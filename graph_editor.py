@@ -4,6 +4,7 @@ from Tkconstants import *
 import tkMessageBox
 import Pmw
 import external.Tree
+import traceback
 
 def coords_to_ltriangle(x, y):
     return (x, y, x - 6, y - 3, x - 6, y + 3)
@@ -396,7 +397,7 @@ class graph_editor:
 	    self.conn_ip['glyph0'] = None
 	except Exception, e:
 	    tkMessageBox.showerror("Connect error", "Could not connect modules: %s" % (str(e)))
-	    print sys.exc_info()	    
+	    traceback.print_exc()
 	
     def disconnect_glyphs(self, output_glyph, input_glyph, input_idx):
 	"""This will ask the main module whether the glyphs in question

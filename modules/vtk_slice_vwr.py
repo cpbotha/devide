@@ -1,7 +1,7 @@
 # FIXME FIXME: you have to give the reslice origin!!!
 # just use the matrices from dscas1
 
-# $Id: vtk_slice_vwr.py,v 1.7 2002/03/24 20:52:39 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.8 2002/03/26 12:48:17 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -28,9 +28,9 @@ class vtk_slice_vwr(module_base):
         self.ortho_pipes = [[] for i in range(self.num_orthos)]
 
         # axial, sagittal, coronal
-        self.IntialResliceAxes = [(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), # axial
-				  (0,1,0, 0,0,1, 1,0,0),
-				  (1,0,0, 0,0,1, 0,-1,0)]
+        self.InitialResliceAxes = [{'axes' : (1,0,0, 0,1,0, 0,0,1), 'origin' : (0,0,0)}, # axial (xy-plane)
+                                             {'axes' : (0,0,1, 0,1,0, 1,0,0), 'origin' : (0,0,0)}, # sagittal (yz-plane)
+                                             {'axes' : (1,0,0, 0,0,1, 0,1,0), 'origin' : (0,0,0)}] # coronal (zx-plane)
 	
 	self.create_window()
 	
@@ -148,7 +148,8 @@ class vtk_slice_vwr(module_base):
                     cur_pipe = self.ortho_pipes[i][-1]
                     # if this is the first layer in this channel/ortho, then we have to do some initial setup stuff
                     if len(self.ortho_pipes[i]) == 1:
-                        cur_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(self.IntialResliceAxesDirectionCosines[i])
+                        cur_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(self.InitialResliceAxes[i]['axes'])
+                        cur_pipe['vtkImageReslice'].SetResliceAxesOrigin(self.InitialResliceAxes[i]['origin'])
                     # more setup
                     cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
                     # connect up input
@@ -203,40 +204,49 @@ class vtk_slice_vwr(module_base):
     def rw_slice_cb(self, x, y, rw):
 	r_idx = self.rws.index(rw)
 	
-	for layer_pl in self.ortho_pipes[r_idx - 1]:
+	delta = y - self.rw_lastxys[r_idx]['y']
+        for layer_pl in self.ortho_pipes[r_idx - 1]:
 	    reslice = layer_pl['vtkImageReslice']
-	    o_extent = reslice.GetOutputExtent()
-	    o_origin = reslice.GetOutputOrigin()
-	    o_spacing = reslice.GetOutputSpacing()
+            
+            # we're going to assume that origin, spacing and extent are set to defaults, i.e.
+            # the output origin, spacing and extent are the ones at input permuted through
+            # the transformation matrix
+            reslice.UpdateInformation()
 
-	    reslice.SetOutputExtentToDefault()
-	    reslice.SetOutputOriginToDefault()
-	    reslice.SetOutputSpacingToDefault()
-	    output = reslice.GetOutput()
-	    output.UpdateInformation()
-	    lo,hi = output.GetWholeExtent()[4:6]
-	    s = output.GetSpacing()[2]
-	    o = output.GetOrigin()[2]
-	    lo = o + lo*s
-	    hi = o + hi*s
-	    orig_lo = min((lo,hi))
-	    orig_hi = max((lo,hi))
+            # get the current ResliceAxesOrigin (we want to move this)
+            ra_origin = reslice.GetResliceAxesOrigin()
+            # see what it's on the output (so we can just move it along the Z)
+            o_ra_origin = reslice.GetResliceAxes().MultiplyPoint(ra_origin + (0.0,))
+            # translate input spacing to output
+            input_spacing = reslice.GetInput().GetSpacing()
+            output_spacing = reslice.GetResliceAxes().MultiplyPoint(input_spacing + (0.0,))
+            # get input extent so we can translato
+            input_extent = reslice.GetInput().GetWholeExtent()
+            p0 = (input_extent[0], input_extent[2], input_extent[4], 0.0)
+            p1 = (input_extent[1], input_extent[3], input_extent[5], 0.0)
+            output_p0 = reslice.GetResliceAxes().MultiplyPoint(p0)
+            output_p1 = reslice.GetResliceAxes().MultiplyPoint(p1)
+            zmin = min(output_p0[2],output_p1[2]) * output_spacing[2]
+            zmax = max(output_p0[2],output_p1[2]) * output_spacing[2]
 
-	    print o_origin
-	    delta = y - self.rw_lastxys[r_idx]['y']
-	    o_origin = list(o_origin)
-	    o_origin[2] = o_origin[2]+delta*o_spacing[2]
-	    if (o_origin[2] > orig_hi):
-		o_origin[2] = orig_hi
-	    elif (o_origin[2] < orig_lo):
-		o_origin[2] = orig_lo
-	    o_origin = tuple(o_origin)
+            # calculate new output origin
+            o_ra_origin = list(o_ra_origin)
+            o_ra_origin[2] += delta * output_spacing[2]
 
-        reslice.SetOutputSpacing(o_spacing)
-        reslice.SetOutputOrigin(o_origin)
-        reslice.SetOutputExtent(o_extent)
-	    
-	    
+            if o_ra_origin[2] < zmin:
+                o_ra_origin[2] = zmin
+            elif o_ra_origin[2] > zmax:
+                o_ra_origin[2] = zmax
+            o_ra_origin = tuple(o_ra_origin)
+
+            # invert the ResliceAxes and invert them
+            rm = vtkMatrix4x4()
+            vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rm)
+
+            new_ResliceAxesOrigin = rm.MultiplyPoint(o_ra_origin)[0:3]
+            reslice.SetResliceAxesOrigin(new_ResliceAxesOrigin)
+            print new_ResliceAxesOrigin
+
 	# at the end
 	self.rw_lastxys[r_idx] = {'x' : x, 'y' : y}
 	rw.Render()
