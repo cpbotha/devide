@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.48 2002/07/05 16:21:50 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.49 2002/07/29 17:09:52 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -369,7 +369,9 @@ class vtk_slice_vwr(module_base,
         self._renderers.append(vtk.vtkRenderer())
         #self._renderers[-1].SetBackground(1,1,1)
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        istyle = vtk.vtkInteractorStyleImage()
+        #istyle = vtk.vtkInteractorStyleImage()
+        istyle = self._rwis[-1].GetInteractorStyle()
+        print istyle.GetClassName()
         istyle.AddObserver('LeftButtonPressEvent', self._istyle_img_cb)        
         istyle.AddObserver('MouseMoveEvent', self._istyle_img_cb)
         istyle.AddObserver('LeftButtonReleaseEvent', self._istyle_img_cb)
@@ -895,9 +897,9 @@ class vtk_slice_vwr(module_base,
 
                     self._add_sel_point(inpoint[0:3], r_idx - 1)
 
-                    self._ortho_huds[r_idx - 1]['vtkAxes'].SetOrigin(ppx,ppy,
-                                                                     0.5)
-                    self._ortho_huds[r_idx - 1]['axes_actor'].VisibilityOn()
+                    #self._ortho_huds[r_idx - 1]['vtkAxes'].SetOrigin(ppx,ppy,
+                    #                                                 0.5)
+                    #self._ortho_huds[r_idx - 1]['axes_actor'].VisibilityOn()
 
                     self._rwis[r_idx].Render()
     
