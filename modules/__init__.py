@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.94 2004/04/27 09:22:58 cpbotha Exp $
+# $Id: __init__.py,v 1.95 2004/05/11 17:26:10 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -80,6 +80,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Insight.sigmoid' : ('Insight',),
               'Insight.watershed' : ('Insight', 'Morphology'),
               'Insight.imageStackRDR' : ('Insight',),
+              'Insight.itkWRT' : ('Insight', 'Writers'),
               'Insight.confidenceSeedConnect' : ('Insight',),
               'Insight.discreteLaplacian' : ('Insight',),
               'Insight.nbhSeedConnect' : ('Insight',),
