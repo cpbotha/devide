@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.35 2003/09/15 17:10:36 cpbotha Exp $
+# $Id: tdObjects.py,v 1.36 2003/09/15 17:19:45 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -201,10 +201,7 @@ class tdObjects(object, s3dcGridMixin):
              self._handlerObjectAxisToSlice, True),
             ('Const&rain Motion',
              'Constrain the motion of selected objects to the selected slices',
-             self._handlerObjectPlaneLock, True),
-            ('---',), # important!  one-element tuple...
-            ('&Delete', 'Delete selected slices',
-             self._handlerObjectDelete, True)]
+             self._handlerObjectPlaneLock, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(
             menu, eventWidget, commandsTuple, disable)
@@ -670,13 +667,6 @@ class tdObjects(object, s3dcGridMixin):
         if objs:
             self.slice3dVWR.render3D()
 
-    def _handlerObjectDelete(self, event):
-        objs = self._getSelectedObjects()
-        for obj in objs:
-            self.removeObject(obj)
-
-        if objs:
-            self.slice3dVWR.render3D()
 
     def _handlerObjectSetColour(self, event):
         objs = self._getSelectedObjects()
