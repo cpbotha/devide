@@ -83,6 +83,7 @@
       <label>&amp;File</label>
       <object class="wxMenuItem" name="ID_EXIT_MI">
         <label>E&amp;xit</label>
+        <accel>ALT-X</accel>
       </object>
     </object>
     <object class="wxMenu">
