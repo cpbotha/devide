@@ -2,7 +2,7 @@ import os
 import sys
 
 if sys.platform.startswith('win'):
-    sys.path.insert(0, 'c:/work/code/devide/')
+    sys.path.insert(0, 'g:/work/code/devide/')
 else:
     sys.path.insert(0, '/home/cpbotha/work/code/devide/')
 
