@@ -8,7 +8,7 @@ import wx
 class histogramSegment(introspectModuleMixin, moduleBase):
     """Mooooo!  I'm a cow.
 
-    $Revision: 1.6 $
+    $Revision: 1.7 $
     """
 
     _gridCols = [('Type', 0), ('Number of Handles',0)]
@@ -54,6 +54,9 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         return self._config
 
     def setConfig(self, config):
+        pass
+
+    def setConfigPostConnect(self, config):
 
         # first nuke all current selectors (but prevent updates to config
         # and the stencil)
