@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.65 2003/08/04 23:16:17 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.66 2003/08/06 16:19:04 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -140,6 +140,14 @@ class selectedPoints(object):
                                 'lockToSurface' : sp['lockToSurface']})
 
         return savedPoints
+
+    def getSelectedWorldPoints(self):
+        """Return list of world coordinates that correspond to selected
+        points.
+        """
+
+        return [self._pointsList[i]['world']
+                for i in self._grid.GetSelectedRows()]
 
     def _handlerStoreCursorAsPoint(self):
         """Call back for the store cursor button.

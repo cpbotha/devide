@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.16 2003/08/04 16:53:36 cpbotha Exp $
+# $Id: tdObjects.py,v 1.17 2003/08/06 16:19:07 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -43,6 +43,26 @@ class tdObjects:
         self._grid.ClearGrid()
         self._grid = None
 
+    def _attachAxis(self, sObject, twoPoints):
+        """Associate the axis defined by the two world points with the
+        given tdObject.
+        """
+
+        lineSource = vtk.vtkLineSource()
+        lineSource.SetPoint1(twoPoints[0])
+        lineSource.SetPoint2(twoPoints[1])
+
+        tubeFilter = vtk.vtkTubeFilter()
+        tubeFilter.SetInput(lineSource.GetOutput())
+
+        lineActor = vtk.vtkActor()
+        lineMapper = vtk.vtkPolyDataMapper()
+
+        # FIXME: continue here
+        
+        self._tdObjectsDict[sObject]['axisPoints'] = twoPoints
+        self._tdObjectsDict[sObject]['axisLineSource']
+
     def _bindEvents(self):
         controlFrame = self._slice3dVWR.controlFrame
 
@@ -64,6 +84,9 @@ class tdObjects:
         wx.EVT_BUTTON(controlFrame, controlFrame.objectMotionButtonId,
                       self._handlerObjectMotion)
 
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectAttachAxisId,
+                      self._handlerObjectAttachAxis)
+
         wx.EVT_BUTTON(controlFrame, controlFrame.objectAxisToSliceButtonId,
                       self._handlerObjectAxisToSlice)
 
@@ -72,6 +95,10 @@ class tdObjects:
                 if 'vtkActor' in o]
 
     def _getSelectedObjects(self):
+        """Return a list of tdObjects representing the objects that have
+        been selected by the user.
+        """
+        
         objectNames = []        
         selectedRows = self._grid.GetSelectedRows()
         for sRow in selectedRows:
@@ -151,6 +178,21 @@ class tdObjects:
 
         if objs:
             self._slice3dVWR.render3D()
+
+    def _handlerObjectAttachAxis(self, event):
+        """The user should have selected at least two points and an object.
+        This will record the axis formed by the two selected points as the
+        object axis.  If no points are selected, and an axis already exists,
+        we could detach the axis.
+        """
+
+        worldPoints = self._slice3dVWR.selectedPoints.getSelectedWorldPoints()
+        sObjects = self._getSelectedObjects()
+        if len(worldPoints) >= 2 and sObjects:
+            for sObject in sObjects:
+                # the user asked for it, so we're doing all of 'em
+                self._attachAxis(sObject, worldPoints[0:2])
+            
 
     def _handlerObjectAxisToSlice(self, event):
         # first find two selected points from the selected points list
@@ -380,7 +422,7 @@ class tdObjects:
                 return oi[0]
 
     def findObjectsByNames(self, objectNames):
-        """Given an objectName, return an object binding.
+        """Given an objectName, return a tdObject binding.
         """
         
         dictItems = self._tdObjectsDict.items()
