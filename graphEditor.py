@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.99 2004/11/28 20:07:55 cpbotha Exp $
+# $Id: graphEditor.py,v 1.100 2004/12/05 16:01:23 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -195,20 +195,14 @@ class graphEditor:
                  self._handlerHelpShowHelp)
 
 
-        # finish with moduleLists config
-        self._modulePaletteFrame.moduleCatsListCtrl.InsertColumn(
-            0, 'Categories')
-        
-        self._modulePaletteFrame.modulesListCtrl.InsertColumn(
-            0, 'Modules')
-
         # event handlers
-        EVT_LIST_ITEM_SELECTED(self._modulePaletteFrame,
-                               self._modulePaletteFrame.moduleCatsListCtrlId,
-                               self._handlerModuleCatsListCtrlSelected)
-        EVT_LIST_ITEM_SELECTED(self._modulePaletteFrame,
-                               self._modulePaletteFrame.modulesListCtrlId,
-                               self._handlerModulesListCtrlSelected)
+        EVT_LISTBOX(self._modulePaletteFrame,
+                    self._modulePaletteFrame.moduleCatsListBoxId,
+                    self._handlerModuleCatsListBoxSelected)
+
+        EVT_LISTBOX(self._modulePaletteFrame,
+                    self._modulePaletteFrame.modulesListBoxId,
+                    self._handlerModulesListBoxSelected)
 
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
@@ -216,9 +210,19 @@ class graphEditor:
         #self.fill_module_tree()
         self.fillModuleLists()
 
-        EVT_LIST_BEGIN_DRAG(self._modulePaletteFrame,
-                            self._modulePaletteFrame.modulesListCtrlId,
-                            self.modulesListCtrlBeginDragHandler)
+        #EVT_LIST_BEGIN_DRAG(self._modulePaletteFrame,
+        #                    self._modulePaletteFrame.modulesListCtrlId,
+        #                    self.modulesListCtrlBeginDragHandler)
+
+        def mpfmouse(event):
+            if event.Dragging():
+                print "HALLO"
+
+            else:
+                event.Skip()
+
+        EVT_MOUSE_EVENTS(self._modulePaletteFrame.modulesListBox,
+                         self._handlerModulesListBoxMouseEvents)
 
         # (shortName, longName) tuples, updated every time the user changes
         # here module category selection
@@ -264,23 +268,19 @@ class graphEditor:
         # method that will shift the SashPosition and thus cause a redraw
         self.show()
 
-    def modulesListCtrlBeginDragHandler(self, event):
-        mlc = self._modulePaletteFrame.modulesListCtrl
+    def _handlerModulesListBoxMouseEvents(self, event):
+        if not event.Dragging():
+            # if no dragging is taking place, let somebody else
+            # handle this event...
+            event.Skip()
+            return
+        
+        mlb = self._modulePaletteFrame.modulesListBox
 
-        # this is more robust than using event.GetIndex() or somesuch:
-        # if there's a drag event, we use the currently selected item
-        # as the drag source
-        selectedFound = False
-        if mlc.GetSelectedItemCount():
-            for idx in range(mlc.GetItemCount()):
-                if mlc.GetItemState(
-                    idx, wxLIST_STATE_SELECTED) & wxLIST_STATE_SELECTED:
-                    selectedFound = True
-                    break
 
-        if selectedFound:
-            shortName, moduleName = \
-                       self._selectedModulesList[mlc.GetItemData(idx)]
+        sel = mlb.GetSelection()
+        if sel >= 0:
+            shortName, moduleName = self._selectedModulesList[sel]
             
             if type(moduleName) != str:
                 return
@@ -619,22 +619,17 @@ class graphEditor:
                     
         
         # setup all categories
-        self._modulePaletteFrame.moduleCatsListCtrl.DeleteAllItems()
+        self._modulePaletteFrame.moduleCatsListBox.Clear()
         idx = 0
 
         cats = self._moduleCats.keys()
         cats.sort()
         
         for cat in cats:
-            self._modulePaletteFrame.moduleCatsListCtrl.InsertStringItem(
-                idx, cat)
-            idx += 1
-
-        self._modulePaletteFrame.moduleCatsListCtrl.SetColumnWidth(
-            0, wxLIST_AUTOSIZE)
+            self._modulePaletteFrame.moduleCatsListBox.Append(cat)
 
         # no category is selected
-        self._modulePaletteFrame.modulesListCtrl.DeleteAllItems()
+        self._modulePaletteFrame.modulesListBox.Clear()
 
     def _handlerGraphFrameClose(self, event):
         self.hide()
@@ -649,10 +644,6 @@ class graphEditor:
         self._modulePaletteFrame.Iconize(False)
         self._modulePaletteFrame.Raise()
 
-        # this is a workaround for a bug in the ListCtrl of 2.4.2.4 which
-        # sometimes just forgets to draw itself...
-        self._modulePaletteFrame.modulesListCtrl.Refresh()
-        self._modulePaletteFrame.modulesListCtrl.Update()
 
     def show(self):
         self.showModulePalette()        
@@ -706,17 +697,16 @@ class graphEditor:
             if filename:
                 self._saveNetwork(glyphs, filename)
 
-    def _handlerModuleCatsListCtrlSelected(self, event):
-        self._modulePaletteFrame.modulesListCtrl.DeleteAllItems()
+    def _handlerModuleCatsListBoxSelected(self, event):
+        self._modulePaletteFrame.modulesListBox.Clear()
 
         selectedCats = []
 
-        clc = self._modulePaletteFrame.moduleCatsListCtrl
-        if clc.GetSelectedItemCount():
-            for idx in range(clc.GetItemCount()):
-                if clc.GetItemState(idx, wxLIST_STATE_SELECTED) &\
-                       wxLIST_STATE_SELECTED:
-                    selectedCats.append(clc.GetItemText(idx))
+        mclb = self._modulePaletteFrame.moduleCatsListBox
+        sels = mclb.GetSelections()
+
+        for sel in sels:
+            selectedCats.append(mclb.GetString(sel))
 
         selectedModuleNames = {}
         for cat in selectedCats:
@@ -747,18 +737,13 @@ class graphEditor:
                 self._selectedModulesList.append(
                     (mParts[-1], 'module:%s' % (mn,)))
 
-        # now populate the mlc
-        mlc = self._modulePaletteFrame.modulesListCtrl        
+        # now populate the mlb
+        mlb = self._modulePaletteFrame.modulesListBox
         # important: sort by shortnames
         self._selectedModulesList.sort()
 
-        idx = 0
         for shortname,longname in self._selectedModulesList:
-            mlc.InsertStringItem(idx, shortname)
-            mlc.SetItemData(idx, idx)
-            idx += 1
-
-        mlc.SetColumnWidth(0, wxLIST_AUTOSIZE)
+            mlb.Append(shortname)
 
     def _handlerMarkModule(self, instance):
         markedModuleName = wxGetTextFromUser(
@@ -771,9 +756,10 @@ class graphEditor:
                 instance, markedModuleName)
                 
 
-    def _handlerModulesListCtrlSelected(self, event):
-        mlc = self._modulePaletteFrame.modulesListCtrl
-        idx = mlc.GetItemData(event.m_itemIndex)
+    def _handlerModulesListBoxSelected(self, event):
+        mlb = self._modulePaletteFrame.modulesListBox
+        idx = mlb.GetSelection()
+
         self._canvasFrame.GetStatusBar().SetStatusText(
             self._selectedModulesList[idx][1])
 
@@ -837,21 +823,17 @@ class graphEditor:
                 return
             
 
-            mlc = self._modulePaletteFrame.modulesListCtrl
-            if mlc.GetSelectedItemCount():
-                for idx in range(mlc.GetItemCount()):
-                    if mlc.GetItemState(
-                        idx, wxLIST_STATE_SELECTED) & wxLIST_STATE_SELECTED:
-                        # place just this one
-                        self.canvasDropText(event.GetX(), event.GetY(),
-                                            self._selectedModulesList[idx][1])
-                        # break out of the for loop
-                        break
+            mlb = self._modulePaletteFrame.modulesListBox
+            idx = mlb.GetSelection()
+            if idx >= 0:
+                # place just this one
+                self.canvasDropText(event.GetX(), event.GetY(),
+                                    self._selectedModulesList[idx][1])
 
-                # we've placed a module, so we'd probably like to place
-                # another one... let's clear qss but keep the selection
-                qss = ''
-                updateSelectionAndStatusBar = True
+            # we've placed a module, so we'd probably like to place
+            # another one... let's clear qss but keep the selection
+            qss = ''
+            updateSelectionAndStatusBar = True
 
         elif key == WXK_ESCAPE:
             idx = -1
@@ -866,9 +848,7 @@ class graphEditor:
         if updateSelectionAndStatusBar:
             if idx >= 0:
                 # then select what we want
-                self._modulePaletteFrame.modulesListCtrl.SetItemState(
-                    idx, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
-                self._modulePaletteFrame.modulesListCtrl.EnsureVisible(idx)
+                self._modulePaletteFrame.modulesListBox.SetSelection(idx)
                 # we only update the string if it was found
                 self._quickSearchString = qss
 
@@ -876,10 +856,11 @@ class graphEditor:
                 if qss == '':
                     # this means the search was cancelled, so we have
                     # to deselect everything and cancel the status bar disp
-                    for idx in range(
-                        self._modulePaletteFrame.modulesListCtrl.GetItemCount()):
-                        self._modulePaletteFrame.modulesListCtrl.SetItemState(
-                            idx, 0, wxLIST_STATE_SELECTED)
+                    sel = self._modulePaletteFrame.modulesListBox.\
+                          GetSelection()
+                    if sel >= 0:
+                        self._modulePaletteFrame.modulesListBox.SetSelection(
+                            sel, False)
 
                     self._quickSearchString = qss
 
