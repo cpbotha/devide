@@ -549,7 +549,7 @@ class moduleManager:
         only show if the filesize of the vtk log file has changed since the
         last call.
         """
-        self._dscas3_app.update_vtk_log_window()
+        print "vtk_poll_error is DEPRECATED"
 
     def setProgress(self, progress, message):
         """Progress is in percent.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.47 2003/09/20 23:37:33 cpbotha Exp $
+# $Id: dscas3.py,v 1.48 2003/09/23 14:36:18 cpbotha Exp $
 
 DSCAS3_VERSION = '20030920'
 
@@ -24,6 +24,7 @@ from wxPython.wx import *
 from wxPython.html import *
 
 import vtk
+import vtkdscas
 
 # ---------------------------------------------------------------------------
 class dscas3_log_window:
@@ -217,15 +218,18 @@ class dscas3_app_t(wxApp):
         vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
         
         # now make sure that VTK will always send error to vtk.log logfile
-        temp = vtk.vtkFileOutputWindow()
-        vtk_logfn = os.path.join(self.get_appdir(), 'vtk.log')
-        temp.SetFileName(vtk_logfn)
-        #temp.SetInstance(temp)
-        del temp
+        temp = vtkdscas.vtkEventOutputWindow()
+        temp.SetInstance(temp)
 
-        self._vtk_lw = dscas3_log_window('VTK error log',
-                                         self._mainFrame,
-                                         vtk_logfn)
+        def observerEOW(theObject, eventType):
+            print "HALO"
+            print theObject.GetText()
+            print "OLAH %d" % (len(theObject.GetText()),)
+
+        temp.AddObserver('ErrorEvent', observerEOW)
+        temp.AddObserver('WarningEvent', observerEOW)        
+            
+        del temp
 
         return True
 
