@@ -13,10 +13,7 @@ class graphEditorFrame(wxFrame):
         # begin wxGlade: graphEditorFrame.__init__
         kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)
-        self.panel_2 = wxPanel(self, -1)
-        self.window_2 = wxSplitterWindow(self.panel_2, -1)
-        self.window_2_pane_2 = wxPanel(self.window_2, -1)
-        self.window_2_pane_1 = wxPanel(self.window_2, -1)
+        self.mainPanel = wxPanel(self, -1)
         
         # Menu Bar
         self.frame_1_menubar = wxMenuBar()
@@ -45,12 +42,12 @@ class graphEditorFrame(wxFrame):
         # Menu Bar end
         self.frame_1_statusbar = self.CreateStatusBar(1)
         self.moduleCatsListCtrlId  =  wxNewId()
-        self.moduleCatsListCtrl = wxListCtrl(self.window_2_pane_1, self.moduleCatsListCtrlId , style=wxLC_REPORT|wxSUNKEN_BORDER)
+        self.moduleCatsListCtrl = wxListCtrl(self.mainPanel, self.moduleCatsListCtrlId , style=wxLC_REPORT|wxSUNKEN_BORDER)
         self.modulesListCtrlId  =  wxNewId()
-        self.modulesListCtrl = wxListCtrl(self.window_2_pane_1, self.modulesListCtrlId , style=wxLC_REPORT|wxLC_SINGLE_SEL|wxSUNKEN_BORDER)
+        self.modulesListCtrl = wxListCtrl(self.mainPanel, self.modulesListCtrlId , style=wxLC_REPORT|wxLC_SINGLE_SEL|wxSUNKEN_BORDER)
         self.rescanButtonId  =  wxNewId()
-        self.rescanButton = wxButton(self.window_2_pane_1, self.rescanButtonId , "Rescan")
-        self.canvas = wxpcCanvas(self.window_2_pane_2, -1)
+        self.rescanButton = wxButton(self.mainPanel, self.rescanButtonId , "Rescan")
+        self.canvas = wxpcCanvas(self.mainPanel, -1)
 
         self.__set_properties()
         self.__do_layout()
@@ -59,14 +56,12 @@ class graphEditorFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: graphEditorFrame.__set_properties
         self.SetTitle("DeVIDE Graph Editor")
+        self.SetSize((756, 617))
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
         frame_1_statusbar_fields = ["Welcome to the DeVIDE Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
-        self.canvas.SetSize((599, 532))
-        self.window_2.SetSize((784, 541))
-        self.window_2.SplitVertically(self.window_2_pane_1, self.window_2_pane_2, 176)
         # end wxGlade
 
     def __do_layout(self):
@@ -74,31 +69,24 @@ class graphEditorFrame(wxFrame):
         sizer_1 = wxBoxSizer(wxVERTICAL)
         sizer_5 = wxBoxSizer(wxVERTICAL)
         sizer_6 = wxBoxSizer(wxVERTICAL)
+        sizer_2 = wxBoxSizer(wxHORIZONTAL)
         sizer_8 = wxBoxSizer(wxVERTICAL)
         sizer_7 = wxBoxSizer(wxVERTICAL)
         sizer_7.Add(self.moduleCatsListCtrl, 2, wxBOTTOM|wxEXPAND, 7)
         sizer_7.Add(self.modulesListCtrl, 3, wxEXPAND, 0)
         sizer_7.Add(self.rescanButton, 0, wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 7)
-        self.window_2_pane_1.SetAutoLayout(1)
-        self.window_2_pane_1.SetSizer(sizer_7)
-        sizer_7.Fit(self.window_2_pane_1)
-        sizer_7.SetSizeHints(self.window_2_pane_1)
+        sizer_2.Add(sizer_7, 2, wxEXPAND, 0)
         sizer_8.Add(self.canvas, 1, wxEXPAND, 0)
-        self.window_2_pane_2.SetAutoLayout(1)
-        self.window_2_pane_2.SetSizer(sizer_8)
-        sizer_8.Fit(self.window_2_pane_2)
-        sizer_8.SetSizeHints(self.window_2_pane_2)
-        sizer_6.Add(self.window_2, 1, wxEXPAND, 0)
+        sizer_2.Add(sizer_8, 9, wxEXPAND, 0)
+        sizer_6.Add(sizer_2, 1, wxEXPAND, 0)
         sizer_5.Add(sizer_6, 1, wxALL|wxEXPAND, 7)
-        self.panel_2.SetAutoLayout(1)
-        self.panel_2.SetSizer(sizer_5)
-        sizer_5.Fit(self.panel_2)
-        sizer_5.SetSizeHints(self.panel_2)
-        sizer_1.Add(self.panel_2, 1, wxEXPAND, 0)
+        self.mainPanel.SetAutoLayout(1)
+        self.mainPanel.SetSizer(sizer_5)
+        sizer_5.Fit(self.mainPanel)
+        sizer_5.SetSizeHints(self.mainPanel)
+        sizer_1.Add(self.mainPanel, 1, wxEXPAND, 0)
         self.SetAutoLayout(1)
         self.SetSizer(sizer_1)
-        sizer_1.Fit(self)
-        sizer_1.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 

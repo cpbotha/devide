@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.56 2004/02/20 13:38:46 cpbotha Exp $
+# $Id: graphEditor.py,v 1.57 2004/02/20 14:09:26 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -99,8 +99,14 @@ class graphEditor:
 
         EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)
 
-#         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
-#                    lambda e, s=self: s.fill_module_tree())
+
+        def gfKeyDown(event):
+            print "blaat"
+            print event.GetKeyCode()
+            
+        EVT_KEY_DOWN(self._graphFrame.mainPanel, gfKeyDown)
+        
+
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
                    lambda e, s=self: s.fillModuleLists())
         
@@ -393,61 +399,6 @@ class graphEditor:
         if not htmlWindowFrame.Show(True):
             htmlWindowFrame.Raise()
 
-    def fill_module_tree(self):
-        """Build up the module tree from the list of available modules
-        supplied by the moduleManager.  At the moment, things will look
-        a bit strange if the module tree goes deeper than one level, but
-        everything will still work.
-        """
-        self._graphFrame.treeCtrl.DeleteAllItems()
-
-        rootNode = self._graphFrame.treeCtrl.AddRoot('Modules and Segments')
-        coreNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
-                                                        'Core Modules')
-        userNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
-                                                        'User Modules')
-        segNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
-                                                       'Segments')
-        rootDict = {'modules' : coreNode,
-                    'userModules' : userNode}
-
-        mm = self._devide_app.getModuleManager()
-        mm.scanModules()
-        self._availableModuleList = mm.getAvailableModuleList()
-        catDict = {}
-        for moduleName in self._availableModuleList:
-            # we're getting the complete module spec relative to devide
-            # itself, e.g. modules.Filters.doubleThreshold
-            mParts = moduleName.split('.')
-            if len(mParts) == 2:
-                # this is one level deep, e.g. modules.blaatFilter
-                lastName = mParts[1]
-                catNode = rootDict[mParts[0]]
-            else:
-                # this is two levels deep, e.g. modules.Filters.maatFilter
-                lastName = mParts[2]
-                try:
-                    catNode = catDict[mParts[1]]
-                except KeyError:
-                    catNode = self._graphFrame.treeCtrl.AppendItem(
-                        rootDict[mParts[0]], mParts[1])
-                    catDict[mParts[1]] = catNode
-
-            nn = self._graphFrame.treeCtrl.AppendItem(catNode, lastName)
-            self._graphFrame.treeCtrl.SetPyData(nn,
-                                                'module:%s' % (moduleName,))
-
-        # the availableSegmentsList is a list of fully qualified filenames
-        self.availableSegmentsList = mm.availableSegmentsList
-        for segmentName in self.availableSegmentsList:
-            # we want basename without extension to put in the tree
-            basename = os.path.splitext(os.path.basename(segmentName))[0]
-            nn = self._graphFrame.treeCtrl.AppendItem(segNode, basename)
-            self._graphFrame.treeCtrl.SetPyData(nn,
-                                                'segment:%s' % (segmentName,))
-
-        for node in rootDict.values() + [segNode, rootNode]:
-            self._graphFrame.treeCtrl.Expand(node)
 
     def fillModuleLists(self):
         """Build up the module tree from the list of available modules
@@ -489,44 +440,8 @@ class graphEditor:
 
         self._graphFrame.moduleCatsListCtrl.SetColumnWidth(0, wxLIST_AUTOSIZE)
 
-        
-
-        
-#         catDict = {}
-#         for moduleName in self._availableModuleList:
-#             # we're getting the complete module spec relative to devide
-#             # itself, e.g. modules.Filters.doubleThreshold
-#             mParts = moduleName.split('.')
-#             if len(mParts) == 2:
-#                 # this is one level deep, e.g. modules.blaatFilter
-#                 lastName = mParts[1]
-#                 catNode = rootDict[mParts[0]]
-#             else:
-#                 # this is two levels deep, e.g. modules.Filters.maatFilter
-#                 lastName = mParts[2]
-#                 try:
-#                     catNode = catDict[mParts[1]]
-#                 except KeyError:
-#                     catNode = self._graphFrame.treeCtrl.AppendItem(
-#                         rootDict[mParts[0]], mParts[1])
-#                     catDict[mParts[1]] = catNode
-
-#             nn = self._graphFrame.treeCtrl.AppendItem(catNode, lastName)
-#             self._graphFrame.treeCtrl.SetPyData(nn,
-#                                                 'module:%s' % (moduleName,))
-
-#         # the availableSegmentsList is a list of fully qualified filenames
-#         self.availableSegmentsList = mm.availableSegmentsList
-#         for segmentName in self.availableSegmentsList:
-#             # we want basename without extension to put in the tree
-#             basename = os.path.splitext(os.path.basename(segmentName))[0]
-#             nn = self._graphFrame.treeCtrl.AppendItem(segNode, basename)
-#             self._graphFrame.treeCtrl.SetPyData(nn,
-#                                                 'segment:%s' % (segmentName,))
-
-#         for node in rootDict.values() + [segNode, rootNode]:
-#             self._graphFrame.treeCtrl.Expand(node)
-            
+        # no category is selected
+        self._graphFrame.modulesListCtrl.DeleteAllItems()
 
     def close_graph_frame_cb(self, event):
         self.hide()
