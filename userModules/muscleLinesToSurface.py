@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.9 2004/01/30 12:51:22 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.10 2004/03/18 11:46:53 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -21,7 +21,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
     not allowed.  Handling this graciously would add far too much complexity
     to this code.  We're already handling breaks in the x-y plane.
     
-    $Revision: 1.9 $
+    $Revision: 1.10 $
     """
     
 
@@ -321,7 +321,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         pass
 
     def executeModule(self):
-        self._oObj.Update()
+        self._oObj.GetOutput().Update()
         #print str(self._pf2.GetOutput().GetPointData().GetScalars())
 
     def view(self, parent_window=None):
