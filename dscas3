@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3,v 1.16 2002/04/22 14:34:07 cpbotha Exp $
+# $Id: dscas3,v 1.17 2002/04/22 21:08:41 cpbotha Exp $
 
 import sys
 import Tkinter
@@ -7,10 +7,13 @@ import tkMessageBox
 from Tkconstants import *
 import Pmw
 
+from assistants import assistants
 from graph_editor import graph_editor
 from module_manager import module_manager
 
 from wxPython.wx import *
+from wxPython.xrc import *
+#from types import *
 
 class pyco_t:
     """Run-time Python interpreter class thingy.
@@ -30,7 +33,7 @@ class pyco_t:
     def text_exec(self, py_text):
 	eval(compile("%s\n\n" % (py_text), '<string>', 'exec'), globals())
 
-class dscas3_main_window_t(wxFrame):
+class main_window(wxFrame):
     """Main dscas3 application window.
 
     This is class representing the main dscas3 window.  As is the convention
@@ -47,21 +50,70 @@ class dscas3_main_window_t(wxFrame):
 
         # and of course the file submenu
         file_menu = wxMenu()
-
         exit_id = wxNewId()
         file_menu.Append(exit_id, 'E&xit', 'Exit DSCAS3')
         # event table associated with self, which id triggers it, what to do
-        EVT_MENU(self, exit_id, self.dscas3_app.quit())
+        EVT_MENU(self, exit_id, self.exit_cb)
+
+        # the window menu
+        window_menu = wxMenu()
+        ge_id = wxNewId()
+        window_menu.Append(ge_id, '&Graph Editor', 'Activate the Graph Editor')
+        pyi_id = wxNewId()
+        window_menu.Append(pyi_id, '&Python Interpreter',
+                           'Activate the built-in Python Interpreter')
 
         # create the main menu bar to attach all these submenus to
         self.main_menu = wxMenuBar()
         # attach them things
         self.main_menu.Append(file_menu, '&File')
+        self.main_menu.Append(window_menu, '&Window')
         # now tell this frame to use the created menubar
-        self.SetMenuBar(main_menu)
+        self.SetMenuBar(self.main_menu)
+
+        # create a grid sizer that will have 3 cols but will calc the number
+        # of rows that it needs to hold the added controls
+        top_sizer = wxGridSizer(0,3)
+        #top_sizer.Add(wxComboBox(parent=self, id=-1, value="",
+        #                         style=wxCB_DROPDOWN),
+        #              option=0, flag=wxALIGN_TOP)
+
+        # the load data Assistant
+        load_data_id = wxNewId()
+        top_sizer.Add(wxButton(parent=self, id=load_data_id,
+                               label="Load Data"),
+                      option=1, flag=wxEXPAND)
+        EVT_BUTTON(self, load_data_id, self.load_data_cb)
+
+        # the view slices Assistant
+        top_sizer.Add(wxButton(parent=self, id=10, label="View Slices"),
+                      option=1, flag=wxEXPAND)
+        
+        top_sizer.Add(wxButton(parent=self, id=11, label="Render Volume"),
+                      option=1, flag=wxEXPAND)
+        top_sizer.Add(wxButton(parent=self, id=12, label="Segment Bones"),
+                      option=1, flag=wxEXPAND)
+        top_sizer.Add(wxButton(parent=self, id=13, label="Extract Surfaces"),
+                      option=1, flag=wxEXPAND)
+
+        # means the Layout function will be called from wxWindow::OnSize()
+        self.SetAutoLayout(true)
+        # by doing this, the top_sizer will be queried via this Layout func
+        self.SetSizer(top_sizer)
+        # resize the frame (self) to match sizer's minimum size
+        top_sizer.Fit(self)
+        # this seems to do the same (according to docs) but I'm assuming that
+        # it keeps things this way.
+        top_sizer.SetSizeHints(self)
         
         # display ourselves
-        self.show(True)
+        self.Show(true)
+
+    def exit_cb(self, event):
+        self.dscas3_app.quit()
+
+    def load_data_cb(self, event):
+        self.dscas3_app.get_assistants().load_data()
         
 class dscas3_app_t(wxApp):
     """Main dscas3 application class.
@@ -72,56 +124,65 @@ class dscas3_app_t(wxApp):
     does not prevent abstraction from the GUI.
     """
     
-    def __init__(self, root):
+    def __init__(self):
+        self.main_window = None
+        
+        wxApp.__init__(self, 0)
 	self.pyco = pyco_t(self)
 
-        
+        self._assistants = assistants(self)
 	
 	# interpreter input line
-	self.pyco_ol = Pmw.ComboBox(self.root, label_text = 'python one-liner',
-                                    labelpos = 'nw',
-                                    selectioncommand=self.pyco.ol_exec)
-	self.pyco_ol.pack(side=TOP, fill=X)
+	#self.pyco_ol = Pmw.ComboBox(self.root, label_text = 'python one-liner',
+         #                           labelpos = 'nw',
+          #                          selectioncommand=self.pyco.ol_exec)
+	#self.pyco_ol.pack(side=TOP, fill=X)
 	
-	self.pyco_text = Pmw.ScrolledText(self.root, borderframe = 1,
-                                          labelpos = 'n',
-                                          label_text='python code segments',
-                                          usehullsize = 1,
-                                          hull_width = 400, hull_height = 300,
-                                          text_padx = 10, text_pady = 10,
-                                          text_wrap='none')
-	self.pyco_text.pack(side=TOP, fill=BOTH)
+	#self.pyco_text = Pmw.ScrolledText(self.root, borderframe = 1,
+#                                          labelpos = 'n',
+#                                          label_text='python code segments',
+#                                          usehullsize = 1,
+#                                          hull_width = 400, hull_height = 300,
+#                                          text_padx = 10, text_pady = 10,
+#                                          text_wrap='none')
+#	self.pyco_text.pack(side=TOP, fill=BOTH)
 	
 	# button box
-	box = Pmw.ButtonBox(self.root)
-	box.add('Execute OL', underline=0, command=lambda self=self:
-                self.pyco.ol_exec(self.pyco.get()))
-	box.add('Execute TXT', underline=0, command=lambda self=self:
-                self.pyco.text_exec(self.pyco_text.get(1.0, END)))
-	box.add('Quit', underline=0, command=self.quit)
-	box.pack(side=TOP, fill=X, expand=1)
+#	box = Pmw.ButtonBox(self.root)
+#	box.add('Execute OL', underline=0, command=lambda self=self:
+#                self.pyco.ol_exec(self.pyco.get()))
+#	box.add('Execute TXT', underline=0, command=lambda self=self:
+#                self.pyco.text_exec(self.pyco_text.get(1.0, END)))
+#	box.add('Quit', underline=0, command=self.quit)
+#	box.pack(side=TOP, fill=X, expand=1)
 	
 	# this will instantiate the module manager and get a list of plugins
-	self.module_manager = module_manager()
+#	self.module_manager = module_manager()
 	# then start up a default graph_editor
-	self.graph_editor = graph_editor(self)
+#	self.graph_editor = graph_editor(self)
 
     def OnInit(self):
-        self.dscas3_main_window = dscas3_main_window_t(self)
-        self.SetTopWindow(self.dscas3_main_window)
+        self.main_window = main_window(self)
+        self.SetTopWindow(self.main_window)
         # "true" is defined in wxPython.wx
         return true
 	
+    def get_main_window(self):
+        return self.main_window
+
     def get_module_manager(self):
 	return self.module_manager
+
+    def get_assistants(self):
+        return self._assistants
 	
     def quit(self):
 	print "quit called!"
 	# take care of main window
-	self.dscas3_main_window.Close()
+	self.main_window.Close()
 	
 
-dscas3_app = dscas3_app_t(0)
+dscas3_app = dscas3_app_t()
 dscas3_app.MainLoop()
 
 # create main window
