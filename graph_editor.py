@@ -1,6 +1,6 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.41 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: graph_editor.py,v 1.42 2003/03/28 11:22:58 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -118,8 +118,10 @@ class ge_glyph_shape(wxFRectangleShape):
         tl_y = self.GetY() - self._height / 2
         for i in range(num_inputs):
             ishape = inout_shape(5, 5, 1, self._glyph)
-            ishape.SetX(tl_x)
-            ishape.SetY(tl_y + self._input_incr * len(self._input_shapes))
+            #ishape.SetX(tl_x)
+            #ishape.SetY(tl_y + self._input_incr * len(self._input_shapes))
+            ishape.SetX(tl_x + self._input_incr * len(self._input_shapes))
+            ishape.SetY(tl_y)
             canvas.AddShape(ishape)
             ishape.Show(True)
             ishape.dont_move()
@@ -128,12 +130,14 @@ class ge_glyph_shape(wxFRectangleShape):
             
         # and the output shapes
         self._output_shapes = []
-        tr_x = self.GetX() + self._width / 2
-        tr_y = self.GetY() - self._height / 2
+        tr_x = self.GetX() - self._width / 2
+        tr_y = self.GetY() + self._height / 2
         for i in range(num_outputs):
             oshape = inout_shape(5, 5, 0, self._glyph)
-            oshape.SetX(tr_x)
-            oshape.SetY(tr_y + self._input_incr * len(self._output_shapes))
+            #oshape.SetX(tr_x)
+            #oshape.SetY(tr_y + self._input_incr * len(self._output_shapes))
+            oshape.SetX(tr_x + self._input_incr * len(self._output_shapes))
+            oshape.SetY(tr_y)
             canvas.AddShape(oshape)
             oshape.Show(True)
             oshape.dont_move()
@@ -185,18 +189,18 @@ class ge_glyph_shape(wxFRectangleShape):
             # nuke the old shape
             ishape.Erase(dc)
             # draw in new position
-            ishape.Move(dc, tl_x, tl_y + self._input_incr * i)
+            ishape.Move(dc, tl_x + self._input_incr * i, tl_y)
             i += 1
 
         # move all the outputs
-        tr_x = self.GetX() + self._width / 2
-        tr_y = self.GetY() - self._height / 2
+        tr_x = self.GetX() - self._width / 2
+        tr_y = self.GetY() + self._height / 2
         i = 0
         for oshape in self._output_shapes:
             # nuke old shape
             oshape.Erase(dc)
             # draw new position
-            oshape.Move(dc, tr_x, tr_y + self._input_incr * i)
+            oshape.Move(dc, tr_x + self._input_incr * i, tr_y)
             i += 1
             
         # this fixes some drawing problems (we'll have to optimise!)
