@@ -15,8 +15,8 @@ class shellSplatSegmentedFLT(moduleBase, noConfigModuleMixin):
         # we'll be playing around with some vtk objects, this could
         # be anything
         self._splatMapper = vtkdscas.vtkOpenGLVolumeShellSplatMapper()
-        self._splatMapper.SetOmegaL(0.9)
-        self._splatMapper.SetOmegaH(0.9)
+        self._splatMapper.SetOmegaL(0.3)
+        self._splatMapper.SetOmegaH(0.3)
         # high-quality rendermode
         self._splatMapper.SetRenderMode(0)
 
