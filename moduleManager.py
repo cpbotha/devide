@@ -352,7 +352,7 @@ class moduleManager:
             exec('import %s' % fullName)
             # in THIS case, there is a McMillan hook which'll tell the
             # installer about all the devide modules. :)
-            #print "imported: " + str(id(sys.modules[fullName]))
+            print "imported: " + str(id(sys.modules[fullName]))
 
 	    # then instantiate the requested class
             moduleInstance = None
@@ -418,14 +418,18 @@ class moduleManager:
             
         # there can only be a reload if this is not a newModule
         if not newModule:
-            if not self.isInstalled() or \
-                   modulePrefix == 'userModules':
-                # we only reload if we're not running from an Installer
-                # package (the __importsub__ check) OR if we are running
-                # from Installer, but it's a userModule; there's no sense
-                # in reloading a module from an Installer package as these
-                # can never change in anycase
-                exec('reload(' + fullName + ')')
+            #if not self.isInstalled() or \
+            #       modulePrefix == 'userModules':
+
+            # we've changed the logic of this.  bugs in Installer have been
+            # fixed, this shouldn't break things too badly.
+
+            # we only reload if we're not running from an Installer
+            # package (the __importsub__ check) OR if we are running
+            # from Installer, but it's a userModule; there's no sense
+            # in reloading a module from an Installer package as these
+            # can never change in anycase
+            exec('reload(' + fullName + ')')
 
         # we need to inject the import into the calling dictionary...
         # importing my.module results in "my" in the dictionary, so we
