@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.24 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.25 2003/06/09 20:10:37 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -627,6 +627,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._viewFrame.Destroy()
         # unbind the _view_frame binding
         del self._viewFrame
+
+    def getConfig(self):
+        # implant some stuff into the _config object and return it
+        return self._config
+
+    def setConfig(self, aConfig):
+        self._config = aConfig
 
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -1285,7 +1292,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             discrete = (0, 0, 0)
             val = 0
 
-        self._storePoint(discrete, xyz, val, True) # lock to surface
+        pointName = self._viewFrame.sliceCursorNameCombo.GetValue()            
+        self._storePoint(discrete, xyz, val, pointName, True) # lock to surface
 
     def _storeCursor(self, cursor):
         """Store the point represented by the cursor parameter.
@@ -1312,9 +1320,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         world = map(operator.add, iorigin,
                     map(operator.mul, ispacing, cursor[0:3]))
 
-        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3])
+        pointName = self._viewFrame.sliceCursorNameCombo.GetValue()
+        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
+                         pointName)
 
-    def _storePoint(self, discrete, world, value, lockToSurface=False):
+    def _storePoint(self, discrete, world, value, pointName,
+                    lockToSurface=False):
 
         bounds = self._threedRenderer.ComputeVisiblePropBounds()        
         
@@ -1345,12 +1356,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._threedRenderer.AddActor(sa)
         sa.SetPickable(0)
 
-        # first get the name of the point that we are going to store
-        cursor_name = self._viewFrame.sliceCursorNameCombo.GetValue()
-
-        if len(cursor_name) > 0:
+        if len(pointName) > 0:
             name_text = vtk.vtkVectorText()
-            name_text.SetText(cursor_name)
+            name_text.SetText(pointName)
             name_mapper = vtk.vtkPolyDataMapper()
             name_mapper.SetInput(name_text.GetOutput())
             ta = vtk.vtkFollower()
@@ -1391,7 +1399,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._selectedPoints.append({'discrete' : tuple(discrete),
                                      'world' : tuple(world),
                                      'value' : value,
-                                     'name' : cursor_name,
+                                     'name' : pointName,
                                      'point_widget' : pw,
                                      'lock_to_surface' : lockToSurface,
                                      'sphere_actor' : sa,

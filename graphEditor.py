@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.31 2003/06/09 13:31:15 cpbotha Exp $
+# $Id: graphEditor.py,v 1.32 2003/06/09 20:10:37 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -385,7 +385,7 @@ class graphEditor:
                                      inputIdx)
 
     def _canvasDrag(self, canvas, eventName, event, userData):
-        if event.LeftIsDown():
+        if event.LeftIsDown() and not canvas.getDraggedObject():
             self._drawRubberBand(event)
 
     def _checkAndConnect(self, draggedObject, draggedPort,
