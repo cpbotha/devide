@@ -344,7 +344,6 @@ class moduleManager:
 
         # now we're going to connect all of the successfully created
         # modules together; first type 1 connections, then type 2 then type 3
-
         newConnections = []
         for connectionType in range(3):
             typeConnections = [connection for connection in connectionList
