@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.68 2004/03/07 20:57:57 cpbotha Exp $
+# $Id: graphEditor.py,v 1.69 2004/03/10 22:14:40 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -860,22 +860,27 @@ class graphEditor:
             mm = self._devide_app.getModuleManager()
             mm.disconnectModules(glyph.moduleInstance, inputIdx)
 
-            deadLine = glyph.inputLines[inputIdx]
-            if deadLine:
-                # remove the line from the destination module input lines
-                glyph.inputLines[inputIdx] = None
-                # and for the source module output lines
-                outlines = deadLine.fromGlyph.outputLines[
-                    deadLine.fromOutputIdx]
-                del outlines[outlines.index(deadLine)]
-
-                # and from the canvas
-                self._graphFrame.canvas.removeObject(deadLine)
-                deadLine.close()
-            
         except Exception, e:
-            genUtils.logError('Could not disconnect modules: %s' \
+            genUtils.logError('Could not disconnect modules (removing link '
+                              'from canvas anyway): %s' \
                               % (str(e)))
+
+        # we did our best, the module didn't want to comply
+        # we're going to nuke it anyway
+        deadLine = glyph.inputLines[inputIdx]
+        if deadLine:
+            # remove the line from the destination module input lines
+            glyph.inputLines[inputIdx] = None
+            # and for the source module output lines
+            outlines = deadLine.fromGlyph.outputLines[
+                deadLine.fromOutputIdx]
+            del outlines[outlines.index(deadLine)]
+
+            # and from the canvas
+            self._graphFrame.canvas.removeObject(deadLine)
+            deadLine.close()
+            
+            
 
     def _canvasButtonDown(self, canvas, eventName, event, userData):
         # we should only get this if there's no glyph involved
@@ -1647,18 +1652,21 @@ class graphEditor:
             # consuming objects (we hope) :)
             mm.deleteModule(glyph.moduleInstance)
 
-            canvas = glyph.getCanvas()
-            # remove it from the canvas
-            canvas.removeObject(glyph)
-            # take care of possible lyings around
-            glyph.close()
-
-            # after all that work, we deserve a redraw
-            if refreshCanvas:
-                canvas.redraw()
 
         except Exception, e:
-            genUtils.logError('Could not delete module: %s' % (str(e)))
+            genUtils.logError('Could not delete module (removing from canvas '
+                              'anyway): %s' % (str(e)))
+
+        canvas = glyph.getCanvas()
+        # remove it from the canvas
+        canvas.removeObject(glyph)
+        # take care of possible lyings around
+        glyph.close()
+
+        # after all that work, we deserve a redraw
+        if refreshCanvas:
+            canvas.redraw()
+            
         
     def _stopRubberBanding(self, event):
         # whatever the case may be, rubberBanding stops
