@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.4 2004/06/02 22:16:19 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.5 2004/08/20 23:14:06 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -462,10 +462,35 @@ class sliceDirections(s3dcGridMixin):
         
     def setCurrentCursor(self, cursor):
         self.currentCursor = cursor
-        cstring = str(self.currentCursor[0:3]) + " = " + \
-                  str(self.currentCursor[3])
-        
-        self.slice3dVWR.controlFrame.sliceCursorText.SetValue(cstring)
+
+        cf = self.slice3dVWR.controlFrame
+
+        # ===================
+        # discrete position
+        discretePos = cursor[0:3]
+        cf.sliceCursorDiscreteText.SetValue('%d, %d, %d' % tuple(discretePos))
+
+        # ===================
+        # world position
+        worldPos = self.slice3dVWR.getWorldPositionInInputData(discretePos)
+        if worldPos != None:
+            worldPosString = '%.2f, %.2f, %.2f' % tuple(worldPos)
+        else:
+            worldPosString = 'NA'
+
+        cf.sliceCursorWorldText.SetValue(worldPosString)
+
+        # ===================
+        # scalar values
+        values = self.slice3dVWR.getValuesAtDiscretePositionInInputData(
+            discretePos)
+        if values != None:
+            valuesString = '%s' % (values,)
+        else:
+            valuesString = 'NA'
+            
+        cf.sliceCursorScalarsText.SetValue(valuesString)
+            
 
     def setCurrentSliceDirection(self, sliceDirection):
         # find this sliceDirection

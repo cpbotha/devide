@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.9 2004/06/02 22:16:19 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.10 2004/08/20 23:14:06 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -376,27 +376,18 @@ class selectedPoints(s3dcGridMixin):
         the value at that point.
         """
 
-        inputs = [i for i in self.slice3dVWR._inputs if i['Connected'] ==
-                  'vtkImageDataPrimary']
-
-        if not inputs or not cursor:
-            return
-
         # we first have to check that we don't have this pos already
         discretes = [i['discrete'] for i in self._pointsList]
         if tuple(cursor[0:3]) in discretes:
             return
         
-        input_data = inputs[0]['inputData']
-        ispacing = input_data.GetSpacing()
-        iorigin = input_data.GetOrigin()
-        # calculate real coords
-        world = map(operator.add, iorigin,
-                    map(operator.mul, ispacing, cursor[0:3]))
+        worldPos = self.slice3dVWR.getWorldPositionInInputData(cursor[0:3])
+        if worldPos == None:
+            return
 
         pointName = self.slice3dVWR.controlFrame.sliceCursorNameCombo.\
                     GetValue()
-        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
+        self._storePoint(tuple(cursor[0:3]), tuple(worldPos), cursor[3],
                          pointName)
 
     def _storePoint(self, discrete, world, value, pointName,

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.24 2004/05/27 12:47:32 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.25 2004/08/20 23:14:06 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.24 $
+    $Revision: 1.25 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -525,6 +525,50 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
             inputData = None
 
         return inputData
+
+    def getWorldPositionInInputData(self, discretePos):
+        if len(discretePos) < 3:
+            return None
+        
+        inputData = self.getPrimaryInput()
+
+        if inputData:
+            ispacing = inputData.GetSpacing()
+            iorigin = inputData.GetOrigin()
+            # calculate real coords
+            world = map(operator.add, iorigin,
+                        map(operator.mul, ispacing, discretePos[0:3]))
+            return world
+
+        else:
+            return None
+
+    def getValuesAtDiscretePositionInInputData(self, discretePos):
+        inputData = self.getPrimaryInput()
+
+        if inputData == None:
+            return
+
+        # check that discretePos is in the input volume
+        validPos = True
+        extent = inputData.GetExtent()
+        for d in range(3):
+            if discretePos[d]< extent[d*2] or discretePos[d] > extent[d*2+1]:
+                validPos = False
+                break
+
+        if validPos:
+            nc = inputData.GetNumberOfScalarComponents()
+            values = []
+            for c in range(nc):
+                values.append(inputData.GetScalarComponentAsDouble(
+                    discretePos[0], discretePos[1], discretePos[2], c))
+                
+        else:
+            values = None
+
+        return values
+            
 
     def getValueAtPositionInInputData(self, worldPosition):
         """Try and find out what the primary image data input value is at

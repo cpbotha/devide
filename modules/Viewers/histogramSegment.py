@@ -8,7 +8,7 @@ import wx
 class histogramSegment(introspectModuleMixin, moduleBase):
     """Mooooo!  I'm a cow.
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
 
     _gridCols = [('Type', 0), ('Number of Handles',0)]
@@ -88,6 +88,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                 self._deactivateOverlayIPW()
 
             self._histogram.SetInput1(input0)
+            self._lookupAppend.SetInput(0, input0)
 
         elif idx == 1:
             input1 = checkTypeAndReturnInput(inputStream)
@@ -97,7 +98,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                 self._deactivateOverlayIPW()
             
             self._histogram.SetInput2(input1)
-
+            self._lookupAppend.SetInput(1, input1)
 
         if self._histogram.GetInput(0) and self._histogram.GetInput(1):
             if self._ipw == None:
@@ -113,13 +114,14 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                 self._ipw.SetInput(None)
                 self._ipw = None
 
-
-
     def getOutputDescriptions(self):
-        return ('Segmented vtkImageData',)
+        return ('Segmented vtkImageData', 'Histogram Stencil')
 
     def getOutput(self, idx):
-        return self._stencil.GetOutput()
+        if idx == 0:
+            return self._lookup.GetOutput()
+        else:
+            return self._stencil.GetOutput()
 
     def executeModule(self):
         pass
@@ -288,6 +290,12 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         #self._stencil.SetStencil(self._pdToImageStencil.GetOutput())
         self._stencil.ReverseStencilOff()
         self._stencil.SetBackgroundValue(0)
+
+        self._lookupAppend = vtk.vtkImageAppendComponents()
+
+        self._lookup = vtkdevide.vtkHistogramLookupTable()
+        self._lookup.SetInput1(self._lookupAppend.GetOutput())        
+        self._lookup.SetInput2(self._stencil.GetOutput())
 
         moduleUtils.createStandardObjectAndPipelineIntrospection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
