@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.27 2004/10/27 15:10:04 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.28 2004/11/20 15:23:16 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.27 $
+    $Revision: 1.28 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -66,6 +66,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
         # the renderers corresponding to the render windows
         self._threedRenderer = None
+        self._dummyRenderer = None
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -179,10 +180,13 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
         del self._cInteractorStyle
 
+        # make sure we are in a known state
+        self.disableExecution()
         # make SURE there are no props in the Renderer
         self._threedRenderer.RemoveAllProps()
         # take care of all our bindings to renderers
         del self._threedRenderer
+        del self._dummyRenderer
 
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
@@ -219,6 +223,46 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self.controlFrame.Destroy()
         del self.controlFrame
 
+    def disableExecution(self):
+        rw = self.threedFrame.threedRWI.GetRenderWindow()
+
+        # disable interaction
+        rw.GetInteractor().Disable()
+
+        # remove current renderer from renderwindow
+        rw.RemoveRenderer(self._threedRenderer)
+
+        # create and install dummy renderer
+        self._dummyRenderer = vtk.vtkRenderer()
+        self._dummyRenderer.SetBackground(0.4, 0.4, 0.4)
+        rw.AddRenderer(self._dummyRenderer)
+
+        # add text to show that we've been disabled
+        ta = vtk.vtkTextActor()
+        ta.SetInput("Execution disabled.  Enable in main window.")
+        x,y = rw.GetSize()
+        ta.SetPosition(10, y / 2 )
+        #ta.SetAlignmentPoint(2)
+        self._dummyRenderer.AddActor(ta)
+
+        #
+        self.render3D()
+
+    def enableExecution(self):
+        if self._dummyRenderer:
+            
+            # put old renderer back and destroy dummyRenderer
+            rw = self.threedFrame.threedRWI.GetRenderWindow()
+            rw.RemoveRenderer(self._dummyRenderer)
+            rw.AddRenderer(self._threedRenderer)
+            self._dummyRenderer.RemoveAllProps()
+            self._dummyRenderer = None
+
+            # enable interaction
+            rw.GetInteractor().Enable()
+
+            # and render
+            self.render3D()
 
     def getConfig(self):
         # implant some stuff into the _config object and return it

@@ -89,7 +89,7 @@ class moduleManager:
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inProgressCallback = mutex.mutex()
 
-        self._executionEnabled = True
+        self._executionDisabled = True
 
     def close(self):
         """Iterates through each module and closes it.
@@ -217,18 +217,42 @@ class moduleManager:
         self.availableSegmentsList = segmentList
 
     def disableExecution(self):
+        """This will call the disableExecution on all modules that have
+        this method.  In addition, this call will be attempted on all new
+        modules that are created.
+        """
+
+        for moduleInstance in self._moduleDict:
+            if hasattr(moduleInstance, 'disableExecution'):
+                moduleInstance.disableExecution()
+
+        self._executionDisabled = True
+            
+
+    def enableExecution(self):
+        """This will call enableExecution on all modules that have this
+        method.  In addition, disableExecution will not be called on newly
+        created modules.
+        """
+
+        for moduleInstance in self._moduleDict:
+            if hasattr(moduleInstance, 'enableExecution'):
+                moduleInstance.enableExecution()
+
+        self._executionDisabled = False
+              
+
+
+    def interruptExecution(self):
         """Stop as much of the demand driven execution as possible.
         """
 
-        self._executionEnabled = False
+        # here we call disableExecution, else the interruption can never
+        # work... resumeExecution does NOT automatically call enableExecution()
+        self.disableExecution()
+
         for moduleInstance, metaModule in self._moduleDict.items():
             className = moduleInstance.__class__.__name__
-
-            # first disable all slice3dVWRs
-            if className == 'slice3dVWR':
-                # this will stop its RWI from rendering
-                moduleInstance.threedFrame.Enable(False)
-                moduleInstance.threedFrame.Show(0)
 
             # now go through all the module's attributes calling
             # SetAbortExecute() and SetAbortGenerateData() everywhere
@@ -251,19 +275,13 @@ class moduleManager:
                           "%s.%s" \
                           % (moduleInstance, obj.__class__)
 
-    def enableExecution(self):
-        """Restart all execution.
+    def resumeExecution(self):
+        """Restart all execution after an interruptExecution
         """
 
-        self._executionEnabled = True
         # FIXME: we ONLY want to do this if we're not inProgress
         for moduleInstance, metaModule in self._moduleDict.items():
             className = moduleInstance.__class__.__name__
-
-            # first disable all slice3dVWRs
-            if className == 'slice3dVWR':
-                # this will restart the RWI
-                moduleInstance.threedFrame.Enable(True)
 
             # now go through all the module's attributes calling
             # SetAbortExecute() and SetAbortGenerateData() everywhere
@@ -285,7 +303,6 @@ class moduleManager:
                     print "Successfully called SetAbortGenerateData(0) on " \
                           "%s.%s" \
                           % (moduleInstance, obj.__class__)
-        
 
     def get_app_dir(self):
         return self.getAppDir()
@@ -374,6 +391,11 @@ class moduleManager:
 	    genUtils.logError("Unable to instantiate module %s: %s" \
                                 % (fullName, str(e)))
 	    return None
+
+        # first apply the executionDisabled setting
+        if self._executionDisabled:
+            if hasattr(moduleInstance, 'disableExecution'):
+                moduleInstance.disableExecution()
                                     
 	# return the instance
 	return moduleInstance

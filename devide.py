@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.61 2004/11/19 17:44:02 cpbotha Exp $
+# $Id: devide.py,v 1.62 2004/11/20 15:23:16 cpbotha Exp $
 
 DEVIDE_VERSION = '20041119'
 
@@ -129,6 +129,10 @@ class devide_app_t(wx.App):
                     self.aboutCallback)
 
         wx.EVT_CHECKBOX(
+            self._mainFrame, self._mainFrame.enableExecutionCheckBox.GetId(),
+            self._handlerEnableExecution)
+
+        wx.EVT_CHECKBOX(
             self._mainFrame, self._mainFrame.blockExecutionCheckBox.GetId(),
             self._handlerBlockExecution)
 
@@ -191,6 +195,10 @@ class devide_app_t(wx.App):
                 # ErrorText - shown and logged
                 wx.LogError(text)
                 self.logMessage(text)
+                # and we disable execution, else the error keeps on getting
+                # triggered...
+                self.moduleManager.disableExecution()
+                self._mainFrame.enableExecutionCheckBox.SetValue(0)
                 
             elif textType == 2:
                 # WarningText
@@ -241,10 +249,18 @@ class devide_app_t(wx.App):
 
     def _handlerBlockExecution(self, event):
         if self._mainFrame.blockExecutionCheckBox.GetValue():
-            self.moduleManager.disableExecution()
+            self.moduleManager.interruptExecution()
+            # this will also call disableExecution, so we set the correct box
+            self._mainFrame.enableExecutionCheckBox.SetValue(0)
 
         else:
+            self.moduleManager.resumeExecution()
+
+    def _handlerEnableExecution(self, event):
+        if self._mainFrame.enableExecutionCheckBox.GetValue():
             self.moduleManager.enableExecution()
+        else:
+            self.moduleManager.disableExecution()
 
     def _handlerHelpContents(self, event):
         self.showHelp()
