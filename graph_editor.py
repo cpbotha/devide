@@ -105,7 +105,7 @@ class glyph:
 		idx = self.inputs.index(i)
 		break
 	return idx
-	
+    
     def get_otri_coords(self, output_idx):
 	return self.canvas.coords(self.outputs[output_idx])
 	
@@ -157,6 +157,8 @@ class glyph:
     def b1click_cb(self, event):
 	if self.graph_editor.get_mode() == 'delete':
 	    self.graph_editor.delete_glyph(self)
+	elif self.graph_editor.get_mode() == 'configure':
+	    self.graph_editor.configure_glyph(self)
 	
     def output_drag_cb(self, event, item):
 	if not self.cur_output_line:
@@ -165,7 +167,11 @@ class glyph:
 	    self.canvas.coords(self.cur_output_line, self.canvas.coords(item)[0], self.canvas.coords(item)[1], event.x, event.y)
 	    
     def input_enter_cb(self, event):
-	self.graph_editor.set_status("Entered input")
+	item = self.canvas.find_withtag(Tix.CURRENT)
+	if len(item) == 1:
+	    idx = self.find_input_idx(item[0])
+	    if (idx > -1):
+		self.graph_editor.set_status("Input " + self.get_module_instance().get_input_descriptions()[idx])
 	
     def input_click_cb(self, event):
 	item = self.canvas.find_withtag(Tix.CURRENT)
@@ -180,7 +186,12 @@ class glyph:
 	    print "This shouldn't happen!!"
     
     def output_enter_cb(self, event):
-	self.graph_editor.set_status("Entered output")
+	item = self.canvas.find_withtag(Tix.CURRENT)
+	if len(item) == 1:
+	    idx = self.outputs.index(item[0])
+	    if (idx > -1):
+		self.graph_editor.set_status("Output " + self.get_module_instance().get_output_descriptions()[idx])
+	
 	
     def output_click_cb(self, event):
 	item = self.canvas.find_withtag(Tix.CURRENT)
@@ -266,8 +277,7 @@ class graph_editor:
 	self.command_frame.mode_select = Tix.Select(self.command_frame, radio=1, allowzero=0, orientation=Tix.VERTICAL)
 	self.command_frame.mode_select.add('edit', text='Edit')
 	self.command_frame.mode_select.add('delete', text='Delete')
-	self.command_frame.mode_select.add('config1', text='Configure 1')
-	self.command_frame.mode_select.add('config2', text='Configure 2')
+	self.command_frame.mode_select.add('configure', text='Configure')
 	
 	self.command_frame.mode_select['value'] = 'edit'
 	self.command_frame.mode_select.pack(side=Tix.TOP)
@@ -307,6 +317,10 @@ class graph_editor:
 	except Exception, e:
 	    tkMessageBox.showerror("Destruction error", "Unable to destroy object: %s" % str(e))
 	    print sys.exc_info()
+	    
+    def configure_glyph(self, glyph):
+	# we should probably thunk this through to dscas3_main?
+	glyph.get_module_instance().configure()
 	
     def canvas_b1click_cb(self, event):
 	if self.get_mode() == 'edit':
@@ -331,6 +345,8 @@ class graph_editor:
 	"""This will ask the main module whether the glyphs setup in 
 	self.conn_ip can be connected. If so, it will connect them graphically
 	and also the objects which they actually represent."""
+	# do the actual connection
+	self.dscas3_main.
 	# tell the glyphs to connect to each other (and store the line handles, aaaaaai!)
 	self.conn_ip['glyph0'].connect_to(self.conn_ip['out_idx'], self.conn_ip['glyph1'], self.conn_ip['in_idx'])
 	# we only have to do this bit for new connections to work again

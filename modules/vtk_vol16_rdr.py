@@ -25,19 +25,27 @@ class vtk_vol16_rdr(module_base):
 	raise Exception
     
     def get_output_descriptions(self):
-	return (type(self.reader.GetOutput()),)
+	return (self.reader.GetOutput().GetClassName(),)
 
     # BASE
     def get_output(self, idx):
 	return self.reader.GetOutput()
     
-    def configure(self):
+    def configure(self, parent_window=None):
 	# also show some intance name for this, or index into the module list
-	config_window = Tix.Toplevel()
+	config_window = Tix.Toplevel(parent_window)
+	config_window.title("vtk_vol16_rdr.py configuration")
+	config_window.protocol ("WM_DELETE_WINDOW", config_window.destroy)
 	
+	# button box
+	box = Tix.ButtonBox(config_window, orientation=Tix.HORIZONTAL)
+	box.add('pipeline', text='Pipeline', underline=0, width=6,
+	command=lambda self=self, pw=parent_window: self.browse_pipeline(pw))
+	box.pack(side=Tix.TOP, fill=Tix.X, expand=1)
 	
-	# do we need a parent for this?
-	pipeline_browser_window = Tix.Toplevel()
+    def browse_pipeline(self, parent_window=None):
+	pipeline_browser_window = Tix.Toplevel(parent_window)
 	# we don't have access to a renderer right now
 	pipeline_browser = vtkPipelineSegmentBrowser(pipeline_browser_window, self.reader)
+	# pack it
 	pipeline_browser.pack (side='top', expand = 1, fill = 'both' )
