@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.57 2002/08/30 15:32:46 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.58 2002/09/03 15:55:24 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -100,7 +100,7 @@ class vtk_slice_vwr(module_base,
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
                 self._inputs[idx]['Connected'] = None
                 if self._inputs[idx]['vtkActor'] != None:
-                    self._renderers[0].RemoveActor(self._inputs[idx]['vtkActor'])
+                    self._renderer.RemoveActor(self._inputs[idx]['vtkActor'])
                     self._inputs[idx]['vtkActor'] = None
 
             elif self._inputs[idx]['Connected'] == 'vtkImageData':
@@ -125,10 +125,10 @@ class vtk_slice_vwr(module_base,
                 mapper.SetInput(input_stream)
                 self._inputs[idx]['vtkActor'] = vtk.vtkActor()
                 self._inputs[idx]['vtkActor'].SetMapper(mapper)
-                self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
+                self._renderer.AddActor(self._inputs[idx]['vtkActor'])
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
-                self._renderers[0].ResetCamera()                
-                self._rwis[0].Render()
+                self._renderer.ResetCamera()                
+                self._rwi.Render()
                 
             elif input_stream.IsA('vtkImageData'):
 
@@ -409,14 +409,58 @@ class vtk_slice_vwr(module_base,
         self._acs_nb_page_changed_cb(None)
 
     def _store_cursor(self, cursor):
-        self._sel_points.append({'cursor' : cursor, 'actor' : None})
+        
+        input_data = self._ipws[0].GetInput()
+        ispacing = input_data.GetSpacing()
+        iorigin = input_data.GetSpacing()
+        # calculate real coords
+        coords = map(operator.add, iorigin,
+                     map(operator.mul, ispacing, cursor[0:3]))
+        
+        # setup a pipeline to indicate position of selected point
+        axes = vtk.vtkAxes()
+        axes.SetOrigin(coords)
+        axes.SetScaleFactor(30.0)
+        axes.SymmetricOn()
+
+        axes_tf = vtk.vtkTubeFilter()
+        axes_tf.SetInput(axes.GetOutput())
+        bounds = input_data.GetBounds()
+        axes_tf.SetRadius((bounds[1] - bounds[0]) / 100.0)
+        axes_tf.SetNumberOfSides(6)
+
+        axes_mapper = vtk.vtkPolyDataMapper()
+        axes_mapper.SetInput(axes_tf.GetOutput())
+        
+        axes_actor = vtk.vtkActor()
+        axes_actor.SetMapper(axes_mapper)
+        axes_actor.GetProperty().BackfaceCullingOff()
+        self._renderer.AddActor(axes_actor)
+        
+        # store the cursor (discrete coords) the coords and the actor
+        self._sel_points.append({'cursor' : cursor, 'coords' : coords,
+                                 'actor' : axes_actor})
+
+        def ca_pe_cb(actor, evtname):
+
+            # we have to search for "actor" in the _self_points :(
+            actors = map(lambda i: i['actor'], self._sel_points)
+            if actor in actors:
+                # FIXME: continue here
+                pass
+                #self._spoint_listctrl(actors.index(actor))
+                
+        axes_actor.AddObserver('PickEvent', ca_pe_cb)
         
         # *sniff* *sob* It's unreadable, but why's it so pretty?
         # this just formats the real point
         pos_str = "%s, %s, %s" % tuple(cursor[0:3])
         idx = self._spoint_listctrl.InsertStringItem(0, pos_str)
-
+        # this adds a line to our list of points (for later manip)
         self._spoint_listctrl.SetStringItem(idx, 1, str(cursor[3]))
+
+        self._rwi.Render()
+        
         
 #################################################################
 # callbacks
