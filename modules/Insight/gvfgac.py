@@ -1,14 +1,14 @@
 # geodesicActiveContour.py
-# $Id: tpgac.py,v 1.2 2004/08/24 16:44:40 cpbotha Exp $
+# $Id: gvfgac.py,v 1.1 2004/08/24 16:44:40 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
 import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
-class tpgac(scriptedConfigModuleMixin, moduleBase):
+class gvfgac(scriptedConfigModuleMixin, moduleBase):
 
-    """Module for performing topology-preserving Geodesic Active
+    """Module for performing Gradient Vector Flow-driven Geodesic Active
     Contour-based segmentation on 3D data.
 
     This module requires a DeVIDE-specific ITK class.
@@ -20,11 +20,13 @@ class tpgac(scriptedConfigModuleMixin, moduleBase):
     transformation to create an edge potential map.
 
     The initial level set is a volume with the initial surface embedded as the
-    0 level set, i.e. the 0-value iso-contour (more or less).
+    0 level set, i.e. the 0-value iso-contour (more or less).  The inside of
+    the volume is indicated by negative values and the outside with positive
+    values.
 
     Also see figure 9.18 in the ITK Software Guide.
 
-    $Revision: 1.2 $
+    $Revision: 1.1 $
     """
 
     def __init__(self, moduleManager):
@@ -78,42 +80,42 @@ class tpgac(scriptedConfigModuleMixin, moduleBase):
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            self._tpgac.SetFeatureImage(inputStream)
+            self._gvfgac.SetFeatureImage(inputStream)
             
         else:
-            self._tpgac.SetInput(inputStream)
+            self._gvfgac.SetInput(inputStream)
             
 
     def getOutputDescriptions(self):
         return ('Final level set (ITK Float 3D)',)
 
     def getOutput(self, idx):
-        return self._tpgac.GetOutput()
+        return self._gvfgac.GetOutput()
 
     def configToLogic(self):
-        self._tpgac.SetPropagationScaling(
+        self._gvfgac.SetPropagationScaling(
             self._config.propagationScaling)
 
-        self._tpgac.SetCurvatureScaling(
+        self._gvfgac.SetCurvatureScaling(
             self._config.curvatureScaling)
 
-        self._tpgac.SetAdvectionScaling(
+        self._gvfgac.SetAdvectionScaling(
             self._config.advectionScaling)
 
-        self._tpgac.SetNumberOfIterations(
+        self._gvfgac.SetNumberOfIterations(
             self._config.numberOfIterations)
 
     def logicToConfig(self):
-        self._config.propagationScaling = self._tpgac.\
+        self._config.propagationScaling = self._gvfgac.\
                                           GetPropagationScaling()
 
-        self._config.curvatureScaling = self._tpgac.\
+        self._config.curvatureScaling = self._gvfgac.\
                                         GetCurvatureScaling()
 
-        self._config.advectionScaling = self._tpgac.\
+        self._config.advectionScaling = self._gvfgac.\
                                         GetAdvectionScaling()
 
-        self._config.numberOfIterations = self._tpgac.\
+        self._config.numberOfIterations = self._gvfgac.\
                                           GetNumberOfIterations()
 
     # --------------------------------------------------------------------
@@ -124,17 +126,17 @@ class tpgac(scriptedConfigModuleMixin, moduleBase):
         # input: smoothing.SetInput()
         # output: thresholder.GetOutput()
         
-        self._tpgac = itk.itkTPGACLevelSetImageFilterF3F3_New()
+        self._gvfgac = itk.itkGVFGACLevelSetImageFilterF3F3_New()
         #geodesicActiveContour.SetMaximumRMSError( 0.1 );
 
         moduleUtilsITK.setupITKObjectProgress(
-            self, self._tpgac,
-            'TPGACLevelSetImageFilter',
+            self, self._gvfgac,
+            'GVFGACLevelSetImageFilter',
             'Growing active contour')
         
     def _destroyITKPipeline(self):
         """Delete all bindings to components of the ITK pipeline.
         """
 
-        del self._tpgac
+        del self._gvfgac
         
