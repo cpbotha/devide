@@ -1,7 +1,7 @@
 # FIXME FIXME: you have to give the reslice origin!!!
 # just use the matrices from dscas1
 
-# $Id: vtk_slice_vwr.py,v 1.8 2002/03/26 12:48:17 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.9 2002/03/26 14:29:08 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -99,14 +99,38 @@ class vtk_slice_vwr(module_base):
 	# concatenate it num_inputs times (but these are shallow copies!)
 	return self.num_inputs * ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
     
-    def setup_plane(self, cur_pipe):
+    def setup_ortho_plane(self, cur_pipe):
 	# try and pull the data through
 	cur_pipe['vtkImageReslice'].Update()
 	# make the plane that the texture is mapped on
 	output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
-	cur_pipe['vtkPlaneSource'].SetOrigin(output_bounds[0], output_bounds[2], 0)
-	cur_pipe['vtkPlaneSource'].SetPoint1(output_bounds[1], output_bounds[2], 0)
-	cur_pipe['vtkPlaneSource'].SetPoint2(output_bounds[0], output_bounds[3], 0)
+	cur_pipe['vtkPlaneSourceO'].SetOrigin(output_bounds[0], output_bounds[2], 0)
+	cur_pipe['vtkPlaneSourceO'].SetPoint1(output_bounds[1], output_bounds[2], 0)
+	cur_pipe['vtkPlaneSourceO'].SetPoint2(output_bounds[0], output_bounds[3], 0)
+
+    def update_3d_plane(self, cur_pipe, output_z=0):
+        """Move texture-mapper 3d plane source so that it corresponds to the 
+        passed output z coord.
+
+        Given the ortho pipeline corresponding to a certain layer on a certain 
+        input, this will perform the necessary changes so that the plane is
+        placed, scaled and oriented correctly in the 3d viewer.
+        """
+        reslice = cur_pipe['vtkImageReslice']
+        reslice.Update()
+	output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
+        # invert the ResliceAxes
+        rm = vtkMatrix4x4()
+        vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rm)
+        # transform our new origin back to the input
+        origin = rm.MultiplyPoint((output_bounds[0], output_bounds[2], output_z, 0))[0:3]
+        point1 = rm.MultiplyPoint((output_bounds[1], output_bounds[2], output_z, 0))[0:3]
+        point2 = rm.MultiplyPoint((output_bounds[0], output_bounds[3], output_z, 0))[0:3]
+
+	cur_pipe['vtkPlaneSource3'].SetOrigin(origin)
+	cur_pipe['vtkPlaneSource3'].SetPoint1(point1)
+	cur_pipe['vtkPlaneSource3'].SetPoint2(point2)
+
 	
     def setup_camera(self, cur_pipe, renderer):
 	# now we're going to manipulate the camera in order to achieve some gluOrtho2D() goodness
@@ -114,8 +138,8 @@ class vtk_slice_vwr(module_base):
 	# set to orthographic projection
 	icam.SetParallelProjection(1);
 	# set camera 10 units away, right in the centre
-	icam.SetPosition(cur_pipe['vtkPlaneSource'].GetCenter()[0], cur_pipe['vtkPlaneSource'].GetCenter()[1], 10);
-	icam.SetFocalPoint(cur_pipe['vtkPlaneSource'].GetCenter());
+	icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0], cur_pipe['vtkPlaneSourceO'].GetCenter()[1], 10);
+	icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
 	# make sure it's the right way up
 	icam.SetViewUp(0,1,0);
 	icam.SetClippingRange(1, 11);
@@ -141,15 +165,22 @@ class vtk_slice_vwr(module_base):
                 # find the maximum number of layers
                 #max([len(i) for i in self.ortho_pipes])
                 for i in range(self.num_orthos):
-                    self.ortho_pipes[i].append({'vtkImageReslice' : vtkImageReslice(), 'vtkPlaneSource' : vtkPlaneSource(), 
+                    self.ortho_pipes[i].append({'vtkImageReslice' : vtkImageReslice(), 'vtkPlaneSourceO' : vtkPlaneSource(), 
+                                                             'vtkPlaneSource3' : vtkPlaneSource(),
                                                              'vtkTexture' : vtkTexture(), 'vtkLookupTable' : vtkWindowLevelLookupTable(),
-                                                             'vtkActor' : vtkActor()})
+                                                             'vtkActorO' : vtkActor(), 'vtkActor3' : vtkActor()})
                     # get just added pipeline
                     cur_pipe = self.ortho_pipes[i][-1]
                     # if this is the first layer in this channel/ortho, then we have to do some initial setup stuff
                     if len(self.ortho_pipes[i]) == 1:
                         cur_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(self.InitialResliceAxes[i]['axes'])
                         cur_pipe['vtkImageReslice'].SetResliceAxesOrigin(self.InitialResliceAxes[i]['origin'])
+                        some_trans = vtkTransform()
+                        some_trans.RotateWXYZ(-50,1,1,1)
+                        new_matrix = vtkMatrix4x4()
+                        vtkMatrix4x4.Multiply4x4(some_trans.GetMatrix(), cur_pipe['vtkImageReslice'].GetResliceAxes(), new_matrix)
+                        #cur_pipe['vtkImageReslice'].SetResliceAxes(new_matrix)
+
                     # more setup
                     cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
                     # connect up input
@@ -166,18 +197,30 @@ class vtk_slice_vwr(module_base):
                     # make sure the LUT is  going to be used
                     cur_pipe['vtkTexture'].MapColorScalarsThroughLookupTableOn()
                     # set up a plane source
-                    cur_pipe['vtkPlaneSource'].SetXResolution(1)
-                    cur_pipe['vtkPlaneSource'].SetYResolution(1)
+                    cur_pipe['vtkPlaneSourceO'].SetXResolution(1)
+                    cur_pipe['vtkPlaneSourceO'].SetYResolution(1)
                     # and connect it to a polydatamapper
                     mapper = vtkPolyDataMapper()
-                    mapper.SetInput(cur_pipe['vtkPlaneSource'].GetOutput())
-                    cur_pipe['vtkActor'].SetMapper(mapper)
-                    cur_pipe['vtkActor'].SetTexture(cur_pipe['vtkTexture'])
-                    self.renderers[i + 1].AddActor(cur_pipe['vtkActor'])
+                    mapper.SetInput(cur_pipe['vtkPlaneSourceO'].GetOutput())
+                    cur_pipe['vtkActorO'].SetMapper(mapper)
+                    cur_pipe['vtkActorO'].SetTexture(cur_pipe['vtkTexture'])
+                    self.renderers[i + 1].AddActor(cur_pipe['vtkActorO'])
+
+                    cur_pipe['vtkPlaneSource3'].SetXResolution(1)
+                    cur_pipe['vtkPlaneSource3'].SetYResolution(1)
+                    mapper = vtkPolyDataMapper()
+                    mapper.SetInput(cur_pipe['vtkPlaneSource3'].GetOutput())
+                    cur_pipe['vtkActor3'] = vtkActor()
+                    cur_pipe['vtkActor3'].SetMapper(mapper)
+                    cur_pipe['vtkActor3'].SetTexture(cur_pipe['vtkTexture'])
+                    self.renderers[0].AddActor(cur_pipe['vtkActor3'])
 		    
-		    self.setup_plane(cur_pipe)
+		    self.setup_ortho_plane(cur_pipe)
+                    self.update_3d_plane(cur_pipe, 0)
 		    if len(self.ortho_pipes[i]) == 1:
 			self.setup_camera(cur_pipe, self.renderers[i+1])
+                    self.renderers[0].ResetCamera()
+
 
 	    else:
 		raise TypeError, "Wrong input type!"
@@ -220,7 +263,7 @@ class vtk_slice_vwr(module_base):
             # translate input spacing to output
             input_spacing = reslice.GetInput().GetSpacing()
             output_spacing = reslice.GetResliceAxes().MultiplyPoint(input_spacing + (0.0,))
-            # get input extent so we can translato
+            # get input extent so we can translate it and find out what our limits are for movement
             input_extent = reslice.GetInput().GetWholeExtent()
             p0 = (input_extent[0], input_extent[2], input_extent[4], 0.0)
             p1 = (input_extent[1], input_extent[3], input_extent[5], 0.0)
@@ -233,22 +276,28 @@ class vtk_slice_vwr(module_base):
             o_ra_origin = list(o_ra_origin)
             o_ra_origin[2] += delta * output_spacing[2]
 
+            # make sure we remain within the data
             if o_ra_origin[2] < zmin:
                 o_ra_origin[2] = zmin
             elif o_ra_origin[2] > zmax:
                 o_ra_origin[2] = zmax
             o_ra_origin = tuple(o_ra_origin)
+            # make sure the 3d plane moves with us
+            self.update_3d_plane(layer_pl, o_ra_origin[2])
 
-            # invert the ResliceAxes and invert them
+            # invert the ResliceAxes
             rm = vtkMatrix4x4()
             vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rm)
-
+            # transform our new origin back to the input
             new_ResliceAxesOrigin = rm.MultiplyPoint(o_ra_origin)[0:3]
+            # and set it up!
             reslice.SetResliceAxesOrigin(new_ResliceAxesOrigin)
-            print new_ResliceAxesOrigin
 
 	# at the end
 	self.rw_lastxys[r_idx] = {'x' : x, 'y' : y}
+        # render the pertinent orth
 	rw.Render()
-    
+        # render the 3d viewer
+        self.rws[0].Render()
+
 	
