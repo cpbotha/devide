@@ -1,4 +1,4 @@
-# $Id: vtk_dicom_rdr.py,v 1.3 2002/08/19 09:58:50 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.4 2002/08/19 15:30:59 cpbotha Exp $
 
 import gen_utils
 import os
@@ -23,6 +23,7 @@ class vtk_dicom_rdr(module_base,
 
         # setup necessary VTK objects
 	self._reader = vtkcpbothapython.vtkDICOMVolumeReader()
+        self._reader.DebugOn()
 
         # this part of the config is stored in this module, and not in
         # the reader.
@@ -91,24 +92,21 @@ class vtk_dicom_rdr(module_base,
                        'change in config.')
             return
 
-        # now check if the new list and our existing list differ
-        # only then will the _reader be tickled in all the wrong places
-        # FIXME: continue here
-
-        # filter(lambda x: x in a, b ) <--- list subtraction
-        # it seems that == between lists also works??! (calls __eq__ method)
-        
-        # so, now we have a list of filenames.  let's try to hand them over
+        # this will clear only the dicom_filenames_buffer without setting
+        # mtime of the vtkDICOMVolumeReader
         self._reader.clear_dicom_filenames()
 
-        for fullname in fullnames:
+        for fullname in dicom_fullnames:
+            # this will simply add a file to the buffer list of the
+            # vtkDICOMVolumeReader (will not set mtime)
+            print "%s\n" % fullname
             self._reader.add_dicom_filename(fullname)
         
-
-        #self._reader.SetFileName(self._view_frame.dirname_text.GetValue())
+        # if we've added the same list as we added at the previous exec
+        # of apply_config(), the dicomreader is clever enough to know that
+        # it doesn't require an update.  Yay me.
 
     def execute_module(self):
-        
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
         # tell the vtk log file window to poll the file; if the file has
@@ -149,7 +147,7 @@ class vtk_dicom_rdr(module_base,
     def dn_browse_cb(self, event):
         path = self.dn_browse(self._view_frame,
                               "Choose a DICOM directory",
-                              ".")
+                              self._module_manager.get_app_dir())
 
         if path != None:
             self._view_frame.dirname_text.SetValue(path)

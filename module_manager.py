@@ -37,6 +37,9 @@ class module_manager:
 		self.module_list.append(os.path.splitext(i)[0])
 
         self.module_list += modules.module_list
+
+    def get_app_dir(self):
+        return self._dscas3_app.get_appdir()
 	
     def get_module_list(self):
 	return self.module_list
