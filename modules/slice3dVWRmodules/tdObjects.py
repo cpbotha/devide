@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.14 2003/07/07 14:45:32 cpbotha Exp $
+# $Id: tdObjects.py,v 1.15 2003/07/07 22:16:51 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -16,7 +16,7 @@ class tdObjects:
                       'GOLD',  'MAGENTA', 'GREY80',
                       'PURPLE']
 
-    _gridCols = [('Object Name', 0), ('Colour', 150), ('Visible', 0),
+    _gridCols = [('Object Name', 0), ('Colour', 120), ('Visible', 0),
                  ('Contour', 0), ('Motion', 0)]
     
     _gridNameCol = 0
