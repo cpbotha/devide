@@ -184,4 +184,50 @@ class doubleThresholdFLT(moduleBase):
         for aType in self._outputTypes.keys():
             self._viewFrame.outputDataTypeChoice.Append(aType)
 
+        # connect threshold sliders to each other and to text inputs
+        EVT_SCROLL(self._viewFrame.lowerThresholdSlider,
+                   lambda e, slider=0, s=self: s._sliderCallback(slider))
+        EVT_SCROLL(self._viewFrame.upperThresholdSlider,
+                   lambda e, slider=1, s=self: s._sliderCallback(slider))
+
+        EVT_TEXT_ENTER(self._viewFrame,
+                       self._viewFrame.lowerThresholdTextId,
+                       lambda e, s=self: s._threshTextCallback(0))
+
+    def _setThresholdControls(self, whichControl, newValue):
+        if whichControl == 0:
+            self._viewFrame.lowerThresholdSlider.SetValue(newValue)
+            self._viewFrame.lowerThresholdText.SetValue(str(newValue))
+        else:
+            self._viewFrame.upperThresholdSlider.SetValue(newValue)
+            self._viewFrame.upperThresholdText.SetValue(str(newValue))
+
+    
+    def _threshTextCallback(self, whichText):
+        print "BLAAT"
+        return 0
+        if whichText == 0:
+            self._viewFrame.lowerThresholdSlider.SetValue(float(
+                self._viewFrame.lowerThresholdText.GetValue()))
+        else:
+            self._viewFrame.lowerThresholdSlider.SetValue(float(
+                self._viewFrame.lowerThresholdText.GetValue()))
+
+    def _sliderCallback(self, slider):
+        lvalue = self._viewFrame.lowerThresholdSlider.GetValue()
+        uvalue = self._viewFrame.upperThresholdSlider.GetValue()
+        
+        if slider == 0:
+            # we're working with the lowerThresholdSlider
+            self._viewFrame.lowerThresholdText.SetValue(str(lvalue))
+            if lvalue > uvalue:
+                # set upper threshold controls to lvalue
+                self._setThresholdControls(1, lvalue)
+
+        else:
+            # we're working with the upperThresholdSlider
+            self._viewFrame.upperThresholdText.SetValue(str(uvalue))
+            if uvalue < lvalue:
+                # set lower threshold controls to uvalue
+                self._setThresholdControls(0, uvalue)
 
