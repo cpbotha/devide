@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.4 2003/02/19 22:24:27 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.5 2003/05/19 20:56:32 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -6,3 +6,20 @@ IMPORTANT NOTES:
 1. Yes, a badly-written module can VERY easily crash the whole DSCAS3.
    Be careful, Austin.
 
+LAYOUT OF DIALOGUES
+-------------------
+
+Yes, we follow the Windows standards, simply because they're the
+most widely used ones and because most of our "clients" use/will use
+Windows.  Deal with it.
+
+http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch09d.asp
+has the low-down on button-order.  In short, the most important button
+is first in its group, whether that group is horizontally or
+vertically aligned on the bottom right of the dialog.
+
+http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
+has details about the spacing between controls.  Everything should be
+7 pixels from the edge of the dialogue box.  Non-related controls
+should be 7 pixels apart, related controls 4 pixels apart and
+text-labels and their associated controls should be 3 pixels apart.
