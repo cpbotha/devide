@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.57 2003/12/11 15:20:09 cpbotha Exp $
+# $Id: __init__.py,v 1.58 2003/12/14 20:39:16 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -7,7 +7,6 @@
 # along with the application... we can't search directories.
 
 moduleList = ['Readers.dicomRDR',
-              'Readers.hdfRDR',
               'Readers.objRDR',
               'Readers.rawVolumeRDR',
               'Readers.stlRDR',
