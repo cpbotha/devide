@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.55 2004/11/01 13:17:09 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.56 2004/11/02 16:29:12 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -882,6 +882,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             if configTuple[3] == 'choice':
                 wv = widget.GetStringSelection()
 
+                # if the user has asked for a base:int, we give her
+                # the index of the choice that was made; otherwise
+                # we return the string on the choice at that position
+                if typeD.startswith('base:'):
+                    castString = typeD.split(':')[1]
+                    if castString == 'int':
+                        wv = widget.GetSelection()
+
             elif configTuple[3] == 'tupleText':
                 widgets = widget
                 wv = []
@@ -940,7 +948,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     castString = typeD.split(':')[1]
                     if castString == 'float':
                         widget.SetValue('%g' % (val,))
-                        
+                       
                     else:
                         widget.SetValue(str(val))
 
@@ -981,8 +989,26 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             elif configTuple[3] == 'filebrowser':
                 widget.SetValue(str(val))
 
-            else: # choice
-                widget.SetStringSelection(str(val))
+            elif configTuple[3] == 'choice': # choice
+
+                # if a choice has a type of 'int', it works with the index
+                # of the selection.  In all other cases, the actual
+                # string selection is used
+                
+                setChoiceWithString = True
+                
+                if typeD.startswith('base:'):
+                    castString = typeD.split(':')[1]
+                    if castString == 'int':
+                        setChoiceWithString = False
+                
+                if setChoiceWithString:
+                    widget.SetStringSelection(str(val))
+                else:
+                    
+                    print "moo: %s = %d" % (configTuple[0], val)
+                    widget.SetSelection(int(val))
+
 
     def view(self):
         self._viewFrame.Show(True)
