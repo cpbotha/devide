@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.3 2003/01/28 22:38:34 cpbotha Exp $
+# $Id: moduleBase.py,v 1.4 2003/01/29 12:09:22 cpbotha Exp $
 
 
 """Module containing base class for dscas3 modules.
@@ -128,7 +128,10 @@ class moduleBase:
         use of the pipeline browser.
 
         If the dialog is already visible, do something to draw the user's
-        attention to it.
+        attention to it.  For a wxFrame-based view, you can do something like:
+        if not frame.Show(true):
+            frame.Raise()
+        If the frame is already visible, this will bring it to the front.
         """
 	raise NotImplementedError
 
