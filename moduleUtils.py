@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.23 2004/05/19 12:27:45 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.24 2004/05/24 12:46:45 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -85,15 +85,23 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
     viewFrame.syncButton.SetToolTip(wxToolTip(
         "Synchronise dialogue with configuration of underlying system."))
 
+    viewFrame.helpButtonId = wxNewId()
+    viewFrame.helpButton = wxButton(viewFramePanel,
+                                    viewFrame.helpButtonId,
+                                    "Help")
+    viewFrame.helpButton.SetToolTip(wxToolTip(
+        "Show help on this module."))
+    
+
 
     # add them to their own sizer, each with a border of 4 pixels on the right
     buttonSizer = wxBoxSizer(wxHORIZONTAL)
     for button in (viewFrame.executeButton, viewFrame.closeButton,
-                   viewFrame.applyButton):
+                   viewFrame.applyButton, viewFrame.syncButton):
         buttonSizer.Add(button, 0, wxRIGHT, 7)
 
     # except for the right-most button, which has no border
-    buttonSizer.Add(viewFrame.syncButton, 0)
+    buttonSizer.Add(viewFrame.helpButton, 0)
 
     # add the buttonSizer to the viewFramePanel sizer with a border of 7 pixels
     # on the left, right and bottom... remember, this is below a sizer with
@@ -119,8 +127,15 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
     viewFrame.GetSizer().SetSizeHints(viewFrame)
 
     # EVENT BINDINGS
-    # execute
     mm = d3module._moduleManager
+
+    # call back into the graphEditor, if it exists
+    ge = mm._devide_app._graphEditor    
+    def helpModule(dvModule):
+        if ge:
+            ge._helpModule(dvModule)
+    
+    # execute
     EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
                lambda e: (d3module.applyViewToLogic(),
                           mm.executeModule(d3module)))
@@ -132,7 +147,11 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
                lambda e, m=d3module: m.applyViewToLogic())
     # sync
     EVT_BUTTON(viewFrame, viewFrame.syncButtonId,
-               lambda e, m=d3module: m.syncViewWithLogic())               
+               lambda e, m=d3module: m.syncViewWithLogic())
+
+    # help
+    EVT_BUTTON(viewFrame, viewFrame.helpButtonId,
+               lambda e: helpModule(d3module))
 
     # make sure that execute is the default button
     viewFrame.executeButton.SetDefault()

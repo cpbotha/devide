@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.45 2004/05/24 12:34:46 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.46 2004/05/24 12:46:45 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -630,6 +630,11 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         return viewFrame
 
     def close(self):
+        # we play it safe... (the graph_editor/module_manager should have
+        # disconnected us by now)
+        for inputIdx in range(len(self.getInputDescriptions())):
+            self.setInput(inputIdx, None)
+        
         pickleVTKObjectsModuleMixin.close(self)
         self._configVtkObj.close()
         self._viewFrame.Destroy()
