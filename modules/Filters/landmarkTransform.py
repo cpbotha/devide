@@ -1,5 +1,5 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: landmarkTransform.py,v 1.2 2003/10/15 12:59:06 cpbotha Exp $
+# $Id: landmarkTransform.py,v 1.3 2003/10/15 15:19:47 cpbotha Exp $
 # see module documentation
 
 # TODO:
@@ -17,13 +17,13 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
     from a set of source landmarks to a set of target landmarks.
 
     The mapping is optimised with a least-squares metric.  You have to supply
-    two sets of points, all points in the source set have to be named
-    'Source' and all the points in the target set have to be named 'Target'.
+    two sets of points, all points names in the source set have to start with
+    'Source' and all the points names in the target set have to start with
+    'Target'.
 
-    This module will supply a vtkTransform at its first output and a 4x4
-    vtk Matrix at its second output.  By connecting the vtkTransform to
-    a transformPolyData module, you'll be able to perform the actual
-    transformation.
+    This module will supply a vtkTransform at its output.  By
+    connecting the vtkTransform to a transformPolyData module, you'll
+    be able to perform the actual transformation.
     """
 
     def __init__(self, moduleManager):
@@ -76,14 +76,10 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
             self._observerInputPoints(None)
 
     def getOutputDescriptions(self):
-        return (self._landmarkTransform.GetClassName(),
-                self._landmarkTransform.GetMatrix().GetClassName())
+        return ('vtkTransform',)
 
     def getOutput(self, idx):
-        if idx == 0:
             return self._landmarkTransform
-        else:
-            return self._landmarkTransform.GetMatrix()
 
     def logicToConfig(self):
         pass
@@ -112,9 +108,9 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
             return
         
         tempSourceLandmarks = [i['world'] for i in self._inputPoints
-                               if i['name'].lower() == 'source']
+                               if i['name'].lower().startswith('source')]
         tempTargetLandmarks = [i['world'] for i in self._inputPoints
-                               if i['name'].lower() == 'target']
+                               if i['name'].lower().startswith('target')]
 
         if tempSourceLandmarks != self._sourceLandmarks or \
            tempTargetLandmarks != self._targetLandmarks:
