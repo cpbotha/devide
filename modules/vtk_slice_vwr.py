@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.55 2002/08/28 15:55:45 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.56 2002/08/29 13:19:28 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -204,11 +204,25 @@ class vtk_slice_vwr(module_base,
         self._sel_points.append((point, dpoint, dvalue))
 
 
-
-    def _create_ipw_panel(self, parent):
+    def _create_ipw_panel(self, parent, ipw):
         panel = wxPanel(parent, -1)
 
+        eid = wxNewId()
+        # this is just too useful, embedding variables in existing
+        # instances.
+        panel.enabled_cbox = wxCheckBox(panel, eid, 'Enabled')
+        panel.enabled_cbox.SetValue(true)
+
+        def _eb_cb(event):
+            if ipw.GetInput():
+                if panel.enabled_cbox.GetValue():
+                    ipw.On()
+                else:
+                    ipw.Off()
         
+        EVT_CHECKBOX(panel, eid, _eb_cb)
+
+        # FIXME: continue here
         
         return panel
 
@@ -265,22 +279,25 @@ class vtk_slice_vwr(module_base,
         # slices notebook
         # -----------------------------------------------------------------
 
-        nb = wxNotebook(panel, -1)
+        nb_id = wxNewId()
+        self._acs_nb = wxNotebook(panel, nb_id)
         # by this time the _ipws must exist!
         pnames = ["Axial", "Coronal", "Sagittal"]
         for i in range(len(self._ipws)):
             # create and populate panel
-            spanel = self._create_ipw_panel(nb)
-            nb.AddPage(spanel, pnames[i])
+            spanel = self._create_ipw_panel(self._acs_nb, self._ipws[i])
+            self._acs_nb.AddPage(spanel, pnames[i])
             # now make callback for the ipw
             self._ipws[i].AddObserver('StartInteractionEvent',
-                                      lambda e, o, nb=nb, i=i:
+                                      lambda e, o, nb=self._acs_nb, i=i:
                                       nb.SetSelection(i))
+
+        EVT_NOTEBOOK_PAGE_CHANGED(panel, nb_id, self._acs_nb_page_changed_cb)
 
         # this sizer will contain the button_sizer and the notebook
         button_nb_sizer = wxBoxSizer(wxVERTICAL)
         button_nb_sizer.Add(button_sizer)
-        button_nb_sizer.Add(nb, option=1, flag=wxEXPAND)
+        button_nb_sizer.Add(self._acs_nb, option=1, flag=wxEXPAND)
 
         bottom_sizer = wxBoxSizer(wxHORIZONTAL)
         bottom_sizer.Add(self._spoint_listctrl, flag=wxEXPAND)
@@ -380,10 +397,20 @@ class vtk_slice_vwr(module_base,
         # whee, thaaaar she goes.
         self._rwi.Render()
 
+        # now also make sure that the notebook with slice config is updated
+        self._acs_nb_page_changed_cb(None)
+
         
 #################################################################
 # callbacks
 #################################################################
+
+    def _acs_nb_page_changed_cb(self, event):
+        cur_panel = self._acs_nb.GetPage(self._acs_nb.GetSelection())
+        if self._ipws[self._acs_nb.GetSelection()].GetEnabled():
+            cur_panel.enabled_cbox.SetValue(true)
+        else:
+            cur_panel.enabled_cbox.SetValue(false)
 
 
     def _ipw_cb(self, ortho_idx):
