@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.8 2002/05/07 08:31:03 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.9 2002/06/07 15:52:51 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -107,14 +107,14 @@ def get_methods (vtk_obj):
 	strng = string.replace (strng, " ", "")
 	methods[i] = string.split (strng, ":")
         method_names.append (methods[i][0])
-
+        
     # Bug! :(
     # Severe bug - causes segfault with readers and renderwindows on
     # older VTK releases    
     if re.match ("vtk\w*RenderWindow", vtk_obj.GetClassName ()) or \
        re.match ("vtk\w*Reader", vtk_obj.GetClassName ()):
         remove_method('FileName', methods, method_names)
-
+        
     if re.match ("vtk\w*Renderer", vtk_obj.GetClassName ()):
 	methods.append (["ActiveCamera", ""])
 
@@ -151,6 +151,7 @@ def get_vtk_objs (vtk_obj):
 
     debug ("vtkPipeline.py: get_vtk_objs (%s)"%
 	   (vtk_obj.GetClassName ()))
+           
     methods = get_methods(vtk_obj)
 
     vtk_objs = []
@@ -176,7 +177,7 @@ def get_vtk_objs (vtk_obj):
 		    vtk_objs.append (["%s%d"%(icon[0], i), obj, icon[2]])
 	    else:
 		obj = eval ("vtk_obj.Get%s ()"%method[0])
-		vtk_objs.append (get_icon (obj))
+                vtk_objs.append (get_icon (obj))
 
     icon = icon_map['Source']
     try:
@@ -214,20 +215,21 @@ def recursively_add_children(tree_ctrl, parent_node):
     """
     children = get_vtk_objs(tree_ctrl.GetPyData(parent_node))
     for i in children:
-        # get_vtk_objs() conveniently calls get_icon as well
-        img_idx = icon_map.values().index(i[2])
-        if i[0]:
-            text = i[0] + " (" + i[1].GetClassName() + ")"
-        else:
-            text = i[1].GetClassName()
-        # now add the node with image index
-        ai = tree_ctrl.AppendItem(parent_node, text, img_idx)
-        # and set the data to be the actual vtk object
-        tree_ctrl.SetPyData(ai, i[1])
+        if not i[1].IsA("vtkRenderWindowInteractor"):
+            # get_vtk_objs() conveniently calls get_icon as well
+            img_idx = icon_map.values().index(i[2])
+            if i[0]:
+                text = i[0] + " (" + i[1].GetClassName() + ")"
+            else:
+                text = i[1].GetClassName()
+                
+            # now add the node with image index
+            ai = tree_ctrl.AppendItem(parent_node, text, img_idx)
+            # and set the data to be the actual vtk object
+            tree_ctrl.SetPyData(ai, i[1])
         
-        # and we get to call ourselves!
-        recursively_add_children(tree_ctrl, ai)
-
+            # and we get to call ourselves!
+            recursively_add_children(tree_ctrl, ai)
 
 class vtkPipelineBrowser:
     """Browses the VTK pipleline given a vtkRenderWindow or given a set of
