@@ -53,6 +53,7 @@ class testModule(moduleBase, noConfigModuleMixin):
 
     def getOutputDescriptions(self):
         return (self._testObject1.GetOutput().GetClassName(),)
+    
 
     def getOutput(self, idx):
         return self._testObject1.GetOutput()
@@ -72,6 +73,7 @@ class testModule(moduleBase, noConfigModuleMixin):
     
 
     def executeModule(self):
+        print "hello alex"
         self._testObject1.Update()
 
 
