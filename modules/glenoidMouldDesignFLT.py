@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.5 2003/03/20 18:42:24 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.6 2003/03/21 17:49:42 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -127,8 +127,11 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 plane.SetOrigin(ps.GetOrigin())
                 plane.SetNormal(ps.GetNormal())
 
+                pdn = vtk.vtkPolyDataNormals()
+                pdn.SetInput(self._inputPolyData)
+
                 cut = vtk.vtkCutter()
-                cut.SetInput(self._inputPolyData)
+                cut.SetInput(pdn.GetOutput())
                 cut.SetCutFunction(plane)
                 cut.GenerateCutScalarsOn()
                 cut.SetValue(0,1)
@@ -149,10 +152,11 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                 ptIds = vtk.vtkIdList()
                 cellIds = vtk.vtkIdList()
-                newCellArray = vtk.vtkCellArray()
-                newPoints = vtk.vtkPoints()
-                newPoints.SetDataType(contour.GetPoints().GetDataType())
-                
+
+                # we'll use these to store tuples:
+                # (ptId, (pt0, pt1, pt2), (n0, n1, n2))
+                lines = [[],[]]
+                lineIdx = 0
                 for startLineId in twoLineIds:
 
                     # we have a startLineId, a startPtId and polyData
@@ -162,7 +166,6 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                     for i in range(20):
                         contour.GetCellPoints(curLineId, ptIds)
-                        print ptIds.GetNumberOfIds()
                         ptId0 = ptIds.GetId(0)
                         ptId1 = ptIds.GetId(1)
                         nextPointId = [ptId0, ptId1]\
@@ -174,33 +177,69 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                         nextLineId = [cId0, cId1]\
                                      [bool(cId0 == curLineId)]
 
+
                         # stop criterion here, if not, then store
+
+                        # get the normal for the current point
+                        n = contour.GetPointData().GetNormals().GetTuple3(
+                            curStartPtId)
+
+                        # get the current point
                         pt0 = contour.GetPoints().GetPoint(curStartPtId)
-                        pt1 = contour.GetPoints().GetPoint(nextPointId)
-                        id0 = newPoints.InsertNextPoint(pt0)
-                        id1 = newPoints.InsertNextPoint(pt1)
-                        idList = vtk.vtkIdList()
-                        idList.InsertNextId(id0)
-                        idList.InsertNextId(id1)
-
-                        newCellArray.InsertNextCell(idList)
-
+                        # store the real ptid, point coords and normal
+                        lines[lineIdx].append((curStartPtId,
+                                               tuple(pt0), tuple(n)))
 
                         # get ready for next iteration
                         curStartPtId = nextPointId
                         curLineId = nextLineId
                 
+                    # closes: for i in range(20)
+                    lineIdx += 1
+
+                # closes: for startLineId in twoLineIds
+                # we now have two line lists... we have to combine them and
+                # make sure it still constitutes one long line
+                lines[0].reverse()
+                edgeLine = lines[0] + lines[1]
+
+                # do line extrusion resulting in a list of 5-element tuples,
+                # each tuple representing the 5 3-d vertices of a "house"
+                houses = self._lineExtrudeHouse(edgeLine,
+                                                plane.GetNormal())
+                
+                # we will dump ALL the new points in here
+                newPoints = vtk.vtkPoints()
+                newPoints.SetDataType(contour.GetPoints().GetDataType())
+                # but we're going to create 5 lines
+                idLists = [vtk.vtkIdList() for i in range(5)]
+
+                for house in houses:
+                    for vertexIdx in range(len(house)):
+                        ptId = newPoints.InsertNextPoint(house[vertexIdx])
+                        idLists[vertexIdx].InsertNextId(ptId)
+                    
+                # create a cell with the 5 lines
+                newCellArray = vtk.vtkCellArray()
+                for idList in idLists:
+                    newCellArray.InsertNextCell(idList)
+                #newCellArray.InsertNextCell(idLists[0])
 
                 newPolyData = vtk.vtkPolyData()
                 newPolyData.SetLines(newCellArray)
                 newPolyData.SetPoints(newPoints)
-                #tf = vtk.vtkRibbonFilter()
-                #tf.SetInput(contour)
-                #tf.Update()
 
-                stuff.append(newPolyData)
+                rsf = vtk.vtkRuledSurfaceFilter()
+                rsf.CloseSurfaceOn()
+                rsf.SetRuledModeToPointWalk()
+                rsf.SetInput(newPolyData)
+                rsf.Update()
 
+                stuff.append(rsf.GetOutput())
 
+            
+            # closes: for i in range(4)
+            
             ap = vtk.vtkAppendPolyData()
             # copy everything to output (for testing)
             for thing in stuff:
@@ -212,6 +251,63 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
     def view(self):
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
+
+
+    def _buildHouse(self, startPoint, startPointNormal, cutPlaneNormal):
+        """Calculate the vertices of a single house.
+
+        Given a point on the cutPlane, the normal at that point and
+        the cutPlane normal, this method will calculate and return the
+        five points (including the start point) defining the
+        upside-down house.  The house is of course oriented with the point
+        normal and the cutPlaneNormal.  Doh.
+
+        
+        p3 +--+ p2
+           |  |
+        p4 +--+ p1
+            \/
+            p0
+
+        startPoint, startPointNormal and cutPlaneNormal are all 3-element
+        Python tuples.
+        """
+
+        startPointNormal3 = [3.0 * i for i in startPointNormal]
+        cutPlaneNormal1_5 = [1.5 * i for i in cutPlaneNormal]
+        mp = map(operator.add, startPoint, startPointNormal3)
+        p1 = tuple(map(operator.add, mp, cutPlaneNormal1_5))
+        p2 = tuple(map(operator.add, p1, startPointNormal3))
+        p4 = tuple(map(operator.sub, mp, cutPlaneNormal1_5))
+        p3 = tuple(map(operator.add, p4, startPointNormal3))
+
+        return (tuple(startPoint), p1, p2, p3, p4)
+        
+        
+    def _lineExtrudeHouse(self, edgeLine, cutPlaneNormal):
+        """Extrude the house (square with triangle as roof) along edgeLine.
+
+        edgeLine is a list of tuples where each tuple is:
+        (ptId, (p0, p1, p2), (n0, n1, n2)) with P the point coordinate and
+        N the normal at that point.  The normal determines the orientation
+        of the housy.
+
+        The result is just a line extrusion, i.e. no surfaces yet.  In order
+        to do that, run the output (after it has been converted to a polydata)
+        through a vtkRuledSurfaceFilter.
+
+        This method returns a list of 5-element tuples.
+        """
+
+        newEdgeLine = []
+        
+        for point in edgeLine:
+            housePoints = self._buildHouse(point[1], point[2], cutPlaneNormal)
+            newEdgeLine.append(housePoints)
+
+        return newEdgeLine
+            
+            
 
     def _inputPointsObserver(self, obj):
         # extract a list from the input points
