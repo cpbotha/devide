@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.1 2003/03/18 15:13:44 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.2 2003/03/18 17:48:40 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -11,28 +11,39 @@
 # This is not critical.
 
 from moduleBase import moduleBase
+from moduleMixins import noConfigModuleMixin
 import vtk
 from wxPython.wx import *
 
-class glenoidMouldDesigner(moduleBase):
+class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
     def __init__(self, moduleManager):
         
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
+        # and mixin
+        noConfigModuleMixin.__init__(self)
 
         self._inputPolyData = None
         self._inputPoints = None
-        self._inputsPointsOID
+        self._inputPointsOID = None
         self._giaProximal = None
         self._giaDistal = None
         self._outputPolyData = vtk.vtkPolyData()
 
+        # create the frame and display it proudly!
+        self._createViewFrame('Glenoid Mould Designer View',
+                              {'Output Polydata': self._outputPolyData})
+        self._viewFrame.Show(True)
+
     def close(self):
         # disconnect all inputs
-        self._setInput(0, None)
-        self._setInput(1, None)
-        pass
+        self.setInput(0, None)
+        self.setInput(1, None)
+        # take care of critical instances
+        self._outputPolyData = None
+        # mixin close
+        noConfigModuleMixin.close(self)
 
     def getInputDescriptions(self):
         return('Scapula vtkPolyData', 'Insertion axis (points)')
@@ -76,24 +87,26 @@ class glenoidMouldDesigner(moduleBase):
 
     def executeModule(self):
         if self._giaDistal and self._giaProximal and self._inputPolyData:
-            print "all systems go!"
+            # construct eight planes with the insertion axis as mid-line
+            # the planes should go somewhat further proximally than the
+            # proximal insertion axis point
+
+            pass # a stone (ha ha)
+            
 
     def view(self):
-        pass
+        if not self._viewFrame.Show(True):
+            self._viewFrame.Raise()
 
     def _inputPointsObserver(self, obj):
         # extract a list from the input points
         if self._inputPoints:
-            # extart the two points with labels 'GIA Proximal'
+            # extract the two points with labels 'GIA Proximal'
             # and 'GIA Distal'
             
-            # create list of tuples
-            tempList1 = [(i['world'],i['name']) for i in self._inputPoints
-                         if i['name'].startswith('GIA')]
+            giaProximal = [i['world'] for i in self._inputPoints if i['name'] == 'GIA Proximal']
 
-            giaProximal = [i['world'] for i in tempList1 if i['name'] == 'GIA Proximal']
-
-            giaDistal = [i['world'] for i in tempList1 if i['name'] == 'GIA Distal']
+            giaDistal = [i['world'] for i in self._inputPoints if i['name'] == 'GIA Distal']
 
             if giaProximal and giaDistal:
                 # we only apply these points to our internal parameters
