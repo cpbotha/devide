@@ -1,1 +1,9 @@
-# blaat
+# dscas3 dsem Geometry description
+
+[bonyLandmarks]
+ac = (0.0, 1.0, 2.3)
+ts = (0.3, 3.0, 8.9)
+
+[surfaces]
+scapula: %(dscas3dir)s/data/dsemGeometries/l10scapula.vtp
+humerus: %(dscas3dir)s/data/dsemGeometries/l10humerus.vtp
