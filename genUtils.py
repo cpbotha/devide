@@ -25,6 +25,10 @@ def flattenProp3D(prop3D):
     the 'main' matrix.
     """
 
+    if not prop3D.GetUserTransform():
+        # no flattening here, move along
+        return
+
     # get the current "complete" matrix (combining internal and user)
     currentMatrix = vtk.vtkMatrix4x4()
     prop3D.GetMatrix(currentMatrix)
@@ -38,11 +42,11 @@ def flattenProp3D(prop3D):
 
     # and set the internal matrix of the prop3D
     prop3D.SetPosition(currentTransform.GetPosition())
+    prop3D.SetScale(currentTransform.GetScale())    
     prop3D.SetOrientation(currentTransform.GetOrientation())
-    prop3D.SetScale(currentTransform.GetScale())
+
     # we should now also be able to zero the origin
-    #prop3D.SetOrigin(0.0, 0.0, 0.0)
-    
+    #prop3D.SetOrigin(0,0,0)
     
 
 def textToFloat(text, defaultFloat):
