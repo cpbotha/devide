@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.17 2003/04/24 11:14:33 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.18 2003/04/25 10:24:06 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -1211,7 +1211,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             discrete = (0, 0, 0)
             val = 0
 
-        self._storePoint(discrete, xyz, val)
+        self._storePoint(discrete, xyz, val, True) # lock to surface
 
     def _storeCursor(self, cursor):
         """Store the point represented by the cursor parameter.
@@ -1240,7 +1240,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3])
 
-    def _storePoint(self, discrete, world, value):
+    def _storePoint(self, discrete, world, value, lockToSurface=False):
 
         bounds = self._threedRenderer.ComputeVisiblePropBounds()        
         
@@ -1312,14 +1312,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             pw.On()
         else:
             pw.Off()
-        
-        
+
         # store the cursor (discrete coords) the coords and the actor
         self._selectedPoints.append({'discrete' : tuple(discrete),
                                      'world' : tuple(world),
                                      'value' : value,
                                      'name' : cursor_name,
                                      'point_widget' : pw,
+                                     'lock_to_surface' : lockToSurface,
                                      'sphere_actor' : sa,
                                      'text_actor' : ta})
 
@@ -1389,6 +1389,19 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list
             self._viewFrame.spointsGrid.SelectRow(idx)
+
+            # if this is lockToSurface, lock it!
+            if self._selectedPoints[idx]['lock_to_surface']:
+                ex,ey = pw.GetInteractor().GetEventPosition()
+                # we use a vtkPropPicker - this is supposed to make use of
+                # the graphics hardware to pick rapidly
+                picker = vtk.vtkPropPicker()
+                picker.Pick(ex, ey, 0, self._threedRenderer)
+
+                pa = picker.GetActor()
+                if pa:
+                    xyz = picker.GetPickPosition()
+                    pw.SetPosition(xyz)
 
             # get its position and transfer it to the sphere actor that
             # we use
