@@ -230,14 +230,14 @@ class coGlyph(coRectangle):
         dc.SetBrush(brush)
         dc.DrawRectangle(pos[0], pos[1], coGlyph._pWidth, coGlyph._pHeight)
 
-    def drawSinglePort(self, dc, idx, inputPort=True):
+    def drawSinglePort(self, dc, port):
         """Use to redraw a SINGLE port.
 
         Do NOT use as part of a full redraw, as it can be done faster.  This
         is for use during a mouseOver and whatnot.
         """
 
-        if inputPort:
+        if port[0] == 0:
             connected = bool(self.inputLines[idx])
         else:
             connected = bool(self.outputLines[idx])
