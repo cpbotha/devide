@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.13 2003/02/04 16:51:55 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.14 2003/02/12 00:24:41 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -345,7 +345,7 @@ class slice3d_vwr(moduleBase,
         EVT_BUTTON(self._view_frame, self._view_frame.pipelineButtonId,
                    lambda e, pw=self._view_frame, s=self,
                    rw=self._view_frame.threedRWI.GetRenderWindow():
-                   s.vtk_pipeline_configure(pw, rw))
+                   s.vtkPipelineConfigure(pw, rw))
 
         def confPickedHandler(event):
             rwi = self._view_frame.threedRWI
@@ -354,9 +354,9 @@ class slice3d_vwr(moduleBase,
             if path:
                 prop = path.GetFirstNode().GetProp()
                 if prop:
-                    self.vtk_pipeline_configure(self._view_frame,
-                                                rwi.GetRenderWindow(),
-                                                (prop,))
+                    self.vtkPipelineConfigure(self._view_frame,
+                                              rwi.GetRenderWindow(),
+                                              (prop,))
 
         EVT_BUTTON(self._view_frame, self._view_frame.confPickedButtonId,
                    confPickedHandler)

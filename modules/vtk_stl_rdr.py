@@ -1,134 +1,110 @@
-# $Id: vtk_stl_rdr.py,v 1.2 2002/09/06 15:27:55 cpbotha Exp $
+# $Id: vtk_stl_rdr.py,v 1.3 2003/02/12 00:24:41 cpbotha Exp $
 
-from module_base import \
-     module_base, \
-     module_mixin_vtk_pipeline_config, \
-     module_mixin_fo_dialog
+# TODO:
+# * rename this module to stlRDR
+# * remove vtk_stl_rdr.py and vtk_stl_rdr.xml from the repository
+
+from moduleBase import moduleBase
+from moduleMixins import filenameViewModuleMixin
 from wxPython.wx import *
 from wxPython.xrc import *
 import vtk
 import os
 import module_utils
 
-class vtk_stl_rdr(module_base,
-                  module_mixin_vtk_pipeline_config,
-                  module_mixin_fo_dialog):
+class vtk_stl_rdr(moduleBase, filenameViewModuleMixin):
     
-    def __init__(self, module_manager):
+    def __init__(self, moduleManager):
+        """Constructor (initialiser) for the PD reader.
+
+        This is almost standard code for most of the modules making use of
+        the filenameViewModuleMixin mixin.
+        """
+        
         # call the constructor in the "base"
-        module_base.__init__(self, module_manager)
+        moduleBase.__init__(self, moduleManager)
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(self)
 
         # setup necessary VTK objects
 	self._reader = vtk.vtkSTLReader()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module
-        self._reader.SetProgressText('Reading STL triangles')
-        mm = self._module_manager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
-	
-        self._view_frame = None
-        self.create_view_window()
-	self.sync_config()
+        # we now have a viewFrame in self._viewFrame
+        self._createViewFrame('STL Reader',
+                              'Select a filename',
+                              'STL data (*.stl)|*.stl|All files (*)|*',
+                              {'vtkSTLReader': self._reader})
+
+        # set up some defaults
+        self._config.filename = ''
+        self.configToLogic()
+        # make sure these filter through from the bottom up
+        self.syncViewWithLogic()
+
+        # finally we can display the GUI
+        self._viewFrame.Show(1)
 	
     def close(self):
-        self._view_frame.Destroy()
-	if hasattr(self, '_reader'):
-	    del self._reader
+        del self._reader
+        # call the close method of the mixin
+        filenameViewModuleMixin.close(self)
 
-    def get_input_descriptions(self):
+    def getInputDescriptions(self):
 	return ()
     
-    def set_input(self, idx, input_stream):
+    def setInput(self, idx, input_stream):
 	raise Exception
     
-    def get_output_descriptions(self):
+    def getOutputDescriptions(self):
+        # equivalent to return ('vtkPolyData',)
 	return (self._reader.GetOutput().GetClassName(),)
     
-    def get_output(self, idx):
+    def getOutput(self, idx):
 	return self._reader.GetOutput()
-    
-    def sync_config(self):
-        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
+
+    def logicToConfig(self):
         filename = self._reader.GetFileName()
         if filename == None:
-            filename = ""
-        fn_text.SetValue(filename)
-	
-    def apply_config(self):
-        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')        
-        self._reader.SetFileName(fn_text.GetValue())
+            filename = ''
 
-    def execute_module(self):
-        # get the vtkPolyDataReader to try and execute
-	self._reader.Update()
+        self._config.filename = filename
+
+    def configToLogic(self):
+        self._reader.SetFileName(self._config.filename)
+
+    def viewToConfig(self):
+        self._config.filename = self._getViewFrameFilename()
+
+    def configToView(self):
+        self._setViewFrameFilename(self._config.filename)
+
+    def executeModule(self):
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module - you could do this in __init__ as well, it seems
+        # neater here though
+        self._reader.SetProgressText('Reading STL data')
+        mm = self._moduleManager
+        self._reader.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._reader))
+        
+        # get the vtkSTLReader to try and execute (if there's a filename)
+        if len(self._reader.GetFileName()):        
+            self._reader.Update()
+            
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
         # pop up.  you should do this in all your modules right after you
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
-        self._module_manager.vtk_poll_error()
+        self._moduleManager.vtk_poll_error()
 
-    def create_view_window(self):
-        parent_window = self._module_manager.get_module_view_parent_window()
+        # tell the user that we're done
+        mm.setProgress(100, 'DONE reading STL data')
 
-        self._view_frame = wxFrame(parent=parent_window, id=-1,
-                                   title='vtk_stl_rdr configuration')
-        EVT_CLOSE(self._view_frame,
-                  lambda e, s=self: s._view_frame.Show(false))
-
-        # get out the panel resource that is constitutes this view
-        res_path = os.path.join(self._module_manager.get_modules_xml_res_dir(),
-                                'vtk_stl_rdr.xrc')
-        res = wxXmlResource(res_path)
-        panel = res.LoadPanel(self._view_frame, 'PNL_VTK_STL_RDR_VIEW')
-
-        # as per usual make one more top level sizer and add only the panel
-        top_sizer = wxBoxSizer(wxVERTICAL)
-        top_sizer.Add(panel, option=1, flag=wxEXPAND)
-
-        # then make sure the frame will use the top_level sizer
-        self._view_frame.SetAutoLayout(true)
-        self._view_frame.SetSizer(top_sizer)
-        # make the frame big enough to fit the sizer
-        top_sizer.Fit(self._view_frame)
-        # make sure the frame can't get smaller than the minimum sizer size
-        top_sizer.SetSizeHints(self._view_frame)
-
-        # bind events specific to this bitch
-        EVT_BUTTON(self._view_frame, XMLID('MV_ID_BROWSE'), self.fn_browse_cb)
-        EVT_CHOICE(self._view_frame, XMLID('MV_ID_VTK_OBJECT_CHOICE'),
-                   self.vtk_object_choice_cb)
-        EVT_BUTTON(self._view_frame, XMLID('MV_ID_VTK_PIPELINE'),
-                   self.vtk_pipeline_cb)
-
-        # bind events to the standard cancel, sync, apply, execute, ok buttons
-        module_utils.bind_CSAEO(self, self._view_frame)
-            
     def view(self, parent_window=None):
-	# first make sure that our variables agree with the stuff that
-        # we're configuring
-	self.sync_config()
-        self._view_frame.Show(true)
-        
-    def fn_browse_cb(self, event):
-        path = self.fn_browse(self._view_frame,
-                              "Choose an STL filename",
-                              "STL data (*.stl)|*.stl|All files (*)|*")
+        # if the frame is already visible, bring it to the top; this makes
+        # it easier for the user to associate a frame with a glyph
+        if not self._viewFrame.Show(true):
+            self._viewFrame.Raise()
 
-        if path != None:
-            fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-            fn_text.SetValue(path)
-
-    def vtk_object_choice_cb(self, event):
-        choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
-        if choice != None:
-            if choice.GetStringSelection() == 'vtkSTLReader':
-                self.vtk_object_configure(self._view_frame, None, self._reader)
-
-    def vtk_pipeline_cb(self, event):
-        # move this to module utils too, or to base...
-        self.vtk_pipeline_configure(self._view_frame, None, (self._reader,))
-	    
