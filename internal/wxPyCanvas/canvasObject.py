@@ -221,7 +221,8 @@ class coGlyph(coRectangle):
     _pHeight = 10
     
 
-    def __init__(self, position, numInputs, numOutputs, label, moduleInstance):
+    def __init__(self, position, numInputs, numOutputs,
+                 labelList, moduleInstance):
         # parent constructor
         coRectangle.__init__(self, position, (0,0))
         # we'll fill this out later
@@ -231,7 +232,7 @@ class coGlyph(coRectangle):
         self._numOutputs = numOutputs
         # be careful with list concatenation!
         self.outputLines = [[] for i in range(self._numOutputs)]
-        self._label = label
+        self._labelList = labelList
         self.moduleInstance = moduleInstance
         self.draggedPort = None
         self.enteredPort = None
@@ -269,7 +270,7 @@ class coGlyph(coRectangle):
         tex = 0
         tey = 0
 
-        for l in self._label:
+        for l in self._labelList:
             temptx, tempty = dc.GetTextExtent(l)
 
             if temptx > tex:
@@ -282,7 +283,7 @@ class coGlyph(coRectangle):
         textWidth = tex + 2 * coGlyph._horizBorder
         
         self._size = (max(textWidth, portsWidth),
-                      tey * len(self._label) + 2 * coGlyph._vertBorder)
+                      tey * len(self._labelList) + 2 * coGlyph._vertBorder)
 
         # draw the main rectangle
         dc.DrawRectangle(self._position[0], self._position[1],
@@ -292,7 +293,7 @@ class coGlyph(coRectangle):
         #                        self._size[0], self._size[1], radius=5)
 
         initY = self._position[1] + coGlyph._vertBorder
-        for l in self._label:
+        for l in self._labelList:
             dc.DrawText(l,
                         self._position[0] + coGlyph._horizSpacing,
                         initY)
@@ -368,7 +369,7 @@ class coGlyph(coRectangle):
         return (cx, cy)
 
     def getLabel(self):
-        return self._label
+        return ' '.join(self._labelList)
         
 
 
