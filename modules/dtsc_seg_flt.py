@@ -1,5 +1,5 @@
 # dtsc_seg_flt.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: dtsc_seg_flt.py,v 1.3 2002/09/10 16:14:27 cpbotha Exp $
+# $Id: dtsc_seg_flt.py,v 1.4 2002/09/12 18:00:19 cpbotha Exp $
 # double-threshold seed connectivity segmentation filter
 
 from gen_utils import log_error
@@ -25,34 +25,127 @@ class dtsc_seg_flt(module_base,
         module_base.__init__(self, module_manager)
 
         # setup VTK pipeline
+        mm = self._module_manager
+        self._input_points = None
+        
         self._threshold = vtk.vtkImageThreshold()
+        self._threshold.SetInValue(1)
+        self._threshold.SetOutValue(0)
+        self._threshold.SetOutputScalarTypeToUnsignedChar()
+        self._threshold.SetProgressText('Thresholding data')
+        self._threshold.SetProgressMethod(lambda s=self, mm=mm:
+                                          mm.vtk_progress_cb(s._threshold))
+
+        
         self._seedconnect = vtk.vtkImageSeedConnectivity()
         self._seedconnect.SetInput(self._threshold.GetOutput())
+        self._seedconnect.SetInputConnectValue(1)
+        self._seedconnect.SetProgressText('Performing region growing')
+        self._seedconnect.SetProgressMethod(lambda s=self, mm=mm:
+                                            mm.vtk_progress_cb(s._seedconnect))
 
         # create gui
         self._create_view_frame()
+
+        self.sync_config()
 
     #################################################################
     # module API methods
     #################################################################
 
+    def apply_config(self):
+        lt = self._view_frame.lt_spinctrl.GetValue()
+        ut = self._view_frame.ut_spinctrl.GetValue()
+        self._threshold.ThresholdBetween(lt, ut)
+
     def close(self):
-        pass
+        self._view_frame.Destroy()
+        del self._threshold
+        del self._seedconnect
+
+    def execute_module(self):
+        if self._input_points:
+            self._seedconnect.RemoveAllSeeds()
+            for i in range(self._input_points.GetNumberOfPoints()):
+                x,y,z = self._input_points.GetPoint(i)
+                self._seedconnect.AddSeed(x,y,z)
+                
+        self._seedconnect.Update()
 
     def get_input_descriptions(self):
         return ('Seed points (vtkPoints)',
                 'Volume data (vtkImageData)')
-
-    def set_input(self, idx, input_stream):
-        pass
+    
+    def get_output(self, idx):
+        if idx == 0:
+            return self._seedconnect.GetOutput()
+        else:
+            wxLogError('Invalid output requested from dtsc_seg_flt.')
 
     def get_output_descriptions(self):
         return ('Segmented data (vtkImageData)',)
 
-    def get_output(self):
-        pass
+    def set_input(self, idx, input_stream):
+        if input_stream == None:
+            if idx == 0:
+                self._input_points = None
+            else:
+                self._threshold.SetInput(None)
+        else:
+            if hasattr(input_stream, 'IsA') and \
+               callable(input_stream.IsA):
+                if input_stream.IsA('vtkPoints'):
+                    if idx == 0:
+                        self._input_points = input_stream
+                    else:
+                        raise TypeError, 'vtkPoints should be connected on ' \
+                              'the first input.'
+                    
+                elif input_stream.IsA('vtkImageData'):
+                    if idx == 0:
+                        raise TypeError, 'vtkImageData should be connected ' \
+                              ' the second input.'
+                    else:
+                        self._threshold.SetInput(input_stream)
+                        # and sync us up
+                        self.sync_config()
+                else:
+                    raise TypeError, 'vtkPoints or vtkImageData input '\
+                          'required.'
+            else:
+                raise TypeError, 'vtkPoints or vtkImageData input '\
+                      'required.'             
+
+    def sync_config(self):
+        if self._threshold.GetInput():
+            self._threshold.GetInput().Update()
+            minv,maxv = self._threshold.GetInput().GetScalarRange()
+        else:
+            minv = 0.0
+            maxv = 100.0
+
+        # do we want to do this dynamically? i.e. the lt's max is the
+        # ut's min?
+        self._view_frame.lt_spinctrl.SetRange(minv, maxv)
+        self._view_frame.ut_spinctrl.SetRange(minv, maxv)        
+            
+        ut = self._threshold.GetUpperThreshold()
+        if ut < minv:
+            ut = minv
+        if ut > maxv:
+            ut = maxv
+            
+        lt = self._threshold.GetLowerThreshold()
+        if lt < minv:
+            lt = minv
+        if lt > maxv:
+            lt = maxv
+
+        self._view_frame.lt_spinctrl.SetValue(lt)
+        self._view_frame.ut_spinctrl.SetValue(ut)
 
     def view(self):
+        self.sync_config()
         self._view_frame.Show(true)
 
     #################################################################
