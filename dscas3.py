@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.24 2003/05/04 21:24:28 cpbotha Exp $
+# $Id: dscas3.py,v 1.25 2003/05/04 22:53:14 cpbotha Exp $
 
 DSCAS3_VERSION = '20030504'
 
@@ -249,6 +249,8 @@ class dscas3_app_t(wxApp):
         self._vtk_lw.update()
 
     def setProgress(self, progress, message):
+
+        
         # 1. we shouldn't call setProgress whilst busy with setProgress
         # 2. only do something if the message or the progress has changed
         # 3. we only perform an update if a second or more has passed
@@ -267,20 +269,19 @@ class dscas3_app_t(wxApp):
                    self._mainFrame.progressGauge.SetValue(progress)
                    self._mainFrame.progressText.SetLabel(message)
 
-                   # deactivate the busy cursor
-                   if progress < 100:
+                   # activate the busy cursor
+                   if progress < 100.0:
                        if not wxIsBusy():
-                           print "calling wxBeginBusyCursor!"
                            wxBeginBusyCursor()
-                   # or set it...
+                   # or switch it off
                    else:
                        if wxIsBusy():
-                           print "calling wxEndBusyCursor!"
                            wxEndBusyCursor()
                    
-                   # bring this window to the top
-                   # self._mainFrame.Raise()
-                   # let's rather not!
+                   # bring this window to the top if the user wants it
+                   if self._mainFrame.progressRaiseCheckBox.GetValue():
+                       self._mainFrame.Raise()
+
                    # we want wx to update its UI, but it shouldn't accept any
                    # user input, else things can get really crazy.
                    #print "calling yield"

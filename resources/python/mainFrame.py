@@ -14,23 +14,24 @@ class mainFrame(wxFrame):
         # Menu Bar
         self.frame_1_menubar = wxMenuBar()
         self.SetMenuBar(self.frame_1_menubar)
-        wxglade_tmp_menu = wxMenu()
         self.fileExitId  =  wxNewId()
+        self.windowGraphEditorId  =  wxNewId()
+        self.windowPythonShellId  =  wxNewId()
+        self.helpAboutId  =  wxNewId()
+        wxglade_tmp_menu = wxMenu()
         wxglade_tmp_menu.Append(self.fileExitId , "E&xit", "Exit DSCAS")
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
         wxglade_tmp_menu = wxMenu()
-        self.windowGraphEditorId  =  wxNewId()
         wxglade_tmp_menu.Append(self.windowGraphEditorId , "&Graph Editor", "Open up the graph editor window")
-        self.windowPythonShellId  =  wxNewId()
         wxglade_tmp_menu.Append(self.windowPythonShellId , "&Python Shell", "Show the Python Shell interface")
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Window")
         wxglade_tmp_menu = wxMenu()
-        self.helpAboutId  =  wxNewId()
         wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DSCAS3")
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that even the longest of messages eek.")
         self.progressGauge = wxGauge(self.panel_1, -1, 100)
+        self.progressRaiseCheckBox = wxCheckBox(self.panel_1, -1, "Raise this window when the progress is updated.")
 
         self.__set_properties()
         self.__do_layout()
@@ -46,6 +47,8 @@ class mainFrame(wxFrame):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         self.progressText.SetFont(wxFont(14, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
         self.progressGauge.SetBackgroundColour(wxColour(50, 153, 204))
+        self.progressRaiseCheckBox.SetFont(wxFont(10, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
+        self.progressRaiseCheckBox.SetValue(1)
         # end wxGlade
 
     def __do_layout(self):
@@ -54,6 +57,7 @@ class mainFrame(wxFrame):
         sizer_3 = wxBoxSizer(wxVERTICAL)
         sizer_3.Add(self.progressText, 0, wxLEFT|wxRIGHT|wxTOP, 5)
         sizer_3.Add(self.progressGauge, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 5)
+        sizer_3.Add(self.progressRaiseCheckBox, 0, wxALL|wxEXPAND, 5)
         self.panel_1.SetAutoLayout(1)
         self.panel_1.SetSizer(sizer_3)
         sizer_3.Fit(self.panel_1)
