@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.3 2004/01/27 15:30:05 cpbotha Exp $
+# $Id: devide.py,v 1.4 2004/01/28 23:21:47 cpbotha Exp $
 
-DEVIDE_VERSION = '20040127'
+DEVIDE_VERSION = '20040128'
 
 # standard Python imports
 import getopt
