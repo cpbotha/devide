@@ -7,7 +7,7 @@ import vtk
 class transformVolumeData(noConfigModuleMixin, moduleBase):
     """Transform volume according to 4x4 homogeneous transform.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -19,10 +19,6 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
 
         self._imageReslice = vtk.vtkImageReslice()
         self._imageReslice.SetInterpolationModeToCubic()
-
-        self._matrixToLT = vtk.vtkMatrixToLinearTransform()
-        self._matrixToLT.Inverse()
-
 
         moduleUtils.setupVTKObjectProgress(self, self._imageReslice,
                                            'Resampling volume')
@@ -53,25 +49,15 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
         if idx == 0:
             self._imageReslice.SetInput(inputStream)
         else:
-            try:
-                self._matrixToLT.SetInput(inputStream.GetMatrix())
-                
-            except AttributeError:
-                # this means the inputStream has no GetMatrix()
-                # i.e. it could be None or just the wrong type
-                # if it's none, we just have to disconnect
-                if inputStream == None:
-                    self._matrixToLT.SetInput(None)
-                    self._imageReslice.SetResliceTransform(None)
+            if inputStream == None:
+                # disconnect
+                self._imageReslice.SetResliceTransform(None)
 
-                # if not, we have to complain
-                else:
-                    raise TypeError, \
-                          "transformVolume input 2 requires a transform."
-            
             else:
-                self._imageReslice.SetResliceTransform(self._matrixToLT)
-                    
+                # resliceTransform transforms the resampling grid, which
+                # is equivalent to transforming the volume with its inverse
+                self._imageReslice.SetResliceTransform(
+                    inputStream.GetInverse())
 
     def getOutputDescriptions(self):
         return ('Transformed VTK Image Data',)
