@@ -1,3 +1,7 @@
+Tue Apr 30 03:27:54 CEST 2002 Charl P. Botha <cpbotha@ieee.org>
+
+* Conversion to wxPython
+
 Sat Nov 17 17:33:59 2001 Prabhu Ramachandran <prabhu_r@users.sf.net>
 
     (*) Now installed using distutils as a separate module.
