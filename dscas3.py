@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.50 2003/09/24 10:45:24 cpbotha Exp $
+# $Id: dscas3.py,v 1.51 2003/09/24 12:03:06 cpbotha Exp $
 
 DSCAS3_VERSION = '20030923'
 
@@ -323,8 +323,6 @@ class dscas3_app_t(wxApp):
                     self._currentProgress = progress
                     self._mainFrame.progressGauge.SetValue(progress)
                     self._mainFrame.progressText.SetLabel(message)
-
-                    print "Main thread: %d" % (wxThread_IsMain(),)
 
                     # activate the busy cursor
                     if progress < 100.0:
