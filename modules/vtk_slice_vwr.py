@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.25 2002/05/14 13:40:09 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.26 2002/05/14 15:10:58 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -188,7 +188,7 @@ class vtk_slice_vwr(module_base):
 	cur_pipe['vtkPlaneSource3'].SetPoint2(point2)
 
 	
-    def _setup_camera(self, cur_pipe, renderer):
+    def _setup_ortho_cam(self, cur_pipe, renderer):
 	# now we're going to manipulate the camera in order to achieve some
         # gluOrtho2D() goodness
 	icam = renderer.GetActiveCamera()
@@ -230,17 +230,31 @@ class vtk_slice_vwr(module_base):
                 self._InitialResliceAxes[ortho_idx]['axes'])
             overlay_pipe['vtkImageReslice'].SetResliceAxesOrigin(
                 self._InitialResliceAxes[ortho_idx]['origin'])
-            some_trans = vtk.vtkTransform()
-            some_trans.RotateWXYZ(-50,1,1,1)
-            new_matrix = vtk.vtkMatrix4x4()
-            vtk.vtkMatrix4x4.Multiply4x4(some_trans.GetMatrix(),
-                                         overlay_pipe['vtkImageReslice'].
-                                         GetResliceAxes(), new_matrix)
+            #some_trans = vtk.vtkTransform()
+            #some_trans.RotateWXYZ(-50,1,1,1)
+            #new_matrix = vtk.vtkMatrix4x4()
+            #vtk.vtkMatrix4x4.Multiply4x4(some_trans.GetMatrix(),
+            #                             overlay_pipe['vtkImageReslice'].
+            #                             GetResliceAxes(), new_matrix)
             #overlay_pipe['vtkImageReslice'].SetResliceAxes(new_matrix)
+        else:
+            # if this is NOT the first layer, it  must copy the slicer
+            # config of the first ortho
+            ir = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
+            rad = ir.GetResliceAxesDirectionCosines()
+            rao = ir.GetResliceAxesOrigin()
+            overlay_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(rad)
+            overlay_pipe['vtkImageReslice'].SetResliceAxesOrigin(rao)
 
+        # create and texture map the plane for ortho viewing
         self._setup_ortho_plane(overlay_pipe)
+
+        # FIXME:
+        # we probably only want to do this for the first layer...(i.e. we
+        # DON'T do overlays in 3D?)
         self._update_3d_plane(overlay_pipe, 0)
 
+        # set up the vtkPlaneWidgets if this is the first layer
         if len(self._ortho_pipes[ortho_idx]) == 1:
             self._pws[ortho_idx].SetProp3D(overlay_pipe['vtkActor3'])
             if ortho_idx == 0:
@@ -257,12 +271,12 @@ class vtk_slice_vwr(module_base):
             self._pws[ortho_idx].SetInteractor(rwi)
             self._pws[ortho_idx].On()
                                  
+        # setup the orthogonal camera if this is the first layer
         if len(self._ortho_pipes[ortho_idx]) == 1:
-            self._setup_camera(overlay_pipe, self._renderers[ortho_idx+1])
+            self._setup_ortho_cam(overlay_pipe, self._renderers[ortho_idx+1])
 
+        # whee, thaaaar she goes.
         self._rwis[ortho_idx+1].Render()
-        
-	
     
     def set_input(self, idx, input_stream):
         if input_stream == None:
@@ -324,6 +338,12 @@ class vtk_slice_vwr(module_base):
 		self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
 		self._inputs[idx]['Connected'] = 'vtkPolyData'
             elif input_stream.GetClassName() == 'vtkStructuredPoints':
+                # if we already have a vtkStructuredPoints (or similar,
+                # we might want to use the IsA() method later) we must check
+                # the new dataset for certain requirements
+
+                you should continue here.  thar she blows.
+                
                 for i in range(self._num_orthos):
                     self._ortho_pipes[i].append(
                         {'input_idx' : idx,
