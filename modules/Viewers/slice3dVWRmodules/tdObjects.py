@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.3 2003/12/16 15:52:48 cpbotha Exp $
+# $Id: tdObjects.py,v 1.4 2003/12/17 16:34:28 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -216,7 +216,10 @@ class tdObjects(object, s3dcGridMixin):
             ('---',), # important!  one-element tuple...
             ('Animate Objects',
              'Animate all present objects by controlling exclusive visibility',
-             self._handlerObjectAnimation, False)]
+             self._handlerObjectAnimation, True),
+            ('Invoke Prop Method',
+             'Invoke the same method on all the selected objects\'s 3D props',
+             self._handlerObjectPropInvokeMethod, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(
             menu, eventWidget, commandsTuple, disable)
@@ -668,13 +671,35 @@ class tdObjects(object, s3dcGridMixin):
         self._objectAnimationReset()
         
     def _handlerObjectAnimationSlider(self, event):
-        numObjects = len(self._tdObjectsDict)
         frameSlider = self.slice3dVWR.objectAnimationFrame.frameSlider
-        if frameSlider.GetValue() < numObjects:
-            objectName = self._grid.GetCellValue(
-                frameSlider.GetValue(), self._gridNameCol)
-            self._setExclusiveObjectVisibility(objectName, True)
-            self.slice3dVWR.render3D()
+        self._objectAnimationSetFrame(frameSlider.GetValue())
+
+    def _handlerObjectPropInvokeMethod(self, event):
+        methodName = wx.GetTextFromUser(
+            'Enter the name of the method that you would like\n'
+            'to invoke on all selected objects.')
+        if methodName:
+            objs = self._getSelectedObjects()            
+            try:
+                for obj in objs:
+                    t = self._tdObjectsDict[obj]['type']
+                    prop = None
+                    if t == 'vtkPolyData':
+                        prop = self._tdObjectsDict[obj]['vtkActor']
+                    elif t == 'vtkVolume':
+                        prop = obj # this is the vtkVolume
+                    else:
+                        prop = None
+
+                    if prop:
+                        exec('prop.%s' % (methodName,))
+                        
+            except Exception:
+                genUtils.logError(
+                    'Could not execute %s on object %s\'s prop.' % \
+                    (methodName,
+                     self._tdObjectsDict[obj]['objectName']))
+                
 
     def _handlerObjectSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
@@ -982,15 +1007,42 @@ class tdObjects(object, s3dcGridMixin):
                 tdObject)
 
     def _objectAnimationReset(self):
-        numObjects = len(self._tdObjectsDict)        
-        if numObjects > 0:
+        objectsPerFrameSpinCtrl = self.slice3dVWR.objectAnimationFrame.\
+                                  objectsPerFrameSpinCtrl
+        objectsPerFrame = objectsPerFrameSpinCtrl.GetValue()
+        
+        if objectsPerFrame > 0:
             frameSlider = self.slice3dVWR.objectAnimationFrame.frameSlider
             # first tell slider what it can do
-            frameSlider.SetRange(0, numObjects - 1)
+            selectedObjects = self._getSelectedObjects()
+            numObjects = len(selectedObjects)
+            frames = numObjects / objectsPerFrame
+            frameSlider.SetRange(0, frames - 1)
             frameSlider.SetValue(0)
-            name0 = self._grid.GetCellValue(0, self._gridNameCol)
-            self._setExclusiveObjectVisibility(name0, True)
+
+            self._objectAnimationSetFrame(0)
+
+    def _objectAnimationSetFrame(self, frame):
+        selectedObjects = self._getSelectedObjects()
+        numObjects = len(selectedObjects)
+        objectsPerFrameSpinCtrl = self.slice3dVWR.objectAnimationFrame.\
+                                  objectsPerFrameSpinCtrl
+        objectsPerFrame = objectsPerFrameSpinCtrl.GetValue()
+
+        if objectsPerFrame > 0 and \
+               frame < numObjects / objectsPerFrame:
+
+            objectNames = []
+            selectedRows = self._grid.GetSelectedRows()
+            for i in range(objectsPerFrame):
+                objectNames.append(self._grid.GetCellValue(
+                    selectedRows[frame * objectsPerFrame + i],
+                    self._gridNameCol))
+                                   
+            self._setExclusiveObjectVisibility(objectNames, True)
             self.slice3dVWR.render3D()
+        
+        
 
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
         # make sure the transform is up to date
@@ -1135,13 +1187,15 @@ class tdObjects(object, s3dcGridMixin):
                 genUtils.setGridCellYesNo(
                     self._grid,gridRow, self._gridVisibleCol, visible)
 
-    def _setExclusiveObjectVisibility(self, objectName, visible):
+    def _setExclusiveObjectVisibility(self, objectNames, visible):
         """Sets the visibility of tdObject to visible and all the other
         objects to the opposite.  Used by animation.
         """
 
-        for obj, objDict in self._tdObjectsDict.items():
-            if objDict['objectName'] == objectName:
+        objs = self._getSelectedObjects()
+        for obj in objs:
+            objDict = self._tdObjectsDict[obj]
+            if objDict['objectName'] in objectNames:
                 self._setObjectVisibility(obj, visible)
             else:
                 self._setObjectVisibility(obj, not visible)

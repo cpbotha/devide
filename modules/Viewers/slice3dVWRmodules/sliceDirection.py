@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.4 2003/12/17 09:16:57 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.5 2003/12/17 16:34:28 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -202,9 +202,7 @@ class sliceDirection:
             # if self._ipws ...
             else:
                 # this means primary data!
-                # first make sure that the WHOLE primary will get updated
-                # when we render, else we get stupid single slice renderings!
-                inputData.SetUpdateExtentToWholeExtent()
+
                 self._ipws.append(vtk.vtkImagePlaneWidget())
                 self._ipws[-1].SetInput(inputData)
                 self._ipws[-1].SetPicker(self.sliceDirections.ipwPicker)
@@ -533,7 +531,14 @@ class sliceDirection:
         """
 
         if self._ipws:
+
             inputData = self._ipws[0].GetInput()
+            
+            # first make sure that the WHOLE primary will get updated
+            # when we render, else we get stupid single slice renderings!
+            inputData.UpdateInformation()
+            inputData.SetUpdateExtentToWholeExtent()
+            inputData.Update()
             
             # calculate default window/level once (same as used
             # by vtkImagePlaneWidget)

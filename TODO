@@ -1,4 +1,8 @@
-$Id: TODO,v 1.23 2003/12/09 17:36:23 cpbotha Exp $
+$Id: TODO,v 1.24 2003/12/17 16:34:28 cpbotha Exp $
+
+* Colour input ports depending on whether the input is
+  required... green for connected, red for unconnected, blue (or
+  something) for optional-not-connected.
 
 * Nice one: when building the module and segment tree, also build a
   main menubar structure, so we can place modules and segments ORCAD
@@ -36,6 +40,9 @@ $Id: TODO,v 1.23 2003/12/09 17:36:23 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+- NB: ALL writers HAVE to do an UpdateInformation() and
+  SetUpdateExtentToWholeExtent() BEFORE writing.
 
 - urgh, SliceThickness in CT can't be trusted.  You really have to look at
   the SliceLocation...
