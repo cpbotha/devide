@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.60 2003/10/20 22:21:20 cpbotha Exp $
+# $Id: dscas3.py,v 1.61 2003/12/11 17:32:02 cpbotha Exp $
 
-DSCAS3_VERSION = '20031021 Holiday'
+DSCAS3_VERSION = '20031211 Four'
 
+import getopt
 import os
 import mutex
 import stat
@@ -17,6 +18,7 @@ from assistants import assistants
 from graphEditor import graphEditor
 from moduleManager import moduleManager
 from python_shell import python_shell
+
 import resources.python.mainFrame
 import resources.graphics.images
 
@@ -25,6 +27,36 @@ from wxPython.html import *
 
 import vtk
 import vtkdscas
+
+
+class configClass(object):
+
+    def __init__(self, argv):
+        parseCommandLine()
+
+        self.useInsight = True
+
+    def dispUsage(self):
+        print "-h or --help               : Display this message."
+        print "--no-insight or --no-itk   : Do not use ITK-based modules."
+
+    def _parseCommandLine(self):
+        try:
+            # 'p:' means -p with something after
+            optlist, args = getopt.getopt(
+                argv[1:], 'h',
+                ['help', 'no-itk', 'no-insight'])
+        except getopt.GetoptError,e:
+            self.dispUsage()
+            sys.exit(1)
+
+        for a, o in optlist:
+            if o in ('-h', '--help'):
+                self.dispUsage()
+
+            elif o in ('--no-itk', '--no-insight'):
+                self.useInsight = False
+        
 
 # ---------------------------------------------------------------------------
 class dscas3_app_t(wxApp):
@@ -60,9 +92,6 @@ class dscas3_app_t(wxApp):
         self._graphEditor = None
         self._python_shell = None
 	
-	# this will instantiate the module manager and get a list of plugins
-	self.moduleManager = moduleManager(self)
-
 
     def OnInit(self):
         self._mainFrame = resources.python.mainFrame.mainFrame(None, -1,
@@ -82,7 +111,11 @@ class dscas3_app_t(wxApp):
 
         self._mainFrame.Show(1)
         self.SetTopWindow(self._mainFrame)
-        self.setProgress(100, 'Started up')
+        
+        # find all modules that we can use
+	self.moduleManager = moduleManager(self)
+
+        self.setProgress(100, 'Started up')        
         
 
         # CRITICAL VTK CUSTOMISATION BIT:
