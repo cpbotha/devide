@@ -37,7 +37,7 @@ glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 class glyphs(scriptedConfigModuleMixin, moduleBase):
     """Visualise vector field with glyphs.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -141,4 +141,3 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         self._glyphFilter.SetUseMaskPoints(self._config.maskPoints)
         self._glyphFilter.SetMaximumNumberOfPoints(self._config.maskMax)
         self._glyphFilter.SetRandomMode(self._config.maskRandom)
-        
