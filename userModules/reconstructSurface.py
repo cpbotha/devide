@@ -17,23 +17,28 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
 
         # we'll be playing around with some vtk objects, this could
         # be anything
-        self._geometryFilter = vtk.vtkImageDataGeometryFilter()
+        self._thresh = vtk.vtkThresholdPoints()
+        # this is wacked syntax!
+        self._thresh.ThresholdByUpper(200)
         self._reconstructionFilter = vtk.vtkSurfaceReconstructionFilter()
+        self._reconstructionFilter.SetInput(self._thresh.GetOutput())
         self._mc = vtk.vtkMarchingCubes()
         self._mc.SetInput(self._reconstructionFilter.GetOutput())
         self._mc.SetValue(0, 0.0)
 
-        moduleUtils.setupVTKObjectProgress(self, self._geometryFilter,
-                                           'Extracting geometry...')
+        moduleUtils.setupVTKObjectProgress(self, self._thresh,
+                                           'Extracting points...')
         moduleUtils.setupVTKObjectProgress(self, self._reconstructionFilter,
                                            'Reconstructing...')
         moduleUtils.setupVTKObjectProgress(self, self._mc,
                                            'Extracting surface...')
 
-        self._iObj = self._geometryFilter
-        self._oObj = self._geometryFilter
+        self._iObj = self._thresh
+        self._oObj = self._mc
         
-        self._viewFrame = self._createViewFrame({'reconstructionFilter' :
+        self._viewFrame = self._createViewFrame({'threshold' :
+                                                 self._thresh,
+                                                 'reconstructionFilter' :
                                                  self._reconstructionFilter,
                                                  'marchingCubes' :
                                                  self._mc})
@@ -47,9 +52,9 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # get rid of our reference
+        del self._thresh
         del self._reconstructionFilter
         del self._mc
-        del self._geometryFilter
         del self._iObj
         del self._oObj
 
