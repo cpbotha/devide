@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.8 2002/04/27 00:51:56 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.9 2002/04/29 16:57:34 cpbotha Exp $
 
 from module_base import module_base
 from wxPython.wx import *
@@ -7,6 +7,8 @@ import os
 import vtkpython
 import vtkcpbothapython
 import module_utils
+
+from vtkPipeline.ConfigVtkObj import ConfigVtkObj
 
 class vtk_hdf_rdr(module_base):
     """dscas3 module for reading dscas HDF datasets.
@@ -17,7 +19,7 @@ class vtk_hdf_rdr(module_base):
     def __init__(self, module_manager):
         # call the base class __init__ (atm it just stores module_manager)
         module_base.__init__(self, module_manager)
-	self.reader = vtkcpbothapython.vtkHDFVolumeReader()
+	self._reader = vtkcpbothapython.vtkHDFVolumeReader()
 
         #
         self._fo_dlg = None
@@ -33,7 +35,7 @@ class vtk_hdf_rdr(module_base):
             self._fo_dlg.Destroy()
         self._view_frame.Destroy()
 	if hasattr(self, 'reader'):
-	    del self.reader
+	    del self._reader
 	    
     def get_input_descriptions(self):
 	return ()
@@ -42,21 +44,21 @@ class vtk_hdf_rdr(module_base):
 	raise Exception
     
     def get_output_descriptions(self):
-	return (self.reader.GetOutput().GetClassName(),)
+	return (self._reader.GetOutput().GetClassName(),)
 
     def get_output(self, idx):
-	return self.reader.GetOutput()
+	return self._reader.GetOutput()
 
     def sync_config(self):
         fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-        fn_text.SetValue(self.reader.get_hdf_filename())
+        fn_text.SetValue(self._reader.get_hdf_filename())
 	
     def apply_config(self):
         fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')        
-        self.reader.set_hdf_filename(fn_text.GetValue())
+        self._reader.set_hdf_filename(fn_text.GetValue())
 	
     def execute_module(self):
-	self.reader.Update()
+	self._reader.Update()
 
     def create_view_window(self, parent_window=None):
         """Create configuration/view window.
@@ -92,6 +94,8 @@ class vtk_hdf_rdr(module_base):
 
         # bind events specific to this bitch
         EVT_BUTTON(self._view_frame, XMLID('MV_ID_BROWSE'), self.fn_browse_cb)
+        EVT_CHOICE(self._view_frame, XMLID('MV_ID_VTK_OBJECT_CHOICE'),
+                   self.vtk_object_choice_cb)
 
         # bind events to the standard cancel, sync, apply, execute, ok buttons
         module_utils.bind_CSAEO(self, self._view_frame)
@@ -114,6 +118,15 @@ class vtk_hdf_rdr(module_base):
         if self._fo_dlg.ShowModal() == wxID_OK:
                     fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
                     fn_text.SetValue(self._fo_dlg.GetPath())
+
+    def vtk_object_choice_cb(self, event):
+        choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
+        if choice != None:
+            if choice.GetStringSelection() == 'vtkHDFVolumeReader':
+                cvo = ConfigVtkObj()
+
+                cvo.configure(self._view_frame,
+                              self._reader)
         
 	
     

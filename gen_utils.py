@@ -3,7 +3,6 @@ import string
 import traceback
 
 def log_error(msg):
-    #traceback.print_exc()
     # create nice formatted string with tracebacks and all
     dmsg = \
          string.join(traceback.format_exception(sys.exc_type,
