@@ -3,17 +3,15 @@ import vtk
 
 class simplestVTKExample(simpleVTKClassModuleBase):
     """This is the minimum you need to wrap a single VTK object.
+
+    Neat huh?
     """
 
     def __init__(self, moduleManager):
-        theThing = vtk.vtkStripper()
-        simpleVTKClassModuleBase.__init__(self, moduleManager,
-                                          theThing, 'Stripping stuff.')
+        simpleVTKClassModuleBase.__init__(
+            self, moduleManager,
+            vtk.vtkStripper(), 'Stripping polydata.',
+            ('vtkPolyData',), ('Stripped vtkPolyData',))
 
-    def getInputDescriptions(self):
-        return ('vtkPolyData',)
-
-    def getOutputDescriptions(self):
-        return ('Stripped vtkPolyData',)
 
                                           

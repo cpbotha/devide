@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.36 2004/05/18 23:10:00 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.37 2004/05/18 23:18:55 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -549,11 +549,11 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
     """Use this base to make a DeVIDE module that wraps a single VTK
     object.  The state of this module will be saved.
 
-    You only have to define getInputDescriptions() and getOutputDescriptions()
-    and __init__.  
+
     """
     
-    def __init__(self, moduleManager, vtkObjectBinding, progressText):
+    def __init__(self, moduleManager, vtkObjectBinding, progressText,
+                 inputDescriptions, outputDescriptions):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
         pickleVTKObjectsModuleMixin.__init__(self)
@@ -566,6 +566,9 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
             {'Module (self)' : self,
              '%s' % (self._theFilter.GetClassName(),) : self._theFilter})
 
+        self._inputDescriptions = inputDescriptions
+        self._outputDescriptions = outputDescriptions
+
         # we don't have to call configToLogic or syncViewWithLogic, everything
         # should be in sync
 
@@ -574,10 +577,16 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         noConfigModuleMixin.close(self)
         moduleBase.close(self)
 
+    def getOutputDescriptions(self):
+        return self._outputDescriptions
+
     def getOutput(self, idx):
         # this will only every be invoked if your getOutputDescriptions has
         # 1 or more elements
         return self._theFilter.GetOutput()
+
+    def getInputDescriptions(self):
+        return self._inputDescriptions
 
     def setInput(self, idx, inputStream):
         # this will only be called for a certain idx if you've specified that
