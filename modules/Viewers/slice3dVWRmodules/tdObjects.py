@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.9 2004/10/07 16:07:49 cpbotha Exp $
+# $Id: tdObjects.py,v 1.10 2004/10/20 16:41:04 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -1283,8 +1283,9 @@ class tdObjects(s3dcGridMixin):
                                                 vtkBoxWidgetConstrained()
                 bw = objectDict['motionBoxWidget']
                     
-                # we don't want the user to scale, only move and rotate
-                bw.ScalingEnabledOff()
+                # let's switch on scaling for now... (I used to have this off,
+                # but I can't remember exactly why)
+                bw.ScalingEnabledOn()
                 # the balls only confuse us!
                 bw.HandlesOff()
                 # without the balls, the outlines aren't needed either
