@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.11 2004/11/19 15:19:07 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.12 2004/11/19 17:08:05 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -411,12 +411,15 @@ class selectedPoints(s3dcGridMixin):
         ca.SetAttachmentPoint(world)
         ca.SetPosition(25,10)
         ca.BorderOff()
-        ca.SetWidth(0.15)
-        ca.SetHeight(0.02)
+        ca.SetWidth(0.3)
+        ca.SetHeight(0.04)
         #ca.ThreeDimensionalLeaderOff()
+        ca.SetMaximumLeaderGlyphSize(10)
 
         coneSource = vtk.vtkConeSource()
         coneSource.SetResolution(6)
+        # we want the cone's very tip to by at 0,0,0
+        coneSource.SetCenter(- coneSource.GetHeight() / 2.0, 0, 0)
 
         ca.SetLeaderGlyph(coneSource.GetOutput())
 
