@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: PyColourChooserDialog.py,v 1.2 2003/05/03 19:10:33 cpbotha Exp $
+# $Id: PyColourChooserDialog.py,v 1.3 2003/05/03 23:46:12 cpbotha Exp $
 #
 # This python module contains a class to construct a colour chooser dialog
 # using the wxPyColourChooser which is part of wxPython since 2.4.0.something.
@@ -111,7 +111,7 @@ class PyColourChooserDialog(wx.wxDialog):
         buttonSizer.Add(cancelButton, 0, wx.wxALL, 5)        
         buttonSizer.Add(okButton, 0, wx.wxALL, 5)
 
-        wx.wxInitAllImageHandlers()
+	wx.wxInitAllImageHandlers()
         self._pyColourChooser = wxPyColourChooser(self, -1)
 
         mainSizer = wx.wxBoxSizer(wx.wxVERTICAL)

@@ -1,4 +1,4 @@
-# $Id: SwitchColourDialog.py,v 1.1 2003/05/03 23:24:54 cpbotha Exp $
+# $Id: SwitchColourDialog.py,v 1.2 2003/05/03 23:46:12 cpbotha Exp $
 #
 # This very simple module enables one to make use of a "ColourDialog" class
 # which on Windows maps to the native wxColourDialog and on all other
@@ -25,5 +25,6 @@ import sys
 if sys.platform.startswith('win'):
     ColourDialog = wx.wxColourDialog
 else:
-    ColourDialog = PyColourChooserDialog
+    ColourDialog = PyColourChooserDialog.PyColourChooserDialog
+
 
