@@ -68,6 +68,12 @@ class moduleManager:
 	# make first scan of available modules
 	self.scanModules()
 
+        # this is a list of modules that have the ability to start a network
+        # executing all by themselves and usually do... when we break down
+        # a network, we should take these out first.  when we build a network
+        # we should put them down last
+        self.dangerousConsumerModules = ['slice3dVWR']
+
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inVTKProgressCallback = mutex.mutex()

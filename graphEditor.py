@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.24 2003/06/06 13:36:08 cpbotha Exp $
+# $Id: graphEditor.py,v 1.25 2003/06/06 16:08:31 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -37,6 +37,9 @@ class graphEditor:
 
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
                    lambda e, s=self: s.fill_module_tree())
+
+        EVT_MENU(self._graphFrame, self._graphFrame.fileNewId,
+                 self._fileNewCallback)
 
         EVT_MENU(self._graphFrame, self._graphFrame.fileExitId,
                  self._fileExitCallback)
@@ -274,6 +277,27 @@ class graphEditor:
 
             self._graphFrame.canvas.Refresh()
 
+    def clearAllGlyphsFromCanvas(self):
+        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+
+        mm = self._dscas3_app.getModuleManager()
+
+        # we take care of the "difficult" modules first
+        safeGlyphs = []
+        for glyph in allGlyphs:
+            if glyph.moduleInstance.__class__.__name__ \
+               in mm.dangerousConsumerModules:
+                self._deleteModule(glyph)
+            else:
+                safeGlyphs.append(glyph)
+
+        # and then the rest
+        for glyph in safeGlyphs:
+            # delete each module, do NOT refresh canvas
+            self._deleteModule(glyph, False)
+
+        # only here!
+        self._graphFrame.canvas.Refresh()
 
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
         l1 = wxpc.coLine(fromObject, fromOutputIdx,
@@ -301,6 +325,62 @@ class graphEditor:
 
         except Exception, e:
             genUtils.logError('Could not connect modules: %s' % (str(e)))
+
+    def loadNetwork(self, filename, position=(-1,-1)):
+        print "Loading from %s" % (filename)
+
+        f = None
+        try:
+            # load the stream
+            f = open(filename, 'r')
+            stream = f.read()
+        except Exception, e:
+            genUtils.logError('Could not load network from %s: %s' % \
+                              (filename,str(e)))
+            if f:
+                f.close()
+            return
+
+        f.close()
+
+        try:
+            # unpickle it
+            tup = cPickle.loads(stream)
+            pmsDict, connectionList, glyphPosDict = tup
+        except Exception, e:
+            genUtils.logError('Could not interpret network from %s: %s' % \
+                              (filename,str(e)))
+            return
+
+
+        # get the module manager to deserialise
+        mm = self._dscas3_app.getModuleManager()
+        newModulesDict, newConnections = mm.deserialiseModuleInstances(
+            pmsDict, connectionList)
+            
+        # newModulesDict and newConnections contain the modules and
+        # connections which were _actually_ realised... let's draw
+        # glyphs!
+
+        # store the new glyphs in a dictionary keyed on OLD pickled
+        # instanceName so that we can connect them up in the next step
+        newGlyphDict = {} 
+        for newModulePickledName in newModulesDict.keys():
+            position = glyphPosDict[newModulePickledName]
+            moduleInstance = newModulesDict[newModulePickledName]
+            newGlyph = self.createGlyph(
+                position[0], position[1],
+                moduleInstance.__class__.__name__,
+                moduleInstance)
+            newGlyphDict[newModulePickledName] = newGlyph
+
+        # now make lines for all the existing connections
+        for connection in connectionList:
+            sGlyph = newGlyphDict[connection.sourceInstanceName]
+            tGlyph = newGlyphDict[connection.targetInstanceName]
+            self._createLine(sGlyph, connection.outputIdx,
+                             tGlyph, connection.inputIdx)
+        
                                          
 
     def updatePortInfoStatusBar(self, currentGlyph, currentPort):
@@ -338,6 +418,9 @@ class graphEditor:
     def _fileExitCallback(self, event):
         self._dscas3_app.quit()
 
+    def _fileNewCallback(self, event):
+        self.clearAllGlyphsFromCanvas()
+
     def _fileOpenCallback(self, event):
         filename = wxFileSelector(
             "Choose DSCAS3 network to load",
@@ -345,47 +428,8 @@ class graphEditor:
             "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
         
         if filename:
-            print "Loading from %s" % (filename)
-
-            # load the stream
-            f = open(filename, 'r')
-            stream = f.read()
-
-            # unpickle it
-            tup = cPickle.loads(stream)
-            print len(tup)
-            pmsDict, connectionList, glyphDict = tup
-
-            f.close()
-
-            # get the module manager to deserialise
-            mm = self._dscas3_app.getModuleManager()
-            newModulesDict, newConnections = mm.deserialiseModuleInstances(
-                pmsDict, connectionList)
-            
-            # newModulesDict and newConnections contain the modules and
-            # connections which were _actually_ realised... let's draw
-            # glyphs!
-
-            # store the new glyphs in a dictionary keyed on OLD pickled
-            # instanceName so that we can connect them up in the next step
-            newGlyphDict = {} 
-            for newModulePickledName in newModulesDict.keys():
-                position = glyphDict[newModulePickledName]
-                moduleInstance = newModulesDict[newModulePickledName]
-                newGlyph = self.createGlyph(
-                    position[0], position[1],
-                    moduleInstance.__class__.__name__,
-                    moduleInstance)
-                newGlyphDict[newModulePickledName] = newGlyph
-
-            # now make lines for all the existing connections
-            for connection in connectionList:
-                sGlyph = newGlyphDict[connection.sourceInstanceName]
-                tGlyph = newGlyphDict[connection.targetInstanceName]
-                self._createLine(sGlyph, connection.outputIdx,
-                                 tGlyph, connection.inputIdx)
-
+            self.clearAllGlyphsFromCanvas()
+            self.loadNetwork(filename)
 
     def _fileSaveCallback(self, event):
         filename = wxFileSelector(
@@ -412,14 +456,14 @@ class graphEditor:
                            if mm.getInstanceName(glyph.moduleInstance)\
                            in savedInstanceNames]
             
-            glyphDict = {}
+            glyphPosDict = {}
             for savedGlyph in savedGlyphs:
                 instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
-                glyphDict[instanceName] = savedGlyph.getPosition()
+                glyphPosDict[instanceName] = savedGlyph.getPosition()
                 
-            
             # change the serialised moduleInstances to a pickled stream
-            stream = cPickle.dumps((pmsDict, connectionList, glyphDict), True)
+            stream = cPickle.dumps(\
+                     (pmsDict, connectionList, glyphPosDict), True)
 
             # FIXME: check for file errors, check for overwriting!
             f = open(filename, 'w')
@@ -505,7 +549,7 @@ class graphEditor:
             del_id = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
             EVT_MENU(self._graphFrame.canvas, del_id,
-                     lambda e: self._deleteModule(module, glyph))
+                     lambda e: self._deleteModule(glyph))
 
             # popup that menu!
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
@@ -762,7 +806,7 @@ class graphEditor:
         mm =self._dscas3_app.getModuleManager()
         mm.viewModule(module)
 
-    def _deleteModule(self, module, glyph):
+    def _deleteModule(self, glyph, refreshCanvas=True):
         try:
             # first we disconnect all consumers
             consumerList = []
@@ -782,7 +826,7 @@ class graphEditor:
             mm = self._dscas3_app.getModuleManager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
-            mm.deleteModule(module)
+            mm.deleteModule(glyph.moduleInstance)
 
             canvas = glyph.getCanvas()
             # remove it from the canvas
@@ -791,7 +835,8 @@ class graphEditor:
             glyph.close()
             
             # after all that work, we deserve a redraw
-            canvas.Refresh()
+            if refreshCanvas:
+                canvas.Refresh()
 
         except Exception, e:
             genUtils.logError('Could not delete module: %s' % (str(e)))
