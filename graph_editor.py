@@ -1,6 +1,6 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.36 2003/01/29 18:01:27 cpbotha Exp $
+# $Id: graph_editor.py,v 1.37 2003/02/01 02:17:47 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -580,12 +580,15 @@ class graph_editor:
 
     def del_shape_cb(self, glyph):
         try:
-            # delete all incoming connections
-            for ishape in glyph.get_main_shape().get_input_shapes():
-                self.disconnect_glyphs_by_ishape(ishape)
+            # it is important that we first delete all dependants and
+            # then suppliers of the glyph
+            
             # delete all outgoing connections
             for oshape in glyph.get_main_shape().get_output_shapes():
                 self.disconnect_glyphs_by_oshape(oshape)
+            # delete all incoming connections
+            for ishape in glyph.get_main_shape().get_input_shapes():
+                self.disconnect_glyphs_by_ishape(ishape)
             # we're going to destroy the glyph, make sure we keep tabs
             module_instance = glyph.get_module_instance()
             glyph.close()

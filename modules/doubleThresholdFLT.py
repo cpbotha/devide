@@ -1,19 +1,18 @@
 import genUtils
-from module_base import module_base
-import module_utils
+from moduleBase import moduleBase
+import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class doubleThresholdFLT(module_base):
+class doubleThresholdFLT(moduleBase):
 
-    def __init__(self, module_manager):
+    def __init__(self, moduleManager):
 
         # call parent constructor
-        module_base.__init__(self, module_manager)
-
-        self._config = None
+        moduleBase.__init__(self, moduleManager)
 
         self._imageThreshold = vtk.vtkImageThreshold()
+        self._imageThreshold.ThresholdBetween(1250, 2500)
 
         self._outputTypes = {'Double': 'VTK_DOUBLE',
                              'Float' : 'VTK_FLOAT',
@@ -29,12 +28,14 @@ class doubleThresholdFLT(module_base):
 
         self._viewFrame = None
         self._createViewFrame()
+        self.syncViewWithLogic()
         self._viewFrame.Show(1)
         
     def close(self):
+        print "doubleThresholdFLT.close()"
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.set_input(0, None)
+        self.setInput(0, None)
         # take out our view interface
         self._viewFrame.Destroy()
         # get rid of our reference
@@ -43,8 +44,13 @@ class doubleThresholdFLT(module_base):
     def getInputDescriptions(self):
 	return ('vtkImageData',)
     
-    def setInput(self, idx, input_stream):
-        self._imageThreshold.SetInput(input_stream)
+    def setInput(self, idx, inputStream):
+        self._imageThreshold.SetInput(inputStream)
+        if not inputStream is None:
+            # get scalar bounds
+            minv, maxv = inputStream.GetScalarRange()
+            self._viewFrame.lowerThresholdSlider.SetRange(minv, maxv)
+            self._viewFrame.upperThresholdSlider.SetRange(minv, maxv)
     
     def getOutputDescriptions(self):
 	return ('vtkImageData',)
@@ -63,21 +69,25 @@ class doubleThresholdFLT(module_base):
 
     def configToLogic(self):
         self._imageThreshold.ThresholdBetween(self._config.lt, self._config.ut)
+        # SetInValue HAS to be called before SetReplaceIn(), as SetInValue()
+        # always toggles SetReplaceIn() to ON
+        self._imageThreshold.SetInValue(self._config.iv)        
         self._imageThreshold.SetReplaceIn(self._config.ri)
-        self._imageThreshold.SetInValue(self._config.iv)
-        self._imageThreshold.SetReplaceOut(self._config.ro)
+        # SetOutValue HAS to be called before SetReplaceOut(), same reason
+        # as above
         self._imageThreshold.SetOutValue(self._config.ov)
+        self._imageThreshold.SetReplaceOut(self._config.ro)
         self._imageThreshold.SetOutputScalarType(self._config.os)
 
     def viewToConfig(self):
-        self._config.lt = self._viewFrame.lowerTresholdSlider.GetValue()
+        self._config.lt = self._viewFrame.lowerThresholdSlider.GetValue()
         self._config.ut = self._viewFrame.upperThresholdSlider.GetValue()
         self._config.ri = self._viewFrame.replaceInCheckBox.GetValue()
-        self._config.iv = self._viewFrame.replaceInText.GetValue()
+        self._config.iv = float(self._viewFrame.replaceInText.GetValue())
         self._config.ro = self._viewFrame.replaceOutCheckBox.GetValue()
-        self._config.ov = self._viewFrame.replaceOutText.GetValue()
+        self._config.ov = float(self._viewFrame.replaceOutText.GetValue())
 
-        ocString = self._viewFrame.objectChoice.GetStringSelection()
+        ocString = self._viewFrame.outputDataTypeChoice.GetStringSelection()
         if len(ocString) == 0:
             genUtils.logError("Impossible error with outputType choice in "
                               "doubleThresholdFLT.py.  Picking sane default.")
@@ -104,36 +114,52 @@ class doubleThresholdFLT(module_base):
                 self._config.os = -1
 
     def configToView(self):
-        # fixme: continue here
-        pass
+        self._viewFrame.lowerThresholdSlider.SetValue(self._config.lt)
+        self._viewFrame.upperThresholdSlider.SetValue(self._config.ut)
+        print "calling SetValue(%d)" % (self._config.ri)
+        self._viewFrame.replaceInCheckBox.SetValue(self._config.ri)
+        self._viewFrame.replaceInText.SetValue(str(self._config.iv))
+        self._viewFrame.replaceOutCheckBox.SetValue(self._config.ro)
+        self._viewFrame.replaceOutText.SetValue(str(self._config.ov))
+
+        for key in self._outputTypes.keys():
+            symbolicOutputType = self._outputTypes[key]
+            if hasattr(vtk, str(symbolicOutputType)):
+                numericOutputType = getattr(vtk, symbolicOutputType)
+            else:
+                numericOutputType = -1
+                
+            if self._config.os == numericOutputType:
+                break
+
+        self._viewFrame.outputDataTypeChoice.SetStringSelection(key)
 
     def executeModule(self):
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
         # your module - you could do this in __init__ as well, it seems
         # neater here though
-        self._writer.SetProgressText('Writing vtk Structured Points data')
-        mm = self._module_manager
-        self._writer.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._writer))
+        self._imageThreshold.SetProgressText('Thresholding data')
+        mm = self._moduleManager
+        self._imageThreshold.SetProgressMethod(lambda s=self, mm=mm:
+                                               mm.vtk_progress_cb(
+            s._imageThreshold))
         
-        if len(self._writer.GetFileName()):
-            self._writer.Write()
+        self._imageThreshold.Update()
 
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
         # pop up.  you should do this in all your modules right after you
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
-        self._module_manager.vtk_poll_error()
+        self._moduleManager.vtk_poll_error()
 
-        mm.setProgress(100, 'DONE writing vtk Structured Points data')
+        mm.setProgress(100, 'DONE thresholding data')
 
     def view(self, parent_window=None):
-	# first make sure that our variables agree with the stuff that
-        # we're configuring
-	self.sync_config()
-        self._viewFrame.Show(true)
+        # if the window was visible already. just raise it
+        if not self._viewFrame.Show(true):
+            self._viewFrame.Raise()
 
     def _createViewFrame(self):
 
@@ -142,7 +168,7 @@ class doubleThresholdFLT(module_base):
         reload(modules.resources.python.doubleThresholdFLTFrame)
 
         # find our parent window and instantiate the frame
-        pw = self._module_manager.get_module_view_parent_window()
+        pw = self._moduleManager.get_module_view_parent_window()
         self._viewFrame = modules.resources.python.doubleThresholdFLTFrame.\
                           doubleThresholdFLTFrame(pw, -1, 'dummy')
 
@@ -151,7 +177,7 @@ class doubleThresholdFLT(module_base):
                   lambda e, s=self: s._viewFrame.Show(false))
 
         # default binding for the buttons at the bottom
-        module_utils.bind_CSAEO2(self, self._viewFrame)        
+        moduleUtils.bindCSAEO(self, self._viewFrame)        
 
         # finish setting up the output datatype choice
         self._viewFrame.outputDataTypeChoice.Clear()

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.11 2003/01/29 12:09:27 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.12 2003/02/01 02:17:47 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -40,7 +40,8 @@ class slice3d_vwr(moduleBase,
         moduleBase.__init__(self, moduleManager)
         self._num_inputs = 5
         # use list comprehension to create list keeping track of inputs
-        self._inputs = [{'Connected' : None, 'vtkActor' : None}
+        self._inputs = [{'Connected' : None, 'observerID' : -1,
+                         'vtkActor' : None}
                        for i in range(self._num_inputs)]
         # then the window containing the renderwindows
         self._view_frame = None
@@ -160,7 +161,14 @@ class slice3d_vwr(moduleBase,
 
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
                 self._inputs[idx]['Connected'] = None
-                if self._inputs[idx]['vtkActor'] != None:
+                actor = self._inputs[idx]['vtkActor']
+                if actor != None:
+                    if self._inputs[idx]['observerID'] >= 0:
+                        # remove the observer (if we had one)
+                        actor.GetMapper().GetInput().RemoveObserver(
+                            self._inputs[idx]['observerID'])
+                        self._inputs[idx]['observerID'] = -1
+
                     self._threedRenderer.RemoveActor(self._inputs[idx][
                         'vtkActor'])
                     self._inputs[idx]['vtkActor'] = None
@@ -168,11 +176,17 @@ class slice3d_vwr(moduleBase,
             elif self._inputs[idx]['Connected'] == 'vtkImageData':
                 self._inputs[idx]['Connected'] = None
 
+                # remove our observer
+                if self._inputs[idx]['observerID'] >= 0:
+                    self._ipws[0].GetInput().RemoveObserver(
+                        self._inputs[idx]['observerID'])
+                    self._inputs[idx]['observerID'] = -1
+                
                 # by definition, we only have one set of vtkImagePlaneWidgets
                 # let's disconnect them
                 for ipw in self._ipws:
+                    ipw.Off()                    
                     ipw.SetInput(None)
-                    ipw.Off()
                     ipw.SetInteractor(None)
 
                 self._threedRenderer.RemoveActor(self._outline_actor)
@@ -201,6 +215,12 @@ class slice3d_vwr(moduleBase,
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
                 self._threedRenderer.ResetCamera()
                 self._view_frame.threedRWI.Render()
+
+                # connect an event handler to the data
+                oid = input_stream.AddObserver('ModifiedEvent',
+                                               self.inputModifiedCallback)
+                self._inputs[idx]['observerID'] = oid
+                
                 
             elif input_stream.IsA('vtkImageData'):
 
@@ -254,6 +274,12 @@ class slice3d_vwr(moduleBase,
                 self._outline_actor.PickableOff()
                 self._threedRenderer.AddActor(self._cube_axes_actor2d)
                 self._cube_axes_actor2d.PickableOff()
+
+                # connect an event handler to the data
+                oid = input_stream.AddObserver('ModifiedEvent',
+                                               self.inputModifiedCallback)
+                self._inputs[idx]['observerID'] = oid
+                
 
                 self._reset()
 
@@ -858,7 +884,9 @@ class slice3d_vwr(moduleBase,
         self._extractVOI.SetVOI(self._currentVOI)
 
 
-
+    def inputModifiedCallback(self, o, e):
+        print "DATA MODIFIED"
+        self._view_frame.threedRWI.Render()
         
 
     

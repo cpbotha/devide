@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.22 2003/01/28 22:38:34 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.23 2003/02/01 02:17:47 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -31,7 +31,9 @@ class vtk_hdf_rdr(moduleBase,
                               'Select a filename',
                               'HDF data (*.hdf)|*.hdf|All files (*)|*',
                               {'vtkHDFVolumeReader': self._reader})
-        
+
+        # and make sure the GUI agrees with the logic
+        self.syncViewWithLogic()
 
     def close(self):
         # call close of this specific mixin
@@ -96,8 +98,7 @@ class vtk_hdf_rdr(moduleBase,
         mm.setProgress(100, 'DONE reading HDF data')
             
     def view(self, parent_window=None):
-        # first make sure that our variables agree with the stuff that
-        # we're configuring
-        self.syncViewWithLogic()
-        self._viewFrame.Show(true)
+        # if the window is already visible, raise it
+        if not self._viewFrame.Show(true):
+            self._viewFrame.Raise()
         
