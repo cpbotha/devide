@@ -1,4 +1,4 @@
-# $Id: cannyEdgeDetection.py,v 1.1 2004/03/22 13:56:01 cpbotha Exp $
+# $Id: cannyEdgeDetection.py,v 1.2 2004/09/13 20:22:33 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -11,14 +11,14 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
     """Performs 3D Canny edge detection on input image.
 
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
         self._config.variance = (0.7, 0.7, 0.7)
-        self._config.maximumError = (0.1, 0.1, 0.1)
+        self._config.maximumError = (0.01, 0.01, 0.01)
         self._config.threshold = 0.0
         self._config.outsideValue = 0.0
 
