@@ -1,9 +1,10 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.22 2002/04/26 21:01:58 cpbotha Exp $
+# $Id: graph_editor.py,v 1.23 2002/04/26 22:32:54 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
 from wxPython.ogl import *
+import gen_utils
 import string
 import traceback
 
@@ -123,6 +124,20 @@ class ge_glyph_shape(wxFRectangleShape):
             oshape.dont_move()
             self._output_shapes.append(oshape)
 
+    def close(self):
+        dc = wxClientDC(self.GetCanvas())
+        self.GetCanvas().PrepareDC(dc)
+        
+        for shape in self._input_shapes + self._output_shapes + [self]:
+            shape.Erase(dc)
+            self.GetCanvas().RemoveShape(shape)
+
+    def get_input_shapes(self):
+        return self._input_shapes
+
+    def get_output_shapes(self):
+        return self._output_shapes
+
     def find_input_idx(self, io_shape):
         try:
             return self._input_shapes.index(io_shape)
@@ -174,7 +189,8 @@ class ge_glyph_shape(wxFRectangleShape):
 
     def OnRightClick(self, x, y, keys, attachment):
         # see studio/shapes.cpp: csEvtHandler::OnRightClick
-        print "here we would make a popup menu with delete and props"
+        ge = self.GetCanvas().get_graph_editor()
+        ge.mshape_rightclick_cb(x, y, keys, attachment, self._glyph)
         
         
         
@@ -189,6 +205,17 @@ class ge_glyph:
         self._shape = ge_glyph_shape(shape_canvas, self, x, y,
                                      len(input_descrs), len(output_descrs))
 
+    def close(self):
+        """This method will remove all traces of the glyph from existence.
+
+        Important note: we did not create the module instance, so we will
+        NOT destroy it.  Also, we're not responsible for the links.  So,
+        destroy the module instance, disconnect all links to and from it,
+        then call this close method.  Okay?
+        """
+        self._shape.close()
+        
+
     def get_name(self):
         return self._name
 
@@ -197,7 +224,6 @@ class ge_glyph:
 
     def get_module_instance(self):
         return self._module_instance
-        
 
 # ----------------------------------------------------------------------------
 class ge_shape_canvas(wxShapeCanvas):
@@ -333,22 +359,7 @@ class graph_editor:
                 from_io_shape.dont_move()
                 to_io_shape.dont_move()
             except Exception, e:
-                #traceback.print_exc()
-                # create nice formatted string with tracebacks and all
-                dmsg = \
-                     string.join(traceback.format_exception(sys.exc_type,
-                                                            sys.exc_value,
-                                                            sys.exc_traceback))
-                # we can't disable the timestamp yet
-                #wxLog_SetTimestamp()
-                # set the detail message
-                wxLogError(dmsg)
-                # then the most recent
-                wxLogError('Could not connect modules: %s' % (str(e)))
-                # and flush... the last message will be the actual error
-                # message, what we did before will add to it to become the
-                # detail message
-                wxLog_FlushActive()
+                gen_utils.log_error('Could not connect modules: %s' % (str(e)))
                 
     def disconnect_glyphs_by_ishape(self, ishape):
         if len(ishape.GetLines()) > 0:
@@ -376,13 +387,13 @@ class graph_editor:
                 # remove it from the canvas (actually the diagram)
                 self._shape_canvas.RemoveShape(the_line)
             except Exception, e:
-                dmsg = \
-                     string.join(traceback.format_exception(sys.exc_type,
-                                                            sys.exc_value,
-                                                            sys.exc_traceback))
-                wxLogError(dmsg)
-                wxLogError('Could not disconnect modules: %s' % (str(e)))
-                wxLog_FlushActive()                
+                gen_utils.log_error('Could not disconnect modules: %s' \
+                                    % (str(e)))
+
+    def disconnect_glyphs_by_oshape(self, oshape):
+        # iterate through all the lines emanating from oshape
+        for line in oshape.GetLines():
+            self.disconnect_glyphs_by_ishape(line.GetTo())
 
     def redraw_canvas(self):
         dc = wxClientDC(self._shape_canvas)
@@ -464,7 +475,7 @@ class graph_editor:
                     # input shape that hasn't been connected to yet:
                     # this means that we must break the old connection
                     # and create a new one
-                    from_shape = io_shape.GetLines()[0].GetFrom()                    
+                    from_shape = io_shape.GetLines()[0].GetFrom()
                     self.disconnect_glyphs_by_ishape(io_shape)
                     self.connect_glyphs_by_shapes(from_shape, f_ret[0])
                 elif f_ret and f_ret[0] == io_shape:
@@ -492,6 +503,34 @@ class graph_editor:
                 # by definition, this can be only one line
                 ltn = io_shape.GetLines()[0]
                 self.draw_preview_line(ltn.GetFrom(), x, y)
+
+    def mshape_rightclick_cb(self, x, y, keys, attachment, glyph):
+        pmenu = wxMenu(glyph.get_name())
+        del_id = wxNewId()
+        pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
+        EVT_MENU(self._shape_canvas, del_id,
+                 lambda e, s=self, glyph=glyph: s.del_shape_cb(glyph))
+        self._shape_canvas.PopupMenu(pmenu, wxPoint(x, y))
+
+    def del_shape_cb(self, glyph):
+        try:
+            # delete all incoming connections
+            for ishape in glyph.get_main_shape().get_input_shapes():
+                self.disconnect_glyphs_by_ishape(ishape)
+            # delete all outgoing connections
+            for oshape in glyph.get_main_shape().get_output_shapes():
+                self.disconnect_glyphs_by_oshape(oshape)
+            # we're going to destroy the glyph, make sure we keep tabs
+            module_instance = glyph.get_module_instance()
+            glyph.close()
+            # if all that worked, we can nuke the module
+            mm = self._dscas3_app.get_module_manager()
+            mm.delete_module(module_instance)
+
+        except Exception, e:
+            gen_utils.log_error('Could delete module: %s' % (str(e)))
+        
+                         
             
             
 
