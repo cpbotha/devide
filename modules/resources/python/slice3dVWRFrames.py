@@ -123,10 +123,12 @@ class controlFrame(wxFrame):
         self.button_4_1 = wxButton(self.panel_3, self.objectContourButtonId , "Contour")
         self.objectMotionButtonId  =  wxNewId()
         self.button_11_1 = wxButton(self.panel_3, self.objectMotionButtonId , "Motion")
-        self.objectAttachAxisId  =  wxNewId()
-        self.button_3 = wxButton(self.panel_3, self.objectAttachAxisId , "Attach Axis")
+        self.objectAttachAxisButtonId  =  wxNewId()
+        self.button_3 = wxButton(self.panel_3, self.objectAttachAxisButtonId , "Attach Axis")
         self.objectAxisToSliceButtonId  =  wxNewId()
         self.button_13_1 = wxButton(self.panel_3, self.objectAxisToSliceButtonId , "Axis to Slice")
+        self.objectPlaneLockButtonId  =  wxNewId()
+        self.button_4 = wxButton(self.panel_3, self.objectPlaneLockButtonId , "Plane Lock")
         self.voiEnabledCheckBoxId  =  wxNewId()
         self.voiEnabledCheckBox = wxCheckBox(self.panel_3, self.voiEnabledCheckBoxId , "VOI extraction:")
         self.label_7 = wxStaticText(self.panel_3, -1, "Bounds")
@@ -176,6 +178,10 @@ class controlFrame(wxFrame):
         self.objectsListGrid.SetColLabelValue(3, "Contour")
         self.objectsListGrid.SetColLabelValue(4, "Motion")
         self.objectsListGrid.SetSize((500, 100))
+        self.button_11_1.SetToolTipString("(De)Activate motion for the selected object(s).")
+        self.button_3.SetToolTipString("Associate an object axis (defined by two selected points) with the selected object(s).")
+        self.button_13_1.SetToolTipString("Move the selected objects so that their axes are on the selected planes.")
+        self.button_4.SetToolTipString("Constrain motion of the selected objects to the selected planes.")
         # end wxGlade
 
     def __do_layout(self):
@@ -240,6 +246,7 @@ class controlFrame(wxFrame):
         objectsButtons2Sizer.Add(self.button_11_1, 0, wxRIGHT, 4)
         objectsButtons2Sizer.Add(self.button_3, 0, wxRIGHT, 4)
         objectsButtons2Sizer.Add(self.button_13_1, 0, wxRIGHT, 4)
+        objectsButtons2Sizer.Add(self.button_4, 0, wxRIGHT, 4)
         sizer_19.Add(objectsButtons2Sizer, 0, wxALL, 4)
         sizer_3.Add(sizer_19, 0, wxLEFT|wxRIGHT|wxTOP, 7)
         sizer_21.Add(self.voiEnabledCheckBox, 0, wxALIGN_CENTER_VERTICAL, 0)

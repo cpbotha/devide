@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.22 2003/08/07 22:42:40 cpbotha Exp $
+# $Id: tdObjects.py,v 1.23 2003/08/08 15:05:27 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -47,6 +47,106 @@ class tdObjects:
         self._slice3dVWR = None
         self._grid.ClearGrid()
         self._grid = None
+
+    def addObject(self, tdObject):
+        """Takes care of all the administration of adding a new 3-d object
+        to the list and updating it in the list control.
+        """
+
+        if tdObject not in self._tdObjectsDict:
+
+            # we get to pick a colour and a name
+            colourName = self._objectColours[
+                self._objectId % len(self._objectColours)]
+            # objectName HAS TO BE unique!
+            objectName = "%s%d" % ('obj', self._objectId)
+            self._objectId += 1
+
+            # create a colour as well
+            colour = wx.TheColourDatabase.FindColour(colourName).asTuple()
+            # normalise
+            nColour = tuple([c / 255.0 for c in colour])
+
+            # now actually create the necessary thingies and add the object
+            # to the scene
+            if hasattr(tdObject, 'GetClassName') and \
+               callable(tdObject.GetClassName):
+
+                if tdObject.GetClassName() == 'vtkVolume':
+                    self._slice3dVWR._threedRenderer.AddVolume(tdObject)
+                    self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
+                                                     'type' : 'vtkVolume',
+                                                     'observerId' : None}
+
+                elif tdObject.GetClassName() == 'vtkPolyData':
+                    mapper = vtk.vtkPolyDataMapper()
+                    mapper.SetInput(tdObject)
+                    actor = vtk.vtkActor()
+                    actor.SetMapper(mapper)
+                    self._slice3dVWR._threedRenderer.AddActor(actor)
+                    self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
+                                                     'type' : 'vtkPolyData',
+                                                     'vtkActor' : actor,
+                                                     'observerId' : None}
+
+                    # to get the name of the scalars we need to do this.
+                    tdObject.Update()
+                
+                    # now some special case handling
+                    if tdObject.GetPointData().GetScalars():
+                        sname = tdObject.GetPointData().GetScalars().GetName()
+                    else:
+                        sname = None
+                
+                    if sname and sname.lower().find("curvature") >= 0:
+                        # if the active scalars have "curvature" somewhere in
+                        # their name, activate flat shading and scalar vis
+                        property = actor.GetProperty()
+                        property.SetInterpolationToFlat()
+                        mapper.ScalarVisibilityOn()
+                    
+                    else:
+                        # the user can switch this back on if she really
+                        # wants it
+                        # we switch it off as we mostly work with isosurfaces
+                        mapper.ScalarVisibilityOff()
+                
+                    # connect an event handler to the data
+                    source = tdObject.GetSource()
+                    if source:
+                        oid = source.AddObserver(
+                            'EndEvent',
+                            self._tdObjectModifiedCallback)
+                        self._tdObjectsDict[tdObject]['observerId'] = oid
+
+                else:
+                    raise Exception, 'Non-handled tdObject type'
+
+            else:
+                # the object has no GetClassName that's callable
+                raise Exception, 'tdObject has no GetClassName()'
+
+            nrGridRows = self._grid.GetNumberRows()
+            self._grid.AppendRows()
+            self._grid.SetCellValue(nrGridRows, self._gridNameCol, objectName)
+            
+            # store the name
+            self._tdObjectsDict[tdObject]['objectName'] = objectName
+            # and store the colour
+            self._setObjectColour(tdObject, nColour)
+            # and the visibility
+            self._setObjectVisibility(tdObject, True)
+            # and the contouring
+            self._setObjectContouring(tdObject, False)
+            # and the motion
+            self._setObjectMotion(tdObject, False)
+
+            self._slice3dVWR._threedRenderer.ResetCamera()
+            self._slice3dVWR.render3D()
+            
+        # ends 
+        else:
+            raise Exception, 'Attempt to add same object twice.'
 
     def _attachAxis(self, sObject, twoPoints):
         """Associate the axis defined by the two world points with the
@@ -210,11 +310,14 @@ class tdObjects:
         wx.EVT_BUTTON(controlFrame, controlFrame.objectMotionButtonId,
                       self._handlerObjectMotion)
 
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectAttachAxisId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectAttachAxisButtonId,
                       self._handlerObjectAttachAxis)
 
         wx.EVT_BUTTON(controlFrame, controlFrame.objectAxisToSliceButtonId,
                       self._handlerObjectAxisToSlice)
+
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectPlaneLockButtonId,
+                      self._handlerObjectPlaneLock)
 
     def _detachAxis(self, tdObject):
         """Remove any object axis-related metadata and actors if tdObject
@@ -229,6 +332,96 @@ class tdObjects:
         except KeyError:
             # this means the tdObject had no axis - EAFP! :)
             pass
+
+    def findGridRowByName(self, objectName):
+        nrGridRows = self._grid.GetNumberRows()
+        rowFound = False
+        row = 0
+
+        while not rowFound and row < nrGridRows:
+            value = self._grid.GetCellValue(row, self._gridNameCol)
+            rowFound = (value == objectName)
+            row += 1
+
+        if rowFound:
+            # prepare and return the row
+            row -= 1
+            return row
+        
+        else:
+            return -1
+
+    def findObjectByProp(self, prop):
+        """Find the tdObject corresponding to prop.  Prop can be the vtkActor
+        corresponding with a vtkPolyData tdObject or a vtkVolume tdObject.
+        Whatever the case may be, this will return something that is a valid
+        key in the tdObjectsDict or None
+        """
+
+        try:
+            # this will succeed if prop is a vtkVolume
+            return self._tdObjectsDict[prop]
+        except KeyError:
+            #
+            for objectDict in self._tdObjectsDict.values():
+                if objectDict['vtkActor'] == prop:
+                    return objectDict['tdObject']
+
+        return None
+        
+
+    def findObjectsByNames(self, objectNames):
+        """Given an objectName, return a tdObject binding.
+        """
+        
+        dictItems = self._tdObjectsDict.items()
+        dictLen = len(dictItems)
+
+        objectFound = False
+        itemsIdx = 0
+
+        while not objectFound and itemsIdx < dictLen:
+            objectFound = objectName == dictItems[itemsIdx][1]['objectName']
+            itemsIdx += 1
+
+        if objectFound:
+            itemsIdx -= 1
+            return dictItems[itemsIdx][0]
+        else:
+            return None
+
+    def findObjectsByNames(self, objectNames):
+        """Given a sequence of object names, return a sequence with bindings
+        to all the found objects.  There could be less objects than names.
+        """
+
+        dictItems = self._tdObjectsDict.items()
+        dictLen = len(dictItems)
+
+        itemsIdx = 0
+        foundObjects = []
+
+        while itemsIdx < dictLen:
+            if dictItems[itemsIdx][1]['objectName'] in objectNames:
+                foundObjects.append(dictItems[itemsIdx][0])
+
+            itemsIdx += 1
+
+        return foundObjects
+
+    def findPropByObject(self, tdObject):
+        """Given a tdObject, return the corresponding prop, which could
+        be a vtkActor or a vtkVolume.
+        """
+
+        t = self._tdObjectsDict[tdObject]['type']
+        if t == 'vtkVolume':
+            return tdObject
+        if t == 'vtkPolyData':
+            return self._tdObjectsDict[tdObject]['vtkActor']
+        else:
+            return KeyError
+        
 
     def getPickableProps(self):
         return [o['vtkActor'] for o in self._tdObjectsDict.values()
@@ -399,6 +592,44 @@ class tdObjects:
         if sObjects:
             self._slice3dVWR.render3D()
 
+    def _handlerObjectPlaneLock(self, event):
+        """Lock the selected objects to the selected planes.  This will
+        constrain future motion to the planes as they are currently defined.
+        If no planes are selected, the system will lift the locking.
+        """
+
+        sObjects = self._getSelectedObjects()
+        sSliceDirections = self._slice3dVWR.sliceDirections.\
+                           getSelectedSliceDirections()
+
+        if sObjects and sSliceDirections:
+            for sObject in sObjects:
+                # first unlock from any previous locks
+                self._unlockObjectFromPlanes(sObject)
+                for sliceDirection in sSliceDirections:
+                    self._lockObjectToPlane(sObject, sliceDirection)
+
+        elif sObjects:
+            md = wx.MessageDialog(
+                self._slice3dVWR.controlFrame,
+                "Are you sure you want to UNLOCK the selected objects?",
+                "Confirm Object Unlock",
+                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+            
+            if md.ShowModal() == wx.ID_YES:
+                for sObject in sObjects:
+                    self._unlockObjectFromPlanes(sObject)
+
+        else:
+            md = wx.MessageDialog(
+                self._slice3dVWR.controlFrame,
+                "To lock an object to plane, you have to select at least "
+                "one object and one slice.",
+                "Information",
+                wx.OK | wx.ICON_INFORMATION)
+            
+            md.ShowModal()
+
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
         """
@@ -425,196 +656,24 @@ class tdObjects:
                 self._grid.SetColSize(colIdx, size)
 
         # make sure we have no rows again...
-        self._grid.DeleteRows(0, self._grid.GetNumberRows())            
-        
-    def addObject(self, tdObject):
-        """Takes care of all the administration of adding a new 3-d object
-        to the list and updating it in the list control.
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())
+
+    def _lockObjectToPlane(self, tdObject, sliceDirection):
+        """Set it up so that motion of tdObject will be constrained to the
+        current plane equation of the given sliceDirection.
         """
 
-        if tdObject not in self._tdObjectsDict:
+        if not sliceDirection._ipws:
+            # we need some kind of plane equation!
+            return
 
-            # we get to pick a colour and a name
-            colourName = self._objectColours[
-                self._objectId % len(self._objectColours)]
-            # objectName HAS TO BE unique!
-            objectName = "%s%d" % ('obj', self._objectId)
-            self._objectId += 1
-
-            # create a colour as well
-            colour = wx.TheColourDatabase.FindColour(colourName).asTuple()
-            # normalise
-            nColour = tuple([c / 255.0 for c in colour])
-
-            # now actually create the necessary thingies and add the object
-            # to the scene
-            if hasattr(tdObject, 'GetClassName') and \
-               callable(tdObject.GetClassName):
-
-                if tdObject.GetClassName() == 'vtkVolume':
-                    self._slice3dVWR._threedRenderer.AddVolume(tdObject)
-                    self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
-                                                     'type' : 'vtkVolume',
-                                                     'observerId' : None}
-
-                elif tdObject.GetClassName() == 'vtkPolyData':
-                    mapper = vtk.vtkPolyDataMapper()
-                    mapper.SetInput(tdObject)
-                    actor = vtk.vtkActor()
-                    actor.SetMapper(mapper)
-                    self._slice3dVWR._threedRenderer.AddActor(actor)
-                    self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
-                                                     'type' : 'vtkPolyData',
-                                                     'vtkActor' : actor,
-                                                     'observerId' : None}
-
-                    # to get the name of the scalars we need to do this.
-                    tdObject.Update()
-                
-                    # now some special case handling
-                    if tdObject.GetPointData().GetScalars():
-                        sname = tdObject.GetPointData().GetScalars().GetName()
-                    else:
-                        sname = None
-                
-                    if sname and sname.lower().find("curvature") >= 0:
-                        # if the active scalars have "curvature" somewhere in
-                        # their name, activate flat shading and scalar vis
-                        property = actor.GetProperty()
-                        property.SetInterpolationToFlat()
-                        mapper.ScalarVisibilityOn()
-                    
-                    else:
-                        # the user can switch this back on if she really
-                        # wants it
-                        # we switch it off as we mostly work with isosurfaces
-                        mapper.ScalarVisibilityOff()
-                
-                    # connect an event handler to the data
-                    source = tdObject.GetSource()
-                    if source:
-                        oid = source.AddObserver(
-                            'EndEvent',
-                            self._tdObjectModifiedCallback)
-                        self._tdObjectsDict[tdObject]['observerId'] = oid
-
-                else:
-                    raise Exception, 'Non-handled tdObject type'
-
-            else:
-                # the object has no GetClassName that's callable
-                raise Exception, 'tdObject has no GetClassName()'
-
-            nrGridRows = self._grid.GetNumberRows()
-            self._grid.AppendRows()
-            self._grid.SetCellValue(nrGridRows, self._gridNameCol, objectName)
-            
-            # store the name
-            self._tdObjectsDict[tdObject]['objectName'] = objectName
-            # and store the colour
-            self._setObjectColour(tdObject, nColour)
-            # and the visibility
-            self._setObjectVisibility(tdObject, True)
-            # and the contouring
-            self._setObjectContouring(tdObject, False)
-            # and the motion
-            self._setObjectMotion(tdObject, False)
-
-            self._slice3dVWR._threedRenderer.ResetCamera()
-            self._slice3dVWR.render3D()
-            
-        # ends 
-        else:
-            raise Exception, 'Attempt to add same object twice.'
-
-    def findGridRowByName(self, objectName):
-        nrGridRows = self._grid.GetNumberRows()
-        rowFound = False
-        row = 0
-
-        while not rowFound and row < nrGridRows:
-            value = self._grid.GetCellValue(row, self._gridNameCol)
-            rowFound = (value == objectName)
-            row += 1
-
-        if rowFound:
-            # prepare and return the row
-            row -= 1
-            return row
-        
-        else:
-            return -1
-
-    def findObjectByProp(self, prop):
-        """Find the tdObject corresponding to prop.  Prop can be the vtkActor
-        corresponding with a vtkPolyData tdObject or a vtkVolume tdObject.
-        Whatever the case may be, this will return something that is a valid
-        key in the tdObjectsDict or None
-        """
+        newPlaneNormal = sliceDirection._ipws[0].GetNormal()
 
         try:
-            # this will succeed if prop is a vtkVolume
-            return self._tdObjectsDict[prop]
+            self._tdObjectsDict[tdObject]['lockPlanes'].append(newPlaneNormal)
         except KeyError:
-            #
-            for objectDict in self._tdObjectsDict.values():
-                if objectDict['vtkActor'] == prop:
-                    return objectDict['tdObject']
+            self._tdObjectsDict[tdObject]['lockPlanes'] = [newPlaneNormal]
 
-        return None
-        
-
-    def findObjectsByNames(self, objectNames):
-        """Given an objectName, return a tdObject binding.
-        """
-        
-        dictItems = self._tdObjectsDict.items()
-        dictLen = len(dictItems)
-
-        objectFound = False
-        itemsIdx = 0
-
-        while not objectFound and itemsIdx < dictLen:
-            objectFound = objectName == dictItems[itemsIdx][1]['objectName']
-            itemsIdx += 1
-
-        if objectFound:
-            itemsIdx -= 1
-            return dictItems[itemsIdx][0]
-        else:
-            return None
-
-    def findObjectsByNames(self, objectNames):
-        """Given a sequence of object names, return a sequence with bindings
-        to all the found objects.  There could be less objects than names.
-        """
-
-        dictItems = self._tdObjectsDict.items()
-        dictLen = len(dictItems)
-
-        itemsIdx = 0
-        foundObjects = []
-
-        while itemsIdx < dictLen:
-            if dictItems[itemsIdx][1]['objectName'] in objectNames:
-                foundObjects.append(dictItems[itemsIdx][0])
-
-            itemsIdx += 1
-
-        return foundObjects
-
-    def findPropByObject(self, tdObject):
-        """Given a tdObject, return the corresponding prop, which could
-        be a vtkActor or a vtkVolume.
-        """
-
-        t = self._tdObjectsDict[tdObject]['type']
-        if t == 'vtkVolume':
-            return tdObject
-        if t == 'vtkPolyData':
-            return self._tdObjectsDict[tdObject]['vtkActor']
-        else:
-            return KeyError
 
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
         # make sure the transform is up to date
@@ -829,6 +888,8 @@ class tdObjects:
                 bw.AddObserver('InteractionEvent',
                                self._observerMotionBoxWidgetInteraction)
 
+
+                # FIXME: continue here!
                 try:
                     ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
                 except:
@@ -868,3 +929,15 @@ class tdObjects:
     def _tdObjectModifiedCallback(self, o, e):
         self._slice3dVWR.render3D()
 
+    def _unlockObjectFromPlanes(self, tdObject):
+        """Make sure that there are no plane constraints on the motion
+        of the given tdObject.
+        """
+
+        try:
+            del self._tdObjectsDict[tdObject]['lockPlanes'][:]
+        except KeyError:
+            pass
+
+        # FIXME:
+        # if the object is currently in motion, lift the constraints!
