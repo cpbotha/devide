@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.62 2002/09/09 15:40:34 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.63 2002/09/13 15:38:01 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -291,6 +291,21 @@ class vtk_slice_vwr(module_base,
                    rw=self._rwi.GetRenderWindow():
                    s.vtk_pipeline_configure(pw, rw))
 
+
+        def poc_cb(event):
+            picker = self._rwi.GetPicker()
+            path = picker.GetPath()
+            if path:
+                prop = path.GetFirstNode().GetProp()
+                if prop:
+                    self.vtk_pipeline_configure(self._view_frame,
+                                                self._rwi.GetRenderWindow(),
+                                                (prop,))
+
+        pocid = wxNewId()
+        pocb = wxButton(panel, pocid, 'Conf Picked')
+        EVT_BUTTON(panel, pocid, poc_cb)
+
         rid = wxNewId()
         rb = wxButton(panel, rid, 'Reset')
         EVT_BUTTON(panel, rid, lambda e, s=self: s._reset())
@@ -323,6 +338,7 @@ class vtk_slice_vwr(module_base,
         
         button_sizer = wxBoxSizer(wxHORIZONTAL)
         button_sizer.Add(pcb)
+        button_sizer.Add(pocb)
         button_sizer.Add(rb)
 
         # we need a special sizer that determines the largest sizer
@@ -493,7 +509,7 @@ class vtk_slice_vwr(module_base,
         
         axes_actor = vtk.vtkActor()
         axes_actor.SetMapper(axes_mapper)
-        axes_actor.PickableOff()
+        #axes_actor.PickableOff()
         axes_actor.GetProperty().BackfaceCullingOff()
         self._renderer.AddActor(axes_actor)
         
@@ -543,6 +559,9 @@ class vtk_slice_vwr(module_base,
         for i in self._sel_points:
             x,y,z,v = i['cursor']
             self._vtk_points.InsertNextPoint(x,y,z)
+
+        # and then make sure the vtkPoints knows that it has been modified
+        self._vtk_points.Modified()
         
 #################################################################
 # callbacks
