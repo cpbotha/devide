@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.60 2002/09/05 14:20:21 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.61 2002/09/05 14:21:26 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -361,6 +361,20 @@ class vtk_slice_vwr(module_base,
 
         self._view_frame.Show(true)
 
+    def _remove_cursor(self, idx):
+
+        # remove the actor from the renderer
+        self._renderer.RemoveActor(self._sel_points[idx]['actor'])
+        self._rwi.Render()
+
+        # remove the entry from the wxListCtrl
+        self._spoint_listctrl.DeleteItem(idx)
+
+        # then remove it from our internal list
+        del self._sel_points[idx]
+
+        
+
     def _reset(self):
         """Arrange everything for a single overlay in a single ortho view.
 
@@ -446,18 +460,6 @@ class vtk_slice_vwr(module_base,
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
-
-    def _remove_cursor(self, idx):
-
-        # remove the actor from the renderer
-        self._renderer.RemoveActor(self._sel_points[idx]['actor'])
-        self._rwi.Render()
-
-        # remove the entry from the wxListCtrl
-        self._spoint_listctrl.DeleteItem(idx)
-
-        # then remove it from our internal list
-        del self._sel_points[idx]
 
     def _store_cursor(self, cursor):
 
