@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.83 2004/06/10 16:04:40 cpbotha Exp $
+# $Id: graphEditor.py,v 1.84 2004/06/23 08:41:56 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -712,7 +712,9 @@ class graphEditor:
 
     def _handlerMarkModule(self, instance):
         markedModuleName = wxGetTextFromUser(
-            'Please enter a name for this module to be keyed on.')
+            'Please enter a name for this module to be keyed on.',
+            'Input text',
+            instance.__class__.__name__)
 
         if markedModuleName:
             self._devide_app.getModuleManager().markModule(
