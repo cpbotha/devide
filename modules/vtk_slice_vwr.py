@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.30 2002/05/19 13:35:59 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.31 2002/05/19 15:14:08 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -136,14 +136,19 @@ class vtk_slice_vwr(module_base):
 
         else:
             raise TypeError
-            
+
+    def _pw_cb(self, vtk_obj, event_name):
+        # this is a test; you'll have to send along the index too so we
+        # know WHICH pipeline we have to work with
+        print event_name
 
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
 
         # first create RenderWindowInteractor and pertinent elements
         self._rwis.append(wxVTKRenderWindowInteractor(panel, -1))
-        self._pws.append(vtk.vtkPlaneWidget())        
+        self._pws.append(vtk.vtkPlaneWidget())
+        self._pws[-1].AddObserver('StartInteractionEvent', self._pw_cb)
         self._renderers.append(vtk.vtkRenderer())
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         istyle = vtk.vtkInteractorStyleImage()

@@ -1,4 +1,4 @@
-# $Id: vtk_plydta_rdr.py,v 1.7 2002/05/19 14:29:41 cpbotha Exp $
+# $Id: vtk_plydta_rdr.py,v 1.8 2002/05/19 15:14:08 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -66,7 +66,9 @@ class vtk_plydta_rdr(module_base,
 	self._reader.Update()
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
-        # pop up
+        # pop up.  you should do this in all your modules right after you
+        # caused some VTK processing which might have resulted in VTK
+        # outputting to the error log
         self._module_manager.vtk_poll_error()
 
     def create_view_window(self):
