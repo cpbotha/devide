@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.95 2004/11/27 14:50:00 cpbotha Exp $
+# $Id: graphEditor.py,v 1.96 2004/11/27 22:42:31 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -625,13 +625,13 @@ class graphEditor:
         self.hide()
 
     def show(self):
-        self._modulePaletteFrame.Show(True)
-        self._modulePaletteFrame.Iconize(False)
-        self._modulePaletteFrame.Raise()
-
         self._canvasFrame.Show(True)
         self._canvasFrame.Iconize(False)        
         self._canvasFrame.Raise()
+        
+        self._modulePaletteFrame.Show(True)
+        self._modulePaletteFrame.Iconize(False)
+        self._modulePaletteFrame.Raise()
 
     def _handlerFileExportAsDOT(self, event):
         # make a list of all glyphs
