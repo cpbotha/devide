@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.11 2004/02/27 12:55:19 cpbotha Exp $
+# $Id: devide.py,v 1.12 2004/02/27 13:19:51 cpbotha Exp $
 
 DEVIDE_VERSION = '20040225'
 
@@ -200,8 +200,11 @@ class devide_app_t(wx.App):
             resources.graphics.images.getdevidelogo32x32Bitmap())
         return icon
 
+    def getMainWindow(self):
+        return self._mainFrame        
+
     def get_main_window(self):
-        return self._mainFrame
+        return self.getMainWindow()
 
     def getModuleManager(self):
 	return self.moduleManager
@@ -225,7 +228,8 @@ class devide_app_t(wx.App):
 
     def startPythonShell(self):
         if self._pythonShell == None:
-            self._pythonShell = pythonShell(self)
+            self._pythonShell = pythonShell(self.getMainWindow(),
+                                            self.getApplicationIcon())
             self._pythonShell.injectLocals({'devide_app' : self})
             self._pythonShell.setStatusBarMessage(
                 "'devide_app' is bound to the main app class.")

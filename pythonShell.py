@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.4 2004/02/27 12:55:19 cpbotha Exp $
+# $Id: pythonShell.py,v 1.5 2004/02/27 13:19:51 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -8,15 +8,18 @@ from wxPython import py # shell, version, filling
 
 class pythonShell:
 
-    def __init__(self, app):
-        self._app = app
+    def __init__(self, parentWindow, icon):
+        self._parentWindow = parentWindow
 
         self._ps_frame = self._createFrame()
 
         # set icon
-        self._ps_frame.SetIcon(self._app.getApplicationIcon())
+        self._ps_frame.SetIcon(icon)
         # make sure that when the window is closed, we just hide it (teehee)
         EVT_CLOSE(self._ps_frame, self.close_ps_frame_cb)
+
+        EVT_BUTTON(self._ps_frame, self._ps_frame.closeButton.GetId(),
+                   self.close_ps_frame_cb)
 
         # we can display ourselves
         self.show()
@@ -41,7 +44,7 @@ class pythonShell:
         reload(resources.python.pythonShellFrame)
         
         frame = resources.python.pythonShellFrame.pythonShellFrame(
-            self._app.get_main_window(), id=-1, title="Dummy")
+            self._parentWindow, id=-1, title="Dummy")
 
         return frame
 

@@ -22,7 +22,8 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
                                            'Calculating gradient magnitude')
 
         self._viewFrame = self._createViewFrame(
-            {'vtkImageGradientMagnitude' : self._imageGradientMagnitude})
+            {'Module (self)' : self,
+             'vtkImageGradientMagnitude' : self._imageGradientMagnitude})
 
         # pass the data down to the underlying logic
         self.configToLogic()

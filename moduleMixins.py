@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.21 2004/02/27 12:55:19 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.22 2004/02/27 13:19:51 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -6,6 +6,7 @@ from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import moduleUtils
 from wxPython.wx import *
 import resources.python.filenameViewModuleMixinFrame
+from pythonShell import pythonShell
 
 class introspectModuleMixin:
     """Mixin to use for modules that want to make use of the vtkPipeline
@@ -18,6 +19,35 @@ class introspectModuleMixin:
 
     In your close() method, MAKE SURE to call the close method of this Mixin.
     """
+
+    def miscObjectConfigure(self, parentWindow, obj):
+        """This will instantiate and show a pythonShell with the object that
+        is being examined.
+
+        If it is called multiple times for the same object, it will merely
+        bring the pertinent window to the top.
+        """
+
+        if not hasattr(self, '_pythonShells'):
+            self._pythonShells = {}
+
+        if obj not in self._pythonShells:
+            icon = moduleUtils.getModuleIcon()
+            
+            self._pythonShells[obj] = pythonShell(parentWindow, icon)
+            self._pythonShells[obj].injectLocals({'obj' : obj})
+            self._pythonShells[obj].setStatusBarMessage(
+                "'obj' is bound to the introspected object")
+
+        self._pythonShells[obj].show()
+
+    def closeMiscObjectConfigure(self):
+        if hasattr(self, '_pythonShells'):
+            for pythonShell in self._pythonShells.values():
+                pythonShell.close()
+
+            self._pythonShells.clear()
+            
 
     def vtkObjectConfigure(self, parent, renwin, vtk_obj):
         """This will instantiate and show only one object config frame per
@@ -107,6 +137,7 @@ class introspectModuleMixin:
         closed down.
         """
 
+        self.closeMiscObjectConfigure()
         self.closePipelineConfigure()
         self.closeVtkObjectConfigure()
 
@@ -120,6 +151,8 @@ class introspectModuleMixin:
             if hasattr(objectDict[objectName], "GetClassName"):
                 self.vtkObjectConfigure(viewFrame, renderWin,
                                         objectDict[objectName])
+            elif objectDict[objectName]:
+                self.miscObjectConfigure(viewFrame, objectDict[objectName])
         
     def _defaultPipelineCallback(self, viewFrame, renderWin, objectDict):
         """This callack is required for the
