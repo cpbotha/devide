@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.55 2004/02/12 20:02:17 cpbotha Exp $
+# $Id: graphEditor.py,v 1.56 2004/02/20 13:38:46 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -99,8 +99,11 @@ class graphEditor:
 
         EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)
 
+#         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
+#                    lambda e, s=self: s.fill_module_tree())
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
-                   lambda e, s=self: s.fill_module_tree())
+                   lambda e, s=self: s.fillModuleLists())
+        
 
         EVT_MENU(self._graphFrame, self._graphFrame.fileNewId,
                  self._fileNewCallback)
@@ -123,13 +126,30 @@ class graphEditor:
         EVT_MENU(self._graphFrame, self._graphFrame.helpContextHelpId,
                  self._handlerHelpContextHelp)
 
+
+        # finish with moduleLists config
+        self._graphFrame.moduleCatsListCtrl.InsertColumn(0,
+                                                         'Categories')
+        self._graphFrame.modulesListCtrl.InsertColumn(0,
+                                                      'Modules')
+
+        # event handlers
+        EVT_LIST_ITEM_SELECTED(self._graphFrame,
+                               self._graphFrame.moduleCatsListCtrlId,
+                               self._handlerModuleCatsListCtrlSelected)
+        EVT_LIST_ITEM_SELECTED(self._graphFrame,
+                               self._graphFrame.modulesListCtrlId,
+                               self._handlerModulesListCtrlSelected)
+
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
         self._availableModuleList = None
-        self.fill_module_tree()
+        #self.fill_module_tree()
+        self.fillModuleLists()
 
-        EVT_TREE_BEGIN_DRAG(self._graphFrame, self._graphFrame.treeCtrlId,
-                            self.treeCtrlBeginDragHandler)
+        EVT_LIST_BEGIN_DRAG(self._graphFrame,
+                            self._graphFrame.modulesListCtrlId,
+                            self.modulesListCtrlBeginDragHandler)
 
         # setup the canvas...
         self._graphFrame.canvas.SetVirtualSize((2048, 2048))
@@ -161,8 +181,10 @@ class graphEditor:
         # now display the shebang
         self.show()
 
-    def treeCtrlBeginDragHandler(self, event):
-        moduleName = self._graphFrame.treeCtrl.GetPyData(event.GetItem())
+    def modulesListCtrlBeginDragHandler(self, event):
+        mlc = self._graphFrame.modulesListCtrl        
+        moduleName = self._currentModuleList[mlc.GetItemData(event.GetIndex())]
+
         if type(moduleName) != str:
             return
         
@@ -427,6 +449,85 @@ class graphEditor:
         for node in rootDict.values() + [segNode, rootNode]:
             self._graphFrame.treeCtrl.Expand(node)
 
+    def fillModuleLists(self):
+        """Build up the module tree from the list of available modules
+        supplied by the moduleManager.  At the moment, things will look
+        a bit strange if the module tree goes deeper than one level, but
+        everything will still work.
+        """
+
+        mm = self._devide_app.getModuleManager()
+        mm.scanModules()
+        self._availableModuleList = mm.getAvailableModuleList()
+
+        self._moduleCats = {}
+        # let's build up new dictionary with categoryName as key and
+        # list of complete moduleNames as value - check for 'Segments',
+        # that's reserved
+        for mn,catTuple in self._availableModuleList.items():
+            for cat in catTuple:
+                if cat in self._moduleCats:
+                    self._moduleCats[cat].append(mn)
+                else:
+                    self._moduleCats[cat] = [mn]
+
+
+        # list of DVN filenames
+        self._moduleCats['Segments'] = mm.availableSegmentsList
+                    
+        
+        # setup all categories
+        self._graphFrame.moduleCatsListCtrl.DeleteAllItems()
+        idx = 0
+
+        cats = self._moduleCats.keys()
+        cats.sort()
+        
+        for cat in cats:
+            self._graphFrame.moduleCatsListCtrl.InsertStringItem(idx, cat)
+            idx += 1
+
+        self._graphFrame.moduleCatsListCtrl.SetColumnWidth(0, wxLIST_AUTOSIZE)
+
+        
+
+        
+#         catDict = {}
+#         for moduleName in self._availableModuleList:
+#             # we're getting the complete module spec relative to devide
+#             # itself, e.g. modules.Filters.doubleThreshold
+#             mParts = moduleName.split('.')
+#             if len(mParts) == 2:
+#                 # this is one level deep, e.g. modules.blaatFilter
+#                 lastName = mParts[1]
+#                 catNode = rootDict[mParts[0]]
+#             else:
+#                 # this is two levels deep, e.g. modules.Filters.maatFilter
+#                 lastName = mParts[2]
+#                 try:
+#                     catNode = catDict[mParts[1]]
+#                 except KeyError:
+#                     catNode = self._graphFrame.treeCtrl.AppendItem(
+#                         rootDict[mParts[0]], mParts[1])
+#                     catDict[mParts[1]] = catNode
+
+#             nn = self._graphFrame.treeCtrl.AppendItem(catNode, lastName)
+#             self._graphFrame.treeCtrl.SetPyData(nn,
+#                                                 'module:%s' % (moduleName,))
+
+#         # the availableSegmentsList is a list of fully qualified filenames
+#         self.availableSegmentsList = mm.availableSegmentsList
+#         for segmentName in self.availableSegmentsList:
+#             # we want basename without extension to put in the tree
+#             basename = os.path.splitext(os.path.basename(segmentName))[0]
+#             nn = self._graphFrame.treeCtrl.AppendItem(segNode, basename)
+#             self._graphFrame.treeCtrl.SetPyData(nn,
+#                                                 'segment:%s' % (segmentName,))
+
+#         for node in rootDict.values() + [segNode, rootNode]:
+#             self._graphFrame.treeCtrl.Expand(node)
+            
+
     def close_graph_frame_cb(self, event):
         self.hide()
 
@@ -454,6 +555,57 @@ class graphEditor:
                     
             if filename:
                 self._saveNetwork(glyphs, filename)
+
+    def _handlerModuleCatsListCtrlSelected(self, event):
+        self._graphFrame.modulesListCtrl.DeleteAllItems()
+
+        selectedCats = []
+
+        clc = self._graphFrame.moduleCatsListCtrl
+        if clc.GetSelectedItemCount():
+            for idx in range(clc.GetItemCount()):
+                if clc.GetItemState(idx, wxLIST_STATE_SELECTED):
+                    selectedCats.append(clc.GetItemText(idx))
+
+        selectedModuleNames = {}
+        for cat in selectedCats:
+            for mn in self._moduleCats[cat]:
+                # the dict eliminates duplicates
+                # we set value to 'cat' so we can later check whether this
+                # thing is a segment
+                selectedModuleNames[mn] = cat
+
+        # now populate the module list
+        self._currentModuleList = []
+        idx = 0
+        mlc = self._graphFrame.modulesListCtrl
+
+        smnItems = selectedModuleNames.items()
+        smnItems.sort()
+        
+        for mn,cat in smnItems:
+            if cat == 'Segments':
+                basename = os.path.splitext(os.path.basename(mn))[0]
+                mlc.InsertStringItem(idx, basename)
+                self._currentModuleList.append('segment:%s' % (mn,))
+                mlc.SetItemData(idx, len(self._currentModuleList) - 1)
+                
+            else:
+                mParts = mn.split('.')
+                mlc.InsertStringItem(idx, mParts[-1])
+                self._currentModuleList.append('module:%s' % (mn,))
+                mlc.SetItemData(idx, len(self._currentModuleList) - 1)
+
+            idx += 1
+
+        mlc.SetColumnWidth(0, wxLIST_AUTOSIZE)
+
+    def _handlerModulesListCtrlSelected(self, event):
+        mlc = self._graphFrame.modulesListCtrl
+        idx = mlc.GetItemData(event.m_itemIndex)
+        self._currentModuleList[idx]
+        self._graphFrame.GetStatusBar().SetStatusText(
+            self._currentModuleList[idx])
 
     def _handlerPaste(self, event, position):
         if self._copyBuffer:

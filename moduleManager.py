@@ -95,7 +95,7 @@ class moduleManager:
     def scanModules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files."""
-        self._availableModuleList = []
+        self._availableModuleList = {}
 
         def recursiveDirectoryD3MNSearch(adir, curModulePath, mnList):
             """Iterate recursively starting at adir and make a list of
@@ -148,10 +148,13 @@ class moduleManager:
         for mn in modules.moduleList:
             if self._devide_app.mainConfig.useInsight or \
                not mn.startswith('Insight'):
-                self._availableModuleList.append('modules.%s' % (mn,))
+                self._availableModuleList['modules.%s' % (mn,)] = \
+                                                       modules.moduleList[mn]
 
         # then all the user modules
-        self._availableModuleList += userModuleList
+        for umn in userModuleList:
+            self._availableModuleList['%s' % (umn,)] = \
+                                           ('userModules',)
 
         # we should move this functionality to the graphEditor.  "segments"
         # are _probably_ only valid there... alternatively, we should move

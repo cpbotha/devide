@@ -44,8 +44,10 @@ class graphEditorFrame(wxFrame):
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.frame_1_statusbar = self.CreateStatusBar(1)
-        self.treeCtrlId  =  wxNewId()
-        self.treeCtrl = wxTreeCtrl(self.window_2_pane_1, self.treeCtrlId , style=wxTR_HAS_BUTTONS|wxTR_LINES_AT_ROOT|wxSUNKEN_BORDER)
+        self.moduleCatsListCtrlId  =  wxNewId()
+        self.moduleCatsListCtrl = wxListCtrl(self.window_2_pane_1, self.moduleCatsListCtrlId , style=wxLC_REPORT|wxSUNKEN_BORDER)
+        self.modulesListCtrlId  =  wxNewId()
+        self.modulesListCtrl = wxListCtrl(self.window_2_pane_1, self.modulesListCtrlId , style=wxLC_REPORT|wxLC_SINGLE_SEL|wxSUNKEN_BORDER)
         self.rescanButtonId  =  wxNewId()
         self.rescanButton = wxButton(self.window_2_pane_1, self.rescanButtonId , "Rescan")
         self.canvas = wxpcCanvas(self.window_2_pane_2, -1)
@@ -62,9 +64,8 @@ class graphEditorFrame(wxFrame):
         frame_1_statusbar_fields = ["Welcome to the DeVIDE Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
-        self.treeCtrl.SetSize((174, 447))
-        self.canvas.SetSize((599, 483))
-        self.window_2.SetSize((784, 492))
+        self.canvas.SetSize((599, 532))
+        self.window_2.SetSize((784, 541))
         self.window_2.SplitVertically(self.window_2_pane_1, self.window_2_pane_2, 176)
         # end wxGlade
 
@@ -75,8 +76,9 @@ class graphEditorFrame(wxFrame):
         sizer_6 = wxBoxSizer(wxVERTICAL)
         sizer_8 = wxBoxSizer(wxVERTICAL)
         sizer_7 = wxBoxSizer(wxVERTICAL)
-        sizer_7.Add(self.treeCtrl, 1, wxEXPAND, 0)
-        sizer_7.Add(self.rescanButton, 0, wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 4)
+        sizer_7.Add(self.moduleCatsListCtrl, 2, wxBOTTOM|wxEXPAND, 7)
+        sizer_7.Add(self.modulesListCtrl, 3, wxEXPAND, 0)
+        sizer_7.Add(self.rescanButton, 0, wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 7)
         self.window_2_pane_1.SetAutoLayout(1)
         self.window_2_pane_1.SetSizer(sizer_7)
         sizer_7.Fit(self.window_2_pane_1)
