@@ -97,13 +97,35 @@ class moduleManager:
 	the list self.module_files."""
         self._availableModuleList = []
 
-	user_files = os.listdir(self._userModules_dir)
+        if True:
+            user_files = os.listdir(self._userModules_dir)
+            
+            for i in user_files:
+                if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
+                    self._availableModuleList.append(os.path.splitext(i)[0])
 
-	for i in user_files:
-	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
-		self._availableModuleList.append(os.path.splitext(i)[0])
+            self._availableModuleList += modules.module_list
 
-        self._availableModuleList += modules.module_list
+        else:
+
+            # iterate recursively through all module directories storing full
+            # module specs (e.g. modules.Readers.hdfRDR) for each .py found
+
+            curModulePath = ''
+            appDir = self._dscas3_app.get_appdir()
+
+            def recursiveDirectoryModuleSearch(adir, curModulePath,
+                                               moduleList):
+                fileNames = os.listdir(adir)
+                for fileName in fileNames:
+                    if os.path.isdir(fileName):
+                        recursiveDirectoryModuleSearch(
+                            adir, curModulePath, moduleList)
+
+                    elif os.path.isfile(fileName) and \
+                             fnmatch.fnmatch(i, "*.py") and \
+                             not fnmatch.fnmatch(i, "_*"):
+                        pass
 
     def get_app_dir(self):
         return self._dscas3_app.get_appdir()
