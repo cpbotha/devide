@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.23 2002/05/13 18:56:01 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.24 2002/05/13 22:19:20 cpbotha Exp $
 
 from module_base import module_base
 import vtk
@@ -7,52 +7,8 @@ from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
-# ---------------------------------------------------------------------------
-
-class wxVTKRenderWindowSlice(wxVTKRenderWindow):
-    def Rotate(self, event):
-        pass
-
-    def Pan(self, event):
-        # most of this code comes from wxVTKRenderWindow
-        if self._CurrentRenderer:
-            x = event.GetX()
-            y = event.GetY()
-
-            # get current renderer, camera, campos and camfocalpoint
-            renderer = self._CurrentRenderer
-            camera = self._CurrentCamera
-            (pPoint0,pPoint1,pPoint2) = camera.GetPosition()
-            (fPoint0,fPoint1,fPoint2) = camera.GetFocalPoint()
-
-            # we assume parallel projection
-            # calculate how much the user has "panned" the camera
-            renderer.SetWorldPoint(pPoint0,pPoint1,pPoint2,1.0)
-            renderer.WorldToDisplay()
-            fx,fy,fz = renderer.GetDisplayPoint()
-            renderer.SetDisplayPoint(fx-x+self._LastX,
-                                     fy+y-self._LastY,
-                                     fz)
-            renderer.DisplayToWorld()
-            fx,fy,fz,fw = renderer.GetWorldPoint()
-            camera.SetPosition(fx,fy,fz)
-
-            # now we KNOW that the camera has to be pointing orthogonally
-            # to the xy-plane (that's how we set it up) so we just take the
-            # (x,y) coordinates of the new camera position and use the previous
-            # z coordinate of the focal point
-            camera.SetFocalPoint(fx, fy, fPoint2)
-            
-            # record the interaction position
-            self._LastX = x
-            self._LastY = y
-
-            # render it!
-            self.Render()
-
-# ---------------------------------------------------------------------------
-
 class vtk_slice_vwr(module_base):
+
     def __init__(self, module_manager):
         # call base constructor
         module_base.__init__(self, module_manager)
@@ -64,7 +20,7 @@ class vtk_slice_vwr(module_base):
         # then the window containing the renderwindows
 	self._view_frame = None
         # the render windows themselves (4, 1 x 3d and 3 x ortho)
-	self._rws = []
+	self._rwis = []
         self._pws = []
         # the last clicked/interacted with xy positions for every rw
 	self._rw_lastxys = []
@@ -94,21 +50,29 @@ class vtk_slice_vwr(module_base):
 	if hasattr(self, '_renderers'):
 	    del self._renderers
 	if hasattr(self, '_rws'):
-	    del self._rws
+	    del self._rwis
 	if hasattr(self,'_view_frame'):
 	    self._view_frame.Destroy()
 	    del self._view_frame
         if hasattr(self,'_ortho_pipes'):
             del self._ortho_pipes
 
+    def _istyle_lbp_cb(self, vtk_object, command_name):
+        print one.GetClassName()
+        print two
+
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
-        self._rws.append(wxVTKRenderWindowSlice(panel, -1))
+        self._rwis.append(wxVTKRenderWindowInteractor(panel, -1))
         self._pws.append(vtk.vtkPlaneWidget())        
         self._renderers.append(vtk.vtkRenderer())
-        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        #istyle = vtk.vtkInteractorStyleTrackballCamera()
+        istyle = vtk.vtkInteractorStyleImage()
+        self._rwis[-1].SetInteractorStyle(istyle)
+        #istyle.AddObserver('LeftButtonPressEvent', self._istyle_lbp_cb)
         panel_sizer = wxBoxSizer(wxVERTICAL)
-        panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
         panel.SetAutoLayout(true)
         panel.SetSizer(panel_sizer)
         return panel
@@ -133,11 +97,11 @@ class vtk_slice_vwr(module_base):
         top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
         # 3d view
         td_panel = wxPanel(top_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindowInteractor(td_panel, -1))
+        self._rwis.append(wxVTKRenderWindowInteractor(td_panel, -1))
         self._renderers.append(vtk.vtkRenderer())
-        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         td_panel_sizer = wxBoxSizer(wxVERTICAL)
-        td_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        td_panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
         td_panel.SetAutoLayout(true)
         td_panel.SetSizer(td_panel_sizer)
         # ortho view
@@ -173,24 +137,13 @@ class vtk_slice_vwr(module_base):
         
         self._view_frame.Show(true)
 	
-# 	# bind event handlers
-# 	for rw in self.rws[1:]:
-# 	    # we need to keep track of a last mouse activity
-# 	    rw.bind('<Any-ButtonPress>', lambda e,s=self,rw=rw:
-#                     s.rw_starti_cb(e.x,e.y,rw))
-# 	    rw.bind('<Any-ButtonRelease>', lambda e,s=self,rw=rw:
-#                     s.rw_endi_cb(e.x,e.y,rw))
-# 	    # we're going to use this to change current slice
-# 	    rw.bind('<B1-Motion>', lambda e,s=self,rw=rw:
-#                     s.rw_slice_cb(e.x,e.y,rw))
-
 
     def get_input_descriptions(self):
 	# concatenate it num_inputs times (but these are shallow copies!)
 	return self._num_inputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
     
-    def setup_ortho_plane(self, cur_pipe):
+    def _setup_ortho_plane(self, cur_pipe):
 	# try and pull the data through
 	cur_pipe['vtkImageReslice'].Update()
 	# make the plane that the texture is mapped on
@@ -205,7 +158,7 @@ class vtk_slice_vwr(module_base):
                                               output_bounds[3],
                                               0)
 
-    def update_3d_plane(self, cur_pipe, output_z=0):
+    def _update_3d_plane(self, cur_pipe, output_z=0):
         """Move texture-mapper 3d plane source so that it corresponds to the 
         passed output z coord.
 
@@ -232,7 +185,7 @@ class vtk_slice_vwr(module_base):
 	cur_pipe['vtkPlaneSource3'].SetPoint2(point2)
 
 	
-    def setup_camera(self, cur_pipe, renderer):
+    def _setup_camera(self, cur_pipe, renderer):
 	# now we're going to manipulate the camera in order to achieve some
         # gluOrtho2D() goodness
 	icam = renderer.GetActiveCamera()
@@ -255,6 +208,57 @@ class vtk_slice_vwr(module_base):
         icam.ParallelProjectionOn()
 
 	#icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
+
+    def _reset_ortho_overlay(self, ortho_idx, overlay_pipe):
+        """Arrange everything for a single overlay in a single ortho view.
+
+        This method is to be called AFTER the pertinent VTK pipeline has been
+        setup.  This is here, because one often connects modules together
+        before source modules have been configured, i.e. the success of this
+        method is dependent on whether the source modules have been configged.
+        HOWEVER: it won't die if it hasn't, just complain.
+
+        It will configure all 3d widgets and textures and thingies, but it
+        won't CREATE anything.
+        """
+
+        if len(self._ortho_pipes[ortho_idx]) == 1:
+            overlay_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(
+                self._InitialResliceAxes[ortho_idx]['axes'])
+            overlay_pipe['vtkImageReslice'].SetResliceAxesOrigin(
+                self._InitialResliceAxes[ortho_idx]['origin'])
+            some_trans = vtk.vtkTransform()
+            some_trans.RotateWXYZ(-50,1,1,1)
+            new_matrix = vtk.vtkMatrix4x4()
+            vtk.vtkMatrix4x4.Multiply4x4(some_trans.GetMatrix(),
+                                         overlay_pipe['vtkImageReslice'].
+                                         GetResliceAxes(), new_matrix)
+            #overlay_pipe['vtkImageReslice'].SetResliceAxes(new_matrix)
+
+        self._setup_ortho_plane(overlay_pipe)
+        self._update_3d_plane(overlay_pipe, 0)
+
+        if len(self._ortho_pipes[ortho_idx]) == 1:
+            self._pws[ortho_idx].SetProp3D(overlay_pipe['vtkActor3'])
+            if ortho_idx == 0:
+                self._pws[ortho_idx].NormalToZAxisOn()
+            elif ortho_idx == 1:
+                self._pws[ortho_idx].NormalToXAxisOn()
+            else:
+                self._pws[ortho_idx].NormalToYAxisOn()
+            self._pws[ortho_idx].SetResolution(20)
+            self._pws[ortho_idx].SetRepresentationToOutline()
+            self._pws[ortho_idx].SetPlaceFactor(1)
+            self._pws[ortho_idx].PlaceWidget()
+            rwi = self._rwis[0]
+            self._pws[ortho_idx].SetInteractor(rwi)
+            self._pws[ortho_idx].On()
+                                 
+        if len(self._ortho_pipes[ortho_idx]) == 1:
+            self._setup_camera(overlay_pipe, self._renderers[ortho_idx+1])
+
+        self._rwis[ortho_idx+1].Render()
+        
 	
     
     def set_input(self, idx, input_stream):
@@ -279,16 +283,30 @@ class vtk_slice_vwr(module_base):
                             self._renderers[ortidx+1].RemoveActor(layer_pl['vtkActorO'])
                             # disconnect the input (no refs hanging around)
                             layer_pl['vtkImageReslice'].SetInput(None)
-                            layer_pl_indices.append(self._ortho_pipes[ortidx].index(layer_pl))
-                        if len(layer_pl_indices) > 0:
-                            # make sure the indices are in ascending order
-                            layer_pl_indices.sort()
-                            # swap
-                            layer_pl_indices.reverse()
-                            # then delete the elements at these indices
-                            for i in layer_pl_indices:
-                                # nuke the whole dictionary
-                                del self._ortho_pipes[ortidx][i]
+                            if len(self._ortho_pipes[ortidx]) == 1:
+                                # this means this is the last pipeline, and
+                                # it's going to be removed;
+                                # switch off the 3DWidget, it will be
+                                # reactivated if something gets added again
+                                pw = self._pws[ortidx]
+                                pw.Off()
+                                pw.SetInteractor(None)
+                                # FIXME: at removal, the planewidget sometimes
+                                # leaves 3 plane actors behind (its code
+                                # seems to be fine)
+
+                            pl_idx = self._ortho_pipes[ortidx].index(layer_pl)
+                            layer_pl_indices.append(pl_idx)
+                            
+                    if len(layer_pl_indices) > 0:
+                        # make sure the indices are in ascending order
+                        layer_pl_indices.sort()
+                        # swap
+                        layer_pl_indices.reverse()
+                        # then delete the elements at these indices
+                        for i in layer_pl_indices:
+                            # nuke the whole dictionary
+                            del self._ortho_pipes[ortidx][i]
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
@@ -315,18 +333,6 @@ class vtk_slice_vwr(module_base):
                     cur_pipe = self._ortho_pipes[i][-1]
                     # if this is the first layer in this channel/ortho, then
                     # we have to do some initial setup stuff
-                    if len(self._ortho_pipes[i]) == 1:
-                        cur_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(
-                            self._InitialResliceAxes[i]['axes'])
-                        cur_pipe['vtkImageReslice'].SetResliceAxesOrigin(
-                            self._InitialResliceAxes[i]['origin'])
-                        some_trans = vtk.vtkTransform()
-                        some_trans.RotateWXYZ(-50,1,1,1)
-                        new_matrix = vtk.vtkMatrix4x4()
-                        vtk.vtkMatrix4x4.Multiply4x4(some_trans.GetMatrix(),
-                                                 cur_pipe['vtkImageReslice'].
-                                                 GetResliceAxes(), new_matrix)
-                        #cur_pipe['vtkImageReslice'].SetResliceAxes(new_matrix)
 
                     # more setup
                     cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
@@ -363,31 +369,15 @@ class vtk_slice_vwr(module_base):
                     cur_pipe['vtkActor3'].SetTexture(cur_pipe['vtkTexture'])
                     self._renderers[0].AddActor(cur_pipe['vtkActor3'])
 		    
-		    self.setup_ortho_plane(cur_pipe)
-                    self.update_3d_plane(cur_pipe, 0)
+                    # we've connected the pipeline, now we get to do all
+                    # the bells and whistles
+                    self._reset_ortho_overlay(i, cur_pipe)
 
-
-                    if len(self._ortho_pipes[i]) == 1:
-                        self._pws[i].SetProp3D(cur_pipe['vtkActor3'])
-                        if i == 0:
-                            self._pws[i].NormalToZAxisOn()
-                        elif i == 1:
-                            self._pws[i].NormalToXAxisOn()
-                        else:
-                            self._pws[i].NormalToYAxisOn()
-                        self._pws[i].SetResolution(20)
-                        self._pws[i].SetRepresentationToOutline()
-                        self._pws[i].SetPlaceFactor(1)
-                        self._pws[i].PlaceWidget()
-                        rwi = self._rws[0]
-                        self._pws[i].SetInteractor(rwi)
-                        self._pws[i].On()
-                                 
-		    if len(self._ortho_pipes[i]) == 1:
-			self.setup_camera(cur_pipe, self._renderers[i+1])
-                        
-                    self._renderers[0].ResetCamera()
-
+                # after we've done all the orthos (and their corresponding
+                # plains in 3d), we should probably tell the 3d renderer
+                # that something is going on :)
+                self._renderers[0].ResetCamera()
+                self._rwis[0].Render()
                 self._inputs[idx]['Connected'] = 'vtkStructuredPoints'
 
 	    else:
@@ -402,7 +392,7 @@ class vtk_slice_vwr(module_base):
 	raise Exception
 
     def view(self):
-	self.rw_window.deiconify()
+	self._view_frame.Show(true)
     
     def rw_starti_cb(self, x, y, rw):
 	rw.StartMotion(x,y)
