@@ -1,12 +1,15 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: landmarkTransform.py,v 1.1 2003/10/15 11:25:32 cpbotha Exp $
+# $Id: landmarkTransform.py,v 1.2 2003/10/15 12:59:06 cpbotha Exp $
 # see module documentation
+
+# TODO:
+# * make mode configurable by the user
 
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-#from wxPython.wx import *
+import wx
 import vtk
 
 class landmarkTransform(moduleBase, noConfigModuleMixin):
@@ -27,9 +30,14 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
+        self._inputPoints = None
+        self._inputPointsOID = -1
+        self._sourceLandmarks = None
+        self._targetLandmarks = None
+
         self._landmarkTransform = vtk.vtkLandmarkTransform()
-        moduleUtils.setupVTKObjectProgress(self, self._landmarkTransform,
-                                           'Optimising transform')
+        # make this configurable!
+        self._landmarkTransform.SetModeToRigidBody()
 
         self._viewFrame = self._createViewFrame(
             {'vtkLandmarkTransform': self._landmarkTransform})
@@ -37,5 +45,106 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
         self.configToLogic()
         self.syncViewWithLogic()
 
+    def close(self):
+        # we play it safe... (the graph_editor/module_manager should have
+        # disconnected us by now)
+        for inputIdx in range(len(self.getInputDescriptions())):
+            self.setInput(inputIdx, None)
 
+        # this will take care of all display thingies
+        noConfigModuleMixin.close(self)
+        
+        # get rid of our reference
+        del self._landmarkTransform
+
+    def getInputDescriptions(self):
+        return ('Source and Target Points',)
+
+    def setInput(self, idx, inputStream):
+        if inputStream is not self._inputPoints:
+
+            if self._inputPoints:
+                self._inputPoints.removeObserver(self._inputPointsOID)
+
+            if inputStream:
+                self._inputPointsOID = inputStream.addObserver(
+                    self._observerInputPoints)
+
+            self._inputPoints = inputStream
+
+            # initial update
+            self._observerInputPoints(None)
+
+    def getOutputDescriptions(self):
+        return (self._landmarkTransform.GetClassName(),
+                self._landmarkTransform.GetMatrix().GetClassName())
+
+    def getOutput(self, idx):
+        if idx == 0:
+            return self._landmarkTransform
+        else:
+            return self._landmarkTransform.GetMatrix()
+
+    def logicToConfig(self):
+        pass
+    
+    def configToLogic(self):
+        pass
+    
+    def viewToConfig(self):
+        pass
+
+    def configToView(self):
+        pass
+    
+    def executeModule(self):
+        self._landmarkTransform.Update()
+
+    def view(self, parent_window=None):
+        # if the window was visible already. just raise it
+        if not self._viewFrame.Show(True):
+            self._viewFrame.Raise()
+
+    def _observerInputPoints(self, obj):
+        # the points have changed, let's see if they really have
+
+        if not self._inputPoints:
+            return
+        
+        tempSourceLandmarks = [i['world'] for i in self._inputPoints
+                               if i['name'].lower() == 'source']
+        tempTargetLandmarks = [i['world'] for i in self._inputPoints
+                               if i['name'].lower() == 'target']
+
+        if tempSourceLandmarks != self._sourceLandmarks or \
+           tempTargetLandmarks != self._targetLandmarks:
+
+            if len(tempSourceLandmarks) != len(tempTargetLandmarks):
+                md= wx.MessageDialog(
+                    self._moduleManager.getModuleViewParentWindow(),
+                    "landmarkTransform: Your 'Source' landmark set and "
+                    "'Target' landmark set should be of equal size.",
+                    "Landmark Set Size",
+                    wx.ICON_INFORMATION | wx.OK)
+                
+                md.ShowModal()
+
+            else:
+                self._sourceLandmarks = tempSourceLandmarks
+                self._targetLandmarks = tempTargetLandmarks
+
+                sourceLandmarks = vtk.vtkPoints()
+                targetLandmarks = vtk.vtkPoints()
+                landmarkPairs = ((self._sourceLandmarks, sourceLandmarks),
+                                 (self._targetLandmarks, targetLandmarks))
+                
+                for lmp in landmarkPairs:
+                    lmp[1].SetNumberOfPoints(len(lmp[0]))
+                    for pointIdx in range(len(lmp[0])):
+                        lmp[1].SetPoint(pointIdx, lmp[0][pointIdx])
+                                 
+                self._landmarkTransform.SetSourceLandmarks(sourceLandmarks)
+                self._landmarkTransform.SetTargetLandmarks(targetLandmarks)
+                
+        
         

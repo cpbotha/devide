@@ -181,6 +181,9 @@ class moduleManager:
 
     def get_module_view_parent_window(self):
         # this could change
+        return self.getModuleViewParentWindow()
+
+    def getModuleViewParentWindow(self):
         return self._dscas3_app.get_main_window()
     
     def createModule(self, fullName, instanceName=None):
