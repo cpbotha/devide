@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3,v 1.22 2002/04/27 00:51:56 cpbotha Exp $
+# $Id: dscas3.py,v 1.1 2002/05/07 13:16:10 cpbotha Exp $
 
 import os
 import sys
@@ -81,7 +81,8 @@ class main_window(wxFrame):
         self._status_stxt.SetLabel(message)
 
     def set_progress_gauge(self, progress):
-        self._progress_gauge.SetValue(progress)
+        #self._progress_gauge.SetValue(progress)
+        pass
 
     def exit_cb(self, event):
         self.dscas3_app.quit()
