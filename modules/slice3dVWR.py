@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.71 2003/09/07 14:38:36 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.72 2003/09/15 10:17:43 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -900,10 +900,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                     sliceDirection.pushSlice(val)
                     self.threedFrame.pushSliceSpinCtrl.SetValue(0)
                     self.threedFrame.threedRWI.Render()
-
-        EVT_SPINCTRL(self.controlFrame, self.controlFrame.pushSliceSpinCtrlId,
-                     lambda e: _ps_cb())
-
 
         # clicks directly in the window for picking
         self.threedFrame.threedRWI.AddObserver('LeftButtonPressEvent',

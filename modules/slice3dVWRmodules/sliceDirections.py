@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.12 2003/09/12 16:51:56 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.13 2003/09/15 10:17:43 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -39,6 +39,11 @@ class sliceDirections(object):
         # bind all events
         self._bindEvents()
 
+        # fill out our drop-down menu
+        self._appendGridCommandsToMenu(
+            self.slice3dVWR.controlFrame.slicesMenu,
+            self.slice3dVWR.controlFrame, disable=False)
+
         # create the first slice
         self._createSlice('Axial')
 
@@ -63,59 +68,67 @@ class sliceDirections(object):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection.addContourObject(tdObject, prop3D)
 
-    def _appendGridCommandsToMenu(self, menu, eventWidget):
+    def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
         """Appends the slice grid commands to a menu.  This can be used
         to build up the context menu or the drop-down one.
         """
 
-        interactionOnId = wx.NewId()
-        menu.AppendItem(wx.MenuItem(
-            menu, interactionOnId, 'Interaction ON',
-            'Activate Interaction for all selected s lices'))
-        wx.EVT_MENU(
-            eventWidget, interactionOnId, self._handlerSliceInteractionOn)
+        commandsTuple = [
+            ('Select All', 'Select all slices',
+             self._handlerSliceSelectAll, False),
+            ('DEselect All', 'Deselect all slices',
+             self._handlerSliceDeselectAll, False),
+            ('---',),
+            ('Hide', 'Hide selected slices',
+             self._handlerSliceHide, True),
+            ('Interaction ON', 'Activate Interaction for all selected slices',
+             self._handlerSliceInteractionOn, True),
+            ('Interaction OFF',
+             'Deactivate Interaction for all selected slices',
+             self._handlerSliceInteractionOff, True),
+            ('Show', 'Show selected slices',
+             self._handlerSliceShow, True),
+            ('---',),
+            ('Lock to Points', 'Move the selected slices to selected points',
+             self._handlerSliceLockToPoints, True),
+            ('---',),
+            ('Reset to Axial', 'Reset the selected slices to Axial',
+            self._handlerSliceResetToAxial, True),
+            ('Reset to Coronal', 'Reset the selected slices to Coronal',
+            self._handlerSliceResetToCoronal, True),
+            ('Reset to Sagittal', 'Reset the selected slices to Sagittal',
+            self._handlerSliceResetToSagittal, True),
+            ('---',), # important!  one-element tuple...
+            ('Delete', 'Delete selected slices',
+             self._handlerSliceDelete, True)]
 
-        interactionOffId = wx.NewId()
-        menu.AppendItem(wx.MenuItem(
-            menu, interactionOffId, 'Interaction OFF',
-            'Deactivate Interaction for all selected s lices'))
-        wx.EVT_MENU(
-            eventWidget, interactionOffId, self._handlerSliceInteractionOff)
-        
-        selectAllId = wx.NewId()
-        menu.AppendItem(wx.MenuItem(menu, selectAllId, 'Select All',
-                                     'Select all slices'))
-        wx.EVT_MENU(eventWidget, selectAllId, self._handlerSliceSelectAll)
+        disableList = []
+        for command in commandsTuple:
+            if command[0] == '---':
+                mi = wx.MenuItem(menu, wx.ID_SEPARATOR)
+                menu.AppendItem(mi)
+            else:
+                id = wx.NewId()
+                mi = wx.MenuItem(
+                    menu, id, command[0], command[1])
+                menu.AppendItem(mi)
+                wx.EVT_MENU(
+                    eventWidget, id, command[2])
+                
+                if disable:
+                    disableList.append(mi)
+                    if not self._grid.GetSelectedRows() and command[3]:
+                        mi.Enable(False)
 
-        deselectAllId = wx.NewId()
-        menu.AppendItem(wx.MenuItem(menu, deselectAllId, 'DEselect All',
-                                     'Deselect all slices'))
-        wx.EVT_MENU(eventWidget, deselectAllId, self._handlerSliceDeselectAll)
-        
-        
+        # the disableList can be used later if the menu is created for use
+        # in the frame menubar
+        return disableList
 
     def _bindEvents(self):
         controlFrame = self.slice3dVWR.controlFrame
 
         wx.EVT_BUTTON(controlFrame, controlFrame.createSliceButtonId,
                       self._handlerCreateSlice)
-        wx.EVT_BUTTON(controlFrame, controlFrame.sliceSelectAllButtonId,
-                      self._handlerSliceSelectAll)
-        wx.EVT_BUTTON(controlFrame, controlFrame.sliceDeselectAllButtonId,
-                      self._handlerSliceDeselectAll)
-        wx.EVT_BUTTON(controlFrame, controlFrame.sliceShowHideButtonId,
-                      self._handlerSliceShowHide)
-        wx.EVT_BUTTON(controlFrame, controlFrame.sliceInteractionButtonId,
-                      self._handlerSliceInteraction)
-        wx.EVT_BUTTON(controlFrame, controlFrame.sliceDeleteButtonId,
-                      self._handlerSliceDelete)
-        wx.EVT_BUTTON(controlFrame,
-                      controlFrame.sliceLockToPointsButtonId,
-                      self._handlerSliceLockToPoints)
-        
-
-        wx.EVT_CHOICE(controlFrame, controlFrame.acsChoiceId,
-                      self._handlerSliceACS)
 
         # for ortho view use sliceDirection.createOrthoView()
 
@@ -123,6 +136,17 @@ class sliceDirections(object):
             self._grid, self._handlerGridRightClick)
         wx.grid.EVT_GRID_LABEL_RIGHT_CLICK(
             self._grid, self._handlerGridRightClick)
+
+        def gsc(event):
+            self._grid.GetSelectionBlockTopLeft()
+            self._grid.GetSelectionBlockBottomRight()
+            
+#        wx.grid.EVT_GRID_SELECT_CELL(
+#            self._grid, gsc)
+
+        wx.grid.EVT_GRID_RANGE_SELECT(
+            self._grid, gsc)
+        
 
     def close(self):
         for sliceName, sd in self._sliceDirectionsDict.items():
@@ -242,9 +266,6 @@ class sliceDirections(object):
 
         self._appendGridCommandsToMenu(pmenu, self._grid)
         self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
-        
-        
-        
 
     def _handlerSliceSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
@@ -268,6 +289,20 @@ class sliceDirections(object):
         else:
             wx.LogMessage("You have to select at least three points.")
 
+    def _handlerSliceHide(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._setSliceEnabled(name, False)
+
+        self.slice3dVWR.render3D()
+
+    def _handlerSliceShow(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._setSliceEnabled(name, True)
+
+        self.slice3dVWR.render3D()
+        
     def _handlerSliceShowHide(self, event):
         names = self._getSelectedSliceNames()
         for name in names:
@@ -311,6 +346,34 @@ class sliceDirections(object):
         for name in names:
             sd = self._sliceDirectionsDict[name]
             sd.resetToACS(selection)
+
+        if names:
+            self.slice3dVWR.render3D()
+        
+
+    def _handlerSliceResetToAxial(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            sd = self._sliceDirectionsDict[name]
+            sd.resetToACS(0)
+
+        if names:
+            self.slice3dVWR.render3D()
+
+    def _handlerSliceResetToCoronal(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            sd = self._sliceDirectionsDict[name]
+            sd.resetToACS(1)
+
+        if names:
+            self.slice3dVWR.render3D()
+
+    def _handlerSliceResetToSagittal(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            sd = self._sliceDirectionsDict[name]
+            sd.resetToACS(2)
 
         if names:
             self.slice3dVWR.render3D()
