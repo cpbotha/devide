@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsWRT.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: vtkStructPtsWRT.py,v 1.2 2003/09/23 14:53:48 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -73,13 +73,6 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
     def executeModule(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
-
-        # tell the vtk log file window to poll the file; if the file has
-        # changed, i.e. vtk has written some errors, the log window will
-        # pop up.  you should do this in all your modules right after you
-        # caused some VTK processing which might have resulted in VTK
-        # outputting to the error log
-        self._moduleManager.vtk_poll_error()
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

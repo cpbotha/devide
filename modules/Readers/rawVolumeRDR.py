@@ -168,13 +168,6 @@ class rawVolumeRDR(moduleBase,
         # get the reader to read :)
         self._reader.Update()
 
-        # tell the vtk log file window to poll the file; if the file has
-        # changed, i.e. vtk has written some errors, the log window will
-        # pop up.  you should do this in all your modules right after you
-        # caused some VTK processing which might have resulted in VTK
-        # outputting to the error log
-        self._moduleManager.vtk_poll_error()
-
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
         if not self._viewFrame.Show(True):

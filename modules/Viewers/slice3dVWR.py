@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.3 2003/09/22 11:21:35 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.4 2003/09/23 14:53:48 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -321,11 +321,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 for pointName in inputStream:
                     self.selectedPoints._storePoint(
                         (0,0,0), inputStream[pointName], 0.0, pointName)
-        
-        # make sure we catch any errors!
-        self._moduleManager.vtk_poll_error()
-
-        
 
     def getOutputDescriptions(self):
         return ('Selected points',

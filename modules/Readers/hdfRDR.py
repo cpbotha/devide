@@ -1,4 +1,4 @@
-# $Id: hdfRDR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: hdfRDR.py,v 1.2 2003/09/23 14:53:48 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -90,8 +90,6 @@ class hdfRDR(moduleBase,
     
     def executeModule(self):
         self._reader.Update()
-        # important call to make sure the app catches VTK error in the GUI
-        self._moduleManager.vtk_poll_error()
             
     def view(self, parent_window=None):
         # if the window is already visible, raise it

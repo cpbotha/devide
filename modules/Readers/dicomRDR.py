@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.3 2003/09/23 14:53:48 cpbotha Exp $
 
 import genUtils
 import os
@@ -164,13 +164,6 @@ class dicomRDR(moduleBase,
     def executeModule(self):
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
-        
-        # tell the vtk log file window to poll the file; if the file has
-        # changed, i.e. vtk has written some errors, the log window will
-        # pop up.  you should do this in all your modules right after you
-        # caused some VTK processing which might have resulted in VTK
-        # outputting to the error log
-        self._moduleManager.vtk_poll_error()
 
     def _createViewFrame(self):
         import modules.Readers.resources.python.dicomRDRViewFrame
