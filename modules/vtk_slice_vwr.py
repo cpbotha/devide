@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.58 2002/09/03 15:55:24 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.59 2002/09/04 14:33:20 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -249,10 +249,30 @@ class vtk_slice_vwr(module_base,
         self._spoint_listctrl.InsertColumn(0, 'Position')
         self._spoint_listctrl.SetColumnWidth(0, 180)
         self._spoint_listctrl.InsertColumn(2, 'Value')
-        self._spoint_listctrl.SetColumnWidth(2, 100)                
-        #self._spoint_listctrl.InsertStringItem(0, 'yaa')
-        #self._spoint_listctrl.InsertStringItem(1, 'yaa2')        
+        self._spoint_listctrl.SetColumnWidth(2, 100)
 
+        # buttons for managing the selected point list control
+
+        def select_all_cb(event):
+            for i in range(self._spoint_listctrl.GetItemCount()):
+                self._spoint_listctrl.SetItemState(i, wxLIST_STATE_SELECTED,
+                                                   wxLIST_STATE_SELECTED)
+        
+        sa_id = wxNewId()
+        sab = wxButton(panel, sa_id, 'Select all')
+        EVT_BUTTON(panel, sa_id, select_all_cb)
+
+        
+        da_id = wxNewId()
+        dab = wxButton(panel, da_id, 'Deselect all')
+
+        def deselect_all_cb(event):
+            for i in range(self._spoint_listctrl.GetItemCount()):
+                self._spoint_listctrl.SetItemState(i, not wxLIST_STATE_SELECTED,
+                                                   not wxLIST_STATE_SELECTED)
+            
+        rm_id = wxNewId()
+        rmb = wxButton(panel, rm_id, 'Remove')
         
         # the button control panel
         # -----------------------------------------------------------------
@@ -305,9 +325,18 @@ class vtk_slice_vwr(module_base,
         button_nb_sizer.Add(button_sizer)
         button_nb_sizer.Add(nbs, option=1, flag=wxEXPAND)
 
+        # sizers for _spoint_listctrl and _spoint_listctrl buttons
+        slc_buttons_sizer = wxBoxSizer(wxHORIZONTAL)
+        slc_buttons_sizer.Add(sab)
+        slc_buttons_sizer.Add(dab)
+        slc_buttons_sizer.Add(rmb)
+        slc_sizer = wxBoxSizer(wxVERTICAL)
+        slc_sizer.Add(self._spoint_listctrl, option=1, flag=wxEXPAND)
+        slc_sizer.Add(slc_buttons_sizer)
+
         # this sizer contains the selected points list, buttons and notebook
         bottom_sizer = wxBoxSizer(wxHORIZONTAL)
-        bottom_sizer.Add(self._spoint_listctrl, option=1, flag=wxEXPAND)
+        bottom_sizer.Add(slc_sizer, option=1, flag=wxEXPAND)
         bottom_sizer.Add(button_nb_sizer, option=1, flag=wxEXPAND)
 
         # top level sizer
@@ -445,9 +474,15 @@ class vtk_slice_vwr(module_base,
 
             # we have to search for "actor" in the _self_points :(
             actors = map(lambda i: i['actor'], self._sel_points)
+
             if actor in actors:
-                # FIXME: continue here
-                pass
+                # aidx == wxListCtrl long index
+                aidx = actors.index(actor)
+                # toggle the selection
+                self._spoint_listctrl.SetItemState(aidx,
+                                                   wxLIST_STATE_SELECTED,
+                                                   wxLIST_STATE_SELECTED)
+                                                   
                 #self._spoint_listctrl(actors.index(actor))
                 
         axes_actor.AddObserver('PickEvent', ca_pe_cb)
