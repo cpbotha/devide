@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.90 2004/11/01 10:22:09 cpbotha Exp $
+# $Id: graphEditor.py,v 1.91 2004/11/21 22:02:37 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1031,20 +1031,28 @@ class graphEditor:
         # types from high to low
         maxConsumerType = max(mm.consumerTypeTable.values())
 
-        # go through consumerTypes from high to low, deleting as we go
+        # go through consumerTypes from high to low, building up a list
+        # with glyph in the order that we should destroy them
+        # we should probably move this logic to the moduleManager as a
+        # method getModuleDeletionOrder() or somesuch
+        glyphDeletionSchedule = []
         for consumerType in range(maxConsumerType, -1, -1):
             for glyph in allGlyphs:
-                if glyph in mm.consumerTypeTable:
-                    moduleClassName = glyph.moduleInstance.__class__.__name__
+                moduleClassName = glyph.moduleInstance.__class__.__name__
+                if moduleClassName in mm.consumerTypeTable:
                     currentConsumerType = mm.consumerTypeTable[
                         moduleClassName]
+                    
                 else:
                     # default filter
                     currentConsumerType = 1
 
                 if currentConsumerType == consumerType:
-                    self._deleteModule(glyph)
-                    
+                    glyphDeletionSchedule.append(glyph)
+
+        # now actually delete the glyphs in the correct order
+        for glyph in glyphDeletionSchedule:
+            self._deleteModule(glyph)
 
         
 #         safeGlyphs = []
