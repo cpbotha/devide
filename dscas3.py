@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.27 2003/05/06 23:07:56 cpbotha Exp $
+# $Id: dscas3.py,v 1.28 2003/05/07 16:06:40 cpbotha Exp $
 
 DSCAS3_VERSION = '20030507'
 
@@ -10,7 +10,7 @@ import sys
 import time
 
 from assistants import assistants
-from graph_editor import graph_editor
+from graphEditor import graphEditor
 from module_manager import module_manager
 from python_shell import python_shell
 
@@ -160,7 +160,7 @@ class dscas3_app_t(wxApp):
         wxApp.__init__(self, 0)
 
         self._assistants = assistants(self)
-        self._graph_editor = None
+        self._graphEditor = None
         self._python_shell = None
 	
 	# this will instantiate the module manager and get a list of plugins
@@ -240,10 +240,10 @@ class dscas3_app_t(wxApp):
             self._python_shell.show()
 
     def start_graph_editor(self):
-        if self._graph_editor == None:
-            self._graph_editor = graph_editor(self)
+        if self._graphEditor == None:
+            self._graphEditor = graphEditor(self)
         else:
-            self._graph_editor.show()
+            self._graphEditor.show()
 
     def update_vtk_log_window(self):
         self._vtk_lw.update()

@@ -32,6 +32,10 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         rx = ex + vsx * dx
         ry = ey + vsy * dy
 
+        # add the "real" coords to the event structure
+        event.realX = rx
+        event.realY = ry
+
         if self._previousRealCoords:
             self._mouseDelta = (rx - self._previousRealCoords[0],
                                 ry - self._previousRealCoords[1])
@@ -50,9 +54,6 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             if cobject.hitTest(rx, ry):
                 mouseOnObject = True
 
-                # we modify what's in the event structure to REAL coords
-                event.m_x = rx
-                event.m_y = ry
                 
                 if not cobject.__hasMouse:
                     cobject.__hasMouse = True
@@ -92,6 +93,8 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             mouseOnObject = True
 
         if not mouseOnObject:
+            # these get canvas relative coords - we'll see if that's
+            # really what we want
             if event.Dragging():
                 self.notifyObservers('drag', event)
             elif event.ButtonUp():

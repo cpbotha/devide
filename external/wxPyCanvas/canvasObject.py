@@ -112,6 +112,7 @@ class coGlyph(coRectangle):
 
     def draw(self, dc):
         # default pen and font
+        dc.SetBrush(wx.wxBrush(wx.wxColour(192, 192, 192), wx.wxSOLID))
         dc.SetPen(wx.wxPen('BLACK', 1, wx.wxSOLID))
         dc.SetFont(wx.wxNORMAL_FONT)
         
@@ -176,6 +177,9 @@ class coGlyph(coRectangle):
             py += self._size[1] - coGlyph._pHeight
 
         self.drawPort(dc, brush, (px, py))
+
+    def getLabel(self):
+        return self._label
         
     def setPortConnected(self, idx, inputPort=True, connected=True):
         if inputPort:

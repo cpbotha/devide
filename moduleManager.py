@@ -6,7 +6,27 @@ import string
 import genUtils
 import modules
 
-class module_manager:
+class metaModule:
+    def __init__(self, instance):
+        self.instance = instance
+        self.resetInputsOutputs()
+
+    def close(self):
+        del self.instance
+        del self.inputs
+        del self.outputs
+
+    def resetInputsOutputs(self):
+        numIns = len(instance.getInputDescriptions())
+        numOuts = len(instance.getOutputDescriptions())
+        # numIns list of tuples of (supplierModule, supplierOutputIdx)
+        self.inputs = [None for i in range(numIns)]
+        # numOuts list of dicts of tuples of (consumerModule, consumerInputIdx)
+        # where each dict is keyed on consumerModule
+        self.outputs = [{} for i in range(numOuts)]
+        
+
+class moduleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program."""
     
@@ -15,7 +35,8 @@ class module_manager:
 	all pertinent directories."""
 	
         self._dscas3_app = dscas3_app
-	self.modules = []
+        # module dictionary, keyed on instance... cool.
+	self._moduleDict = {}
 
         appdir = self._dscas3_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
@@ -31,6 +52,10 @@ class module_manager:
 
         This is only called during dscas3 application shutdown.
         """
+
+        # FIXME: rework this code!  you can't walk down the list and delete
+        # each module, because delete actually removes the module from the
+        # list!
         for module in self.modules:
             try:
                 self.delete_module(module)
@@ -38,39 +63,33 @@ class module_manager:
                 # we can't allow a module to stop us
                 pass
 
-    def scan_modules(self):
+    def scanModules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files."""
-        self.module_list = []
+        self._availableModuleList = []
 
 	user_files = os.listdir(self._userModules_dir)
 
 	for i in user_files:
 	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
-		self.module_list.append(os.path.splitext(i)[0])
+		self._availableModuleList.append(os.path.splitext(i)[0])
 
-        self.module_list += modules.module_list
+        self._availableModuleList += modules.module_list
 
     def get_app_dir(self):
         return self._dscas3_app.get_appdir()
 	
-    def get_module_list(self):
-	return self.module_list
+    def getAvailableModuleList(self):
+	return self._availableModuleList
     
     def get_modules_dir(self):
 	return self._modules_dir
-
-    def get_modules_xml_res_dir(self):
-        return os.path.join(self._modules_dir, 'resources/xml')
-    
-    def get_modules(self):
-	return self.modules
 
     def get_module_view_parent_window(self):
         # this could change
         return self._dscas3_app.get_main_window()
     
-    def create_module(self, name):
+    def createModule(self, name):
 	try:
             # find out whether it's built-in or user
             mtypePrefix = ['userModules', 'modules']\
@@ -86,7 +105,11 @@ class module_manager:
                 
             print "imported: " + str(id(sys.modules[fullName]))
 	    # then instantiate the requested class
-	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
+            exec('moduleInstance = %s.%s(self)' % (fullName, name))
+	    #exec('self.modules.append(' + fullName + '.' + name + '(self))')
+            numIns = len(moduleInstance.getInputDescriptions())
+            numOuts = len(moduleInstance.getOutputDescriptions())
+            self._moduleDict[moduleInstance] = metaModule(moduleInstance)
 
 	except ImportError:
 	    genUtils.logError("Unable to import module %s!" % name)
@@ -95,8 +118,9 @@ class module_manager:
 	    genUtils.logError("Unable to instantiate module %s: %s" \
                                 % (name, str(e)))
 	    return None
+                                    
 	# return the instance
-	return self.modules[-1]
+	return self.modules[-1][0]
 
     def importReload(self, fullName):
         """This will import and reload a module if necessary.  Use this only
@@ -163,31 +187,67 @@ class module_manager:
         """
         return hasattr(modules, '__importsub__')
 
-    def view_module(self, instance):
+    def viewModule(self, instance):
         instance.view()
     
-    def delete_module(self, instance):
+    def deleteModule(self, instance):
         # first make sure current_module isn't bound to the instance
         if self._current_module == instance:
             self._current_module = None
-        # interesting... here we simply take the module out... this means
-        # that with VTK ref counted things other modules that were dependent
-        # on this can probably still continue with life
-        # ATM, the when you delete a module from the graph editor, it
-        # carefully takes care of all dependents;
+
+        # first disconnect all outgoing connections
+        inputs = self._moduleDict[instance].inputs
+        outputs = self._moduleDict[instance].outputs
+
+        # outputs is a list of lists of tuples, each tuple containing
+        # moduleInstance and inputIdx of the consumer module
+        for output in outputs:
+            if output:
+                # we just want to walk through the dictionary tuples
+                for consumer in output.items():
+                    # disconnect all consumers
+                    consumer[0].setInput(consumer[1], None)
+                    # the setInput could fail, which would throw an exception,
+                    # but that's really just too deep: just in case
+                    # we set it to None
+                    # we COULD just delete the entry from the dict, it should
+                    # work, as the output.items() above is "static"
+                    consumer[0] = None
+                    consumer[1] = -1
+
+        # inputs is a list of tuples, each tuple containing moduleInstance
+        # and outputIdx of the producer/supplier module
+        for inputIdx in range(len(inputs)):
+            instance.setInput(inputIdx, None)
+            # set supplier to None - so we know it's nuked
+            inputs[inputIdx][0] = None
+            inputs[inputIdx][1] = -1
+
+        # we've disconnected completely - let's reset all lists
+        self._moduleDict[instance].resetInputsOutputs()
+
+        # now we can finally call close on the instance
 	instance.close()
-	# take away the reference AND remove (neat huh?)
-	del self.modules[self.modules.index(instance)]
+        # if that worked (i.e. no exception) let's remove it from the dict
+        del self._moduleDict[instance]
 	
-    def connect_modules(self, output_module, output_idx,
+    def connectModules(self, output_module, output_idx,
                         input_module, input_idx):
         """Connect output_idx'th output of provider output_module to
         input_idx'th input of consumer input_module.
         """
 
 	input_module.setInput(input_idx, output_module.getOutput(output_idx))
+        
+        # update the inputs thingy on the input_module
+        self._moduleDict[input_module].inputs[input_idx] = (output_module,
+                                                            output_idx)
+
+        #
+        outDict = self._moduleDict[output_module].outputs[output_idx]
+        outDict['input_module'] = (input_module, input_idx))
 	
-    def disconnect_modules(self, input_module, input_idx):
+    def disconnectModules(self, input_module, input_idx):
         """Disconnect a consumer module from its provider.
 
         This method will disconnect input_module from its provider by
@@ -196,6 +256,19 @@ class module_manager:
         """
 
 	input_module.setInput(input_idx, None)
+
+        # trace it back to our supplier, and tell it that it has one
+        # less consumer
+        supp = self._moduleDict[input_module].inputs[input_idx][0]
+        suppOutIdx = self._moduleDict[input_module].inputs[input_idx][1]
+        cDict = self._moduleDict[supp].outputs[suppOutIdx]
+        # this is so NAAAAACE
+        del cDict[input_module]
+
+        # indicate to the meta data that this module doesn't have an input
+        # anymore
+        self._moduleDict[input_module].inputs[input_idx] = None
+        
     
     def vtk_progress_cb(self, process_object):
         """Default callback that can be used for VTK ProcessObject callbacks.

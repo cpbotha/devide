@@ -6,21 +6,21 @@ from wxPython.wx import *
 class graphEditorFrame(wxFrame):
     def __init__(self, *args, **kwds):
 	# this class gets passed in as keyword argument (neat huh?)
-	geShapeCanvas = kwds['geShapeCanvas']
+	wxpcCanvas = kwds['wxpcCanvas']
 	# I have to delete it from the keywords, because some of the wrapped
 	# code doesn't like it
-	del kwds['geShapeCanvas']
+	del kwds['wxpcCanvas']
         # begin wxGlade: graphEditorFrame.__init__
         kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)
         self.window_1 = wxSplitterWindow(self, -1)
         self.window_1_pane_2 = wxPanel(self.window_1, -1)
         self.window_1_pane_1 = wxPanel(self.window_1, -1)
+        self.frame_1_statusbar = self.CreateStatusBar(1)
         self.treeCtrl = wxTreeCtrl(self.window_1_pane_1, -1)
         self.rescanButtonId  =  wxNewId()
         self.rescanButton = wxButton(self.window_1_pane_1, self.rescanButtonId , "Rescan")
-        self.shapeCanvas = geShapeCanvas(self.window_1_pane_2)
-        self.frame_1_statusbar = self.CreateStatusBar(1)
+        self.canvas = wxpcCanvas(self.window_1_pane_2)
 
         self.__set_properties()
         self.__do_layout()
@@ -29,15 +29,15 @@ class graphEditorFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: graphEditorFrame.__set_properties
         self.SetTitle("DSCAS3 Graph Editor")
-        self.treeCtrl.SetSize((149, 424))
-        self.shapeCanvas.SetSize((480, 446))
-        self.window_1.SetSize((640, 455))
-        self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 151)
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
         frame_1_statusbar_fields = ["Welcome to the DSCAS3 Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
+        self.treeCtrl.SetSize((161, 399))
+        self.canvas.SetSize((468, 421))
+        self.window_1.SetSize((640, 430))
+        self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 163)
         # end wxGlade
 
     def __do_layout(self):
@@ -51,7 +51,7 @@ class graphEditorFrame(wxFrame):
         self.window_1_pane_1.SetSizer(sizer_3)
         sizer_3.Fit(self.window_1_pane_1)
         sizer_3.SetSizeHints(self.window_1_pane_1)
-        sizer_2.Add(self.shapeCanvas, 1, wxEXPAND, 0)
+        sizer_2.Add(self.canvas, 1, wxEXPAND, 0)
         self.window_1_pane_2.SetAutoLayout(1)
         self.window_1_pane_2.SetSizer(sizer_2)
         sizer_2.Fit(self.window_1_pane_2)
