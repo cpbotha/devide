@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.4 2003/10/06 23:39:52 cpbotha Exp $
+# $Id: startupImports.py,v 1.5 2003/10/15 22:02:15 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -39,21 +39,23 @@ if dl and (os.name == 'posix'):
     sys.setdlopenflags(dl.RTLD_NOW|dl.RTLD_GLOBAL)
 
 def defaultProgressMethod(percentage, message):
-    print "%3.2f - %s" % (percentage, message)
+    print "%s [%3.2f]" % (message, percentage)
 
 def doImports(progressMethod=defaultProgressMethod):
-    importList = [('vtk.common', 'Importing VTK Common.'),
-                  ('vtk.filtering', 'Importing VTK Filtering.'),
-                  ('vtk.io', 'Importing VTK IO.'),
-                  ('vtk.imaging', 'Importing VTK Imaging.'),
-                  ('vtk.graphics', 'Importing VTK Graphics.'),
-                  ('vtk.rendering', 'Importing VTK Rendering.'),
-                  ('vtk.hybrid', 'Importing VTK Hybrid.'),
-                  ('vtk.patented', 'Importing VTK Patented.')]
+    importList = [('vtk.common', ' VTK Common.'),
+                  ('vtk.filtering', ' VTK Filtering.'),
+                  ('vtk.io', ' VTK IO.'),
+                  ('vtk.imaging', ' VTK Imaging.'),
+                  ('vtk.graphics', ' VTK Graphics.'),
+                  ('vtk.rendering', ' VTK Rendering.'),
+                  ('vtk.hybrid', ' VTK Hybrid.'),
+                  ('vtk.patented', ' VTK Patented.')]
                   
     percentStep = 95.0 / len(importList)
     currentPercent = 0.0
 
+    progressMethod(0.0, 'Preloading VTK libraries...')
+    
     for module, message in importList:
         currentPercent += percentStep
         progressMethod(currentPercent, message)
