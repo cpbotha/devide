@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.66 2003/12/15 09:48:49 cpbotha Exp $
+# $Id: dscas3.py,v 1.67 2003/12/15 10:29:04 cpbotha Exp $
 
 DSCAS3_VERSION = '20031214 no-ITK'
 
+# standard Python imports
 import getopt
 import mutex
 import os
@@ -12,30 +13,22 @@ import string
 import sys
 import time
 
-import startupImports
-startupImports.doImports()
-
-from assistants import assistants
-from graphEditor import graphEditor
-from moduleManager import moduleManager
-from pythonShell import pythonShell
-
-import resources.python.mainFrame
-import resources.graphics.images
-
+# WX imports
+# this HAS to go before we call import wx
+import fixWxImports
 import wx
 import wx.html
 
-import vtk
-import vtkdscas
-
+# UI imports
+import resources.python.mainFrame
+import resources.graphics.images
 
 class mainConfigClass(object):
 
-    def __init__(self, argv):
-        parseCommandLine()
-
+    def __init__(self):
         self.useInsight = True
+        
+        self._parseCommandLine()
 
     def dispUsage(self):
         print "-h or --help               : Display this message."
@@ -45,13 +38,13 @@ class mainConfigClass(object):
         try:
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
-                argv[1:], 'h',
+                sys.argv[1:], 'h',
                 ['help', 'no-itk', 'no-insight'])
         except getopt.GetoptError,e:
             self.dispUsage()
             sys.exit(1)
 
-        for a, o in optlist:
+        for o, a in optlist:
             if o in ('-h', '--help'):
                 self.dispUsage()
 
@@ -70,6 +63,8 @@ class dscas3_app_t(wx.App):
     """
     
     def __init__(self):
+        self.mainConfig = mainConfigClass()
+        
         self._inProgress = mutex.mutex()
         self._previousProgressTime = 0
         self._currentProgress = -1
@@ -112,14 +107,23 @@ class dscas3_app_t(wx.App):
 
         self._mainFrame.Show(1)
         self.SetTopWindow(self._mainFrame)
+
+        # pre-import VTK and optionally ITK (these are BIG libraries)
+        import startupImports
+        startupImports.doImports(
+            self.setProgress, useInsight=self.mainConfig.useInsight)
+
+        # perform post initialisation and pre-loading imports
+        postWxInitImports()
         
         # find all modules that we can use
 	self.moduleManager = moduleManager(self)
 
-        self.setProgress(100, 'Started up')
-
         # perform vtk initialisation
         self._vtkInit()
+
+        # indicate that we're ready to go!
+        self.setProgress(100, 'Started up')
 
         return True
         
@@ -220,12 +224,12 @@ class dscas3_app_t(wx.App):
         else:
             self._graphEditor.show()
 
-    def setProgress(self, progress, message):
+    def setProgress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress
         # 2. only do something if the message or the progress has changed
         # 3. we only perform an update if a second or more has passed
         #    since the previous update, unless this is the final
-        #    (i.e. 100% update)
+        #    (i.e. 100% update) or noTime is True
 
         # the testandset() method of mutex.mutex is atomic... this will grab
         # the lock and set it if it isn't locked alread and then return true.
@@ -233,7 +237,7 @@ class dscas3_app_t(wx.App):
         if self._inProgress.testandset():
             if message != self._currentProgressMsg or \
                    progress != self._currentProgress:
-                if progress >= 100 or \
+                if progress >= 100 or noTime or \
                        time.time() - self._previousProgressTime >= 1:
                     self._previousProgressTime = time.time()
                     self._currentProgressMsg = message
@@ -324,6 +328,25 @@ class dscas3_app_t(wx.App):
 
 	
 # ---------------------------------------------------------------------------
+
+def postWxInitImports():
+    """AFTER we've started the GUI and performed all pre-imports, this method
+    makes sure that all other dependencies are imported into the module
+    namespace.  We want these imports here, else the pre-imports can't do
+    their thing.
+    """
+    
+    global assistants, graphEditor, moduleManager, pythonShell
+    global vtk, vtkdscas
+    
+    from assistants import assistants
+    from graphEditor import graphEditor
+    from moduleManager import moduleManager
+    from pythonShell import pythonShell
+
+    import vtk
+    import vtkdscas
+    
 
 
 def main():

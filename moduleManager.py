@@ -146,7 +146,9 @@ class moduleManager:
 
         # first add the core modules to our central list
         for mn in modules.moduleList:
-            self._availableModuleList.append('modules.%s' % (mn,))
+            if self._dscas3_app.mainConfig.useInsight or \
+               not mn.startswith('Insight'):
+                self._availableModuleList.append('modules.%s' % (mn,))
 
         # then all the user modules
         self._availableModuleList += userModuleList
