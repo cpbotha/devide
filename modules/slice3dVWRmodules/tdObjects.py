@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.30 2003/08/27 15:09:11 cpbotha Exp $
+# $Id: tdObjects.py,v 1.31 2003/08/27 15:54:10 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -1049,13 +1049,6 @@ class tdObjects:
 
             # in our own dict
             objectDict['motion'] = bool(motion)
-
-            # tell the sliceViewer that this is movable
-            # FIXME WORKAROUND: this will ALWAYS set motion to True, even
-            # when motion is being deactivated... this is a quick workaround
-            # for the superbly broken vtkBoxWidget.  Thanks guys.
-            if objectDict['type'] == 'vtkPolyData':
-                self.slice3dVWR.setPropMotion(objectDict['vtkActor'], True)
 
             # setup our frikking motionBoxWidget, mmmkay?
             if motion:

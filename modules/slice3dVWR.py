@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.68 2003/08/27 15:09:11 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.69 2003/08/27 15:54:07 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -525,17 +525,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # set the whole UI up!
         self._create_window()
 
-        # our interactor styles
+        # our interactor styles (we could add joystick or something too)
         self._cInteractorStyle = vtk.vtkInteractorStyleTrackballCamera()
-        self._aInteractorStyle = vtkdscas.\
-                                 vtkInteractorStyleTrackballActorConstrained()
 
-        # connect up an observer to the actor interactor style so that we
-        # get a hook to update things that need to be updated when an actor
-        # is moved around
-        self._aInteractorStyle.AddObserver(
-            'EndInteractionEvent',
-            self._observerAIstyleEndInteraction)
 
         # set the default
         self.threedFrame.threedRWI.SetInteractorStyle(self._cInteractorStyle)
@@ -591,7 +583,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         del self._extractVOI
 
         del self._cInteractorStyle
-        del self._aInteractorStyle
         
         # take care of all our bindings to renderers
         del self._threedRenderer
@@ -781,12 +772,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     # miscellaneous public methods
     #################################################################
 
-    def setPropMotion(self, prop, motion=True):
-        if motion:
-            self._aInteractorStyle.AddActiveProp(prop)
-        else:
-            self._aInteractorStyle.RemoveActiveProp(prop)
-
     def getIPWPicker(self):
         return self._ipwPicker
 
@@ -868,14 +853,11 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                    self.threedFrame.projectionChoiceId,
                    self._handlerProjectionChoice)
 
-        EVT_CHOICE(self.threedFrame,
-                   self.threedFrame.mouseMovesChoiceId,
-                   self._handlerMouseMovesChoice)
-        
-#         EVT_BUTTON(self.threedFrame, self.threedFrame.pipelineButtonId,
-#                    lambda e, pw=self.threedFrame, s=self,
-#                    rw=self.threedFrame.threedRWI.GetRenderWindow():
-#                    s.vtkPipelineConfigure(pw, rw))
+        EVT_BUTTON(self.threedFrame,
+                   self.threedFrame.introspectPipelineButtonId,
+                   lambda e, pw=self.threedFrame, s=self,
+                   rw=self.threedFrame.threedRWI.GetRenderWindow():
+                   s.vtkPipelineConfigure(pw, rw))
 
 #         EVT_BUTTON(self.threedFrame, self.threedFrame.resetButtonId,
 #                    lambda e, s=self: s._resetAll())
@@ -1081,16 +1063,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         self.render3D()
 
-    def _handlerMouseMovesChoice(self, event):
-        mmcs = self.threedFrame.mouseMovesChoice.GetSelection()
-
-        if mmcs == 0:
-            self.threedFrame.threedRWI.SetInteractorStyle(
-                self._cInteractorStyle)
-        else:
-            self.threedFrame.threedRWI.SetInteractorStyle(
-                self._aInteractorStyle)
-
     def _handlerResetCamera(self, event):
         self._threedRenderer.ResetCamera()
         self.render3D()
@@ -1098,13 +1070,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     def _handlerShowControls(self, event):
         if not self.controlFrame.Show(True):
             self.controlFrame.Raise()
-
-    def _observerAIstyleEndInteraction(self, eventObject, eventType):
-        iProp = self._aInteractorStyle.GetInteractionProp()
-        if iProp:
-            for sd in self._sliceDirections:
-                sd.syncContourToObjectViaProp(iProp)
-
 
     # DEPRECATED CODE
 

@@ -21,8 +21,8 @@ class threedFrame(wxFrame):
         self.resetCameraButton = wxButton(self.panel_1, self.resetCameraButtonId , "Reset Camera")
         self.resetAllButtonId  =  wxNewId()
         self.button = wxButton(self.panel_1, self.resetAllButtonId , "Reset All")
-        self.mouseMovesChoiceId  =  wxNewId()
-        self.mouseMovesChoice = wxChoice(self.panel_1, self.mouseMovesChoiceId , choices=["Camera Mode", "Object Mode"])
+        self.introspectPipelineButtonId  =  wxNewId()
+        self.button_5 = wxButton(self.panel_1, self.introspectPipelineButtonId , "Introspect")
         self.projectionChoiceId  =  wxNewId()
         self.projectionChoice = wxChoice(self.panel_1, self.projectionChoiceId , choices=["Perspective", "Orthogonal"])
         self.threedRWI = wxVTKRenderWindowInteractor(self.panel_1, -1)
@@ -35,7 +35,6 @@ class threedFrame(wxFrame):
         # begin wxGlade: threedFrame.__set_properties
         self.SetTitle("Slice3D Viewer")
         self.SetSize((640, 480))
-        self.mouseMovesChoice.SetSelection(0)
         self.projectionChoice.SetSelection(0)
         # end wxGlade
 
@@ -48,7 +47,7 @@ class threedFrame(wxFrame):
         sizer_15.Add(self.button_2, 0, wxBOTTOM|wxEXPAND, 4)
         sizer_15.Add(self.resetCameraButton, 0, wxBOTTOM|wxEXPAND, 4)
         sizer_15.Add(self.button, 0, wxBOTTOM|wxEXPAND, 4)
-        sizer_15.Add(self.mouseMovesChoice, 0, wxBOTTOM|wxEXPAND, 4)
+        sizer_15.Add(self.button_5, 0, wxBOTTOM|wxEXPAND, 4)
         sizer_15.Add(self.projectionChoice, 0, wxEXPAND, 0)
         sizer_2.Add(sizer_15, 0, wxRIGHT|wxEXPAND, 4)
         sizer_2.Add(self.threedRWI, 1, wxEXPAND, 0)
