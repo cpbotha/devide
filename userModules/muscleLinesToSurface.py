@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.6 2004/01/30 12:30:23 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.7 2004/01/30 12:46:59 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -130,7 +130,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
                 x += 1
 
             if not startPointFound:
-                print "ERROR: startPoint not found on slice %d." % (z,)
+                wxLogError("ERROR: startPoint not found on slice %d." % (z,))
                 return
 
             x = xdim
@@ -147,7 +147,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
                 x -= 1
 
             if not endPointFound:
-                print "ERROR: endPoint not found on slice %d." % (z,)
+                wxLogError("ERROR: endPoint not found on slice %d." % (z,))
                 return
 
             prevFlipy = -1
