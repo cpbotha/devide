@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.9 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: moduleBase.py,v 1.10 2003/05/20 17:24:41 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
@@ -27,10 +27,6 @@ class moduleBase:
         
         self._config = defaultConfigClass()
 
-        # then very importantly, input and output metadata for the manager
-        self._mmInputs = []
-        # FIMXE: continue here
-	
     def close(self):
 	"""Idempotent method for de-initialising module as far as possible.
 
