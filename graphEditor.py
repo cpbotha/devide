@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.64 2004/03/04 14:29:50 cpbotha Exp $
+# $Id: graphEditor.py,v 1.65 2004/03/04 17:35:44 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -251,13 +251,17 @@ class graphEditor:
     def canvasDropFilenames(self, x, y, filenames):
         actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
                       'vtp' : ('modules.Readers.vtpRDR', 'filename')}
-        
+
+        dcmFilenames = []
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
                 rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
                 self._loadAndRealiseNetwork(filename, (rx,ry),
                                             reposition=True)
+
+            elif filename.lower().endswith('.dcm'):
+                dcmFilenames.append(filename)
 
             else:
                 ext = filename.split('.')[-1].lower()
@@ -267,8 +271,13 @@ class graphEditor:
                         cfg = ret.getConfig()
                         setattr(cfg, actionDict[ext][1], filename)
                         ret.setConfig(cfg)
-                
 
+        if len(dcmFilenames) > 0:
+            ret = self.createModuleAndGlyph(x, y, 'modules.Readers.dicomRDR')
+            if ret:
+                cfg = ret.getConfig()
+                cfg.dicomFilenames.extend(dcmFilenames)
+                ret.setConfig(cfg)
 
     def close(self):
         """This gracefull takes care of all graphEditor shutdown and is mostly
