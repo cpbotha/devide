@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.93 2004/11/26 15:44:37 cpbotha Exp $
+# $Id: graphEditor.py,v 1.94 2004/11/27 14:27:38 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -244,6 +244,9 @@ class graphEditor:
         self._moduleHelpFrames = {}
         
         # now display the shebang
+        self.show()
+        # if we don't show twice, the stupid ListCtrls don't completely
+        # draw on startup!
         self.show()
 
     def modulesListCtrlBeginDragHandler(self, event):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.65 2004/11/25 13:58:56 cpbotha Exp $
+# $Id: devide.py,v 1.66 2004/11/27 14:27:38 cpbotha Exp $
 
 DEVIDE_VERSION = '20041125'
 
@@ -137,6 +137,9 @@ class devide_app_t(wx.App):
             self._handlerBlockExecution)
 
         self._mainFrame.Show(1)
+        # here we also show twice: in wxPython 2.4.2.4 the ListCtrls sometimes
+        # have difficulty completely drawing themselves at startup
+        self._mainFrame.Show(1)        
         self.SetTopWindow(self._mainFrame)
 
         # pre-import VTK and optionally ITK (these are BIG libraries)
