@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.22 2004/02/27 13:19:51 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.23 2004/02/27 13:35:08 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -330,7 +330,7 @@ class colourDialogMixin:
 
 # ----------------------------------------------------------------------------
 
-class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
+class noConfigModuleMixin(introspectModuleMixin):
     """Mixin class for those modules that don't make use of any user-config
     views.
 
@@ -346,7 +346,7 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         self._viewFrame = None
 
     def close(self):
-        vtkPipelineConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
         self._viewFrame.Destroy()
         del self._viewFrame
 
