@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.30 2004/05/05 22:30:31 cpbotha Exp $
+# $Id: devide.py,v 1.31 2004/05/09 21:34:19 cpbotha Exp $
 
 DEVIDE_VERSION = '20040506'
 
@@ -407,8 +407,6 @@ def postWxInitImports():
     import vtk
     import vtkdevide
     
-
-
 def main():
     devide_app = devide_app_t()
     devide_app.MainLoop()

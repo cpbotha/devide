@@ -184,7 +184,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         """This function actually draws the complete shebang to the passed
         dc.
         """
-        
+
         dc.BeginDrawing()
         # clear the whole shebang to background
         dc.SetBackground(wx.wxBrush(self.GetBackgroundColour(), wx.wxSOLID))

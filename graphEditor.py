@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.80 2004/05/07 14:20:36 cpbotha Exp $
+# $Id: graphEditor.py,v 1.81 2004/05/09 21:34:19 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1657,7 +1657,8 @@ class graphEditor:
         moreOvershoot = overshoot
 
         successfulInsert = True
-        while successfulInsert:
+        numInserts = 0
+        while successfulInsert and numInserts < 30:
             
             (x0, y0), (x1, y1) = line.getThirdLastSecondLast()
 
@@ -1720,8 +1721,10 @@ class graphEditor:
                      
                     if cp2:
                         line.insertRoutingPoint(nearestClipPoint[0], newY)
+                        numInserts += 1
                         
                     successfulInsert = line.insertRoutingPoint(newX, newY)
+                    numInserts += 1
                     
                 # or does it clip the vertical bar
                 elif nearestClipPoint[0] == xmin or \
@@ -1751,8 +1754,10 @@ class graphEditor:
                      
                     if cp2:
                         line.insertRoutingPoint(newX, nearestClipPoint[1])
+                        numInserts += 1
 
                     successfulInsert = line.insertRoutingPoint(newX, newY)
+                    numInserts += 1
 
                 else:
                     print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
