@@ -72,6 +72,11 @@ class module_manager:
 	return self.modules[-1]
     
     def delete_module(self, instance):
+        # interesting... here we simply take the module out... this means
+        # that with VTK ref counted things other modules that were dependent
+        # on this can probably still continue with life
+        # ATM, the when you delete a module from the graph editor, it
+        # carefully takes care of all dependents;
 	instance.close()
 	# take away the reference AND remove (neat huh?)
 	del self.modules[self.modules.index(instance)]
