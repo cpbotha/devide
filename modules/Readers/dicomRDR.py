@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.4 2003/10/07 16:46:34 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.5 2003/10/07 16:59:58 cpbotha Exp $
 
 import genUtils
 import os
@@ -142,6 +142,9 @@ class dicomRDR(moduleBase,
             si_uid = "NONE"
 
         self._viewFrame.si_uid_text.SetValue(si_uid)
+
+        msii = self._reader.GetMaximumSeriesInstanceIdx()
+        self._viewFrame.seriesInstancesText.SetValue(msii)
 
         sd = self._reader.GetStudyDescription()
         if sd == None:
