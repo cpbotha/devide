@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.36 2003/03/06 16:01:13 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.37 2003/03/06 18:05:06 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -120,13 +120,19 @@ class sliceDirection:
         if self._ipws:
             self._ipws[0].SetInteraction(0)
 
+    def getEnabled(self):
+        return self._ipws[0].GetEnabled()
+
+    def getInteractionEnabled(self):
+        return self._ipws[0].GetInteraction()
+
     def getName(self):
         return self._name
 
     def getNumberOfLayers(self):
         return len(self._ipws)
 
-    def pushSlice(self):
+    def pushSlice(self, val):
         if self._ipws:
             self._ipws[0].GetPolyDataSource().Push(val)
             self._ipws[0].UpdatePlacement()
@@ -148,11 +154,26 @@ class sliceDirection:
             idx = self._ipws.index(ipw)
             del self._ipws[idx]
 
+    def resetToACS(self, acs):
+        """Reset the current sliceDirection to Axial, Coronal or Sagittal.
+        """
+
+        # colours of imageplanes; we will use these as keys
+        ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
+
+        orientation = 2 - acs
+        for ipw in self._ipws:
+            # this becomes the new default for resets as well
+            self._defaultPlaneOrientation = orientation 
+            ipw.SetPlaneOrientation(orientation)
+            ipw.GetPlaneProperty().SetColor(ipw_cols[orientation])
+
+
     def _resetOverlays(self):
         """Rest all overlays with default LUT, plane orientation and
         start position."""
 
-        if len(self._ipws > 1):
+        if len(self._ipws) > 1:
             # iterate through overlay layers
             for ipw in self._ipws[1:]:
                 lut = vtk.vtkLookupTable()            
@@ -168,7 +189,7 @@ class sliceDirection:
                 # default axial orientation
                 ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
                 ipw.SetSliceIndex(0)
-                #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
+                
                 ipw.SetLookupTable(lut)
                 ipw.On()
                 ipw.InteractionOff()
@@ -239,29 +260,26 @@ class sliceDirection:
                 ipw.UpdatePlacement()
 
     def _ipwStartInteractionCallback(self):
-        #self._viewFrame.acsNotebook.SetSelection(direction)
+        self._slice3dViewer.setCurrentSliceDirection(self)
         self._ipwInteractionCallback()
 
     def _ipwInteractionCallback(self):
         cd = 4 * [0.0]
         if self._ipws[0].GetCursorData(cd):
-            pass
-            self._current_cursors[direction] = cd
-            cstring = str(cd[0:3]) + " = " + str(cd[3])
-            #cur_panel.cursorText.SetValue(cstring)
+            self._slice3dViewer.setCurrentCursor(cd)
 
         # find the orthoView (if any) which tracks this IPW
-        directionL = [v['direction'] for v in self._orthoViews
-                      if v['direction'] == direction]
+        #directionL = [v['direction'] for v in self._orthoViews
+        #              if v['direction'] == direction]
         
-        if directionL:
-            self._syncOrthoViewWithIPW(directionL[0])
-            [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]\
-                                        [directionL[0]].Render()
+        #if directionL:
+        #    self._syncOrthoViewWithIPW(directionL[0])
+        #    [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]\
+        #                                [directionL[0]].Render()
 
-    def _ipwEndInteractionCallback(self, direction):
-        self._syncOverlay(direction)
-        self._ipwInteractionCallback(direction)
+    def _ipwEndInteractionCallback(self):
+        self._syncOverlays()
+        #self._ipwInteractionCallback(direction)
                 
         
 # -------------------------------------------------------------------------
@@ -306,10 +324,13 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         # of lists of IPWs (each direction list contains the primary IPW
         # as well as all overlays)
         self._sliceDirections = []
+        self._currentSliceDirection = None
+        # this same picker is used on all new IPWS of all sliceDirections
         self._ipwPicker = vtk.vtkCellPicker()
         # the renderers corresponding to the render windows
         self._threedRenderer = None
 
+        self._currentCursor = None
         # list of selected points (we can make this grow or be overwritten)
         self._selectedPoints = []
         # this will be passed on as input to the next component
@@ -547,6 +568,14 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
     def getIPWPicker(self):
         return self._ipwPicker
 
+    def setCurrentCursor(self, cursor):
+        self._currentCursor = cursor
+        cstring = str(self._currentCursor[0:3]) + " = " + \
+                  str(self._currentCursor[3])
+        
+        self._viewFrame.sliceCursorText.SetValue(cstring)
+        
+
     #################################################################
     # internal utility methods
     #################################################################
@@ -624,7 +653,8 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
 
                 # add it to the GUI choice
                 self._viewFrame.sliceNameChoice.Append(sliceName)
-                self._viewFrame.sliceNameChoice.SetStringSelection(sliceName)
+                self.setCurrentSliceDirection(self._sliceDirections[-1])
+                #self._viewFrame.sliceNameChoice.SetStringSelection(sliceName)
 
     def _create_window(self):
         import modules.resources.python.slice3d_vwr_frame
@@ -695,6 +725,9 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                      self._viewFrame.voiPanel.widgetEnabledCboxId,
                      widgetEnabledCBoxCallback)
 
+        EVT_CHOICE(self._viewFrame, self._viewFrame.sliceNameChoiceId,
+                   self._sliceNameChoiceCallback)
+
         # first a callback for turning an IPW on or off
         def _eb_cb():
             sliceDirection = self._getCurrentSliceDirection()
@@ -702,16 +735,18 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                 if self._viewFrame.sliceEnabledCheckBox.GetValue():
                     sliceDirection.enable()
                                 
-                    orthoPanels[i].interactionCbox.Enable(1)
-                    orthoPanels[i].pushSliceLabel.Enable(1)
-                    orthoPanels[i].pushSliceSpinCtrl.Enable(1)
+                    self._viewFrame.sliceInteractionCheckBox.Enable(1)
+                    self._viewFrame.pushSliceLabel.Enable(1)
+                    self._viewFrame.pushSliceSpinCtrl.Enable(1)
                         
                 else:
                     sliceDirection.disable()
-                            
-                    orthoPanels[i].interactionCbox.Enable(0)
-                    orthoPanels[i].pushSliceLabel.Enable(0)
-                    orthoPanels[i].pushSliceSpinCtrl.Enable(0)
+
+                    self._viewFrame.sliceInteractionCheckBox.Enable(0)
+                    self._viewFrame.pushSliceLabel.Enable(0)
+                    self._viewFrame.pushSliceSpinCtrl.Enable(0)
+                    
+    
 
         EVT_BUTTON(self._viewFrame, self._viewFrame.createSliceButtonId,
                    lambda e, s=self: s._createSlice())
@@ -722,6 +757,9 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         
         EVT_CHECKBOX(self._viewFrame, self._viewFrame.sliceEnabledCheckBoxId,
                      lambda e: _eb_cb())
+
+        EVT_CHOICE(self._viewFrame, self._viewFrame.acsChoiceId,
+                   lambda e, s=self: s._acsChoiceCallback())
 
         def _ib_cb():
             sliceDirection = self._getCurrentSliceDirection()
@@ -741,7 +779,8 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                 val = self._viewFrame.pushSliceSpinCtrl.GetValue()
                 if val:
                     sliceDirection.pushSlice(val)
-                    orthoPanels[i].pushSliceSpinCtrl.SetValue(0)
+                    self._viewFrame.pushSliceSpinCtrl.SetValue(0)
+                    self._viewFrame.threedRWI.Render()
 
         EVT_SPINCTRL(self._viewFrame, self._viewFrame.pushSliceSpinCtrlId,
                      lambda e: _ps_cb())
@@ -799,16 +838,31 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             self._viewFrame.sliceNameChoice.Delete(idx)
             self._viewFrame.sliceNameChoice.SetSelection(1)
 
-    def _getCurrentSliceDirection(self):
-        selectedName = self._viewFrame.sliceNameChoice.GetStringSelection()
+    def _findSliceDirectionByName(self, name):
         sliceDirectionL = [i for i in self._sliceDirections if
-                           i.getName() == selectedName]
+                          i.getName() == name]
                            
         if sliceDirectionL:
-            return sliceDirectionL[0]
+           return sliceDirectionL[0]
         else:
-            return None
+           return None
+        
+    def _getCurrentSliceDirection(self):
+        return self._currentSliceDirection
 
+    def setCurrentSliceDirection(self, sliceDirection):
+        if sliceDirection != self._currentSliceDirection:
+            self._currentSliceDirection = sliceDirection
+            if sliceDirection is not None:
+                name = sliceDirection.getName()
+                print name
+                self._viewFrame.sliceNameChoice.SetStringSelection(name)
+                # update all GUI elements
+                self._viewFrame.sliceEnabledCheckBox.SetValue(
+                    sliceDirection.getEnabled())
+                self._viewFrame.sliceInteractionCheckBox.SetValue(
+                    sliceDirection.getInteractionEnabled())
+        
     def _remove_cursors(self, idxs):
 
         # we have to delete one by one from back to front
@@ -954,9 +1008,11 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         cursor is a 4-tuple with the discrete (data-relative) xyz coords and
         the value at that point.
         """
-        
-        # do we have volume data?
-        if self._ipws[0][0].GetInput() is None:
+
+        inputs = [i for i in self._inputs if i['Connected'] ==
+                  'vtkImageDataPrimary']
+
+        if not inputs or not self._currentCursor:
             return
 
         # we first have to check that we don't have this pos already
@@ -964,7 +1020,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         if tuple(cursor[0:3]) in discretes:
             return
         
-        input_data = self._ipws[0][0].GetInput()
+        input_data = inputs[0]['inputData']
         ispacing = input_data.GetSpacing()
         iorigin = input_data.GetOrigin()
         # calculate real coords
@@ -1003,9 +1059,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         self._threedRenderer.AddActor(sa)
 
         # first get the name of the point that we are going to store
-        nb = self._viewFrame.acsNotebook
-        cur_panel = nb.GetPage(nb.GetSelection())
-        cursor_name = cur_panel.cursorNameCombo.GetValue()
+        cursor_name = self._viewFrame.sliceCursorNameCombo.GetValue()
 
         if len(cursor_name) > 0:
             name_text = vtk.vtkVectorText()
@@ -1122,11 +1176,20 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         # then make sure this structure knows that it has been modified
         self._outputSelectedPoints.notify()
         
-#################################################################
-# callbacks
-#################################################################
+    #################################################################
+    # callbacks
+    #################################################################
 
 
+    def _acsChoiceCallback(self):
+        sliceDirection = self._getCurrentSliceDirection()
+        if sliceDirection:
+            selection = self._viewFrame.acsChoice.GetSelection()
+            sliceDirection.resetToACS(selection)
+
+            # once we've done this, we have to redraw
+            self._viewFrame.threedRWI.Render()
+    
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
         pwidgets = map(lambda i: i['point_widget'], self._selectedPoints)
@@ -1146,8 +1209,10 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                 ta.SetPosition(pos)
 
 
-            if self._ipws[0]:
-                inputData = self._ipws[0][0].GetInput()
+            inputs = [i for i in self._inputs if i['Connected'] ==
+                      'vtkImageDataPrimary']
+            if inputs:
+                inputData = inputs[0]['inputData']
             else:
                 inputData = None
 
@@ -1267,12 +1332,12 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         wxvtkrwi.GetRenderWindow().Render()
         self._rwis[0].GetRenderWindow().Render()
 
-    def _storeCursorCallback(self, i):
+    def _storeCursorCallback(self):
         """Call back for the store cursor button.
 
         Calls store cursor method on [x,y,z,v].
         """
-        self._storeCursor(self._current_cursors[i])
+        self._storeCursor(self._currentCursor)
         
     def voiWidgetInteractionCallback(self, o, e):
         planes = vtk.vtkPlanes()
@@ -1299,6 +1364,12 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         # display the discrete extent
         self._viewFrame.voiPanel.extentText.SetValue(
             "(%d %d %d %d %d %d)" % tuple(voi))
+
+    def _sliceNameChoiceCallback(self, e):
+        sliceDirection = self._findSliceDirectionByName(
+            self._viewFrame.sliceNameChoice.GetStringSelection())
+        
+        self.setCurrentSliceDirection(sliceDirection)
 
 
     def voiWidgetEndInteractionCallback(self, o, e):
