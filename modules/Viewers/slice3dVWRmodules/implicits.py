@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.2 2004/02/22 21:15:31 cpbotha Exp $
+# $Id: implicits.py,v 1.3 2004/02/23 10:00:47 cpbotha Exp $
 #
 
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -20,7 +20,7 @@ class implicits(object, s3dcGridMixin):
         self.slice3dVWR = slice3dVWRThingy
         self._grid = implicitsGrid
 
-        #self._pointsList = []
+        self._implicitsList = []
 
         self._initialiseGrid()
 
@@ -44,24 +44,28 @@ class implicits(object, s3dcGridMixin):
              'selected name and type',
              self._handlerCreateImplicit, False),
             ('---',),
-            ('Select &All', 'Select all slices',
-             self._handlerPointsSelectAll, False),
-            ('D&Eselect All', 'Deselect all slices',
-             self._handlerPointsDeselectAll, False),
+            ('Select &All', 'Select all implicits',
+             self._handlerSelectAllImplicits, False),
+            ('D&Eselect All', 'Deselect all implicits',
+             self._handlerDeselectAllImplicits, False),
             ('---',),
+            ('&Show', 'Show selected implicits',
+             self._handlerShowImplicits, True),
+            ('&Hide', 'Hide selected implicits',
+             self._handlerHideImplicits, True),
             ('&Interaction ON +',
-             'Activate interaction for the selected points',
-             self._handlerPointsInteractionOn, True),
+             'Activate interaction for the selected implicits',
+             self._handlerImplicitsInteractionOn, True),
             ('I&nteraction OFF',
-             'Deactivate interaction for the selected points',
-             self._handlerPointsInteractionOff, True),
+             'Deactivate interaction for the selected implicits',
+             self._handlerImplicitsInteractionOff, True),
             ('---',), # important!  one-element tuple...
             ('&Rename',
-             'Rename selected points',
-             self._handlerPointsRename, True),
+             'Rename selected implicits',
+             self._handlerRenameImplicits, True),
             ('---',), # important!  one-element tuple...
-            ('&Delete', 'Delete selected slices',
-             self._handlerPointsDelete, True)]
+            ('&Delete', 'Delete selected implicits',
+             self._handlerDeleteImplicits, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(
             menu, eventWidget, commandsTuple, disable)
@@ -132,35 +136,41 @@ class implicits(object, s3dcGridMixin):
         self._appendGridCommandsToMenu(imenu, self._grid)
         self._grid.PopupMenu(imenu, gridEvent.GetPosition())
 
-    def _handlerPointsRename(self, event):
+    def _handlerRenameImplicits(self, event):
         rslt = wx.GetTextFromUser(
             'Please enter a new name for the selected points.',
             'Points Rename', '')
 
         if rslt:
             selRows = self._grid.GetSelectedRows()
-            self._renamePoints(selRows, rslt)
+            self._renameImplitits(selRows, rslt)
 
-    def _handlerPointsSelectAll(self, event):
+    def _handlerSelectAllImplicits(self, event):
         # calling SelectAll and then GetSelectedRows() returns nothing
         # so, we select row by row, and that does seem to work!
         for row in range(self._grid.GetNumberRows()):
             self._grid.SelectRow(row, True)
 
-    def _handlerPointsDeselectAll(self, event):
+    def _handlerDeselectAllImplicits(self, event):
         self._grid.ClearSelection()
         
-    def _handlerPointsDelete(self, event):
+    def _handlerDeleteImplicits(self, event):
         selRows = self._grid.GetSelectedRows()
         if len(selRows):
             self.removePoints(selRows)
             self.slice3dVWR.render3D()
 
-    def _handlerPointsInteractionOn(self, event):
+    def _handlerHideImplicits(self, event):
+        pass
+
+    def _handlerShowImplicits(self, event):
+        pass
+
+    def _handlerImplicitsInteractionOn(self, event):
         for idx in self._grid.GetSelectedRows():
             self._pointsList[idx]['pointWidget'].On()
 
-    def _handlerPointsInteractionOff(self, event):
+    def _handlerImplicitsInteractionOff(self, event):
         for idx in self._grid.GetSelectedRows():
             self._pointsList[idx]['pointWidget'].Off()
         
@@ -299,39 +309,23 @@ class implicits(object, s3dcGridMixin):
             # and sync up output points
             self._syncOutputSelectedPoints()
 
-    def _renamePoint(self, pointIdx, newName):
+    def _renameImplicit(self, idx, newName):
         """Given a point index and a new name, this will take care of all
         the actions required to rename a point.  This is often called for
         a series of points, so this function does not refresh the display
         or resync the output list.  You're responsible for that. :)
         """
 
-        if newName and newName != self._pointsList[pointIdx]['name']:
+        if newName and newName != self._implicitsList[idx]['name']:
             # we only do something if this has really changed and if the name
             # is not blank
 
-            # first make sure the 3d renderer knows about this
-            ta =  self._pointsList[pointIdx]['textActor']
-            if ta:
-                nameText = ta.GetMapper().GetInput().GetSource()
-                # nameText should be a vtkVectorText
-                nameText.SetText(newName)
-
-
             # now record the change in our internal list
-            self._pointsList[pointIdx]['name'] = newName
+            self._implicitsList[idx]['name'] = newName
 
-            # now in the grid (the rows and pointIdxs correlate)
-            self._syncGridRowToSelPoints(pointIdx)
-
-    def _renamePoints(self, pointIdxs, newName):
-        for pointIdx in pointIdxs:
-            self._renamePoint(pointIdx, newName)
-
-        # now resync the output points
-        self._syncOutputSelectedPoints()
-        # and redraw stuff
-        self.slice3dVWR.render3D()
+    def _renameImplicits(self, Idxs, newName):
+        for idx in Idxs:
+            self._renameImplicit(idx, newName)
 
     def setSavePoints(self, savedPoints, boundsForPoints):
         """Re-install the saved points that were returned with getPoints.

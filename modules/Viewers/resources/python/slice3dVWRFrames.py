@@ -215,6 +215,7 @@ class controlFrame(wxFrame):
         self.implicitsGrid.SetColLabelValue(1, "Type")
         self.implicitsGrid.SetColLabelValue(2, "Enabled")
         self.implicitsGrid.SetColLabelValue(3, "Interaction")
+        self.implicitsGrid.SetSize((500, 400))
         # end wxGlade
 
     def __do_layout(self):
@@ -263,11 +264,11 @@ class controlFrame(wxFrame):
         selectedPointsCursorSizer_copy.Add(self.label_1_2_copy, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
         selectedPointsCursorSizer_copy.Add(self.implicitNameText, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         selectedPointsCursorSizer_copy.Add(self.label_4_2_copy, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
-        selectedPointsCursorSizer_copy.Add(self.implicitTypeChoice, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 7)
-        selectedPointsCursorSizer_copy.Add(self.button_6_2_copy, 0, wxEXPAND, 0)
+        selectedPointsCursorSizer_copy.Add(self.implicitTypeChoice, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 7)
+        selectedPointsCursorSizer_copy.Add(self.button_6_2_copy, 0, wxALIGN_CENTER_VERTICAL, 0)
         sizer_25.Add(selectedPointsCursorSizer_copy, 0, wxALL|wxEXPAND, 4)
-        sizer_25.Add(self.implicitsGrid, 1, wxEXPAND, 0)
-        sizer_24.Add(sizer_25, 1, wxBOTTOM|wxEXPAND, 7)
+        sizer_25.Add(self.implicitsGrid, 0, 0, 0)
+        sizer_24.Add(sizer_25, 1, wxBOTTOM, 7)
         sizer_21.Add(self.voiEnabledCheckBox, 0, wxALIGN_CENTER_VERTICAL, 0)
         sizer_21.Add(self.label_7, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         sizer_21.Add(self.voiBoundsText, 1, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
@@ -275,7 +276,7 @@ class controlFrame(wxFrame):
         sizer_21.Add(self.voiExtentText, 1, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         sizer_20.Add(sizer_21, 0, wxALL|wxEXPAND, 4)
         sizer_24.Add(sizer_20, 0, wxEXPAND, 7)
-        sizer_23.Add(sizer_24, 1, wxALL|wxEXPAND, 7)
+        sizer_23.Add(sizer_24, 0, wxALL, 7)
         self.notebook_1_pane_2.SetAutoLayout(1)
         self.notebook_1_pane_2.SetSizer(sizer_23)
         sizer_23.Fit(self.notebook_1_pane_2)
