@@ -41,7 +41,7 @@ class module_manager:
 	files = os.listdir(self._modules_dir)
 	self.module_files = []
 	for i in files:
-	    if fnmatch.fnmatch(i, "*.py"):
+	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
 		self.module_files.append(os.path.splitext(i)[0])
 	# DON'T DO THIS HERE! (why not? - bloat!)
 	# exec('import ' + self.module_files[-1])

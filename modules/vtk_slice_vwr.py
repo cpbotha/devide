@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.28 2002/05/15 16:56:22 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.29 2002/05/17 11:49:20 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -17,6 +17,13 @@ except NameError:
         WX_USE_X_CAPTURE = 0
 
 class vtk_slice_vwr(module_base):
+    """Slicing, dicing slice viewing class.
+
+    This class is used as a dscas3 module.  Given vtkImageData-like input data,
+    it will show 3 slices and 3 planes in a 3d scene.  PolyData objects can
+    also be added.  One can interact with the 3d slices to change the slice
+    orientation and position.
+    """
 
     def __init__(self, module_manager):
         # call base constructor
@@ -133,17 +140,25 @@ class vtk_slice_vwr(module_base):
 
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
+
+        # first create RenderWindowInteractor and pertinent elements
         self._rwis.append(wxVTKRenderWindowInteractor(panel, -1))
         self._pws.append(vtk.vtkPlaneWidget())        
         self._renderers.append(vtk.vtkRenderer())
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        #istyle = vtk.vtkInteractorStyleTrackballCamera()
         istyle = vtk.vtkInteractorStyleImage()
         istyle.AddObserver('LeftButtonPressEvent', self._istyle_img_cb)        
         istyle.AddObserver('MouseMoveEvent', self._istyle_img_cb)
         istyle.AddObserver('LeftButtonReleaseEvent', self._istyle_img_cb)
         istyle.AddObserver('LeaveEvent', self._istyle_img_cb)
         self._rwis[-1].SetInteractorStyle(istyle)
+
+        # then controls
+        #iid = wxNewId()
+        #wxButton(panel, iid, '3D Interact')
+
+        #button_sizer = wxBoxSizer(wxHORIZONTAL)
+        
         panel_sizer = wxBoxSizer(wxVERTICAL)
         panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
         panel.SetAutoLayout(true)
@@ -572,14 +587,15 @@ class vtk_slice_vwr(module_base):
             reslice.SetResliceAxesOrigin(new_ResliceAxesOrigin)
 
         if len(self._ortho_pipes[r_idx - 1]) > 0:
-            #
+            # adjust the planewidget to coincide with the texture plane
+            # of the FIRST ortho pipeline
             pw = self._pws[r_idx - 1]
             ps3 = self._ortho_pipes[r_idx - 1][0]['vtkPlaneSource3']
             pw.SetOrigin(ps3.GetOrigin())
             pw.SetPoint1(ps3.GetPoint1())
             pw.SetPoint2(ps3.GetPoint2())
             # FIXME: we need some kind of call here to realise planesource geom
-
+            pw.RealiseGeometry()
             
             # render the pertinent orth
             wxvtkrwi.Render()

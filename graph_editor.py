@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.27 2002/05/14 15:10:52 cpbotha Exp $
+# $Id: graph_editor.py,v 1.28 2002/05/17 11:49:18 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -317,7 +317,7 @@ class graph_editor:
             elif mtype == 'flt':
                 self._tree_ctrl.AppendItem(fltn, cur_mod)
             else:
-                self._tree_ctrl.AppendItem(misc, cur_mod)
+                self._tree_ctrl.AppendItem(miscn, cur_mod)
 
         # only do stuff if !ItemHasChildren()
 
