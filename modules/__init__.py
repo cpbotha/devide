@@ -1,12 +1,11 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.8 2003/01/17 19:01:52 cpbotha Exp $
+# $Id: __init__.py,v 1.9 2003/01/20 09:09:56 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
 module_list = ['dtsc_seg_flt',
                'ghr_linreg_flt',
 	       'slice3d_vwr',
-               'vtk_3d_vwr',
                'vtk_dicom_rdr',
                'vtk_hdf_rdr',
                'vtk_mc_flt',
