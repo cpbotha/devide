@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.31 2003/08/27 15:54:10 cpbotha Exp $
+# $Id: tdObjects.py,v 1.32 2003/09/04 20:18:46 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -669,11 +669,26 @@ class tdObjects:
         sObjects = self._getSelectedObjects()
         if len(worldPoints) >= 2 and sObjects:
             for sObject in sObjects:
-                # detach any previous stuff
-                self._detachAxis(sObject)
-                # the user asked for it, so we're doing all of 'em
-                self._attachAxis(sObject, worldPoints[0:2])
+                canChange = True
+                if 'axisPoints' in self._tdObjectsDict[sObject]:
+                    oName = self._tdObjectsDict[sObject]['objectName']
+                    md = wx.MessageDialog(
+                        self.slice3dVWR.controlFrame,
+                        "Are you sure you want to CHANGE the axis on object "
+                        "%s?" % (oName,),
+                        "Confirm axis change",
+                        wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+                    
+                    if md.ShowModal() != wx.ID_YES:
+                        canChange = False
 
+                if canChange:
+                    # detach any previous stuff
+                    self._detachAxis(sObject)
+                    # the user asked for it, so we're doing all of 'em
+                    self._attachAxis(sObject, worldPoints[0:2])
+
+            # closes for sObject in sObjects...
             if sObjects:
                 self.slice3dVWR.render3D()
                 
