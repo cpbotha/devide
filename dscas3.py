@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.68 2003/12/15 10:54:45 cpbotha Exp $
+# $Id: dscas3.py,v 1.69 2003/12/15 10:59:25 cpbotha Exp $
+
+DSCAS3_VERSION = '20031215'
 
 # standard Python imports
 import getopt
@@ -39,7 +41,7 @@ class mainConfigClass(object):
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-itk', 'no-insight'])
+                ['help', 'no-itk', 'no-insight', 'itk', 'insight'])
         except getopt.GetoptError,e:
             self.dispUsage()
             sys.exit(1)
@@ -47,13 +49,13 @@ class mainConfigClass(object):
         for o, a in optlist:
             if o in ('-h', '--help'):
                 self.dispUsage()
+                sys.exit(1)
 
             elif o in ('--insight', '--itk'):
                 self.useInsight = True
 
             elif o in ('--no-itk', '--no-insight'):
                 self.useInsight = False
-        
 
 # ---------------------------------------------------------------------------
 class dscas3_app_t(wx.App):
@@ -314,8 +316,7 @@ class dscas3_app_t(wx.App):
         else:
             ivs = 'N/A'
 
-        import defaults
-        about.htmlWindow.SetPage(aboutText % (defaults.DSCAS3_VERSION,
+        about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION,
                                               wx.VERSION_STRING,
                                               pyver,
                                               vvs, ivs))
