@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.15 2002/05/03 11:44:48 cpbotha Exp $
+# $Id: module_base.py,v 1.16 2002/06/07 15:52:40 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ class module_mixin_vtk_pipeline_config:
                 self._vtk_obj_cfs[key].close()
             self._vtk_obj_cfs.clear()
 
-    def vtk_pipeline_configure(self, parent, renwin, objects):
+    def vtk_pipeline_configure(self, parent, renwin, objects=None):
         """This will instantiate and show only one pipeline config per
         module instance.
 
