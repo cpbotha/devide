@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.4 2004/03/01 10:59:51 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.5 2004/03/01 12:30:22 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -22,7 +22,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
     geodesicActiveContour object.  Also see figure 9.18 in the ITK
     Software Guide.
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
 
     def __init__(self, moduleManager):
@@ -84,7 +84,8 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         return ('Image Data', )
 
     def getOutput(self, idx):
-        return self._pSource.GetStructuredPointsOutput()
+        #return self._pSource.GetStructuredPointsOutput()
+        return self._vtkImporter.GetOutput()
 
     def configToLogic(self):
         self._gradientMagnitude.SetSigma(self._config.sigma)
@@ -234,8 +235,8 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         # so that we have the opportunity call the ITK Update() manually
         # from Python (so that we can catch exceptions)
         # also see _psExecute
-        self._pSource = vtk.vtkProgrammableSource()
-        self._pSource.SetExecuteMethod(self._psExecute)
+        #self._pSource = vtk.vtkProgrammableSource()
+        #self._pSource.SetExecuteMethod(self._psExecute)
 
         # final FINAL output is self._pSource.GetStructuredPointsOutput()
 
