@@ -59,7 +59,6 @@ class testModule(moduleBase, noConfigModuleMixin):
 
     def configToLogic(self):
         pass
-    
 
     def viewToConfig(self):
         pass
@@ -74,7 +73,3 @@ class testModule(moduleBase, noConfigModuleMixin):
         # if the window was visible already. just raise it
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
-    
-        
-        
-        
