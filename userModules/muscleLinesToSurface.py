@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.8 2004/01/30 12:47:20 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.9 2004/01/30 12:51:22 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -17,7 +17,11 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
     distance field, extracts an isosurface and then clips off extraneous
     surfaces.
     
-    $Revision: 1.8 $
+    NOTE: there should be SOME voxels on ALL slices, i.e. black slices are
+    not allowed.  Handling this graciously would add far too much complexity
+    to this code.  We're already handling breaks in the x-y plane.
+    
+    $Revision: 1.9 $
     """
     
 
