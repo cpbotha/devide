@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.3 2003/10/15 11:23:21 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -73,7 +73,10 @@ class selectedPoints(object, s3dcGridMixin):
              self._handlerPointsInteractionOn, True),
             ('I&nteraction OFF',
              'Deactivate interaction for the selected points',
-             self._handlerPointsInteractionOff, True),             
+             self._handlerPointsInteractionOff, True),
+            ('&Rename',
+             'Rename selected points',
+             self._handlerPointsRename, True),
             ('---',), # important!  one-element tuple...
             ('&Delete', 'Delete selected slices',
              self._handlerPointsDelete, True)]
@@ -146,6 +149,15 @@ class selectedPoints(object, s3dcGridMixin):
 
         self._appendGridCommandsToMenu(pmenu, self._grid)
         self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
+
+    def _handlerPointsRename(self, event):
+        rslt = wx.GetTextFromUser(
+            'Please enter a new name for the selected points.',
+            'Points Rename', '')
+
+        if rslt:
+            selRows = self._grid.GetSelectedRows()
+            self._renamePoints(selRows, rslt)
 
     def _handlerPointsSelectAll(self, event):
         # calling SelectAll and then GetSelectedRows() returns nothing
@@ -321,6 +333,40 @@ class selectedPoints(object, s3dcGridMixin):
 
             # and sync up output points
             self._syncOutputSelectedPoints()
+
+    def _renamePoint(self, pointIdx, newName):
+        """Given a point index and a new name, this will take care of all
+        the actions required to rename a point.  This is often called for
+        a series of points, so this function does not refresh the display
+        or resync the output list.  You're responsible for that. :)
+        """
+
+        if newName and newName != self._pointsList[pointIdx]['name']:
+            # we only do something if this has really changed and if the name
+            # is not blank
+
+            # first make sure the 3d renderer knows about this
+            ta =  self._pointsList[pointIdx]['textActor']
+            if ta:
+                nameText = ta.GetMapper().GetInput().GetSource()
+                # nameText should be a vtkVectorText
+                nameText.SetText(newName)
+
+
+            # now record the change in our internal list
+            self._pointsList[pointIdx]['name'] = newName
+
+            # now in the grid (the rows and pointIdxs correlate)
+            self._syncGridRowToSelPoints(pointIdx)
+
+    def _renamePoints(self, pointIdxs, newName):
+        for pointIdx in pointIdxs:
+            self._renamePoint(pointIdx, newName)
+
+        # now resync the output points
+        self._syncOutputSelectedPoints()
+        # and redraw stuff
+        self.slice3dVWR.render3D()
 
     def setSavePoints(self, savedPoints, boundsForPoints):
         """Re-install the saved points that were returned with getPoints.

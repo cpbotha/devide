@@ -30,7 +30,7 @@ class isolatedConnect(moduleBase):
         self._isolatedConnect = itk.itkIsolatedConnectedImageFilterF3F3_New()
         self._isolatedConnect.SetInput(self._itkImporter.GetOutput())
         # lower threshold, not configurable right now
-        self._isolatedConnect.SetLower(1250.0)
+        self._isolatedConnect.SetLower(0.9)
 
 
         self._itkExporter = itk.itkVTKImageExportF3_New()
