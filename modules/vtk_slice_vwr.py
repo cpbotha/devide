@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.32 2002/05/20 01:17:38 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.33 2002/05/20 17:50:03 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -6,6 +6,7 @@ import vtk
 from wxPython.wx import *
 from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+import operator
 
 # wxGTK 2.3.2.1 bugs with mouse capture (BADLY), so we disable this
 try:
@@ -150,15 +151,20 @@ class vtk_slice_vwr(module_base):
         pw.GetNormal(normal)
 
         # python is so beautiful it makes me want to cry
-        # first calculate x vector
-        xa = map(lambda o, p1: p1 - o, origin, point1)
-        # calculate its magnitude
-        xam = reduce(lambda e1, e2: e1 + e2, map(lambda e: e**2, xa)) ** .5
-        # then normalise the x vector
+
+        # first calculate x vector (subtract each element of o from the
+        # corresponding element in point1)
+        xa = map(operator.sub, point1, origin)
+        # calculate its magnitude (first square each element, then add them
+        # all together, then sqrt); yes, its faster to use operator.mul and
+        # xa,xa than it is to use a lambda with only one xa
+        xam = reduce(operator.add, map(operator.mul, xa, xa)) ** .5
+        # then normalise the x vector (divide each element by magnitude)
         xan = map(lambda e, m=xam: 1.0 * e / m, xa)
         
-        ya = map(lambda o, p2: p2 - o, origin, point2)
-        yam = reduce(lambda e1, e2: e1 + e2, map(lambda e: e**2, ya)) ** .5
+        # now calculate normalised y vector
+        ya = map(operator.sub, point2, origin)
+        yam = reduce(operator.add, map(operator.mul, ya, ya)) ** .5
         yan = map(lambda e, m=yam: 1.0 * e / m, ya)        
 
         # do this for ALL layers! (we have it only on 0 for testing)

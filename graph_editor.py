@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.29 2002/05/19 14:55:29 cpbotha Exp $
+# $Id: graph_editor.py,v 1.30 2002/05/20 17:50:03 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -314,7 +314,6 @@ class graph_editor:
         self.show()
 
     def fill_module_tree(self):
-        print "filling module tree"
         self._tree_ctrl.DeleteAllItems()
 
         tree_root = self._tree_ctrl.AddRoot('Modules')
