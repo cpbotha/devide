@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.44 2004/05/24 11:32:48 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.45 2004/05/24 12:34:46 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -551,7 +551,6 @@ class pickleVTKObjectsModuleMixin(object):
 # should be chosen over that of noConfig
 
 class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
-                               noConfigModuleMixin,
                                moduleBase):
     """Use this base to make a DeVIDE module that wraps a single VTK
     object.  The state of the VTK object will be saved when the network
@@ -579,8 +578,6 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
 
         # first these two mixins
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
-
 
         self._theFilter = vtkObjectBinding
         if replaceDoc:
@@ -590,11 +587,9 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         # that the state of this object will be saved
         pickleVTKObjectsModuleMixin.__init__(self, ['_theFilter'])        
 
+        # make progress hooks for the object
         moduleUtils.setupVTKObjectProgress(self, self._theFilter,
                                            progressText)        
-        self._createViewFrame(
-            {'Module (self)' : self,
-             '%s' % (self._theFilter.GetClassName(),) : self._theFilter})
 
         self._inputDescriptions = inputDescriptions
         self._outputDescriptions = outputDescriptions
@@ -602,9 +597,43 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         self._inputFunctions = inputFunctions
         self._outputFunctions = outputFunctions
 
+        # we have an initial config populated with stuff and in sync
+        # with theFilter.  The viewFrame will also be in sync with the
+        # filter
+        self._viewFrame = self._createViewFrame()
+
+    def _createViewFrame(self):
+        parentWindow = self._moduleManager.getModuleViewParentWindow()
+
+        import resources.python.defaultModuleViewFrame
+        reload(resources.python.defaultModuleViewFrame)
+
+        dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
+        viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, dMVF)
+
+        # ConfigVtkObj parent not important, we're passing frame + panel
+        # this should populate the sizer with a new sizer7
+        # params: noParent, noRenwin, vtk_obj, frame, panel
+        self._configVtkObj = ConfigVtkObj(None, None,
+                                          self._theFilter,
+                                          viewFrame, viewFrame.viewFramePanel)
+
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, viewFrame, viewFrame.viewFramePanel,
+            {'Module (self)' : self}, None)
+
+        moduleUtils.createECASButtons(self, viewFrame,
+                                      viewFrame.viewFramePanel)
+            
+        self._viewFrame = viewFrame
+        return viewFrame
+
     def close(self):
         pickleVTKObjectsModuleMixin.close(self)
-        noConfigModuleMixin.close(self)
+        self._configVtkObj.close()
+        self._viewFrame.Destroy()
+        #noConfigModuleMixin.close(self)
         moduleBase.close(self)
         # get rid of our binding to the vtkObject
         del self._theFilter
@@ -648,6 +677,29 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         if hasattr(self._theFilter, 'Write') and \
            callable(self._theFilter.Write):
             self._theFilter.Write()
+
+    def view(self):
+        self._viewFrame.Show(True)
+        self._viewFrame.Raise()
+
+    def configToView(self):
+        # the pickleVTKObjectsModuleMixin does logic <-> config
+        # so when the user clicks "sync", logicToConfig is called
+        # which transfers picklable state from the LOGIC to the CONFIG
+        # then we do double the work and call update_gui, which transfers
+        # the same state from the LOGIC straight up to the VIEW
+        self._configVtkObj.update_gui()
+
+    def viewToConfig(self):
+        # same thing here: user clicks "apply", viewToConfig is called which
+        # zaps UI changes straight to the LOGIC.  Then we have to call
+        # logicToConfig explicitly which brings the info back up to the
+        # config... i.e. view -> logic -> config
+        # after that, configToLogic is called which transfers all state AGAIN
+        # from the config to the logic
+        self._configVtkObj.apply_changes()
+        self.logicToConfig()
+    
 
 class scriptedConfigModuleMixin(introspectModuleMixin):
 
