@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.3 2003/02/17 20:07:01 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.4 2003/02/17 21:21:08 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -448,8 +448,8 @@ class ConfigVtkObj:
 	    m = "Get"+self.get_set_meths[i]
 	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
 
-	    # if the method requires a color make a button so the user
-	    # can choose the color!
+	    # if the method requires a colour make a button so the user
+	    # can choose the colour!
 	    if string.find (m[-5:], "Color") > -1:
                 cbut_id = wxNewId()
                 cbut = wxButton(parent=panel, id=cbut_id, label="Set"+m[3:])

@@ -1,6 +1,6 @@
-# $Id: dicomRDR.py,v 1.5 2003/02/10 15:31:33 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.6 2003/02/17 21:21:08 cpbotha Exp $
 
-import gen_utils
+import genUtils
 import os
 from moduleBase import moduleBase
 from moduleMixins import \
@@ -93,7 +93,7 @@ class dicomRDR(moduleBase,
         try:
             filenames_init = os.listdir(self._config.dicomDirname)
         except Exception, e:
-            gen_utils.log_error('Could not read DICOM directory: %s' % e)
+            genUtils.logError('Could not read DICOM directory: %s' % e)
             return
 
         # go through list of files in directory, perform trivial tests

@@ -1,10 +1,11 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.38 2003/02/17 17:20:44 cpbotha Exp $
+# $Id: graph_editor.py,v 1.39 2003/02/17 21:21:08 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
 from wxPython.ogl import *
+import genUtils
 import string
 import traceback
 
@@ -362,7 +363,7 @@ class graph_editor:
                 from_io_shape.dont_move()
                 to_io_shape.dont_move()
             except Exception, e:
-                gen_utils.log_error('Could not connect modules: %s' % (str(e)))
+                gen_utils.logError('Could not connect modules: %s' % (str(e)))
                 
     def disconnect_glyphs_by_ishape(self, ishape):
         if len(ishape.GetLines()) > 0:
@@ -390,7 +391,7 @@ class graph_editor:
                 # remove it from the canvas (actually the diagram)
                 self._graph_frame.shapeCanvas.RemoveShape(the_line)
             except Exception, e:
-                gen_utils.log_error('Could not disconnect modules: %s' \
+                gen_utils.logError('Could not disconnect modules: %s' \
                                     % (str(e)))
 
     def disconnect_glyphs_by_oshape(self, oshape):
@@ -596,7 +597,7 @@ class graph_editor:
             mm.delete_module(module_instance)
 
         except Exception, e:
-            gen_utils.log_error('Could not delete module: %s' % (str(e)))
+            gen_utils.logError('Could not delete module: %s' % (str(e)))
         
                          
             

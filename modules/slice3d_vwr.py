@@ -1,12 +1,12 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.14 2003/02/12 00:24:41 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.15 2003/02/17 21:21:08 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
 # * add 2 orthogonal views again
 # * 
 
-from gen_utils import log_error
+from genUtils import logError
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import vtk

@@ -5,7 +5,7 @@ from module_base import \
 from wxPython.wx import *
 from wxPython.xrc import *
 import vtk
-import gen_utils
+import genUtils
 import module_constants
 import module_utils
 import os
@@ -111,7 +111,7 @@ class vtk_vol_rdr(module_base,
             eval('self._reader.SetDataSpacing(%s)' %
                  (spacing_text.GetValue()))
         except Exception, e:
-            gen_utils.log_error(str(e))
+            genUtils.logError(str(e))
             
         
     def execute_module(self):

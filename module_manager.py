@@ -85,10 +85,10 @@ class module_manager:
 	    # then instantiate the requested class
 	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
 	except ImportError:
-	    genUtils.log_error("Unable to import module %s!" % name)
+	    genUtils.logError("Unable to import module %s!" % name)
 	    return None
 	except Exception, e:
-	    genUtils.log_error("Unable to instantiate module %s: %s" \
+	    genUtils.logError("Unable to instantiate module %s: %s" \
                                 % (name, str(e)))
 	    return None
 	# return the instance
