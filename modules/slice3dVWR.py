@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.22 2003/04/30 21:43:32 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.23 2003/04/30 22:15:44 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -573,8 +573,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         # take care of scalarbar
         self._showScalarBarForProp(None)
-        # and the moveWidget thingy
-        self._activatePropMove(None)
         
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
