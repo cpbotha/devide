@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsWRT.py,v 1.5 2003/02/17 23:07:17 cpbotha Exp $
+# $Id: vtkStructPtsWRT.py,v 1.6 2003/02/18 14:38:33 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -15,6 +15,14 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.__init__(self)
 
         self._writer = vtk.vtkStructuredPointsWriter()
+
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        self._writer.SetProgressText('Writing vtk Structured Points data')
+        mm = self._moduleManager
+        self._writer.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._writer))
+        
         # we do this to save space - if you're going to be transporting files
         # to other architectures, change this to ASCII
         self._writer.SetFileTypeToBinary()
@@ -69,15 +77,6 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         self._setViewFrameFilename(self._config.filename)
 
     def executeModule(self):
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-        self._writer.SetProgressText('Writing vtk Structured Points data')
-        mm = self._moduleManager
-        self._writer.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._writer))
-        
         if len(self._writer.GetFileName()):
             self._writer.Write()
 
@@ -87,8 +86,6 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._moduleManager.vtk_poll_error()
-
-        mm.setProgress(100, 'DONE writing vtk Structured Points data')
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

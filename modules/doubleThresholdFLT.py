@@ -15,6 +15,17 @@ class doubleThresholdFLT(moduleBase,
 
         self._imageThreshold = vtk.vtkImageThreshold()
 
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module - you could do this in __init__ as well, it seems
+        # neater here though
+        self._imageThreshold.SetProgressText('Thresholding data')
+        mm = self._moduleManager
+        self._imageThreshold.SetProgressMethod(lambda s=self, mm=mm:
+                                               mm.vtk_progress_cb(
+            s._imageThreshold))
+        
+
         self._outputTypes = {'Double': 'VTK_DOUBLE',
                              'Float' : 'VTK_FLOAT',
                              'Long'  : 'VTK_LONG',
@@ -155,16 +166,6 @@ class doubleThresholdFLT(moduleBase,
         self._viewFrame.outputDataTypeChoice.SetStringSelection(key)
 
     def executeModule(self):
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-        self._imageThreshold.SetProgressText('Thresholding data')
-        mm = self._moduleManager
-        self._imageThreshold.SetProgressMethod(lambda s=self, mm=mm:
-                                               mm.vtk_progress_cb(
-            s._imageThreshold))
-        
         self._imageThreshold.Update()
 
         # tell the vtk log file window to poll the file; if the file has
@@ -173,8 +174,6 @@ class doubleThresholdFLT(moduleBase,
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._moduleManager.vtk_poll_error()
-
-        mm.setProgress(100, 'DONE thresholding data')
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

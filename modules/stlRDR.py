@@ -1,4 +1,4 @@
-# $Id: stlRDR.py,v 1.3 2003/02/17 21:22:37 cpbotha Exp $
+# $Id: stlRDR.py,v 1.4 2003/02/18 14:38:33 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -24,6 +24,13 @@ class stlRDR(moduleBase, filenameViewModuleMixin):
         # setup necessary VTK objects
 	self._reader = vtk.vtkSTLReader()
 
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        self._reader.SetProgressText('Reading STL data')
+        mm = self._moduleManager
+        self._reader.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._reader))
+        
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('STL Reader',
                               'Select a filename',
@@ -74,15 +81,6 @@ class stlRDR(moduleBase, filenameViewModuleMixin):
         self._setViewFrameFilename(self._config.filename)
 
     def executeModule(self):
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-        self._reader.SetProgressText('Reading STL data')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
-        
         # get the vtkSTLReader to try and execute (if there's a filename)
         if len(self._reader.GetFileName()):        
             self._reader.Update()
@@ -93,9 +91,6 @@ class stlRDR(moduleBase, filenameViewModuleMixin):
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._moduleManager.vtk_poll_error()
-
-        # tell the user that we're done
-        mm.setProgress(100, 'DONE reading STL data')
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

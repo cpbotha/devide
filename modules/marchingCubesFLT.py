@@ -14,6 +14,17 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
         self._marchingCubes = vtk.vtkMarchingCubes()
 
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module - you could do this in __init__ as well, it seems
+        # neater here though
+        self._marchingCubes.SetProgressText('Performing marching cubes')
+        mm = self._moduleManager
+        self._marchingCubes.SetProgressMethod(lambda s=self, mm=mm:
+                                               mm.vtk_progress_cb(
+            s._marchingCubes))
+        
+
         # now setup some defaults before our sync
         self._config.isoValue = 128;
         self._config.rtu = 0
@@ -72,16 +83,6 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._viewFrame.realtimeUpdateCheckBox.SetValue(self._config.rtu)
 
     def executeModule(self):
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-        self._marchingCubes.SetProgressText('Performing marching cubes')
-        mm = self._moduleManager
-        self._marchingCubes.SetProgressMethod(lambda s=self, mm=mm:
-                                               mm.vtk_progress_cb(
-            s._marchingCubes))
-        
         self._marchingCubes.Update()
 
         # tell the vtk log file window to poll the file; if the file has
@@ -90,8 +91,6 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._moduleManager.vtk_poll_error()
-
-        mm.setProgress(100, 'DONE performing marching cubes')
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

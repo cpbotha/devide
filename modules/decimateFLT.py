@@ -18,6 +18,19 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._decimate = vtk.vtkDecimate()
         self._decimate.SetInput(self._triFilter.GetOutput())
 
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module
+        self._triFilter.SetProgressText('converting to triangles')
+        mm = self._moduleManager
+        self._triFilter.SetProgressMethod(lambda s=self, mm=mm:
+                                         mm.vtk_progress_cb(s._triFilter))
+        
+        self._decimate.SetProgressText('decimating mesh')
+        mm = self._moduleManager
+        self._decimate.SetProgressMethod(lambda s=self, mm=mm:
+                                         mm.vtk_progress_cb(s._decimate))
+
         # now setup some defaults before our sync
         self._config.targetReduction = self._decimate.GetTargetReduction()
 
@@ -72,16 +85,7 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
             self._config.targetReduction * 100.0)
 
     def executeModule(self):
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-        self._decimate.SetProgressText('decimating mesh')
-        mm = self._moduleManager
-        self._decimate.SetProgressMethod(lambda s=self, mm=mm:
-                                         mm.vtk_progress_cb(
-            s._decimate))
-        
+        # get the filter doing its thing
         self._decimate.Update()
 
         # tell the vtk log file window to poll the file; if the file has
@@ -90,8 +94,6 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._moduleManager.vtk_poll_error()
-
-        mm.setProgress(100, 'DONE decimating mesh')
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
