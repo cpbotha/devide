@@ -28,8 +28,7 @@ class module_manager:
 	for i in files:
 	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
 		self.module_files.append(os.path.splitext(i)[0])
-	# DON'T DO THIS HERE! (why not? - bloat!)
-	# exec('import ' + self.module_files[-1])
+
 	return self.module_files
 	
     def get_module_list(self):
@@ -94,7 +93,9 @@ class module_manager:
         """Default callback that can be used for VTK ProcessObject callbacks.
 
         In all VTK-using child classes, this method can be used if such a
-        class wants to show its process graphically.
+        class wants to show its process graphically.  You'll have to use
+        a lambda callback in order to pass the process_object along.  See
+        vtk_plydta_rdr.py for a simple example.
         """
 
         vtk_progress = process_object.GetProgress() * 100.0

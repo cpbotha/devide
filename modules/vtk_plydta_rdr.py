@@ -1,4 +1,4 @@
-# $Id: vtk_plydta_rdr.py,v 1.6 2002/05/19 14:22:32 cpbotha Exp $
+# $Id: vtk_plydta_rdr.py,v 1.7 2002/05/19 14:29:41 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -15,10 +15,19 @@ class vtk_plydta_rdr(module_base,
                      module_mixin_fo_dialog):
     
     def __init__(self, module_manager):
+        # call the constructor in the "base"
         module_base.__init__(self, module_manager)
+
+        # setup necessary VTK objects
 	self._reader = vtk.vtkPolyDataReader()
+
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module
         self._reader.SetProgressText('Reading VTK polydata')
-        self._reader.SetProgressMethod(lambda s=self: s._module_manager.vtk_progress_cb(s._reader))
+        mm = self._module_manager
+        self._reader.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._reader))
 	
         self._view_frame = None
         self.create_view_window()
