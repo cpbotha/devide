@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.43 2002/06/10 15:00:57 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.44 2002/06/10 16:00:44 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -102,7 +102,6 @@ class vtk_slice_vwr(module_base,
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
     def set_input(self, idx, input_stream):
-        print "starting set_input"
         if input_stream == None:
 
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
@@ -170,7 +169,6 @@ class vtk_slice_vwr(module_base,
                 self._renderers[0].ResetCamera()                
                 self._rwis[0].Render()
             elif input_stream.IsA('vtkImageData'):
-                print "vtkImageData clause..."
                 # if we already have a vtkStructuredPoints (or similar,
                 # we might want to use the IsA() method later) we must check
                 # the new dataset for certain requirements
@@ -222,11 +220,11 @@ class vtk_slice_vwr(module_base,
                     cur_pipe['vtkLookupTable'].SetWindow(1000)
                     cur_pipe['vtkLookupTable'].SetLevel(1000)
                     cur_pipe['vtkLookupTable'].Build()
-                    print "about to call slut"
-                    cur_pipe['vtkTexture'].SetLookupTable(cur_pipe['vtkLookupTable'])
-                    print "about to call si"
+                    cur_pipe['vtkTexture'].SetLookupTable(
+                        cur_pipe['vtkLookupTable'])
                     # connect output of reslicer to texture
-                    cur_pipe['vtkTexture'].SetInput(cur_pipe['vtkImageReslice'].GetOutput())
+                    cur_pipe['vtkTexture'].SetInput(
+                        cur_pipe['vtkImageReslice'].GetOutput())
                     # make sure the LUT is  going to be used
                     cur_pipe['vtkTexture'].MapColorScalarsThroughLookupTableOn()
 
