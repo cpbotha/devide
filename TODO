@@ -1,9 +1,13 @@
-$Id: TODO,v 1.7 2003/05/22 18:30:39 cpbotha Exp $
+$Id: TODO,v 1.8 2003/05/22 18:33:10 cpbotha Exp $
 
 * object menu for sliceVWR
 
 * split out dscas3-specific version of vtkPipeline... change buttons,
   change frame icon to that of dscas3, other enhancements
+
+* saving of arbitrary collection of modules, leading to network and pattern
+  saving (network: complete, pattern: macro) - for this we also need
+  rubber-banding
 
 - ideas for TF editor:
   * opacity curve overlaid on histogram of data
