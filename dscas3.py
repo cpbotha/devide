@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.63 2003/12/12 16:37:04 cpbotha Exp $
+# $Id: dscas3.py,v 1.64 2003/12/14 21:05:56 cpbotha Exp $
 
-DSCAS3_VERSION = '20031211 Four'
+DSCAS3_VERSION = '20031214 no-ITK'
 
 import getopt
-import os
 import mutex
+import os
+import re
 import stat
 import string
 import sys
@@ -277,7 +278,8 @@ class dscas3_app_t(wx.App):
         use.
         </p>
         <p>
-        wxPython %s, Python %s, VTK %s
+        wxPython %s, Python %s<br>
+        VTK %s
         </p>
         </center>
         </body>
@@ -286,10 +288,18 @@ class dscas3_app_t(wx.App):
 
         about = aboutDialog(self._mainFrame, -1, 'dummy')
         pyver = string.split(sys.version)[0]
+
+        # make VTK "official version" + date of nightly (so we know
+        # what to checkout)
+        vsv = vtk.vtkVersion.GetVTKSourceVersion()
+        # VTK source nightly date
+        vnd = re.match('.*\$Date: 2003/12/14 21:05:56 $.*', vsv).group(1)
+        vvs = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
+        
         about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION,
                                               wx.VERSION_STRING,
                                               pyver,
-                                              vtk.vtkVersion.GetVTKVersion()))
+                                              vvs))
 
         ir = about.htmlWindow.GetInternalRepresentation()
         ir.SetIndent(0, wx.html.HTML_INDENT_ALL)
