@@ -1,7 +1,7 @@
 # updates all DeVIDE dependencies except ITK and VTK
 # i.e. do a cvs update, a cmake and a build of:
 # vtkdevide, vtktud, wrapitk and, depending on ITK: wrapitk, ConnectVTKITK
-# $Id: updateAll.py,v 1.4 2005/01/11 22:51:30 cpbotha Exp $
+# $Id: updateAll.py,v 1.5 2005/01/12 22:32:34 cpbotha Exp $
 # authored by Charl P. Botha http://cpbotha.net/
 
 import getopt
@@ -55,31 +55,35 @@ def standardBuild(binary, slnFile):
     os.system(theBuildCommand)
     
 
-def doUpdates():
+def doUpdates(itkRequested):
     standardUpdate(defaults.devideTopLevel)
     standardUpdate(defaults.vtkdevideSource)
     standardUpdate(defaults.vtktudSource)
-    standardUpdate(defaults.wrapitkSource)
+    if itkRequested:
+        standardUpdate(defaults.wrapitkSource)
 
 def doBuilds():
     standardBuild(defaults.vtkdevideBinary, 'vtkdevide.sln')
     standardBuild(defaults.vtktudBinary, 'vtktud.sln')
-    standardBuild(defaults.wrapitkBinary, 'wrapitk.sln')
+    if itkRequested:
+        standardBuild(defaults.wrapitkBinary, 'wrapitk.sln')
 
 def dispUsage():
     print "-h or --help               : Display this message."
     print "--noUpdates                : Do not do any CVS updates."
     print "--noBuilds                 : Do not do any builds."
+    print "--noItk or --no-itk        : Do not build any itk-related source."
 
 def main():
     updatesRequested = True
     buildsRequested = True
+    itkRequested = True
     
     try:
         # 'p:' means -p with something after
         optlist, args = getopt.getopt(
             sys.argv[1:], 'h',
-            ['help', 'noUpdates', 'noBuilds'])
+            ['help', 'noUpdates', 'noBuilds', 'noItk', 'no-itk'])
 
     except getopt.GetoptError,e:
         dispUsage()
@@ -96,11 +100,14 @@ def main():
         elif o in ('--noBuilds'):
             buildsRequested = False
 
+        elif o in ('--noItk', '--no-itk'):
+            itkRequested = False
+
     if updatesRequested:
-        doUpdates()
+        doUpdates(itkRequested)
 
     if buildsRequested:
-        doBuilds()
+        doBuilds(itkRequested)
 
 if __name__ == '__main__':
     main()
