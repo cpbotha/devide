@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.27 2004/03/04 22:46:30 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.28 2004/03/05 14:21:46 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -459,7 +459,9 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             label = wx.StaticText(panel, -1, configTuple[0])
             gridSizer.Add(label, 0, wx.ALIGN_CENTER_VERTICAL, 0)
             text = wx.TextCtrl(panel, -1, "")
-            text.SetToolTip(wx.ToolTip(configTuple[4]))
+            if len(configTuple[4]) > 0:
+                text.SetToolTip(wx.ToolTip(configTuple[4]))
+                
             gridSizer.Add(text, 0, wx.EXPAND, 0)
             self._widgets[configTuple[0]] = text
 
