@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.14 2003/05/09 22:12:58 cpbotha Exp $
+# $Id: graphEditor.py,v 1.15 2003/05/12 15:47:30 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -552,8 +552,7 @@ class graphEditor:
                 (xmin, ymin), (xmax, ymax) = \
                        nearestGlyph.getTopLeftBottomRight()
 
-                # first check whether we should work according to angle
-                # or distance
+                # does it clip the horizontal bar
                 if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
                     midPointX = xmin + (xmax - xmin) / 2.0
                     if x1 < midPointX:
@@ -564,25 +563,26 @@ class graphEditor:
                     newY = nearestClipPoint[1]
                     if newY == ymin:
                         newY -= overshoot
-                        # try the insert
-                        #line.insertRoutingPoint(nearestClipPoint[0], newY)
-                        successfulInsert = line.insertRoutingPoint(newX, newY)
-#                         if not successfulInsert:
-#                             # if it failed, it's because we added a duplicate
-#                             # point, which means we're oscillating...
-#                             # move the schmuxor down and try again
-#                             newY += overshoot
-#                             si = line.insertRoutingPoint(newX, newY)
-#                             successfulInsert = si
+
                     else:
                         newY += overshoot
-                        #line.insertRoutingPoint(nearestClipPoint[0], newY)
-                        successfulInsert = line.insertRoutingPoint(newX, newY)
-#                         if not successfulInsert:
-#                             newY -= overshoot
-#                             si = line.insertRoutingPoint(newX, newY)
-#                             successfulInsert = si
+                        
+                    # if there are clips on the new segment, add an extra
+                    # node to avoid those clips!
+                    newSegmentClipped = False
+                    glyph = allGlyphs[0]
+#                     while not newSegmentClipped:
+#                         cp = self._cohenSutherLandClip(x0,y0,newX,newY)
+#                         if cp:
+#                             newSegmentClipped = True
+                        
+#                     if newSegmentClipped:
+#                         print "Extra node added to avoid new clips."
+#                         line.insertRoutingPoint(nearestClipPoint[0], newY)
+                        
+                    successfulInsert = line.insertRoutingPoint(newX, newY)
                     
+                # or does it clip the vertical bar
                 elif nearestClipPoint[0] == xmin or \
                          nearestClipPoint[0] == xmax:
                     midPointY = ymin + (ymax - ymin) / 2.0
@@ -596,9 +596,21 @@ class graphEditor:
                         newX -= overshoot
                     else:
                         newX += overshoot
+
+
+                    # if there are clips on the new segment, add an extra
+                    # node to avoid those clips!
+                    newSegmentClipped = False
+                    glyph = allGlyphs[0]
+#                     while not newSegmentClipped:
+#                         cp = self._cohenSutherLandClip(x0,y0,newX,newY)
+#                         if cp:
+#                             newSegmentClipped = True
                         
-                    # duplicates should never happen here!
-                    #line.insertRoutingPoint(newX, nearestClipPoint[1])
+#                     if newSegmentClipped:
+#                         print "Extra node added to avoid new clips."
+#                         line.insertRoutingPoint(newX, nearestClipPoint[1])
+                        
                     successfulInsert = line.insertRoutingPoint(newX, newY)
 
                 else:
