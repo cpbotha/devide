@@ -13,7 +13,7 @@ class probeFilter(noConfigModuleMixin, moduleBase):
     i.e. the interpolated values will be associated as the attributes of the
     polydata points.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -21,7 +21,19 @@ class probeFilter(noConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
+        # what a lame-assed filter, we have to make dummy inputs!
+        # if we don't have a dummy input (but instead a None input) it
+        # bitterly complains when we do a GetOutput() (it needs the input
+        # to know the type of the output) - and GetPolyDataOutput() also
+        # doesn't work.
+        # NB: this does mean that our probeFilter NEEDS a PolyData as
+        # probe geometry!
+        ss = vtk.vtkSphereSource()
+        ss.SetRadius(0)
+        self._dummyInput = ss.GetOutput()
+        
         self._probeFilter = vtk.vtkProbeFilter()
+        self._probeFilter.SetInput(self._dummyInput)
 
         moduleUtils.setupVTKObjectProgress(self, self._probeFilter,
                                            'Mapping source on input')
@@ -45,13 +57,20 @@ class probeFilter(noConfigModuleMixin, moduleBase):
         
         # get rid of our reference
         del self._probeFilter
+        del self._dummyInput
 
     def getInputDescriptions(self):
         return ('Input', 'Source')
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            self._probeFilter.SetInput(inputStream)
+            if inputStream == None:
+                # we don't really disconnect, we just reset the dummy
+                # input...
+                self._probeFilter.SetInput(self._dummyInput)
+            else:
+                self._probeFilter.SetInput(inputStream)
+
         else:
             self._probeFilter.SetSource(inputStream)
 
