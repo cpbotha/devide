@@ -4,16 +4,16 @@ import sys
 
 if sys.platform.startswith('win'):
     INSTALLER_DIR = 'c:\\build\\Installer'
-    D3_DIR = 'c:\\work\\code\\dscas3'
-    exeName = 'builddscas3/dscas3.exe'    
+    D3_DIR = 'c:\\work\\code\\devide'
+    exeName = 'builddevide/devide.exe'    
 else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
-    D3_DIR = '/home/cpbotha/work/code/dscas3'
-    exeName = 'builddscas3/dscas3'
+    D3_DIR = '/home/cpbotha/work/code/devide'
+    exeName = 'builddevide/devide'
 
 print "[*] D3_DIR == %s" % (D3_DIR)
 print "[*] exeName == %s" % (exeName)
-mainScript = os.path.join(D3_DIR, 'dscas3.py')
+mainScript = os.path.join(D3_DIR, 'devide.py')
 print "[*] mainScript == %s" % (mainScript)
 
 # segments
@@ -69,7 +69,7 @@ exe = EXE(pyz,
           a.scripts, #+ [('v', '', 'OPTION')], # Python is ran with -v
           exclude_binaries=1,
           name=exeName,
-          icon=os.path.join(D3_DIR, 'resources/graphics/dscas3logo64x64.ico'),
+          icon=os.path.join(D3_DIR, 'resources/graphics/devidelogo64x64.ico'),
           debug=0,
           strip=0,
           console=1 )
@@ -86,5 +86,5 @@ binaries = [i for i in allBinaries if i[0].lower() not in removeNames]
 coll = COLLECT(exe,
                binaries,
                strip=0,
-               name='distdscas3')
+               name='distdevide')
 
