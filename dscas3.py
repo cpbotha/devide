@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.23 2003/05/04 20:59:14 cpbotha Exp $
+# $Id: dscas3.py,v 1.24 2003/05/04 21:24:28 cpbotha Exp $
 
 DSCAS3_VERSION = '20030504'
 
@@ -259,13 +259,25 @@ class dscas3_app_t(wxApp):
                    progress != self._currentProgress:
                if progress >= 100 or \
                   time.time() - self._previousProgressTime >= 1:
-                   print "IN " + message
+                   #print "IN " + message
                    self._previousProgressTime = time.time()
                    self._inProgress = 1
                    self._currentProgressMsg = message
                    self._currentProgress = progress
                    self._mainFrame.progressGauge.SetValue(progress)
                    self._mainFrame.progressText.SetLabel(message)
+
+                   # deactivate the busy cursor
+                   if progress < 100:
+                       if not wxIsBusy():
+                           print "calling wxBeginBusyCursor!"
+                           wxBeginBusyCursor()
+                   # or set it...
+                   else:
+                       if wxIsBusy():
+                           print "calling wxEndBusyCursor!"
+                           wxEndBusyCursor()
+                   
                    # bring this window to the top
                    # self._mainFrame.Raise()
                    # let's rather not!
@@ -279,7 +291,7 @@ class dscas3_app_t(wxApp):
                    #self._mainFrame.Update()
                    #print "done calling yield"
                    self._inProgress = 0
-                   print "OUT " + message
+                   #print "OUT " + message
 
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog

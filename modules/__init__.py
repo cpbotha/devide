@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.30 2003/05/04 02:01:53 cpbotha Exp $
+# $Id: __init__.py,v 1.31 2003/05/04 21:24:28 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -13,7 +13,6 @@ module_list = ['contourFLT',
                'polyDataConnectFLT',
                'rawVolumeRDR',
                'seedConnectFLT',
-               'shellSplatSegmentedFLT',
                'shellSplatSimpleFLT',
 	       'slice3dVWR',
                'stlRDR',
