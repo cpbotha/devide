@@ -1,7 +1,18 @@
-D3_DIR = '/home/cpbotha/work/code/dscas3'
-
 import os
 import fnmatch
+import sys
+
+if sys.platform.startswith('win'):
+    D3_DIR = 'c:\\work\\code\\dscas3'
+    exeName = 'builddscas3/dscas3.exe'    
+else:
+    D3_DIR = '/home/cpbotha/work/code/dscas3'
+    exeName = 'builddscas3/dscas3'
+
+print "[*] D3_DIR == %s" % (D3_DIR)
+print "[*] exeName == %s" % (exeName)
+mainScript = os.path.join(D3_DIR, 'dscas3.py')
+print "[*] mainScript == %s" % (mainScript)
 
 # USER MODULES
 
@@ -18,36 +29,46 @@ vpli = [(os.path.join('Icons', i),
          os.path.join(vpli_dir, i), 'DATA')
         for i in os.listdir(vpli_dir) if fnmatch.fnmatch(i, '*.xpm')]
 
-# under linux, libpython is shared -- McMillan installer doesn't know
-# about this...
-# also copy the hdf libs
-extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0','BINARY'),
-    ('libmfhdf.so.4', '/usr/lib/libmfhdf.so.4','BINARY'),
-    ('libdf.so.4', '/usr/lib/libdf.so.4','BINARY')]
+if sys.platform.startswith('win'):
+    extraLibs = []
+    removeLibs = []
+else:
+    # under linux, libpython is shared -- McMillan installer doesn't know
+    # about this...
+    # also copy the hdf libs
+    extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
+                  'BINARY'),
+                 ('libmfhdf.so.4', '/usr/lib/libmfhdf.so.4','BINARY'),
+                 ('libdf.so.4', '/usr/lib/libdf.so.4','BINARY')]
     
-# these libs will be removed from the package
-removeLibs = [('libGLU.so.1', '', ''), ('libICE.so.6','',''),
-              ('libSM.so.6', '', ''), ('libX11.so.6', '', ''), 
-              ('libXext.so.6', '', ''), ('libXi.so.6', '', ''), 
-              ('libXt.so.6', '', '')]
+    # these libs will be removed from the package
+    removeLibs = [('libGLU.so.1', '', ''), ('libICE.so.6','',''),
+                  ('libSM.so.6', '', ''), ('libX11.so.6', '', ''), 
+                  ('libXext.so.6', '', ''), ('libXi.so.6', '', ''), 
+                  ('libXt.so.6', '', '')]
 
 ##########################################################################
 
-a = Analysis(['/home/cpbotha/build/Installer/support/_mountzlib.py',
-    	      '/home/cpbotha/build/Installer/support/useUnicode.py',
-              '/home/cpbotha/work/code/dscas3/dscas3.py'],
+
+a = Analysis(['c:\\build\\Installer\\support\\_mountzlib.py',
+              'c:\\build\\Installer\\support\\useUnicode.py',
+              mainScript],
              pathex=[],
-             hookspath=['/home/cpbotha/work/code/dscas3/installer/hooks'])
+             hookspath=[os.path.join(D3_DIR, 'installer\\hooks\\')])
 
 pyz = PYZ(a.pure)
 
-exe = EXE(pyz,
-          a.scripts, #+ [('v', '', 'OPTION')], # for debugging of lib loading
-          exclude_binaries=1,
-          name='builddscas3/dscas3',
-          debug=0, # switch on for more debugging info
-          console=1)
 
-coll = COLLECT(exe,
-               a.binaries - removeLibs + umods + vpli + extraLibs,
+    
+exe = EXE(pyz,
+          a.scripts, #+ [('v', '', 'OPTION')],
+          exclude_binaries=1,
+          name=exeName,
+          debug=0,
+          strip=0,
+          console=1 )
+
+coll = COLLECT( exe,
+               a.binaries + umods + vpli,
+               strip=0,
                name='distdscas3')

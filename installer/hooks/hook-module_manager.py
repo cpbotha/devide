@@ -1,7 +1,11 @@
 import os
 import sys
 
-sys.path.insert(0, '/home/cpbotha/work/code/dscas3/')
+if sys.platform.startswith('win'):
+    sys.path.insert(0, 'c:/work/code/dscas3/')
+else:
+    sys.path.insert(0, '/home/cpbotha/work/code/dscas3/')
+
 import modules
 
 # * we need to give the module paths relative to the directory module_manager
@@ -12,4 +16,5 @@ import modules
 ml2 = ["modules." + i for i in modules.module_list]
 hiddenimports = ml2
 
+print "[*] hook-module_manager.py - HIDDENIMPORTS"
 print hiddenimports
