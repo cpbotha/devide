@@ -1,4 +1,4 @@
-# $Id: ifdocRDR.py,v 1.7 2003/09/06 16:14:01 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.8 2003/09/06 18:47:53 cpbotha Exp $
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import md5
@@ -45,7 +45,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.__init__(self)
         
         # setup our output
-        self._mFileMatrices = mData(self)
+        self._mData = mData(self)
 
         # setup the md5sum variable so that we know when the file has changed
         self._md5HexDigest = ''
@@ -63,8 +63,8 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         
     def close(self):
         filenameViewModuleMixin.close(self)
-        self._mFileMatrices.close()
-        del self._mFileMatrices
+        self._mData.close()
+        del self._mData
 
     def getInputDescriptions(self):
         return ()
@@ -73,10 +73,10 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         raise Exception, 'This module does not accept any input.'
 
     def getOutputDescriptions(self):
-        return ('ifdoc m-file matrices',)
+        return ('ifdoc m-Data',)
 
     def getOutput(self, idx):
-        return self._mFileMatrices
+        return self._mData
 
     def logicToConfig(self):
         """Synchronise internal configuration information (usually
@@ -106,11 +106,39 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         """
         self._setViewFrameFilename(self._config.mFilename)
 
+    def parseMDict(self, mDict, mData):
+        """After a file has been parsed by a suitable call to parseMFile,
+        this method will perform higher level parsing.  Relevant data
+        structures in mDict (the result of parseMFile) will be interpreted
+        and inserted into mData.
+        """
+
+        # column is time, rows are coordinates of various points
+        # matrix is row, column ordered
+        pposMatrix = mDict['ppos']
+
+        # let's clear out our ppos
+        mData.ppos = [{} for i in xrange(len(pposMatrix[0]))]
+        
+        rowIdx = 0
+        for pointName in ['ac', 'ts', 'ai', 'ghr', 'er', 'em', 'el', 'wr',
+                          'hcog']:
+            rows = pposMatrix[rowIdx:rowIdx+3]
+            # go through all timesteps, storing the currently active point
+            for timeStep in xrange(len(mData.ppos)):
+                mData.ppos[timeStep][pointName] = (rows[0][timeStep],
+                                                   rows[1][timeStep],
+                                                   rows[2][timeStep])
+            
+            rowIdx += 3
 
     def parseMFile(self, fileBuffer, variableNameList):
         """This will parse fileBuffer for any variable = [ lines and
         return these as lists of lists in a dictionary with
         matlab variable name as key.
+
+        Use this as a raw parser for matlab files, i.e. it just returns
+        the raw matrices.
         """
         
         # build regular expressions that'll catch any of the variables
@@ -152,7 +180,6 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
                       'Non-constant number of columns in in matrix %s' % \
                       (groupTuple[0],)
 
-            print cDict
             variableDict[groupTuple[0]] = floats
 
         return variableDict
@@ -262,15 +289,14 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
             # this exception will trigger the handler in moduleManager
             mDict = self.parseMFile(mBuffer, ['ppos'])
 
-#             # we have to do it this way as we're using a special class
-#             self._mFileMatrices.clear()
-#             self._mFileMatrices.update(mDict)
+            # this will clear necessary structures as well
+            self.parseMDict(mDict, self._mData)
 
-#             # now indicate that we've changed stuff
-#             self._mFileMatrices.notify()
+            # now indicate that we've changed stuff
+            self._mData.notify()
 
-#             # and update our digest
-#             self._md5HexDigest = newHexDigest
+            # and update our digest
+            self._md5HexDigest = newHexDigest
 
     def view(self, parent_window=None):
         # if the window is already visible, raise it

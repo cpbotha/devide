@@ -14,4 +14,11 @@ Windows:
   hotfixes for your specific operating system.  http://www.windowsupdate.com/
   will do all of this automatically.
 
-$Id: ReadMe.txt,v 1.1 2003/05/14 21:35:29 cpbotha Exp $
+Architecture note
+-----------------
+
+As is the case with all things Python, this is not absolute, but try
+never to call module methods directly: always work via the
+moduleManager.
+
+$Id: ReadMe.txt,v 1.2 2003/09/06 18:47:53 cpbotha Exp $

@@ -1,14 +1,11 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.5 2003/09/02 15:37:01 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.6 2003/09/06 18:47:53 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
-# * connect observer to self._mFileMatrices, update INTERNAL matrix forms
+# * connect observer to self._mData, update INTERNAL matrix forms
 #   when it notifies... that way, doTimeStep doesn't have to parse the whole
 #   frikking matrix everytime.
-# * think about: ifdocRDR could do more of this parsing, that's what it's for
-#   isn't it?
-
 from moduleBase import moduleBase
 import moduleUtils
 import time
@@ -23,7 +20,7 @@ class ifdocVWR(moduleBase):
         # base constructor
         moduleBase.__init__(self, moduleManager)
 
-        self._mFileMatrices = None
+        self._mData = None
 
         self._createViewFrames()
         self._bindEvents()
@@ -39,7 +36,7 @@ class ifdocVWR(moduleBase):
         moduleBase.close(self)
 
         # get rid of all the refs we carry
-        del self._mFileMatrices
+        del self._mData
 
         # we should be able to take care of our renderwindow now
         # we have to do this nasty trick until my Finalize changes are
@@ -54,22 +51,21 @@ class ifdocVWR(moduleBase):
         del self.controlFrame
 
     def getInputDescriptions(self):
-        return ('ifdoc m-file matrices',)
+        return ('ifdoc m-Data',)
 
     def setInput(self, idx, inputStream):
         # don't forget to register as an observer
-        self._mFileMatrices = inputStream
+        self._mData = inputStream
 
-        if self._mFileMatrices != None:
-            self._mFileMatrices.Update()
-            ppos = self._mFileMatrices['ppos']
-            self.doTimeStep(ppos, 0)
+        if self._mData != None:
+            self._mData.Update()
+            self.doTimeStep(0)
             self.updateRender()
             self._threedRenderer.ResetCamera()
 
             # setup the slider
             # number of timeSteps == columns
-            timeSteps = len(ppos[0])
+            timeSteps = len(self._mData.ppos)
 
             # setup UI
             self.controlFrame.timeStepSlider.SetRange(0, timeSteps - 1)
@@ -130,21 +126,21 @@ class ifdocVWR(moduleBase):
         """
 
         # make sure our data is up to date
-        self._mFileMatrices.Update()
-        if self._mFileMatrices:
-            ppos =  self._mFileMatrices['ppos']
+        self._mData.Update()
+        if self._mData:
+            ppos =  self._mData.ppos
 
             # timesteps are columns of ppos
-            timeSteps = len(ppos[0])
+            timeSteps = len(ppos)
 
             for timeStep in range(timeSteps):
                 self.updateRender()
                 wxSafeYield()
-                self.doTimeStep(ppos, timeStep)
+                self.doTimeStep(timeStep)
                 time.sleep(0.2)
 
             time.sleep(0.5)
-            self.doTimeStep(ppos, 0)
+            self.doTimeStep(0)
             wxSafeYield()
             self.updateRender()
 
@@ -224,35 +220,26 @@ class ifdocVWR(moduleBase):
 
         actor.GetProperty().SetColor(0,1.0,0)
         
-    def doTimeStep(self, ppos, timeStep):
+    def doTimeStep(self, timeStep):
         """timeStep is 0-based.
         """
 
-        # rather modify this to break out the WHOLE ppos matrix in one
-        # go... return a list of dicts, where first index is timeStep
-        # and each timeStep has a dictionary with the points
-        rowIdx = 0
-        coordDict = {}
-        for pointName in ['ac', 'ts', 'ai', 'gh', 'e', 'em', 'el', 'w']:
-            rows = ppos[rowIdx:rowIdx+3]
-            coordDict[pointName] = [row[timeStep] for row in rows]
-            rowIdx += 3
-
+        currentTimeStep = self._mData.ppos[timeStep]
         # now use the coordinates to set up the geometry
-        self._lineSourceDict['acts'].SetPoint1(coordDict['ac'])
-        self._lineSourceDict['acts'].SetPoint2(coordDict['ts'])
+        self._lineSourceDict['acts'].SetPoint1(currentTimeStep['ac'])
+        self._lineSourceDict['acts'].SetPoint2(currentTimeStep['ts'])
 
-        self._lineSourceDict['acai'].SetPoint1(coordDict['ac'])
-        self._lineSourceDict['acai'].SetPoint2(coordDict['ai'])
+        self._lineSourceDict['acai'].SetPoint1(currentTimeStep['ac'])
+        self._lineSourceDict['acai'].SetPoint2(currentTimeStep['ai'])
 
-        self._lineSourceDict['tsai'].SetPoint1(coordDict['ts'])
-        self._lineSourceDict['tsai'].SetPoint2(coordDict['ai'])
+        self._lineSourceDict['tsai'].SetPoint1(currentTimeStep['ts'])
+        self._lineSourceDict['tsai'].SetPoint2(currentTimeStep['ai'])
 
-        self._lineSourceDict['ghe'].SetPoint1(coordDict['gh'])
-        self._lineSourceDict['ghe'].SetPoint2(coordDict['e'])
+        self._lineSourceDict['ghe'].SetPoint1(currentTimeStep['ghr'])
+        self._lineSourceDict['ghe'].SetPoint2(currentTimeStep['er'])
 
-        self._lineSourceDict['ew'].SetPoint1(coordDict['e'])
-        self._lineSourceDict['ew'].SetPoint2(coordDict['w'])
+        self._lineSourceDict['ew'].SetPoint1(currentTimeStep['er'])
+        self._lineSourceDict['ew'].SetPoint2(currentTimeStep['wr'])
         
         # make sure everything is up to date
         self._appendPolyData.Update()
@@ -266,8 +253,7 @@ class ifdocVWR(moduleBase):
 
     def _handlerTimeStepSlider(self, event):
         timeStep = self.controlFrame.timeStepSlider.GetValue()
-        ppos = self._mFileMatrices['ppos']
-        self.doTimeStep(ppos, timeStep)
+        self.doTimeStep(timeStep)
         self.updateRender()
 
     def updateRender(self):
