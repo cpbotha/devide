@@ -1,4 +1,4 @@
-# $Id: transform2D.py,v 1.4 2004/03/30 11:07:29 cpbotha Exp $
+# $Id: transform2D.py,v 1.5 2004/03/30 13:56:03 cpbotha Exp $
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should
@@ -6,13 +6,14 @@
 
 from imageStackRDR import imageStackClass
 from moduleBase import moduleBase
+from moduleMixins import noConfigModuleMixin
 import fixitk as itk
 from typeModules.transformStackClass import transformStackClass
 from typeModules.imageStackClass import imageStackClass
 import  vtk
 import ConnectVTKITKPython as CVIPy
 
-class transform2D(moduleBase):
+class transform2D(noConfigModuleMixin, moduleBase):
 
     """This apply a stack of transforms to a stack of images in an
     accumulative fashion, i.e. imageN is transformed:
@@ -25,6 +26,7 @@ class transform2D(moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
+        noConfigModuleMixin.__init__(self)
 
         self._imageStack = None
         self._transformStack = None
@@ -35,6 +37,12 @@ class transform2D(moduleBase):
         # stack of images should become volume
         self._imageAppend.SetAppendAxis(2)
 
+        self._viewFrame = self._createViewFrame(
+            {'Module (self)' : self})
+        self.configToLogic()
+        self.syncViewWithLogic()
+             
+
     def close(self):
         # just in case
         self.setInput(0, None)
@@ -44,6 +52,8 @@ class transform2D(moduleBase):
         self._destroyPipelines()
         del self._itkExporterStack
         del self._imageAppend
+
+        noConfigModuleMixin.close(self)
 
         moduleBase.close(self)
 
@@ -127,7 +137,16 @@ class transform2D(moduleBase):
     def executeModule(self):
         pass
 
-    def view(self):
+    def logicToConfig(self):
+        pass
+    
+    def configToLogic(self):
+        pass
+    
+    def viewToConfig(self):
+        pass
+
+    def configToView(self):
         pass
 
     # ----------------------------------------------------------------------
@@ -155,16 +174,25 @@ class transform2D(moduleBase):
         totalTrfm.SetIdentity()
         
         prevImage = self._imageStack[0]
-        for trfm, img, i in zip(self._transformStack[1:],
-                                self._imageStack[1:],
-                                range(len(self._imageStack) - 1)):
+        for trfm, img, i in zip(self._transformStack,
+                                self._imageStack,
+                                range(len(self._imageStack))):
             # accumulate with our totalTransform
             totalTrfm.Compose(trfm.GetPointer(), 0)
             # make a copy of the totalTransform that we can use on
             # THIS image
-            pda = totalTrfm.GetParameters()
+
             copyTotalTrfm = itk.itkEuler2DTransform_New()
-            copyTotalTrfm.SetParameters(pda)
+            # this is a really kludge way to copy the total transform,
+            # as concatenation doesn't update the Parameters member, so
+            # getting and setting parameters is not the way to go
+            copyTotalTrfm.SetIdentity()
+            copyTotalTrfm.Compose(totalTrfm.GetPointer(),0)
+
+            # this SHOULD have worked
+            #pda = totalTrfm.GetParameters()
+            #copyTotalTrfm.SetParameters(pda)
+            
             # this actually increases the ref count of the transform!
             # resampler
             resampler = itk.itkResampleImageFilterF2F2_New()
@@ -194,7 +222,10 @@ class transform2D(moduleBase):
             CVIPy.ConnectITKUS2ToVTK(itkExporter.GetPointer(),
                                      vtkImporter)
 
-            self._imageAppend.AddInput(vtkImporter.GetOutput())
+            # FIXME KLUDGE: we ignore image 0 (this is for joris)
+            #if i > 0:
+            if True:
+                self._imageAppend.AddInput(vtkImporter.GetOutput())
 
             # setup the previous Image for the next loop
             prevImage = img
