@@ -18,7 +18,7 @@ class module_manager:
 
         appdir = self._dscas3_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
-        self._user_modules_dir = os.path.join(appdir, 'user_modules')
+        self._userModules_dir = os.path.join(appdir, 'userModules')
         
 	# make first scan of available modules
 	self.scan_modules()
@@ -42,7 +42,7 @@ class module_manager:
 	the list self.module_files."""
         self.module_list = []
 
-	user_files = os.listdir(self._user_modules_dir)
+	user_files = os.listdir(self._userModules_dir)
 
 	for i in user_files:
 	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
@@ -72,7 +72,7 @@ class module_manager:
     def create_module(self, name):
 	try:
             # find out whether it's built-in or user
-            mtypePrefix = ['user_modules', 'modules']\
+            mtypePrefix = ['userModules', 'modules']\
                           [bool(name in modules.module_list)]
             fullName = mtypePrefix + '.' + name
 	    # import the correct module
