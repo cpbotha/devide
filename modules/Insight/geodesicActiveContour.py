@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.6 2004/03/02 13:33:54 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.7 2004/03/03 11:26:25 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -22,7 +22,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
     geodesicActiveContour object.  Also see figure 9.18 in the ITK
     Software Guide.
 
-    $Revision: 1.6 $
+    $Revision: 1.7 $
     """
 
     def __init__(self, moduleManager):
@@ -79,9 +79,19 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
     def setInput(self, idx, inputStream):
         self._inputImageCast.SetInput(inputStream)
+        if inputStream != None:
+            inputStream.Update()
+            dims = inputStream.GetDimensions()
+            print dims
+            sz = itk.itkSize3()
+            sz.SetElement(0, dims[0])
+            sz.SetElement(1, dims[1])
+            sz.SetElement(2, dims[2])            
+            
+            self._fastMarching.SetOutputSize(sz)
 
     def getOutputDescriptions(self):
-        return ('Image Data', )
+        return ('Image Data',)
 
     def getOutput(self, idx):
         #return self._pSource.GetStructuredPointsOutput()
@@ -96,9 +106,9 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         # FIXME: make sure points are here
         seedPosition = itk.itkIndex3()
         # test position with r256 (this could take a while)
-        seedPosition.SetElement(0, 0)
-        seedPosition.SetElement(1, 0)
-        seedPosition.SetElement(2, 0)        
+        seedPosition.SetElement(0, 19)
+        seedPosition.SetElement(1, 25)
+        seedPosition.SetElement(2, 43)        
 
         seedValue = - self._config.initialDistance
         node = itk.itkLevelSetNodeF3()
@@ -138,7 +148,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         
         # ITK 1: smoothing -> gradientMagnitude -> sigmoid -> FI
         smoothing = itk.itkCurvatureAnisotropicDiffusionImageFilterF3F3_New()
-        smoothing.SetTimeStep( 0.125 );
+        smoothing.SetTimeStep( 0.0625 );
         smoothing.SetNumberOfIterations(  5 );
         smoothing.SetConductanceParameter( 3.0 );
         self._smoothing = smoothing
@@ -150,30 +160,27 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         gradientMagnitude = gM
         gradientMagnitude.SetInput( smoothing.GetOutput() );
         self._gradientMagnitude = gradientMagnitude
+        moduleUtilsITK.setupITKObjectProgress(
+            self, gradientMagnitude,
+            'itkGradientMagnitudeRecursiveGaussianImageFilter',
+            'Calculating gradient magnitude')
 
         sigmoid = itk.itkSigmoidImageFilterF3F3_New()
         sigmoid.SetOutputMinimum(  0.0  );
         sigmoid.SetOutputMaximum(  1.0  );
         sigmoid.SetInput( gradientMagnitude.GetOutput() );
         self._sigmoid = sigmoid
+        moduleUtilsITK.setupITKObjectProgress(
+            self, sigmoid,
+            'itkSigmoidImageFilter', 'Calculating feature image with sigmoid')
 
         # ITK 2: fastMarching -> geodesicActiveContour(FI) -> thresholder
         fastMarching = itk.itkFastMarchingImageFilterF3F3_New()
         fastMarching.SetSpeedConstant(1.0)
         self._fastMarching = fastMarching
-
-        def fmSetSizeCallable():
-            # this will get called as soon as fastMarching's UpdateOutputData
-            # is called... (see itkProcessObject)
-            print "fmSetSizeCallable"
-            # 1. first we must make sure that the output size is good
-            self._itkImporter.GetOutput().Update()
-            fastMarching.SetOutputSize(
-                self._itkImporter.GetOutput().GetBufferedRegion().GetSize())
-
-        pc = itk.itkPyCommand_New()
-        pc.SetCommandCallable(fmSetSizeCallable)
-        self._smoothing.AddObserver(itk.itkEndEvent(), pc.GetPointer())
+        moduleUtilsITK.setupITKObjectProgress(
+            self, fastMarching,
+            'itkFastMarchingImageFilter', 'Calculating initial distance field')
 
         gAC = itk.itkGeodesicActiveContourLevelSetImageFilterF3F3_New()
         geodesicActiveContour = gAC
@@ -189,19 +196,6 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
             'GeodesicActiveContourLevelSetImageFilter',
             'Growing active contour')
 
-        def gACCallable():
-            # make sure our feature image is up to date before we even
-            # start...
-            sigmoid.Update()
-            # updating the sigmoid will also trigger an update of the
-            # smoothing filter, which in its turn will make sure the
-            # fastMarching has the correct size set
-            
-        pc = itk.itkPyCommand_New()
-        pc.SetCommandCallable(gACCallable)
-        self._geodesicActiveContour.AddObserver(itk.itkStartEvent(),
-                                                pc.GetPointer())
-
         thresholder = itk.itkBinaryThresholdImageFilterF3US3_New()
         thresholder.SetLowerThreshold( -1000.0 );
         thresholder.SetUpperThreshold( 0.0 );
@@ -209,6 +203,11 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         thresholder.SetInsideValue( 65535 );
         thresholder.SetInput( geodesicActiveContour.GetOutput() );
         self._thresholder = thresholder
+        moduleUtilsITK.setupITKObjectProgress(
+            self, thresholder,
+            'itkBinaryThresholdImageFilter',
+            'Thresholding segmented areas')
+
 
     def _createConnectPipeline(self):
         """When creating a new VTK->ITK-VTK pipeline, copy this method,
@@ -237,14 +236,6 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         CVIPy.ConnectITKUS3ToVTK(
             self._itkExporter.GetPointer(), self._vtkImporter)
 
-        # we use this trick to make sure that any VTK updates are caught
-        # so that we have the opportunity call the ITK Update() manually
-        # from Python (so that we can catch exceptions)
-        # also see _psExecute
-        #self._pSource = vtk.vtkProgrammableSource()
-        #self._pSource.SetExecuteMethod(self._psExecute)
-
-        # final FINAL output is self._pSource.GetStructuredPointsOutput()
 
     def _destroyConnectPipeline(self):
         del self._inputImageCast
