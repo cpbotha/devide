@@ -5,6 +5,7 @@ import modules
 import mutex
 from whrandom import choice
 
+
 class metaModule:
     """Class used to store module-related information.
     """
@@ -88,7 +89,7 @@ class moduleManager:
 	
     def getAvailableModuleList(self):
 	return self._availableModuleList
-    
+
     def get_modules_dir(self):
 	return self._modules_dir
 

@@ -122,15 +122,11 @@ class wsMeshSmoothFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # requires it and so that it's available in this namespace.
         import modules.resources.python.wsMeshSmoothFLTViewFrame
 
-        # find our parent window and instantiate the frame
-        pw = mm.get_module_view_parent_window()
-        viewFrame = \
-                  modules.resources.python.wsMeshSmoothFLTViewFrame.\
-                  wsMeshSmoothFLTViewFrame(pw, -1, 'dummy')
-
-        # make sure that a close of that window does the right thing (VERY NB)
-        EVT_CLOSE(viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(False))
+        # instantiate the view frame, add close handler, set default icon
+        viewFrame = moduleUtils.instantiateModuleViewFrame(
+            'wsMeshSmooth', mm,
+            modules.resources.python.wsMeshSmoothFLTViewFrame.\
+            wsMeshSmoothFLTViewFrame)
 
         # setup introspection with default everythings
         objectDict = {'vtkWindowedSincPolyDataFilter': self._wsPDFilter}

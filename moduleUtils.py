@@ -1,9 +1,10 @@
-# $Id: moduleUtils.py,v 1.10 2003/05/13 10:33:16 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.11 2003/05/20 17:16:57 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
      vtkPipelineBrowser
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
+import resources.graphics.images
 
 def bind_CSAEO(module, view_frame):
     # it seems wxID_CANCEL (and probably some others) is an exception
@@ -175,6 +176,8 @@ def bindCSAEO(module, view_frame):
     view_frame.SetAcceleratorTable(accel_table)
 
 def createStandardObjectAndPipelineIntrospection(d3module,
+
+                                                 
                                                  viewFrame, viewFramePanel,
                                                  objectDict, renderWindow):
        
@@ -231,6 +234,26 @@ def createStandardObjectAndPipelineIntrospection(d3module,
                                         renderWindow,
                                         objectChoice, objectChoiceId,
                                         pipelineButtonId)
+
+def getModuleIcon():
+    icon = wxEmptyIcon()
+    icon.CopyFromBitmap(
+        resources.graphics.images.getdscas3logom32x32Bitmap())
+    return icon
+    
+def instantiateModuleViewFrame(name, moduleManager, frameClass):
+    # instantiate the frame
+    pw = moduleManager.get_module_view_parent_window()
+    viewFrame = frameClass(pw, -1, 'dummy')
+
+    # make sure that it's only hidden when it's closed
+    EVT_CLOSE(viewFrame,
+              lambda e: viewFrame.Show(False))
+
+    # set its icon!
+    viewFrame.SetIcon(getModuleIcon())
+
+    return viewFrame
 
 def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
                                         renderWindow,

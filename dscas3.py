@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.34 2003/05/19 12:26:48 cpbotha Exp $
+# $Id: dscas3.py,v 1.35 2003/05/20 17:16:57 cpbotha Exp $
 
 DSCAS3_VERSION = '20030519 T1'
 
@@ -14,6 +14,8 @@ from assistants import assistants
 from graphEditor import graphEditor
 from moduleManager import moduleManager
 from python_shell import python_shell
+import resources.python.mainFrame
+import resources.graphics.images
 
 from wxPython.wx import *
 from wxPython.html import *
@@ -169,10 +171,11 @@ class dscas3_app_t(wxApp):
 
 
     def OnInit(self):
-        import resources.python.mainFrame
-
         self._mainFrame = resources.python.mainFrame.mainFrame(None, -1,
                                                                "dummy")
+
+        wxInitAllImageHandlers()
+        self._mainFrame.SetIcon(self.getApplicationIcon())
 
         EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
                  self.exitCallback)
@@ -186,7 +189,6 @@ class dscas3_app_t(wxApp):
         self._mainFrame.Show(1)
         self.SetTopWindow(self._mainFrame)
         self.setProgress(100, 'Started up')
-
         
         # after we get the gui going, we can redirect
         self._stde_lw = dscas3_log_window('Standard Error Log',
@@ -215,7 +217,13 @@ class dscas3_app_t(wxApp):
     def OnExit(self):
         sys.stderr = self._old_stderr
         sys.stdout = self._old_stdout
-	
+
+    def getApplicationIcon(self):
+        icon = wxEmptyIcon()
+        icon.CopyFromBitmap(
+            resources.graphics.images.getdscas3logo32x32Bitmap())
+        return icon
+
     def get_main_window(self):
         return self._mainFrame
 
