@@ -1,5 +1,5 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: landmarkTransform.py,v 1.4 2004/04/13 13:45:00 cpbotha Exp $
+# $Id: landmarkTransform.py,v 1.5 2004/04/13 14:39:33 cpbotha Exp $
 # see module documentation
 
 # TODO:
@@ -81,8 +81,9 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
             elif hasattr(inputStream, 'devideType') and \
                  inputStream.devideType == 'namedPoints':
                 # correct type... first disconnect the old
-                self._inputPoints.removeObserver(
-                    self._observerInputPoints)
+                if self._inputPoints:
+                    self._inputPoints.removeObserver(
+                        self._observerInputPoints)
 
                 self._inputPoints = inputStream
                 self._inputPoints.addObserver(self._observerInputPoints)
