@@ -1,7 +1,6 @@
-# $Id: moduleUtils.py,v 1.3 2003/02/06 16:16:54 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.4 2003/03/06 21:06:49 cpbotha Exp $
 
 from wxPython.wx import *
-from wxPython.xrc import *
 from external.vtkPipeline.vtkPipeline import \
      vtkPipelineBrowser
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj

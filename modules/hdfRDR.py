@@ -1,9 +1,8 @@
-# $Id: hdfRDR.py,v 1.4 2003/02/18 18:07:59 cpbotha Exp $
+# $Id: hdfRDR.py,v 1.5 2003/03/06 21:06:49 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 from wxPython.wx import *
-from wxPython.xrc import *
 import os
 import vtk
 import vtkdscas

@@ -3,7 +3,6 @@ from module_base import \
      module_mixin_vtk_pipeline_config, \
      module_mixin_fo_dialog
 from wxPython.wx import *
-from wxPython.xrc import *
 import vtk
 import genUtils
 import module_constants
