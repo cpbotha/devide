@@ -1,4 +1,4 @@
-# $Id: histogram2D.py,v 1.1 2004/02/18 15:38:41 cpbotha Exp $
+# $Id: histogram2D.py,v 1.2 2004/02/18 17:19:46 cpbotha Exp $
 
 from moduleBase import moduleBase
 
@@ -11,6 +11,10 @@ class histogram2D(moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
+
+        self.setInput(0, None)
+        self.setInput(1, None)
+        
         pass
 
     def close(self):
@@ -23,7 +27,38 @@ class histogram2D(moduleBase):
         return ('Image Data 1', 'Imaga Data 2')
 
     def setInput(self, idx, inputStream):
-        pass
+        
+        def checkTypeAndReturnInput(inputStream):
+            """Check type of input.  None gets returned.  The input is
+            returned if it has a valid type.  An exception is thrown if
+            the input is invalid.
+            """
+            
+            if inputStream == None:
+                # disconnect
+                return None
+                
+            else:
+                # first check the type
+                validType = False
+                try:
+                    if inputStream.IsA('vtkImageData'):
+                        validType = True
+
+                except AttributeError:
+                    # validType is already False
+                    pass
+
+                if not validType:
+                    raise TypeError, 'Input has to be of type vtkImageData.'
+            
+            
+        if idx == 0:
+            self._input0 = checkTypeAndReturnInput(inputStream)
+
+        elif idx == 1:
+            self._input1 = checkTypeAndReturnInput(inputStream)
+
 
     def getOutputDescriptions(self):
         return ()
