@@ -258,7 +258,7 @@ class controlFrame(wxFrame):
         sizer_27.Add(self.label_5, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_27.Add(self.overlayModeChoice, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 7)
         sizer_27.Add(self.label_6, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
-        sizer_27.Add(self.fusionAlphaSlider, 0, 0, 0)
+        sizer_27.Add(self.fusionAlphaSlider, 1, wxALIGN_CENTER_VERTICAL, 0)
         sizer_18.Add(sizer_27, 0, wxTOP|wxBOTTOM|wxEXPAND, 7)
         sizer_22.Add(sizer_18, 0, wxLEFT|wxRIGHT|wxTOP, 7)
         selectedPointsCursorSizer.Add(self.label_1_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)

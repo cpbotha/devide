@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.7 2004/03/11 00:00:57 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.8 2004/03/11 10:50:04 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -16,13 +16,13 @@ class sliceDirection:
     """
 
     overlayModes = {'Green Fusion' : 'greenFusion',
-                     'Red Fusion' : 'redFusion',
-                     'Blue Fusion' : 'blueFusion',
-                     'Hue Fusion' : 'hueFusion',
-                     'Hue/Value Fusion' : 'hueValueFusion',
-                     'Green Opacity Range' : 'greenOpacityRange',
-                     'Blue Opacity Range' : 'blueOpacityRange',
-                     'Hue Opacity Range' : 'hueOpacityRange'}
+                    'Red Fusion' : 'redFusion',
+                    'Blue Fusion' : 'blueFusion',
+                    'Hue Fusion' : 'hueFusion',
+                    'Hue/Value Fusion' : 'hueValueFusion',
+                    'Green Opacity Range' : 'greenOpacityRange',
+                    'Blue Opacity Range' : 'blueOpacityRange',
+                    'Hue Opacity Range' : 'hueOpacityRange'}
 
     def __init__(self, name, sliceDirections, defaultPlaneOrientation=2):
         self.sliceDirections = sliceDirections
@@ -625,7 +625,7 @@ class sliceDirection:
             lut.SetSaturationRange((1.0, 1.0))
 
         elif mode == 'hueFusion':
-            lut.SetHueRange((0.0, 1.0))
+            lut.SetHueRange((0.0, 0.85))
             lut.SetAlphaRange((srcAlpha, srcAlpha))
             lut.SetValueRange((1.0, 1.0))
             lut.SetSaturationRange((1.0, 1.0))
