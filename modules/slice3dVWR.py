@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.49 2003/06/29 18:27:01 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.50 2003/06/29 20:26:53 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -374,11 +374,11 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     # miscellaneous public methods
     #################################################################
 
-    def addActiveProp(self, prop):
-        self._aInteractorStyle.AddActiveProp(prop)
-
-    def removeActiveProp(self, prop):
-        self._aInteractorStyle.RemoveActiveProp(prop)
+    def setPropMotion(self, prop, motion=True):
+        if motion:
+            self._aInteractorStyle.AddActiveProp(prop)
+        else:
+            self._aInteractorStyle.RemoveActiveProp(prop)
 
     def getIPWPicker(self):
         return self._ipwPicker

@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.4 2003/06/29 18:27:01 cpbotha Exp $
+# $Id: tdObjects.py,v 1.5 2003/06/29 20:26:53 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import vtk
@@ -464,10 +464,31 @@ class tdObjects:
 
             # tell the sliceViewer that this is movable
             if objectDict['type'] == 'vtkPolyData':
-                if motion:
-                    self._slice3dVWR.addActiveProp(objectDict['vtkActor'])
+                self._slice3dVWR.setPropMotion(objectDict['vtkActor'])
+
+            #
+            if motion:
+                if 'motionBoxWidget' in objectDict and \
+                   objectDict['motionBoxWidget']:
+                    objectDict['motionBoxWidget'].Off()
+                    objectDict['motionBoxWidget'].SetInteractor(None)
                 else:
-                    self._slice3dVWR.removeActiveProp(objectDict['vtkActor'])
+                    objectDict['motionBoxWidget'] = vtk.vtkBoxWidget()
+
+                bw = objectDict['motionBoxWidget']
+                    
+                bw = vtk.vtkBoxWidget()
+                bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
+                bw.SetProp3D(objectDict['vtkActor'])
+                bw.PlaceWidget()
+                bw.On()
+                
+            else:
+                if 'motionBoxWidget' in objectDict and \
+                   objectDict['motionBoxWidget']:
+                    objectDict['motionBoxWidget'].Off()
+                    objectDict['motionBoxWidget'].SetInteractor(None)
+                    objectDict['motionBoxWidget'] = None
             
             # finally in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
