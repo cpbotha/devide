@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.19 2004/03/17 21:13:56 cpbotha Exp $
+# $Id: devide.py,v 1.20 2004/03/18 13:13:24 cpbotha Exp $
 
 DEVIDE_VERSION = '20040317'
 
@@ -280,6 +280,7 @@ class devide_app_t(wx.App):
         # the testandset() method of mutex.mutex is atomic... this will grab
         # the lock and set it if it isn't locked alread and then return true.
         # returns false otherwise
+        #print "%s: %f" % (message, progress)
         if self._inProgress.testandset():
             if message != self._currentProgressMsg or \
                    progress != self._currentProgress:
