@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.6 2003/05/04 17:12:41 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.7 2003/05/04 19:08:51 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -25,12 +25,14 @@ def bind_CSAEO(module, view_frame):
 def createECASButtons(d3module, viewFrame, viewFramePanel):
     """Add Execute, Close, Apply and Sync buttons to the viewFrame.
 
+    d3module is the module for which these buttons are being added.
     viewFrame is the actual dialog frame.
     viewFramePanel is the top-level panel in the frame, i.e. the panel
     completely filling the top-level sizer.
 
     IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
-    the viewFramePanel.
+    the viewFramePanel.  This is the default for wxGlade created dialogs
+    with a top-level panel.
 
     The Execute, Close, Apply and Sync buttons will be created with the
     viewFramePanel as their parent.  They will be added to a horizontal sizer

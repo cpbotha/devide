@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.8 2003/03/18 17:48:29 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.9 2003/05/04 19:08:51 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -99,12 +99,66 @@ class vtkPipelineConfigModuleMixin:
     def close(self):
         """Shut down the whole shebang.
 
-        All created ConfigVtkObjs and vtkPiplines should be explicitly
+        All created ConfigVtkObjs and vtkPipelines should be explicitly
         closed down.
         """
 
         self.closePipelineConfigure()
-        self.closeVtkObjectConfigure()        
+        self.closeVtkObjectConfigure()
+
+    def _defaultObjectChoiceCallback(self, viewFrame, renderWin,
+                                    objectChoice, objectDict):
+        objectName = objectChoice.GetStringSelection()
+        if objectDict.has_key(objectName):
+            if hasattr(objectDict[objectName], "GetClassName"):
+                self.vtkObjectConfigure(viewFrame, renderWin,
+                                        objectDict[objectName])
+        
+    def _defaultPipelineCallback(self, viewFrame, renderWin, objectDict):
+        # check that all objects are VTK objects (probably not necessary)
+        objects1 = objectDict.values()
+        objects = tuple([object for object in objects1
+                         if hasattr(object, 'GetClassName')])
+
+        self.vtkPipelineConfigure(viewFrame, renderWin, objects)
+
+
+    def _setupObjectAndPipelineIntrospection(self, viewFrame, objectDict,
+                                             renderWindow,
+                                             objectChoice, objectChoiceId,
+                                             pipelineButtonId):
+        """Setup all object and pipeline introspection for standard module
+        views with a choice for objects and a button for pipeline
+        introspection.
+
+        viewFrame is the actual window of the module view.
+        objectDict is a dictionary with object name strings as keys and object
+        instances as values.
+        renderWindow is an optional renderWindow that'll be used for updating,
+        pass as None if you don't have this.
+        objectChoice is the object choice widget.
+        objectChoiceId is the event id connected to the objectChoice widget.
+        pipelineButtonId is the event id connected to the pipeline
+        introspection button.
+        """
+
+        # fill out the objectChoice with the object names
+        objectChoice.Clear()
+	for objectName in objectDict.keys():
+            objectChoice.Append(objectName)
+        # default on first object
+	objectChoice.SetSelection(0)
+
+        # setup the two default callbacks
+        EVT_CHOICE(viewFrame, objectChoiceId,
+                   lambda e: self._defaultObjectChoiceCallback(
+            viewFrame, renderWindow, objectChoice, objectDict))
+        
+        EVT_BUTTON(viewFrame, pipelineButtonId,
+                   lambda e: self._defaultPipelineCallback(
+            viewFrame, renderWindow, objectDict))
+
+        
             
 # ----------------------------------------------------------------------------
 
@@ -213,20 +267,14 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                    lambda e: self.browseButtonCallback(browseMsg,
                                                        fileWildcard))
 
-        self._viewFrame.objectChoice.Clear()
-	for objectName in objectDict.keys():
-            self._viewFrame.objectChoice.Append(objectName)
+        self._setupObjectAndPipelineIntrospection(
+            self._viewFrame, objectDict, None,
+            self._viewFrame.objectChoice, self._viewFrame.objectChoiceId,
+            self._viewFrame.pipelineButtonId)
 
-	self._viewFrame.objectChoice.SetSelection(0)
-            
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   lambda e: self.objectChoiceCallback(objectDict))
-        
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   lambda e: self.pipelineCallback(objectDict))
-
-        # bind events to the standard cancel, sync, apply, execute, ok buttons
-        moduleUtils.bindCSAEO(self, self._viewFrame)
+        # new style standard ECAS buttons
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
 
     def _getViewFrameFilename(self):
         return self._viewFrame.filenameText.GetValue()
@@ -244,20 +292,6 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
             self._viewFrame.filenameText.SetValue(path)
         
 
-    def objectChoiceCallback(self, objectDict):
-        objectName = self._viewFrame.objectChoice.GetStringSelection()
-        if objectDict.has_key(objectName):
-            if hasattr(objectDict[objectName], "GetClassName"):
-                self.vtkObjectConfigure(self._viewFrame, None,
-                                          objectDict[objectName])
-        
-    def pipelineCallback(self, objectDict):
-        # check that all objects are VTK objects (probably not necessary)
-        objects1 = objectDict.values()
-        objects = tuple([object for object in objects1
-                         if hasattr(object, 'GetClassName')])
-
-        self.vtkPipelineConfigure(self._viewFrame, None, objects)
 
 # ----------------------------------------------------------------------------
 
@@ -306,20 +340,14 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         EVT_CLOSE(self._viewFrame,
                   lambda e, s=self: s._viewFrame.Show(false))
 
-        self._viewFrame.objectChoice.Clear()
-	for objectName in objectDict.keys():
-            self._viewFrame.objectChoice.Append(objectName)
+        self._setupObjectAndPipelineIntrospection(
+            self._viewFrame, objectDict, None,
+            self._viewFrame.objectChoice, self._viewFrame.objectChoiceId,
+            self._viewFrame.pipelineButtonId)
 
-	self._viewFrame.objectChoice.SetSelection(0)
-            
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   lambda e: self.objectChoiceCallback(objectDict))
-        
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   lambda e: self.pipelineCallback(objectDict))
-
-        # bind events to the standard cancel, sync, apply, execute, ok buttons
-        moduleUtils.bindCSAEO(self, self._viewFrame)
+        # new style standard ECAS buttons
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
 
     def objectChoiceCallback(self, objectDict):
         objectName = self._viewFrame.objectChoice.GetStringSelection()

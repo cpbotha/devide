@@ -41,6 +41,12 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._volume.SetProperty(self._volumeProperty)
         self._volume.SetMapper(self._splatMapper)
 
+        self._objectDict = {'splatMapper' : self._splatMapper,
+                            'opacity TF' : self._otf,
+                            'colour TF' : self._ctf,
+                            'volumeProp' : self._volumeProperty,
+                            'volume' : self._volume}
+
         self._viewFrame = None
         self._createViewFrame()
 
@@ -57,6 +63,18 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         del self._ctf
         del self._volumeProperty
         del self._volume
+
+        del self._objectDict
+
+        # we have to call this mixin close so that all inspection windows
+        # can be taken care of.  They should be taken care of in anycase
+        # when the viewFrame is destroyed, but we like better safe than
+        # sorry
+        vtkPipelineConfigModuleMixin.close(self)
+
+        # take care of our own window
+        self._viewFrame.Destroy()
+        del self._viewFrame
 
     def getInputDescriptions(self):
 	return ('vtkVolume',)
@@ -106,19 +124,19 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
                         modules.resources.python.shellSplatSimpleFLTViewFrame.\
                         shellSplatSimpleFLTViewFrame(pw, -1, 'dummy')
 
+        # create and configure the standard ECAS buttons
         moduleUtils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
-        # make sure that a close of that window does the right thing
+        # make sure that a close of that window does the right thing (VERY NB)
         EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
+                  lambda e, s=self: s._viewFrame.Show(False))
 
-        # default binding for the buttons at the bottom
-        #moduleUtils.bindCSAEO(self, self._viewFrame)        
-
-        # and now the standard examine object/pipeline stuff
-        #EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-        #           self.vtkObjectChoiceCallback)
-        #EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-        #           self.vtkPipelineCallback)
+        # setup introspection with default everythings
+        self._setupObjectAndPipelineIntrospection(
+            self._viewFrame, self._objectDict,
+            None,
+            self._viewFrame.objectChoice,
+            self._viewFrame.objectChoiceId,
+            self._viewFrame.pipelineButtonId)
         
