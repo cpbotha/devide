@@ -78,6 +78,7 @@ class controlFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: controlFrame.__set_properties
         self.SetTitle("ifdoc Control")
+        self.timeStepSlider.SetSize((150, 15))
         # end wxGlade
 
     def __do_layout(self):
@@ -87,12 +88,12 @@ class controlFrame(wxFrame):
         sizer_14 = wxBoxSizer(wxVERTICAL)
         sizer_11 = wxStaticBoxSizer(wxStaticBox(self.panel_4, -1, "Animation"), wxVERTICAL)
         sizer_12_copy = wxBoxSizer(wxHORIZONTAL)
-        sizer_11.Add(self.button_1, 0, wxALL|wxEXPAND, 7)
+        sizer_11.Add(self.button_1, 0, wxALL, 7)
         sizer_12_copy.Add(self.label_3_copy, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
         sizer_12_copy.Add(self.timeStepSlider, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
         sizer_12_copy.Add(self.timeStepSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 0)
         sizer_11.Add(sizer_12_copy, 1, wxLEFT|wxRIGHT|wxBOTTOM, 7)
-        sizer_14.Add(sizer_11, 1, 0, 0)
+        sizer_14.Add(sizer_11, 1, wxEXPAND, 0)
         sizer_9.Add(sizer_14, 1, wxALL|wxEXPAND, 7)
         self.panel_4.SetAutoLayout(1)
         self.panel_4.SetSizer(sizer_9)
