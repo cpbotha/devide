@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataWRT.py,v 1.1 2003/03/13 17:20:25 cpbotha Exp $
+# $Id: vtkPolyDataWRT.py,v 1.2 2003/04/16 09:53:06 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -15,6 +15,9 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.__init__(self)
 
         self._writer = vtk.vtkPolyDataWriter()
+        # sorry about this, but the files get REALLY big if we write them
+        # in ASCII - I'll make this a gui option later.
+        self._writer.SetFileTypeToBinary()
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
