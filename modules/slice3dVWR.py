@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.43 2003/06/27 16:31:49 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.44 2003/06/27 21:14:09 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -775,11 +775,8 @@ class tdObjects:
                                                      'observerId' : None}
 
                 elif tdObject.GetClassName() == 'vtkPolyData':
-                    # this is by definition for display, so let's strip it
-                    stripper = vtk.vtkStripper()
-                    stripper.SetInput(tdObject)
                     mapper = vtk.vtkPolyDataMapper()
-                    mapper.SetInput(stripper.GetOutput())
+                    mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
                     self._slice3dVWR._threedRenderer.AddActor(actor)
