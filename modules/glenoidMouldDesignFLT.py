@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.9 2003/03/23 23:23:28 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.10 2003/03/24 16:08:59 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -10,6 +10,7 @@
 # child that has the PolyData as output or until we fake it with Observers
 # This is not critical.
 
+import math
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import operator
@@ -28,8 +29,10 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         self._inputPolyData = None
         self._inputPoints = None
         self._inputPointsOID = None
-        self._giaProximal = None
-        self._giaDistal = None
+        self._giaGlenoid = None
+        self._giaHumerus = None
+        self._fbzSup = None
+        self._fbzInf = None
         self._outputPolyData = vtk.vtkPolyData()
 
         # create the frame and display it proudly!
@@ -87,13 +90,15 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         pass
 
     def executeModule(self):
-        if self._giaDistal and self._giaProximal and self._inputPolyData:
+        if self._giaHumerus and self._giaGlenoid and \
+               len(self._fbzSup) >= 2 and len(self._fbzInf) >= 2 and \
+               self._inputPolyData:
             # construct eight planes with the insertion axis as mid-line
             # the planes should go somewhat further proximally than the
             # proximal insertion axis point
 
             # first calculate the distal-proximal glenoid insertion axis
-            gia = tuple(map(operator.sub, self._giaProximal, self._giaDistal))
+            gia = tuple(map(operator.sub, self._giaGlenoid, self._giaHumerus))
             # and in one swift move, we normalize it and get the magnitude
             giaN = list(gia)
             giaM = vtk.vtkMath.Normalize(giaN)
@@ -112,7 +117,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 # each ridge is 1 cm (10 mm) - we'll change this later
                 y = [10.0 * j for j in yN]
                 
-                origin = map(operator.add, self._giaDistal, y)
+                origin = map(operator.add, self._giaHumerus, y)
                 point1 = map(operator.add, origin, [-2.0 * k for k in y])
                 point2 = map(operator.add, origin, gia)
 
@@ -139,11 +144,11 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                 contour = cut.GetOutput()
 
-                # now find line segment closest to self._giaProximal
+                # now find line segment closest to self._giaGlenoid
                 pl = vtk.vtkPointLocator()
                 pl.SetDataSet(contour)
                 pl.BuildLocator()
-                startPtId = pl.FindClosestPoint(self._giaProximal)
+                startPtId = pl.FindClosestPoint(self._giaGlenoid)
 
                 cellIds = vtk.vtkIdList()
                 contour.GetPointCells(startPtId, cellIds)
@@ -197,6 +202,14 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                             curLineId = nextLineId
                             
                         else:
+                            # we've fallen off the glenoid, really
+                            # (we should actually only fall off if the last
+                            # 5 points have been invalid...)
+
+                            # seeing that we've fallen off, remove the previous
+                            # 10 points... actually, we should remove the
+                            # previous 5 millimetres, yeah?
+                            del lines[lineIdx][-10:]
                             onGlenoid = False
                 
                     # closes: for i in range(20)
@@ -238,11 +251,10 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 rsf.SetRuledModeToPointWalk()
                 rsf.SetInput(newPolyData)
                 rsf.Update()
-
+                
                 stuff.append(rsf.GetOutput())
                 #stuff.append(cut.GetOutput())
                 #stuff.append(ps.GetOutput())
-
             
             # closes: for i in range(4)
             
@@ -251,8 +263,85 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             for thing in stuff:
                 ap.AddInput(thing)
 
+            # now add outer guide cylinder, capped
+            cs1 = vtk.vtkCylinderSource()
+            cs1.SetResolution(32)
+            cs1.SetRadius(5) # 5 mm diameter
+            cs1.CappingOn()
+            cs1.SetHeight(15) # 15 mm height
+            cs1.SetCenter(0,0,0)
+            cs1.Update()
+            
+            # we have to transform this fucker...
+            csTrfm = vtk.vtkTransform()
+
+            # go half the height + 1mm upwards from surface
+            cs1Centre = map(operator.add,
+                            self._giaGlenoid, [- 8.5 * i for i in giaN])
+            csTrfm.Translate(cs1Centre)
+
+            # cylinder is oriented along y-axis (0,1,0)
+            # calc dot product (|a||b|cos(\phi))
+            cylDotGia = - giaN[1]
+            phiRads = math.acos(cylDotGia)
+            cp = [0,0,0]
+            vtk.vtkMath.Cross((-giaN[0], -giaN[1], -giaN[2]),
+                              (0.0, 1.0, 0.0), cp)
+            
+            csTrfm.RotateWXYZ(-phiRads * vtk.vtkMath.RadiansToDegrees(),
+                              cp[0], cp[1], cp[2])
+
+            csTPDF = vtk.vtkTransformPolyDataFilter()
+            csTPDF.SetTransform(csTrfm)
+
+            csTPDF.SetInput(cs1.GetOutput())
+            csTPDF.Update()
+            
+            ap.AddInput(csTPDF.GetOutput())
+
+            # seems to be important for vtkAppendPolyData
             ap.Update()
-            self._outputPolyData.DeepCopy(ap.GetOutput())
+
+            # now cut it with the FBZ planes
+            fbzSupPlane = self._fbzCutPlane(self._fbzSup, giaN,
+                                            self._giaGlenoid)
+            fbzSupClip = vtk.vtkClipPolyData()
+            fbzSupClip.SetClipFunction(fbzSupPlane)
+            fbzSupClip.SetValue(0)
+            fbzSupClip.SetInput(ap.GetOutput())
+
+            fbzInfPlane = self._fbzCutPlane(self._fbzInf, giaN,
+                                            self._giaGlenoid)
+            fbzInfClip = vtk.vtkClipPolyData()
+            fbzInfClip.SetClipFunction(fbzInfPlane)
+            fbzInfClip.SetValue(0)
+            fbzInfClip.SetInput(fbzSupClip.GetOutput())
+
+            cylinder = vtk.vtkCylinder()
+            cylinder.SetCenter([0,0,0])
+            cylinder.SetRadius(3)
+
+            trfm = vtk.vtkTransform()
+            print phiRads * vtk.vtkMath.RadiansToDegrees()
+            trfm.RotateWXYZ(phiRads * vtk.vtkMath.RadiansToDegrees(),
+                            cp[0], cp[1], cp[2])
+            trfm.Translate(-self._giaGlenoid[0], -self._giaGlenoid[1],
+                           -self._giaGlenoid[2])
+
+            cylinder.SetTransform(trfm)
+
+            cylinderClip = vtk.vtkClipPolyData()
+            cylinderClip.SetClipFunction(cylinder)
+            cylinderClip.SetValue(0)
+            cylinderClip.SetInput(fbzInfClip.GetOutput())
+            cylinderClip.GenerateClipScalarsOn()
+                
+            ap2 = vtk.vtkAppendPolyData()
+            ap2.AddInput(cylinderClip.GetOutput())
+            ap2.Update()
+            
+            #self._outputPolyData.DeepCopy(ap2.GetOutput())
+            self._outputPolyData.DeepCopy(ap2.GetOutput())
 
     def view(self):
         if not self._viewFrame.Show(True):
@@ -303,6 +392,33 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
         return (tuple(startPoint), p1, p2, p3, p4, p5)
 
+    def _fbzCutPlane(self, fbz, giaN, giaGlenoid):
+        """Calculate cut-plane corresponding to fbz.
+
+        fbz is a list containing the two points defining a single FBZ
+        (forbidden zone).  giaN is the glenoid-insertion axis normal.
+        giaGlenoid is the user-selected gia point on the glenoid.
+
+        This method will return a cut-plane to enforce the given fbz such
+        that giaGlenoid is on the inside of the implicit plane.
+        """
+        
+        fbzV = map(operator.sub, fbz[0], fbz[1])
+        fbzPN = [0,0,0]
+        vtk.vtkMath.Cross(fbzV, giaN, fbzPN)
+        vtk.vtkMath.Normalize(fbzPN)
+        fbzPlane = vtk.vtkPlane()
+        fbzPlane.SetOrigin(fbz[0])
+        fbzPlane.SetNormal(fbzPN)
+        insideVal = fbzPlane.EvaluateFunction(giaGlenoid)
+        if insideVal < 0:
+            # eeep, it's outside, so flip the planeNormal
+            fbzPN = [-1.0 * i for i in fbzPN]
+            fbzPlane.SetNormal(fbzPN)
+
+        return fbzPlane
+
+
     def _lineExtrudeHouse(self, edgeLine, cutPlane):
         """Extrude the house (square with triangle as roof) along edgeLine.
 
@@ -349,15 +465,26 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
     def _inputPointsObserver(self, obj):
         # extract a list from the input points
         if self._inputPoints:
-            # extract the two points with labels 'GIA Proximal'
-            # and 'GIA Distal'
+            # extract the two points with labels 'GIA Glenoid'
+            # and 'GIA Humerus'
             
-            giaProximal = [i['world'] for i in self._inputPoints if i['name'] == 'GIA Proximal']
+            giaGlenoid = [i['world'] for i in self._inputPoints
+                          if i['name'] == 'GIA Glenoid']
 
-            giaDistal = [i['world'] for i in self._inputPoints if i['name'] == 'GIA Distal']
+            giaHumerus = [i['world'] for i in self._inputPoints
+                          if i['name'] == 'GIA Humerus']
 
-            if giaProximal and giaDistal:
+            fbzSup = [i['world'] for i in self._inputPoints
+                          if i['name'] == 'FBZ Superior']
+
+            fbzInf = [i['world'] for i in self._inputPoints
+                          if i['name'] == 'FBZ Inferior']
+
+            if giaGlenoid and giaHumerus and \
+                   len(fbzSup) >= 2 and len(fbzInf) >= 2:
                 # we only apply these points to our internal parameters
                 # if they're valid and if they're new
-                self._giaProximal = giaProximal[0]
-                self._giaDistal = giaDistal[0]
+                self._giaGlenoid = giaGlenoid[0]
+                self._giaHumerus = giaHumerus[0]
+                self._fbzSup = fbzSup[:2]
+                self._fbzInf = fbzInf[:2]
