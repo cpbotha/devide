@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.44 2002/06/10 16:00:44 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.45 2002/06/21 07:04:11 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -45,6 +45,12 @@ class vtk_slice_vwr(module_base,
         # the renderers corresponding to the render windows
         self._renderers = []
 
+        # list of dictionaries for the "Heads Up Display" overlaid on
+        # each ortho view
+        self._ortho_huds = []
+        # list of selected points (we can make this grow or be overwritten)
+        self._ortho_sel_points = []
+
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
         om.SetInput(self._outline_source.GetOutput())
@@ -88,7 +94,9 @@ class vtk_slice_vwr(module_base,
         if hasattr(self,'_view_frame'):
             self._view_frame.Destroy()
             del self._view_frame
-        if hasattr(self,'_ortho_pipes'):
+        if hasattr(self, '_ortho_huds'):
+            del self._ortho_huds
+        if hasattr(self, '_ortho_pipes'):
             del self._ortho_pipes
 
 
@@ -265,6 +273,7 @@ class vtk_slice_vwr(module_base,
                     self._cube_axes_actor2d.SetCamera(ren.GetActiveCamera())
                     ren.AddActor(self._cube_axes_actor2d)
 
+
                 # after we've done all the orthos (and their corresponding
                 # plains in 3d), we should probably tell the 3d renderer
                 # that something is going on :)
@@ -313,6 +322,21 @@ class vtk_slice_vwr(module_base,
         istyle.AddObserver('LeaveEvent', self._istyle_img_cb)
         self._rwis[-1].SetInteractorStyle(istyle)
 
+        self._ortho_huds.append({'vtkAxes' : vtk.vtkAxes(),
+                                 'axes_actor' : vtk.vtkActor()})
+        self._ortho_huds[-1]['vtkAxes'].SetOrigin(0.0,0.0,0.5)        
+        self._ortho_huds[-1]['vtkAxes'].SymmetricOn()
+
+        axes_mapper = vtk.vtkPolyDataMapper()
+        axes_mapper.SetInput(self._ortho_huds[-1]['vtkAxes'].GetOutput())
+
+        self._ortho_huds[-1]['axes_actor'].SetMapper(axes_mapper)
+        self._ortho_huds[-1]['axes_actor'].GetProperty().SetAmbient(1.0)
+        self._ortho_huds[-1]['axes_actor'].GetProperty().SetDiffuse(0.0)
+        self._ortho_huds[-1]['axes_actor'].VisibilityOff()
+
+        #self._ortho_huds[-1]['vtkAxes'].SetScaleFactor(200.0)
+        self._renderers[-1].AddActor(self._ortho_huds[-1]['axes_actor'])
 
         # then controls
         iid = wxNewId()
@@ -469,7 +493,12 @@ class vtk_slice_vwr(module_base,
             overlay_pipe['vtkLookupTable'].SetWindow(w)
             overlay_pipe['vtkLookupTable'].SetLevel(l)
             overlay_pipe['vtkLookupTable'].Build()
-            
+
+            # also setup the HUD for this ortho_pipe
+            ob = reslice.GetOutput().GetBounds()
+            sf = ob[1] - ob[0]
+            self._ortho_huds[ortho_idx]['vtkAxes'].SetScaleFactor(sf)
+            self._ortho_huds[ortho_idx]['vtkAxes'].SetOrigin(0.0,0.0,0.5)
 
         else:
             # if this is NOT the first layer, it  must copy the slicer
@@ -530,7 +559,8 @@ class vtk_slice_vwr(module_base,
         #icam.OrthogonalizeViewUp()
         # make sure it's the right way up
         icam.SetViewUp(0,1,0);
-        #icam.SetClippingRange(1, 11);
+        # if we don't do this, the frikking plane often gets lost
+        icam.SetClippingRange(1, 11);
         # we're assuming icam->WindowCenter is (0,0), then  we're effectively
         # doing this:
         # glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
@@ -567,6 +597,38 @@ class vtk_slice_vwr(module_base,
 
         # end test code
 
+    def _sync_hud_with_pwsrc_and_reslice(self, ortho_idx):
+        # check if any of the currently selected points for this
+        # ortho fall on this plane, hmmmm kay?
+        # the easiest way to do this is to make use of the 3d plane
+        # on which we've texture mapped; this has already been adjusted
+        # by the call to _pw_cb()
+        if len(self._ortho_sel_points[ortho_idx]):
+            selp = self._ortho_sel_points[ortho_idx][0]
+            # p - tp
+            ps = self._pws[ortho_idx].GetPolyDataSource()
+            pmtp = map(operator.sub, ps.GetOrigin(), selp)
+            # then calculate dotproduct of p - tp and Normal
+            es = map(operator.mul, pmtp, ps.GetNormal())
+            dotp = reduce(operator.add, es)
+
+            # we use only the first reslicer
+            reslice = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
+
+            # once again, this is how we transform from input to sliced
+            # output, with the fricking INVERSE of the ResliceAxes()
+            input_spacing = reslice.GetInput().GetSpacing()
+            rai = vtk.vtkMatrix4x4()
+            vtk.vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rai)
+            output_spacing = rai.MultiplyPoint(input_spacing + (0.0,))
+            
+            if abs(dotp) < abs(output_spacing[2]):
+                # here we have to project the selected point onto the
+                # slice plane and update the origin of the axes_actor
+                # FIXME!!!
+                self._ortho_huds[ortho_idx]['axes_actor'].VisibilityOn()
+            else:
+                self._ortho_huds[ortho_idx]['axes_actor'].VisibilityOff()
 
     def _sync_ortho_plane_with_reslice(self, plane_source, reslice):
         # try and pull the data through
@@ -628,13 +690,18 @@ class vtk_slice_vwr(module_base,
 
         if command_name == 'LeftButtonPressEvent':
             # only capture mouse if we're told to
+            rwi = self._find_wxvtkrwi_by_istyle(istyle)            
             if WX_USE_X_CAPTURE:
-                rwi = self._find_wxvtkrwi_by_istyle(istyle)
                 rwi.CaptureMouse()
+                
             # note status of mouse button
             self._left_mouse_button = 1
-            # chain to built-in method
-            istyle.OnLeftButtonDown()
+            
+            if rwi.GetControlKey():
+                self._rw_ortho_pick_cb(rwi)
+            else:
+                # chain to built-in method
+                istyle.OnLeftButtonDown()
             
         elif command_name == 'MouseMoveEvent':
             if self._left_mouse_button:
@@ -722,10 +789,56 @@ class vtk_slice_vwr(module_base,
             self._sync_ortho_plane_with_reslice(cur_pipe['vtkPlaneSourceO'],
                                                 ir)
 
+        self._sync_hud_with_pwsrc_and_reslice(ortho_idx)
+
+                                              
+        
         # we have updated all layers, so we can now call this
         self._rwis[ortho_idx + 1].Render()
 
+    def _rw_ortho_pick_cb(self, wxvtkrwi):
+        (cx,cy) = wxvtkrwi.GetEventPosition()
+        r_idx = self._rwis.index(wxvtkrwi)
 
+        # there has to be data in this pipeline before we can go on
+        if len(self._ortho_pipes[r_idx - 1]):
+        
+            # instantiate WorldPointPicker and use it to get the World Point
+            # that we've selected
+            wpp = vtk.vtkWorldPointPicker()
+            wpp.Pick(cx,cy,0,self._renderers[r_idx])
+            (ppx,ppy,ppz) = wpp.GetPickPosition()
+            # ppz will be zero too
+
+            # now check that it's within bounds of the sliced data
+            reslice = self._ortho_pipes[r_idx - 1][0]['vtkImageReslice']
+            rbounds = reslice.GetOutput().GetBounds()
+
+            if ppx >= rbounds[0] and ppx <= rbounds[1] and \
+               ppy >= rbounds[2] and ppy <= rbounds[3]:
+
+                # this is just the way that the ResliceAxes are constructed
+                # here we do: inpoint = ra * pp
+                ra = reslice.GetResliceAxes()
+                inpoint = ra.MultiplyPoint((ppx,ppy,ppz,1))
+
+                input_bounds = reslice.GetInput().GetBounds()
+                
+                # now put this point in the applicable list
+                # check that the point is in the volume
+                # later we'll have a multi-point mode which is when this
+                # "1" conditional will be used
+                if 1 and \
+                   inpoint[2] >= input_bounds[4] and \
+                   inpoint[2] <= input_bounds[5]:
+
+                    self._ortho_sel_points[r_idx - 1] = [inpoint[0:3]]
+
+                    self._ortho_huds[r_idx - 1]['vtkAxes'].SetOrigin(ppx,ppy,
+                                                                     0.5)
+                    self._ortho_huds[r_idx - 1]['axes_actor'].VisibilityOn()
+
+                    self._rwis[r_idx].Render()
     
     def _rw_slice_cb(self, wxvtkrwi):
         delta = wxvtkrwi.GetEventPosition()[1] - \
@@ -739,7 +852,9 @@ class vtk_slice_vwr(module_base,
             reslice.UpdateInformation()
 
             input_spacing = reslice.GetInput().GetSpacing()
-            output_spacing = reslice.GetResliceAxes().MultiplyPoint(input_spacing + (0.0,))
+            rai = vtk.vtkMatrix4x4()
+            vtk.vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rai)
+            output_spacing = rai.MultiplyPoint(input_spacing + (0.0,))
 
             # modify the underlying polydatasource of the planewidget
             ps = self._pws[r_idx - 1].GetPolyDataSource()
