@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.15 2004/02/24 11:11:54 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.16 2004/02/29 21:24:30 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -788,7 +788,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         bounds =  planes.GetPoints().GetBounds()
 
         # first set bounds
-        self.threedFrame.voiPanel.boundsText.SetValue(
+        self.controlFrame.voiBoundsText.SetValue(
             "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
             bounds)
 
@@ -805,7 +805,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # store the VOI (this is a shallow copy)
         self._currentVOI = voi
         # display the discrete extent
-        self.threedFrame.voiPanel.extentText.SetValue(
+        self.controlFrame.voiExtentText.SetValue(
             "(%d %d %d %d %d %d)" % tuple(voi))
 
     def voiWidgetEndInteractionCallback(self, o, e):
