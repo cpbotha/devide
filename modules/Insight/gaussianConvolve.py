@@ -1,4 +1,4 @@
-# $Id: gaussianConvolve.py,v 1.2 2004/04/13 20:34:24 cpbotha Exp $
+# $Id: gaussianConvolve.py,v 1.3 2004/04/20 13:05:48 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -8,10 +8,13 @@ import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
-    """Convolves input with Gaussian (or first or second derivative of
-    Gaussian.  The convolution is implemented as an IIR filter.
+    """Convolves input with Gaussian, or its first or second derivative.
+    Only a single dimension is convolved (i.e. the filter is separated).
+    Select which dimension in the View/Config window.
 
-    $Revision: 1.2 $
+    The convolution is implemented as an IIR filter.
+
+    $Revision: 1.3 $
     """
 
     _orders = ['Zero', 'First', 'Second']
@@ -19,11 +22,15 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
+        self._config.direction = 0
         self._config.sigma = 1.0
         self._config.order = 'Zero'
         self._config.normaliseAcrossScale = False        
         
         configList = [
+            ('Direction:', 'direction', 'base:int', 'choice',
+             'Direction in which the filter has to be applied.',
+             ['0', '1', '2']),
             ('Sigma:', 'sigma', 'base:float', 'text',
              'Sigma of Gaussian kernel in world coordinates.'),
 
@@ -80,6 +87,8 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
         return self._gaussian.GetOutput()
 
     def configToLogic(self):
+        self._gaussian.SetDirection(self._config.direction)
+        
         # SIGMA
         self._gaussian.SetSigma(self._config.sigma)
 
@@ -100,6 +109,8 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
         
 
     def logicToConfig(self):
+        self._config.direction = self._gaussian.GetDirection()
+        
         # SIGMA
         self._config.sigma = self._gaussian.GetSigma()
 
