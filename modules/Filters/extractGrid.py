@@ -2,17 +2,21 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+import vtkdevide
 
 class extractGrid(scriptedConfigModuleMixin, moduleBase):
-    """Subsamples input structured grid dataset.
+    """Subsamples input dataset.
 
-    $Revision: 1.2 $
+    This module makes use of the ParaView vtkPVExtractVOI class, which can
+    handle structured points, structured grids and rectilinear grids.
+
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
-        self._config.sampleRate = (100, 100, 125)
+        self._config.sampleRate = (1, 1, 1)
 
         configList = [
             ('Sample rate:', 'sampleRate', 'tuple:int,3', 'tupleText',
@@ -20,7 +24,7 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
 
         scriptedConfigModuleMixin.__init__(self, configList)
 
-        self._extractGrid = vtk.vtkExtractGrid()
+        self._extractGrid = vtkdevide.vtkPVExtractVOI()
         
         moduleUtils.setupVTKObjectProgress(self, self._extractGrid,
                                            'Subsampling structured grid.')
@@ -50,13 +54,13 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
         self._extractGrid.Update()
 
     def getInputDescriptions(self):
-        return ('VTK Structured Grid',)
+        return ('VTK Dataset',)
 
     def setInput(self, idx, inputStream):
         self._extractGrid.SetInput(inputStream)
 
     def getOutputDescriptions(self):
-        return ('Subsampled VTK Structured Grid',)
+        return ('Subsampled VTK Dataset',)
 
     def getOutput(self, idx):
         return self._extractGrid.GetOutput()
@@ -65,6 +69,5 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
         self._config.sampleRate = self._extractGrid.GetSampleRate()
     
     def configToLogic(self):
-        print self._config.sampleRate
         self._extractGrid.SetSampleRate(self._config.sampleRate)
         
