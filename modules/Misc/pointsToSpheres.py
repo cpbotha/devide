@@ -1,5 +1,5 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: pointsToSpheres.py,v 1.1 2004/11/21 22:03:54 cpbotha Exp $
+# $Id: pointsToSpheres.py,v 1.2 2005/03/13 17:12:32 cpbotha Exp $
 # see module documentation
 
 import genUtils
@@ -16,7 +16,11 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
     useful when using selected points to generate points for seeding
     streamlines or calculating advection by a vector field.
 
-    $Revision: 1.1 $
+    Each point's sphere has an array associated to its pointdata called
+    'VolumeIndex'.  All values in this array are equal to the corresponding
+    point's index in the input points list.
+
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -49,13 +53,23 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         # we do need a dummy sphere, else the appender complains
         dummySphere = vtk.vtkSphereSource()
         dummySphere.SetRadius(0.0)
-        self._appendPolyData.AddInput(dummySphere.GetOutput())
-        # this will be a list of lists
+
+        # and a dummy calc, with -1 index
+        # if we don't add the VolumeIndex array here as well, the append
+        # polydata discards all the others
+        calc = vtk.vtkArrayCalculator()
+        calc.SetAttributeModeToUsePointData()
+        calc.SetFunction('-1')
+        calc.SetResultArrayName('VolumeIndex')
+        calc.SetInput(dummySphere.GetOutput())
+        
+        self._appendPolyData.AddInput(calc.GetOutput())
+        # this will be a list of lists containing tuples
+        # (vtkArrayCalculator, vtkSphereSource)
         self._sphereSources = []
 
         self._createWindow(
             {'Module (self)' : self,
-             'all vtkSphereSources': self._sphereSources,
              'vtkAppendPolyData' : self._appendPolyData})
 
         self.configToLogic()
@@ -149,7 +163,8 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         
             for spheres in self._sphereSources:
                 for i in range(len(spheres)):
-                    sphere = spheres[i]
+                    # each element of spheres is a (calc, sphere) tuple
+                    sphere = spheres[i][1]
                     sphere.SetRadius(self._config.radius - radiusStep * i)
                     sphere.SetThetaResolution(self._config.thetaResolution)
                     sphere.SetPhiResolution(self._config.phiResolution)
@@ -174,8 +189,11 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
                 # move points
                 for i in range(len(self._internalPoints)):
                     pt = self._internalPoints[i]
-                    for sphere in self._sphereSources[i]:
+                    for calc,sphere in self._sphereSources[i]:
+                        # set new centre
                         sphere.SetCenter(pt)
+                        # set new index!
+                        calc.SetFunction('%d' % (i,))
 
             else:
                 # if the number of points HAS changed, we have to redo
@@ -186,8 +204,8 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
     def _destroySpheres(self):
         # first remove all inputs from the appender
         for spheres in self._sphereSources:
-            for sphere in spheres:
-                self._appendPolyData.RemoveInput(sphere.GetOutput())
+            for calc, sphere in spheres:
+                self._appendPolyData.RemoveInput(calc.GetOutput())
 
         # now actually nuke our references
         del self._sphereSources[:]
@@ -202,7 +220,8 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         # make sure we're all empty
         self._destroySpheres()
         
-        for pt in self._internalPoints:
+        for ptIdx in range(len(self._internalPoints)):
+            pt = self._internalPoints[ptIdx]
             # each point gets potentially more than one sphere
             spheres = []
 
@@ -217,8 +236,15 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
                 sphere.SetThetaResolution(self._config.thetaResolution)
                 sphere.SetPhiResolution(self._config.phiResolution)
 
-                self._appendPolyData.AddInput(sphere.GetOutput())
-                spheres.append(sphere)
+                # use calculator to add array with VolumeIndex
+                calc = vtk.vtkArrayCalculator()
+                calc.SetAttributeModeToUsePointData()
+                calc.SetFunction('%d' % (ptIdx,))
+                calc.SetResultArrayName('VolumeIndex')
+                calc.SetInput(sphere.GetOutput())
+
+                self._appendPolyData.AddInput(calc.GetOutput())
+                spheres.append((calc,sphere))
                 
             self._sphereSources.append(spheres)
 
