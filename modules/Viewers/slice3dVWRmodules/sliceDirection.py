@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.14 2004/11/11 12:44:37 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.15 2004/11/20 20:31:13 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -196,9 +196,9 @@ class sliceDirection:
 
                 if inputData.GetWholeExtent() != mainInput.GetWholeExtent():
                     raise Exception, \
-                          "The extent of this inputData" \
+                          "The extent of this inputData " \
                           "does not match the extent of the existing input" \
-                          ", so it can't be used as overlay.\n"\
+                          ", so it can't be used as overlay:\n"\
                           "[%s != %s]" % \
                           (inputData.GetWholeExtent(),
                            mainInput.GetWholeExtent())

@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.5 2004/08/20 23:14:06 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.6 2004/11/20 20:31:13 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -540,3 +540,26 @@ class sliceDirections(s3dcGridMixin):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection.syncContourToObjectViaProp(prop)
                 
+    def enableEnabledSliceDirections(self):
+        """Enable all sliceDirections that are enabled in the grid control.
+        This is used as part of the slice3dVWR enable/disable execution logic.
+        """
+
+        numRows = self._grid.GetNumberRows()
+
+        for row in range(numRows):
+            # val can be 0 or 1
+            val = int(self._grid.GetCellValue(row, self._gridEnabledCol))
+            if val:
+                name = self._grid.GetCellValue(row, self._gridNameCol)
+                self._sliceDirectionsDict[name].enable()
+
+    def disableEnabledSliceDirections(self):
+        numRows = self._grid.GetNumberRows()
+
+        for row in range(numRows):
+            # val can be 0 or 1
+            val = int(self._grid.GetCellValue(row, self._gridEnabledCol))
+            if val:
+                name = self._grid.GetCellValue(row, self._gridNameCol)
+                self._sliceDirectionsDict[name].disable()

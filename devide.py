@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.62 2004/11/20 15:23:16 cpbotha Exp $
+# $Id: devide.py,v 1.63 2004/11/20 20:31:13 cpbotha Exp $
 
 DEVIDE_VERSION = '20041119'
 
@@ -152,6 +152,10 @@ class devide_app_t(wx.App):
 
         # perform vtk initialisation
         self._vtkInit()
+
+        #
+        self.moduleManager.enableExecution()
+        self._mainFrame.enableExecutionCheckBox.SetValue(1)
 
         # indicate that we're ready to go!
         self.setProgress(100, 'Started up')
