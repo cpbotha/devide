@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.57 2003/07/07 14:45:29 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.58 2003/07/07 16:17:56 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -357,6 +357,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         if not self.threedFrame.Show(True):
             self.threedFrame.Raise()
 
+        if not self.controlFrame.Show(True):
+            self.controlFrame.Raise()
+
     #################################################################
     # miscellaneous public methods
     #################################################################
@@ -484,9 +487,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                    self.controlFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
 
-        EVT_BUTTON(self.controlFrame,
-                   self.controlFrame.pointsLockSliceButtonId,
-                   self._handlerPointsLockSlice)
 
         def pointInteractionCheckBoxCallback(event):
             val = self.controlFrame.pointInteractionCheckBox.GetValue()
@@ -582,7 +582,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             pw.SetInteractor(None)
 
             # remove the entries from the wxGrid
-            self.threedFrame.spointsGrid.DeleteRows(idx)
+            self.controlFrame.spointsGrid.DeleteRows(idx)
 
             # then remove it from our internal list
             del self._selectedPoints[idx]
@@ -713,7 +713,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             discrete = (0, 0, 0)
             val = 0
 
-        pointName = self.threedFrame.sliceCursorNameCombo.GetValue()            
+        pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
         self._storePoint(discrete, xyz, val, pointName, True) # lock to surface
 
     def _storeCursor(self, cursor):
@@ -726,7 +726,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         inputs = [i for i in self._inputs if i['Connected'] ==
                   'vtkImageDataPrimary']
 
-        if not inputs or not self._currentCursor:
+        if not inputs or not cursor:
             return
 
         # we first have to check that we don't have this pos already
@@ -741,7 +741,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         world = map(operator.add, iorigin,
                     map(operator.mul, ispacing, cursor[0:3]))
 
-        pointName = self.threedFrame.sliceCursorNameCombo.GetValue()
+        pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
         self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
                          pointName)
 
@@ -814,7 +814,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         # after we've added observers, we get to switch the widget on or
         # off; but it HAS to be on when the observers are added
-        if self.threedFrame.pointInteractionCheckBox.GetValue():
+        if self.controlFrame.pointInteractionCheckBox.GetValue():
             pw.On()
         else:
             pw.Off()
@@ -830,9 +830,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                                      'textActor' : ta})
 
         
-        self.threedFrame.spointsGrid.AppendRows()
-        self.threedFrame.spointsGrid.AdjustScrollbars()        
-        row = self.threedFrame.spointsGrid.GetNumberRows() - 1
+        self.controlFrame.spointsGrid.AppendRows()
+        self.controlFrame.spointsGrid.AdjustScrollbars()        
+        row = self.controlFrame.spointsGrid.GetNumberRows() - 1
         self._syncGridRowToSelPoints(row)
         
         # make sure self._outputSelectedPoints is up to date
@@ -848,10 +848,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         value = self._selectedPoints[row]['value']
         discreteStr = "%.0f, %.0f, %.0f" % discrete
         worldStr = "%.2f, %.2f, %.2f" % world
-        self.threedFrame.spointsGrid.SetCellValue(row, 0, worldStr)
-        self.threedFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
+        self.controlFrame.spointsGrid.SetCellValue(row, 0, worldStr)
+        self.controlFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
 
-        self.threedFrame.spointsGrid.SetCellValue(row, 2, str(value))
+        self.controlFrame.spointsGrid.SetCellValue(row, 2, str(value))
 
 
     def _syncOutputSelectedPoints(self):
@@ -877,17 +877,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     # callbacks
     #################################################################
 
-    def _handlerPointsLockSlice(self, event):
-        selRows = self.threedFrame.spointsGrid.GetSelectedRows()
-        if len(selRows) >= 3:
-            tp = [self._selectedPoints[idx]['world'] for idx in selRows]
-            sliceDirection = self._getCurrentSliceDirection()
-            if sliceDirection:
-                sliceDirection.lockToPoints(tp[0], tp[1], tp[2])
-                self.render3D()
-                
-        else:
-            wxLogMessage("You have to select at least three points.")
 
     def _handlerProjectionChoice(self, event):
         """Handler for global projection type change.
@@ -936,7 +925,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         if pw in pwidgets:
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list
-            self.threedFrame.spointsGrid.SelectRow(idx)
+            self.controlFrame.spointsGrid.SelectRow(idx)
 
             # if this is lockToSurface, lock it!
             if self._selectedPoints[idx]['lockToSurface']:
@@ -1087,7 +1076,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         Calls store cursor method on [x,y,z,v].
         """
-        self._storeCursor(self._currentCursor)
+        self._storeCursor(self.sliceDirections.currentCursor)
         
 
     def voiWidgetInteractionCallback(self, o, e):

@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.3 2003/07/07 14:45:32 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.4 2003/07/07 16:17:58 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -30,7 +30,7 @@ class sliceDirections(object):
         # this same picker is used on all new IPWS of all sliceDirections
         self.ipwPicker = vtk.vtkCellPicker()
 
-        self._currentCursor = None
+        self.currentCursor = None
 
         # configure the grid from scratch
         self._initialiseGrid()
@@ -73,6 +73,10 @@ class sliceDirections(object):
                       self._handlerSliceInteraction)
         wx.EVT_BUTTON(controlFrame, controlFrame.sliceDeleteButtonId,
                       self._handlerSliceDelete)
+        wx.EVT_BUTTON(controlFrame,
+                      controlFrame.sliceLockToPointsButtonId,
+                      self._handlerSliceLockToPoints)
+        
 
         wx.EVT_CHOICE(controlFrame, controlFrame.acsChoiceId,
                       self._handlerSliceACS)
@@ -142,6 +146,14 @@ class sliceDirections(object):
         else:
             return -1
 
+    def getSelectedSliceDirections(self):
+        """Returns list with bindings to user-selected sliceDirections.
+        """
+        selectedSliceNames  = self._getSelectedSliceNames()
+        selectedSliceDirections = [self._sliceDirectionsDict[sliceName]
+                                   for sliceName in selectedSliceNames]
+        return selectedSliceDirections
+
     def _getSelectedSliceNames(self):
         """
         """
@@ -163,6 +175,23 @@ class sliceDirections(object):
 
     def _handlerSliceDeselectAll(self, event):
         self._grid.ClearSelection()
+
+    def _handlerSliceLockToPoints(self, event):
+        selRows = self.slice3dVWR.controlFrame.spointsGrid.GetSelectedRows()
+        if len(selRows) >= 3:
+            tp = [self.slice3dVWR._selectedPoints[idx]['world']
+                  for idx in selRows]
+            
+            selectedSliceDirections = self.getSelectedSliceDirections()
+
+            for sliceDirection in selectedSliceDirections:
+                sliceDirection.lockToPoints(tp[0], tp[1], tp[2])
+                
+            if selectedSliceDirections:
+                self.slice3dVWR.render3D()
+                
+        else:
+            wx.LogMessage("You have to select at least three points.")
 
     def _handlerSliceShowHide(self, event):
         names = self._getSelectedSliceNames()
@@ -236,9 +265,9 @@ class sliceDirections(object):
             sliceDirection._syncContours()
         
     def setCurrentCursor(self, cursor):
-        self._currentCursor = cursor
-        cstring = str(self._currentCursor[0:3]) + " = " + \
-                  str(self._currentCursor[3])
+        self.currentCursor = cursor
+        cstring = str(self.currentCursor[0:3]) + " = " + \
+                  str(self.currentCursor[3])
         
         self.slice3dVWR.controlFrame.sliceCursorText.SetValue(cstring)
 
