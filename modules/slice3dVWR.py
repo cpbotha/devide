@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.9 2003/03/20 18:42:24 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.10 2003/03/24 18:37:38 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -843,8 +843,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                                                                _threedRenderer)
 
         # add possible point names
-        self._viewFrame.sliceCursorNameCombo.Append('GIA Proximal')
-        self._viewFrame.sliceCursorNameCombo.Append('GIA Distal')        
+        self._viewFrame.sliceCursorNameCombo.Append('GIA Glenoid')
+        self._viewFrame.sliceCursorNameCombo.Append('GIA Humerus')
+        self._viewFrame.sliceCursorNameCombo.Append('FBZ Superior')
+        self._viewFrame.sliceCursorNameCombo.Append('FBZ Inferior')
         
         # event handlers for the global control buttons
         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,

@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.11 2003/03/24 17:11:23 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.12 2003/03/24 18:37:38 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -192,7 +192,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                         # stop criterion here
                         #if abs(vtk.vtkMath.Dot(giaN, n)) > 0.4:
-                        if vtk.vtkMath.Dot(giaN, n) < -0.6:
+                        if vtk.vtkMath.Dot(giaN, n) < -0.5:
                             # store the real ptid, point coords and normal
                             lines[lineIdx].append((curStartPtId,
                                                tuple(pt0), tuple(n)))
@@ -232,7 +232,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 idLists = [vtk.vtkIdList() for i in range(5)]
 
                 for house in houses:
-                    for vertexIdx in range(len(house)):
+                    for vertexIdx in range(5):
                         ptId = newPoints.InsertNextPoint(house[vertexIdx])
                         idLists[vertexIdx].InsertNextId(ptId)
                     
@@ -240,19 +240,23 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 newCellArray = vtk.vtkCellArray()
                 for idList in idLists:
                     newCellArray.InsertNextCell(idList)
-                #newCellArray.InsertNextCell(idLists[0])
 
                 newPolyData = vtk.vtkPolyData()
                 newPolyData.SetLines(newCellArray)
                 newPolyData.SetPoints(newPoints)
 
+
                 rsf = vtk.vtkRuledSurfaceFilter()
                 rsf.CloseSurfaceOn()
-                rsf.SetRuledModeToPointWalk()
+                #rsf.SetRuledModeToPointWalk()
+                rsf.SetRuledModeToResample()
+                rsf.SetResolution(128, 4)
                 rsf.SetInput(newPolyData)
                 rsf.Update()
+
                 
                 stuff.append(rsf.GetOutput())
+                #stuff.append(newPolyData)
                 #stuff.append(cut.GetOutput())
                 #stuff.append(ps.GetOutput())
             
