@@ -399,4 +399,4 @@ class graph_editor:
     def set_status(self, text):
 	self.status['text'] = text
 	
-	
+
