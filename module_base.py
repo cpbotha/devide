@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.9 2002/03/19 13:53:37 cpbotha Exp $
+# $Id: module_base.py,v 1.10 2002/03/28 11:55:34 cpbotha Exp $
 import vtkpython
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
 from vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -6,8 +6,11 @@ import Tkinter
 import Pmw
 
 class module_base:
-    """Base class for all modules.  Any module wishing to take part in the dscas3
-    party will have to offer all of these methods."""
+    """Base class for all modules.
+
+    Any module wishing to take part in the dscas3 party will have to offer all
+    of these methods.
+    """
     
     def __init__(self):
 	raise NotImplementedError
@@ -16,11 +19,13 @@ class module_base:
 	self.close()
 	
     def close(self):
-	"""Idempotent method for de-initialising module as far as possible.  We
-	can't guarantee the calling of __del__, as Python does garbage collection
-	and the object might destruct a while after we've removed all references
-	to it.  We call close() AGAIN from __del__ for obvious reasons, so
-	make sure that your override is idempotent."""
+	"""Idempotent method for de-initialising module as far as possible.
+
+        We can't guarantee the calling of __del__, as Python does garbage
+        collection and the object might destruct a while after we've removed
+        all references to it.  We call close() AGAIN from __del__ for obvious
+        reasons, so make sure that your override is idempotent.
+        """
 	raise NotImplementedError
 	
     def get_input_descriptions(self):
@@ -29,19 +34,25 @@ class module_base:
 	raise NotImplementedError
     
     def set_input(self, idx, input_stream):
-	"""Attaches input_stream (which is e.g. the output of a previous module)
-	to this module's input at position idx."""
+	"""Attaches input_stream (which is e.g. the output of a previous
+        module) to this module's input at position idx.
+        """
 	raise NotImplementedError
     
     def get_output_descriptions(self):
-	"""Returns a tuple of output descriptions, mostly used by the graph editor
-	to make a nice glyph for this module.  These are also clues to the
-	user as to which glyphs can be connected."""
+	"""Returns a tuple of output descriptions.
+
+        Mostly used by the graph editor to make a nice glyph for this module.
+        These are also clues to the user as to which glyphs can be connected.
+        """
 	raise NotImplementedError
 
     def get_output(self, idx):
-	"""Get the n-th output.  This will be used for connecting this output to
-	the input of another module."""
+	"""Get the n-th output.
+
+        This will be used for connecting this output to the input of another
+        module.
+        """
 	raise NotImplementedError
     
     def sync_config(self):
@@ -63,7 +74,7 @@ class module_base:
 	is standard for many of the modules.  The methods sync_config(), apply_config()
 	and execute_module() have to be defined."""
 	box2 = Pmw.ButtonBox(parent_window)
-	box2.add('Cancel', command=parent_window.destroy)
+	box2.add('Cancel', command=parent_window.withdraw)
 	# synch settings with underlying code
 	box2.add('Sync', command=self.sync_config)
 	# apply settings
@@ -71,7 +82,7 @@ class module_base:
 	# apply and execute
 	box2.add('Execute', command=lambda self=self: (self.apply_config(), self.execute_module()))
 	# apply and close dialog
-	box2.add('Ok', command=lambda self=self, parent_window=parent_window: (self.apply_config(), parent_window.destroy()))
+	box2.add('Ok', command=lambda self=self, parent_window=parent_window: (self.apply_config(), parent_window.withdraw()))
 
 	balloon = Pmw.Balloon(parent_window)
 	balloon.bind(box2.button(0), balloonHelp='Close this dialogue without applying.')
