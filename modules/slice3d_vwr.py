@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.6 2003/01/20 11:05:22 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.7 2003/01/21 16:44:16 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -76,6 +76,9 @@ class slice3d_vwr(module_base,
         self._voi_widget.AddObserver('InteractionEvent',
                                      self.voiWidgetInteractionCallback)
 
+        # also create the VTK construct for actually extracting VOI from data
+        self._extractVOI = vtk.vtkExtractVOI()
+
         self._left_mouse_button = 0
 
         # make the list of imageplanewidgets
@@ -105,6 +108,7 @@ class slice3d_vwr(module_base,
         del self._outline_actor
         del self._cube_axes_actor2d
         del self._voi_widget
+        del self._extractVOI
         
 	del self._ipws
 
@@ -172,9 +176,15 @@ class slice3d_vwr(module_base,
                 self._threedRenderer.RemoveActor(self._outline_actor)
                 self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
 
+                # deactivate VOI widget as far as possible
                 self._voi_widget.SetInput(None)
                 self._voi_widget.Off()
                 self._voi_widget.SetInteractor(None)
+
+                # and stop vtkExtractVOI from extracting more VOIs
+                # we have to disconnect this, else the input data will
+                # live on...
+                self._extractVOI.SetInput(None)
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
@@ -254,7 +264,8 @@ class slice3d_vwr(module_base,
 
         
     def get_output_descriptions(self):
-        return ('Selected points (vtkPoints)', 'Selected points names (list)')
+        return ('Selected points (vtkPoints)', 'Selected points names (list)',
+                'Volume of Interest (vtkStructuredPoints)')
         
     def get_output(self, idx):
         if idx == 0:
@@ -281,7 +292,7 @@ class slice3d_vwr(module_base,
                                              title='dummy')
 
         # fix for the grid
-        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectCells)
+        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
 
         # add THREE the renderers
         self._threedRenderer = vtk.vtkRenderer()
@@ -331,8 +342,8 @@ class slice3d_vwr(module_base,
 
         def pointsRemoveCallback(event):
             selRows = self._view_frame.spointsGrid.GetSelectedRows()
-            selCells = self._view_frame.spointsGrid.GetSelectionBlockTopLeft()
-            print "SELROWS " + str(selCells)
+            print "SELROWS " + str(selRows)
+            print "This should begin working somewhere after wxPython 2.4.0.1"
             if len(selRows):
                 self._remove_cursors(selRows)
 
@@ -812,6 +823,12 @@ class slice3d_vwr(module_base,
         self._view_frame.voiPanel.voiBoundsText.SetValue(
             "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
             planes.GetPoints().GetBounds())
+
+    def voiWidgetEndInteractionCallback(self, o, e):
+        # FIXME: continue here
+        # we want to adjust the vtkExtractVOI
+        pass
+    
     
         
 
