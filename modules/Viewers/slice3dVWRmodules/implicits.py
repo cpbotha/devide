@@ -1,8 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.7 2004/02/24 11:12:00 cpbotha Exp $
-# TODO:
-# * at creation, there's a radiobox with the choices of placement:
-#   visiblePropBounds, primary input, manual (extent is entered), default
+# $Id: implicits.py,v 1.8 2004/02/24 14:44:20 cpbotha Exp $
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -16,12 +13,14 @@ class implicitInfo:
         self.type = None
         self.widget = None
         self.function = None
+        self.insideOut = False
 
 class implicits(object, s3dcGridMixin):
-    _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0)]
+    _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0), ('Inside Out', 0)]
     _gridNameCol = 0
     _gridTypeCol = 1
     _gridEnabledCol = 2
+    _gridInsideOutCol = 3
 
     _implicitTypes = ['Plane']
 
@@ -40,7 +39,7 @@ class implicits(object, s3dcGridMixin):
         # * an implicit is deleted
         # * the user has adjusted the representative widget
         self.outputImplicitFunction = vtk.vtkImplicitBoolean()
-        self.outputImplicitFunction.SetOperationTypeToIntersection()
+        self.outputImplicitFunction.SetOperationTypeToUnion()
 
         self._initialiseGrid()
 
@@ -188,7 +187,13 @@ class implicits(object, s3dcGridMixin):
                 # now add an observer to the widget
                 def observerImplicitPlaneWidget(widget, eventName):
                     # sync it to the initial widget
-                    self._syncPlaneFunctionToWidget(widget)
+                    ret = self._syncPlaneFunctionToWidget(widget)
+                    # also select the correct grid row
+                    if ret != None:
+                        name, ii = ret
+                        row = self.findGridRowByName(name)
+                        if row >= 0:
+                            self._grid.SelectRow(row)
 
                 oId = implicitWidget.AddObserver('EndInteractionEvent',
                                                  observerImplicitPlaneWidget)
@@ -202,6 +207,7 @@ class implicits(object, s3dcGridMixin):
                 ii.widget = implicitWidget
                 ii.oId = oId
                 ii.function = implicitFunction
+                ii.insideOut = False
                 
                 self._implicitsDict[implicitName] = ii
 
@@ -214,7 +220,7 @@ class implicits(object, s3dcGridMixin):
                                        implicitType)
 
                 # set the relevant cells up for Boolean
-                for col in [self._gridEnabledCol]:
+                for col in [self._gridEnabledCol, self._gridInsideOutCol]:
 
                     self._grid.SetCellRenderer(nrGridRows, col,
                                                wx.grid.GridCellBoolRenderer())
@@ -485,102 +491,6 @@ class implicits(object, s3dcGridMixin):
         # make sure we have no rows again...
         self._grid.DeleteRows(0, self._grid.GetNumberRows())
 
-    def _observerPointWidgetInteraction(self, pw, evt_name):
-        # we have to find pw in our list
-        pwidgets = map(lambda i: i['pointWidget'], self._pointsList)
-        if pw in pwidgets:
-            idx = pwidgets.index(pw)
-            # toggle the selection for this point in our list
-            self._grid.SelectRow(idx)
-
-            # if this is lockToSurface, lock it! (and we can only lock
-            # to something if there're some pickable objects as reported
-            # by the tdObjects class)
-            pp = self.slice3dVWR._tdObjects.getPickableProps()            
-            if self._pointsList[idx]['lockToSurface'] and pp:
-                tdren = self.slice3dVWR._threedRenderer
-                # convert the actual pointwidget position back to
-                # display coord
-                tdren.SetWorldPoint(pw.GetPosition() + (1,))
-                tdren.WorldToDisplay()
-                ex,ey,ez = tdren.GetDisplayPoint()
-                # we make use of a CellPicker (for the same reasons we
-                # use it during the initial placement of a surface point)
-                picker = vtk.vtkCellPicker()
-                # this is quite important
-                picker.SetTolerance(0.005)
-                
-                # tell the picker which props it's allowed to pick from
-                for p in pp:
-                    picker.AddPickList(p)
-
-                picker.PickFromListOn()
-                # and go!
-                picker.Pick(ex, ey, 0.0, tdren)
-                if picker.GetActor():
-                    # correct the pointWidget's position so it sticks to
-                    # the surface
-                    pw.SetPosition(picker.GetPickPosition())
-
-            # get its position and transfer it to the sphere actor that
-            # we use
-            pos = pw.GetPosition()
-            self._pointsList[idx]['sphereActor'].SetPosition(pos)
-
-            # also update the text_actor (if appropriate)
-            ta = self._pointsList[idx]['textActor']
-            if ta:
-                ta.SetPosition(pos)
-
-            val, discrete = self.slice3dVWR.getValueAtPositionInInputData(pos)
-            if val == None:
-                discrete = (0, 0, 0)
-                val = 0
-                
-            # the cursor is a tuple with discrete position and value
-            self._pointsList[idx]['discrete'] = tuple(discrete)
-            # 'world' is the world coordinates
-            self._pointsList[idx]['world'] = tuple(pos)
-            # and the value
-            self._pointsList[idx]['value'] = val
-
-            self._syncGridRowToSelPoints(idx)
-
-
-    def removePoints(self, idxs):
-        """Remove all points at indexes in idxs list.
-        """
-        # we have to delete one by one from back to front
-        idxs.sort()
-        idxs.reverse()
-
-        ren = self.slice3dVWR._threedRenderer
-        for idx in idxs:
-            # remove the sphere actor from the renderer
-            ren.RemoveActor(self._pointsList[idx]['sphereActor'])
-            # remove the text_actor (if any)
-            if self._pointsList[idx]['textActor']:
-                ren.RemoveActor(self._pointsList[idx]['textActor'])
-            
-            # then deactivate and disconnect the point widget
-            pw = self._pointsList[idx]['pointWidget']
-            pw.SetInput(None)
-            pw.Off()
-            pw.SetInteractor(None)
-
-            # remove the entries from the wxGrid
-            self._grid.DeleteRows(idx)
-
-            # then remove it from our internal list
-            del self._pointsList[idx]
-
-            # rerender
-            self.slice3dVWR.render3D()
-
-            # and sync up output points
-            self._syncOutputSelectedPoints()
-
-
     def _renameImplicits(self, Idxs, newName):
         for idx in Idxs:
             self._renameImplicit(idx, newName)
@@ -641,4 +551,10 @@ class implicits(object, s3dcGridMixin):
             ii.function.SetOrigin(ii.widget.GetOrigin())
             # FIXME: incorporate "sense" setting
             ii.function.SetNormal(ii.widget.GetNormal())
+
+            # as a convenience, we return the name and ii
+            return name, ii
+        
+        else:
+            return None
             
