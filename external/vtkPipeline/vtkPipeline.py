@@ -1,27 +1,19 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.2 2002/08/28 14:59:40 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.3 2003/02/17 20:07:01 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
 #
+# This code is distributed under the conditions of the BSD license.
+# See LICENSE.txt for details.
+#
 # Copyright (C) 2000 Prabhu Ramachandran
-# Conversion to wxPython copyright (c) 2002 Charl P. Botha
+# Conversion to wxPython, other changes copyright (c) 2002,2003 Charl P. Botha
 #
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Library General Public
-# License as published by the Free Software Foundation; either
-# version 2 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Library General Public License for more details.
-# 
-# You should have received a copy of the GNU Library General Public
-# License along with this library; if not, write to the
-# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-# Boston, MA  02111-1307, USA.
+# This software is distributed WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the above copyright notice for more information.
 #
 # Author contact information:
 #   Prabhu Ramachandran <prabhu_r@users.sf.net>
