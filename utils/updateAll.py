@@ -1,7 +1,7 @@
 # updates all DeVIDE dependencies except ITK and VTK
 # i.e. do a cvs update, a cmake and a build of:
 # vtkdevide, vtktud, wrapitk and, depending on ITK: wrapitk, ConnectVTKITK
-# $Id: updateAll.py,v 1.5 2005/01/12 22:32:34 cpbotha Exp $
+# $Id: updateAll.py,v 1.6 2005/01/12 22:48:34 cpbotha Exp $
 # authored by Charl P. Botha http://cpbotha.net/
 
 import getopt
@@ -62,7 +62,7 @@ def doUpdates(itkRequested):
     if itkRequested:
         standardUpdate(defaults.wrapitkSource)
 
-def doBuilds():
+def doBuilds(itkRequested):
     standardBuild(defaults.vtkdevideBinary, 'vtkdevide.sln')
     standardBuild(defaults.vtktudBinary, 'vtktud.sln')
     if itkRequested:
