@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.11 2004/02/25 20:50:32 cpbotha Exp $
+# $Id: implicits.py,v 1.12 2004/03/17 12:51:40 cpbotha Exp $
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -12,6 +12,7 @@ class implicitInfo:
         self.name = None
         self.type = None
         self.widget = None
+        self.bounds = None
         self.function = None
 
 class implicits(object, s3dcGridMixin):
@@ -63,7 +64,11 @@ class implicits(object, s3dcGridMixin):
         self._grid.ClearGrid()
         self._grid = None
 
-    def _createImplicit(self, implicitName, implicitType):
+    def _createImplicitFromUI(self):
+        cf = self.slice3dVWR.controlFrame
+        implicitType = cf.implicitTypeChoice.GetStringSelection()
+        implicitName = cf.implicitNameText.GetValue()
+        
         if implicitType in self._implicitTypes:
             if implicitName in self._implicitsDict:
                 md = wx.MessageDialog(
@@ -77,8 +82,8 @@ class implicits(object, s3dcGridMixin):
                 return
                 
             
-            implicitWidget = None
-            rwi = self.slice3dVWR.threedFrame.threedRWI
+            #implicitWidget = None
+            
             ren = self.slice3dVWR._threedRenderer
 
 
@@ -159,7 +164,16 @@ class implicits(object, s3dcGridMixin):
                     return
                     
             # at this stage, you MUST have pi or bounds!
+            self._createImplicit(implicitType, implicitName, bounds, pi)
 
+    def _createImplicit(self, implicitType, implicitName, bounds, primaryInput):
+        if implicitType in self._implicitTypes and \
+               implicitName not in self._implicitsDict:
+
+            pi = primaryInput
+            rwi = self.slice3dVWR.threedFrame.threedRWI
+            implicitInfoBounds = None
+            
             if implicitType == "Plane":
                 implicitWidget = vtk.vtkImplicitPlaneWidget()
                 implicitWidget.SetPlaceFactor(1.25)
@@ -168,9 +182,11 @@ class implicits(object, s3dcGridMixin):
                     implicitWidget.PlaceWidget()
                     b = pi.GetBounds()
                     implicitWidget.SetOrigin(b[0], b[2], b[4])
+                    implicitInfoBounds = b
                 elif bounds != None:
                     implicitWidget.PlaceWidget(bounds)
                     implicitWidget.SetOrigin(bounds[0], bounds[2], bounds[4])
+                    implicitInfoBounds = bounds
                 else:
                     # this can never happen
                     pass
@@ -209,10 +225,12 @@ class implicits(object, s3dcGridMixin):
                 if pi != None:
                     implicitWidget.SetInput(pi)
                     implicitWidget.PlaceWidget()
-                    #b = pi.GetBounds()
+                    b = pi.GetBounds()
+                    implicitInfoBounds = b
                     #implicitWidget.SetOrigin(b[0], b[2], b[4])
                 elif bounds != None:
                     implicitWidget.PlaceWidget(bounds)
+                    implicitInfoBounds = bounds
                     #implicitWidget.SetOrigin(bounds[0], bounds[2], bounds[4])
                 else:
                     # this can never happen
@@ -250,6 +268,7 @@ class implicits(object, s3dcGridMixin):
                 ii.name = implicitName
                 ii.type = implicitType
                 ii.widget = implicitWidget
+                ii.bounds = implicitInfoBounds
                 ii.oId = oId
                 ii.function = implicitFunction
                 
@@ -394,19 +413,68 @@ class implicits(object, s3dcGridMixin):
         else:
             return -1
 
-    def getSavePoints(self):
-        """Get special list of points that can be easily pickled.
+    def getImplicitsState(self):
+        """Get state of current implicits in a pickle-able data structure.
         """
-        savedPoints = []
-        for sp in self._pointsList:
-            savedPoints.append({'discrete' : sp['discrete'],
-                                'world' : sp['world'],
-                                'value' : sp['value'],
-                                'name' : sp['name'],
-                                'lockToSurface' : sp['lockToSurface']})
 
-        return savedPoints
+        implicitsState = []
+        for implicitName, implicitInfo in self._implicitsDict.items():
+            functionState = None
+            
+            if implicitInfo.type == 'Plane':
+                # we need to get origin and normal
+                o = implicitInfo.widget.GetOrigin()
+                n = implicitInfo.widget.GetNormal()
+                functionState = (o, n)
+                
+                
+            elif implicitInfo.type == 'Sphere':
+                # we need to get center and radius
+                c = implicitInfo.widget.GetCenter()
+                r = implicitInfo.widget.GetRadius()
+                functionState = (c, r)
+                
+            else:
+                break
+            
+            implicitsState.append({'name'   : implicitName,
+                                   'type'   : implicitInfo.type,
+                                   'bounds' : implicitInfo.bounds,
+                                   'fState' : functionState})
 
+        return implicitsState
+                                  
+    def setImplicitsState(self, implicitsState):
+        """Given an implicitsState data structure, create implicits exactly
+        as they were when the implicitsState was generated.
+        """
+
+        # first delete all implicits
+        for dname in self._implicitsDict.keys():
+            self._deleteImplicit(dname)
+
+        # now start creating new ones
+        for state in implicitsState:
+            self._createImplicit(state['type'], state['name'], state['bounds'], None)
+            if state['name'] in self._implicitsDict:
+                # succesful creation - now restore function state
+                ii = self._implicitsDict[state['name']]
+                
+                if ii.type == 'Plane':
+                    ii.widget.SetOrigin(state['fState'][0])
+                    ii.widget.SetNormal(state['fState'][1])
+                    self._syncPlaneFunctionToWidget(ii.widget)
+                    
+                elif ii.type == 'Sphere':
+                    ii.widget.SetCenter(state['fState'][0])
+                    ii.widget.SetRadius(state['fState'][1])
+                    self._syncSphereFunctionToWidget(ii.widget)
+
+                else:
+                    pass
+                    
+                
+        
     def _getSelectedImplicitNames(self):
         """Return a list of names representing the currently selected
         implicits.
@@ -535,10 +603,7 @@ class implicits(object, s3dcGridMixin):
         """Create 3d widget and the actual implicit function.
         """
 
-        cf = self.slice3dVWR.controlFrame
-        implicitType = cf.implicitTypeChoice.GetStringSelection()
-        implicitName = cf.implicitNameText.GetValue()
-        self._createImplicit(implicitName, implicitType)
+        self._createImplicitFromUI()
 
     def hasWorldPoint(self, worldPoint):
         worldPoints = [i['world'] for i in self._pointsList]
