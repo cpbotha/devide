@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.8 2003/05/08 09:10:10 cpbotha Exp $
+# $Id: graphEditor.py,v 1.9 2003/05/08 09:21:52 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -252,7 +252,7 @@ class graphEditor:
                 pstr = draggedObject.moduleInstance.getOutputDescriptions()[
                     draggedObject.draggedPort[1]]
 
-            msg = '%s port %s TO ' % (draggedObject.getLabel(), pstr)
+            msg = '|%s|-[%s] ===>> ' % (draggedObject.getLabel(), pstr)
 
         if currentPort[0] == 0:
             pstr = currentGlyph.moduleInstance.getInputDescriptions()[
@@ -261,8 +261,7 @@ class graphEditor:
             pstr = currentGlyph.moduleInstance.getOutputDescriptions()[
                 currentPort[1]]
              
-        msg += '%s port %s' % (currentGlyph.getLabel(), pstr)
-
+        msg += '|%s|-[%s]' % (currentGlyph.getLabel(), pstr)
 
         self._graphFrame.GetStatusBar().SetStatusText(msg)            
                                    
