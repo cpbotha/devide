@@ -292,7 +292,7 @@ class moduleManager:
             
             genUtils.logError('Unable to execute module %s (%s): %s' \
                               % (instanceName, moduleName, str(e)))
-
+			      
     def viewModule(self, instance):
         instance.view()
     

@@ -1,4 +1,4 @@
-# $Id: ivWRT.py,v 1.3 2003/09/29 20:20:49 cpbotha Exp $
+# $Id: ivWRT.py,v 1.4 2003/09/29 22:59:01 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -6,7 +6,8 @@ from wxPython.wx import *
 import vtk
 
 class ivWRT(moduleBase, filenameViewModuleMixin):
-
+    """ivWRT is an Inventor Viewer polygonal data writer dscas3 module.
+    """
     def __init__(self, moduleManager):
 
         # call parent constructor

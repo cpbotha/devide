@@ -178,4 +178,3 @@ def textToTypeTuple(text, defaultTuple, numberOfElements, aType):
 
     return returnTuple
 
-

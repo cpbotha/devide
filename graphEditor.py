@@ -1,11 +1,12 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.43 2003/09/19 23:54:16 cpbotha Exp $
+# $Id: graphEditor.py,v 1.44 2003/09/29 22:59:01 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
 from wxPython.wx import *
 from internal.wxPyCanvas import wxpc
 import genUtils
+import moduleUtils # for getModuleIcon
 import sys
 
 # ----------------------------------------------------------------------------
@@ -147,14 +148,19 @@ class graphEditor:
 
         # initialise cut/copy/paste buffer
         self._copyBuffer = None
+
+        # we'll use this list to keep track of module help windows
+        self._moduleHelpFrames = {}
         
         # now display the shebang
         self.show()
 
     def treeCtrlBeginDragHandler(self, event):
         moduleName = self._graphFrame.treeCtrl.GetPyData(event.GetItem())
-        dataObject = wxTextDataObject(moduleName)
+        if type(moduleName) != str:
+            return
         
+        dataObject = wxTextDataObject(moduleName)
         dropSource = wxDropSource(self._graphFrame)
         dropSource.SetData(dataObject)
         # we don't need the result of the DoDragDrop call (phew)
@@ -171,6 +177,11 @@ class graphEditor:
         called at application shutdown.
         """
 
+        # clear away all moduleHelpFrames
+        for helpFrame in self._moduleHelpFrames.values():
+            helpFrame.Destroy()
+        self._moduleHelpFrames.clear()
+        
         # make sure no refs are stuck in the selection
         self._glyphSelection.close()
         # this should take care of just about everything!
@@ -280,6 +291,51 @@ class graphEditor:
         
         mm = self._dscas3_app.getModuleManager()
         mm.executeModule(moduleInstance)
+	
+    def _helpModule(self, moduleInstance):
+	"""
+	"""
+
+        if not moduleInstance.__doc__:
+            md = wxMessageDialog(
+                self._dscas3_app._mainFrame,
+                "This module has no help documentation yet.",
+                "Information",
+                wxOK | wxICON_INFORMATION)
+            md.ShowModal()
+            return
+
+        fullModuleName = moduleInstance.__class__.__module__
+        try:
+            htmlWindowFrame = self._moduleHelpFrames[fullModuleName]
+        except KeyError:
+            import resources.python.htmlWindowFrame
+            htmlWindowFrame = resources.python.htmlWindowFrame.htmlWindowFrame(
+                self._dscas3_app._mainFrame, id=-1,
+                title='dummy')
+
+            # store it in the dict for later use
+            self._moduleHelpFrames[fullModuleName] = htmlWindowFrame
+
+            htmlWindowFrame.SetTitle(
+                'Help documentation for %s' % (fullModuleName,))
+
+            htmlWindowFrame.SetIcon(moduleUtils.getModuleIcon())
+
+            def handlerModuleHelpDestroy(event):
+                htmlWindowFrame.Destroy()
+                del self._moduleHelpFrames[fullModuleName]
+                
+            EVT_BUTTON(htmlWindowFrame, htmlWindowFrame.closeButtonId,
+                       handlerModuleHelpDestroy)
+            EVT_CLOSE(htmlWindowFrame, handlerModuleHelpDestroy)
+            
+            
+        htmlWindowFrame.htmlWindow.SetPage(
+            '<html><body>%s</body></html>' % (moduleInstance.__doc__,))
+
+        if not htmlWindowFrame.Show(True):
+            htmlWindowFrame.Raise()
 
     def fill_module_tree(self):
         """Build up the module tree from the list of available modules
@@ -932,6 +988,12 @@ class graphEditor:
             EVT_MENU(self._graphFrame.canvas, vc_id,
                      lambda e: self._viewConfModule(module))
 
+            help_id = wxNewId()
+            pmenu.AppendItem(wxMenuItem(
+                pmenu, help_id, "Help on Module"))
+            EVT_MENU(self._graphFrame.canvas, help_id,
+                     lambda e: self._helpModule(module))
+            
             exe_id = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, exe_id, "Execute Module"))
             EVT_MENU(self._graphFrame.canvas, exe_id,

@@ -37,6 +37,9 @@ class graphEditorFrame(wxFrame):
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
         self.editMenu = wxMenu()
         self.frame_1_menubar.Append(self.editMenu, "&Edit")
+        wxglade_tmp_menu = wxMenu()
+        wxglade_tmp_menu.Append(wxNewId(), "&Context-sensitive Help\tF1", "", wxITEM_NORMAL)
+        self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.frame_1_statusbar = self.CreateStatusBar(1)
         self.treeCtrlId  =  wxNewId()
