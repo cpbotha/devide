@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.28 2003/06/12 15:29:18 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.29 2003/06/15 01:30:17 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -510,7 +510,7 @@ class tdObjects:
                       'PURPLE', 'GREY80']
 
     def __init__(self, slice3dVWRThingy, listCtrl):
-        self._tdObjectsList = []
+        self._tdObjectsDict = {}
         self._objectId = 0
         
         self._slice3dVWR = slice3dVWRThingy
@@ -519,7 +519,7 @@ class tdObjects:
         
 
     def close(self):
-        del self._tdObjectsList[:]
+        self._tdObjectsDict.clear()
         self._slice3dVWR = None
         self._listCtrl = None
         self._listCtrl.ClearAll()
@@ -539,17 +539,115 @@ class tdObjects:
         """Takes care of all the administration of adding a new 3-d object
         to the list and updating it in the list control.
         """
-        
-        if not tdObject in self._tdObjectsList:
-            # we get to pick a colour and a name
-            name = "%s%d" % (obj, self._objectId)
-            
-        else:
-            return False
 
+        if not self._tdObjectsDict.has_key(tdObject):
+            # we get to pick a colour and a name
+            colourName = self._objectColours[
+                self._objectId % len(self._objectColours)]
+            objectName = "%s%d" % ('obj', self._objectId)
+            self._objectId += 1
+
+            # now actually create the necessary thingies and add the object
+            # to the scene
+            if hasattr(tdObject, 'GetClassName') and \
+               callable(tdObject.GetClassName):
+
+                if tdObject.GetClassName() == 'vtkVolume':
+                    self._slice3dVWR._threedRenderer.AddVolume(tdObject)
+                    self._slice3dVWR._threedRenderer.ResetCamera()
+                    self._slice3dVWR.render3D()
+                    self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
+                                                     'type' : 'vtkVolume',
+                                                     'observerId' : None}
+
+                elif tdObject.GetClassName() == 'vtkPolyData':
+                    mapper = vtk.vtkPolyDataMapper()
+                    mapper.SetInput(tdObject)
+                    actor = vtk.vtkActor()
+                    actor.SetMapper(mapper)
+                    self._slice3dVWR._threedRenderer.AddActor(actor)
+                    self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
+                                                     'type' : 'vtkPolyData',
+                                                     'vtkActor' : actor,
+                                                     'observerId' : None}
+
+                    # to get the name of the scalars we need to do this.
+                    tdObject.Update()
+                
+                    # now some special case handling
+                    if tdObject.GetPointData().GetScalars():
+                        sname = tdObject.GetPointData().GetScalars().GetName()
+                    else:
+                        sname = None
+                
+                    if sname and sname.lower().find("curvature") >= 0:
+                        # if the active scalars have "curvature" somewhere in
+                        # their name, activate flat shading and scalar vis
+                        property = actor.GetProperty()
+                        property.SetInterpolationToFlat()
+                        mapper.ScalarVisibilityOn()
+                    
+                    else:
+                        # the user can switch this back on if she really
+                        # wants it
+                        # we switch it off as we mostly work with isosurfaces
+                        mapper.ScalarVisibilityOff()
+                
+                    self._slice3dVWR._threedRenderer.ResetCamera()
+                    self._slice3dVWR.render3D()
+
+                    # connect an event handler to the data
+                    source = tdObject.GetSource()
+                    if source:
+                        oid = source.AddObserver(
+                            'EndEvent',
+                            self._tdObjectModifiedCallback)
+                        self._tdObjectsDict[tdObject]['observerId'] = oid
+
+                else:
+                    raise Exception, 'Non-handled tdObject type'
+
+            else:
+                # the object has no GetClassName that's callable
+                raise Exception, 'tdObject has no GetClassName()'
+
+            # if we get this far, we've been able to do something
+            print "doing stuff to listctrl %s %s" % (objectName, colourName)
+            nrItems = self._listCtrl.GetItemCount()
+            self._listCtrl.SetStringItem(nrItems, 0, objectName)
+            self._listCtrl.SetStringItem(nrItems, 1, colourName)
             
-        
-    
+        # ends 
+        else:
+            raise Exception, 'Attempt to add same object twice.'
+
+    def removeObject(self, tdObject):
+        if not self._tdObjectsDict.has_key(tdObject):
+            raise Exception, 'Attempt to remove non-existent tdObject'
+
+        oType = self._tdObjectsDict[tdObject]['type']
+        if oType == 'vtkVolume':
+            self._slice3dVWR._threedRenderer.RemoveVolume()
+            del self._tdObjectsDict[tdObject]
+            self._slice3dVWR.render3D()
+
+        elif oType == 'vtkPolyData':
+            actor = self._tdObjectsDict[tdObject]['vtkActor']
+            self._slice3dVWR._threedRenderer.RemoveActor(actor)
+            if self._tdObjectsDict[tdObject]['observerId']:
+                source = actor.GetMapper().GetInput().GetSource()
+                if source:
+                    source.RemoveObserver(
+                        self._tdObjectsDict[tdObject]['observerId'])
+                    
+                # whether we had a source or not, zero this
+                self._tdObjectsDict[tdObject]['observerId'] = None
+
+            del self._tdObjectsDict[tdObject]
+            self._slice3dVWR.render3D()
+
+    def _tdObjectModifiedCallback(self, o, e):
+        self._slice3dVWR.render3D()
 
 # -------------------------------------------------------------------------
 
@@ -614,7 +712,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._create_window()
 
         # we now have a wxListCtrl, let's abuse it
-        self._tdObjects = tdObjects(self._viewFrame.objectsListCtrl)
+        self._tdObjects = tdObjects(self,
+                                    self._viewFrame.objectsListCtrl)
 
         # create a default slice
         self._createSlice('Axial')
@@ -720,34 +819,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def setInput(self, idx, input_stream):
         if input_stream == None:
-
-            if self._inputs[idx]['Connected'] == 'vtkVolume':
-                # this means we were volume rendering!
+            if self._inputs[idx]['Connected'] == 'tdObject':
+                self._tdObjects.removeObject(self._inputs[idx]['tdObject'])
                 self._inputs[idx]['Connected'] = None
-                volume = self._inputs[idx]['vtkActor']
-                if volume != None:
-                    self._threedRenderer.RemoveVolume(volume)
-                    self._inputs[idx]['vtkActor'] = None
-
-            elif self._inputs[idx]['Connected'] == 'vtkPolyData':
-                self._inputs[idx]['Connected'] = None
-                actor = self._inputs[idx]['vtkActor']
-                if actor != None:
-                    if self._inputs[idx]['observerID'] >= 0:
-                        # remove the observer (if we had one)
-                        source = actor.GetMapper().GetInput().GetSource()
-                        if source:
-                            source.RemoveObserver(
-                                self._inputs[idx]['observerID'])
-                        # whether we had a source or not, zero this
-                        self._inputs[idx]['observerID'] = -1
-
-                    # FIXME: also make sure that the there is no move prop
-                    # 3d widget associated with this prop
-
-                    self._threedRenderer.RemoveActor(self._inputs[idx][
-                        'vtkActor'])
-                    self._inputs[idx]['vtkActor'] = None
+                self._inputs[idx]['tdObject'] = None
 
             elif self._inputs[idx]['Connected'] == 'vtkImageDataPrimary' or \
                  self._inputs[idx]['Connected'] == 'vtkImageDataOverlay':
@@ -786,53 +861,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
 
-            if input_stream.GetClassName() == 'vtkVolume':
-                self._inputs[idx]['vtkActor'] = input_stream
-                self._threedRenderer.AddVolume(input_stream)
-                self._inputs[idx]['Connected'] = 'vtkVolume'
-
-                self._threedRenderer.ResetCamera()
-                self._viewFrame.threedRWI.Render()
-
-            elif input_stream.GetClassName() == 'vtkPolyData':
-                mapper = vtk.vtkPolyDataMapper()
-                mapper.SetInput(input_stream)
-                self._inputs[idx]['vtkActor'] = vtk.vtkActor()
-                self._inputs[idx]['vtkActor'].SetMapper(mapper)
-                self._threedRenderer.AddActor(self._inputs[idx]['vtkActor'])
-                self._inputs[idx]['Connected'] = 'vtkPolyData'
-
-                # to get the name of the scalars we need to do this.
-                input_stream.Update()
-                
-                # now some special case handling
-                if input_stream.GetPointData().GetScalars():
-                    sname = input_stream.GetPointData().GetScalars().GetName()
-                else:
-                    sname = None
-                
-                if sname and sname.lower().find("curvature") >= 0:
-                    # if the active scalars have "curvature" somewhere in
-                    # their name, activate flat shading and scalar vis
-                    property = self._inputs[idx]['vtkActor'].GetProperty()
-                    property.SetInterpolationToFlat()
-                    mapper.ScalarVisibilityOn()
-                    
-                else:
-                    # the user can switch this back on if she really wants it
-                    # we switch it off as we mostly work with isosurfaces
-                    mapper.ScalarVisibilityOff()
-                
-                self._threedRenderer.ResetCamera()
-                self._viewFrame.threedRWI.Render()
-
-                # connect an event handler to the data
-                source = input_stream.GetSource()
-                if source:
-                    oid = source.AddObserver('EndEvent',
-                                             self.inputModifiedCallback)
-                    self._inputs[idx]['observerID'] = oid
-                
+            if input_stream.GetClassName() == 'vtkVolume' or \
+               input_stream.GetClassName() == 'vtkPolyData':
+                # our _tdObjects instance likes to do this
+                self._tdObjects.addObject(input_stream)
+                # if this worked, we have to make a note that it was
+                # connected as such
+                self._inputs[idx]['Connected'] = 'tdObject'
+                self._inputs[idx]['tdObject'] = input_stream
                 
             elif input_stream.IsA('vtkImageData'):
 
@@ -919,7 +955,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     def getIPWPicker(self):
         return self._ipwPicker
 
-    def Render3D(self):
+    def render3D(self):
         """This will cause a render to be called on the encapsulated 3d
         RWI.
         """
