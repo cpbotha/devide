@@ -1,9 +1,11 @@
-# $Id: moduleMixins.py,v 1.49 2004/06/23 15:15:30 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.50 2004/08/04 14:11:49 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
+from external.filebrowsebutton import FileBrowseButton, \
+     FileBrowseButtonWithHistory,DirBrowseButton
 import genUtils
 from moduleBase import moduleBase
 import moduleUtils
@@ -732,12 +734,13 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
     'A tooltip for the initial distance text thingy.')
 
     typeDescription: basetype:subtype
-     basetype: scalar, tuple, list (list not implemented yet)
+     basetype: base, tuple, list (list not implemented yet)
      subtype: in the case of scalar, the actual cast, e.g. float or int
               in the case of tuple, the actual cast followed by a comma
               and the number of elements
 
-    widgetType: text, checkbox, choice (you'll get a string back)
+    widgetType: text, checkbox, choice (you'll get a string back),
+                filebrowser (you get a string)
 
     NOTE: this mixin assumes that your module is derived from moduleBase,
     e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
@@ -787,17 +790,22 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             elif configTuple[3] == 'checkbox': # checkbox
                 widget = wx.CheckBox(panel, -1, "")
                 
-            else: # choice
+            elif configTuple[3] == 'choice': # choice
                 widget = wx.Choice(panel, -1)
                 # in this case, configTuple[5] has to be a list of strings
                 for cString in configTuple[5]:
                     widget.Append(cString)
+
+            else: # filebrowser
+                widget = FileBrowseButton(
+                    panel, -1,
+                    labelText=None)
                 
             if len(configTuple[4]) > 0:
                 widget.SetToolTip(wx.ToolTip(configTuple[4]))
                 
             gridSizer.Add(widget, 0, wx.EXPAND, 0)
-            self._widgets[configTuple[0]] = widget
+            self._widgets[configTuple] = widget
 
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
@@ -816,11 +824,12 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
     def viewToConfig(self):
         for configTuple in self._configList:
-            widget = self._widgets[configTuple[0]]
+            widget = self._widgets[configTuple]
             typeD = configTuple[2]
 
             if configTuple[3] == 'choice':
                 wv = widget.GetStringSelection()
+                
             else:
                 wv = widget.GetValue()
             
@@ -855,7 +864,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         # long
         
         for configTuple in self._configList:
-            widget = self._widgets[configTuple[0]]
+            widget = self._widgets[configTuple]
             val = getattr(self._config, configTuple[1])
 
             typeD = configTuple[2]
@@ -883,8 +892,11 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                         # some other tuple
                         widget.SetValue(str(val))
                         
-            elif configTuple[3] == 'checkbox': # checkbox
+            elif configTuple[3] == 'checkbox':
                 widget.SetValue(bool(val))
+
+            elif configTuple[3] == 'filebrowser':
+                widget.SetValue(str(val))
 
             else: # choice
                 widget.SetStringSelection(str(val))
