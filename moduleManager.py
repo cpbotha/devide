@@ -354,12 +354,14 @@ class moduleManager:
             if not uniqueName:
                 # this means that this exists already!
                 # create a random 3 character string
-                chars = string.letters
+                chars = 'abcdefghijklmnopqrstuvwxyz'
+
                 tl = ""
                 for i in range(3):
                     tl += choice(chars)
                         
-                instanceName == "%s%s%d" % (instanceName, tl,
-                                            len(self._moduleDict))
+                instanceName = "%s%s%d" % (instanceName, tl,
+                                           len(self._moduleDict))
+
         
         return instanceName
