@@ -1,5 +1,3 @@
-# FIXME: surfacereconstruction needs PointSet of surface points
-
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
@@ -7,6 +5,15 @@ from wxPython.wx import *
 import vtk
 
 class reconstructSurface(moduleBase, noConfigModuleMixin):
+    """Given a binary volume, fit a surface through the marked points.
+
+    A doubleThreshold could be used to extract points of interest from
+    a volume.  By passing it through this module, a surface will be fit
+    through those points of interest.
+
+    This is not to be confused with traditional iso-surface extraction.
+    """
+    
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -19,7 +26,7 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
         # be anything
         self._thresh = vtk.vtkThresholdPoints()
         # this is wacked syntax!
-        self._thresh.ThresholdByUpper(200)
+        self._thresh.ThresholdByUpper(0)
         self._reconstructionFilter = vtk.vtkSurfaceReconstructionFilter()
         self._reconstructionFilter.SetInput(self._thresh.GetOutput())
         self._mc = vtk.vtkMarchingCubes()
