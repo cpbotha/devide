@@ -1,4 +1,4 @@
-# $Id: levelSetMotionRegistration.py,v 1.2 2004/12/05 20:13:34 cpbotha Exp $
+# $Id: symmetricDemonsRegistration.py,v 1.1 2004/12/05 20:13:34 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -6,11 +6,11 @@ import moduleUtils
 import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
-class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
-    """Performs deformable registration between two input volumes using
-    level set motion.
+class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
+    """Performs symmetric forces demons registration on fixed and moving input
+    images, returns deformation field.
 
-    $Revision: 1.2 $
+    $Revision: 1.1 $
     """
     
     def __init__(self, moduleManager):
@@ -18,17 +18,12 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
 
         self._config.numberOfIterations = 50
-        self._config.gradSmoothStd = 1.0
         self._config.idiffThresh = 0.001
 
         configList = [
             ('Number of iterations:', 'numberOfIterations',
              'base:int', 'text',
              'Number of iterations for the Demons registration to run.'),
-            ('Gradient smoothing standard deviation:', 'gradSmoothStd',
-             'base:float', 'text',
-             'The standard deviation of the Gaussian kernel that will be '
-             'used to smooth the images before calculating gradients.'),
             ('Intensity difference threshold:', 'idiffThresh',
              'base:float', 'text',
              'Voxels differing with less than this threshold are considered '
@@ -45,22 +40,17 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         self._matcher.SetNumberOfMatchPoints(7)
         self._matcher.ThresholdAtMeanIntensityOn()
 
-        self._levelSetMotion = \
-                             itk.itkLevelSetMotionRegistrationFilterF3F3_New()
-        self._levelSetMotion.SetMovingImage(self._matcher.GetOutput())
+        self._demons = itk.itkSymmetricForcesDemonsRegistrationFilterF3F3_New()
+        self._demons.SetStandardDeviations(1.0)
+        self._demons.SetMovingImage(self._matcher.GetOutput())
 
-        # we should get a hold of GetElapsedIterations...
-        # DenseFiniteDifference -> PDEDeformableRegistration -> LevelSetMotion
-        # Dense still has it, PDE onwards doesn't.  Dense is templated on
-        # input and output, PDE on two image types and a deformation field...
         moduleUtilsITK.setupITKObjectProgress(
-            self, self._levelSetMotion, 'itkLevelSetMotionRegistrationFilter',
-            'Performing registration, metric = %.2f',
-            ('GetMetric()',))
+            self, self._demons, 'itkSymmetricForcesDemonsRegistration',
+            'Performing registration, metric = %.2f', ('GetMetric()',))
 
         self._createWindow(
             {'Module (self)' : self,
-             'itkLevelSetMotionRegistrationFilter' : self._levelSetMotion,
+             'itkSymmetricForcesDemonsRegistrationFilter' : self._demons,
              'itkHistogramMatchingImageFilter' : self._matcher})
 
         self.configToLogic()
@@ -78,7 +68,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         moduleBase.close(self)
             
         # remove all bindings
-        del self._levelSetMotion
+        del self._demons
         del self._matcher
 
     def executeModule(self):
@@ -90,7 +80,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
     def setInput(self, idx, inputStream):
         if idx == 0:
             self._matcher.SetReferenceImage(inputStream)
-            self._levelSetMotion.SetFixedImage(inputStream)
+            self._demons.SetFixedImage(inputStream)
 
         else:
             self._matcher.SetInput(inputStream)
@@ -99,27 +89,17 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         return ('Deformation field (ITK 3D Float vectors)',)
 
     def getOutput(self, idx):
-        return self._levelSetMotion.GetOutput()
+        return self._demons.GetOutput()
 
     def configToLogic(self):
-        self._levelSetMotion.SetNumberOfIterations(
-            self._config.numberOfIterations)
-        self._levelSetMotion.SetGradientSmoothingStandardDeviations(
-            self._config.gradSmoothStd)
-        self._levelSetMotion.SetIntensityDifferenceThreshold(
+        self._demons.SetNumberOfIterations(self._config.numberOfIterations)
+        self._demons.SetIntensityDifferenceThreshold(
             self._config.idiffThresh)
 
     def logicToConfig(self):
-        self._config.numberOfIterations = self._levelSetMotion.\
-                                          GetNumberOfIterations()
-        
-        self._config.gradSmoothStd = \
-                                   self._levelSetMotion.\
-                                   GetGradientSmoothingStandardDeviations()
-        
+        self._config.numberOfIterations = self._demons.GetNumberOfIterations()
         self._config.idiffThresh = \
-                                 self._levelSetMotion.\
-                                 GetIntensityDifferenceThreshold()
+                                 self._demons.GetIntensityDifferenceThreshold()
         
 
     
