@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.100 2004/12/05 16:01:23 cpbotha Exp $
+# $Id: graphEditor.py,v 1.101 2004/12/06 21:27:01 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -40,11 +40,18 @@ class geCanvasDropTarget(wxPyDropTarget):
             filenames = self._fdo.GetFilenames()
             
             if len(text) > 0:
+                # we're going to do something, so set the focus on
+                # the graph editor canvas
+                self._graphEditor._canvasFrame.SetFocus()
                 # set the string to zero so we know what to do when
                 self._tdo.SetText('')
                 self._graphEditor.canvasDropText(x,y,text)
 
             elif len(filenames) > 0:
+                # we're going to do something, so set the focus on
+                # the graph editor canvas
+                self._graphEditor._canvasFrame.SetFocus()
+                # handle the list of filenames
                 dropFilenameErrors = self._graphEditor.canvasDropFilenames(
                     x,y,filenames)
 
