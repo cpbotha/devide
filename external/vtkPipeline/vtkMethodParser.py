@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.1 2002/06/10 16:00:28 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.2 2002/07/08 11:24:31 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -61,11 +61,16 @@ class VtkDirMethodParser:
 	self.state_patn = re.compile ("To[A-Z0-9]")
 
         # Removing the Get/SetReferenceCount method
-        if self.methods.index ('GetReferenceCount') > -1:
+        try:
+            self.methods.index ('GetReferenceCount')
+        except ValueError:
+            pass
+        else:  
             self.methods.remove ('GetReferenceCount')
             self.methods.remove ('SetReferenceCount')
             # The ReferenceCount is merely displayed
             self.get_meths.append ('GetReferenceCount')
+
         try:
             self.methods.index ('GetGlobalWarningDisplay')
         except ValueError:
