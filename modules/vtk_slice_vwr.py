@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.33 2002/05/20 17:50:03 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.34 2002/05/20 21:29:53 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -139,8 +139,6 @@ class vtk_slice_vwr(module_base):
             raise TypeError
 
     def _pw_cb(self, pw, ortho_idx):
-        # this is a test; you'll have to send along the index too so we
-        # know WHICH pipeline we have to work with
         origin = 3 * [0]
         point1 = 3 * [0]
         point2 = 3 * [0]
@@ -171,8 +169,21 @@ class vtk_slice_vwr(module_base):
         ir = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
         ir.SetResliceAxesDirectionCosines(xan + yan + normal)
         ir.SetResliceAxesOrigin(origin)
+        # this is VERY important! this means that the output origin will
+        # be at the (ResliceAxesOrigin permuted with the resliceaxes)
+        # which means that if the user moves the origin of the planewidget,
+        # the data plane gets smaller
+        ir.SetOutputOrigin((0,0,0))
+        # we have to divide xam and yam by the output spacing, which
+        # is the input spacing permuted through the resliceaxes
+        ispacing = ir.GetInput().GetSpacing()
+        ra = ir.GetResliceAxes()
+        ospacing = ra.MultiplyPoint(ispacing + (0,))
+        ir.SetOutputExtent((0,xam / ospacing[0],0,yam / ospacing[1],0,0))
 
         ir.Update()
+
+        self._update_3d_plane2(self._ortho_pipes[ortho_idx][0], pw)
 
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
@@ -286,6 +297,39 @@ class vtk_slice_vwr(module_base):
                                               output_bounds[3],
                                               0)
 
+    def _update_3d_plane2(self, cur_pipe, pw):
+        reslice = cur_pipe['vtkImageReslice']
+        reslice.Update()
+
+	output_bounds = reslice.GetOutput().GetBounds()
+
+        # invert the ResliceAxes
+        ra = reslice.GetResliceAxes()        
+        rm = vtk.vtkMatrix4x4()
+        vtk.vtkMatrix4x4.Invert(ra, rm)
+
+        origin = reslice.GetResliceAxesOrigin()
+
+        output_origin = ra.MultiplyPoint(origin + (1,))
+        input_origin = rm.MultiplyPoint((output_bounds[0], output_bounds[2],
+                                         output_origin[2], 1))[0:3]
+        #print input_origin
+        #input_origin = list(input_origin)
+        
+        p1mag = output_bounds[1] - output_bounds[0]
+        p2mag = output_bounds[3] - output_bounds[2]
+        radc = reslice.GetResliceAxesDirectionCosines()
+        p1vn = radc[0:3]
+        p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
+        p2vn = radc[3:6]
+        p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
+
+	cur_pipe['vtkPlaneSource3'].SetOrigin(origin)
+	cur_pipe['vtkPlaneSource3'].SetPoint1(p1v)
+	cur_pipe['vtkPlaneSource3'].SetPoint2(p2v)
+
+        # end test code
+
     def _update_3d_plane(self, cur_pipe, output_z=0):
         """Move texture-mapper 3d plane source so that it corresponds to the 
         passed output z coord.
@@ -349,6 +393,7 @@ class vtk_slice_vwr(module_base):
         It will configure all 3d widgets and textures and thingies, but it
         won't CREATE anything.
         """
+
 
         if len(self._ortho_pipes[ortho_idx]) == 1:
             overlay_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(
