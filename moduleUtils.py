@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.16 2003/06/05 15:59:41 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.17 2003/09/06 16:14:01 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -109,9 +109,10 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
 
     # EVENT BINDINGS
     # execute
+    mm = d3module._moduleManager
     EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
-               lambda e, m=d3module: (m.applyViewToLogic(),
-                                      m.executeModule()))
+               lambda e: (d3module.applyViewToLogic(),
+                          mm.executeModule(d3module)))
     # close
     EVT_BUTTON(viewFrame, viewFrame.closeButtonId,
                lambda e, vf=viewFrame: vf.Show(False))
@@ -166,9 +167,10 @@ def bindCSAEO(module, view_frame):
         wxToolTip('Apply changes, then execute the module.'))
     # very importantly, make the Execute button the default
     view_frame.execute_button.SetDefault()
+    mm = m._moduleManager
     EVT_BUTTON(view_frame, view_frame.EXECUTE_ID,
                lambda e, m=module: (m.applyViewToLogic(),
-                                    m.executeModule()))
+                                    mm.executeModule(m)))
 
     # setup some hotkeys as well
     accel_table = wxAcceleratorTable(

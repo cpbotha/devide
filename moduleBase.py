@@ -1,11 +1,16 @@
-# $Id: moduleBase.py,v 1.13 2003/09/01 21:43:53 cpbotha Exp $
+# $Id: moduleBase.py,v 1.14 2003/09/06 16:14:01 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
 author: Charl P. Botha <cpbotha@ieee.org>
 """
 
-class defaultConfigClass:
+class genericObject(object):
+    """Generic object into which we can stuff whichever attributes we want.
+    """
+    pass
+
+class defaultConfigClass(object):
     pass
 
 class moduleBase(object):

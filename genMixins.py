@@ -1,5 +1,5 @@
 # genMixins copyright 2003 by Charl P. Botha <http://cpbotha.net/>
-# $Id: genMixins.py,v 1.2 2003/09/01 16:39:54 cpbotha Exp $
+# $Id: genMixins.py,v 1.3 2003/09/06 16:14:01 cpbotha Exp $
 
 class subjectMixin(object):
 
@@ -47,8 +47,8 @@ class updateCallsExecuteModuleMixin(object):
         """Part of our API.  If Update is called, we somehow have to make
         sure that we are current.
         """
-        if self._d3Module:
-            self._d3Module.executeModule()
+        if self._d3Module and hasattr(self._3dModule._moduleManager):
+            self._d3Module._moduleManager.executeModule(self._d3Module)
 
 
 

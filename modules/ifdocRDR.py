@@ -1,8 +1,8 @@
-# $Id: ifdocRDR.py,v 1.6 2003/09/01 21:43:53 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.7 2003/09/06 16:14:01 cpbotha Exp $
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import md5
-from moduleBase import moduleBase
+from moduleBase import moduleBase, genericObject
 from moduleMixins import filenameViewModuleMixin
 import re
 import time
@@ -10,17 +10,23 @@ import vtk
 from wxPython.wx import *
 
 # -------------------------------------------------------------------------
-class mFileMatrices(dict, subjectMixin, updateCallsExecuteModuleMixin):
-    """Class for holding the matrices of the ifdoc m-file as output.
+class mData(subjectMixin, updateCallsExecuteModuleMixin):
+    """Class for holding the parsed m-file.  An instance of this class is
+    available at the output of the ifdocRDR.
     """
     
-    def __init__(self, d3Module, *argv):
-        # base constructor (passing parameters along)
-        dict.__init__(self, *argv)
+    def __init__(self, d3Module):
         # mixin constructor
         subjectMixin.__init__(self)
         # mixin constructor
         updateCallsExecuteModuleMixin.__init__(self, d3Module)
+        
+        # important variables
+
+        # ppos: is a list of objects, each object containing attributes
+        # that are the tuples with the position at that time, e.g.
+        # self.ppos[10].ac is the position of ac at timestep 10
+        self.ppos = []
 
     def close(self):
         # this will get rid of all bindings to observers
@@ -28,7 +34,6 @@ class mFileMatrices(dict, subjectMixin, updateCallsExecuteModuleMixin):
         # and this of bindings to the generating d3module
         updateCallsExecuteModuleMixin.close(self)
 
-        
 # -------------------------------------------------------------------------
 class ifdocRDR(moduleBase, filenameViewModuleMixin):
 
@@ -40,7 +45,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.__init__(self)
         
         # setup our output
-        self._mFileMatrices = mFileMatrices(self)
+        self._mFileMatrices = mData(self)
 
         # setup the md5sum variable so that we know when the file has changed
         self._md5HexDigest = ''
@@ -102,7 +107,58 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         self._setViewFrameFilename(self._config.mFilename)
 
 
-    def parseMFile(self, fileLines, variableNameList):
+    def parseMFile(self, fileBuffer, variableNameList):
+        """This will parse fileBuffer for any variable = [ lines and
+        return these as lists of lists in a dictionary with
+        matlab variable name as key.
+        """
+        
+        # build regular expressions that'll catch any of the variables
+        # var1|var2|var3
+        vnlre = '|'.join(variableNameList)
+        vre = r'(%s)\s*=\s*\[([^\]]*)\];' % (vnlre)
+        poVariable = re.compile(vre, re.DOTALL)
+
+        # groupList is a list of occurrences of the regexp above
+        # each occurrence is a tuple containing all found groups
+        groupList = poVariable.findall(fileBuffer)
+
+        variableDict = {}
+
+        for groupTuple in groupList:
+            stripped = groupTuple[1].strip()
+            floatStringLines = stripped.split('\n')
+            floats = []
+            for floatString in floatStringLines:
+                floatStringList = floatString.strip().split()
+                lineFloats = []
+                for floatString in floatStringList:
+                    try:
+                        lineFloats.append(float(floatString))
+                    except ValueError:
+                        # couldn't cast, just continue...
+                        pass
+
+                floats.append(lineFloats)
+
+            # before we assign, make sure it's a valid matrix (constant number
+            # of columns over all lines)
+            cDict = {}
+            for rowIdx in range(len(floats)):
+                cDict[len(floats[rowIdx])] = rowIdx
+
+            if len(cDict) > 1:
+                raise ValueError, \
+                      'Non-constant number of columns in in matrix %s' % \
+                      (groupTuple[0],)
+
+            print cDict
+            variableDict[groupTuple[0]] = floats
+
+        return variableDict
+            
+        
+    def parseMFileOld(self, fileLines, variableNameList):
         """This will parse fileLines for any variable = [ lines and
         return these as lists (or lists of lists) in a dictionary with
         matlab variable name as key.
@@ -193,27 +249,28 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
 
     def executeModule(self):
         mFile = open(self._config.mFilename)
-        mLines = mFile.readlines()
+        mBuffer = mFile.read()
         mFile.close()        
 
         # now check with md5 if the file has changed!
         m = md5.new()
-        for line in mLines:
-            m.update(line)
+        m.update(mBuffer)
 
         newHexDigest = m.hexdigest()
         if newHexDigest != self._md5HexDigest:
-            mDict = self.parseMFile(mLines, ['ppos'])
+            # this will throw an exception if it can't parse the file
+            # this exception will trigger the handler in moduleManager
+            mDict = self.parseMFile(mBuffer, ['ppos'])
 
-            # we have to do it this way as we're using a special class
-            self._mFileMatrices.clear()
-            self._mFileMatrices.update(mDict)
+#             # we have to do it this way as we're using a special class
+#             self._mFileMatrices.clear()
+#             self._mFileMatrices.update(mDict)
 
-            # now indicate that we've changed stuff
-            self._mFileMatrices.notify()
+#             # now indicate that we've changed stuff
+#             self._mFileMatrices.notify()
 
-            # and update our digest
-            self._md5HexDigest = newHexDigest
+#             # and update our digest
+#             self._md5HexDigest = newHexDigest
 
     def view(self, parent_window=None):
         # if the window is already visible, raise it

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.17 2003/09/04 22:35:20 cpbotha Exp $
+$Id: TODO,v 1.18 2003/09/06 16:14:01 cpbotha Exp $
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -27,6 +27,11 @@ $Id: TODO,v 1.17 2003/09/04 22:35:20 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+- nobody but the moduleManager is allowed to call executeModule; actually,
+  probably no-one is allowed to call any of the other methods either
+  we could hide these with a _ with a non-_ wrapper that calls the method
+  via its moduleManager
 
 - when a plane gets hidden, the interaction button should be disabled
   (else the user can muck about with interaction, and we don't want that)

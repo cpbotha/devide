@@ -237,7 +237,15 @@ class moduleManager:
         return hasattr(modules, '__importsub__')
 
     def executeModule(self, instance):
-        instance.executeModule()
+        try:
+            instance.executeModule()
+        except Exception, e:
+            mModule = self._moduleDict[instance]
+            instanceName = mModule.instanceName
+            moduleName = instance.__class__.__name__
+            
+            genUtils.logError('Unable to execute module %s (%s): %s' \
+                              % (instanceName, moduleName, str(e)))
 
     def viewModule(self, instance):
         instance.view()
