@@ -1,6 +1,3 @@
-# TODO: the module_manager should maintain an internal record of which
-# modules have been connected together
-
 import sys, os, fnmatch
 import string
 import genUtils
