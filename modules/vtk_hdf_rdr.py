@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.3 2002/03/27 16:35:56 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.4 2002/03/28 11:55:48 cpbotha Exp $
 
 from module_base import module_base
 import vtkpython
@@ -16,11 +16,8 @@ class vtk_hdf_rdr(module_base):
     """
     
     def __init__(self):
-	print "instantiating vtkHDFVolumeReader()"
 	self.reader = vtkcpbothapython.vtkHDFVolumeReader()
-	print "creating stringvar"
 	self.filename = Tkinter.StringVar()
-	print "syncing config"
 	self.sync_config()
         # declare this var here out of good habit
         self.config_window = None

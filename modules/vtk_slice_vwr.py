@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.12 2002/03/27 17:47:44 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.13 2002/03/28 11:55:48 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -14,11 +14,15 @@ class vtk_slice_vwr(module_base):
         self.num_inputs = 5
         self.num_orthos = 3
         # use list comprehension to create list keeping track of inputs
-	self.inputs = [{'Connected' : 0, 'vtkActor' : None}
+	self.inputs = [{'Connected' : None, 'vtkActor' : None}
                        for i in range(self.num_inputs)]
+        # then the window containing the renderwindows
 	self.rw_window = None
+        # the render windows themselves (4, 1 x 3d and 3 x ortho)
 	self.rws = []
+        # the last clicked/interacted with xy positions for every rw
 	self.rw_lastxys = []
+        # the renderers corresponding to the render windows
 	self.renderers = []
 
         # list of lists of dictionaries
@@ -27,7 +31,7 @@ class vtk_slice_vwr(module_base):
         # where n can vary per direction
         self.ortho_pipes = [[] for i in range(self.num_orthos)]
 
-        # axial, sagittal, coronal
+        # axial, sagittal, coronal reslice axes
         self.InitialResliceAxes = [{'axes' : (1,0,0, 0,1,0, 0,0,1),
                                     'origin' : (0,0,0)}, # axial (xy-plane)
                                    {'axes' : (0,0,1, 0,1,0, 1,0,0),
@@ -41,6 +45,8 @@ class vtk_slice_vwr(module_base):
 	self.close()
 	
     def close(self):
+        for idx in range(self.num_inputs):
+            self.set_input(idx, None)
 	if hasattr(self, 'renderers'):
 	    del self.renderers
 	if hasattr(self, 'rws'):
@@ -176,29 +182,36 @@ class vtk_slice_vwr(module_base):
     
     def set_input(self, idx, input_stream):
         if input_stream == None:
-            # check the three ortho pipelines (each consister of multi layers)
-            for ortidx in range(len(self.ortho_pipes)):
-                # find all layers in THIS ortho pipeline with correct input_idx
-                layer_pl_indices = []
-                for layer_pl in self.ortho_pipes[ortidx]:
-                    if layer_pl['input_idx'] == idx:
-                        # remove corresponding actors from renderers
-                        self.renderers[0].RemoveActor(layer_pl['vtkActor3'])
-                        self.renderers[ortidx+1].RemoveActor(layer_pl['vtkActorO'])
-                        # disconnect the input (no refs hanging around)
-                        layer_pl['vtkImageReslice'].SetInput(None)
-                        layer_pl_indices.append(self.ortho_pipes[ortidx].index(layer_pl))
-                if len(layer_pl_indices) > 0:
-                    # make sure the indices are in ascending order
-                    layer_pl_indices.sort()
-                    # swap
-                    layer_pl_indices.reverse()
-                    # then delete the elements at these indices
-                    for i in layer_pl_indices:
-                        # nuke the whole dictionary
-                        del self.ortho_pipes[ortidx][i]
 
-        # FIXME: removal of vtkPolyData and such
+            if self.inputs[idx]['Connected'] == 'vtkPolyData':
+                self.inputs[idx]['Connected'] = None
+                if self.inputs[idx]['vtkActor'] != None:
+                    self.renderers[0].RemoveActor(self.inputs[idx]['vtkActor'])
+                    self.inputs[idx]['vtkActor'] = None
+
+            elif self.inputs[idx]['Connected'] == 'vtkStructuredPoints':
+                self.inputs[idx]['Connected'] = None
+                # check the three ortho pipelines (each consister of multi layers)
+                for ortidx in range(len(self.ortho_pipes)):
+                    # find all layers in THIS ortho pipeline with correct input_idx
+                    layer_pl_indices = []
+                    for layer_pl in self.ortho_pipes[ortidx]:
+                        if layer_pl['input_idx'] == idx:
+                            # remove corresponding actors from renderers
+                            self.renderers[0].RemoveActor(layer_pl['vtkActor3'])
+                            self.renderers[ortidx+1].RemoveActor(layer_pl['vtkActorO'])
+                            # disconnect the input (no refs hanging around)
+                            layer_pl['vtkImageReslice'].SetInput(None)
+                            layer_pl_indices.append(self.ortho_pipes[ortidx].index(layer_pl))
+                        if len(layer_pl_indices) > 0:
+                            # make sure the indices are in ascending order
+                            layer_pl_indices.sort()
+                            # swap
+                            layer_pl_indices.reverse()
+                            # then delete the elements at these indices
+                            for i in layer_pl_indices:
+                                # nuke the whole dictionary
+                                del self.ortho_pipes[ortidx][i]
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
@@ -208,7 +221,7 @@ class vtk_slice_vwr(module_base):
 		self.inputs[idx]['vtkActor'] = vtkActor()
 		self.inputs[idx]['vtkActor'].SetMapper(mapper)
 		self.renderers[0].AddActor(self.inputs[idx]['vtkActor'])
-		self.inputs[idx]['Connected'] = 1
+		self.inputs[idx]['Connected'] = 'vtkPolyData'
             elif input_stream.GetClassName() == 'vtkStructuredPoints':
                 # find the maximum number of layers
                 #max([len(i) for i in self.ortho_pipes])
@@ -279,7 +292,7 @@ class vtk_slice_vwr(module_base):
 		    if len(self.ortho_pipes[i]) == 1:
 			self.setup_camera(cur_pipe, self.renderers[i+1])
                     self.renderers[0].ResetCamera()
-
+                self.inputs[idx]['Connected'] = 'vtkStructuredPoints'
 
 	    else:
 		raise TypeError, "Wrong input type!"
