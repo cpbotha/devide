@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.4 2003/07/07 16:17:58 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.5 2003/08/07 22:50:03 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -88,11 +88,11 @@ class sliceDirections(object):
             self._destroySlice(sliceName)
 
     def _createSlice(self, sliceName):
-        print "creating %s" % (sliceName,)
         if sliceName:
             if sliceName in self._sliceDirectionsDict:
                 wx.LogError("A slice with that name already exists.")
-
+                return None
+            
             else:
                 newSD = sliceDirection(sliceName, self)
                 self._sliceDirectionsDict[sliceName] = newSD
@@ -111,6 +111,8 @@ class sliceDirections(object):
 
                 self._setSliceEnabled(sliceName, True)
                 self._setSliceInteraction(sliceName, True)
+
+                return newSD
 
     def _destroySlice(self, sliceName):
         """Destroy the named slice."""
@@ -166,8 +168,18 @@ class sliceDirections(object):
         return sliceNames
 
     def _handlerCreateSlice(self, event):
-        self._createSlice(
-            self.slice3dVWR.controlFrame.createSliceComboBox.GetValue())
+        sliceName = self.slice3dVWR.controlFrame.createSliceComboBox.GetValue()
+
+        newSD = self._createSlice(sliceName)
+
+        if newSD:
+            if sliceName == 'Coronal':
+                newSD.resetToACS(1)
+            elif sliceName == 'Sagittal':
+                newSD.resetToACS(2)
+
+            # a new slice was added, re-render!
+            self.slice3dVWR.render3D()
 
     def _handlerSliceSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
