@@ -101,6 +101,11 @@ class coLine(canvasObject):
         self.toGlyph = toGlyph
         self.toInputIdx = toInputIdx
 
+        colourNames = ['BLACK', 'BLUE', 'BROWN', 'MEDIUM FOREST GREEN',
+                       'DARKORANGE1']
+        self.lineColourName = colourNames[self.toInputIdx % (len(colourNames))]
+        
+
         # any line begins with 4 (four) points
 
         self.updateEndPoints()
@@ -115,7 +120,7 @@ class coLine(canvasObject):
 
     def draw(self, dc):
         # lines are 2 pixels thick
-        dc.SetPen(wx.wxPen('BLACK', 2, wx.wxSOLID))
+        dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
         dc.DrawLines(self._linePoints)
 
     def getBounds(self):
