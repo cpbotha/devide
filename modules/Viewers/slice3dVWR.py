@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.25 2004/08/20 23:14:06 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.26 2004/10/20 16:16:05 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -7,7 +7,7 @@ from external.SwitchColourDialog import ColourDialog
 from genUtils import logError
 
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin, colourDialogMixin
+from moduleMixins import introspectModuleMixin, colourDialogMixin
 import moduleUtils
 
 # the following four lines are only needed during prototyping of the modules
@@ -39,14 +39,14 @@ import operator
 
 # -------------------------------------------------------------------------
 
-class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
+class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     
     """Slicing, dicing slice viewing class.
 
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.25 $
+    $Revision: 1.26 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -164,7 +164,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
         del self._implicits
 
         # don't forget to call the mixin close() methods
-        vtkPipelineConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
         colourDialogMixin.close(self)
         
         # unbind everything that we bound in our __init__
@@ -459,6 +459,10 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
                    self._handlerProjectionChoice)
 
         EVT_BUTTON(self.threedFrame,
+                   self.threedFrame.introspectButton.GetId(),
+                   self._handlerIntrospectButton)
+
+        EVT_BUTTON(self.threedFrame,
                    self.threedFrame.introspectPipelineButtonId,
                    lambda e, pw=self.threedFrame, s=self,
                    rw=self.threedFrame.threedRWI.GetRenderWindow():
@@ -739,6 +743,12 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     # callbacks
     #################################################################
 
+    def _handlerIntrospectButton(self, event):
+        """Open Python introspection window with this module as main object.
+        """
+
+        self.miscObjectConfigure(self.threedFrame ,self)
+        
 
     def _handlerProjectionChoice(self, event):
         """Handler for global projection type change.
