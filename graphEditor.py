@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.67 2004/03/07 17:27:35 cpbotha Exp $
+# $Id: graphEditor.py,v 1.68 2004/03/07 20:57:57 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -45,7 +45,15 @@ class geCanvasDropTarget(wxPyDropTarget):
                 self._graphEditor.canvasDropText(x,y,text)
 
             elif len(filenames) > 0:
-                self._graphEditor.canvasDropFilenames(x,y,filenames)
+                dropFilenameErrors = self._graphEditor.canvasDropFilenames(
+                    x,y,filenames)
+
+                if len(dropFilenameErrors) > 0:
+                    for i in dropFilenameErrors:
+                        wxLogWarning('%s: %s' % (i))
+                        
+                    wxLogWarning('Some of the dropped files could not '
+                                 'be handled.  See "Details".')
 
         # d is the recommended drag result.  we could also return
         # wxDragNone if we don't want whatever's been dropped.
@@ -252,8 +260,25 @@ class graphEditor:
                                         reposition=True)
 
     def canvasDropFilenames(self, x, y, filenames):
+        
+        def createModuleOneVar(moduleName, configVarName, configVarValue):
+            """This method creates a moduleName (e.g. modules.Readers.vtiRDR)
+            at position x,y.  It then sets the 'configVarName' attribute to
+            value configVarValue.
+            """
+            ret = self.createModuleAndGlyph(x, y, moduleName)
+            if ret:
+                cfg = ret.getConfig()
+                setattr(cfg, configVarName, filename)
+                ret.setConfig(cfg)
+            
+        
         actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
-                      'vtp' : ('modules.Readers.vtpRDR', 'filename')}
+                      'vtp' : ('modules.Readers.vtpRDR', 'filename'),
+                      'stl' : ('modules.Readers.stlRDR', 'filename')}
+
+        # list of tuples: (filename, errormessage)
+        dropFilenameErrors = []
 
         dcmFilenames = []
         for filename in filenames:
@@ -263,17 +288,56 @@ class graphEditor:
                 self._loadAndRealiseNetwork(filename, (rx,ry),
                                             reposition=True)
 
+            elif filename.lower().endswith('.vtk'):
+                # for this type we have to do some special handling.
+                # it could be a structuredpoints or a polydata, so we
+                # have to read the first few lines to determine
+                
+                try:
+                    # read first four lines of file, fourth is what we want
+                    f = file(filename)
+                    for i in range(4):
+                        fline = f.readline()
+
+                    fline = fline.strip().lower()
+
+                except Exception, e:
+                    dropFilenameErrors.append(
+                        (filename,
+                         'Could not parse VTK file to distinguish type.'))
+
+                else:
+                    # this only executes if there was no exception
+                    if fline.endswith('structured_points'):
+                        createModuleOneVar(
+                            'modules.Readers.vtkStructPtsRDR',
+                            'filename', filename)
+                        
+                    elif fline.lower().endswith('polydata'):
+                        createModuleOneVar(
+                            'modules.Readers.vtkPolyDataRDR',
+                            'filename', filename)
+
+                    else:
+                        dropFilenameErrors.append(
+                            (filename,
+                             'Could not distinguish type of VTK file.'))
+                
+
             elif filename.lower().endswith('.dcm'):
                 dcmFilenames.append(filename)
 
             else:
                 ext = filename.split('.')[-1].lower()
                 if ext in actionDict:
-                    ret = self.createModuleAndGlyph(x, y, actionDict[ext][0])
-                    if ret:
-                        cfg = ret.getConfig()
-                        setattr(cfg, actionDict[ext][1], filename)
-                        ret.setConfig(cfg)
+                    createModuleOneVar(actionDict[ext][0], actionDict[ext][1],
+                                       filename)
+
+                else:
+                    dropFilenameErrors.append(
+                        (filename, 'File extension not known.'))
+
+        # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
             ret = self.createModuleAndGlyph(x, y, 'modules.Readers.dicomRDR')
@@ -281,6 +345,8 @@ class graphEditor:
                 cfg = ret.getConfig()
                 cfg.dicomFilenames.extend(dcmFilenames)
                 ret.setConfig(cfg)
+
+        return dropFilenameErrors
 
     def close(self):
         """This gracefull takes care of all graphEditor shutdown and is mostly
