@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.13 2003/07/04 14:03:31 cpbotha Exp $
+# $Id: tdObjects.py,v 1.14 2003/07/07 14:45:32 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -44,27 +44,27 @@ class tdObjects:
         self._grid = None
 
     def _bindEvents(self):
-        svViewFrame = self._slice3dVWR.getViewFrame()
+        controlFrame = self._slice3dVWR.controlFrame
 
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectSelectAllButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectSelectAllButtonId,
                       self._handlerObjectSelectAll)
 
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectDeselectAllButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectDeselectAllButtonId,
                       self._handlerObjectDeselectAll)
         
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectSetColourButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectSetColourButtonId,
                       self._handlerObjectSetColour)
         
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectShowHideButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectShowHideButtonId,
                       self._handlerObjectShowHide)
 
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectContourButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectContourButtonId,
                       self._handlerObjectContour)
 
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectMotionButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectMotionButtonId,
                       self._handlerObjectMotion)
 
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectAxisToSliceButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.objectAxisToSliceButtonId,
                       self._handlerObjectAxisToSlice)
 
     def _getSelectedObjects(self):
@@ -150,7 +150,7 @@ class tdObjects:
 
     def _handlerObjectAxisToSlice(self, event):
         # first find two selected points from the selected points list
-        selPoints = self._slice3dVWR._viewFrame.spointsGrid.GetSelectedRows()
+        selPoints = self._slice3dVWR.controlFrame.spointsGrid.GetSelectedRows()
         sliceDirection = self._slice3dVWR._getCurrentSliceDirection()
         
         if len(selPoints) >= 2 and sliceDirection and sliceDirection._ipws:
@@ -583,7 +583,7 @@ class tdObjects:
                     
                 # we don't want the user to scale, only move and rotate
                 bw.ScalingEnabledOff()
-                bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
+                bw.SetInteractor(self._slice3dVWR.threedFrame.threedRWI)
                 # also "flatten" the actor (i.e. integrate its UserTransform)
                 genUtils.flattenProp3D(objectDict['vtkActor'])
                 bw.SetProp3D(objectDict['vtkActor'])

@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.5 2003/07/04 07:32:14 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.6 2003/07/07 14:45:32 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -256,7 +256,7 @@ class sliceDirection:
             # import our wxGlade-generated frame
             ovf = modules.resources.python.slice3dVWRFrames.orthoViewFrame
             self._orthoViewFrame = ovf(
-                self.sliceDirections.slice3dVWR._viewFrame, id=-1,
+                self.sliceDirections.slice3dVWR.threedFrame, id=-1,
                 title='dummy')
 
             self._orthoViewFrame.SetIcon(moduleUtils.getModuleIcon())
@@ -473,7 +473,7 @@ class sliceDirection:
                 lut.Build()
 
                 ipw.SetInteractor(
-                    self.sliceDirection.slice3dVWR._viewFrame.threedRWI)
+                    self.sliceDirection.slice3dVWR.threedFrame.threedRWI)
                 # default axial orientation
                 ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
                 ipw.SetSliceIndex(0)
@@ -546,7 +546,7 @@ class sliceDirection:
             ipw = self._ipws[0]
             ipw.DisplayTextOn()
             ipw.SetInteractor(
-                self.sliceDirections.slice3dVWR._viewFrame.threedRWI)
+                self.sliceDirections.slice3dVWR.threedFrame.threedRWI)
             ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
             ipw.SetSliceIndex(0)
             ipw.GetPlaneProperty().SetColor(

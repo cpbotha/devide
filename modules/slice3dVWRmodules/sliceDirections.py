@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.2 2003/07/04 16:52:08 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.3 2003/07/07 14:45:32 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -59,22 +59,22 @@ class sliceDirections(object):
             sliceDirection.addContourObject(tdObject, prop3D)
 
     def _bindEvents(self):
-        svViewFrame = self.slice3dVWR._viewFrame
+        controlFrame = self.slice3dVWR.controlFrame
 
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.createSliceButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.createSliceButtonId,
                       self._handlerCreateSlice)
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.sliceSelectAllButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.sliceSelectAllButtonId,
                       self._handlerSliceSelectAll)
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.sliceDeselectAllButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.sliceDeselectAllButtonId,
                       self._handlerSliceDeselectAll)
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.sliceShowHideButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.sliceShowHideButtonId,
                       self._handlerSliceShowHide)
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.sliceInteractionButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.sliceInteractionButtonId,
                       self._handlerSliceInteraction)
-        wx.EVT_BUTTON(svViewFrame, svViewFrame.sliceDeleteButtonId,
+        wx.EVT_BUTTON(controlFrame, controlFrame.sliceDeleteButtonId,
                       self._handlerSliceDelete)
 
-        wx.EVT_CHOICE(svViewFrame, svViewFrame.acsChoiceId,
+        wx.EVT_CHOICE(controlFrame, controlFrame.acsChoiceId,
                       self._handlerSliceACS)
 
         # for ortho view use sliceDirection.createOrthoView()
@@ -155,7 +155,7 @@ class sliceDirections(object):
 
     def _handlerCreateSlice(self, event):
         self._createSlice(
-            self.slice3dVWR._viewFrame.createSliceComboBox.GetValue())
+            self.slice3dVWR.controlFrame.createSliceComboBox.GetValue())
 
     def _handlerSliceSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
@@ -186,7 +186,7 @@ class sliceDirections(object):
             self.slice3dVWR.render3D()
 
     def _handlerSliceACS(self, event):
-        selection = self.slice3dVWR._viewFrame.acsChoice.GetSelection()
+        selection = self.slice3dVWR.controlFrame.acsChoice.GetSelection()
         names = self._getSelectedSliceNames()
         for name in names:
             sd = self._sliceDirectionsDict[name]
@@ -240,7 +240,7 @@ class sliceDirections(object):
         cstring = str(self._currentCursor[0:3]) + " = " + \
                   str(self._currentCursor[3])
         
-        self.slice3dVWR._viewFrame.sliceCursorText.SetValue(cstring)
+        self.slice3dVWR.controlFrame.sliceCursorText.SetValue(cstring)
 
     def setCurrentSliceDirection(self, sliceDirection):
         # find this sliceDirection

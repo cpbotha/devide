@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.56 2003/07/04 16:14:04 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.57 2003/07/07 14:45:29 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -75,7 +75,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                          'vtkActor' : None, 'ipw' : None}
                        for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
-        self._viewFrame = None
+        self.threedFrame = None
 
         # the renderers corresponding to the render windows
         self._threedRenderer = None
@@ -121,16 +121,16 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             self._observerAIstyleEndInteraction)
 
         # set the default
-        self._viewFrame.threedRWI.SetInteractorStyle(self._cInteractorStyle)
+        self.threedFrame.threedRWI.SetInteractorStyle(self._cInteractorStyle)
 
         # initialise our sliceDirections, this will also setup the grid and
         # bind all slice UI events
         self.sliceDirections = sliceDirections(
-            self, self._viewFrame.sliceGrid)
+            self, self.controlFrame.sliceGrid)
 
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
-                                    self._viewFrame.objectsListGrid)
+                                    self.controlFrame.objectsListGrid)
 
     #################################################################
     # module API methods
@@ -184,16 +184,20 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # method 2 doesn't alway work, so we use WindowRemap
 
         # hide it so long
-        #self._viewFrame.Show(0)
+        #self.threedFrame.Show(0)
 
-        #self._viewFrame.threedRWI.GetRenderWindow().SetSize(10,10)
-        self._viewFrame.threedRWI.GetRenderWindow().WindowRemap()        
+        #self.threedFrame.threedRWI.GetRenderWindow().SetSize(10,10)
+        self.threedFrame.threedRWI.GetRenderWindow().WindowRemap()
         
         # all the RenderWindow()s are now reparented, so we can destroy
         # the containing frame
-        self._viewFrame.Destroy()
+        self.threedFrame.Destroy()
         # unbind the _view_frame binding
-        del self._viewFrame
+        del self.threedFrame
+
+        # take care of the controlFrame too
+        self.controlFrame.Destroy()
+        del self.controlFrame
 
     def getConfig(self):
         # implant some stuff into the _config object and return it
@@ -327,7 +331,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                     self._resetAll()
 
                 # update our 3d renderer
-                self._viewFrame.threedRWI.Render()
+                self.threedFrame.threedRWI.Render()
 
             else:
                 raise TypeError, "Wrong input type!"
@@ -350,8 +354,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             return self._extractVOI.GetOutput()
 
     def view(self):
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        if not self.threedFrame.Show(True):
+            self.threedFrame.Raise()
 
     #################################################################
     # miscellaneous public methods
@@ -367,13 +371,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         return self._ipwPicker
 
     def getViewFrame(self):
-        return self._viewFrame
+        return self.threedFrame
 
     def render3D(self):
         """This will cause a render to be called on the encapsulated 3d
         RWI.
         """
-        self._viewFrame.threedRWI.Render()
+        self.threedFrame.threedRWI.Render()
 
         
 
@@ -386,87 +390,106 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         import modules.resources.python.slice3dVWRFrames
         reload(modules.resources.python.slice3dVWRFrames)
 
-        # create main frame, make sure that when it's closed, it merely hides
         parent_window = self._moduleManager.get_module_view_parent_window()
-        slice3d_vwr_frame = modules.resources.python.slice3dVWRFrames.\
-                            MainFrame
-        self._viewFrame = slice3d_vwr_frame(parent_window, id=-1,
-                                             title='dummy')
 
-        self._viewFrame.SetIcon(moduleUtils.getModuleIcon())
+        # threedFrame creation and basic setup -------------------
+        threedFrame = modules.resources.python.slice3dVWRFrames.\
+                      threedFrame
+        self.threedFrame = threedFrame(parent_window, id=-1,
+                                      title='dummy')
 
-        # fix for the grid
-        self._viewFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
-        self._viewFrame.spointsGrid.DeleteRows(
-            0, self._viewFrame.spointsGrid.GetNumberRows())
+        # attach close handler
+        EVT_CLOSE(self.threedFrame,
+                  lambda e, s=self: s.threedFrame.Show(false))
+
+        self.threedFrame.SetIcon(moduleUtils.getModuleIcon())
 
         # add the renderer
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
-        self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
+        self.threedFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
+        
+        # controlFrame creation and basic setup -------------------
+        controlFrame = modules.resources.python.slice3dVWRFrames.\
+                       controlFrame
+        self.controlFrame = controlFrame(parent_window, id=-1,
+                                         title='dummy')
+        EVT_CLOSE(self.controlFrame,
+                  lambda e: self.controlFrame.Show(false))
+        self.controlFrame.SetIcon(moduleUtils.getModuleIcon())
+
+
+        # fix for the grid
+        self.controlFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        self.controlFrame.spointsGrid.DeleteRows(
+            0, self.controlFrame.spointsGrid.GetNumberRows())
+
 
         # add possible point names
-        self._viewFrame.sliceCursorNameCombo.Clear()
-        self._viewFrame.sliceCursorNameCombo.Append('Point 1')
-        self._viewFrame.sliceCursorNameCombo.Append('GIA Glenoid')
-        self._viewFrame.sliceCursorNameCombo.Append('GIA Humerus')
-        self._viewFrame.sliceCursorNameCombo.Append('FBZ Superior')
-        self._viewFrame.sliceCursorNameCombo.Append('FBZ Inferior')
+        self.controlFrame.sliceCursorNameCombo.Clear()
+        self.controlFrame.sliceCursorNameCombo.Append('Point 1')
+        self.controlFrame.sliceCursorNameCombo.Append('GIA Glenoid')
+        self.controlFrame.sliceCursorNameCombo.Append('GIA Humerus')
+        self.controlFrame.sliceCursorNameCombo.Append('FBZ Superior')
+        self.controlFrame.sliceCursorNameCombo.Append('FBZ Inferior')
         
         # event handlers for the global control buttons
-        EVT_BUTTON(self._viewFrame, self._viewFrame.resetCameraButtonId,
-                   self._handlerResetCameraButtonId)
+        EVT_BUTTON(self.threedFrame, self.threedFrame.showControlsButtonId,
+                   self._handlerShowControls)
+        
+        EVT_BUTTON(self.threedFrame, self.threedFrame.resetCameraButtonId,
+                   self._handlerResetCamera)
 
-        EVT_BUTTON(self._viewFrame, self._viewFrame.resetAllButtonId,
+        EVT_BUTTON(self.threedFrame, self.threedFrame.resetAllButtonId,
                    lambda e, s=self: s._resetAll())
         
-        EVT_CHOICE(self._viewFrame,
-                   self._viewFrame.projectionChoiceId,
+        EVT_CHOICE(self.threedFrame,
+                   self.threedFrame.projectionChoiceId,
                    self._handlerProjectionChoice)
 
-        EVT_CHOICE(self._viewFrame,
-                   self._viewFrame.mouseMovesChoiceId,
+        EVT_CHOICE(self.threedFrame,
+                   self.threedFrame.mouseMovesChoiceId,
                    self._handlerMouseMovesChoice)
         
-#         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-#                    lambda e, pw=self._viewFrame, s=self,
-#                    rw=self._viewFrame.threedRWI.GetRenderWindow():
+#         EVT_BUTTON(self.threedFrame, self.threedFrame.pipelineButtonId,
+#                    lambda e, pw=self.threedFrame, s=self,
+#                    rw=self.threedFrame.threedRWI.GetRenderWindow():
 #                    s.vtkPipelineConfigure(pw, rw))
 
-#         EVT_BUTTON(self._viewFrame, self._viewFrame.resetButtonId,
+#         EVT_BUTTON(self.threedFrame, self.threedFrame.resetButtonId,
 #                    lambda e, s=self: s._resetAll())
 
         def pointsSelectAllCallback(event):
             # calling SelectAll and then GetSelectedRows() returns nothing
-            #self._viewFrame.spointsGrid.SelectAll()
+            #self.threedFrame.spointsGrid.SelectAll()
             # so, we select row by row, and that does seem to work!
-            for row in range(self._viewFrame.spointsGrid.GetNumberRows()):
-                self._viewFrame.spointsGrid.SelectRow(row, True)
+            for row in range(self.controlFrame.spointsGrid.GetNumberRows()):
+                self.controlFrame.spointsGrid.SelectRow(row, True)
 
         def pointsDeselectAllCallback(event):
-            self._viewFrame.spointsGrid.ClearSelection()
+            self.controlFrame.spointsGrid.ClearSelection()
 
         def pointsRemoveCallback(event):
-            selRows = self._viewFrame.spointsGrid.GetSelectedRows()
+            selRows = self.controlFrame.spointsGrid.GetSelectedRows()
             if len(selRows):
                 self._remove_cursors(selRows)
 
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pointsSelectAllButtonId,
+        EVT_BUTTON(self.controlFrame, self.controlFrame.pointsSelectAllButtonId,
                    pointsSelectAllCallback)
-        EVT_BUTTON(self._viewFrame,
-                   self._viewFrame.pointsDeselectAllButtonId,
+        EVT_BUTTON(self.controlFrame,
+                   self.controlFrame.pointsDeselectAllButtonId,
                    pointsDeselectAllCallback)
-        EVT_BUTTON(self._viewFrame,
-                   self._viewFrame.pointsRemoveButtonId,
+        EVT_BUTTON(self.controlFrame,
+                   self.controlFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
 
-        EVT_BUTTON(self._viewFrame,
-                   self._viewFrame.pointsLockSliceButtonId,
+        EVT_BUTTON(self.controlFrame,
+                   self.controlFrame.pointsLockSliceButtonId,
                    self._handlerPointsLockSlice)
 
         def pointInteractionCheckBoxCallback(event):
-            val = self._viewFrame.pointInteractionCheckBox.GetValue()
+            val = self.controlFrame.pointInteractionCheckBox.GetValue()
             if val:
                 for selectedPoint in self._selectedPoints:
                     if selectedPoint['pointWidget']:
@@ -477,8 +500,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                     if selectedPoint['pointWidget']:
                         selectedPoint['pointWidget'].Off()
 
-        EVT_CHECKBOX(self._viewFrame,
-                     self._viewFrame.pointInteractionCheckBoxId,
+        EVT_CHECKBOX(self.controlFrame,
+                     self.controlFrame.pointInteractionCheckBoxId,
                      pointInteractionCheckBoxCallback)
 
         # event logic for the voi panel
@@ -493,37 +516,35 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 else:
                     self._voi_widget.Off()
             
-            
-        EVT_CHECKBOX(self._viewFrame,
-                     self._viewFrame.voiPanel.widgetEnabledCboxId,
+        EVT_CHECKBOX(self.controlFrame,
+                     self.controlFrame.voiEnabledCheckBoxId,
                      widgetEnabledCBoxCallback)
 
         def _ps_cb():
+            # FIXME: update to new factoring
             sliceDirection  = self._getCurrentSliceDirection()
             if sliceDirection:
-                val = self._viewFrame.pushSliceSpinCtrl.GetValue()
+                val = self.threedFrame.pushSliceSpinCtrl.GetValue()
                 if val:
                     sliceDirection.pushSlice(val)
-                    self._viewFrame.pushSliceSpinCtrl.SetValue(0)
-                    self._viewFrame.threedRWI.Render()
+                    self.threedFrame.pushSliceSpinCtrl.SetValue(0)
+                    self.threedFrame.threedRWI.Render()
 
-        EVT_SPINCTRL(self._viewFrame, self._viewFrame.pushSliceSpinCtrlId,
+        EVT_SPINCTRL(self.controlFrame, self.controlFrame.pushSliceSpinCtrlId,
                      lambda e: _ps_cb())
 
         # the store button
-        EVT_BUTTON(self._viewFrame, self._viewFrame.sliceStoreButtonId,
+        EVT_BUTTON(self.controlFrame, self.controlFrame.sliceStoreButtonId,
                    lambda e: self._storeCursorCallback())
 
         # clicks directly in the window for picking
-        self._viewFrame.threedRWI.AddObserver('LeftButtonPressEvent',
+        self.threedFrame.threedRWI.AddObserver('LeftButtonPressEvent',
                                                self._rwiLeftButtonCallback)
         
-        # attach close handler
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
 
         # display the window
-        self._viewFrame.Show(True)
+        self.threedFrame.Show(True)
+        self.controlFrame.Show(True)
 
     def _getPrimaryInput(self):
         """Get primary input data, i.e. bottom layer.
@@ -561,13 +582,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             pw.SetInteractor(None)
 
             # remove the entries from the wxGrid
-            self._viewFrame.spointsGrid.DeleteRows(idx)
+            self.threedFrame.spointsGrid.DeleteRows(idx)
 
             # then remove it from our internal list
             del self._selectedPoints[idx]
 
             # rerender
-            self._viewFrame.threedRWI.Render()
+            self.threedFrame.threedRWI.Render()
 
             # and sync up output points
             self._syncOutputSelectedPoints()
@@ -609,7 +630,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             self._threedRenderer.GetActiveCamera())
 
         # reset the VOI widget
-        self._voi_widget.SetInteractor(self._viewFrame.threedRWI)
+        self._voi_widget.SetInteractor(self.threedFrame.threedRWI)
         self._voi_widget.SetInput(inputData)
         self._voi_widget.PlaceWidget()
         self._voi_widget.SetPriority(0.6)
@@ -648,7 +669,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 self._pdScalarBarActor.SetLookupTable(
                     prop.GetMapper().GetLookupTable())
 
-                self._viewFrame.threedRWI.Render()
+                self.threedFrame.threedRWI.Render()
                     
             else:
                 # the prop doesn't have a mapper or the mapper doesn't
@@ -692,7 +713,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             discrete = (0, 0, 0)
             val = 0
 
-        pointName = self._viewFrame.sliceCursorNameCombo.GetValue()            
+        pointName = self.threedFrame.sliceCursorNameCombo.GetValue()            
         self._storePoint(discrete, xyz, val, pointName, True) # lock to surface
 
     def _storeCursor(self, cursor):
@@ -720,7 +741,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         world = map(operator.add, iorigin,
                     map(operator.mul, ispacing, cursor[0:3]))
 
-        pointName = self._viewFrame.sliceCursorNameCombo.GetValue()
+        pointName = self.threedFrame.sliceCursorNameCombo.GetValue()
         self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
                          pointName)
 
@@ -741,7 +762,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # make priority higher than the default of vtk3DWidget so
         # that imageplanes behind us don't get selected the whole time
         pw.SetPriority(0.6)
-        pw.SetInteractor(self._viewFrame.threedRWI)
+        pw.SetInteractor(self.threedFrame.threedRWI)
         pw.AllOff()
         pw.On()
 
@@ -793,7 +814,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         # after we've added observers, we get to switch the widget on or
         # off; but it HAS to be on when the observers are added
-        if self._viewFrame.pointInteractionCheckBox.GetValue():
+        if self.threedFrame.pointInteractionCheckBox.GetValue():
             pw.On()
         else:
             pw.Off()
@@ -809,15 +830,15 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                                      'textActor' : ta})
 
         
-        self._viewFrame.spointsGrid.AppendRows()
-        self._viewFrame.spointsGrid.AdjustScrollbars()        
-        row = self._viewFrame.spointsGrid.GetNumberRows() - 1
+        self.threedFrame.spointsGrid.AppendRows()
+        self.threedFrame.spointsGrid.AdjustScrollbars()        
+        row = self.threedFrame.spointsGrid.GetNumberRows() - 1
         self._syncGridRowToSelPoints(row)
         
         # make sure self._outputSelectedPoints is up to date
         self._syncOutputSelectedPoints()
 
-        self._viewFrame.threedRWI.Render()
+        self.threedFrame.threedRWI.Render()
 
     def _syncGridRowToSelPoints(self, row):
         # *sniff* *sob* It's unreadable, but why's it so pretty?
@@ -827,10 +848,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         value = self._selectedPoints[row]['value']
         discreteStr = "%.0f, %.0f, %.0f" % discrete
         worldStr = "%.2f, %.2f, %.2f" % world
-        self._viewFrame.spointsGrid.SetCellValue(row, 0, worldStr)
-        self._viewFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
+        self.threedFrame.spointsGrid.SetCellValue(row, 0, worldStr)
+        self.threedFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
 
-        self._viewFrame.spointsGrid.SetCellValue(row, 2, str(value))
+        self.threedFrame.spointsGrid.SetCellValue(row, 2, str(value))
 
 
     def _syncOutputSelectedPoints(self):
@@ -857,7 +878,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     #################################################################
 
     def _handlerPointsLockSlice(self, event):
-        selRows = self._viewFrame.spointsGrid.GetSelectedRows()
+        selRows = self.threedFrame.spointsGrid.GetSelectedRows()
         if len(selRows) >= 3:
             tp = [self._selectedPoints[idx]['world'] for idx in selRows]
             sliceDirection = self._getCurrentSliceDirection()
@@ -876,7 +897,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         if not cam:
             return
         
-        pcs = self._viewFrame.projectionChoice.GetSelection()
+        pcs = self.threedFrame.projectionChoice.GetSelection()
         if pcs == 0:
             # perspective
             cam.ParallelProjectionOff()
@@ -886,18 +907,22 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self.render3D()
 
     def _handlerMouseMovesChoice(self, event):
-        mmcs = self._viewFrame.mouseMovesChoice.GetSelection()
+        mmcs = self.threedFrame.mouseMovesChoice.GetSelection()
 
         if mmcs == 0:
-            self._viewFrame.threedRWI.SetInteractorStyle(
+            self.threedFrame.threedRWI.SetInteractorStyle(
                 self._cInteractorStyle)
         else:
-            self._viewFrame.threedRWI.SetInteractorStyle(
+            self.threedFrame.threedRWI.SetInteractorStyle(
                 self._aInteractorStyle)
 
-    def _handlerResetCameraButtonId(self, event):
+    def _handlerResetCamera(self, event):
         self._threedRenderer.ResetCamera()
         self.render3D()
+
+    def _handlerShowControls(self, event):
+        if not self.controlFrame.Show(True):
+            self.controlFrame.Raise()
 
     def _observerAIstyleEndInteraction(self, eventObject, eventType):
         iProp = self._aInteractorStyle.GetInteractionProp()
@@ -911,7 +936,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         if pw in pwidgets:
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list
-            self._viewFrame.spointsGrid.SelectRow(idx)
+            self.threedFrame.spointsGrid.SelectRow(idx)
 
             # if this is lockToSurface, lock it!
             if self._selectedPoints[idx]['lockToSurface']:
@@ -1071,7 +1096,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         bounds =  planes.GetPoints().GetBounds()
 
         # first set bounds
-        self._viewFrame.voiPanel.boundsText.SetValue(
+        self.threedFrame.voiPanel.boundsText.SetValue(
             "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
             bounds)
 
@@ -1088,7 +1113,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # store the VOI (this is a shallow copy)
         self._currentVOI = voi
         # display the discrete extent
-        self._viewFrame.voiPanel.extentText.SetValue(
+        self.threedFrame.voiPanel.extentText.SetValue(
             "(%d %d %d %d %d %d)" % tuple(voi))
 
     def voiWidgetEndInteractionCallback(self, o, e):
@@ -1098,7 +1123,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     def inputModifiedCallback(self, o, e):
         # the data has changed, so re-render what's on the screen
         print "calling Render"
-        self._viewFrame.threedRWI.Render()
+        self.threedFrame.threedRWI.Render()
         print "done calling Render"
 
     def _rwiLeftButtonCallback(self, obj, event):
@@ -1110,7 +1135,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             picker.Pick(x,y,0.0,self._threedRenderer)
             return (picker.GetActor(), picker.GetPointId())
             
-        pickAction = self._viewFrame.surfacePickActionChoice.GetSelection()
+        pickAction = self.controlFrame.surfacePickActionChoice.GetSelection()
         if pickAction == 1:
             # Place point on surface
             actor, pointId = findPickedProp(obj)
@@ -1121,8 +1146,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             # configure picked object
             prop, pointId = findPickedProp(obj)
             if prop:
-                self.vtkPipelineConfigure(self._viewFrame,
-                                          self._viewFrame.threedRWI, (prop,))
+                self.vtkPipelineConfigure(self.threedFrame,
+                                          self.threedFrame.threedRWI, (prop,))
 
         elif pickAction == 3:
             # show scalarbar for picked object
