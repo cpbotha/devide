@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.54 2002/08/28 14:59:50 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.55 2002/08/28 15:55:45 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -204,29 +204,14 @@ class vtk_slice_vwr(module_base,
         self._sel_points.append((point, dpoint, dvalue))
 
 
-        # FIXME: CONTINUE HERE
-        #self._ortho_huds.append({'vtkAxes' : vtk.vtkAxes(),
-        #                         'axes_actor' : vtk.vtkActor()})
-        #self._ortho_huds[-1]['vtkAxes'].SetOrigin(0.0,0.0,0.5)        
-        #self._ortho_huds[-1]['vtkAxes'].SymmetricOn()
 
-        #axes_mapper = vtk.vtkPolyDataMapper()
-        #axes_mapper.SetInput(self._ortho_huds[-1]['vtkAxes'].GetOutput())
-
-        #self._ortho_huds[-1]['axes_actor'].SetMapper(axes_mapper)
-        #self._ortho_huds[-1]['axes_actor'].GetProperty().SetAmbient(1.0)
-        #self._ortho_huds[-1]['axes_actor'].GetProperty().SetDiffuse(0.0)
-        #self._ortho_huds[-1]['axes_actor'].VisibilityOff()
-
-        #self._renderers[-1].AddActor(self._ortho_huds[-1]['axes_actor'])
+    def _create_ipw_panel(self, parent):
+        panel = wxPanel(parent, -1)
 
         
-        # also setup the HUD for this ortho_pipe
-        #ob = reslice.GetOutput().GetBounds()
-        #sf = ob[1] - ob[0]
-        #self._ortho_huds[ortho_idx]['vtkAxes'].SetScaleFactor(sf)
-        #self._ortho_huds[ortho_idx]['vtkAxes'].SetOrigin(0.0,0.0,0.5)
         
+        return panel
+
     def _create_window(self):
         # create main frame, make sure that when it's closed, it merely hides
         parent_window = self._module_manager.get_module_view_parent_window()
@@ -285,14 +270,12 @@ class vtk_slice_vwr(module_base,
         pnames = ["Axial", "Coronal", "Sagittal"]
         for i in range(len(self._ipws)):
             # create and populate panel
-            spanel = wxPanel(nb, -1)
+            spanel = self._create_ipw_panel(nb)
             nb.AddPage(spanel, pnames[i])
             # now make callback for the ipw
             self._ipws[i].AddObserver('StartInteractionEvent',
                                       lambda e, o, nb=nb, i=i:
                                       nb.SetSelection(i))
-            
-            
 
         # this sizer will contain the button_sizer and the notebook
         button_nb_sizer = wxBoxSizer(wxVERTICAL)
@@ -313,22 +296,6 @@ class vtk_slice_vwr(module_base,
         #tl_sizer.SetSizeHints(self._view_frame)
 
         self._view_frame.Show(true)
-
-    def _find_wxvtkrwi_by_istyle(self, istyle):
-        """Find the wxVTKRenderWindowInteractor (out of self._rwis) that owns
-        the given vtkInteractorStyle.
-
-        If one uses vtkInteractorStyle::GetInteractor, one gets the vtk_object,
-        and we sometimes want the python wxVTKRenderWindowInteractor to use
-        some of the wx calls.
-        """
-
-        # kind of stupid, this will always iterate over the whole list :(
-        frwis = [i for i in self._rwis if i.GetInteractorStyle() == istyle]
-        if len(frwis) > 0:
-            return frwis[0]
-        else:
-            return None
 
     def _reset(self):
         """Arrange everything for a single overlay in a single ortho view.
@@ -418,59 +385,6 @@ class vtk_slice_vwr(module_base,
 # callbacks
 #################################################################
 
-    def _istyle_img_cb(self, istyle, command_name):
-        """Call-back (observer) for InteractorStyleImage.
-
-        We keep track of left mouse button status.  If the user drags with
-        the left mouse button, we change the current slice.  Because mouse
-        capturing is broken in wxGTK 2.3.2.1, we can't do that...
-        """
-
-        if command_name == 'LeftButtonPressEvent':
-            # only capture mouse if we're told to
-            rwi = self._find_wxvtkrwi_by_istyle(istyle)            
-            if WX_USE_X_CAPTURE:
-                rwi.CaptureMouse()
-                
-            # note status of mouse button
-            self._left_mouse_button = 1
-            
-            if rwi.GetControlKey():
-                self._rw_ortho_pick_cb(rwi)
-            else:
-                # chain to built-in method
-                istyle.OnLeftButtonDown()
-            
-        elif command_name == 'MouseMoveEvent':
-            if self._left_mouse_button:
-                rwi = self._find_wxvtkrwi_by_istyle(istyle)
-                if rwi.GetShiftKey():
-                    self._rw_windowlevel_cb(rwi)
-                else:
-                    self._rw_slice_cb(rwi)
-            else:
-                istyle.OnMouseMove()
-
-        elif command_name == 'LeftButtonReleaseEvent':
-            # release mouse if we captured it
-            if WX_USE_X_CAPTURE:
-                rwi = self._find_wxvtkrwi_by_istyle(istyle)                
-                rwi.ReleaseMouse()
-            # update state variable
-            self._left_mouse_button = 0
-            # chain to built-in event
-            istyle.OnLeftButtonUp()
-
-        elif command_name == 'LeaveEvent':
-            if not WX_USE_X_CAPTURE:
-                # we only let cancel the button down if we're kludging it
-                # i.e. mouse capturing DOESN'T work
-                self._left_mouse_button = 0
-            # chain to built-in leave handler
-            istyle.OnLeave()
-
-        else:
-            raise TypeError
 
     def _ipw_cb(self, ortho_idx):
 
