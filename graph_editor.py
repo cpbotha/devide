@@ -1,4 +1,5 @@
-import Tix, re
+import sys, re
+import Tix, tkMessageBox
 
 def coords_to_ltriangle(x, y):
     return (x, y, x - 6, y - 3, x - 6, y + 3)
@@ -12,6 +13,7 @@ def coords_to_rtriangle(x, y):
 
 class glyph:
     def __init__(self, graph_editor, canvas, coords, module_instance):
+	self.module_instance = module_instance
 
 	# extract the module name from the __class__ attribute of the passed instance
 	sres = re.search(".*\.(.*)", str(module_instance.__class__))
@@ -33,7 +35,6 @@ class glyph:
 	    'line': None, 'glyph': None})
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Enter>", self.input_enter_cb)
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Button-1>", self.input_click_cb)
-	    canvas.tag_bind(self.inputs[-1]['item'], "<Double-Button-1>", self.input_dclick_cb)
 	    
 	self.outputs = []
 	for cur_output_type in module_instance.get_output_types():
@@ -43,9 +44,28 @@ class glyph:
 	    
 	self.rectangle = canvas.create_rectangle(self.rcoords, fill="gray80")
 	self.text = canvas.create_text(self.coords[0], self.coords[1], text=self.module_name, width=115)
+	# add click handlers for rectangle and text so we can delete the glyph
+	canvas.tag_bind(self.rectangle, "<Button-1>", self.b1click_cb)
+	canvas.tag_bind(self.text, "<Button-1>", self.b1click_cb)
 	# bind move handler to text and rectangle (the glyph can move itself)
 	canvas.tag_bind(self.rectangle, "<B1-Motion>", self.move_cb)
 	canvas.tag_bind(self.text, "<B1-Motion>", self.move_cb)
+	
+    def __del__(self):
+	print "in glyph.__del__()"
+	self.canvas.delete(self.text)
+	self.canvas.delete(self.rectangle)
+	for cur_input in self.inputs:
+	    self.canvas.delete(cur_input['item'])
+	for cur_output in self.outputs:
+	    self.canvas.delete(cur_output)
+	for cur_output_line in self.output_lines:
+	    self.canvas.delete(cur_output_line)
+	for cur_input in self.inputs:
+	    if cur_input['line']:
+		self.canvas.delete(cur_input['line'])
+	    
+	
 	
     def accept_connection(self, from_glyph, input_line, input_idx):
 	self.inputs[input_idx]['line'] = input_line
@@ -88,6 +108,9 @@ class glyph:
     def get_itri_coords(self, input_idx):
 	return self.canvas.coords(self.inputs[input_idx]['item'])
     
+    def get_module_instance(self):
+	return self.module_instance
+    
     def is_connected_on(self, input_idx):
 	return self.inputs[input_idx]['glyph']
     
@@ -118,6 +141,10 @@ class glyph:
 		coords[3] += dy
 		# is there not a better way to break the coords list up?
 		self.canvas.coords(cur_input['line'], coords[0], coords[1], coords[2], coords[3])
+		
+    def b1click_cb(self, event):
+	if self.graph_editor.get_mode() == 'delete':
+	    self.graph_editor.delete_glyph(self)
 	
     def output_drag_cb(self, event, item):
 	if not self.cur_output_line:
@@ -133,21 +160,13 @@ class glyph:
 	if len(item) == 1:
 	    idx = self.find_input_idx(item[0])
 	    if (idx > -1):
-		self.graph_editor.glyph_input_clicked(self, idx)
+		if self.graph_editor.get_mode() == 'edit':
+		    self.graph_editor.glyph_input_clicked(self, idx)
+		elif self.graph_editor.get_mode() == 'delete':
+		    self.graph_editor.disconnect_glyphs(self.inputs[idx]['glyph'], self, idx)
 	elif (len(item) > 1):
 	    print "This shouldn't happen!!"
     
-    def input_dclick_cb(self, event):
-	# find_withtag returns a tuple
-	item = self.canvas.find_withtag(Tix.CURRENT)
-	if len(item) == 1:
-	    idx = self.find_input_idx(item[0])
-	    if (idx > -1 and self.inputs[idx]['glyph']):
-		self.graph_editor.disconnect_glyphs(self.inputs[idx]['glyph'], self, idx)
-	elif (len(item) > 1):
-	    print "This shouldn't happen!!"
-
-	    
     def output_enter_cb(self, event):
 	self.graph_editor.set_status("Entered output")
 	
@@ -185,15 +204,16 @@ class graph_editor:
 	# create window for the glyph editor
 	self.window = Tix.Toplevel()
 	
-	# frame
-	self.command_frame = Tix.Frame(self.window)
-	self.command_frame.pack(side=Tix.LEFT, fill=Tix.Y)
-
+	# sunken label with border width 1
+        self.status = Tix.Label(self.window, relief=Tix.SUNKEN, bd=1, anchor=Tix.W)
+        self.status.pack(side=Tix.BOTTOM, fill=Tix.X, padx=2, pady=1)
+	self.status['text'] = "hello"
+	
 	# apparently we can do cool stuff like this too
-	self.command_frame.module_tree = Tix.Tree(self.command_frame, scrollbar=Tix.AUTO)
-	self.command_frame.module_tree.pack(side=Tix.TOP, expand=1, fill=Tix.BOTH)
+	self.module_tree = Tix.Tree(self.window, scrollbar=Tix.AUTO)
+	self.module_tree.pack(side=Tix.LEFT, expand=1, fill=Tix.BOTH)
 
-	hlist = self.command_frame.module_tree.subwidget_list['hlist']
+	hlist = self.module_tree.subwidget_list['hlist']
 	hlist['drawbranch'] = 1
 	hlist['separator'] = '.'
 	hlist.add("Readers", text="Readers")
@@ -214,22 +234,30 @@ class graph_editor:
 	    elif filter_re.search(i):
 		hlist.add("Filters." + i, text=i)
 	# do openings and closings automatically
-	self.command_frame.module_tree.autosetmode()	
+	self.module_tree.autosetmode()
+	
 	
 	# create canvas for drawing glyph layouts on
 	self.canvas = Tix.Canvas(self.window)
 	self.canvas.bind("<Button-1>", self.canvas_b1click_cb)
-	self.canvas.pack(side=Tix.TOP, expand=1, fill=Tix.BOTH)
+	self.canvas.pack(side=Tix.LEFT, expand=1, fill=Tix.BOTH)
 	
-	# sunken label with border width 1
-        self.status = Tix.Label(self.window, relief=Tix.SUNKEN, bd=1, anchor=Tix.W)
-        self.status.pack(side=Tix.BOTTOM, fill=Tix.X, padx=2, pady=1)
 	
-	self.status['text'] = "hello"
+	# frame
+	self.command_frame = Tix.Frame(self.window)
+	self.command_frame.pack(side=Tix.LEFT, fill=Tix.BOTH)
+
+	# then some command buttons
+	self.command_frame.mode_select = Tix.Select(self.command_frame, radio=1, allowzero=0, orientation=Tix.VERTICAL)
+	self.command_frame.mode_select.add('edit', text='Edit')
+	self.command_frame.mode_select.add('delete', text='Delete')
+	self.command_frame.mode_select['value'] = 'edit'
+	self.command_frame.mode_select.pack(side=Tix.TOP)
+	
 	
     def create_glyph(self, x, y):
 	# see what's selected in the tree (make sure it's not a section heading)
-	sel_tuple = self.command_frame.module_tree.subwidget_list['hlist'].info_selection()
+	sel_tuple = self.module_tree.subwidget_list['hlist'].info_selection()
 	if (len(sel_tuple) == 1):
 	    module_search = re.search(".*\.(.*)", sel_tuple[0])
 	    if (module_search and module_search.group(1)):
@@ -237,7 +265,17 @@ class graph_editor:
 		if temp_module:
 		    self.glyphs.append(glyph(self, self.canvas, (x,y),
 		    temp_module))
-	
+		    
+    def delete_glyph(self, glyph):
+	try:
+	    # IMPORTANT: WE HAVE TO DISCONNECT AS WELL... ALL GLYPHS GETTING INPUT FROM THIS ONE
+	    self.dscas3_main.delete_module(glyph.get_module_instance())
+	    self.glyphs.remove(glyph)
+	    print sys.getrefcount(glyph)
+	    del glyph		
+	except Exception, e:
+	    tkMessageBox.showerror("Destruction error", "Unable to destroy object: %s" % str(e))
+	    #print sys.exc_info()
 	
     def canvas_b1click_cb(self, event):
 	item = self.canvas.find_withtag(Tix.CURRENT)
@@ -273,6 +311,9 @@ class graph_editor:
 	may disconnect the requested inputs/outputs.  If allowed, the
 	situation in the graph editor will be adapted."""
 	input_glyph.disconnect_from(output_glyph, input_idx)
+	
+    def get_mode(self):
+	return self.command_frame.mode_select['value']
 	
     def set_status(self, text):
 	self.status['text'] = text

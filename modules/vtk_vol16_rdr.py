@@ -24,4 +24,4 @@ class vtk_vol16_rdr:
     
     # BASE
     def get_input(self, idx):
-#	return None
+	return None

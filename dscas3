@@ -46,6 +46,10 @@ class dscas3_main:
 	    return None
 	# return the instance
 	return self.modules[-1]
+    
+    def delete_module(self, instance):
+	self.modules.remove(instance)
+	del instance
 	
     def get_module_list(self):
 	return self.module_manager.get_module_list()
