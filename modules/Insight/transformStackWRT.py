@@ -1,7 +1,6 @@
-# $Id: transformStackWRT.py,v 1.2 2003/12/09 12:44:09 cpbotha Exp $
-
+# $Id: transformStackWRT.py,v 1.3 2003/12/09 14:01:26 cpbotha Exp $
+from typeModules.transformStackClass import transformStackClass
 import cPickle
-from register2D import transformStackClass
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -9,6 +8,10 @@ import wx
 import vtk
 
 class transformStackWRT(moduleBase, filenameViewModuleMixin):
+    """Writes 2D Transform Stack to disc.
+
+    Use this module to save the results of a register2D session.
+    """
 
     def __init__(self, moduleManager):
 
@@ -46,8 +49,8 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
             if inputStream == None: # disconnect
                 self._transformStack = None
                 return
-            
-            if not isinstance(inputStream, transformStackClass):
+
+            if not inputStream.__class__.__name__ == 'transformStackClass':
                 raise TypeError, \
                       'transformStackWRT requires a transformStack at input'
             

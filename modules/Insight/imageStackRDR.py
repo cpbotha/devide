@@ -1,22 +1,9 @@
-from genMixins import subjectMixin, updateCallsExecuteModuleMixin
+from typeModules.imageStackClass import imageStackClass
 import InsightToolkit as itk
 from moduleBase import moduleBase
 from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
 import wx
-
-class imageStackClass(list,
-                      subjectMixin,
-                      updateCallsExecuteModuleMixin):
-    
-    def __init__(self, d3Module):
-        # call base ctors
-        subjectMixin.__init__(self)
-        updateCallsExecuteModuleMixin.__init__(self, d3Module)
-
-    def close(self):
-        subjectMixin.close(self)
-        updateCallsExecuteModuleMixin.close(self)
 
 class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
     """Loads a list of images as ITK Images.

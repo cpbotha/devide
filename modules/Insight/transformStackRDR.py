@@ -1,9 +1,8 @@
-# $Id: transformStackRDR.py,v 1.1 2003/12/09 12:44:09 cpbotha Exp $
-
+# $Id: transformStackRDR.py,v 1.2 2003/12/09 14:01:26 cpbotha Exp $
+from typeModules.transformStackClass import transformStackClass
 import cPickle
 import InsightToolkit as itk
 import md5
-from register2D import transformStackClass
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -11,6 +10,13 @@ import wx
 import vtk
 
 class transformStackRDR(moduleBase, filenameViewModuleMixin):
+
+    """Reads 2D Transform Stack from disc.
+
+    This module can be used to feed a register2D or a transform2D module.
+    It reads the files that are written by transformStackWRT, but you knew
+    that.
+    """
 
     def __init__(self, moduleManager):
 
@@ -28,7 +34,7 @@ class transformStackRDR(moduleBase, filenameViewModuleMixin):
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame(
             'Select a filename to load',
-            '2D Transform Stack file (*.2ts)|*.dts|All files (*)|*',
+            '2D Transform Stack file (*.2ts)|*.2ts|All files (*)|*',
             objectDict=None)
 
         # set up some defaults

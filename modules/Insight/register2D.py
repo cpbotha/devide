@@ -1,6 +1,6 @@
-from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import genUtils
-from imageStackRDR import imageStackClass
+from typeModules.imageStackClass import imageStackClass
+from typeModules.transformStackClass import transformStackClass
 from moduleBase import moduleBase
 import moduleUtils
 import operator
@@ -8,19 +8,6 @@ import InsightToolkit as itk
 import ConnectVTKITKPython as CVIPy
 import vtk
 import wx
-
-class transformStackClass(list,
-                          subjectMixin,
-                          updateCallsExecuteModuleMixin):
-    
-    def __init__(self, d3Module):
-        # call base ctors
-        subjectMixin.__init__(self)
-        updateCallsExecuteModuleMixin.__init__(self, d3Module)
-
-    def close(self):
-        subjectMixin.close(self)
-        updateCallsExecuteModuleMixin.close(self)
 
 class register2D(moduleBase):
     """Registers a stack of 2D images and generates a list of transforms.
@@ -39,6 +26,10 @@ class register2D(moduleBase):
         # FIXME: add current transforms to config stuff
 
     def close(self):
+        # we do this just in case...
+        self.setInput(0, None)
+        self.setInput(1, None)
+        
         moduleBase.close(self)
 
         # take care of the IPWs
@@ -69,40 +60,91 @@ class register2D(moduleBase):
         del self.controlFrame
 
     def getInputDescriptions(self):
-        return ('ITK Image Stack',)
+        return ('ITK Image Stack', '2D Transform Stack')
 
     def setInput(self, idx, inputStream):
-        if inputStream != self._imageStack:
-            # if it's None, we have to take it
-            if inputStream == None:
-                # disconnect
-                del self._transformStack[:]
-                self._destroyIPWs()
-                self._imageStack = None
-                self._pairNumber = -1
-                return
-                
-            # let's setup for a new stack!
-            try:
-                assert(isinstance(inputStream, imageStackClass))
-                inputStream.Update()
-                assert(len(inputStream) >= 2)
-            except Exception:
-                # if the Update call doesn't work or
-                # if the input list is not long enough (or unsizable),
-                # we don't do anything
-                raise TypeError, \
-                      "register2D requires an ITK Image Stack of minimum length 2 as input."
+        if idx == 0:
+            if inputStream != self._imageStack:
+                # if it's None, we have to take it
+                if inputStream == None:
+                    # disconnect
+                    del self._transformStack[:]
+                    self._destroyIPWs()
+                    self._imageStack = None
+                    self._pairNumber = -1
+                    return
 
-            self._imageStack = inputStream
-            # create a new transformStack
-            del self._transformStack[:]
-            # the first transform is always identity
-            for dummy in self._imageStack:
-                self._transformStack.append(itk.itkEuler2DTransform_New())
-                self._transformStack[-1].SetIdentity()
-                
-            self._showImagePair(1)
+                # let's setup for a new stack!
+                try:
+                    assert(inputStream.__class__.__name__ == 'imageStackClass')
+                    inputStream.Update()
+                    assert(len(inputStream) >= 2)
+                except Exception:
+                    # if the Update call doesn't work or
+                    # if the input list is not long enough (or unsizable),
+                    # we don't do anything
+                    raise TypeError, \
+                          "register2D requires an ITK Image Stack of minimum length 2 as input."
+
+                # now check that the imageStack is the same size as the
+                # transformStack
+                if self._inputTransformStack and \
+                   len(inputStream) != len(self._inputTransformStack):
+                    raise TypeError, \
+                          "The Image Stack you are trying to connect has a\n" \
+                          "different length than the connected Transform\n" \
+                          "Stack."
+
+                self._imageStack = inputStream
+
+                if self._inputTransformStack:
+                    self._copyInputTransformStack()
+                else:
+                    # create a new transformStack
+                    del self._transformStack[:]
+                    # the first transform is always identity
+                    for dummy in self._imageStack:
+                        self._transformStack.append(
+                            itk.itkEuler2DTransform_New())
+                        self._transformStack[-1].SetIdentity()
+
+                self._showImagePair(1)
+
+        else: # closes if idx == 0 block
+            if inputStream != self._inputTransformStack:
+                if inputStream == None:
+                    # we disconnect, but we keep the transforms we have
+                    self._inputTransformStack = None
+                    return
+
+                try:
+                    assert(inputStream.__class__.__name__ == \
+                           'transformStackClass')
+                except Exception:
+                    raise TypeError, \
+                          "register2D requires an ITK Transform Stack on " \
+                          "this port."
+
+                inputStream.Update()
+
+                if len(inputStream) < 2:
+                    raise TypeError, \
+                          "The input transform stack should be of minimum " \
+                          "length 2."
+                    
+                if self._imageStack and \
+                   len(inputStream) != len(self._imageStack):
+                    raise TypeError, \
+                          "The Transform Stack you are trying to connect\n" \
+                          "has a different length than the connected\n" \
+                          "Transform Stack"
+
+                self._inputTransformStack = inputStream
+
+                if self._imageStack:
+                    self._copyInputTransformStack()
+                    self._showImagePair(self._pairNumber)
+                          
         
     def getOutputDescriptions(self):
         return ('2D Transform Stack',)
@@ -139,9 +181,23 @@ class register2D(moduleBase):
         wx.EVT_BUTTON(self.controlFrame, self.controlFrame.registerButtonId,
                       self._handlerRegisterButton)
 
+    def _copyInputTransformStack(self):
+        """Copy the contents of the inputTransformStack to the internal
+        transform stack.
+        """
+
+        # take care of the current ones
+        del self._transformStack[:]
+        # then copy
+        for trfm in self._inputTransformStack:
+            # FIXME: do we need to take out a ref?
+            self._transformStack.append(trfm)
+
     def _createLogic(self):
         # input
         self._imageStack = None
+        # optional input
+        self._inputTransformStack = None
         # output is a transform stack
         self._transformStack = transformStackClass(self)
 
