@@ -12,7 +12,8 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
 
-        self._marchingCubes = vtk.vtkMarchingCubes()
+        #self._marchingCubes = vtk.vtkMarchingCubes()
+        self._marchingCubes = vtk.vtkKitwareContourFilter()
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
@@ -41,6 +42,7 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # off we go!
         self.view()
         
+
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
@@ -55,16 +57,14 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
     def getInputDescriptions(self):
 	return ('vtkImageData',)
     
+
     def setInput(self, idx, inputStream):
         self._marchingCubes.SetInput(inputStream)
-        if not inputStream is None:
-            # get scalar bounds
-            minv, maxv = inputStream.GetScalarRange()
-            self._viewFrame.isoValueSlider.SetRange(minv, maxv)
-    
+
     def getOutputDescriptions(self):
 	return (self._marchingCubes.GetOutput().GetClassName(),)
     
+
     def getOutput(self, idx):
         return self._marchingCubes.GetOutput()
 
@@ -75,11 +75,16 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._marchingCubes.SetValue(0, self._config.isoValue)
 
     def viewToConfig(self):
-        self._config.isoValue = self._viewFrame.isoValueSlider.GetValue()
+        try:
+            self._config.isoValue = float(
+                self._viewFrame.isoValueText.GetValue())
+        except:
+            pass
+        
         self._config.rtu = self._viewFrame.realtimeUpdateCheckBox.GetValue()
 
     def configToView(self):
-        self._viewFrame.isoValueSlider.SetValue(self._config.isoValue)
+        self._viewFrame.isoValueText.SetValue(str(self._config.isoValue))
         self._viewFrame.realtimeUpdateCheckBox.SetValue(self._config.rtu)
 
     def executeModule(self):
@@ -116,8 +121,9 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         moduleUtils.bindCSAEO(self, self._viewFrame)        
 
         # connect slider to its callback for instant processing
-        EVT_SCROLL(self._viewFrame.isoValueSlider,
-                   self._sliderCallback())
+        EVT_TEXT_ENTER(self._viewFrame,
+                       self._viewFrame.isoValueTextId,
+                       self._isoTextCallback)
 
         # the checkbox should directly modify its own bit of the self._config
         EVT_CHECKBOX(self._viewFrame,
@@ -132,7 +138,7 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
         
         
 
-    def _sliderCallback(self):
+    def _isoTextCallback(self):
         if self._config.rtu:
             self.applyViewToLogic()
             self.executeModule()
@@ -140,6 +146,7 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
     def _realtimeUpdateCheckBoxCallback(self, event):
         self._config.rtu = self._viewFrame.realtimeUpdateCheckBox.GetValue()
         
+
     def vtkObjectChoiceCallback(self, event):
         self.vtkObjectConfigure(self._viewFrame, None,
                                 self._marchingCubes)
