@@ -33,7 +33,20 @@ class metaModule:
         self.outputs = [[] for i in range(numOuts)]
 
 class pickledModuleState:
-    pass
+    def __init__(self):
+        self.moduleConfig = None
+        self.moduleName = None
+        self.instanceName = None
+
+class pickledConnection:
+    def __init__(self, sourceInstanceName=None, outputIdx=None,
+                 targetInstanceName=None, inputIdx=None, connectionType=None):
+        
+        self.sourceInstanceName = sourceInstanceName
+        self.outputIdx = outputIdx
+        self.targetInstanceName = targetInstanceName
+        self.inputIdx = inputIdx
+        self.connectionType = connectionType
 
 class moduleManager:
     """This class in responsible for picking up new modules in the modules 
@@ -295,18 +308,60 @@ class moduleManager:
         # anymore
         self._moduleDict[input_module].inputs[input_idx] = None
 
-    def deserialiseModuleInstances(self, stream):
+    def deserialiseModuleInstances(self, pmsDict, connectionList):
         """Given a pickled stream, this method will recreate all modules,
         configure them and connect them up.  It returns a list of
         successfully instantiated modules.
         """
         
-        pmsList = cPickle.loads(stream)
-        newModules = []
-        for pms in pmsList:
-            newModule = self.createModule(pms.moduleName)
+        # let's attempt to instantiate all the modules
+
+        # newModulesDict will act as translator between pickled instanceName
+        # and new instance!
+        newModulesDict = {}
+        for pmsTuple in pmsDict.items():
+            # each pmsTuple == (instanceName, pms)
+            newModule = self.createModule(pmsTuple[1].moduleName)
             if newModule:
-                newModules.append(newModule)
+                # set its config!
+                try:
+                    newModule.setConfig(pmsTuple[1].moduleConfig)
+                except:
+                    # it could be a module with no defined config logic
+                    pass
+                
+                # and record that it's been recreated
+                newModulesDict[pmsTuple[1].instanceName] = newModule
+
+        # now we're going to connect all of the successfully created
+        # modules together; first type 1 connections, then type 2 then type 3
+
+        newConnections = []
+        for connectionType in range(3):
+            typeConnections = [connection for connection in connectionList
+                               if connection.connectionType == connectionType]
+            
+            for connection in typeConnections:
+                if newModulesDict.has_key(connection.sourceInstanceName) and \
+                   newModulesDict.has_key(connection.targetInstanceName):
+                    sourceM = newModulesDict[connection.sourceInstanceName]
+                    targetM = newModulesDict[connection.targetInstanceName]
+                    # attempt connecting them
+                    print "connecting %s:%d to %s:%d..." % \
+                          (sourceM.__class__.__name__, connection.outputIdx,
+                           targetM.__class__.__name__, connection.inputIdx)
+
+                    try:
+                        self.connectModules(sourceM, connection.outputIdx,
+                                            targetM, connection.inputIdx)
+                    except:
+                        pass
+                    else:
+                        newConnections.append(connection)
+
+        # we return a dictionary, keyed on OLD pickled name with value
+        # the newly created module-instance and a list with the connections
+        return (newModulesDict, newConnections)
 
     def serialiseModuleInstances(self, moduleInstances):
         """Given 
@@ -343,9 +398,9 @@ class moduleManager:
         # now iterate through all the actually pickled module instances
         # and store all connections in a connections list
         # three different types of connections:
-        # 1. connections with source modules with no inputs
-        # 2. normal connections
-        # 3. connections with targets that are exceptions, e.g. sliceViewer
+        # 0. connections with source modules with no inputs
+        # 1. normal connections
+        # 2. connections with targets that are exceptions, e.g. sliceViewer
         connectionList = []
         for moduleInstance in pickledModuleInstances:
             mModule = self._moduleDict[moduleInstance]
@@ -365,23 +420,24 @@ class moduleManager:
                         # the back...
                         if outputConnection[0].__class__.__name__ in \
                            ['slice3dVWR']:
-                            connectionType = 3
-                        else:
                             connectionType = 2
-                            # FIXME: we still have to check for 1: iterate
+                        else:
+                            connectionType = 1
+                            # FIXME: we still have to check for 0: iterate
                             # through all inputs, check that none of the
                             # supplier modules are in the list that we're
                             # going to pickle
                             
                         
-                        connection = (mModule.instanceName, outputIdx,
-                                      outputConnection[0].__class__.__name__,
-                                      outputConnection[1], connectionType)
-                        
+                        connection = pickledConnection(
+                            mModule.instanceName, outputIdx,
+                            self._moduleDict[outputConnection[0]].instanceName,
+                            outputConnection[1],
+                            connectionType)
+                                                       
                         connectionList.append(connection)
-                
 
-        return cPickle.dumps((pmsDict, connectionList), True)
+        return (pmsDict, connectionList)
     
     def vtk_progress_cb(self, process_object):
         """Default callback that can be used for VTK ProcessObject callbacks.

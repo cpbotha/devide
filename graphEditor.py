@@ -1,7 +1,8 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.23 2003/06/05 22:15:24 cpbotha Exp $
+# $Id: graphEditor.py,v 1.24 2003/06/06 13:36:08 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
+import cPickle
 from wxPython.wx import *
 from internal.wxPyCanvas import wxpc
 import genUtils
@@ -40,6 +41,9 @@ class graphEditor:
         EVT_MENU(self._graphFrame, self._graphFrame.fileExitId,
                  self._fileExitCallback)
 
+        EVT_MENU(self._graphFrame, self._graphFrame.fileOpenId,
+                 self._fileOpenCallback)
+
         EVT_MENU(self._graphFrame, self._graphFrame.fileSaveId,
                  self._fileSaveCallback)
 
@@ -76,7 +80,7 @@ class graphEditor:
         dropSource.DoDragDrop(TRUE)
 
     def canvasDropText(self, x, y, text):
-        self.createModule(x, y, text)
+        self.createModuleAndGlyph(x, y, text)
         # check if the text is in our module list (then we should create it)
 
     def close(self):
@@ -86,7 +90,40 @@ class graphEditor:
         # FIXME: clean the canvas!
         pass
 
-    def createModule(self, x, y, moduleName):
+    def createGlyph(self, rx, ry, moduleName, moduleInstance):
+        """Create only a glyph on the canvas given an already created
+        moduleInstance.
+        """
+        
+
+        co = wxpc.coGlyph((rx, ry),
+                          len(moduleInstance.getInputDescriptions()),
+                          len(moduleInstance.getOutputDescriptions()),
+                          moduleName, moduleInstance)
+        
+        canvas = self._graphFrame.canvas
+        canvas.addObject(co)
+
+
+        co.addObserver('motion', self._glyphMotion)
+                    
+        co.addObserver('buttonDown',
+                       self._glyphRightClick, moduleInstance)
+        co.addObserver('buttonUp',
+                       self._glyphButtonUp, moduleInstance)
+        co.addObserver('drag',
+                       self._glyphDrag, moduleInstance)
+
+        # first have to draw the just-placed glyph so it has
+        # time to update its (label-dependent) dimensions
+        dc = wxClientDC(self._graphFrame.canvas)
+        self._graphFrame.canvas.PrepareDC(dc)
+        co.draw(dc)
+
+        # the network loading needs this
+        return co
+    
+    def createModuleAndGlyph(self, x, y, moduleName):
         # check that it's a valid module name
         if moduleName in self._availableModuleList:
             # we have a valid module, we should try and instantiate
@@ -94,39 +131,13 @@ class graphEditor:
             temp_module = mm.createModule(moduleName)
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
+                # create and draw the actual glyph
                 rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
-                co = wxpc.coGlyph((rx, ry),
-                                  len(temp_module.getInputDescriptions()),
-                                  len(temp_module.getOutputDescriptions()),
-                                  moduleName, temp_module)
-                canvas = self._graphFrame.canvas
-                canvas.addObject(co)
+                self.createGlyph(rx,ry,moduleName,temp_module)
 
+                # route all lines
+                self._routeAllLines()
 
-                co.addObserver('motion', self._glyphMotion)
-                    
-                co.addObserver('buttonDown',
-                               self._glyphRightClick, temp_module)
-                co.addObserver('buttonUp',
-                               self._glyphButtonUp, temp_module)
-                co.addObserver('drag',
-                               self._glyphDrag, temp_module)
-
-                # first have to draw the just-placed glyph so it has
-                # time to update its (label-dependent) dimensions
-                dc = wxClientDC(self._graphFrame.canvas)
-                self._graphFrame.canvas.PrepareDC(dc)
-                co.draw(dc)
-
-                # THEN reroute all lines
-                allLines = self._graphFrame.canvas.getObjectsOfClass(
-                    wxpc.coLine)
-                    
-                for line in allLines:
-                    self._routeLine(line)
-
-                # redraw all
-                canvas.Refresh()
 
     def fill_module_tree(self):
         self._graphFrame.treeCtrl.DeleteAllItems()
@@ -262,7 +273,19 @@ class graphEditor:
                           droppedObject, droppedInputPort)
 
             self._graphFrame.canvas.Refresh()
+
+
+    def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
+        l1 = wxpc.coLine(fromObject, fromOutputIdx,
+                         toObject, toInputIdx)
+        self._graphFrame.canvas.addObject(l1)
             
+        # also record the line in the glyphs
+        toObject.inputLines[toInputIdx] = l1
+        fromObject.outputLines[fromOutputIdx].append(l1)
+
+        # REROUTE THIS LINE
+        self._routeLine(l1)
 
     def _connect(self, fromObject, fromOutputIdx,
                  toObject, toInputIdx):
@@ -274,16 +297,7 @@ class graphEditor:
                               toObject.moduleInstance, toInputIdx)
 
             # if that worked, we can make a linypoo
-            l1 = wxpc.coLine(fromObject, fromOutputIdx,
-                             toObject, toInputIdx)
-            self._graphFrame.canvas.addObject(l1)
-
-            # also record the line in the glyphs
-            toObject.inputLines[toInputIdx] = l1
-            fromObject.outputLines[fromOutputIdx].append(l1)
-
-            # REROUTE THIS LINE
-            self._routeLine(l1)
+            self._createLine(fromObject, fromOutputIdx, toObject, toInputIdx)
 
         except Exception, e:
             genUtils.logError('Could not connect modules: %s' % (str(e)))
@@ -324,6 +338,55 @@ class graphEditor:
     def _fileExitCallback(self, event):
         self._dscas3_app.quit()
 
+    def _fileOpenCallback(self, event):
+        filename = wxFileSelector(
+            "Choose DSCAS3 network to load",
+            "", "", "d3n",
+            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+        
+        if filename:
+            print "Loading from %s" % (filename)
+
+            # load the stream
+            f = open(filename, 'r')
+            stream = f.read()
+
+            # unpickle it
+            tup = cPickle.loads(stream)
+            print len(tup)
+            pmsDict, connectionList, glyphDict = tup
+
+            f.close()
+
+            # get the module manager to deserialise
+            mm = self._dscas3_app.getModuleManager()
+            newModulesDict, newConnections = mm.deserialiseModuleInstances(
+                pmsDict, connectionList)
+            
+            # newModulesDict and newConnections contain the modules and
+            # connections which were _actually_ realised... let's draw
+            # glyphs!
+
+            # store the new glyphs in a dictionary keyed on OLD pickled
+            # instanceName so that we can connect them up in the next step
+            newGlyphDict = {} 
+            for newModulePickledName in newModulesDict.keys():
+                position = glyphDict[newModulePickledName]
+                moduleInstance = newModulesDict[newModulePickledName]
+                newGlyph = self.createGlyph(
+                    position[0], position[1],
+                    moduleInstance.__class__.__name__,
+                    moduleInstance)
+                newGlyphDict[newModulePickledName] = newGlyph
+
+            # now make lines for all the existing connections
+            for connection in connectionList:
+                sGlyph = newGlyphDict[connection.sourceInstanceName]
+                tGlyph = newGlyphDict[connection.targetInstanceName]
+                self._createLine(sGlyph, connection.outputIdx,
+                                 tGlyph, connection.inputIdx)
+
+
     def _fileSaveCallback(self, event):
         filename = wxFileSelector(
             "Choose filename for DSCAS3 network",
@@ -336,7 +399,27 @@ class graphEditor:
             allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
             moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
             mm = self._dscas3_app.getModuleManager()
-            stream = mm.serialiseModuleInstances(moduleInstances)
+
+            # let the moduleManager serialise what it can
+            pmsDict, connectionList = mm.serialiseModuleInstances(
+                moduleInstances)
+
+            savedInstanceNames = [pms.instanceName for pms in pmsDict.values()]
+                                  
+            # now we also get to store the coordinates of the glyphs which
+            # have been saved (keyed on instanceName)
+            savedGlyphs = [glyph for glyph in allGlyphs
+                           if mm.getInstanceName(glyph.moduleInstance)\
+                           in savedInstanceNames]
+            
+            glyphDict = {}
+            for savedGlyph in savedGlyphs:
+                instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
+                glyphDict[instanceName] = savedGlyph.getPosition()
+                
+            
+            # change the serialised moduleInstances to a pickled stream
+            stream = cPickle.dumps((pmsDict, connectionList, glyphDict), True)
 
             # FIXME: check for file errors, check for overwriting!
             f = open(filename, 'w')
@@ -548,6 +631,17 @@ class graphEditor:
 
         return clipPoints
                 
+    def _routeAllLines(self):
+        canvas = self._graphFrame.canvas
+        # THEN reroute all lines
+        allLines = canvas.getObjectsOfClass(wxpc.coLine)
+                    
+        for line in allLines:
+            self._routeLine(line)
+            
+        # redraw all
+        canvas.Refresh()
+        
 
     def _routeLine(self, line):
         
