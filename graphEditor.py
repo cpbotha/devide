@@ -1,6 +1,6 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.1 2003/05/07 16:06:40 cpbotha Exp $
+# $Id: graphEditor.py,v 1.2 2003/05/07 16:13:38 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -91,7 +91,7 @@ class graphEditor:
         fltn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Filters')
         miscn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Misc')
 
-        mm = self._dscas3_app.get_module_manager()
+        mm = self._dscas3_app.getModuleManager()
         mm.scanModules()
         for cur_mod in mm.getAvailableModuleList():
             mtype = cur_mod[-3:].lower()
@@ -142,7 +142,7 @@ class graphEditor:
         # if these are valid
         if in_idx != None and out_idx != None:
             try:
-                mm = self._dscas3_app.get_module_manager()
+                mm = self._dscas3_app.getModuleManager()
                 mm.connectModules(from_glyph.get_module_instance(), out_idx,
                                    to_glyph.get_module_instance(), in_idx)
                 # create a connecting line
@@ -170,7 +170,7 @@ class graphEditor:
                 to_glyph = ishape.get_parent_glyph()
                 in_idx = to_glyph.get_main_shape().find_input_idx(ishape)
                 # get the module manager
-                mm = self._dscas3_app.get_module_manager()
+                mm = self._dscas3_app.getModuleManager()
                 # disconnect that shape
                 mm.disconnectModules(to_glyph.get_module_instance(), in_idx)
                 
@@ -210,7 +210,7 @@ class graphEditor:
            self._graphFrame.treeCtrl.GetItemParent(sel_item) != root_item:
             # we have a valid module, we should try and instantiate
             mod_name = self._graphFrame.treeCtrl.GetItemText(sel_item)
-            mm = self._dscas3_app.get_module_manager()
+            mm = self._dscas3_app.getModuleManager()
             temp_module = mm.createModule(mod_name)
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
@@ -364,7 +364,7 @@ class graphEditor:
                                         'Make current'))
             EVT_MENU(self._graphFrame.canvas, mcs_id,
                      lambda e, s=self, glyph=glyph:
-                     s._dscas3_app.get_module_manager().set_current_module(
+                     s._dscas3_app.getModuleManager().set_current_module(
                 glyph.get_module_instance()))
 
             # popup that menu!
@@ -372,7 +372,7 @@ class graphEditor:
                                                              event.GetY()))
 
     def _viewConfModule(self, module):
-        mm =self._dscas3_app.get_module_manager()
+        mm =self._dscas3_app.getModuleManager()
         mm.viewModule(module)
 
     def del_shape_cb(self, glyph):
@@ -390,7 +390,7 @@ class graphEditor:
             module_instance = glyph.get_module_instance()
             glyph.close()
             # if all that worked, we can nuke the module
-            mm = self._dscas3_app.get_module_manager()
+            mm = self._dscas3_app.getModuleManager()
             mm.deleteModule(module_instance)
 
         except Exception, e:

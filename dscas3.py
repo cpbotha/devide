@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.28 2003/05/07 16:06:40 cpbotha Exp $
+# $Id: dscas3.py,v 1.29 2003/05/07 16:13:38 cpbotha Exp $
 
 DSCAS3_VERSION = '20030507'
 
@@ -11,7 +11,7 @@ import time
 
 from assistants import assistants
 from graphEditor import graphEditor
-from module_manager import module_manager
+from moduleManager import moduleManager
 from python_shell import python_shell
 
 from wxPython.wx import *
@@ -164,7 +164,7 @@ class dscas3_app_t(wxApp):
         self._python_shell = None
 	
 	# this will instantiate the module manager and get a list of plugins
-	self.module_manager = module_manager(self)
+	self.moduleManager = moduleManager(self)
 
 
     def OnInit(self):
@@ -218,8 +218,8 @@ class dscas3_app_t(wxApp):
     def get_main_window(self):
         return self._mainFrame
 
-    def get_module_manager(self):
-	return self.module_manager
+    def getModuleManager(self):
+	return self.moduleManager
 
     def get_assistants(self):
         return self._assistants
@@ -229,7 +229,7 @@ class dscas3_app_t(wxApp):
 	
     def quit(self):
         # shutdown all modules gracefully
-        self.module_manager.close()
+        self.moduleManager.close()
 	# take care of main window
 	self._mainFrame.Close()
 

@@ -17,8 +17,8 @@ class metaModule:
         del self.outputs
 
     def resetInputsOutputs(self):
-        numIns = len(instance.getInputDescriptions())
-        numOuts = len(instance.getOutputDescriptions())
+        numIns = len(self.instance.getInputDescriptions())
+        numOuts = len(self.instance.getOutputDescriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
         self.inputs = [None for i in range(numIns)]
         # numOuts list of dicts of tuples of (consumerModule, consumerInputIdx)
@@ -43,7 +43,7 @@ class moduleManager:
         self._userModules_dir = os.path.join(appdir, 'userModules')
         
 	# make first scan of available modules
-	self.scan_modules()
+	self.scanModules()
 
         self._current_module = None
 
@@ -56,9 +56,9 @@ class moduleManager:
         # FIXME: rework this code!  you can't walk down the list and delete
         # each module, because delete actually removes the module from the
         # list!
-        for module in self.modules:
+        for mModule in self._moduleDict.items():
             try:
-                self.delete_module(module)
+                self.deleteModule(mModule.instance)
             except:
                 # we can't allow a module to stop us
                 pass
@@ -120,7 +120,7 @@ class moduleManager:
 	    return None
                                     
 	# return the instance
-	return self.modules[-1][0]
+	return moduleInstance
 
     def importReload(self, fullName):
         """This will import and reload a module if necessary.  Use this only
@@ -245,7 +245,7 @@ class moduleManager:
 
         #
         outDict = self._moduleDict[output_module].outputs[output_idx]
-        outDict['input_module'] = (input_module, input_idx))
+        outDict['input_module'] = (input_module, input_idx)
 	
     def disconnectModules(self, input_module, input_idx):
         """Disconnect a consumer module from its provider.
