@@ -1,3 +1,12 @@
-Bow to DSCAS3!  The DOG ate its NOTES!
+The testing framework:
+---------------------
+
+* How to send an event
+
+event = wxCommandEvent ()
+event.m_eventType = wxEVT_COMMAND_BUTTON_CLICKED
+event.m_id  = whateverId (you could just use GetId())
+wxPostEvent(theButton (or perhaps its frame), event)
+
 
 
