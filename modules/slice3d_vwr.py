@@ -1,8 +1,9 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.22 2003/02/23 23:16:01 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.23 2003/02/25 10:46:58 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
+from genMixins import subjectMixin
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import vtk
@@ -19,6 +20,14 @@ except NameError:
         WX_USE_X_CAPTURE = 1
     else:
         WX_USE_X_CAPTURE = 0
+
+class outputSelectedPoints(list, subjectMixin):
+    def __init__(self):
+        list.__init__(self)
+        subjectMixin.__init__(self)
+
+    def close(self):
+        subjectMixin.close(self)
 
 class slice3d_vwr(moduleBase,
                   vtkPipelineConfigModuleMixin):
@@ -54,11 +63,8 @@ class slice3d_vwr(moduleBase,
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
         # this will be passed on as input to the next component
-        self._vtk_points = vtk.vtkPoints()
-        self._vtk_points.SetDataTypeToDouble()
-        # this is an extra output with text descriptions for each points
-        self._vtk_points_names = []
-
+        self._outputSelectedPoints = outputSelectedPoints()
+        
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
         om.SetInput(self._outline_source.GetOutput())
@@ -326,14 +332,12 @@ class slice3d_vwr(moduleBase,
 
         
     def getOutputDescriptions(self):
-        return ('Selected points (vtkPoints)', 'Selected points names (list)',
+        return ('Selected points',
                 'Volume of Interest (vtkStructuredPoints)')
         
     def getOutput(self, idx):
         if idx == 0:
-            return self._vtk_points
-        elif idx == 1:
-            return self._vtk_points_names
+            return self._outputSelectedPoints
         else:
             return self._extractVOI.GetOutput()
 
@@ -509,12 +513,11 @@ class slice3d_vwr(moduleBase,
             # then remove it from our internal list
             del self._sel_points[idx]
 
-        # rerender
-        self._view_frame.threedRWI.Render()
+            # rerender
+            self._view_frame.threedRWI.Render()
 
-
-        # and sync up vtk_points
-        self._sync_vtk_points()
+            # and sync up output points
+            self._syncOutputSelectedPoints()
         
     def _reset(self):
         """Arrange everything for a single overlay in a single ortho view.
@@ -702,7 +705,7 @@ class slice3d_vwr(moduleBase,
 
         def pw_ei_cb(pw, evt_name):
             # make sure our output is good
-            self._sync_vtk_points()
+            self._syncOutputSelectedPoints()
 
         pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
                        input_data=input_data, s=self:
@@ -725,8 +728,8 @@ class slice3d_vwr(moduleBase,
         row = self._view_frame.spointsGrid.GetNumberRows() - 1
         self._syncGridRowToSelPoints(row)
         
-        # make sure self._vtk_points is up to date
-        self._sync_vtk_points()
+        # make sure self._outputSelectedPoints is up to date
+        self._syncOutputSelectedPoints()
 
         self._view_frame.threedRWI.Render()
 
@@ -753,27 +756,25 @@ class slice3d_vwr(moduleBase,
         for i in range(len(self._overlay_ipws)):
             self._syncOverlay(i)
 
-    def _sync_vtk_points(self):
+    def _syncOutputSelectedPoints(self):
         """Sync up the output vtkPoints and names to _sel_points.
         
         We play it safe, as the number of points in this list is usually
         VERY low.
         """
-        
-        # first make sure it's empty
-        self._vtk_points.SetNumberOfPoints(0)
-        # delete all elements, but keep the actual object around
-        # so that all bindings to it (on input modules) remain the same
-        del self._vtk_points_names[:]
+
+        del self._outputSelectedPoints[:]
+
         # then transfer everything
         for i in self._sel_points:
             x,y,z,v = i['cursor']
-            self._vtk_points.InsertNextPoint(x,y,z)
-            self._vtk_points.InsertNextPoint(i['coords'])
-            self._vtk_points_names.append(i['name'])
+            self._outputSelectedPoints.append({'name' : i['name'],
+                                               'discrete' : (x,y,z),
+                                               'world' : i['coords'],
+                                               'value' : v})
 
-        # and then make sure the vtkPoints knows that it has been modified
-        self._vtk_points.Modified()
+        # then make sure this structure knows that it has been modified
+        self._outputSelectedPoints.notify()
         
 #################################################################
 # callbacks

@@ -37,8 +37,7 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         
         
         # we'll use this to keep a binding (reference) to the passed object
-        self._vtkPoints = None
-        self._vtkPointsOID = -1
+        self._inputPoints = None
         # this will be our internal list of points
         self._seedPoints = []
 
@@ -74,7 +73,7 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         del self._seedConnect
 
     def getInputDescriptions(self):
-	return ('vtkImageData', 'Seed points (vtkPoints)')
+	return ('vtkImageData', 'Seed points')
     
     def setInput(self, idx, inputStream):
         if idx == 0:
@@ -82,19 +81,16 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
             self._imageCast.SetInput(inputStream)
         else:
             if inputStream is None:
-                if self._vtkPointsOID >= 0:
-                    self._vtkPoints.RemoveObserver(self._vtkPointsOID)
-                    self._vtkPointsOID = -1
+                if self._inputPoints:
+                    self._inputPoints.removeObserver(self._inputPointsObserver)
                 
             else:
-                oid = inputStream.AddObserver('ModifiedEvent',
-                                              self.\
-                                              _vtkPointsModifiedCallback)
-                self._vtkPointsOID = oid
+                inputStream.addObserver(self._inputPointsObserver)
 
-            self._vtkPoints = inputStream
+            self._inputPoints = inputStream
 
-            self._vtkPointsModifiedCallback(None, None)
+            # initial update
+            self._inputPointsObserver(self._inputPoints)
     
     def getOutputDescriptions(self):
 	return (self._seedConnect.GetOutput().GetClassName(),)
@@ -176,7 +172,14 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
                   lambda e, s=self: s._viewFrame.Show(false))
 
         # default binding for the buttons at the bottom
-        moduleUtils.bindCSAEO(self, self._viewFrame)        
+        moduleUtils.bindCSAEO(self, self._viewFrame)
+
+        # and now the standard examine object/pipeline stuff
+        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
+                   self.vtkObjectChoiceCallback)
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+                   self.vtkPipelineCallback)
+        
 
     def vtkObjectChoiceCallback(self, event):
         self.vtkObjectConfigure(self._viewFrame, None,
@@ -187,13 +190,13 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self.vtkPipelineConfigure(self._viewFrame, None,
                                   (self._seedConnect,))
 
-    def _vtkPointsModifiedCallback(self, event, obj):
-        # extract a list from the input vtkPoints
+    def _inputPointsObserver(self, obj):
+        # extract a list from the input points
         tempList = []
-        if self._vtkPoints:
-            for i in range(self._vtkPoints.GetNumberOfPoints() / 2):
-                tempList.append(self._vtkPoints.GetPoint(i*2))
-
+        if self._inputPoints:
+            for i in self._inputPoints:
+                tempList.append(i['discrete'])
+            
         if tempList != self._seedPoints:
             self._seedPoints = tempList
             self._seedConnect.RemoveAllSeeds()
