@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.2 2003/03/11 14:47:05 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.3 2003/03/11 17:53:13 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -192,6 +192,7 @@ class sliceDirection:
             # and take care to remove our viewFrame binding
             self._orthoViewFrame = None
         
+
     def enable(self):
         """Switch this sliceDirection on."""
         for ipw in self._ipws:
@@ -557,6 +558,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         # set the whole UI up!
         self._create_window()
 
+        # create a default slice
+        self._createSlice('Axial')
+
     #################################################################
     # module API methods
     #################################################################
@@ -630,7 +634,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 if actor != None:
                     if self._inputs[idx]['observerID'] >= 0:
                         # remove the observer (if we had one)
-                        actor.GetMapper().GetInput().RemoveObserver(
+                        source = actor.GetMapper().GetInput().GetSource()
+                        source.RemoveObserver(
                             self._inputs[idx]['observerID'])
                         self._inputs[idx]['observerID'] = -1
 
@@ -646,7 +651,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
                 # remove our observer
                 if self._inputs[idx]['observerID'] >= 0:
-                    self._inputs[idx]['inputData'].RemoveObserver(
+                    self._inputs[idx]['inputData'].GetSource().RemoveObserver(
                         self._inputs[idx]['observerID'])
                     self._inputs[idx]['observerID'] = -1
 
@@ -683,8 +688,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 self._viewFrame.threedRWI.Render()
 
                 # connect an event handler to the data
-                oid = input_stream.AddObserver('ModifiedEvent',
-                                               self.inputModifiedCallback)
+                oid = input_stream.GetSource().AddObserver('EndEvent',
+                                                   self.inputModifiedCallback)
                 self._inputs[idx]['observerID'] = oid
                 
                 
@@ -717,8 +722,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 self._inputs[idx]['inputData'] = input_stream
 
                 # add an observer to this data and store the id
-                oid = input_stream.AddObserver(
-                    'ModifiedEvent',
+                oid = input_stream.GetSource().AddObserver(
+                    'EndEvent',
                     self.inputModifiedCallback)
                 self._inputs[idx]['observerID'] = oid
                 
@@ -781,8 +786,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     # internal utility methods
     #################################################################
 
-    def _createSlice(self):
-        sliceName = self._viewFrame.createSliceText.GetValue()
+    def _createSlice(self, sliceName):
+        #sliceName = self._viewFrame.createSliceText.GetValue()
         if sliceName:
             names = [i.getName() for i in self._sliceDirections]
             if sliceName in names:
@@ -896,7 +901,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     
 
         EVT_BUTTON(self._viewFrame, self._viewFrame.createSliceButtonId,
-                   lambda e, s=self: s._createSlice())
+                   lambda e, s=self: s._createSlice(
+            s._viewFrame.createSliceText.GetValue()))
 
         EVT_BUTTON(self._viewFrame, self._viewFrame.destroySliceButtonId,
                    lambda e, s=self: s._destroySlice())
@@ -1477,7 +1483,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def inputModifiedCallback(self, o, e):
         # the data has changed, so re-render what's on the screen
+        print "calling Render"
         self._viewFrame.threedRWI.Render()
+        print "done calling Render"
 
     def _rwiLeftButtonCallback(self, obj, event):
 

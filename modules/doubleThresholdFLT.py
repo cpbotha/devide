@@ -60,6 +60,7 @@ class doubleThresholdFLT(moduleBase,
         # off we go!
         self._viewFrame.Show(1)
         
+
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
@@ -74,6 +75,7 @@ class doubleThresholdFLT(moduleBase,
     def getInputDescriptions(self):
 	return ('vtkImageData',)
     
+
     def setInput(self, idx, inputStream):
         self._imageThreshold.SetInput(inputStream)
         if not inputStream is None:
@@ -82,9 +84,11 @@ class doubleThresholdFLT(moduleBase,
             self._viewFrame.lowerThresholdSlider.SetRange(minv, maxv)
             self._viewFrame.upperThresholdSlider.SetRange(minv, maxv)
     
+
     def getOutputDescriptions(self):
 	return ('vtkImageData',)
     
+
     def getOutput(self, idx):
         return self._imageThreshold.GetOutput()
 
@@ -166,7 +170,17 @@ class doubleThresholdFLT(moduleBase,
         self._viewFrame.outputDataTypeChoice.SetStringSelection(key)
 
     def executeModule(self):
+        # don't ask... we have to call Update() twice here, I _think_
+        # due to weirdness in vtkImageThreshold() that I haven't been
+        # able to track down.  If update is called only once, a
+        # directly connected slice3dVWR will Render() but only show
+        # the PREVIOUS output of the _imageThreshold.  My current
+        # hypothesis is that this is due to the ThreadedExecute
+        # employed by vtkImageThreshold, i.e. Update() is
+        # non-blocking.  This hypothesis is of course still full of
+        # holes. :)
         self._imageThreshold.Update()
+        #self._imageThreshold.Update()
 
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
@@ -206,6 +220,7 @@ class doubleThresholdFLT(moduleBase,
         # connect threshold sliders to each other and to text inputs
         EVT_SCROLL(self._viewFrame.lowerThresholdSlider,
                    lambda e, slider=0, s=self: s._sliderCallback(slider))
+                                        
         EVT_SCROLL(self._viewFrame.upperThresholdSlider,
                    lambda e, slider=1, s=self: s._sliderCallback(slider))
 
@@ -238,6 +253,7 @@ class doubleThresholdFLT(moduleBase,
             self._viewFrame.upperThresholdText.SetValue(str(newValue))
 
     
+
     def _threshTextCallback(self, whichText):
         if whichText == 0:
             try:
@@ -272,6 +288,7 @@ class doubleThresholdFLT(moduleBase,
             self._sliderCallback(1)
 
     def _sliderCallback(self, slider):
+        print "slidercallback"
         lvalue = self._viewFrame.lowerThresholdSlider.GetValue()
         uvalue = self._viewFrame.upperThresholdSlider.GetValue()
         
