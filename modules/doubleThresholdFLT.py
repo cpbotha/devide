@@ -1,3 +1,4 @@
+import genUtils
 from module_base import module_base
 import module_utils
 from wxPython.wx import *
@@ -78,28 +79,33 @@ class doubleThresholdFLT(module_base):
 
         ocString = self._viewFrame.objectChoice.GetStringSelection()
         if len(ocString) == 0:
-            print "AAAAAAAAACK, this shouldn't HAPPEN!"
-            print "Trouble with outputType choice in doubleThresholdFLT.py"
+            genUtils.logError("Impossible error with outputType choice in "
+                              "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
             ocString = self._outputTypes.keys()[-1]
 
         try:
             symbolicOutputType = self._outputTypes[ocString]
         except KeyError:
-            print "AAAAAAAAACK, this shouldn't HAPPEN!"
-            print "Trouble with ocString in doubleThresholdFLT.py"
+            genUtils.logError("Impossible error with ocString in "
+                              "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
             symbolicOutputType = self._outputTypes.values()[-1]
 
-        # fixme: continue here...
-        
-    def sync_config(self):
-        
+        if symbolicOutputType == -1:
+            self._config.os = -1
+        else:
+            try:
+                self._config.os = getattr(vtk, symbolicOutputType)
+            except AttributeError:
+                genUtils.logError("Impossible error with symbolicOutputType "
+                                  "in doubleThresholdFLT.py.  Picking sane "
+                                  "default.")
+                self._config.os = -1
 
-        self._setViewFrameFilename(filename)
-	
-    def apply_config(self):
-        self._writer.SetFileName(self._getViewFrameFilename())
+    def configToView(self):
+        # fixme: continue here
+        pass
 
     def executeModule(self):
         # following is the standard way of connecting up the dscas3 progress
