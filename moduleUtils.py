@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.2 2003/01/28 22:38:34 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.3 2003/02/06 16:16:54 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -55,6 +55,8 @@ def bindCSAEO(module, view_frame):
 
     view_frame.execute_button.SetToolTip(
         wxToolTip('Apply changes, then execute the module.'))
+    # very importantly, make the Execute button the default
+    view_frame.execute_button.SetDefault()
     EVT_BUTTON(view_frame, view_frame.EXECUTE_ID,
                lambda e, m=module: (m.applyViewToLogic(),
                                     m.executeModule()))
