@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.6 2004/03/22 13:55:21 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.7 2004/05/18 23:10:00 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -16,6 +16,9 @@
 # Author contact information:
 #   Prabhu Ramachandran <prabhu_r@users.sf.net>
 #   http://www.aero.iitm.ernet.in/~prabhu/
+#
+# Class robustified by Charl P. Botha as part of a wxPython port
+# Charl P. Botha <cpbotha@ieee.org> http://cpbotha.net/
 
 """  
 This python program/module provides functionality to parse the methods
@@ -249,6 +252,19 @@ class VtkDirMethodParser:
 
 	    if len (state_group) > 0:
 		self.state_meths.append (state_group)
+
+        # now make another pass through state_meths, removing all groups
+        # which have less than 2 methods, as they obviously can't be states!
+        toBeRemoved = []
+        for idx, state_group in zip(range(len(self.state_meths)),
+                                    self.state_meths):
+            if len(state_group) < 2:
+                toBeRemoved.append(idx)
+
+        # now work from the back...
+        toBeRemoved.reverse()
+        for idx in toBeRemoved:
+            del(self.state_meths[idx])
 
     def clean_get_methods (self, vtk_obj):
 	debug ("VtkDirMethodParser:: clean_get_methods()")

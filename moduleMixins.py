@@ -1,13 +1,16 @@
-# $Id: moduleMixins.py,v 1.35 2004/04/20 14:01:26 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.36 2004/05/18 23:10:00 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
+from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import genUtils
+from moduleBase import moduleBase
 import moduleUtils
 #from wxPython.wx import *
 import wx
 import resources.python.filenameViewModuleMixinFrame
+import re
 from pythonShell import pythonShell
 
 class introspectModuleMixin(object):
@@ -408,6 +411,8 @@ class noConfigModuleMixin(introspectModuleMixin):
         self._viewFrame = viewFrame
         return viewFrame
 
+    _createWindow = _createViewFrame
+
     def view(self):
         self._viewFrame.Show(True)
         self._viewFrame.Raise()
@@ -423,9 +428,175 @@ class noConfigModuleMixin(introspectModuleMixin):
 
     def viewToConfig(self):
         pass
+
+# ----------------------------------------------------------------------------
+class pickleVTKObjectsModuleMixin(object):
+    """This mixin will pickle the state of all vtk objects whose binding
+    attribute names have been added to self._vtkObjects, e.g. if you have
+    a self._imageMath, '_imageMath' should be in the list.
+
+    Your module has to derive from moduleBase as well so that it has a
+    self._config!
+
+    Remember to call the __init__ of this class (and setting _vtkObjectNames)
+    as well as close().  If you override logicToConfig and configToLogic,
+    don't forget to call these versions as well.
+    """
+
+    def __init__(self):
+        # you have to add the NAMES of the objects that you want pickled
+        # to this list.
+        self._vtkObjectNames = []
+
+        self.statePattern = re.compile ("To[A-Z0-9]")        
+
+    def close(self):
+        # make sure we get rid of these bindings as well
+        del self._vtkObjectNames
+
+    def logicToConfig(self):
+        parser = VtkMethodParser()
+
+
+        for vtkObjName in self._vtkObjectNames:
+
+            # pickled data: a list with toggle_methods, state_methods and
+            # get_set_methods as returned by the vtkMethodParser.  Each of
+            # these is a list of tuples with the name of the method (as
+            # returned by the vtkMethodParser) and the value; in the case
+            # of the stateMethods, we use the whole stateGroup instead of
+            # just a single name
+            vtkObjPD = [[], [], []]
+
+            vtkObj = getattr(self, vtkObjName)
+            
+            parser.parse_methods(vtkObj)
+            # parser now has toggle_methods(), state_methods() and
+            # get_set_methods();
+            # toggle_methods: ['BlaatOn', 'AbortExecuteOn']
+            # state_methods: [['SetBlaatToOne', 'SetBlaatToTwo'],
+            #                 ['SetMaatToThree', 'SetMaatToFive']]
+            # get_set_methods: ['NumberOfThreads', 'Progress']
+
+
+            for method in parser.toggle_methods():
+                # we need to snip the 'On' off
+                val = eval("vtkObj.Get%s()" % (method[:-2],))
+                vtkObjPD[0].append((method, val))
+
+            for stateGroup in parser.state_methods():
+                # we search up to the To
+                end = self.statePattern.search (stateGroup[0]).start ()
+                # so we turn SetBlaatToOne to GetBlaat
+                get_m = 'G'+meths[0][1:end]
+                # we're going to have to be more clever when we setConfig...
+                # use a similar trick to get_state in vtkMethodParser
+                val = eval('vtkObj.%s()' % (get_m,))
+                vtkObjPD[1].append((stateGroup, val))
+
+            for method in parser.get_set_methods():
+                val = eval('vtkObj.Get%s()' % (method,))
+                vtkObjPD[2].append((method, val))
+
+            # finally set the pickle data in the correct position
+            setattr(self._config, vtkObjName, vtkObjPD)
+
+    def configToLogic(self):
+        # go through at least the attributes in self._vtkObjectNames
+
+        for vtkObjName in self._vtkObjectNames:
+            try:
+                vtkObjPD = getattr(self._config, vtkObjName)
+                vtkObj = getattr(self, vtkObjName)
+            except AttributeError:
+                print "pickleVTKObjectsModuleMixin: %s not available " \
+                      "in self._config OR in self.  Skipping."
+
+            else:
+                
+                for method, val in vtkObjPD[0]:
+                    if val:
+                        eval('vtkObj.%s()' % (method,))
+                    else:
+                        # snip off the On
+                        eval('vtkObj.%sOff()' % (method[:-2],))
+
+                for stateGroup, val in vtkObjPD[1]:
+                    # keep on calling the methods in stategroup until
+                    # the getter returns a value == val.
+                    end = self.statePattern.search(stateGroup[0]).start()
+                    getMethod = 'G'+meths[0][1:end]
+
+                    for i in range(len(stateGroup)):
+                        m = stateGroup[i]
+                        eval('vtkObj.%s()' % (m,))
+                        tempVal = eval('vtkObj.%s()' % (getMethod,))
+                        if tempVal == val:
+                            # success! break out of the for loop
+                            break
+
+                for method, val in vtkObjPD[2]:
+                    eval('vtkObj.Set%s(val)' % (method,))
+
     
         
 # ----------------------------------------------------------------------------
+# note that the pickle mixin comes first, as its configToLogic/logicToConfig
+# should be chosen over that of noConfig
+class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
+                               noConfigModuleMixin,
+                               moduleBase):
+    """Use this base to make a DeVIDE module that wraps a single VTK
+    object.  The state of this module will be saved.
+
+    You only have to define getInputDescriptions() and getOutputDescriptions()
+    and __init__.  
+    """
+    
+    def __init__(self, moduleManager, vtkObjectBinding, progressText):
+        moduleBase.__init__(self, moduleManager)
+        noConfigModuleMixin.__init__(self)
+        pickleVTKObjectsModuleMixin.__init__(self)
+
+        self._theFilter = vtkObjectBinding
+        self._vtkObjectNames.append('_theFilter')
+
+        moduleUtils.setupVTKObjectProgress(self, self._theFilter, progressText)        
+        self._createViewFrame(
+            {'Module (self)' : self,
+             '%s' % (self._theFilter.GetClassName(),) : self._theFilter})
+
+        # we don't have to call configToLogic or syncViewWithLogic, everything
+        # should be in sync
+
+    def close(self):
+        pickleVTKObjectsModuleMixin.close(self)
+        noConfigModuleMixin.close(self)
+        moduleBase.close(self)
+
+    def getOutput(self, idx):
+        # this will only every be invoked if your getOutputDescriptions has
+        # 1 or more elements
+        return self._theFilter.GetOutput()
+
+    def setInput(self, idx, inputStream):
+        # this will only be called for a certain idx if you've specified that
+        # many elements in your getInputDescriptions
+        if idx == 0:
+            self._theFilter.SetInput(inputStream)
+        else:
+            eval('self._theFilter.SetInput%d(inputStream)' % (idx,))
+
+    def executeModule(self):
+        for i in range(len(self.getOutputDescriptions())):
+            # according to DeVIDE, module output MUST have an Update()
+            self.getOutput(i).Update()
+
+    
+        
+
+
+#
 
 class scriptedConfigModuleMixin(introspectModuleMixin):
 
@@ -461,7 +632,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         self._viewFrame.Destroy()
         del self._viewFrame
 
-    def _createWindow(self, objectDict=None):
+    def _createViewFrame(self, objectDict=None):
         parentWindow = self._moduleManager.getModuleViewParentWindow()
 
         import resources.python.defaultModuleViewFrame
@@ -516,6 +687,9 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             
         self._viewFrame = viewFrame
         return viewFrame
+
+    # legacy
+    _createWindow = _createViewFrame
 
     def viewToConfig(self):
         for configTuple in self._configList:

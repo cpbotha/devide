@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.15 2004/01/15 10:46:21 cpbotha Exp $
+# $Id: moduleBase.py,v 1.16 2004/05/18 23:10:00 cpbotha Exp $
 
 """Module containing base class for devide modules.
 
@@ -162,7 +162,13 @@ class moduleBase(object):
         self._config, which is None by default.  You can override get_config()
         and set_config(), or just make sure that your config info always goes
         via self._config
+
+        In general, you should never need to override this.
         """
+
+        # make sure that the config reflects the state of the underlying logic
+        self.logicToConfig()
+        # and then return the config struct.
         return self._config
 
     def setConfig(self, aConfig):
@@ -172,6 +178,8 @@ class moduleBase(object):
         get_config(), the module should be in exactly the same state as it was
         when get_config() was called.  The default sets the default
         self._config and applies it to the underlying logic.
+
+        In general, you should never need to override this.
         """
         
         self._config = aConfig
