@@ -1,7 +1,4 @@
-# FIXME FIXME: you have to give the reslice origin!!!
-# just use the matrices from dscas1
-
-# $Id: vtk_slice_vwr.py,v 1.9 2002/03/26 14:29:08 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.10 2002/03/26 21:49:58 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -82,7 +79,13 @@ class vtk_slice_vwr(module_base):
 	    self.renderers.append(vtkRenderer())
 	    # add last appended renderer to last appended vtkTkRenderWidget
 	    self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
-	    self.rws[-1].pack(side=LEFT, fill=BOTH, expand=1)
+
+	    self.rws[-1].pack(side=TOP, fill=BOTH, expand=1)
+	    Tkinter.Button(ortho_pane.pane('ortho%d' % (i)), text='blah').pack(side=TOP)
+	    
+	    #self.real_ = Tkinter.Scale(ortho_pane.pane('ortho%d' % (i)), orient='vertical', length=100, from_='0.0', to='100.0')
+	    #self.real_.pack(side=LEFT, fill=Y)
+
 
 	rws_pane.pack(side=TOP, fill=BOTH, expand=1)
 	
