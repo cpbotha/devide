@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.63 2004/03/04 14:13:22 cpbotha Exp $
+# $Id: graphEditor.py,v 1.64 2004/03/04 14:29:50 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -13,15 +13,6 @@ import string
 import sys
 
 # ----------------------------------------------------------------------------
-# class geCanvasDropTarget(wxTextDropTarget):
-    
-#     def __init__(self, graphEditor):
-#         wxTextDropTarget.__init__(self)        
-#         self._graphEditor = graphEditor
-
-#     def OnDropText(self, x, y, text):
-#         self._graphEditor.canvasDropText(x, y, text)
-
 class geCanvasDropTarget(wxPyDropTarget):
     def __init__(self, graphEditor):
         wxPyDropTarget.__init__(self)
@@ -55,7 +46,9 @@ class geCanvasDropTarget(wxPyDropTarget):
 
             elif len(filenames) > 0:
                 self._graphEditor.canvasDropFilenames(x,y,filenames)
-                
+
+        # d is the recommended drag result.  we could also return
+        # wxDragNone if we don't want whatever's been dropped.
         return d
         
         
@@ -256,12 +249,24 @@ class graphEditor:
                                         reposition=True)
 
     def canvasDropFilenames(self, x, y, filenames):
+        actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
+                      'vtp' : ('modules.Readers.vtpRDR', 'filename')}
+        
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
                 rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
                 self._loadAndRealiseNetwork(filename, (rx,ry),
                                             reposition=True)
+
+            else:
+                ext = filename.split('.')[-1].lower()
+                if ext in actionDict:
+                    ret = self.createModuleAndGlyph(x, y, actionDict[ext][0])
+                    if ret:
+                        cfg = ret.getConfig()
+                        setattr(cfg, actionDict[ext][1], filename)
+                        ret.setConfig(cfg)
                 
 
 
@@ -380,6 +385,10 @@ class graphEditor:
 
                 # route all lines
                 self._routeAllLines()
+
+                return temp_module
+
+        return None
 
     def _executeModule(self, moduleInstance):
         """Ask the moduleManager to execute the devide module represented by
