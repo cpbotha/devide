@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.20 2003/12/01 14:52:12 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.21 2004/02/27 12:55:19 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -7,7 +7,7 @@ import moduleUtils
 from wxPython.wx import *
 import resources.python.filenameViewModuleMixinFrame
 
-class vtkPipelineConfigModuleMixin:
+class introspectModuleMixin:
     """Mixin to use for modules that want to make use of the vtkPipeline
     functionality.
 
@@ -132,6 +132,8 @@ class vtkPipelineConfigModuleMixin:
                          if hasattr(object, 'GetClassName')])
 
         self.vtkPipelineConfigure(viewFrame, renderWin, objects)
+
+vtkPipelineConfigModuleMixin = introspectModuleMixin
             
 # ----------------------------------------------------------------------------
 
