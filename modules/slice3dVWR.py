@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.1 2003/03/11 10:40:59 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.2 2003/03/11 14:47:05 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -25,6 +25,16 @@ class sliceDirection:
         self._name = name
         self._slice3dViewer = slice3dViewer
         self._defaultPlaneOrientation = 2
+
+        # orthoPipeline is a list of dictionaries.  each dictionary is:
+        # {'planeSource' : vtkPlaneSource, 'planeActor' : vtkActor,
+        #  'textureMapToPlane' : vtkTextureMapToPlane,
+        #  '
+        self._orthoPipeline = []
+        # this is the frame that we will use to display our slice pipeline
+        self._orthoViewFrame = None
+        #
+        self._renderer = None
 
         # list of vtkImagePlaneWidgets (first is "primary", rest are overlays)
         self._ipws = []
@@ -66,6 +76,12 @@ class sliceDirection:
                 # now make sure they have the right lut and are synched
                 # with the main IPW
                 self._resetOverlays()
+
+                if self._orthoViewFrame:
+                    # also update our orthoView
+                    self._createOrthoPipelineForNewIPW(self._ipws[-1])
+                    self._syncOrthoView()
+                    self._orthoViewFrame.RWI.Render()
                 
             # if self._ipws ...
             else:
@@ -87,8 +103,19 @@ class sliceDirection:
 
                 self._resetPrimary()
 
+                # now let's update our orthoView as well (if applicable)
+                if self._orthoViewFrame:
+                    self._createOrthoPipelineForNewIPW(self._ipws[-1])
+                    # and because it's a primary, we have to reset as well
+                    # self._resetOrthoView() also calls self.SyncOrthoView()
+                    self._resetOrthoView()
+                    self._orthoViewFrame.Render()
+
     def close(self):
         """Shut down everything."""
+
+        # take out the orthoView
+        self.destroyOrthoView()
 
         # first take care of all our ipws
         inputDatas = [i.GetInput() for i in self._ipws]
@@ -102,6 +129,69 @@ class sliceDirection:
         del self._slice3dViewer
         
 
+    def createOrthoView(self):
+        """Create an accompanying orthographic view of the sliceDirection
+        encapsulated by this object.
+        """
+
+        # there can be only one orthoPipeline
+        if not self._orthoPipeline:
+
+            import modules.resources.python.slice3dVWRFrames            
+            # import our wxGlade-generated frame
+            ovf = modules.resources.python.slice3dVWRFrames.orthoViewFrame
+            self._orthoViewFrame = ovf(self._slice3dViewer._viewFrame, id=-1,
+                                  title='dummy')
+
+            self._renderer = vtk.vtkRenderer()
+            self._renderer.SetBackground(0.5, 0.5, 0.5)
+            self._orthoViewFrame.RWI.GetRenderWindow().AddRenderer(
+                self._renderer)
+            istyle = vtk.vtkInteractorStyleImage()
+            self._orthoViewFrame.RWI.SetInteractorStyle(istyle)
+
+            EVT_CLOSE(self._orthoViewFrame,
+                      lambda e, s=self: s.destroyOrthoView)
+
+            EVT_BUTTON(self._orthoViewFrame,
+                       self._orthoViewFrame.closeButtonId,
+                       lambda e, s=self: s.destroyOrthoView)
+
+            for ipw in self._ipws:
+                self._createOrthoPipelineForNewIPW(ipw)
+
+            if self._ipws:
+                self._resetOrthoView()
+
+            self._orthoViewFrame.Show(True)
+
+    def destroyOrthoView(self):
+        """Destroy the orthoView and disconnect everything associated
+        with it.
+        """
+
+        if self._orthoViewFrame:
+            for layer in self._orthoPipeline:
+                self._renderer.RemoveActor(layer['planeActor'])
+                # this will disconnect the texture (it will destruct shortly)
+                layer['planeActor'].SetTexture(None)
+
+                # this should take care of all references
+                layer = []
+
+            self._orthoPipeline = []
+
+            # remove our binding to the renderer
+            self._renderer = None
+            # remap the RenderWindow (it will create its own new window and
+            # disappear when we remove our binding to the viewFrame)
+            self._orthoViewFrame.RWI.GetRenderWindow().WindowRemap()
+
+            # finally take care of the GUI
+            self._orthoViewFrame.Destroy()
+            # and take care to remove our viewFrame binding
+            self._orthoViewFrame = None
+        
     def enable(self):
         """Switch this sliceDirection on."""
         for ipw in self._ipws:
@@ -121,10 +211,22 @@ class sliceDirection:
             self._ipws[0].SetInteraction(0)
 
     def getEnabled(self):
-        return self._ipws[0].GetEnabled()
+        if self._ipws:
+            return self._ipws[0].GetEnabled()
+        else:
+            # if we have no ipws yet, we are enabled (because the first ipw
+            # will be)
+            return 1
 
     def getInteractionEnabled(self):
-        return self._ipws[0].GetInteraction()
+        if self._ipws:
+            return self._ipws[0].GetInteraction()
+        else:
+            # if we have no ipws yet, we are interaction enabled
+            return 1
+
+    def getOrthoViewEnabled(self):
+        return self._orthoViewFrame is not None
 
     def getName(self):
         return self._name
@@ -169,6 +271,47 @@ class sliceDirection:
             ipw.GetPlaneProperty().SetColor(ipw_cols[orientation])
 
 
+    def _createOrthoPipelineForNewIPW(self, ipw):
+        """This will create and append all the necessary constructs for a
+        single new layer (ipw) to the self._orthoPipeline.
+
+        Make sure you only call this method if the orthoView exists!
+        After having done this, you still need to call _syncOrthoView() or
+        _resetOrthoView() if you've added a new primary.
+        """
+
+        _ps = vtk.vtkPlaneSource()
+        _pa = vtk.vtkActor()
+        _tm2p = vtk.vtkTextureMapToPlane()
+        self._orthoPipeline.append(
+            {'planeSource' : _ps,
+             'planeActor' : _pa,
+             'textureMapToPlane': _tm2p})
+
+        _tm2p.AutomaticPlaneGenerationOff()
+        _tm2p.SetInput(_ps.GetOutput())
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInput(_tm2p.GetOutput())
+        _pa.SetMapper(mapper)
+
+        otherTexture = ipw.GetTexture()
+
+        # we don't just use the texture, else VTK goes mad re-uploading
+        # the same texture unnecessarily... let's just make use of the
+        # same input, we get much more effective use of the
+        # host->GPU bus
+        texture = vtk.vtkTexture()
+        texture.SetInterpolate(otherTexture.GetInterpolate())
+        texture.SetQuality(otherTexture.GetQuality())
+        texture.MapColorScalarsThroughLookupTableOff()
+        texture.RepeatOff()
+        texture.SetInput(otherTexture.GetInput())
+
+        _pa.SetTexture(texture)
+
+        self._renderer.AddActor(_pa)
+        
+
     def _resetOverlays(self):
         """Rest all overlays with default LUT, plane orientation and
         start position."""
@@ -195,6 +338,30 @@ class sliceDirection:
                 ipw.InteractionOff()
 
         self._syncOverlays()
+
+    def _resetOrthoView(self):
+        """Calling this will reset the orthogonal camera and bring us in
+        synchronisation with the primary and overlays.
+        """
+
+        if self._orthoPipeline and self._ipws:
+            self._syncOrthoView()
+            # just get the first planesource
+            planeSource = self._orthoPipeline[0]['planeSource']
+            # let's setup the camera
+            icam = self._renderer.GetActiveCamera()
+            icam.SetPosition(planeSource.GetCenter()[0],
+                             planeSource.GetCenter()[1], 10)
+            icam.SetFocalPoint(planeSource.GetCenter())
+            icam.OrthogonalizeViewUp()
+            icam.SetViewUp(0,1,0)
+            icam.SetClippingRange(1,11)
+            v2 = map(operator.sub, planeSource.GetPoint2(),
+                     planeSource.GetOrigin())
+            n2 = vtk.vtkMath.Normalize(v2)
+            icam.SetParallelScale(n2 / 2.0)
+            icam.ParallelProjectionOn()
+        
 
     def _resetPrimary(self):
         """Reset primary layer.
@@ -259,6 +426,33 @@ class sliceDirection:
             
                 ipw.UpdatePlacement()
 
+    def _syncOrthoView(self):
+        """Synchronise all layers of orthoView with what's happening
+        with our primary and overlays.
+        """
+
+        if self._orthoPipeline and self._ipws:
+            # vectorN is pointN - origin
+            v1 = [0,0,0]
+            self._ipws[0].GetVector1(v1)
+            n1 = vtk.vtkMath.Normalize(v1)
+            v2 = [0,0,0]
+            self._ipws[0].GetVector2(v2)
+            n2 = vtk.vtkMath.Normalize(v2)
+
+            roBounds = self._ipws[0].GetResliceOutput().GetBounds()
+
+            for layer in range(len(self._orthoPipeline)):
+                planeSource = self._orthoPipeline[layer]['planeSource']
+                planeSource.SetOrigin(0,0,0)
+                planeSource.SetPoint1(n1, 0, 0)
+                planeSource.SetPoint2(0, n2, 0)
+
+                tm2p = self._orthoPipeline[layer]['textureMapToPlane']
+                tm2p.SetOrigin(0,0,0)
+                tm2p.SetPoint1(roBounds[1] - roBounds[0], 0, 0)
+                tm2p.SetPoint2(0, roBounds[3] - roBounds[2], 0)
+
     def _ipwStartInteractionCallback(self):
         self._slice3dViewer.setCurrentSliceDirection(self)
         self._ipwInteractionCallback()
@@ -279,7 +473,9 @@ class sliceDirection:
 
     def _ipwEndInteractionCallback(self):
         self._syncOverlays()
-        #self._ipwInteractionCallback(direction)
+        self._syncOrthoView()
+        if self._orthoViewFrame:
+            self._orthoViewFrame.RWI.Render()
                 
         
 # -------------------------------------------------------------------------
@@ -299,7 +495,7 @@ class outputSelectedPoints(list, subjectMixin):
 
 # -------------------------------------------------------------------------
 
-class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
+class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     
     """Slicing, dicing slice viewing class.
 
@@ -365,6 +561,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
     # module API methods
     #################################################################
         
+
     def close(self):
         print "starting close"
         # this is standard behaviour in the close method:
@@ -584,62 +781,6 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
     # internal utility methods
     #################################################################
 
-    def _connectOrthoViewToDirection(self, orthoIdx, direction=-1):
-        """Connect the orthoIdx'th orthoView to direction.
-
-        Because we can't really rely on any state whatsoever, this
-        call first destroys all objects belonging to all ortho layers in
-        this direction and then recreates them.
-        """
-
-        # if direction is -1, use existing direction metadata
-        # if that is also -1, go to defaults
-        if direction < 0:
-            direction = self._orthoViews[orthoIdx]['direction']
-            if direction < 0:
-                direction = orthoIdx
-
-        # first take care of current pipeline
-        self._destroyOrthoView(orthoIdx)
-
-        orthoView = self._orthoViews[orthoIdx]
-        # go through each layer in the ipws of this direction, setting up
-        # the little pipeline
-        for layer in range(len(self._ipws[direction])):
-            orthoView['planeSources'].append(vtk.vtkPlaneSource())
-            orthoView['planeActors'].append(vtk.vtkActor())
-
-            tm2p = vtk.vtkTextureMapToPlane()
-            orthoView['textureMapToPlanes'].append(tm2p)
-            tm2p.AutomaticPlaneGenerationOff()
-            tm2p.SetInput(orthoView['planeSources'][-1].\
-                          GetOutput())
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInput(tm2p.GetOutput())
-
-            orthoView['planeActors'][-1].SetMapper(mapper)
-            otherTexture = self._ipws[direction][layer].GetTexture()
-
-            # we don't just use the texture, else VTK goes mad re-uploading
-            # the same texture unnecessarily... let's just make use of the
-            # same input, we get much more effective use of the host->GPU bus
-            texture = vtk.vtkTexture()
-            texture.SetInterpolate(otherTexture.GetInterpolate())
-            texture.SetQuality(otherTexture.GetQuality())
-            texture.MapColorScalarsThroughLookupTableOff()
-            texture.RepeatOff()
-            texture.SetInput(otherTexture.GetInput())
-            
-            orthoView['planeActors'][-1].SetTexture(texture)
-
-            self._orthoRenderers[orthoIdx].AddActor(
-                orthoView['planeActors'][-1])
-
-            orthoView['direction'] = direction
-
-            # and of course end with a sync!
-            self._syncOrthoViewWithIPW(orthoIdx)
-
     def _createSlice(self):
         sliceName = self._viewFrame.createSliceText.GetValue()
         if sliceName:
@@ -661,13 +802,13 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                 #self._viewFrame.sliceNameChoice.SetStringSelection(sliceName)
 
     def _create_window(self):
-        import modules.resources.python.slice3d_vwr_frame
-        reload(modules.resources.python.slice3d_vwr_frame)
+        import modules.resources.python.slice3dVWRFrames
+        reload(modules.resources.python.slice3dVWRFrames)
 
         # create main frame, make sure that when it's closed, it merely hides
         parent_window = self._moduleManager.get_module_view_parent_window()
-        slice3d_vwr_frame = modules.resources.python.slice3d_vwr_frame.\
-                            slice3d_vwr_frame
+        slice3d_vwr_frame = modules.resources.python.slice3dVWRFrames.\
+                            MainFrame
         self._viewFrame = slice3d_vwr_frame(parent_window, id=-1,
                                              title='dummy')
 
@@ -779,6 +920,18 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                      self._viewFrame.sliceInteractionCheckBoxId,
                      lambda e: _ib_cb())
 
+        def _ov_cb():
+            sliceDirection = self._getCurrentSliceDirection()
+            if sliceDirection:
+                if self._viewFrame.orthoViewCheckBox.GetValue():
+                    sliceDirection.createOrthoView()
+                else:
+                    sliceDirection.destroyOrthoView()
+
+        EVT_CHECKBOX(self._viewFrame,
+                     self._viewFrame.orthoViewCheckBoxId,
+                     lambda e: _ov_cb())
+
         def _ps_cb():
             sliceDirection  = self._getCurrentSliceDirection()
             if sliceDirection:
@@ -801,32 +954,11 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         
         # attach close handler
         EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._view_frame.Show(false))
+                  lambda e, s=self: s._viewFrame.Show(false))
 
         # display the window
         self._viewFrame.Show(True)
 
-    def _destroyOrthoView(self, orthoIdx):
-        """Disconnect all inputs for the orthoIdx'th orthoView and then
-        destroy all objects.
-        """
-
-        orthoView = self._orthoViews[orthoIdx]
-        if orthoView['planeSources']:
-            direction = orthoView['direction']
-            for layer in range(len(orthoView['planeSources'])):
-                             actor = orthoView['planeActors'][layer]
-                             self._orthoRenderers[orthoIdx].RemoveActor(actor)
-                             # this will remove the current texture,
-                             # freeing it for destruction
-                             actor.SetTexture(None)
-
-
-            # now nuke the whole structure
-            self._orthoViews[orthoIdx] = {'planeSources' : [],
-                                          'planeActors' : [],
-                                          'textureMapToPlanes' : [],
-                                          'direction' : -1}
 
     def _destroySlice(self):
         """Destroy the currently selected slice."""
@@ -886,6 +1018,8 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                     sliceDirection.getEnabled())
                 self._viewFrame.sliceInteractionCheckBox.SetValue(
                     sliceDirection.getInteractionEnabled())
+                self._viewFrame.orthoViewCheckBox.SetValue(
+                    sliceDirection.getOrthoViewEnabled())
         
 
     def _remove_cursors(self, idxs):
@@ -971,31 +1105,6 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
 
         # whee, thaaaar she goes.
         self._viewFrame.threedRWI.Render()
-
-    def _setupOrthoViewCamera(self, orthoIdx):
-        """Once the orthoView has been connected to a particular IPW, this
-        method will make sure that the camera points orthogonally at it.
-        """
-        
-        # now we know the plane geometry is synced with the IPW
-        self._syncOrthoViewWithIPW(orthoIdx)
-        # just get the first planesource
-        planeSource = self._orthoViews[orthoIdx]['planeSources'][0]
-        # let's setup the camera
-        icam = self._orthoRenderers[orthoIdx].GetActiveCamera()
-        icam.SetPosition(planeSource.GetCenter()[0],
-                         planeSource.GetCenter()[1], 10)
-        icam.SetFocalPoint(planeSource.GetCenter())
-        icam.OrthogonalizeViewUp()
-        icam.SetViewUp(0,1,0)
-        icam.SetClippingRange(1,11)
-        v2 = map(operator.sub, planeSource.GetPoint2(),
-                 planeSource.GetOrigin())
-        n2 = vtk.vtkMath.Normalize(v2)
-        icam.SetParallelScale(n2 / 2.0)
-        icam.ParallelProjectionOn()
-        
-        
 
     def _storeSurfacePoint(self, pointId, actor):
         polyData = actor.GetMapper().GetInput()
@@ -1147,38 +1256,6 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         self._viewFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
 
         self._viewFrame.spointsGrid.SetCellValue(row, 2, str(value))
-
-
-    def _syncOrthoViewWithIPW(self, orthoIdx):
-        orthoView = self._orthoViews[orthoIdx]
-        
-        # find IPW that we're syncing with
-        direction = orthoView['direction']
-        ipwDir = self._ipws[direction]
-
-        # just use the primary IPW for this direction
-        ipw = ipwDir[0]
-        
-        # vectorN is pointN - origin
-        v1 = [0,0,0]
-        ipw.GetVector1(v1)
-        n1 = vtk.vtkMath.Normalize(v1)
-        v2 = [0,0,0]
-        ipw.GetVector2(v2)
-        n2 = vtk.vtkMath.Normalize(v2)
-
-        roBounds = ipw.GetResliceOutput().GetBounds()
-
-        for layer in range(len(orthoView['planeSources'])):
-            planeSource = orthoView['planeSources'][layer]
-            planeSource.SetOrigin(0,0,0)
-            planeSource.SetPoint1(n1, 0, 0)
-            planeSource.SetPoint2(0, n2, 0)
-
-            tm2p = orthoView['textureMapToPlanes'][layer]
-            tm2p.SetOrigin(0,0,0)
-            tm2p.SetPoint1(roBounds[1] - roBounds[0], 0, 0)
-            tm2p.SetPoint2(0, roBounds[3] - roBounds[2], 0)
 
 
     def _syncOutputSelectedPoints(self):

@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.20 2003/02/25 14:35:29 cpbotha Exp $
+# $Id: __init__.py,v 1.21 2003/03/11 14:47:05 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -11,7 +11,7 @@ module_list = ['dicomRDR',
                'marchingCubesFLT',
                'polyDataConnectFLT',
                'seedConnectFLT',
-	       'slice3d_vwr',
+	       'slice3dVWR',
                'stlRDR',
                'vtkPolyDataRDR',
                'vtkStructPtsRDR',               
