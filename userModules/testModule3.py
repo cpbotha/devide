@@ -72,6 +72,10 @@ class testModule3(moduleBase, noConfigModuleMixin):
         del self._curvatures
         del self._tf
 
+        del self._inputPoints
+        del self._outputPolyDataARB
+        del self._outputPolyDataHM
+
     def getInputDescriptions(self):
 	return ('vtkPolyData', 'Watershed minima')
 
@@ -154,6 +158,9 @@ class testModule3(moduleBase, noConfigModuleMixin):
                     tempPd1.GetCellPoints(edgeId, pointIdList)
                     # there have to be two points per edge,
                     # one if which is the centre-point itself
+                    # FIXME: we should check, cells aren't LIMITED to two
+                    # points, but could for instance be a longer line-segment
+                    # or a quad or somesuch
                     for pointIdListIdx in range(pointIdList.GetNumberOfIds()):
                         tempPtId = pointIdList.GetId(pointIdListIdx)
                         if tempPtId not in neighbourMap[ptId]:
