@@ -1,4 +1,8 @@
-# $Id: vtk_dicom_rdr.py,v 1.7 2002/08/20 12:37:45 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.8 2002/08/22 17:16:31 cpbotha Exp $
+
+# wxGlade doesn't support wxFlexGridSizer yet so:
+# - change wxGridSizer to wxFlexGridSizer
+# - grid_sizer_1.AddGrowableCol(1)
 
 import gen_utils
 import os
@@ -67,9 +71,13 @@ class vtk_dicom_rdr(module_base,
         else:
             self._view_frame.dirname_text.SetValue("")
 
+        # we're going to be reading some information from the _reader which
+        # is only up to date after this call
+        self._reader.UpdateInformation()
+
         # get current SeriesInstanceIdx from the DICOMReader
         # FIXME: the frikking SpinCtrl does not want to update when we call
-        # SetValue()... we've now hard-coded it in wxGlade.
+        # SetValue()... we've now hard-coded it in wxGlade (still doesn't work)
         self._view_frame.si_idx_spin.SetValue(
             int(self._reader.GetSeriesInstanceIdx()))
 
@@ -78,15 +86,35 @@ class vtk_dicom_rdr(module_base,
         si_uid = self._reader.GetSeriesInstanceUID()
         if si_uid == None:
             si_uid = "NONE"
-        
+
         self._view_frame.si_uid_text.SetValue(si_uid)
+
+        sd = self._reader.GetStudyDescription()
+        if sd == None:
+            self._view_frame.study_description_text.SetValue("NONE");
+        else:
+            self._view_frame.study_description_text.SetValue(sd);
+
+        rp = self._reader.GetReferringPhysician()
+        if rp == None:
+            self._view_frame.referring_physician_text.SetValue("NONE");
+        else:
+            self._view_frame.referring_physician_text.SetValue(rp);
+            
+            
+        dd = self._reader.GetDataDimensions()
+        ds = self._reader.GetDataSpacing()
+        self._view_frame.dimensions_text.SetValue('%s at %s mm' %
+                                                  (str(dd), str(ds)))
+        
+
 	
     def apply_config(self):
         # get a list of files in the indicated directory, stuff them all
         # into the dicom reader
         self._dicom_dirname = self._view_frame.dirname_text.GetValue()
 
-        if self._dicom_dirname == None:
+        if self._dicom_dirname == None or self._dicom_dirname == "":
             return
         try:
             filenames_init = os.listdir(self._dicom_dirname)
@@ -144,6 +172,8 @@ class vtk_dicom_rdr(module_base,
         parent_window = self._module_manager.get_module_view_parent_window()
         self._view_frame = vtk_dicom_rdr_view_frame(parent=parent_window,
                                                     id=-1, title='null')
+        # make sure the wxFlexGridSizer knows what to do
+        self._view_frame.mdata_sizer.AddGrowableCol(1)
         
         EVT_CLOSE(self._view_frame,
                   lambda e, s=self: s._view_frame.Show(false))
@@ -209,17 +239,13 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.VTK_OBJECT_CHOICE_ID  =  wxNewId()
         self.object_choice = wxChoice(self, self.VTK_OBJECT_CHOICE_ID , choices=['vtkDICOMVolumeReader'], size=(-1, -1), style=0)
         self.label_2 = wxStaticText(self, -1, "Examine the", size=(-1, -1), style=0)
-        self.grid_sizer_1 = wxGridSizer(5, 2, 0, 0)
-        self.text_ctrl_2_copyc = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_6_copyc = wxStaticText(self, -1, "Dimensions", size=(-1, -1), style=0)
-        self.text_ctrl_2_copyb = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_6_copyb = wxStaticText(self, -1, "Modality", size=(-1, -1), style=0)
-        self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_6_copy = wxStaticText(self, -1, "Patient Name", size=(-1, -1), style=0)
-        self.text_ctrl_3 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_7 = wxStaticText(self, -1, "Referring Physician", size=(-1, -1), style=0)
-        self.text_ctrl_2 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_6 = wxStaticText(self, -1, "Study Description", size=(-1, -1), style=0)
+        self.mdata_sizer = wxFlexGridSizer(3, 2, 0, 0)
+        self.dimensions_text = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY|wxHSCROLL)
+        self.label_11 = wxStaticText(self, -1, "Dimensions:", size=(-1, -1), style=0)
+        self.referring_physician_text = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY|wxHSCROLL)
+        self.label_10 = wxStaticText(self, -1, "Referring Physician:", size=(-1, -1), style=0)
+        self.study_description_text = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY|wxHSCROLL)
+        self.label_9 = wxStaticText(self, -1, "Study Description:", size=(-1, -1), style=0)
         self.sizer_5 = wxBoxSizer(wxHORIZONTAL)
         self.si_uid_text = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY|wxHSCROLL)
         self.label_5 = wxStaticText(self, -1, "UID", size=(-1, -1), style=0)
@@ -241,11 +267,9 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         # begin wxGlade: __set_properties
         self.SetTitle("vtk_dicom_rdr configuration")
         self.si_uid_text.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_2.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_3.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_2_copyb.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_2_copyc.SetBackgroundColour(wxColour(192, 192, 192))
+        self.study_description_text.SetBackgroundColour(wxColour(192, 192, 192))
+        self.referring_physician_text.SetBackgroundColour(wxColour(192, 192, 192))
+        self.dimensions_text.SetBackgroundColour(wxColour(192, 192, 192))
         self.object_choice.SetSelection(0)
         # end wxGlade
 
@@ -260,17 +284,13 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.sizer_5.Add(self.label_5, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
         self.sizer_5.Add(self.si_uid_text, 1, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_1.Add(self.sizer_5, 1, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
-        self.grid_sizer_1.Add(self.label_6, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_2, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.grid_sizer_1.Add(self.label_7, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_3, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.grid_sizer_1.Add(self.label_6_copyb, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_2_copyb, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.grid_sizer_1.Add(self.label_6_copyc, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_2_copyc, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.sizer_1.Add(self.grid_sizer_1, 0, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
+        self.mdata_sizer.Add(self.label_9, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.mdata_sizer.Add(self.study_description_text, 1, wxEXPAND|wxLEFT, 2)
+        self.mdata_sizer.Add(self.label_10, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.mdata_sizer.Add(self.referring_physician_text, 1, wxEXPAND|wxLEFT, 2)
+        self.mdata_sizer.Add(self.label_11, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.mdata_sizer.Add(self.dimensions_text, 1, wxEXPAND|wxLEFT, 2)
+        self.sizer_1.Add(self.mdata_sizer, 0, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
         self.sizer_4.Add(self.label_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         self.sizer_4.Add(self.object_choice, 0, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_4.Add(self.label_3, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
