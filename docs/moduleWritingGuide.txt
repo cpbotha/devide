@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.2 2003/02/19 01:07:21 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.3 2003/02/19 16:49:14 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -6,16 +6,21 @@ IMPORTANT NOTES:
 1. Yes, a badly-written module can VERY easily crash the whole DSCAS3.
    Be careful, Austin.
 
-2. Once you have established that an input that is to be connected constitutes
-   valid input data,  call its Update() method BEFORE you do ANYTHING else
-   if this is as all possible.  If you do not do this, the Multi-Threading 
-   Monster could come a knocking.
-   
-   This instant updating at connection time is not always desirable behaviour
-   however.  Please experiment.  The segfaults will guide you on your journey.
+2. Once you have established that an input that is to be connected
+   constitutes valid input data and you're planning to connect it to
+   ANYTHING that has to do with the GUI, e.g. a vtkPolyDataMapper that
+   is going to map for an actor in a vtkRenderWindow, call that
+   input's Update() method BEFORE you do ANYTHING else if this is as
+   all possible.  If you do not do this, the following will happen:
 
-   Example: connecting a vtkDecimate output to a slice3d_vwr input without
-   an update in the slice3d_vwr SetInput method results in a segfault. 
-   The hypothesis is that the ResetCamera updates the data, but somehow does
-   not block on the call.  The Render() attempts a second update which
-   obviously throws things into complete disarray.
+   a. You connect everything together, the Renderer() gets the objects
+      to Update()
+   b. Each object that Update()s calls its progress callback
+   c. The callback HAS to yield time to the GUI
+   d. The visual elements get redrawn, including the Renderer(), and
+      Update() gets called on the objects again, even although the
+      previous invocation is not done yet.
+   c. BOOM.
+
+   This should be resolved at VTK level by e.g. Update() locking.  It
+   has been reported to the developers mailing list.

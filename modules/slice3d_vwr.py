@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.19 2003/02/19 10:52:28 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.20 2003/02/19 16:49:14 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -226,7 +226,7 @@ class slice3d_vwr(moduleBase,
                 # if we don't do this (and here it fortunately does no
                 # data-flow harm) and we connect up the output of an
                 # un-updated decimateFLT, DSCAS3 goes BYE-BYE
-                #input_stream.Update()
+                input_stream.Update()
                 
                 mapper = vtk.vtkPolyDataMapper()
                 mapper.SetInput(input_stream)
@@ -234,12 +234,12 @@ class slice3d_vwr(moduleBase,
                 self._inputs[idx]['vtkActor'].SetMapper(mapper)
                 self._threedRenderer.AddActor(self._inputs[idx]['vtkActor'])
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
-                print "calling ResetCam"
+                #print "calling ResetCam"
                 self._threedRenderer.ResetCamera()
-                print "DONE calling ResetCam"
-                print "calling RWI.Render()"
+                #print "DONE calling ResetCam"
+                #print "calling RWI.Render()"
                 self._view_frame.threedRWI.Render()
-                print "DONE calling RWI.Render()"
+                #print "DONE calling RWI.Render()"
 
                 # connect an event handler to the data
                 oid = input_stream.AddObserver('ModifiedEvent',
