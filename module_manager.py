@@ -14,13 +14,21 @@ class module_manager:
 	
         self._dscas3_app = dscas3_app
 	self.modules = []
-	
+
+        # handling frozen installs.
+        home, exe = os.path.split(sys.executable)
+        if string.lower(exe[:6]) == 'python':
+            mdir = os.path.join(os.path.dirname(__file__), 'modules')
+        else: # frozen (added by Prabhu, I think?)
+            mdir = os.path.join(home, 'modules')
+        self._modules_dir = mdir
+        
 	# find out the module directory
-	dirname = os.path.dirname(sys.argv[0])
-	if dirname and dirname != os.curdir:
-	    self._modules_dir = dirname + "/modules"
-	else:
-	    self._modules_dir = os.getcwd() + "/modules"
+	#dirname = os.path.dirname(sys.argv[0])
+	#if dirname and dirname != os.curdir:
+	#    self._modules_dir = dirname + "/modules"
+	#else:
+	#    self._modules_dir = os.getcwd() + "/modules"
 	    
 	# add it to the python path so imports work
 	sys.path.insert(0, self._modules_dir)
