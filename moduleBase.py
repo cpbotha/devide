@@ -1,5 +1,4 @@
-# $Id: moduleBase.py,v 1.4 2003/01/29 12:09:22 cpbotha Exp $
-
+# $Id: moduleBase.py,v 1.5 2003/02/03 10:53:06 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
