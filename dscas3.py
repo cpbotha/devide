@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.62 2003/12/12 13:50:02 cpbotha Exp $
+# $Id: dscas3.py,v 1.63 2003/12/12 16:37:04 cpbotha Exp $
 
 DSCAS3_VERSION = '20031211 Four'
 
@@ -22,16 +22,14 @@ from python_shell import python_shell
 import resources.python.mainFrame
 import resources.graphics.images
 
-#from wxPython.wx import *
 import wx
-#from wxPython.html import *
 import wx.html
 
 import vtk
 import vtkdscas
 
 
-class configClass(object):
+class mainConfigClass(object):
 
     def __init__(self, argv):
         parseCommandLine()
@@ -117,9 +115,18 @@ class dscas3_app_t(wx.App):
         # find all modules that we can use
 	self.moduleManager = moduleManager(self)
 
-        self.setProgress(100, 'Started up')        
+        self.setProgress(100, 'Started up')
+
+        # perform vtk initialisation
+        self._vtkInit()
+
+        return True
         
 
+    def _vtkInit(self):
+        """All VTK specific initialisation is done from here.
+        """
+        
         # CRITICAL VTK CUSTOMISATION BIT:
         # multi-threaded vtk objects will call back into python causing
         # re-entrancy; usually, the number of threads is set to the number
@@ -167,8 +174,6 @@ class dscas3_app_t(wx.App):
         temp.AddObserver('WarningEvent', observerEOW)        
             
         del temp
-
-        return True
 
     def OnExit(self):
         pass
