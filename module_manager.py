@@ -1,7 +1,6 @@
 import sys, os, fnmatch
 import string
 import gen_utils
-import vtk
 
 class module_manager:
     """This class in responsible for picking up new modules in the modules 
@@ -13,23 +12,13 @@ class module_manager:
         self._dscas3_app = dscas3_app
 	self.modules = []
 
-        # handling frozen installs.
-        home, exe = os.path.split(sys.executable)
-        if string.lower(exe[:6]) == 'python':
-            mdir = os.path.join(os.path.dirname(__file__), 'modules')
-        else: # frozen (added by Prabhu, I think?)
-            mdir = os.path.join(home, 'modules')
-        self._modules_dir = mdir
+        appdir = self._dscas3_app.get_appdir()
+        self._modules_dir = os.path.join(appdir, 'modules')
         
 	# add it to the python path so imports work
 	sys.path.insert(0, self._modules_dir)
 	# make first scan of available modules
 	self.module_list = self.scan_modules()
-
-        # now make sure that VTK will always send error to stderr
-        temp = vtk.vtkOutputWindow()
-        temp.SetInstance(temp)
-        del temp
 
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in

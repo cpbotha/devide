@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.3 2002/05/18 00:38:26 cpbotha Exp $
+# $Id: dscas3.py,v 1.4 2002/05/18 14:10:20 cpbotha Exp $
 
 import os
 import sys
@@ -12,6 +12,7 @@ from python_shell import python_shell
 from wxPython.wx import *
 from wxPython.xrc import *
 
+import vtk
 
 class main_window(wxFrame):
     """Main dscas3 application window.
@@ -24,7 +25,7 @@ class main_window(wxFrame):
 
     def __init__(self, dscas3_app):
         # bind the app name so we can get to it for events
-        self.dscas3_app = dscas3_app
+        self._dscas3_app = dscas3_app
         
         wxFrame.__init__(self, None, -1, "dscas3")
 
@@ -86,16 +87,33 @@ class main_window(wxFrame):
         pass
 
     def exit_cb(self, event):
-        self.dscas3_app.quit()
+        self._dscas3_app.quit()
 
     def load_data_cb(self, event):
-        self.dscas3_app.get_assistants().load_data()
+        self._dscas3_app.get_assistants().load_data()
 
     def graph_editor_cb(self, event):
-        self.dscas3_app.start_graph_editor()
+        self._dscas3_app.start_graph_editor()
 
     def python_shell_cb(self, event):
-        self.dscas3_app.start_python_shell()
+        self._dscas3_app.start_python_shell()
+
+class log_frame:
+    """Log frame that can display file or whose TextCtrl can be used as
+    destination file object to replace stderr for example.
+    """
+    
+    def __init__(self, title, parent_frame=None):
+        self._filename = None
+        #
+        frame = wxFrame(parent_frame, -1, title)
+
+    
+
+    def set_filename(self, filename):
+        self._filename = filename
+
+    
 
 class wx_output_pipe:
     def write(self, data):
@@ -115,6 +133,15 @@ class dscas3_app_t(wxApp):
         self._old_stdout = None
         
         self.main_window = None
+
+        #self._appdir, exe = os.path.split(sys.executable)
+        dirname = os.path.dirname(sys.argv[0])
+        if dirname and dirname != os.curdir:
+            self._appdir = dirname
+        else:
+            self._appdir = os.getcwd()
+
+        print self._appdir
         
         wxApp.__init__(self, 0)
 
@@ -137,6 +164,14 @@ class dscas3_app_t(wxApp):
 #        sys.stdout = _output_pipe
         
         # "true" is defined in wxPython.wx
+
+        # now make sure that VTK will always send error to vtk.log logfile
+        temp = vtk.vtkFileOutputWindow()
+        vtk_logfn = os.path.join(self.get_appdir(), 'vtk.log')
+        temp.SetFileName(vtk_logfn)
+        temp.SetInstance(temp)
+        del temp
+        
         return true
 
     def OnExit(self):
@@ -152,6 +187,9 @@ class dscas3_app_t(wxApp):
 
     def get_assistants(self):
         return self._assistants
+
+    def get_appdir(self):
+        return self._appdir
 	
     def quit(self):
 	print "quit called!"
