@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.62 2003/07/31 21:46:49 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.63 2003/08/01 15:13:51 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -47,7 +47,7 @@ class outputSelectedPoints(list, subjectMixin):
         
 # -------------------------------------------------------------------------
 class selectedPoints(object):
-    _gridCols = [('Point Name', 0), ('World', 0), ('Discrete', 0),
+    _gridCols = [('Point Name', 0), ('World', 150), ('Discrete', 100),
                  ('Value', 0)]
     _gridNameCol = 0
     _gridWorldCol = 1
@@ -65,11 +65,53 @@ class selectedPoints(object):
         # this will be passed on as input to the next component
         self.outputSelectedPoints = outputSelectedPoints()
 
+        self._bindEvents()
+
+    def close(self):
+        self.removePoints(range(len(self._pointsList)))
+
     def _bindEvents(self):
-        # the store button
-        EVT_BUTTON(self.controlFrame, self.controlFrame.sliceStoreButtonId,
-                   lambda e: self._handlerStoreCursorAsPoint())
+        controlFrame = self.slice3dVWR.controlFrame
         
+        # the store button
+        EVT_BUTTON(controlFrame, controlFrame.sliceStoreButtonId,
+                   lambda e: self._handlerStoreCursorAsPoint())
+
+        def pointsSelectAllCallback(event):
+            # calling SelectAll and then GetSelectedRows() returns nothing
+            #self.threedFrame.spointsGrid.SelectAll()
+            # so, we select row by row, and that does seem to work!
+            for row in range(self._grid.GetNumberRows()):
+                self._grid.SelectRow(row, True)
+
+        def pointsDeselectAllCallback(event):
+            self._grid.ClearSelection()
+
+        def pointsRemoveCallback(event):
+            selRows = self._grid.GetSelectedRows()
+            if len(selRows):
+                self.removePoints(selRows)
+
+        EVT_BUTTON(controlFrame,
+                   controlFrame.pointsSelectAllButtonId,
+                   pointsSelectAllCallback)
+        
+        EVT_BUTTON(controlFrame,
+                   controlFrame.pointsDeselectAllButtonId,
+                   pointsDeselectAllCallback)
+        
+        EVT_BUTTON(controlFrame,
+                   controlFrame.pointsRemoveButtonId,
+                   pointsRemoveCallback)
+
+        def pointInteractionCheckBoxCallback(event):
+            val = controlFrame.pointInteractionCheckBox.GetValue()
+            self.enablePointsInteraction(val)
+            
+        EVT_CHECKBOX(controlFrame,
+                     controlFrame.pointInteractionCheckBoxId,
+                     pointInteractionCheckBoxCallback)
+
 
     def enablePointsInteraction(self, enable):
         """Enable/disable points interaction in the 3d scene.
@@ -104,7 +146,97 @@ class selectedPoints(object):
 
         Calls store cursor method on [x,y,z,v].
         """
-        self._storeCursor(self.sliceDirections.currentCursor)
+        self._storeCursor(self.slice3dVWR.sliceDirections.currentCursor)
+
+    def hasWorldPoint(self, worldPoint):
+        worldPoints = [i['world'] for i in self._pointsList]
+        if worldPoint in worldPoints:
+            return True
+        else:
+            return False
+        
+
+    def _initialiseGrid(self):
+        # delete all existing columns
+        self._grid.DeleteCols(0, self._grid.GetNumberCols())
+
+        # we need at least one row, else adding columns doesn't work (doh)
+        self._grid.AppendRows()
+        
+        # setup columns
+        self._grid.AppendCols(len(self._gridCols))
+        for colIdx in range(len(self._gridCols)):
+            # add labels
+            self._grid.SetColLabelValue(colIdx, self._gridCols[colIdx][0])
+
+        # set size according to labels
+        self._grid.AutoSizeColumns()
+
+        for colIdx in range(len(self._gridCols)):
+            # now set size overrides
+            size = self._gridCols[colIdx][1]
+            if size > 0:
+                self._grid.SetColSize(colIdx, size)
+
+        # make sure we have no rows again...
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())
+
+    def _observerPointWidgetInteraction(self, pw, evt_name):
+        # we have to find pw in our list
+        pwidgets = map(lambda i: i['pointWidget'], self._pointsList)
+        if pw in pwidgets:
+            idx = pwidgets.index(pw)
+            # toggle the selection for this point in our list
+            self._grid.SelectRow(idx)
+
+            # if this is lockToSurface, lock it!
+            if self._pointsList[idx]['lockToSurface']:
+                # convert the actual pointwidget position back to display coord
+                self._threedRenderer.SetWorldPoint(pw.GetPosition() + (1,))
+                self._threedRenderer.WorldToDisplay()
+                ex,ey,ez = self._threedRenderer.GetDisplayPoint()
+                # we use a vtkPropPicker - this is supposed to make use of
+                # the graphics hardware to pick rapidly
+                picker = vtk.vtkPropPicker()
+                if picker.PickProp(ex, ey, self._threedRenderer):
+                    xyz = picker.GetPickPosition()
+                    pw.SetPosition(xyz)
+
+            # get its position and transfer it to the sphere actor that
+            # we use
+            pos = pw.GetPosition()
+            self._pointsList[idx]['sphereActor'].SetPosition(pos)
+
+            # also update the text_actor (if appropriate)
+            ta = self._pointsList[idx]['textActor']
+            if ta:
+                ta.SetPosition(pos)
+
+            inputData = self._getPrimaryInput()
+
+            if inputData:
+                # then we have to update our internal record of this point
+                ispacing = inputData.GetSpacing()
+                iorigin = inputData.GetOrigin()
+                discrete = map(round,
+                            map(operator.div,
+                                map(operator.sub, pos, iorigin), ispacing))
+                val = inputData.GetScalarComponentAsFloat(discrete[0],
+                                                          discrete[1],
+                                                          discrete[2], 0)
+            else:
+                discrete = (0, 0, 0)
+                val = 0
+                
+            # the cursor is a tuple with discrete position and value
+            self._pointsList[idx]['discrete'] = tuple(discrete)
+            # 'world' is the world coordinates
+            self._pointsList[idx]['world'] = tuple(pos)
+            # and the value
+            self._pointsList[idx]['value'] = val
+
+            self._syncGridRowToSelPoints(idx)
+
 
     def removePoints(self, idxs):
         """Remove all points at indexes in idxs list.
@@ -173,14 +305,14 @@ class selectedPoints(object):
         world = map(operator.add, iorigin,
                     map(operator.mul, ispacing, cursor[0:3]))
 
-        pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
+        pointName = self.slice3dVWR.controlFrame.sliceCursorNameCombo.\
+                    GetValue()
         self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
                          pointName)
 
     def _storePoint(self, discrete, world, value, pointName,
                     lockToSurface=False, boundsForPoints=None):
 
-        # FIXME: continue here
         tdren = self.slice3dVWR._threedRenderer
         tdrwi = self.slice3dVWR.threedFrame.threedRWI
 
@@ -227,9 +359,9 @@ class selectedPoints(object):
             ta_bounds = ta.GetBounds()
             ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
                         (ta_bounds[1] - ta_bounds[0]))
-            self._threedRenderer.AddActor(ta)
+            tdren.AddActor(ta)
             ta.SetPickable(0)
-            ta.SetCamera(self._threedRenderer.GetActiveCamera())
+            ta.SetCamera(tdren.GetActiveCamera())
         else:
             ta = None
 
@@ -240,68 +372,76 @@ class selectedPoints(object):
 
         pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
                        s=self:
-                       s._pointWidgetInteractionCallback(pw, evt_name))
+                       s._observerPointWidgetInteraction(pw, evt_name))
         pw.AddObserver('InteractionEvent', lambda pw, evt_name,
                        s=self:
-                       s._pointWidgetInteractionCallback(pw, evt_name))
+                       s._observerPointWidgetInteraction(pw, evt_name))
         pw.AddObserver('EndInteractionEvent', pw_ei_cb)
 
 
         # after we've added observers, we get to switch the widget on or
         # off; but it HAS to be on when the observers are added
-        if self.controlFrame.pointInteractionCheckBox.GetValue():
+        if self.slice3dVWR.controlFrame.pointInteractionCheckBox.GetValue():
             pw.On()
         else:
             pw.Off()
 
         # store the cursor (discrete coords) the coords and the actor
-        self._selectedPoints.append({'discrete' : tuple(discrete),
-                                     'world' : tuple(world),
-                                     'value' : value,
-                                     'name' : pointName,
-                                     'pointWidget' : pw,
-                                     'lockToSurface' : lockToSurface,
-                                     'sphereActor' : sa,
-                                     'textActor' : ta})
+        self._pointsList.append({'discrete' : tuple(discrete),
+                                 'world' : tuple(world),
+                                 'value' : value,
+                                 'name' : pointName,
+                                 'pointWidget' : pw,
+                                 'lockToSurface' : lockToSurface,
+                                 'sphereActor' : sa,
+                                 'textActor' : ta})
 
-        
-        self.controlFrame.spointsGrid.AppendRows()
-        self.controlFrame.spointsGrid.AdjustScrollbars()        
-        row = self.controlFrame.spointsGrid.GetNumberRows() - 1
+
+        self._grid.AppendRows()
+        #self._grid.AdjustScrollBars()
+        row = self._grid.GetNumberRows() - 1
         self._syncGridRowToSelPoints(row)
         
         # make sure self._outputSelectedPoints is up to date
         self._syncOutputSelectedPoints()
 
-        self.threedFrame.threedRWI.Render()
+        self.slice3dVWR.render3D()
+
+    def _syncGridRowToSelPoints(self, row):
+        # *sniff* *sob* It's unreadable, but why's it so pretty?
+        # this just formats the real point
+        name = self._pointsList[row]['name']
+        discrete = self._pointsList[row]['discrete']
+        world = self._pointsList[row]['world']
+        value = self._pointsList[row]['value']
+        discreteStr = "%.0f, %.0f, %.0f" % discrete
+        worldStr = "%.2f, %.2f, %.2f" % world
+
+        self._grid.SetCellValue(row, self._gridNameCol, name)
+        self._grid.SetCellValue(row, self._gridWorldCol, worldStr)
+        self._grid.SetCellValue(row, self._gridDiscreteCol, discreteStr)
+        self._grid.SetCellValue(row, self._gridValueCol, str(value))
+
+    def _syncOutputSelectedPoints(self):
+        """Sync up the output vtkPoints and names to _sel_points.
         
+        We play it safe, as the number of points in this list is usually
+        VERY low.
+        """
+
+        del self.outputSelectedPoints[:]
+
+        # then transfer everything
+        for i in self._pointsList:
+            self.outputSelectedPoints.append({'name' : i['name'],
+                                              'discrete' : i['discrete'],
+                                              'world' : i['world'],
+                                              'value' : i['value']})
+
+        # then make sure this structure knows that it has been modified
+        self.outputSelectedPoints.notify()
             
 
-    def _initialiseGrid(self):
-        # delete all existing columns
-        self._grid.DeleteCols(0, self._grid.GetNumberCols())
-
-        # we need at least one row, else adding columns doesn't work (doh)
-        self._grid.AppendRows()
-        
-        # setup columns
-        self._grid.AppendCols(len(self._gridCols))
-        for colIdx in range(len(self._gridCols)):
-            # add labels
-            self._grid.SetColLabelValue(colIdx, self._gridCols[colIdx][0])
-
-        # set size according to labels
-        self._grid.AutoSizeColumns()
-
-        for colIdx in range(len(self._gridCols)):
-            # now set size overrides
-            size = self._gridCols[colIdx][1]
-            if size > 0:
-                self._grid.SetColSize(colIdx, size)
-
-        # make sure we have no rows again...
-        self._grid.DeleteRows(0, self._grid.GetNumberRows())
-        
 
 # -------------------------------------------------------------------------
 
@@ -596,7 +736,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
     def getOutput(self, idx):
         if idx == 0:
-            return self._outputSelectedPoints
+            return self.selectedPoints.outputSelectedPoints
         else:
             return self._extractVOI.GetOutput()
 
@@ -671,9 +811,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
 
         # fix for the grid
-        self.controlFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
-        self.controlFrame.spointsGrid.DeleteRows(
-            0, self.controlFrame.spointsGrid.GetNumberRows())
+        #self.controlFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        #self.controlFrame.spointsGrid.DeleteRows(
+        #   0, self.controlFrame.spointsGrid.GetNumberRows())
 
 
         # add possible point names
@@ -710,38 +850,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 #         EVT_BUTTON(self.threedFrame, self.threedFrame.resetButtonId,
 #                    lambda e, s=self: s._resetAll())
 
-        def pointsSelectAllCallback(event):
-            # calling SelectAll and then GetSelectedRows() returns nothing
-            #self.threedFrame.spointsGrid.SelectAll()
-            # so, we select row by row, and that does seem to work!
-            for row in range(self.controlFrame.spointsGrid.GetNumberRows()):
-                self.controlFrame.spointsGrid.SelectRow(row, True)
-
-        def pointsDeselectAllCallback(event):
-            self.controlFrame.spointsGrid.ClearSelection()
-
-        def pointsRemoveCallback(event):
-            selRows = self.controlFrame.spointsGrid.GetSelectedRows()
-            if len(selRows):
-                self.selectedPoints.removePoints(selRows)
-
-        EVT_BUTTON(self.controlFrame, self.controlFrame.pointsSelectAllButtonId,
-                   pointsSelectAllCallback)
-        EVT_BUTTON(self.controlFrame,
-                   self.controlFrame.pointsDeselectAllButtonId,
-                   pointsDeselectAllCallback)
-        EVT_BUTTON(self.controlFrame,
-                   self.controlFrame.pointsRemoveButtonId,
-                   pointsRemoveCallback)
-
-
-        def pointInteractionCheckBoxCallback(event):
-            val = self.controlFrame.pointInteractionCheckBox.GetValue()
-            self.selectedPoints.enablePointsInteraction(val)
-            
-        EVT_CHECKBOX(self.controlFrame,
-                     self.controlFrame.pointInteractionCheckBoxId,
-                     pointInteractionCheckBoxCallback)
 
         # event logic for the voi panel
 
@@ -898,8 +1006,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             # something really weird went wrong
             return
 
-        worlds = [i['world'] for i in self._selectedPoints]
-        if xyz in worlds:
+        if self.selectedPoints.hasWorldPoint(xyz):
             return
 
         inputData = self._getPrimaryInput()
@@ -918,42 +1025,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             val = 0
 
         pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
-        self._storePoint(discrete, xyz, val, pointName, True) # lock to surface
+        self.selectedPoints._storePoint(
+            discrete, xyz, val, pointName, True) # lock to surface
 
-
-
-    def _syncGridRowToSelPoints(self, row):
-        # *sniff* *sob* It's unreadable, but why's it so pretty?
-        # this just formats the real point
-        discrete = self._selectedPoints[row]['discrete']
-        world = self._selectedPoints[row]['world']
-        value = self._selectedPoints[row]['value']
-        discreteStr = "%.0f, %.0f, %.0f" % discrete
-        worldStr = "%.2f, %.2f, %.2f" % world
-        self.controlFrame.spointsGrid.SetCellValue(row, 0, worldStr)
-        self.controlFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
-
-        self.controlFrame.spointsGrid.SetCellValue(row, 2, str(value))
-
-
-    def _syncOutputSelectedPoints(self):
-        """Sync up the output vtkPoints and names to _sel_points.
-        
-        We play it safe, as the number of points in this list is usually
-        VERY low.
-        """
-
-        del self._outputSelectedPoints[:]
-
-        # then transfer everything
-        for i in self._selectedPoints:
-            self._outputSelectedPoints.append({'name' : i['name'],
-                                               'discrete' : i['discrete'],
-                                               'world' : i['world'],
-                                               'value' : i['value']})
-
-        # then make sure this structure knows that it has been modified
-        self._outputSelectedPoints.notify()
         
     #################################################################
     # callbacks
@@ -1001,62 +1075,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             for sd in self._sliceDirections:
                 sd.syncContourToObjectViaProp(iProp)
 
-    def _pointWidgetInteractionCallback(self, pw, evt_name):
-        # we have to find pw in our list
-        pwidgets = map(lambda i: i['pointWidget'], self._selectedPoints)
-        if pw in pwidgets:
-            idx = pwidgets.index(pw)
-            # toggle the selection for this point in our list
-            self.controlFrame.spointsGrid.SelectRow(idx)
-
-            # if this is lockToSurface, lock it!
-            if self._selectedPoints[idx]['lockToSurface']:
-                # convert the actual pointwidget position back to display coord
-                self._threedRenderer.SetWorldPoint(pw.GetPosition() + (1,))
-                self._threedRenderer.WorldToDisplay()
-                ex,ey,ez = self._threedRenderer.GetDisplayPoint()
-                # we use a vtkPropPicker - this is supposed to make use of
-                # the graphics hardware to pick rapidly
-                picker = vtk.vtkPropPicker()
-                if picker.PickProp(ex, ey, self._threedRenderer):
-                    xyz = picker.GetPickPosition()
-                    pw.SetPosition(xyz)
-
-            # get its position and transfer it to the sphere actor that
-            # we use
-            pos = pw.GetPosition()
-            self._selectedPoints[idx]['sphereActor'].SetPosition(pos)
-
-            # also update the text_actor (if appropriate)
-            ta = self._selectedPoints[idx]['textActor']
-            if ta:
-                ta.SetPosition(pos)
-
-            inputData = self._getPrimaryInput()
-
-            if inputData:
-                # then we have to update our internal record of this point
-                ispacing = inputData.GetSpacing()
-                iorigin = inputData.GetOrigin()
-                discrete = map(round,
-                            map(operator.div,
-                                map(operator.sub, pos, iorigin), ispacing))
-                val = inputData.GetScalarComponentAsFloat(discrete[0],
-                                                          discrete[1],
-                                                          discrete[2], 0)
-            else:
-                discrete = (0, 0, 0)
-                val = 0
-                
-            # the cursor is a tuple with discrete position and value
-            self._selectedPoints[idx]['discrete'] = tuple(discrete)
-            # 'world' is the world coordinates
-            self._selectedPoints[idx]['world'] = tuple(pos)
-            # and the value
-            self._selectedPoints[idx]['value'] = val
-
-            self._syncGridRowToSelPoints(idx)
-            
 
     # DEPRECATED CODE
 
