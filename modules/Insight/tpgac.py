@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: tpgac.py,v 1.1 2004/08/11 16:17:19 cpbotha Exp $
+# $Id: tpgac.py,v 1.1 2004/08/24 13:08:21 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
