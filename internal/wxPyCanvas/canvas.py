@@ -10,6 +10,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         self._cobjects = []
         self._previousRealCoords = None
         self._mouseDelta = (0,0)
+        self._potentiallyDraggedObject = None
         self._draggedObject = None
 
         self._observers = {'drag' : [],
@@ -74,20 +75,30 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
                         
                 if event.Dragging():
                     if not self._draggedObject:
-                        # this means the user has dragged the mouse
-                        # over an object... which means mouseOnObject
-                        # is technically true, but because we want the
-                        # canvas to get this kind of dragEvent, we
-                        # set it to false
-                        mouseOnObject = False
+                        if self._potentiallyDraggedObject == cobject:
+                            # the user is dragging inside an object inside
+                            # of which he has previously clicked... this
+                            # definitely means he's dragging the object
+                            mouseOnObject = True
+                            self._draggedObject = cobject
+                            
+                        else:
+                            # this means the user has dragged the mouse
+                            # over an object... which means mouseOnObject
+                            # is technically true, but because we want the
+                            # canvas to get this kind of dragEvent, we
+                            # set it to false
+                            mouseOnObject = False
 
                 elif event.ButtonUp():
                     cobject.notifyObservers('buttonUp', event)
 
                 elif event.ButtonDown():
                     if event.LeftDown():
-                        if not self._draggedObject:
-                            self._draggedObject = cobject
+                        # this means EVERY buttonDown in an object classifies
+                        # as a potential drag.  if the user now drags, we
+                        # have a winner
+                        self._potentiallyDraggedObject = cobject
                             
                     cobject.notifyObservers('buttonDown', event)
 
@@ -120,6 +131,10 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
                 self.notifyObservers('buttonUp', event)
             elif event.ButtonDown():
                 self.notifyObservers('buttonDown', event)
+
+        if event.ButtonUp():
+            # each and every ButtonUp cancels the current potential drag object
+            self._potentiallyDraggedObject = None
                     
 
         # store the previous real coordinates for mouse deltas

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.32 2003/06/09 20:10:37 cpbotha Exp $
+# $Id: graphEditor.py,v 1.33 2003/06/09 21:08:42 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -668,8 +668,10 @@ class graphEditor:
             # or the current selection of glyphs, gets dragged
             if glyph in self._glyphSelection.getSelectedGlyphs():
                 # move the whole selection (MAN THIS IS CLEAN)
-                for glyph in self._glyphSelection.getSelectedGlyphs():
-                    canvas.dragObject(glyph, canvas.getMouseDelta())
+                # err, kick yerself in the nads: you CAN'T use glyph
+                # as iteration variable, it'll overwrite the current glyph
+                for sglyph in self._glyphSelection.getSelectedGlyphs():
+                    canvas.dragObject(sglyph, canvas.getMouseDelta())
             else:
                 # or just the glyph under the mouse
                 # this clause should never happen, as the dragged glyph
@@ -696,13 +698,12 @@ class graphEditor:
                 self._drawPreviewLine(cop,
                                       canvas._previousRealCoords,
                                       (event.realX, event.realY))
-        
+
         if not canvas.getDraggedObject():
             # this means that this drag has JUST been cancelled
             if glyph.draggedPort == (-1, -1):
                 # and we were busy dragging a glyph around, so we probably
                 # want to reroute all lines!
-
 
                 # reroute all lines
                 allLines = self._graphFrame.canvas.getObjectsOfClass(
