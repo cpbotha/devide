@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.36 2003/06/19 16:25:52 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.37 2003/06/20 14:50:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -71,6 +71,8 @@ class sliceDirection:
             mapper.SetInput(stripper.GetOutput())
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
+            actor.GetProperty().SetColor(0.0, 1.0, 0.0)
+            actor.GetProperty().SetInterpolationToFlat()
 
             # add it to the renderer
             self._slice3dViewer._threedRenderer.AddActor(actor)
@@ -86,7 +88,11 @@ class sliceDirection:
             self.syncContourToObject(contourObject)
 
     def removeContourObject(self, contourObject):
-        if self._contourObjectsDict.has_key(contourObject):
+        if contourObject in self._contourObjectsDict:
+            # let's remove it from the renderer
+            actor  = self._contourObjectsDict[contourObject]['tdActor']
+            self._slice3dViewer._threedRenderer.RemoveActor(actor)
+            # and remove it from the dict
             del self._contourObjectsDict[contourObject]
 
     def syncContourToObject(self, contourObject):
@@ -97,15 +103,24 @@ class sliceDirection:
         if contourObject not in self._contourObjectsDict:
             return
 
+        # if there are no ipws, we have no planes!
+        if not self._ipws:
+            return
+
         # get the contourObject metadata
         contourDict = self._contourObjectsDict[contourObject]
-        cutter = contourObject['cutter']
+        cutter = contourDict['cutter']
         plane = cutter.GetCutFunction()
 
-        # FIXME continue here
+        # adjust the implicit plane (if we got this far (i.e.
+        normal = self._ipws[0].GetNormal()
+        origin = self._ipws[0].GetOrigin()
+        plane.SetNormal(normal)
+        plane.SetOrigin(origin)
 
+        # calculate it
+        cutter.Update()
         
-
     def addData(self, inputData):
         """Add inputData as a new layer.
         """
@@ -180,8 +195,18 @@ class sliceDirection:
                     self._resetOrthoView()
                     self._orthoViewFrame.Render()
 
+                # also check for contourObjects
+                cos = self._slice3dViewer._tdObjects.getContourObjects()
+                for co in cos:
+                    self.addContourObject(co)
+
     def close(self):
         """Shut down everything."""
+
+        # take out all the contours
+        contourObjects = self._contourObjectsDict.keys()
+        for co in contourObjects:
+            self.removeContourObject(co)
 
         # take out the orthoView
         self.destroyOrthoView()
@@ -482,6 +507,12 @@ class sliceDirection:
             ipw.SetLookupTable(lut)
             ipw.On()
 
+    def _syncContours(self):
+        """Synchronise all contours to current primary plane.
+        """
+        for contourObject in self._contourObjectsDict.keys():
+            self.syncContourToObject(contourObject)
+
     def _syncOverlays(self):
         """Synchronise overlays to current main IPW.
         """
@@ -547,6 +578,7 @@ class sliceDirection:
     def _ipwEndInteractionCallback(self):
         self._syncOverlays()
         self._syncOrthoView()
+        self._syncContours()
         if self._orthoViewFrame:
             self._orthoViewFrame.RWI.Render()
                 
@@ -618,6 +650,10 @@ class tdObjects:
 
         objs = self.findObjectsByNames(objectNames)
         return objs
+
+    def getContourObjects(self):
+        return [o['tdObject'] for o in self._tdObjectsDict.values()
+                if o['contour']]
 
     def _handlerObjectContour(self, event):
         objs = self._getSelectedObjects()
@@ -698,8 +734,11 @@ class tdObjects:
                                                      'observerId' : None}
 
                 elif tdObject.GetClassName() == 'vtkPolyData':
+                    # this is by definition for display, so let's strip it
+                    stripper = vtk.vtkStripper()
+                    stripper.SetInput(tdObject)
                     mapper = vtk.vtkPolyDataMapper()
-                    mapper.SetInput(tdObject)
+                    mapper.SetInput(stripper.GetOutput())
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
                     self._slice3dVWR._threedRenderer.AddActor(actor)
@@ -926,6 +965,13 @@ class tdObjects:
 
             # in our own dict
             objectDict['contour'] = bool(contour)
+
+            # in the scene
+            for sd in self._slice3dVWR._sliceDirections:
+                if contour:
+                    sd.addContourObject(tdObject)
+                else:
+                    sd.removeContourObject(tdObject)
 
             # in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
