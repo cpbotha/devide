@@ -1,4 +1,6 @@
-# $Id: ifdocRDR.py,v 1.8 2003/09/06 18:47:53 cpbotha Exp $
+# ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
+# $Id: ifdocRDR.py,v 1.9 2003/09/07 14:38:36 cpbotha Exp $
+# module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import md5
@@ -289,7 +291,8 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
             # this exception will trigger the handler in moduleManager
             mDict = self.parseMFile(mBuffer, ['ppos'])
 
-            # this will clear necessary structures as well
+            # this will clear necessary structures in self._mData and
+            # re-init them with new data
             self.parseMDict(mDict, self._mData)
 
             # now indicate that we've changed stuff

@@ -1,16 +1,34 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.6 2003/09/06 18:47:53 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.7 2003/09/07 14:38:36 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
 # * connect observer to self._mData, update INTERNAL matrix forms
 #   when it notifies... that way, doTimeStep doesn't have to parse the whole
 #   frikking matrix everytime.
+
+from genMixins import subjectMixin
 from moduleBase import moduleBase
 import moduleUtils
 import time
 import vtk
 from wxPython.wx import *
+
+# named World points TEMPORARY
+class outputPoints(dict, subjectMixin):
+    """Class that we can use (temporarily) to let the sliceViewer visualise
+    some of our points.
+    """
+
+    def __init__(self, *argv):
+        dict.__init__(self, *argv)
+        subjectMixin.__init__(self)
+        # so the sliceVWR will know what to do with us (I hope)
+        self.d3type = 'namedWorldPoints'
+
+    def close(self):
+        subjectMixin.close(self)
+    
 
 class ifdocVWR(moduleBase):
 
@@ -20,7 +38,11 @@ class ifdocVWR(moduleBase):
         # base constructor
         moduleBase.__init__(self, moduleManager)
 
+        # one of our input datas
         self._mData = None
+
+        # temporary output
+        self._outputPoints = outputPoints()
 
         self._createViewFrames()
         self._bindEvents()
@@ -73,11 +95,18 @@ class ifdocVWR(moduleBase):
             self.controlFrame.timeStepSpinCtrl.SetRange(0, timeSteps - 1)
             self.controlFrame.timeStepSpinCtrl.SetValue(0)
 
+            # and setup our outputpoints (just the first timestep; temp)
+            self._outputPoints.clear()
+            timeStep = self._mData.ppos[0]
+            for key in timeStep:
+                self._outputPoints[key] = timeStep[key]
+
     def getOutputDescriptions(self):
-        return ()
+        return ('namedWorldPoints',)
 
     def getOutput(self, idx):
-        raise Exception
+        #raise Exception
+        return self._outputPoints
 
     def logicToConfig(self):
         """Synchronise internal configuration information (usually

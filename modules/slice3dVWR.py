@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.70 2003/09/02 15:37:01 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.71 2003/09/07 14:38:36 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -644,8 +644,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         return self._numDataInputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
-    def setInput(self, idx, input_stream):
-        if input_stream == None:
+    def setInput(self, idx, inputStream):
+        if inputStream == None:
             if self._inputs[idx]['Connected'] == 'tdObject':
                 self._tdObjects.removeObject(self._inputs[idx]['tdObject'])
                 self._inputs[idx]['Connected'] = None
@@ -683,23 +683,27 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 self._inputs[idx]['Connected'] = None
                 self._inputs[idx]['inputData'] = None
 
-        # END of if input_stream is None clause -----------------------------
+            elif self._inputs[idx]['Connected'] == 'namedWorldPoints':
+                pass
 
-        elif hasattr(input_stream, 'GetClassName') and \
-             callable(input_stream.GetClassName):
+        # END of if inputStream is None clause -----------------------------
 
-            if input_stream.GetClassName() == 'vtkVolume' or \
-               input_stream.GetClassName() == 'vtkPolyData':
+        # check for VTK types
+        elif hasattr(inputStream, 'GetClassName') and \
+             callable(inputStream.GetClassName):
+
+            if inputStream.GetClassName() == 'vtkVolume' or \
+               inputStream.GetClassName() == 'vtkPolyData':
                 # our _tdObjects instance likes to do this
-                self._tdObjects.addObject(input_stream)
+                self._tdObjects.addObject(inputStream)
                 # if this worked, we have to make a note that it was
                 # connected as such
                 self._inputs[idx]['Connected'] = 'tdObject'
-                self._inputs[idx]['tdObject'] = input_stream
+                self._inputs[idx]['tdObject'] = inputStream
                 
-            elif input_stream.IsA('vtkImageData'):
+            elif inputStream.IsA('vtkImageData'):
                 # tell all our sliceDirections about the new data
-                self.sliceDirections.addData(input_stream)
+                self.sliceDirections.addData(inputStream)
                 
                 # find out whether this is  primary or an overlay, record it
                 connecteds = [i['Connected'] for i in self._inputs]
@@ -713,10 +717,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                     self._inputs[idx]['Connected'] = 'vtkImageDataPrimary'
 
                 # also store binding to the data itself
-                self._inputs[idx]['inputData'] = input_stream
+                self._inputs[idx]['inputData'] = inputStream
 
                 # add an observer to this data and store the id
-                source = input_stream.GetSource()
+                source = inputStream.GetSource()
                 if source:
                     oid = source.AddObserver(
                         'EndEvent',
@@ -725,7 +729,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     # things to setup when primary data is added
-                    self._extractVOI.SetInput(input_stream)
+                    self._extractVOI.SetInput(inputStream)
 
                     # add outline actor and cube axes actor to renderer
                     self._threedRenderer.AddActor(self._outline_actor)
@@ -744,6 +748,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             else:
                 raise TypeError, "Wrong input type!"
 
+        # ends: elif hasattr GetClassName
+        elif hasattr(inputStream, 'd3type'):
+            if inputStream.d3type == 'namedWorldPoints':
+                # add these to our selected points!
+                self._inputs[idx]['Connected'] = 'namedWorldPoints'
+                for pointName in inputStream:
+                    self.selectedPoints._storePoint(
+                        (0,0,0), inputStream[pointName], 0.0, pointName)
         
         # make sure we catch any errors!
         self._moduleManager.vtk_poll_error()

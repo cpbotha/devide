@@ -1,10 +1,15 @@
-$Id: moduleWritingGuide.txt,v 1.7 2003/09/01 20:50:18 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.8 2003/09/07 14:38:36 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
 
 1. Yes, a badly-written module can VERY easily crash the whole DSCAS3.
    Be careful, Austin.
+
+2. You module will get its chance to do its thing via your executeModule()
+   method (in some exceptional cases view()).  If anything goes wrong,
+   indicate this by simply raising an exception.  The moduleManager will
+   trap this and communicate it to the user.
 
 LAYOUT OF DIALOGUES
 -------------------
