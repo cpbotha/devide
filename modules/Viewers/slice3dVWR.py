@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.31 2004/11/22 18:16:58 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.32 2004/11/25 13:59:04 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.31 $
+    $Revision: 1.32 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -68,7 +68,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self._threedRenderer = None
         self._dummyRenderer = None
         self._executionEnabled = True
-        self._cachedInputs = [None] * len(self._inputs)
+        self._cachedInputs = [-1] * len(self._inputs)
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -151,9 +151,9 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         for idx in range(self._numDataInputs):
             self.setInput(idx, None)
 
-        # also make sure the cached inputs are zeroed
+        # also make sure the cached inputs are not bound
         for idx in range(len(self._cachedInputs)):
-            self._cachedInputs[idx] = None
+            self._cachedInputs[idx] = -1
 
         # take care of the sliceDirections
         self.sliceDirections.close()
@@ -253,6 +253,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         ta.SetPosition(10, y / 2 )
         self._dummyRenderer.AddActor(ta)
 
+        # set cachedInputs to -1, indicating that they have not been touched
+        for idx in range(len(self._cachedInputs)):
+            self._cachedInputs[idx] = -1
+
         #
         self.render3D()
 
@@ -278,17 +282,39 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
             # now do all the cached inputs, checking for exceptions!
             for idx in range(len(self._cachedInputs)):
-                try:
-                    # first disconnect (if the cached input is None,
-                    # this is all that's needed)
-                    self.setInput(idx, None)
 
-                    if self.setInput(idx, self._cachedInputs[idx]):
-                        # then connect the cached input
+                # we only have to something if an input is != -1
+
+                if self._cachedInputs[idx] == None:
+                    # we're going to try to disconnect
+                    try:
+                        self.setInput(idx, None)
+                        
+                    except Exception, e:
+                        genUtils.logError(
+                            'Error disconnecting input %d of slice3dVWR ' \
+                            '%s:%s. ' % \
+                            (idx, self._moduleManager.getInstanceName(self),
+                             str(e)))
+
+                elif self._cachedInputs[idx] != -1:
+                    # this means it's NOT None and NOT -1
+                    # so first disconnect
+                    try:
+                        self.setInput(idx, None)
+
+                    except Exception, e:
+                        genUtils.logError(
+                            'Error disconnecting input %d of slice3dVWR ' \
+                            '%s before reconnect:%s. Going to attempt ' \
+                            'reconnection anyway.' % \
+                            (idx, self._moduleManager.getInstanceName(self),
+                             str(e)))
+
+                    try:
                         self.setInput(idx, self._cachedInputs[idx])
                         
-                except Exception, e:
-                    if self.setInput(idx, self._cachedInputs[idx]):
+                    except Exception, e:
                         # when this happens, the moduleManager (and
                         # graphEditor) still think this input port is
                         # connected, but this module obviously doesn't
@@ -297,16 +323,9 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                             'Consider disconnecting it.' % \
                             (idx, self._moduleManager.getInstanceName(self),
                              str(e)))
-
-                    else:
-                        genUtils.logError(
-                            'Error disconnecting input %d of slice3dVWR ' \
-                            '%s:%s. ' % \
-                            (idx, self._moduleManager.getInstanceName(self),
-                             str(e)))
                         
                 # clear the cached input
-                self._cachedInputs[idx] = None
+                self._cachedInputs[idx] = -1
             
     def getConfig(self):
         # implant some stuff into the _config object and return it
