@@ -87,7 +87,7 @@ class controlFrame(wxFrame):
         self.sliceLockToPointsButtonId  =  wxNewId()
         self.button_12 = wxButton(self.panel_3, self.sliceLockToPointsButtonId , "Lock to Pts")
         self.acsChoiceId  =  wxNewId()
-        self.acsChoice = wxChoice(self.panel_3, self.acsChoiceId , choices=["Reset to Axial", "Reset to Coronal", "Reset to Sagittal"])
+        self.acsChoice = wxChoice(self.panel_3, self.acsChoiceId , choices=["Hide", "Interaction OFF", "Interaction ON", "Lock to Points", "Reset to Axial", "Reset to Coronal", "Reset to Sagittal", "Show"])
         self.pushSliceSpinCtrlId  =  wxNewId()
         self.pushSliceSpinCtrl = wxSpinCtrl(self.panel_3, self.pushSliceSpinCtrlId , "0", min=-100, max=100, style=wxSP_ARROW_KEYS)
         self.sliceDeleteButtonId  =  wxNewId()
