@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.42 2003/06/27 13:37:07 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.43 2003/06/27 16:31:49 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -645,6 +645,13 @@ class tdObjects:
 
     def _bindEvents(self):
         svViewFrame = self._slice3dVWR.getViewFrame()
+
+        EVT_BUTTON(svViewFrame, svViewFrame.objectSelectAllButtonId,
+                   self._handlerObjectSelectAll)
+
+        EVT_BUTTON(svViewFrame, svViewFrame.objectDeselectAllButtonId,
+                   self._handlerObjectDeselectAll)
+        
         EVT_BUTTON(svViewFrame, svViewFrame.objectSetColourButtonId,
                    self._handlerObjectSetColour)
         
@@ -681,6 +688,13 @@ class tdObjects:
             return self._tdObjectsDict[tdObject]['colour']
         except:
             return (0.0, 1.0, 0.0)
+
+    def _handlerObjectSelectAll(self, event):
+        for row in range(self._grid.GetNumberRows()):
+            self._grid.SelectRow(row, True)
+
+    def _handlerObjectDeselectAll(self, event):
+        self._grid.ClearSelection()
 
     def _handlerObjectContour(self, event):
         objs = self._getSelectedObjects()
@@ -1389,6 +1403,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         # fix for the grid
         self._viewFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        self._viewFrame.spointsGrid.DeleteRows(
+            0, self._viewFrame.spointsGrid.GetNumberRows())
         # fix for the choice *sigh*
         self._viewFrame.sliceNameChoice.Clear()
 
@@ -1421,24 +1437,26 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                    self._viewFrame.mouseMovesChoiceId,
                    self._handlerMouseMovesChoice)
         
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   lambda e, pw=self._viewFrame, s=self,
-                   rw=self._viewFrame.threedRWI.GetRenderWindow():
-                   s.vtkPipelineConfigure(pw, rw))
+#         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+#                    lambda e, pw=self._viewFrame, s=self,
+#                    rw=self._viewFrame.threedRWI.GetRenderWindow():
+#                    s.vtkPipelineConfigure(pw, rw))
 
-        EVT_BUTTON(self._viewFrame, self._viewFrame.resetButtonId,
-                   lambda e, s=self: s._resetAll())
+#         EVT_BUTTON(self._viewFrame, self._viewFrame.resetButtonId,
+#                    lambda e, s=self: s._resetAll())
 
         def pointsSelectAllCallback(event):
-            self._viewFrame.spointsGrid.SelectAll()
+            # calling SelectAll and then GetSelectedRows() returns nothing
+            #self._viewFrame.spointsGrid.SelectAll()
+            # so, we select row by row, and that does seem to work!
+            for row in range(self._viewFrame.spointsGrid.GetNumberRows()):
+                self._viewFrame.spointsGrid.SelectRow(row, True)
 
         def pointsDeselectAllCallback(event):
             self._viewFrame.spointsGrid.ClearSelection()
 
         def pointsRemoveCallback(event):
             selRows = self._viewFrame.spointsGrid.GetSelectedRows()
-            print "SELROWS " + str(selRows)
-            print "This should begin working somewhere after wxPython 2.4.0.1"
             if len(selRows):
                 self._remove_cursors(selRows)
 
