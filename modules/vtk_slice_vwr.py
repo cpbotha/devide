@@ -1,10 +1,54 @@
-# $Id: vtk_slice_vwr.py,v 1.20 2002/05/12 17:19:04 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.21 2002/05/12 22:01:33 cpbotha Exp $
 
 from module_base import module_base
 import vtk
 from wxPython.wx import *
 from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+
+# ---------------------------------------------------------------------------
+class wxVTKRenderWindowSlice(wxVTKRenderWindow):
+    def Rotate(self, event):
+        pass
+
+    def Pan(self, event):
+        # most of this code comes from wxVTKRenderWindow
+        if self._CurrentRenderer:
+            x = event.GetX()
+            y = event.GetY()
+
+            # get current renderer, camera, campos and camfocalpoint
+            renderer = self._CurrentRenderer
+            camera = self._CurrentCamera
+            (pPoint0,pPoint1,pPoint2) = camera.GetPosition()
+            (fPoint0,fPoint1,fPoint2) = camera.GetFocalPoint()
+
+            # we assume parallel projection
+            # calculate how much the user has "panned" the camera
+            renderer.SetWorldPoint(pPoint0,pPoint1,pPoint2,1.0)
+            renderer.WorldToDisplay()
+            fx,fy,fz = renderer.GetDisplayPoint()
+            renderer.SetDisplayPoint(fx-x+self._LastX,
+                                     fy+y-self._LastY,
+                                     fz)
+            renderer.DisplayToWorld()
+            fx,fy,fz,fw = renderer.GetWorldPoint()
+            camera.SetPosition(fx,fy,fz)
+
+            # now we KNOW that the camera has to be pointing orthogonally
+            # to the xy-plane (that's how we set it up) so we just take the
+            # (x,y) coordinates of the new camera position and use the previous
+            # z coordinate of the focal point
+            camera.SetFocalPoint(fx, fy, fPoint2)
+            
+            # record the interaction position
+            self._LastX = x
+            self._LastY = y
+
+            # render it!
+            self.Render()
+
+# ---------------------------------------------------------------------------
 
 class vtk_slice_vwr(module_base):
     def __init__(self, module_manager):
@@ -83,7 +127,7 @@ class vtk_slice_vwr(module_base):
         td_panel.SetSizer(td_panel_sizer)
         # ortho view
         o0_panel = wxPanel(top_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindow(o0_panel, -1))
+        self._rws.append(wxVTKRenderWindowSlice(o0_panel, -1))
         self._renderers.append(vtk.vtkRenderer())
         self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         o0_panel_sizer = wxBoxSizer(wxVERTICAL)
@@ -98,7 +142,7 @@ class vtk_slice_vwr(module_base):
         bottom_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
         # first ortho
         o1_panel = wxPanel(bottom_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindow(o1_panel, -1))
+        self._rws.append(wxVTKRenderWindowSlice(o1_panel, -1))
         self._renderers.append(vtk.vtkRenderer())
         self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         o1_panel_sizer = wxBoxSizer(wxVERTICAL)
@@ -107,7 +151,7 @@ class vtk_slice_vwr(module_base):
         o1_panel.SetSizer(o1_panel_sizer)
         # second ortho
         o2_panel = wxPanel(bottom_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindow(o2_panel, -1))
+        self._rws.append(wxVTKRenderWindowSlice(o2_panel, -1))
         self._renderers.append(vtk.vtkRenderer())
         self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         o2_panel_sizer = wxBoxSizer(wxVERTICAL)
@@ -133,41 +177,6 @@ class vtk_slice_vwr(module_base):
         tl_sizer.Fit(self._view_frame)
         tl_sizer.SetSizeHints(self._view_frame)
         
-
-        
-# 	# the 3d window
-# 	self.rws.append(vtkTkRenderWidget(rws_pane.pane('top3d'),
-#                                           width=600, height=200))
-# 	self.rw_lastxys.append({'x' : 0, 'y' : 0})
-# 	self._renderers.append(vtkRenderer())
-        
-# 	# add last appended renderer to last appended vtkTkRenderWidget
-# 	self.rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-# 	self.rws[-1].pack(side=TOP, fill=BOTH, expand=1) # 3d window
-	
-# 	# pane containing three ortho views
-# 	ortho_pane = Pmw.PanedWidget(rws_pane.pane('orthos'),
-#                                      orient='horizontal',
-#                                      hull_width=600, hull_height=150)
-# 	ortho_pane.pack(side=TOP, fill=BOTH, expand=1)
-	
-# 	ortho_pane.add('ortho0', size=200)
-# 	ortho_pane.add('ortho1', size=200)
-# 	ortho_pane.add('ortho2', size=200)	
-# 	for i in range(self._num_orthos):
-# 	    self.rws.append(vtkTkRenderWidget(ortho_pane.pane('ortho%d' % (i)),
-#                                               width=200, height=150))
-# 	    self.rw_lastxys.append({'x' : 0, 'y' : 0})	    
-# 	    self._renderers.append(vtkRenderer())
-# 	    # add last appended renderer to last appended vtkTkRenderWidget
-# 	    self.rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-
-# 	    self.rws[-1].pack(side=TOP, fill=BOTH, expand=1)
-# 	    Tkinter.Button(ortho_pane.pane('ortho%d' % (i)), text='blah').\
-#                                                      pack(side=TOP)
-	    
-# 	rws_pane.pack(side=TOP, fill=BOTH, expand=1)
-
         self._view_frame.Show(true)
 	
 # 	# bind event handlers
@@ -193,11 +202,14 @@ class vtk_slice_vwr(module_base):
 	# make the plane that the texture is mapped on
 	output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
 	cur_pipe['vtkPlaneSourceO'].SetOrigin(output_bounds[0],
-                                              output_bounds[2], 0)
+                                              output_bounds[2],
+                                              0)
 	cur_pipe['vtkPlaneSourceO'].SetPoint1(output_bounds[1],
-                                              output_bounds[2], 0)
+                                              output_bounds[2],
+                                              0)
 	cur_pipe['vtkPlaneSourceO'].SetPoint2(output_bounds[0],
-                                              output_bounds[3], 0)
+                                              output_bounds[3],
+                                              0)
 
     def update_3d_plane(self, cur_pipe, output_z=0):
         """Move texture-mapper 3d plane source so that it corresponds to the 
@@ -233,19 +245,19 @@ class vtk_slice_vwr(module_base):
 	# set to orthographic projection
 	#icam.SetParallelProjection(1);
 	# set camera 10 units away, right in the centre
-	#icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0],
-        #                 cur_pipe['vtkPlaneSourceO'].GetCenter()[1], 10);
-	#icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
+	icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0],
+                         cur_pipe['vtkPlaneSourceO'].GetCenter()[1], 10);
+	icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
+        #icam.OrthogonalizeViewUp()
 	# make sure it's the right way up
-	#icam.SetViewUp(0,1,0);
+	icam.SetViewUp(0,1,0);
 	#icam.SetClippingRange(1, 11);
 	# we're assuming icam->WindowCenter is (0,0), then  we're effectively
         # doing this:
 	# glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
 	#output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
-
-        rsz = renderer.GetRenderWindow().GetSize()
-        icam.SetParallelScale(rsz[0] / 2.0)
+        we = cur_pipe['vtkImageReslice'].GetOutput().GetWholeExtent()
+        icam.SetParallelScale((we[1] - we[0]) / 2.0)
         icam.ParallelProjectionOn()
 
 	#icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
@@ -361,9 +373,6 @@ class vtk_slice_vwr(module_base):
                     self.update_3d_plane(cur_pipe, 0)
 		    if len(self._ortho_pipes[i]) == 1:
 			self.setup_camera(cur_pipe, self._renderers[i+1])
-                        isi = vtk.vtkInteractorStyleImage()
-                        rwi = self._renderers[i+1].GetRenderWindowInteractor()
-                        rwi.SetInteractorStyle(isi)
                         
                     self._renderers[0].ResetCamera()
                 self._inputs[idx]['Connected'] = 'vtkStructuredPoints'
