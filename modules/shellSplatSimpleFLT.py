@@ -1,4 +1,5 @@
 from external.SwitchColourDialog import ColourDialog
+import operator
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
@@ -23,8 +24,8 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
                             'volumeProp' : self._volumeProperty,
                             'volume' : self._volume}
 
+
         # setup some config defaults
-        
         # for segmetented data
         self._config.threshold = 1.0
         # bony kind of colour
@@ -36,11 +37,6 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._viewFrame = None
         self._createViewFrame()
 
-        # pass the data down to the underlying logic
-        self.configToLogic()
-        # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
-
         # some more UI elements that we'll need
         ccd = wxColourData()
         ccd.SetCustomColour(0,wxColour(255, 239, 219))
@@ -49,6 +45,13 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # and create the bugger
         self._colourDialog = ColourDialog(self._viewFrame, ccd)
 
+        # pass the data down to the underlying logic
+        self.configToLogic()
+        # and all the way up from logic -> config -> view to make sure
+        self.syncViewWithLogic()
+
+        # display the module view
+        self.view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -105,16 +108,33 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
     def configToLogic(self):
 
-        # make a step in the opacity transfer function
-        self._otf.RemoveAllPoints()
-        self._otf.AddPoint(self._config.threshold - 0.1, 0.0)
-        self._otf.AddPoint(self._config.threshold, 1.0)
+        # only modify the transfer functions if they've actually changed
+        if self._otf.GetSize() != 2 or \
+           self._otf.GetValue(self._config.threshold - 0.1) != 0.0 or \
+           self._otf.GetValue(self._config.threshold) != 1.0:
+            # make a step in the opacity transfer function
+            self._otf.RemoveAllPoints()
+            self._otf.AddPoint(self._config.threshold - 0.1, 0.0)
+            self._otf.AddPoint(self._config.threshold, 1.0)
 
-        # make a step in the colour transfer function
-        self._ctf.RemoveAllPoints()
-        r,g,b = self._config.colour
-        self._ctf.AddRGBPoint(self._config.threshold - 0.1, r, g, b)
-        self._ctf.AddRGBPoint(self._config.threshold, r, g, b)
+        # sample the two points and check that they haven't changed too much
+        tfCol1 = self._ctf.GetColor(self._config.threshold)
+        colDif1 = [i for i in
+                  map(abs, map(operator.sub, self._config.colour, tfCol1))
+                  if i > 0.001]
+
+        tfCol2 = self._ctf.GetColor(self._config.threshold - 0.1)
+        colDif2 = [i for i in
+                  map(abs, map(operator.sub, (0,0,0), tfCol2))
+                  if i > 0.001]
+        
+        if self._ctf.GetSize() != 2 or colDif1 or colDif2:
+            # make a step in the colour transfer
+            self._ctf.RemoveAllPoints()
+            r,g,b = self._config.colour
+            # setting two points is not necessary, but we play it safe
+            self._ctf.AddRGBPoint(self._config.threshold - 0.1, 0, 0, 0)
+            self._ctf.AddRGBPoint(self._config.threshold, r, g, b)
 
         # set the rendering mode
         self._splatMapper.SetRenderMode(self._config.renderMode)
