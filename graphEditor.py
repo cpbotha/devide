@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.57 2004/02/20 14:09:26 cpbotha Exp $
+# $Id: graphEditor.py,v 1.58 2004/02/20 16:12:20 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -100,12 +100,7 @@ class graphEditor:
         EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)
 
 
-        def gfKeyDown(event):
-            print "blaat"
-            print event.GetKeyCode()
-            
-        EVT_KEY_DOWN(self._graphFrame.mainPanel, gfKeyDown)
-        
+
 
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
                    lambda e, s=self: s.fillModuleLists())
@@ -156,6 +151,11 @@ class graphEditor:
         EVT_LIST_BEGIN_DRAG(self._graphFrame,
                             self._graphFrame.modulesListCtrlId,
                             self.modulesListCtrlBeginDragHandler)
+
+        # and also setup the module quick search
+        self._quickSearchString = ''
+        self._currentModuleListShort = []        
+        EVT_CHAR(self._graphFrame.canvas, self._handlerCanvasChar)
 
         # setup the canvas...
         self._graphFrame.canvas.SetVirtualSize((2048, 2048))
@@ -492,6 +492,11 @@ class graphEditor:
 
         # now populate the module list
         self._currentModuleList = []
+
+        # the currentModuleListShort is a list of the names as they are
+        # displayed!  the order should be exactly the same as the list
+        # that is currently being displayed
+        self._currentModuleListShort = []
         idx = 0
         mlc = self._graphFrame.modulesListCtrl
 
@@ -502,12 +507,15 @@ class graphEditor:
             if cat == 'Segments':
                 basename = os.path.splitext(os.path.basename(mn))[0]
                 mlc.InsertStringItem(idx, basename)
+                self._currentModuleListShort.append(basename)
                 self._currentModuleList.append('segment:%s' % (mn,))
+                # we store this just in case (but it's the same as idx!)
                 mlc.SetItemData(idx, len(self._currentModuleList) - 1)
                 
             else:
                 mParts = mn.split('.')
                 mlc.InsertStringItem(idx, mParts[-1])
+                self._currentModuleListShort.append(mParts[-1])
                 self._currentModuleList.append('module:%s' % (mn,))
                 mlc.SetItemData(idx, len(self._currentModuleList) - 1)
 
@@ -529,6 +537,88 @@ class graphEditor:
                 self._copyBuffer[0], self._copyBuffer[1], self._copyBuffer[2],
                 position, True)
 
+    def _handlerCanvasChar(self, event):
+
+        def prefixSearch(prefix):
+            # let's search for a module in the module list with this prefix
+            mFound = False
+            idx = 0
+            for m in self._currentModuleListShort:
+                if m.lower().startswith(prefix.lower()):
+                    mFound = True
+                    break
+                
+                idx += 1
+
+            if mFound:
+                return idx
+            else:
+                return -1
+            
+        key = event.GetKeyCode()
+        qss = self._quickSearchString
+        idx = -1
+        
+        updateSelectionAndStatusBar = False
+
+        # 'A' - 'z'
+        if key >= 65 and key <= 122:
+            qss = qss + chr(key)
+
+            idx = prefixSearch(qss)
+            updateSelectionAndStatusBar = True
+            
+
+        elif key == WXK_BACK:   # backspace removes one character and backs up
+            if len(qss) > 0:
+                qss = qss[:-1]
+
+            idx = prefixSearch(qss)
+            updateSelectionAndStatusBar = True
+
+        elif key == WXK_RETURN:
+            # place currently selected module at current mouse pos
+            # and zero current qss
+
+            mlc = self._graphFrame.modulesListCtrl
+            if mlc.GetSelectedItemCount():
+                for idx in range(mlc.GetItemCount()):
+                    if mlc.GetItemState(idx, wxLIST_STATE_SELECTED):
+                        # place just this one
+                        self.canvasDropText(event.GetX(), event.GetY(),
+                                            self._currentModuleList[idx])
+                        # break out of the for loop
+                        break
+
+        elif key == WXK_ESCAPE:
+            idx = -1
+            qss = ''
+            updateSelectionAndStatusBar = True
+
+        else:
+            event.Skip()
+
+
+        if updateSelectionAndStatusBar:
+            if idx >= 0:
+                # use idx to select that thing
+                self._graphFrame.modulesListCtrl.SetItemState(
+                    idx, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
+                self._graphFrame.modulesListCtrl.EnsureVisible(idx)
+
+            else:
+                # deselect everything
+                for idx in range(
+                    self._graphFrame.modulesListCtrl.GetItemCount()):
+                    self._graphFrame.modulesListCtrl.SetItemState(
+                        idx, 0, wxLIST_STATE_SELECTED)
+                    
+
+            self._quickSearchString = qss
+            self._graphFrame.GetStatusBar().SetStatusText(
+                self._quickSearchString)
+
+            
     def _handlerHelpContextHelp(self, event):
         owm = self._graphFrame.canvas.getObjectWithMouse()
         if owm and hasattr(owm, 'moduleInstance'):
