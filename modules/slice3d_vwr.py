@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.5 2003/01/19 23:13:37 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.6 2003/01/20 11:05:22 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -73,6 +73,8 @@ class slice3d_vwr(module_base,
         self._voi_widget = vtk.vtkBoxWidget()
         # we want to keep it aligned with the cubic volume, thanks
         self._voi_widget.SetRotationEnabled(0)
+        self._voi_widget.AddObserver('InteractionEvent',
+                                     self.voiWidgetInteractionCallback)
 
         self._left_mouse_button = 0
 
@@ -93,20 +95,23 @@ class slice3d_vwr(module_base,
 #################################################################
         
     def close(self):
-
-        self._view_frame.threedRWI.GetRenderWindow().DebugOn()
-        
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
         for idx in range(self._num_inputs):
             self.set_input(idx, None)
         
+        # unbind everything that we bound in our __init__
         del self._outline_source
         del self._outline_actor
         del self._cube_axes_actor2d
         del self._voi_widget
         
 	del self._ipws
+
+        # take care of all our bindings to renderers
+        del self._threedRenderer
+        del self._ortho1Renderer
+        del self._ortho2Renderer
 
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
@@ -115,50 +120,28 @@ class slice3d_vwr(module_base,
         # frame before the RW destructs, it will cause the application to
         # crash because the RW assumes a valid WindowId in its dtor
         #
-        # So, what we do is to add an event handler to the RenderWindow that
-        # gets triggered when the RW finally dies. This event handler will then
-        # Destroy() the frame.  We must just make sure to del all our bindings
-        # to the frame and the everything else that might be connected.
+        # we have two solutions:
+        # 1. call a WindowRemap on the RenderWindows so that they reparent
+        #    themselves to newly created windowids
+        # 2. attach event handlers to the RenderWindow DeleteEvent and
+        #    destroy the containing frame from there
+        #
+        # method 2 doesn't alway work, so we use WindowRemap
 
-        vf = self._view_frame
 	# hide it so long
-	vf.Show(0)
+	#self._view_frame.Show(0)
 
-	# this event handler will finally Destroy the containing frame
-        vfDestroy = self._view_frame.Destroy
-	def rwDestroyEventHandler(o, e):
-            self.deathCounter = self.deathCounter - 1
-            print "VF DESTROY %d" % (self.deathCounter)
-            if self.deathCounter == 0:
-                vfDestroy()
-                del vf
-
-	# set it to be called on destruction
-	vf.threedRWI.GetRenderWindow().AddObserver('DeleteEvent', 
-                                                   rwDestroyEventHandler)
-	vf.ortho1RWI.GetRenderWindow().AddObserver('DeleteEvent', 
-                                                   rwDestroyEventHandler)
-	vf.ortho2RWI.GetRenderWindow().AddObserver('DeleteEvent', 
-                                                   rwDestroyEventHandler)
-
-        # now we have to disentangle all references
-        vf.threedRWI.GetRenderWindow().RemoveRenderer(self._threedRenderer)
-        vf.threedRWI.SetRenderWindow(None)
-        vf.ortho1RWI.GetRenderWindow().RemoveRenderer(self._ortho1Renderer)
-        vf.ortho1RWI.SetRenderWindow(None)
-        vf.ortho2RWI.GetRenderWindow().RemoveRenderer(self._ortho2Renderer)
-        vf.ortho2RWI.SetRenderWindow(None)
-
-        # take care of all our bindings to renderers
-        #del self._threedRenderer
-        #del self._ortho1Renderer
-        #del self._ortho2Renderer
-
-	# now destroy all the containing frame's children
-	vf.DestroyChildren()
-
+        self._view_frame.threedRWI.GetRenderWindow().SetSize(10,10)
+        self._view_frame.threedRWI.GetRenderWindow().WindowRemap()        
+        self._view_frame.ortho1RWI.GetRenderWindow().SetSize(10,10)
+        self._view_frame.ortho1RWI.GetRenderWindow().WindowRemap()        
+        self._view_frame.ortho2RWI.GetRenderWindow().SetSize(10,10)
+        self._view_frame.ortho2RWI.GetRenderWindow().WindowRemap()        
+        
+        # all the RenderWindow()s are now reparented, so we can destroy
+        # the containing frame
+        self._view_frame.Destroy()
 	# unbind the _view_frame binding
-        del vf
 	del self._view_frame
 	
     def get_input_descriptions(self):
@@ -298,7 +281,7 @@ class slice3d_vwr(module_base,
                                              title='dummy')
 
         # fix for the grid
-        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectCells)
 
         # add THREE the renderers
         self._threedRenderer = vtk.vtkRenderer()
@@ -348,6 +331,8 @@ class slice3d_vwr(module_base,
 
         def pointsRemoveCallback(event):
             selRows = self._view_frame.spointsGrid.GetSelectedRows()
+            selCells = self._view_frame.spointsGrid.GetSelectionBlockTopLeft()
+            print "SELROWS " + str(selCells)
             if len(selRows):
                 self._remove_cursors(selRows)
 
@@ -359,6 +344,20 @@ class slice3d_vwr(module_base,
         EVT_BUTTON(self._view_frame,
                    self._view_frame.pointsRemoveButtonId,
                    pointsRemoveCallback)
+
+        # event logic for the voi panel
+        def widgetEnabledCBoxCallback(event):
+            if self._voi_widget.GetInput():
+                if event.Checked():
+                    self._voi_widget.On()
+                    self.voiWidgetInteractionCallback(self._voi_widget, None)
+                else:
+                    self._voi_widget.Off()
+            
+            
+        EVT_CHECKBOX(self._view_frame,
+                     self._view_frame.voiPanel.widgetEnabledCboxId,
+                     widgetEnabledCBoxCallback)
 
         # now the three ortho view pages + all callbacks
         orthoPanels = [self._view_frame.nbAxialPanel,
@@ -516,7 +515,7 @@ class slice3d_vwr(module_base,
         self._voi_widget.SetInput(input_data)
         self._voi_widget.PlaceWidget()
         self._voi_widget.SetPriority(0.6)
-        self._voi_widget.On()
+        #self._voi_widget.On()
 
         self._threedRenderer.ResetCamera()
 
@@ -525,8 +524,6 @@ class slice3d_vwr(module_base,
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
-
-        print "end of reset()"
 
     def _store_cursor(self, cursor):
 
@@ -809,3 +806,12 @@ class slice3d_vwr(module_base,
         """
         self._store_cursor(self._current_cursors[i])
         
+    def voiWidgetInteractionCallback(self, o, e):
+        planes = vtk.vtkPlanes()
+        o.GetPlanes(planes)
+        self._view_frame.voiPanel.voiBoundsText.SetValue(
+            "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
+            planes.GetPoints().GetBounds())
+    
+        
+
