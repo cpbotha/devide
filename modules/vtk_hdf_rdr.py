@@ -1,6 +1,9 @@
-# $Id: vtk_hdf_rdr.py,v 1.12 2002/05/03 10:03:57 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.13 2002/05/03 11:44:50 cpbotha Exp $
 
-from module_base import module_base, module_mixin_vtk_pipeline_config
+from module_base import \
+     module_base, \
+     module_mixin_vtk_pipeline_config, \
+     module_mixin_fo_dialog
 from wxPython.wx import *
 from wxPython.xrc import *
 import os
@@ -8,10 +11,9 @@ import vtkpython
 import vtkcpbothapython
 import module_utils
 
-#from vtkPipeline.ConfigVtkObj import ConfigVtkObj
-#from vtkPipeline.vtkPipeline import vtkPipelineBrowser
-
-class vtk_hdf_rdr(module_base, module_mixin_vtk_pipeline_config):
+class vtk_hdf_rdr(module_base,
+                  module_mixin_vtk_pipeline_config,
+                  module_mixin_fo_dialog):
     """dscas3 module for reading dscas HDF datasets.
 
     The platform makes use of HDF SDS with a custom spacing attribute.
@@ -22,8 +24,6 @@ class vtk_hdf_rdr(module_base, module_mixin_vtk_pipeline_config):
         module_base.__init__(self, module_manager)
 	self._reader = vtkcpbothapython.vtkHDFVolumeReader()
 
-        #
-        self._fo_dlg = None
         # declare this var here out of good habit
         self._view_frame = None
         # go on, create that view window
@@ -32,8 +32,6 @@ class vtk_hdf_rdr(module_base, module_mixin_vtk_pipeline_config):
 	self.sync_config()
     
     def close(self):
-        if self._fo_dlg != None:
-            self._fo_dlg.Destroy()
         self._view_frame.Destroy()
 	if hasattr(self, 'reader'):
 	    del self._reader
@@ -110,17 +108,12 @@ class vtk_hdf_rdr(module_base, module_mixin_vtk_pipeline_config):
         self._view_frame.Show(true)
         
     def fn_browse_cb(self, event):
-        # we keep the dialog hanging around, it makes it easier if the user
-        # is trying out different files in different directories
-        if self._fo_dlg == None:
-            wildcard = "HDF files (*.hdf)|*.hdf|All files (*)|*"
-            self._fo_dlg = wxFileDialog(self._view_frame,
-                                        "Choose an HDF filename", "", "",
-                                        wildcard, wxOPEN)
-        # the dialog will hide itself with either ok or cancel
-        if self._fo_dlg.ShowModal() == wxID_OK:
-                    fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-                    fn_text.SetValue(self._fo_dlg.GetPath())
+        path = self.fn_browse(self._view_frame, "Choose an HDF filename",
+                              "HDF files (*.hdf)|*.hdf|All files (*)|*")
+
+        if path != None:
+            fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
+            fn_text.SetValue(path)
 
     def vtk_object_choice_cb(self, event):
         choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')

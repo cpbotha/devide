@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.6 2002/05/03 10:03:59 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.7 2002/05/03 11:44:52 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -371,8 +371,13 @@ class vtkPipelineBrowser:
     def item_activate_cb(self, tree_event):
         """Callback for activation (double clicking) of tree node.
         
-        parent_window is the window of which the configuration window will
-        be a child.  renwin is the render window that will be updated.
+        A ConfigVtkObj will be created for the pertinent vtk_obj if one
+        hasn't been created already.  In the latter case, the previously
+        created ConfigVtkObj will simply be show()n.
+
+        When the vtkFrame self._frame is destroyed (by calling the close()
+        method of the relevant vtkPipeline instance), all the ConfigVtkObjs
+        will also be destroyed.
         """
         obj = self._tree_ctrl.GetPyData(tree_event.GetItem())
         if hasattr(obj, 'GetClassName'):
