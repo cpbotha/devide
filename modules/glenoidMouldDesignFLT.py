@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.15 2003/03/25 16:11:12 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.16 2003/04/23 16:42:53 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -205,14 +205,14 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                                                tuple(pt0), tuple(n)))
 
                         
-                        if vtk.vtkMath.Dot(giaN, n) > -0.7:
+                        if vtk.vtkMath.Dot(giaN, n) > -0.9:
                             # this means that this point could be falling off
                             # the glenoid, let's make a note of the incident
                             offCount += 1
                             # if the last N points have been "off" the glenoid,
                             # it could mean we've really fallen off!
-                            if offCount >= 20:
-                                del lines[lineIdx][-30:]
+                            if offCount >= 40:
+                                del lines[lineIdx][-40:]
                                 onGlenoid = False
 
                         # get ready for next iteration
