@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.29 2003/03/04 18:00:53 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.30 2003/03/05 00:07:30 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -46,13 +46,14 @@ class slice3d_vwr(moduleBase,
         self._numDataInputs = 5
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'observerID' : -1,
-                         'vtkActor' : None}
+                         'vtkActor' : None, 'ipw' : None}
                        for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
         self._viewFrame = None
-        # the imageplanewidgets
-        self._ipws = []
-        self._overlay_ipws = []
+        # the imageplanewidgets: a 3-element (axial, coronal, sagittal) list
+        # of lists of IPWs (each direction list contains the primary IPW
+        # as well as all overlays)
+        self._ipws = [[] for i in range(3)]
         # list of current cursors, one cursor for each ipw
         self._current_cursors = []
         # the renderers corresponding to the render windows
@@ -86,21 +87,13 @@ class slice3d_vwr(moduleBase,
 
         self._left_mouse_button = 0
 
-        # make the list of imageplanewidgets
-        self._ipws = [vtk.vtkImagePlaneWidget() for i in range(3)]
-        # set the same picker for each vtkIPW
-        picker = vtk.vtkCellPicker()
-        for ipw in self._ipws:
-            ipw.SetPicker(picker)
-
         self._current_cursors = [[0,0,0,0] for i in self._ipws]
 
         # create 2 empty orthoView pipelines
-        self._orthoViews = [{'planeSource' : None,
-                             'planeActor' : None,
-                             'overlayPlaneSources' : [],
-                             'overlayPlaneActors' :[],
-                             'ipwIdx' : -1} for i in range(2)]
+        self._orthoViews = [{'planeSources' : [],
+                             'planeActors' : [],
+                             'textureMapToPlanes' : [],
+                             'direction' : -1} for i in range(2)]
         
         # set the whole UI up!
         self._create_window()
@@ -112,6 +105,7 @@ class slice3d_vwr(moduleBase,
     def close(self):
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
+
         for idx in range(self._numDataInputs):
             self.setInput(idx, None)
 
@@ -185,20 +179,22 @@ class slice3d_vwr(moduleBase,
                     self._inputs[idx]['vtkActor'] = None
 
             elif self._inputs[idx]['Connected'] == 'vtkImageData':
+
                 self._inputs[idx]['Connected'] = None
 
                 # remove our observer
                 if self._inputs[idx]['observerID'] >= 0:
-                    self._ipws[0].GetInput().RemoveObserver(
+                    self._ipws[0][0].GetInput().RemoveObserver(
                         self._inputs[idx]['observerID'])
                     self._inputs[idx]['observerID'] = -1
                 
-                # by definition, we only have one set of vtkImagePlaneWidgets
-                # let's disconnect them
-                for ipw in self._ipws:
-                    ipw.Off()                    
-                    ipw.SetInput(None)
-                    ipw.SetInteractor(None)
+                # by definition, this will be the first and only layer of IPWS
+                for ipwDir in self._ipws:
+                    ipwDir[0].Off()
+                    ipwDir[0].SetInput(None)
+                    ipwDir[0].SetInteractor(None)
+                    # remove the binding! - this doesn't exist anymore
+                    del ipwDir[0]
 
                 self._threedRenderer.RemoveActor(self._outline_actor)
                 self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
@@ -213,23 +209,42 @@ class slice3d_vwr(moduleBase,
                 # live on...
                 self._extractVOI.SetInput(None)
 
+                # we've disconnected a primary, also destroy orthos
+                self._destroyOrthoView(0)
+                self._destroyOrthoView(1)
+
             elif self._inputs[idx]['Connected'] == 'Overlay':
                 self._inputs[idx]['Connected'] = None
 
+                # we keep track of the axial ipw, because the index of the
+                # overlay can change
+                ipw = self._inputs[idx]['ipw']
+                
                 # remove our observer
                 if self._inputs[idx]['observerID'] >= 0:
-                    self._overlay_ipws[0].GetInput().RemoveObserver(
+                    ipw.GetInput().RemoveObserver(
                         self._inputs[idx]['observerID'])
                     self._inputs[idx]['observerID'] = -1
 
-                # disconnect the mothers
-                for overlayIPW in self._overlay_ipws:
-                    overlayIPW.Off()
-                    overlayIPW.SetInput(None)
-                    overlayIPW.SetInteractor(None)
+                # disconnect this overlay
+                # first search for it in the axial direction
+                layerIdx = self._ipws[0].index(ipw)
 
-                # and empty the array
-                del self._overlay_ipws[:]
+                for ipwDir in self._ipws:
+                    ipwDir[layerIdx].Off()
+                    ipwDir[layerIdx].SetInput(None)
+                    ipwDir[layerIdx].SetInteractor(None)
+                    del ipwDir[layerIdx]
+
+                # finally take care of the 'ipw' as well!
+                self._inputs[idx]['ipw'] = None
+
+                # we've removed the overlay, the orthos would like to know
+                # about that
+                self._connectOrthoViewToDirection(0)
+                self._connectOrthoViewToDirection(1)                
+                
+        # END of if input_stream is None clause -----------------------------
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
@@ -256,17 +271,11 @@ class slice3d_vwr(moduleBase,
                 for input in self._inputs:
                     if input['Connected'] == 'vtkImageData':
 
-                        # this means we might be getting on overlay
-                        # first check that we don't already have an overlay
-                        if self._overlay_ipws:
-                            raise TypeError, \
-                                  "This slice viewer already has an overlay. "\
-                                  "You can't add another."
-
                         # check the overlay for size and spacing
                         input_stream.Update()
 
-                        main_input = self._ipws[0].GetInput()
+                        # get primary IPW in axial direction
+                        main_input = self._ipws[0][0].GetInput()
 
                         if input_stream.GetWholeExtent() == \
                                main_input.GetWholeExtent() and \
@@ -275,22 +284,32 @@ class slice3d_vwr(moduleBase,
                             
                             input_stream.Update()
 
-                            # add a set of overlays
-                            self._overlay_ipws = [vtk.vtkImagePlaneWidget()
-                                                  for i in range(3)]
                             
-                            for overlay_ipw in self._overlay_ipws:
-                                overlay_ipw.SetInput(input_stream)
-                                overlay_ipw.UserControlledLookupTableOn()
+                            for direction in range(3):
+                                ipw = vtk.vtkImagePlaneWidget()
+                                self._ipws[direction].append(ipw)
+                                ipw.SetInput(input_stream)
+                                ipw.UserControlledLookupTableOn()
+
+                            # we store the first ipw
+                            self._inputs[idx]['ipw'] = self._ipws[0][-1]
 
                             oid = input_stream.AddObserver(
                                 'ModifiedEvent',
                                 self.inputModifiedCallback)
                             self._inputs[idx]['observerID'] = oid
 
-                            self._reset_overlays()
+                            self._resetOverlays()
 
                             self._viewFrame.threedRWI.Render()
+
+                            # now make sure the orthos are happy (we've
+                            # added an overlay)
+                            self._connectOrthoViewToDirection(0)
+                            self._connectOrthoViewToDirection(1)
+                            self._viewFrame.ortho1RWI.Render()
+                            self._viewFrame.ortho2RWI.Render()
+                            
                             self._inputs[idx]['Connected'] = 'Overlay'
 
                             return
@@ -307,8 +326,31 @@ class slice3d_vwr(moduleBase,
                 # make sure it's current
                 input_stream.Update()
 
-                for ipw in self._ipws:
+                # set the same picker for each vtkIPW
+                picker = vtk.vtkCellPicker()
+
+                # by definition, our self._ipws will be a 3-element list
+                # of empty lists
+                for direction in range(3):
+                    if self._ipws[direction]:
+                        raise Exception, "Yikes, self._ipws has non-0 lists!"
+                    
+                    ipw = vtk.vtkImagePlaneWidget()
+                    self._ipws[direction].append(ipw)
                     ipw.SetInput(input_stream)
+                    ipw.SetPicker(picker)
+
+                    # now make callback for the ipw
+                    ipw.AddObserver('StartInteractionEvent',
+                                    lambda e, o, d=direction:
+                                    self._ipwStartInteractionCallback(d))
+                    ipw.AddObserver('InteractionEvent',
+                                    lambda e, o, d=direction:
+                                    self._ipwInteractionCallback(d))
+                    ipw.AddObserver('EndInteractionEvent',
+                                    lambda e, o, d=direction:
+                                    self._ipwEndInteractionCallback(d))
+                    
 
                 self._extractVOI.SetInput(input_stream)
 
@@ -323,9 +365,12 @@ class slice3d_vwr(moduleBase,
                                                self.inputModifiedCallback)
                 self._inputs[idx]['observerID'] = oid
 
-                # create the applicable orthoViews
-                self._createOrthoViews()
+                # we have a new primary data set, so we can say where the
+                # orthos go
+                self._connectOrthoViewToDirection(0, 0)
+                self._connectOrthoViewToDirection(1, 1)
 
+                # reset everything, including ortho camera
                 self._reset()
 
                 self._viewFrame.threedRWI.Render()
@@ -334,6 +379,7 @@ class slice3d_vwr(moduleBase,
             else:
                 raise TypeError, "Wrong input type!"
 
+        
         # make sure we catch any errors!
         self._moduleManager.vtk_poll_error()
 
@@ -356,42 +402,64 @@ class slice3d_vwr(moduleBase,
 # utility methods
 #################################################################
 
-    def _connectOrthoViewToIPW(self, orthoIdx, ipwIdx):
-        """Connect the orthoIdx'th orthoView to the ipwIdx'th IPW.
+
+
+    def _connectOrthoViewToDirection(self, orthoIdx, direction=-1):
+        """Connect the orthoIdx'th orthoView to direction.
+
+        Because we can't really rely on any state whatsoever, this
+        call first destroys all objects belonging to all ortho layers in
+        this direction and then recreates them.
         """
 
-        if self._ipws[ipwIdx].GetInput():
-            orthoView = self._orthoViews[orthoIdx]
-            orthoView['ipwIdx'] = ipwIdx
-            texture = self._ipws[ipwIdx].GetTexture()
-            orthoView['planeActor'].SetTexture(texture)
-        
-    def _createOrthoViews(self):
-        """Create the orthoIdx'th ortho view pipeline and attach it to
-        the applicable renderer.
+        # if direction is -1, use existing direction metadata
+        # if that is also -1, go to defaults
+        if direction < 0:
+            direction = self._orthoViews[orthoIdx]['direction']
+            if direction < 0:
+                direction = orthoIdx
 
-        This will only do something if there's a corresponding IPW.
-        See also:
-        """
+        # first take care of current pipeline
+        self._destroyOrthoView(orthoIdx)
 
-        if not self._ipws[0].GetInput():
-            return
+        orthoView = self._orthoViews[orthoIdx]
+        # go through each layer in the ipws of this direction, setting up
+        # the little pipeline
+        for layer in range(len(self._ipws[direction])):
+            orthoView['planeSources'].append(vtk.vtkPlaneSource())
+            orthoView['planeActors'].append(vtk.vtkActor())
 
-        for orthoIdx in range(len(self._orthoViews)):
-            orthoView = self._orthoViews[orthoIdx]
-            orthoView['planeSource'] = vtk.vtkPlaneSource()
-            orthoView['planeActor'] = vtk.vtkActor()
+            tm2p = vtk.vtkTextureMapToPlane()
+            orthoView['textureMapToPlanes'].append(tm2p)
+            tm2p.AutomaticPlaneGenerationOff()
+            tm2p.SetInput(orthoView['planeSources'][-1].\
+                          GetOutput())
             mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInput(orthoView['planeSource'].GetOutput())
+            mapper.SetInput(tm2p.GetOutput())
 
-            orthoView['planeActor'].SetMapper(mapper)
+            orthoView['planeActors'][-1].SetMapper(mapper)
+            otherTexture = self._ipws[direction][layer].GetTexture()
 
-            if orthoView['ipwIdx'] == -1:
-                orthoView['ipwIdx'] = orthoIdx
-
-            self._connectOrthoViewToIPW(orthoIdx, orthoView['ipwIdx'])
+            # we don't just use the texture, else VTK goes mad re-uploading
+            # the same texture unnecessarily... let's just make use of the
+            # same input, we get much more effective use of the host->GPU bus
+            texture = vtk.vtkTexture()
+            texture.SetInterpolate(otherTexture.GetInterpolate())
+            texture.SetQuality(otherTexture.GetQuality())
+            texture.MapColorScalarsThroughLookupTableOff()
+            texture.RepeatOff()
+            texture.SetInput(otherTexture.GetInput())
             
-            self._orthoRenderers[orthoIdx].AddActor(orthoView['planeActor'])
+            orthoView['planeActors'][-1].SetTexture(texture)
+
+            self._orthoRenderers[orthoIdx].AddActor(
+                orthoView['planeActors'][-1])
+
+            orthoView['direction'] = direction
+
+            # and of course end with a sync!
+            self._syncOrthoViewWithIPW(orthoIdx)
+
 
     def _create_window(self):
         import modules.resources.python.slice3d_vwr_frame
@@ -419,6 +487,9 @@ class slice3d_vwr(moduleBase,
             self._orthoRenderers[orthoIdx].SetBackground(0.5, 0.5, 0.5)
             rw = orthoRWIs[orthoIdx].GetRenderWindow()
             rw.AddRenderer(self._orthoRenderers[orthoIdx])
+
+            istyle = vtk.vtkInteractorStyleImage()
+            orthoRWIs[orthoIdx].SetInteractorStyle(istyle)
         
         # event handlers for the global control buttons
         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
@@ -491,22 +562,23 @@ class slice3d_vwr(moduleBase,
 
             # first a callback for turning an IPW on or off
             def _eb_cb(i):
-                ipw = self._ipws[i]
+                ipw = self._ipws[i][0]
                 if ipw.GetInput():
                     if orthoPanels[i].enabledCbox.GetValue():
                         ipw.On()
                         # and if there are overlays, switch them back on
-                        if self._overlay_ipws:
-                            self._overlay_ipws[i].On()
+                        for overlay_ipw in self._ipws[i][1:]:
+                            overlay_ipw.On()
                                 
                         orthoPanels[i].interactionCbox.Enable(1)
                         orthoPanels[i].pushSliceLabel.Enable(1)
                         orthoPanels[i].pushSliceSpinCtrl.Enable(1)
+                        
                     else:
                         ipw.Off()
                         # also switch off the overlays...
-                        if self._overlay_ipws:
-                            self._overlay_ipws[i].Off()
+                        for overlay_ipw in self._ipws[i][1:]:
+                            overlay_ipw.Off()
                             
                         orthoPanels[i].interactionCbox.Enable(0)
                         orthoPanels[i].pushSliceLabel.Enable(0)
@@ -517,7 +589,7 @@ class slice3d_vwr(moduleBase,
                          lambda e, i=i:_eb_cb(i))
 
             def _ib_cb(i):
-                ipw = self._ipws[i]
+                ipw = self._ipws[i][0]
                 if ipw.GetInput():
                     if orthoPanels[i].interactionCbox.GetValue():
                         ipw.SetInteraction(1)
@@ -529,15 +601,15 @@ class slice3d_vwr(moduleBase,
                          lambda e, i=i: _ib_cb(i))
 
             def _ps_cb(i):
-                ipw = self._ipws[i]
+                ipw = self._ipws[i][0]
                 if ipw.GetInput():
                     val = orthoPanels[i].pushSliceSpinCtrl.GetValue()
                     if val:
                         ipw.GetPolyDataSource().Push(val)
                         ipw.UpdatePlacement()
                         orthoPanels[i].pushSliceSpinCtrl.SetValue(0)
+                        self._ipwEndInteractionCallback(i)
                         self._viewFrame.threedRWI.Render()
-                
 
             EVT_SPINCTRL(self._viewFrame, orthoPanels[i].pushSliceSpinCtrlId,
                          lambda e, i=i: _ps_cb(i))
@@ -547,16 +619,6 @@ class slice3d_vwr(moduleBase,
                        lambda e, i=i: self._storeCursorCallback(i))
             
             
-            # now make callback for the ipw
-            self._ipws[i].AddObserver('StartInteractionEvent',
-                                      lambda e, o, i=i:
-                                      self._ipw_start_interaction_cb(i))
-            self._ipws[i].AddObserver('InteractionEvent',
-                                      lambda e, o, i=i:
-                                      self._ipw_interaction_cb(i))
-            self._ipws[i].AddObserver('EndInteractionEvent',
-                                      lambda e, o, i=i:
-                                      self._ipwEndInteractionCallback(i))
 
         
         EVT_NOTEBOOK_PAGE_CHANGED(self._viewFrame,
@@ -573,6 +635,28 @@ class slice3d_vwr(moduleBase,
 
         # display the window
         self._viewFrame.Show(true)
+
+    def _destroyOrthoView(self, orthoIdx):
+        """Disconnect all inputs for the orthoIdx'th orthoView and then
+        destroy all objects.
+        """
+
+        orthoView = self._orthoViews[orthoIdx]
+        if orthoView['planeSources']:
+            direction = orthoView['direction']
+            for layer in range(len(orthoView['planeSources'])):
+                             actor = orthoView['planeActors'][layer]
+                             self._orthoRenderers[orthoIdx].RemoveActor(actor)
+                             # this will remove the current texture,
+                             # freeing it for destruction
+                             actor.SetTexture(None)
+
+
+            # now nuke the whole structure
+            self._orthoViews[orthoIdx] = {'planeSources' : [],
+                                          'planeActors' : [],
+                                          'textureMapToPlanes' : [],
+                                          'direction' : -1}
 
     def _remove_cursors(self, idxs):
 
@@ -620,10 +704,10 @@ class slice3d_vwr(moduleBase,
 
         # if we don't have any _ipws, it means we haven't been given data
         # yet, so let's bail
-        if len(self._ipws) <= 0:
+        if len(self._ipws[0]) <= 0:
             return
 
-        input_data = self._ipws[0].GetInput()
+        input_data = self._ipws[0][0].GetInput()
 
         # we might have ipws, but no input_data, in which we can't do anything
         # either, so we bail
@@ -666,8 +750,10 @@ class slice3d_vwr(moduleBase,
         # colours of imageplanes; we will use these as keys
         ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
 
+        # we want to do only the primaries here
         idx = 2
-        for ipw in self._ipws:
+        for directionIdx in range(3):
+            ipw = self._ipws[directionIdx][0]
             ipw.DisplayTextOn()
             ipw.SetInteractor(self._viewFrame.threedRWI)
             ipw.SetPlaneOrientation(idx)
@@ -689,26 +775,29 @@ class slice3d_vwr(moduleBase,
         self._threedRenderer.ResetCamera()
 
         # make sure the overlays follow  suit
-        self._reset_overlays()
-
-        # and the orthos
-        self._resetOrthoView(0)
-        self._resetOrthoView(1)        
+        self._resetOverlays()
 
         # whee, thaaaar she goes.
         self._viewFrame.threedRWI.Render()
 
-        # now also make sure that the notebook with slice config is updated
-        self._acs_nb_page_changed_cb(None)
+        # and the orthos
+        self._setupOrthoViewCamera(0)
+        self._setupOrthoViewCamera(1)        
+        self._viewFrame.ortho1RWI.Render()
+        self._viewFrame.ortho2RWI.Render()
 
-    def _resetOrthoView(self, orthoIdx):
+        # now also make sure that the notebook with slice config is updated
+        #self._acs_nb_page_changed_cb(None)
+
+    def _setupOrthoViewCamera(self, orthoIdx):
         """Once the orthoView has been connected to a particular IPW, this
         method will make sure that the camera points orthogonally at it.
         """
         
         # now we know the plane geometry is synced with the IPW
-        self._syncOrthoViewWithIPWs(orthoIdx)
-        planeSource = self._orthoViews[orthoIdx]['planeSource']
+        self._syncOrthoViewWithIPW(orthoIdx)
+        # just get the first planesource
+        planeSource = self._orthoViews[orthoIdx]['planeSources'][0]
         # let's setup the camera
         icam = self._orthoRenderers[orthoIdx].GetActiveCamera()
         icam.SetPosition(planeSource.GetCenter()[0],
@@ -717,37 +806,41 @@ class slice3d_vwr(moduleBase,
         icam.OrthogonalizeViewUp()
         icam.SetViewUp(0,1,0)
         icam.SetClippingRange(1,11)
-        #icam.SetParallelScale()
+        v2 = map(operator.sub, planeSource.GetPoint2(),
+                 planeSource.GetOrigin())
+        n2 = vtk.vtkMath.Normalize(v2)
+        icam.SetParallelScale(n2 / 2.0)
         icam.ParallelProjectionOn()
         
-    def _reset_overlays(self):
-        if self._overlay_ipws:
-            lut = vtk.vtkLookupTable()            
-            inputStream = self._overlay_ipws[0].GetInput()
-            minv, maxv = inputStream.GetScalarRange()
-            lut.SetTableRange((minv,maxv))
-            lut.SetAlphaRange((0.0, 1.0))
-            lut.SetValueRange((1.0, 1.0))
-            lut.SetSaturationRange((1.0, 1.0))
-            lut.Build()
+    def _resetOverlays(self):
+        # first check if we have overlays
+        if len(self._ipws[0]) > 1:
+            # iterate through overlay layers
+            for layer in range(len(self._ipws[0]))[1:]:
+                lut = vtk.vtkLookupTable()            
+                inputStream = self._ipws[0][layer].GetInput()
+                minv, maxv = inputStream.GetScalarRange()
+                lut.SetTableRange((minv,maxv))
+                lut.SetAlphaRange((0.0, 1.0))
+                lut.SetValueRange((1.0, 1.0))
+                lut.SetSaturationRange((1.0, 1.0))
+                lut.Build()
 
-            idx = 2
-            for ipw in self._overlay_ipws:
-                ipw.SetInteractor(self._viewFrame.threedRWI)
-                ipw.SetPlaneOrientation(idx)
-                idx -= 1
-                ipw.SetSliceIndex(0)
-                #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
-                # this is not working yet, because the IPWs handling of
-                # luts is somewhat broken at the moment
-                ipw.SetLookupTable(lut)
-                ipw.On()
-                ipw.InteractionOff()
+                idx = 2
+                for direction in range(3):
+                    ipw = self._ipws[direction][layer]
+                    
+                    ipw.SetInteractor(self._viewFrame.threedRWI)
+                    ipw.SetPlaneOrientation(idx)
+                    idx -= 1
+                    ipw.SetSliceIndex(0)
+                    #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
+                    
+                    ipw.SetLookupTable(lut)
+                    ipw.On()
+                    ipw.InteractionOff()
 
-            self._syncOverlays()
-
-
-        
+        self._syncOverlays()
         
     def _storeSurfacePoint(self, pointId, actor):
         polyData = actor.GetMapper().GetInput()
@@ -784,7 +877,7 @@ class slice3d_vwr(moduleBase,
         """
         
         # do we have volume data?
-        if self._ipws[0].GetInput() is None:
+        if self._ipws[0][0].GetInput() is None:
             return
 
         # we first have to check that we don't have this pos already
@@ -792,7 +885,7 @@ class slice3d_vwr(moduleBase,
         if tuple(cursor[0:3]) in discretes:
             return
         
-        input_data = self._ipws[0].GetInput()
+        input_data = self._ipws[0][0].GetInput()
         ispacing = input_data.GetSpacing()
         iorigin = input_data.GetOrigin()
         # calculate real coords
@@ -897,28 +990,35 @@ class slice3d_vwr(moduleBase,
 
         self._viewFrame.spointsGrid.SetCellValue(row, 2, str(value))
 
-    def _syncOverlay(self, i):
-        if len(self._overlay_ipws) > i:
+    def _syncOverlay(self, direction):
+
+        # check that we do have overlays for this direction
+        if len(self._ipws[direction]) > 1:
             # we know this is a vtkPlaneSource
-            pds1 = self._ipws[i].GetPolyDataSource()
-            pds2 = self._overlay_ipws[i].GetPolyDataSource()
-            pds2.SetOrigin(pds1.GetOrigin())
-            pds2.SetPoint1(pds1.GetPoint1())
-            pds2.SetPoint2(pds1.GetPoint2())
+            pds1 = self._ipws[direction][0].GetPolyDataSource()
+
+            for ipw in self._ipws[direction][1:]:
+                pds2 = ipw.GetPolyDataSource()
+                pds2.SetOrigin(pds1.GetOrigin())
+                pds2.SetPoint1(pds1.GetPoint1())
+                pds2.SetPoint2(pds1.GetPoint2())
             
-            self._overlay_ipws[i].UpdatePlacement()
+                ipw.UpdatePlacement()
         
     def _syncOverlays(self):
-        for i in range(len(self._overlay_ipws)):
-            self._syncOverlay(i)
+        for direction in range(3):
+            self._syncOverlay(direction)
 
-    def _syncOrthoViewWithIPWs(self, orthoIdx):
+    def _syncOrthoViewWithIPW(self, orthoIdx):
         orthoView = self._orthoViews[orthoIdx]
         
         # find IPW that we're syncing with
-        ipwIdx = orthoView['ipwIdx']
-        ipw = self._ipws[ipwIdx]
+        direction = orthoView['direction']
+        ipwDir = self._ipws[direction]
 
+        # just use the primary IPW for this direction
+        ipw = ipwDir[0]
+        
         # vectorN is pointN - origin
         v1 = [0,0,0]
         ipw.GetVector1(v1)
@@ -926,12 +1026,20 @@ class slice3d_vwr(moduleBase,
         v2 = [0,0,0]
         ipw.GetVector2(v2)
         n2 = vtk.vtkMath.Normalize(v2)
-        
-        # make sure the planeSource is okay
-        planeSource = orthoView['planeSource']
-        planeSource.SetOrigin(0,0,0)
-        planeSource.SetPoint1(n1, 0, 0)
-        planeSource.SetPoint2(0, n2, 0)
+
+        roBounds = ipw.GetResliceOutput().GetBounds()
+
+        for layer in range(len(orthoView['planeSources'])):
+            planeSource = orthoView['planeSources'][layer]
+            planeSource.SetOrigin(0,0,0)
+            planeSource.SetPoint1(n1, 0, 0)
+            planeSource.SetPoint2(0, n2, 0)
+
+            tm2p = orthoView['textureMapToPlanes'][layer]
+            tm2p.SetOrigin(0,0,0)
+            tm2p.SetPoint1(roBounds[1], 0, 0)
+            tm2p.SetPoint2(0, roBounds[3], 0)
+
 
     def _syncOutputSelectedPoints(self):
         """Sync up the output vtkPoints and names to _sel_points.
@@ -957,6 +1065,7 @@ class slice3d_vwr(moduleBase,
 #################################################################
 
     def _acs_nb_page_changed_cb(self, event):
+        return 1
         nb = self._viewFrame.acsNotebook
         cur_panel = nb.GetPage(nb.GetSelection())
         if self._ipws[nb.GetSelection()].GetEnabled():
@@ -964,21 +1073,31 @@ class slice3d_vwr(moduleBase,
         else:
             cur_panel.enabledCbox.SetValue(false)
 
-    def _ipw_start_interaction_cb(self, i):
-        self._viewFrame.acsNotebook.SetSelection(i)
-        self._ipw_interaction_cb(i)
+    def _ipwStartInteractionCallback(self, direction):
+        self._viewFrame.acsNotebook.SetSelection(direction)
+        self._ipwInteractionCallback(direction)
 
-    def _ipw_interaction_cb(self, i):
+    def _ipwInteractionCallback(self, direction):
         cd = 4 * [0.0]
-        if self._ipws[i].GetCursorData(cd):
+        if self._ipws[direction][0].GetCursorData(cd):
             nb = self._viewFrame.acsNotebook
             cur_panel = nb.GetPage(nb.GetSelection())
-            self._current_cursors[i] = cd
+            self._current_cursors[direction] = cd
             cstring = str(cd[0:3]) + " = " + str(cd[3])
             cur_panel.cursorText.SetValue(cstring)
 
-    def _ipwEndInteractionCallback(self, i):
-        self._syncOverlay(i)
+        # find the orthoView (if any) which tracks this IPW
+        directionL = [v['direction'] for v in self._orthoViews
+                      if v['direction'] == direction]
+        
+        if directionL:
+            self._syncOrthoViewWithIPW(directionL[0])
+            [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]\
+                                        [directionL[0]].Render()
+
+    def _ipwEndInteractionCallback(self, direction):
+        self._syncOverlay(direction)
+        self._ipwInteractionCallback(direction)
 
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
