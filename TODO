@@ -1,4 +1,8 @@
-$Id: TODO,v 1.19 2003/10/06 23:48:42 cpbotha Exp $
+$Id: TODO,v 1.20 2003/10/15 20:24:39 cpbotha Exp $
+
+* We REALLY should get some kind of unit-testing suite going, so that even
+  an Installed binary can be set through its paces with dscas3 --testSuite
+  or somesuch.
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -28,10 +32,6 @@ $Id: TODO,v 1.19 2003/10/06 23:48:42 cpbotha Exp $
 
 BUGS:
 
-- on Win 2000, modules with many ports are too narrow (i.e. the font is too
-  narrow, so the knobs come out the side, if you know what I mean; gimme
-  a break, it's 01:50)
-
 - nobody but the moduleManager is allowed to call executeModule; actually,
   probably no-one is allowed to call any of the other methods either
   we could hide these with a _ with a non-_ wrapper that calls the method
@@ -46,6 +46,10 @@ BUGS:
   easily.
 
 FIXED:
+
+* on Win 2000, modules with many ports are too narrow (i.e. the font is too
+  narrow, so the knobs come out the side, if you know what I mean; gimme
+  a break, it's 01:50)
 
 * attaching axis WHILST motion is active seems to break things. 
 
