@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.2 2004/01/27 15:12:37 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.3 2004/01/29 11:00:07 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -84,6 +84,11 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
     def pf1Execute(self):
         inputData = self._pf1.GetStructuredPointsInput()
         outputData = self._pf1.GetOutput()
+
+        # we would like to operate on the WHOLE shebang
+        inputData.SetUpdateExtentToWholeExtent()
+        inputData.Update()
+        
         outputData.DeepCopy(inputData)
 
         xdim = inputData.GetWholeExtent()[1]
@@ -194,6 +199,11 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         
         inputData = self._pf2.GetStructuredPointsInput()
         outputData = self._pf2.GetOutput()
+
+        # we would like to operate on the WHOLE shebang
+        inputData.SetUpdateExtentToWholeExtent()
+        inputData.Update()
+        
         outputData.DeepCopy(inputData)
 
         xdim = inputData.GetWholeExtent()[1]        
