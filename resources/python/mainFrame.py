@@ -44,6 +44,7 @@ class mainFrame(wxFrame):
         self.progressGauge = wxGauge(self.panel_1, -1, 100)
         self.progressRaiseCheckBox = wxCheckBox(self.panel_1, -1, "Raise this window when the progress is updated.")
         self.blockExecutionCheckBox = wxCheckBox(self.panel_1, -1, "Block / interrupt network execution - CAUTION.")
+        self.messageLogTextCtrl = wxTextCtrl(self.panel_1, -1, "", style=wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL)
 
         self.__set_properties()
         self.__do_layout()
@@ -62,6 +63,7 @@ class mainFrame(wxFrame):
         self.progressRaiseCheckBox.SetToolTipString("Each time the progress is updated, this window will be brought to the front.  If you do not wish this behaviour, uncheck this box.")
         self.progressRaiseCheckBox.SetValue(1)
         self.blockExecutionCheckBox.SetToolTipString("This will stop or shorten the execution of a DeVIDE network.  Uncheck to go back to the normal behaviour.  Sometimes it may be necessary to cycle this twice if the network starts up again.")
+        self.messageLogTextCtrl.SetFont(wxFont(10, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
         # end wxGlade
 
     def __do_layout(self):
@@ -69,10 +71,15 @@ class mainFrame(wxFrame):
         sizer_1 = wxBoxSizer(wxVERTICAL)
         sizer_3 = wxBoxSizer(wxVERTICAL)
         sizer_2 = wxBoxSizer(wxVERTICAL)
+        sizer_4 = wxStaticBoxSizer(wxStaticBox(self.panel_1, -1, "Message log"), wxHORIZONTAL)
         sizer_2.Add(self.progressText, 0, 0, 4)
         sizer_2.Add(self.progressGauge, 0, wxEXPAND, 5)
         sizer_2.Add(self.progressRaiseCheckBox, 0, wxTOP|wxEXPAND|wxALIGN_CENTER_VERTICAL, 7)
         sizer_2.Add(self.blockExecutionCheckBox, 0, wxTOP, 4)
+        sizer_4.Add(self.messageLogTextCtrl, 1, wxALL|wxEXPAND, 7)
+        sizer_4.Add((0, 150), 0, 0, 0)
+        sizer_2.Add(sizer_4, 1, wxTOP|wxEXPAND, 7)
+        sizer_2.Add((600, 0), 0, 0, 0)
         sizer_3.Add(sizer_2, 1, wxALL|wxEXPAND, 7)
         self.panel_1.SetAutoLayout(1)
         self.panel_1.SetSizer(sizer_3)
