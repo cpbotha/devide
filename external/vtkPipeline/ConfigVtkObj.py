@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.12 2003/10/06 22:13:42 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.13 2003/10/16 09:43:59 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -412,6 +412,7 @@ class ConfigVtkObj:
         
 	n_meth = len (self.state_meths)
 	rw = 0
+
 	for i in range (0, n_meth):
 	    meths = self.state_meths[i]
             self.state_var[i] = self.get_state (meths)

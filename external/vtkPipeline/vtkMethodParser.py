@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.4 2003/03/18 15:47:44 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.5 2003/10/16 09:43:59 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -140,7 +140,12 @@ class VtkDirMethodParser:
                     # it doesn't set some state to one of a predefined number
                     # of mutually exclusive values... it's a simple procedural
                     # call that has been unfortunately named
-                    if method != 'SetUpdateExtentToWholeExtent':
+                    # The three calls after that are excluded for the same
+                    # reasons and belong to vtkImageReslice.
+                    if method not in ['SetUpdateExtentToWholeExtent',
+                                      'SetOutputExtentToDefault',
+                                      'SetOutputOriginToDefault',
+                                      'SetOutputSpacingToDefault']:
                         self.state_meths.append (method)
                         self.methods.remove (method)
             # finding all the On/Off toggle methods
