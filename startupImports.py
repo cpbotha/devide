@@ -1,8 +1,16 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.2 2003/08/27 12:34:36 cpbotha Exp $
+# $Id: startupImports.py,v 1.3 2003/10/06 23:35:19 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
+# NB: also see installer/hooks/hook-startupImports.py !
+
+# we also pre-import as much as possible of wxPython to make sure that the
+# weird-assed wx renamer doesn't get to us!
+from wxPython.wx import *
+from wxPython.html import *
+from wxPython.lib import *
+from wxPython.py import *
 
 import wx
 
@@ -43,7 +51,7 @@ def doImports(progressMethod=defaultProgressMethod):
                   
     percentStep = 95.0 / len(importList)
     currentPercent = 0.0
-                  
+
     for module, message in importList:
         currentPercent += percentStep
         progressMethod(currentPercent, message)
