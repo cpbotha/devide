@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 #
-# $Id: PyColourChooserDialog.py,v 1.1 2003/05/03 18:55:06 cpbotha Exp $
+# $Id: PyColourChooserDialog.py,v 1.2 2003/05/03 19:10:33 cpbotha Exp $
 #
 # This python module contains a class to construct a colour chooser dialog
 # using the wxPyColourChooser which is part of wxPython since 2.4.0.something.
+# This dialog should function as a drop-in replacement for the native
+# wxDialog.
 #
 # This code is distributed under the conditions of the BSD license.
 # See LICENSE.txt for details.
