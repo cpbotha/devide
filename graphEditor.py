@@ -1,14 +1,12 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.40 2003/08/22 12:54:46 cpbotha Exp $
+# $Id: graphEditor.py,v 1.41 2003/08/27 13:48:44 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
 from wxPython.wx import *
 from internal.wxPyCanvas import wxpc
 import genUtils
-import string
 import sys
-import traceback
 
 # ----------------------------------------------------------------------------
 class geCanvasDropTarget(wxTextDropTarget):
@@ -1032,7 +1030,7 @@ class graphEditor:
                 
             else:
                 m = float(y1 - y0 + 0.00000001) / float(x1 - x0 + 0.00000001)
-                mi = 1 / m
+                mi = 1.0 / m
                 # this means there COULD be a clip
 
                 # pick "outside" point

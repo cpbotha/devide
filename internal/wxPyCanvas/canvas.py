@@ -4,8 +4,11 @@ from canvasObject import *
 
 class canvas(wx.wxScrolledWindow, canvasSubject):
     def __init__(self, parent, id = -1, size = wx.wxDefaultSize):
+        # parent 1 ctor
         wx.wxScrolledWindow.__init__(self, parent, id, wx.wxPoint(0, 0), size,
                                     wx.wxSUNKEN_BORDER)
+        # parent 2 ctor
+        canvasSubject.__init__(self)
 
         self._cobjects = []
         self._previousRealCoords = None

@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.6 2003/06/20 11:07:03 cpbotha Exp $
+# $Id: python_shell.py,v 1.7 2003/08/27 13:48:44 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -69,8 +69,6 @@ class python_shell:
         if self._ps_frame:
             self._ps_frame.Destroy()
             del self._ps_frame
-        # unbind the resource
-        del self._res
 
     def show(self):
         self._ps_frame.Show(True)

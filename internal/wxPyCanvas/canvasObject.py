@@ -2,12 +2,12 @@ from wxPython import wx
 from canvasSubject import canvasSubject
 
 #############################################################################
-class canvasObject(wx.wxObject, canvasSubject):
+class canvasObject(canvasSubject):
     
     def __init__(self, position):
         # call parent ctor
-        wx.wxObject(self)
-
+        canvasSubject.__init__(self)
+        
         self._position = position
         self._canvas = None
         self._observers = {'enter' : [],
@@ -161,7 +161,7 @@ class coLine(canvasObject):
             return False
 
     def updateEndPoints(self):
-        self._linePoints = [() for i in range(4)]
+        self._linePoints = [(), (), (), ()]
         
         self._linePoints[0] = self.fromGlyph.getCenterOfPort(
             1, self.fromOutputIdx)
@@ -185,13 +185,13 @@ class coGlyph(coRectangle):
 
     def __init__(self, position, numInputs, numOutputs, label, moduleInstance):
         # parent constructor
-        canvasObject.__init__(self, position)
+        coRectangle.__init__(self, position, (0,0))
         # we'll fill this out later
         self._size = (0,0)
         self._numInputs = numInputs
-        self.inputLines = [None for i in range(self._numInputs)]
+        self.inputLines = [None] * self._numInputs
         self._numOutputs = numOutputs
-        self.outputLines = [[] for i in range(self._numOutputs)]
+        self.outputLines = [[]] * self._numOutputs
         self._label = label
         self.moduleInstance = moduleInstance
         self.draggedPort = None
@@ -253,32 +253,6 @@ class coGlyph(coRectangle):
     def drawPort(self, dc, brush, pos):
         dc.SetBrush(brush)
         dc.DrawRectangle(pos[0], pos[1], coGlyph._pWidth, coGlyph._pHeight)
-
-    def drawSinglePort(self, dc, port):
-        """Use to redraw a SINGLE port.
-
-        Do NOT use as part of a full redraw, as it can be done faster.  This
-        is for use during a mouseOver and whatnot.
-        """
-
-        if port[0] == 0:
-            connected = bool(self.inputLines[idx])
-        else:
-            connected = bool(self.outputLines[idx])
-        
-        if connected:
-            brush = wx.wxBrush("GREEN")
-        else:
-            brush = wx.wxBrush("RED")
-
-        px = self._position[0] + coGlyph._horizBorder + \
-             idx * (coGlyph._pWidth + coGlyph._horizBorder)
-        py = self._position[1]
-
-        if not inputPort:
-            py += self._size[1] - coGlyph._pHeight
-
-        self.drawPort(dc, brush, (px, py))
 
     def findPortContainingMouse(self, x, y):
         """Find port that contains the mouse pointer.  Returns tuple

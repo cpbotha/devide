@@ -5,10 +5,11 @@ import vtk
 
 def logError(msg):
     # create nice formatted string with tracebacks and all
+    ei = sys.exc_info()
     dmsg = \
-         string.join(traceback.format_exception(sys.exc_type,
-                                                sys.exc_value,
-                                                sys.exc_traceback))
+         string.join(traceback.format_exception(ei[0],
+                                                ei[1],
+                                                ei[2]))
     # we can't disable the timestamp yet
     # wxLog_SetTimestamp()
     # set the detail message

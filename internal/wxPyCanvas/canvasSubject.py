@@ -1,4 +1,7 @@
 class canvasSubject:
+    def __init__(self):
+        self._observers = {}
+        
     def addObserver(self, eventName, observer, userData=None):
         """Add an observer for a particular event.
 

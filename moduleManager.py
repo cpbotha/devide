@@ -1,10 +1,8 @@
-import cPickle
 import sys, os, fnmatch
-import string
 import genUtils
 import modules
 import mutex
-from whrandom import choice
+from random import choice
 
 class metaModule:
     """Class used to store module-related information.
@@ -27,9 +25,9 @@ class metaModule:
         numIns = len(self.instance.getInputDescriptions())
         numOuts = len(self.instance.getOutputDescriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
-        self.inputs = [None for i in range(numIns)]
+        self.inputs = [None] * numIns
         # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
-        self.outputs = [[] for i in range(numOuts)]
+        self.outputs = [[]] * numOuts
 
 class pickledModuleState:
     def __init__(self):
@@ -150,6 +148,7 @@ class moduleManager:
             print "imported: " + str(id(sys.modules[fullName]))
 
 	    # then instantiate the requested class
+            moduleInstance = None
             exec('moduleInstance = %s.%s(self)' % (fullName, name))
 
             # and store it in our internal structures
