@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.47 2004/05/24 12:59:15 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.48 2004/05/24 21:24:01 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -631,8 +631,11 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
             self, viewFrame, viewFrame.viewFramePanel,
             {'Module (self)' : self}, None)
 
+        # we don't want the Execute button to be default... else stuff gets
+        # executed with every enter in the command window (at least in Doze)
         moduleUtils.createECASButtons(self, viewFrame,
-                                      viewFrame.viewFramePanel)
+                                      viewFrame.viewFramePanel,
+                                      False)
             
         self._viewFrame = viewFrame
         return viewFrame

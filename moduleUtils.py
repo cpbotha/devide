@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.24 2004/05/24 12:46:45 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.25 2004/05/24 21:24:01 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -24,7 +24,8 @@ def bind_CSAEO(module, view_frame):
                                     m.execute_module()))
 
 
-def createECASButtons(d3module, viewFrame, viewFramePanel):
+def createECASButtons(d3module, viewFrame, viewFramePanel,
+                      executeDefault=True):
     """Add Execute, Close, Apply and Sync buttons to the viewFrame.
 
     d3module is the module for which these buttons are being added.
@@ -154,12 +155,18 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
                lambda e: helpModule(d3module))
 
     # make sure that execute is the default button
-    viewFrame.executeButton.SetDefault()
+    # unless the user specifies otherwise - in frames where we make
+    # use of an introspection shell, we don't want Enter to execute...
+    if executeDefault:
+        viewFrame.executeButton.SetDefault()
+        accel_table = wxAcceleratorTable(
+            [(wxACCEL_NORMAL, WXK_ESCAPE, viewFrame.closeButtonId),
+             (wxACCEL_NORMAL, WXK_RETURN, viewFrame.executeButtonId)])
+    else:
+        accel_table = wxAcceleratorTable(
+            [(wxACCEL_NORMAL, WXK_ESCAPE, viewFrame.closeButtonId)])
 
     # setup some hotkeys as well
-    accel_table = wxAcceleratorTable(
-        [(wxACCEL_NORMAL, WXK_ESCAPE, viewFrame.closeButtonId),
-         (wxACCEL_NORMAL, WXK_RETURN, viewFrame.executeButtonId)])
     viewFrame.SetAcceleratorTable(accel_table)
     
 

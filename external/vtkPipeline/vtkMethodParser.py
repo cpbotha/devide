@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.9 2004/05/24 10:00:52 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.10 2004/05/24 21:24:01 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -210,8 +210,9 @@ class VtkDirMethodParser:
 	    else:
                 # unfortunately, GetFileName usually returns None initially
                 # we have to cater for that here and in
-                # ConfigVtkObj.apply_changes
-                if val is None and method != 'FileName':
+                # ConfigVtkObj.apply_changes... (there are also other
+                # Get/Set*FileName() methods.
+                if val is None and not method.endswith('FileName'):
 		    self.get_set_meths.remove (method)
 	
     def clean_state_methods (self, vtk_obj):

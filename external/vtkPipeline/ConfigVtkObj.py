@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.21 2004/05/24 12:59:17 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.22 2004/05/24 21:24:01 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -388,7 +388,10 @@ class ConfigVtkObj:
             apply_button.SetToolTip(wxToolTip(
                 'Modify configuration of the underlying class as specified ' \
                 'by this dialogue.'))
-            apply_button.SetDefault()
+
+            # we can't make this default... everytime somebody presses
+            # the enter button in the command window, BOOM
+            #apply_button.SetDefault()
 
             closeButtonId = wxNewId()
             closeButton = wxButton(parent, closeButtonId, label="Close")
@@ -442,6 +445,15 @@ class ConfigVtkObj:
             cb.SetValue(self.toggle_var[i])
             EVT_CHECKBOX(panel, cb_id,
                          lambda event, s=self, i=i: s.toggle_cb(event, i))
+
+            # find docstring for GetMethod() and add it as tooltip
+            try:
+                docString = eval('self._vtk_obj.%s.__doc__' % (m,))
+            except AttributeError:
+                pass
+            else:
+                cb.SetToolTip(wxToolTip(docString))
+                
             internalSizer.Add(cb, option=0, flag=wxEXPAND)
             self.toggle_checkboxes[i] = cb
 
@@ -487,6 +499,15 @@ class ConfigVtkObj:
                                 majorDimension=2, style=wxRA_SPECIFY_COLS)
                 rb.SetSelection(self.state_var[i])
 
+                set_m = meths[0][0:end]
+                try:
+                    docString = eval('self._vtk_obj.%s.__doc__' % (set_m,))
+                except AttributeError:
+                    pass
+                else:
+                    rb.SetToolTip(wxToolTip(docString))
+                    
+
                 EVT_RADIOBOX(panel, rb_id,
                              lambda event, s=self, i=i: s.radiobox_cb(event, i))
                 internalSizer.Add(rb, 0, wxEXPAND|wxBOTTOM, 7)
@@ -515,6 +536,12 @@ class ConfigVtkObj:
 	    m = "Get"+self.get_set_meths[i]
 	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
 
+            s = 'Set'+self.get_set_meths[i]
+            try:
+                docString = eval('self._vtk_obj.%s.__doc__' % (s,))
+            except AttributeError:
+                docString = None
+
 	    # if the method requires a colour make a button so the user
 	    # can choose the colour!
 	    if string.find (m[-5:], "Color") > -1:
@@ -525,13 +552,25 @@ class ConfigVtkObj:
                            s.set_color(e, i, p))
                 grid_sizer.Add(cbut, 0, wxALIGN_CENTER_VERTICAL)
 
+                if docString:
+                    cbut.SetToolTip(wxToolTip(docString))
+
 	    else:
                 st = wxStaticText(parent=panel, id=-1, label="Set"+m[3:])
                 grid_sizer.Add(st, 0, wxALIGN_CENTER_VERTICAL)
 
+                if docString:
+                    st.SetToolTip(wxToolTip(docString))
+
             if m.endswith('FileName'):
+                if docString:
+                    toolTip = docString
+                else:
+                    toolTip = "Type filename or click browse to choose file"
+
                 fbb = FileBrowseButton(
                     panel, -1,
+                    toolTip=toolTip,
                     labelText=None,
                     changeCallback=lambda evt, i=i:
                     self.handlerGetSetFileBrowseButton(evt, i))
@@ -552,6 +591,9 @@ class ConfigVtkObj:
                 self.get_set_texts[i] = wxTextCtrl(
                     parent=panel, id=gst_id,
                     value=str(self.get_set_var[i]))
+
+                if docString:
+                    self.get_set_texts[i].SetToolTip(wxToolTip(docString))
                 
                 EVT_TEXT(parent, gst_id,
                          lambda event, s=self, i=i: s.get_set_cb(event, i))
@@ -589,6 +631,16 @@ class ConfigVtkObj:
             grid_sizer.Add(st2, flag=wxEXPAND)
 
             self.get_texts[i] = st2
+
+            try:
+                docString = eval('self._vtk_obj.%s.__doc__' %
+                                 (self.get_meths[i],))
+            except AttributeError:
+                pass
+            else:
+                st.SetToolTip(wxToolTip(docString))
+                st2.SetToolTip(wxToolTip(docString))
+            
 
         return panel
 
@@ -692,7 +744,7 @@ class ConfigVtkObj:
 
             if type (val_tst) is types.StringType: 
 		st = 1
-            elif self.get_set_meths[i] == 'FileName': 
+            elif self.get_set_meths[i].endswith('FileName'):
                 # we make an exception with Get/SetFilename
                 if val == 'None' or val == '':
                     val = None
