@@ -1,7 +1,7 @@
 from moduleMixins import simpleVTKClassModuleBase
 import vtktudImagingPython
 
-class myImageExtendPad(simpleVTKClassModuleBase):
+class imageCopyPad(simpleVTKClassModuleBase):
     """This is the minimum you need to wrap a single VTK object.  This
     __doc__ string will be replaced by the __doc__ string of the encapsulated
     VTK object, i.e. vtkStripper in this case.
@@ -15,5 +15,5 @@ class myImageExtendPad(simpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         simpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtktudImagingPython.vtkMyImageExtendPad(), 'Extend image by clipping.',
-            ('vtkImageData',), ('Extended vtkImageData',))
+            vtktudImagingPython.vtkImageCopyPad(), 'Extend image by copying border voxels.',
+            ('vtkImageData',), ('vtkImageData',))
