@@ -5,6 +5,7 @@
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
+import operator
 import vtk
 import wx
 
@@ -12,7 +13,13 @@ class advectionProperties(scriptedConfigModuleMixin, moduleBase):
     """Given a series of prepared advection volumes (each input is a
     timestep), calculate a number of metrics.
 
-    $Revision: 1.1 $
+    The first input HAS to have a VolumeIndex PointData attribute/array.  For
+    example, the output of the pointsToSpheres that you used BEFORE having
+    passed through the first probeFilters.  This first input will NOT be used
+    for the actual calculations, but only for point -> volume lookups.
+    Calculations will be performed for the second input and onwards.
+
+    $Revision: 1.2 $
     """
 
     _numberOfInputs = 10
@@ -60,36 +67,105 @@ class advectionProperties(scriptedConfigModuleMixin, moduleBase):
         # things have been marked with a VolumeIndex array
 
         # find valid inputs with VolumeIndex scalars
-        newInputs = [i for i in self._inputs if i != None and
-                     i.GetPointData().GetScalars('VolumeIndex') != None]
+        newInputs = [i for i in self._inputs if i != None]
 
-        [i.GetPointData().SetActiveScalars('VolumeIndex') for i in newInputs]
+        # we need at the very least three inputs:
+        # the VolumeIndex input and the actual volumes that will be used
+        if len(newInputs) < 3:
+            raise Exception, 'This module requires a minimum of 3 inputs.'
 
-        # this will contain a dictionary of each timestep
-        # where each dictionary will contain a number of lists containing
-        # points belonging to each VolumeIndex
-        allPointsList = []
+        # make sure everything is up to date
+        [i.Update() for i in newInputs]        
 
-        # extract lists of points!
-        for tipt in newInputs:
-            tiptDict = {}
+        # the first input MUST have a VolumeIndex attribute
+        if newInputs[0].GetPointData().GetScalars('VolumeIndex') == None:
+            raise Exception, 'The first input must have ' \
+                  'a VolumeIndex scalar attribute.'
+
+        # now we're going to build up a dictionary to translate
+        # from volume index to a list of point ids
+        vis = newInputs[0].GetPointData().GetScalars('VolumeIndex')
+        volIdxToPtIds = {}
+        for ptid in xrange(vis.GetNumberOfTuples()):
+            vidx = vis.GetTuple1(ptid)
+            if vidx >= 0:
+                if vidx in volIdxToPtIds:
+                    volIdxToPtIds[vidx].append(ptid)
+                else:
+                    volIdxToPtIds[vidx] = [ptid]
             
-            vis = tipt.GetPointData().GetScalars('VolumeIndex')
-            # go through all points in this tipt
-            for ptid in xrange(tipt.GetNumberOfPoints()):
-                pt = tipt.GetPoint(ptid)
-                vidx = vis.GetTuple1(ptid)
+        # 1. calculate centroids
+        # centroids is a dictionary with volume index as key
+        # centroids over time as the values
 
-                if vidx >= 0:
-                    if vidx in tiptDict:
-                        tiptDict[vidx].append(ptid)
-                    else:
-                        tiptDict[vidx] = [ptid]
+        # create dict with keys == volumeIds; values will be lists
+        # of centroids over time
+        centroids = {}
+        for volIdx in volIdxToPtIds:
+            centroids[volIdx] = []
 
-            allPointsList.append(tiptDict)
+        for volIdx in centroids:
+            # get all pointIds for this volume
+            ptIds = volIdxToPtIds[volIdx]
+            # do all timesteps
+            for tsi in range(len(newInputs) - 1):
+                pd = newInputs[tsi + 1]
+                coordSums = [0,0,0]
+                for ptId in ptIds:
+                    coordSums = map(operator.add, coordSums,
+                                    pd.GetPoint(ptId))
 
-        
-                
+                # calc centroid
+                numPoints = float(len(ptIds))
+                centroid = map(lambda e: e / numPoints, coordSums)
+                centroids[volIdx].append(centroid)
+
+        # now use the centroids to build table
+        volids = centroids.keys()
+        volids.sort()
+
+        # centroidVectors of the format:
+        # step-label, vol0 x, vol0 y, vol0 z, vol0 mag, vol1 x, vol1 y, etc.
+        centroidVectors = []
+
+        # newInputs - 1 for the first input, -1 because we're doing vectors
+        for tsi in range(len(newInputs) - 2):
+            # new row
+            centroidVectors.append(['%d - %d' % (tsi, tsi+1)])
+            for volIdx in volids:
+                cvec = map(operator.sub,
+                           centroids[volIdx][tsi+1], centroids[volIdx][tsi])
+                centroidVectors[-1].extend(cvec)
+                # also the sum of motion
+                centroidVectors[-1].append(vtk.vtkMath.Norm(cvec))
+
+        if self._config.csvFilename:
+            # write centroid vectors
+            csvFile = file(self._config.csvFilename, 'w')
+            labelString = 'step-label'
+            for volid in volids:
+                labelString = '%s, vol%d x, vol%d y, vol%d z, vol%d mag' % \
+                              (labelString,volid,volid,volid,volid)
+
+            # write label string
+            csvFile.write('%s\n' % (labelString,))
+
+            # first we write the centroids (naughty)
+            for tsi in range(len(newInputs) - 1):
+                cline = "'%d'" % (tsi,)
+                for volid in volids:
+                    # get me the centroid for this volid and this step
+                    c = centroids[volid][tsi]
+                    cline = '%s, %.3f, %.3f, %.3f, 0' % \
+                            (cline, c[0], c[1], c[2])
+
+                csvFile.write('%s\n' % (cline,))
+                    
+            
+            # then we write the centroid motion vectors
+            for cvecLine in centroidVectors:
+                # strip off starting and ending []
+                csvFile.write('%s\n' % (str(cvecLine)[1:-1],))
 
     def getInputDescriptions(self):
         return ('vtkPolyData with VolumeIndex attribute',) * \
