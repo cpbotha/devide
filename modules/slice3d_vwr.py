@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.27 2003/03/04 12:40:21 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.28 2003/03/04 15:25:13 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -95,6 +95,13 @@ class slice3d_vwr(moduleBase,
             ipw.SetPicker(picker)
 
         self._current_cursors = [[0,0,0,0] for i in self._ipws]
+
+        # create orthoView pipelines
+        self._orthoViews = [{'planeSource' : vtk.vtkPlaneSource(),
+                             'planeActor' : vtk.vtkActor(),
+                             'overlayPlaneSources' : [],
+                             'overlayPlaneActors' :[],
+                             'ipwIdx' : -1} for i in range(2)]
         
         # set the whole UI up!
         self._create_window()
@@ -842,6 +849,27 @@ class slice3d_vwr(moduleBase,
     def _syncOverlays(self):
         for i in range(len(self._overlay_ipws)):
             self._syncOverlay(i)
+
+    def _syncOrthoViewWithIPWs(self, orthoIdx):
+        orthoView = self._orthoViews[orthoIdx]
+        
+        # find IPW that we're syncing with
+        ipwIdx = orthoView['ipwIdx']
+        ipw = self._ipws[ipwIdx]
+
+        # vectorN is pointN - origin
+        v1 = [0,0,0]
+        ipw.GetVector1(v1)
+        n1 = vtk.vtkMath.Normalize(v1)
+        v2 = [0,0,0]
+        ipw.GetVector2(v2)
+        n2 = vtk.vtkMath.Normalize(v2)
+        
+        # make sure the planeSource is okay
+        planeSource = orthoView['planeSource']
+        planeSource.SetOrigin(0,0,0)
+        planeSource.SetPoint1(n1, 0, 0)
+        planeSource.SetPoint2(0, n2, 0)
 
     def _syncOutputSelectedPoints(self):
         """Sync up the output vtkPoints and names to _sel_points.
