@@ -8,13 +8,13 @@ else:
 
 import modules
 
-# * we need to give the module paths relative to the directory module_manager
-#   is in (I think, since this is the hook for module_manager)
+# * we need to give the module paths relative to the directory moduleManager
+#   is in (I think, since this is the hook for moduleManager)
 # * the installer will treat these imports as if they were explicitly
-#   imported by the module_manager, so THEIR dependecies will automatically
+#   imported by the moduleManager, so THEIR dependecies will automatically
 #   be analysed.
 ml2 = ["modules." + i for i in modules.module_list]
 hiddenimports = ml2
 
-print "[*] hook-module_manager.py - HIDDENIMPORTS"
+print "[*] hook-moduleManager.py - HIDDENIMPORTS"
 print hiddenimports
