@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.36 2003/05/20 22:08:55 cpbotha Exp $
+# $Id: dscas3.py,v 1.37 2003/05/22 09:47:33 cpbotha Exp $
 
 DSCAS3_VERSION = '20030521'
 
@@ -200,6 +200,18 @@ class dscas3_app_t(wxApp):
                                           self._mainFrame)
         self._old_stdout = sys.stdout
         #sys.stdout = self._stdo_lw
+
+        # CRITICAL VTK CUSTOMISATION BIT:
+        # multi-threaded vtk objects will call back into python causing
+        # re-entrancy; usually, the number of threads is set to the number
+        # of CPUs, so on single-cpu machines this is no problem
+        # On Linux SMP this somehow does not cause any problems either.
+        # On Windows SMP the doubleThreshold module can reliably crash your
+        # machine.  Give me a Windows SMP machine, and I shall fix it.
+        # for now we will just make sure that threading doesn't use more
+        # than one thread. :)
+        vtk.vtkMultiThreader.SetGlobalMaximumNumberOfThreads(1)
+        vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
         
         # now make sure that VTK will always send error to vtk.log logfile
         temp = vtk.vtkFileOutputWindow()
