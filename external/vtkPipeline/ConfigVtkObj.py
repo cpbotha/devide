@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.18 2004/05/24 10:11:46 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.19 2004/05/24 11:33:02 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -355,7 +355,7 @@ class ConfigVtkObj:
         button_sizer.Add(apply_button, 0, wxRIGHT, 7)
         EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
         apply_button.SetToolTip(wxToolTip(
-            'Modify configuration of the underlying class as specified' \
+            'Modify configuration of the underlying class as specified ' \
             'by this dialogue.'))
         apply_button.SetDefault()
 
@@ -504,10 +504,14 @@ class ConfigVtkObj:
                     labelText=None,
                     changeCallback=lambda evt, i=i:
                     self.handlerGetSetFileBrowseButton(evt, i))
-                
+
+                # set initial value of the text entry
+                fbb.SetValue(str(self.get_set_var[i]))
+
+                # store a binding to the widget in the normal place
                 self.get_set_texts[i] = fbb
                 
-                #fbbId = fbb.GetId()
+                # add the thing to the sizer
                 grid_sizer.Add(self.get_set_texts[i], 0,
                                wxEXPAND|wxALIGN_CENTER_VERTICAL)
                 
