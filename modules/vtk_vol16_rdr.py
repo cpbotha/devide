@@ -1,4 +1,4 @@
-class vtk_volume16_reader:
+class vtk_vol16_rdr:
     def __init__(self):
 	# initialise vtkVolume16Reader
 	self.reader = vtkVolume16Reader()

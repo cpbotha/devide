@@ -34,7 +34,7 @@ class glyph:
 	    canvas.tag_bind(self.outputs[-1], "<Button-1>", self.output_click_cb)
 	    
 	self.rectangle = canvas.create_rectangle(self.rcoords, fill="gray80")
-	self.text = canvas.create_text(self.coords[0], self.coords[1], text=name, width=75)
+	self.text = canvas.create_text(self.coords[0], self.coords[1], text=name, width=115)
 	# bind move handler to text and rectangle (the glyph can move itself)
 	canvas.tag_bind(self.rectangle, "<B1-Motion>", self.move_cb)
 	canvas.tag_bind(self.text, "<B1-Motion>", self.move_cb)
@@ -44,7 +44,7 @@ class glyph:
 	self.inputs[input_idx]['glyph'] = from_glyph
 	
     def coords_to_rcoords(self):
-	self.rcoords = (self.coords[0]-40, self.coords[1]-10, self.coords[0]+40, self.coords[1]+10) # tuple
+	self.rcoords = (self.coords[0]-60, self.coords[1]-15, self.coords[0]+60, self.coords[1]+15) # tuple
 	
     def connect_to(self, output_idx, other_glyph, input_idx):
 	if not other_glyph.is_connected_on(input_idx):
@@ -192,10 +192,10 @@ class graph_editor:
 	hlist.add("Writers", text="Writers")
 	hlist.add("Views", text="Views")
 	hlist.add("Filters", text="Filters")
-	reader_re = re.compile(".*reader$", re.I)
-	writer_re = re.compile(".*writer$", re.I)
-	view_re = re.compile(".*viewr$", re.I)
-	filter_re = re.compile(".*filter$", re.I)	
+	reader_re = re.compile(".*rdr$", re.I)
+	writer_re = re.compile(".*wrt$", re.I)
+	view_re = re.compile(".*vwr$", re.I)
+	filter_re = re.compile(".*flt$", re.I)	
 	for i in self.dscas3_main.get_module_list():
 	    if reader_re.search(i):
 		hlist.add("Readers." + i, text=i)
@@ -219,13 +219,25 @@ class graph_editor:
 	
 	self.status['text'] = "hello"
 	
+    def create_glyph(self, x, y):
+	# see what's selected in the tree (make sure it's not a section heading)
+	sel_tuple = self.command_frame.module_tree.subwidget_list['hlist'].info_selection()
+	if (len(sel_tuple) == 1):
+	    module_search = re.search(".*\.(.*)", sel_tuple[0])
+	    if (module_search and module_search.group(1)):
+		if self.dscas3_main.create_module(module_search.group(1)):
+		    self.glyphs.append(glyph(self, self.canvas, (x,y),
+		    module_search.group(1), ('blah',), ('bish',)))
+	
+	
     def canvas_b1click_cb(self, event):
 	item = self.canvas.find_withtag(Tix.CURRENT)
 	item_type = self.canvas.type(item)
 	# we only create a glyph if we don't click on anything already in the canvas
 	if item_type == None:
-	    self.glyphs.append(glyph(self, self.canvas, (event.x, event.y),
-	    "HDF Reader", ('vtkStructuredPoints', 'vtkImageData'), ( 'vtkStructuredPoints',)))
+	    self.create_glyph(event.x, event.y)
+	    #self.glyphs.append(glyph(self, self.canvas, (event.x, event.y),
+	    #"HDF Reader", ('vtkStructuredPoints', 'vtkImageData'), ( 'vtkStructuredPoints',)))
 	
     def glyph_input_clicked(self, glyph, idx):
 	if self.conn_ip['glyph0']:
@@ -237,9 +249,6 @@ class graph_editor:
 	# cancel any pending connections, start anew
 	self.conn_ip['glyph0'] = glyph
 	self.conn_ip['out_idx'] = idx
-	
-    def create_glyph(self):
-	print "To be implemented..."
 	
     def connect_glyphs(self):
 	"""This will ask the main module whether the glyphs setup in 

@@ -14,7 +14,6 @@ class dscas3_main:
 	# interpreter input line
 	self.pyco = Tix.ComboBox(self.root, editable=Tix.TRUE, history=Tix.TRUE, anchor=Tix.E, command=self.pyco_exec)
 	self.pyco.pack(side=Tix.TOP, fill=Tix.X)
-	
 
 	# button box
 	box = Tix.ButtonBox(self.root, orientation=Tix.HORIZONTAL)
@@ -24,7 +23,11 @@ class dscas3_main:
 	
 	# this will instantiate the module manager and get a list of plugins
 	self.module_manager = module_manager()
+	# then start up a default graph_editor
 	self.graph_editor = graph_editor(self)
+	
+    def create_module(self, name):
+	return 1
 	
     def get_module_list(self):
 	return self.module_manager.get_module_list()
