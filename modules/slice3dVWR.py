@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.27 2003/06/09 22:56:33 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.28 2003/06/12 15:29:18 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -503,6 +503,56 @@ class outputSelectedPoints(list, subjectMixin):
 
 # -------------------------------------------------------------------------
 
+class tdObjects:
+
+    _objectColours = ['SKYBLUE', 'CYAN', 'LIMEGREEN',
+                      'GOLD', 'PERU', 'MAGENTA',
+                      'PURPLE', 'GREY80']
+
+    def __init__(self, slice3dVWRThingy, listCtrl):
+        self._tdObjectsList = []
+        self._objectId = 0
+        
+        self._slice3dVWR = slice3dVWRThingy
+        self._listCtrl = listCtrl
+        self._initialiseListCtrl()
+        
+
+    def close(self):
+        del self._tdObjectsList[:]
+        self._slice3dVWR = None
+        self._listCtrl = None
+        self._listCtrl.ClearAll()
+
+    def _initialiseListCtrl(self):
+        """Setup the object listCtrl from scratch, mmmkay?
+        """
+
+        # delete all items and columns
+        self._listCtrl.ClearAll()
+
+        #
+        self._listCtrl.InsertColumn(0, 'Object Name')
+        self._listCtrl.InsertColumn(1, 'Colour')
+
+    def addObject(self, tdObject):
+        """Takes care of all the administration of adding a new 3-d object
+        to the list and updating it in the list control.
+        """
+        
+        if not tdObject in self._tdObjectsList:
+            # we get to pick a colour and a name
+            name = "%s%d" % (obj, self._objectId)
+            
+        else:
+            return False
+
+            
+        
+    
+
+# -------------------------------------------------------------------------
+
 class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     
     """Slicing, dicing slice viewing class.
@@ -562,6 +612,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         # set the whole UI up!
         self._create_window()
+
+        # we now have a wxListCtrl, let's abuse it
+        self._tdObjects = tdObjects(self._viewFrame.objectsListCtrl)
 
         # create a default slice
         self._createSlice('Axial')
@@ -865,6 +918,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def getIPWPicker(self):
         return self._ipwPicker
+
+    def Render3D(self):
+        """This will cause a render to be called on the encapsulated 3d
+        RWI.
+        """
+        self._viewFrame.threedRWI.Render()
 
     def setCurrentCursor(self, cursor):
         self._currentCursor = cursor
