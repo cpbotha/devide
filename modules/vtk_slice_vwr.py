@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.67 2002/09/24 15:41:02 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.68 2002/09/25 16:07:26 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -50,7 +50,10 @@ class vtk_slice_vwr(module_base,
 
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
+        # this will be passed on as input to the next component
         self._vtk_points = vtk.vtkPoints()
+        # this is an extra output with text descriptions for each points
+        self._vtk_points_descr = []
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -194,10 +197,13 @@ class vtk_slice_vwr(module_base,
 
         
     def get_output_descriptions(self):
-        return ('Selected points (vtkPoints)',)
+        return ('Selected points (vtkPoints)', 'Selected points names (list)')
         
     def get_output(self, idx):
-        return self._vtk_points
+        if idx == 0:
+            return self._vtk_points
+        else:
+            return self._vtk_points_names
 
     def view(self):
         self._view_frame.Show(true)
@@ -230,16 +236,28 @@ class vtk_slice_vwr(module_base,
         # now we have to make a space for the latest coord
         st = wxStaticText(panel, -1, "Cursor at")
         panel.cursor_text = wxTextCtrl(panel, -1)
+
+        nt = wxStaticText(panel, -1, "Name")
+        panel.cursor_name_combo = wxComboBox(panel, -1, "",
+                                             choices=["AC", "TS", "AI",
+                                                      "AA", "PC"])
+
+        gz = wxFlexGridSizer(2, 2)
+        gz.AddGrowableCol(1)
+        gz.Add(st, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
+        gz.Add(panel.cursor_text, option=1,
+                flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
+        gz.Add(nt, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)        
+        gz.Add(panel.cursor_name_combo, option=1,
+               flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
+        
         sid = wxNewId()
         sb = wxButton(panel, sid, "Store")
-
         EVT_BUTTON(panel, sid, lambda e, i=i: self._store_cursor_cb(i))
-        
+
         hz = wxBoxSizer(wxHORIZONTAL)
-        hz.Add(st, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-        hz.Add(panel.cursor_text, option=1,
-               flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
-        hz.Add(sb)
+        hz.Add(gz, option=1, flag=wxEXPAND)
+        hz.Add(sb, flag=wxEXPAND)
 
         tls = wxBoxSizer(wxVERTICAL)
         tls.Add(panel.enabled_cbox, flag=wxALL, border=5)
@@ -411,6 +429,10 @@ class vtk_slice_vwr(module_base,
 
         # remove the sphere actor from the renderer
         self._renderer.RemoveActor(self._sel_points[idx]['sphere_actor'])
+        # remove the text_actor (if any)
+        if self._sel_points[idx]['text_actor']:
+            self._renderer.RemoveActor(self._sel_points[idx]['text_actor'])
+            
         # then deactivate and disconnect the point widget
         pw = self._sel_points[idx]['point_widget']
         pw.SetInput(None)
@@ -514,6 +536,10 @@ class vtk_slice_vwr(module_base,
 
     def _store_cursor(self, cursor):
 
+        # do we have data?
+        if self._ipws[0].GetInput() is None:
+            return
+
         # we first have to check that we don't have this pos already
         cursors = [i['cursor'] for i in self._sel_points]
         if cursor in cursors:
@@ -548,8 +574,28 @@ class vtk_slice_vwr(module_base,
         sa.SetMapper(sm)
         sa.SetPosition(coords)
         sa.GetProperty().SetColor(1.0,0.0,0.0)
-        
         self._renderer.AddActor(sa)
+
+        # first get the name of the point that we are going to store
+        cur_panel = self._acs_nb.GetPage(self._acs_nb.GetSelection())
+        cursor_name = cur_panel.cursor_name_combo.GetValue()
+
+        if len(cursor_name) > 0:
+            name_text = vtk.vtkVectorText()
+            name_text.SetText(cursor_name)
+            name_mapper = vtk.vtkPolyDataMapper()
+            name_mapper.SetInput(name_text.GetOutput())
+            ta = vtk.vtkFollower()
+            ta.SetMapper(name_mapper)
+            ta.GetProperty().SetColor(1.0, 1.0, 0.0)
+            ta.SetPosition(coords)
+            ta_bounds = ta.GetBounds()
+            ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
+                        (ta_bounds[1] - ta_bounds[0]))
+            self._renderer.AddActor(ta)
+            ta.SetCamera(self._renderer.GetActiveCamera())
+        else:
+            ta = None
 
         def pw_si_cb(pw, evt_name):
             # we have to find pw in our list
@@ -564,6 +610,11 @@ class vtk_slice_vwr(module_base,
                 # we use
                 pos = pw.GetPosition()
                 self._sel_points[idx]['sphere_actor'].SetPosition(pos)
+
+                # also update the text_actor (if appropriate)
+                ta = self._sel_points[idx]['text_actor']
+                if ta:
+                    ta.SetPosition(pos)
 
                 # then we have to update our internal record of this point
                 x,y,z = map(round,
@@ -585,8 +636,10 @@ class vtk_slice_vwr(module_base,
         
         # store the cursor (discrete coords) the coords and the actor
         self._sel_points.append({'cursor' : cursor, 'coords' : coords,
+                                 'name' : cursor_name,
                                  'point_widget' : pw,
-                                 'sphere_actor' : sa})
+                                 'sphere_actor' : sa,
+                                 'text_actor' : ta})
 
         
         # *sniff* *sob* It's unreadable, but why's it so pretty?
@@ -602,7 +655,7 @@ class vtk_slice_vwr(module_base,
         self._rwi.Render()
 
     def _sync_vtk_points(self):
-        """Sync up the vtkPoints to _sel_points.
+        """Sync up the output vtkPoints and names to _sel_points.
         
         We play it safe, as the number of points in this list is usually
         VERY low.
@@ -610,10 +663,12 @@ class vtk_slice_vwr(module_base,
         
         # first make sure it's empty
         self._vtk_points.SetNumberOfPoints(0)
+        self._vtk_points_descr = []
         # then transfer everything
         for i in self._sel_points:
             x,y,z,v = i['cursor']
             self._vtk_points.InsertNextPoint(x,y,z)
+            self._vtk_points_names.append(i['name'])
 
         # and then make sure the vtkPoints knows that it has been modified
         self._vtk_points.Modified()
