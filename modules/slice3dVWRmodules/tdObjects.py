@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.2 2003/06/28 15:59:51 cpbotha Exp $
+# $Id: tdObjects.py,v 1.3 2003/06/29 14:38:31 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import vtk
@@ -13,13 +13,13 @@ class tdObjects:
                       'PURPLE']
 
     _gridCols = [('Object Name', 0), ('Colour', 150), ('Visible', 0),
-                 ('Contour', 0), ('3D Motion', 0)]
+                 ('Contour', 0), ('Motion', 0)]
     
     _gridNameCol = 0
     _gridColourCol = 1
     _gridVisibleCol = 2
     _gridContourCol = 3
-    _gridTDMotionCol = 4
+    _gridMotionCol = 4
 
     def __init__(self, slice3dVWRThingy, grid):
         self._tdObjectsDict = {}

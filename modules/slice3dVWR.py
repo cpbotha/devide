@@ -1,6 +1,12 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.47 2003/06/28 15:59:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.48 2003/06/29 14:38:31 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
+
+# some notes w.r.t. the layout of the main window of this module:
+# The strategy to keep things more or less sane (with custom widgets and all)
+# is to manually set the size of the containing frame and of the selected
+# points grid only... along with all the sizer logic, this tends to keep
+# things under control
 
 import cPickle
 from external.SwitchColourDialog import ColourDialog
