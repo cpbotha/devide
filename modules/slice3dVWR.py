@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.32 2003/06/16 15:22:16 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.33 2003/06/16 16:24:36 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -539,32 +539,46 @@ class tdObjects:
                    self._handlerObjectSetColour)
         
         EVT_BUTTON(svViewFrame, svViewFrame.objectShowHideButtonId,
-                   self._handlerObjectShowHideHandler)
+                   self._handlerObjectShowHide)
+
+    def _getSelectedObjects(self):
+        objectNames = []        
+        selectedRows = self._grid.GetSelectedRows()
+        for sRow in selectedRows:
+            objectNames.append(
+                self._grid.GetCellValue(sRow, self._gridNameCol)
+                )
+
+        objs = self.findObjectsByNames(objectNames)
+        return objs
+        
 
     def _handlerObjectSetColour(self, event):
-        # get the first selected row in the grid
-        selectedRows = self._grid.GetSelectedRows()
-        if selectedRows:
-            objectNames = []
-            for sRow in selectedRows:
-                objectNames.append(
-                    self._grid.GetCellValue(sRow, self._gridNameCol)
-                    )
-
-            objs = self.findObjectsByNames(objectNames)
-
-            if objs:
-                self._slice3dVWR.setColourDialogColour(
-                    self._tdObjectsDict[objs[0]]['colour'])
-                
-                dColour = self._slice3dVWR.getColourDialogColour()
-                if dColour:
-                    for obj in objs:
-                        self._setObjectColour(obj, dColour)
-
-    def _handlerObjectShowHideHandler(self, event):
-        pass
+        objs = self._getSelectedObjects()
         
+        if objs:
+            self._slice3dVWR.setColourDialogColour(
+                self._tdObjectsDict[objs[0]]['colour'])
+                
+            dColour = self._slice3dVWR.getColourDialogColour()
+            if dColour:
+                for obj in objs:
+                    self._setObjectColour(obj, dColour)
+
+        if objs:
+            self._slice3dVWR.render3D()
+                    
+
+    def _handlerObjectShowHide(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            visible = self._tdObjectsDict[obj]['visible']
+            self._setObjectVisibility(obj, not visible)
+
+        if objs:
+            self._slice3dVWR.render3D()
+            
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
         """
@@ -660,9 +674,12 @@ class tdObjects:
             self._grid.SetCellValue(nrGridRows, 1, colourName)
             self._grid.SetCellValue(nrGridRows, 2, 'Yes')
             
+            # store the name
             self._tdObjectsDict[tdObject]['objectName'] = objectName
             # and store the colour
             self._setObjectColour(tdObject, nColour)
+            # and the visibility
+            self._setObjectVisibility(tdObject, True)
 
             self._slice3dVWR._threedRenderer.ResetCamera()
             self._slice3dVWR.render3D()
@@ -802,6 +819,27 @@ class tdObjects:
                         cName = 'USER DEFINED'
 
                     self._grid.SetCellValue(row, self._gridColourCol, cName)
+
+    def _setObjectVisibility(self, tdObject, visible):
+        if self._tdObjectsDict.has_key(tdObject):
+            objectDict = self._tdObjectsDict[tdObject]
+
+            # in our own dict
+            objectDict['visible'] = bool(visible)
+            
+            # in the scene
+            if objectDict['type'] == 'vtkVolume':
+                tdObject.SetVisibility(bool(visible))
+            elif objectDict['type'] == 'vtkPolyData':
+                objectDict['vtkActor'].SetVisibility(bool(visible))
+            else:
+                pass
+
+            # finally in the grid
+            gridRow = self.findGridRowByName(objectDict['objectName'])
+            if gridRow >= 0:
+                self._grid.SetCellValue(gridRow, self._gridVisibleCol,
+                                        ['No', 'Yes'][bool(visible)])
                     
 
     def _tdObjectModifiedCallback(self, o, e):
