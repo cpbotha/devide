@@ -1,7 +1,4 @@
 import sys, os, fnmatch
-import Tix
-import tkMessageBox
-import traceback
 import string
 import gen_utils
 
