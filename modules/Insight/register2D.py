@@ -136,6 +136,8 @@ class register2D(moduleBase):
                         self._handlerPairNumberSpinCtrl)
         wx.EVT_BUTTON(self.controlFrame, self.controlFrame.transformButtonId,
                       self._handlerTransformButton)
+        wx.EVT_BUTTON(self.controlFrame, self.controlFrame.registerButtonId,
+                      self._handlerRegisterButton)
 
     def _createLogic(self):
         # input
@@ -242,6 +244,16 @@ class register2D(moduleBase):
     def _handlerPairNumberSpinCtrl(self, event):
         self._showImagePair(self.controlFrame.pairNumberSpinCtrl.GetValue())
 
+    def _handlerRegisterButton(self, event):
+        maxIterations = genUtils.textToFloat(
+            self.controlFrame.maxIterationsTextCtrl.GetValue(), 50)
+        if not maxIterations > 0:
+            maxIterations = 50
+            
+        self._registerCurrentPair(maxIterations)
+        
+        self.controlFrame.maxIterationsTextCtrl.SetValue(str(maxIterations))
+
     def _handlerShowControls(self, event):
         if not self.controlFrame.Show(True):
             self.controlFrame.Raise()
@@ -272,6 +284,86 @@ class register2D(moduleBase):
 
             self._rescaler2.Update() # give ITK a chance to complain
             self.viewerFrame.threedRWI.GetRenderWindow().Render()
+
+    def _registerCurrentPair(self, maxIterations):
+        if not self._pairNumber > 0:
+            # no data, return
+            return
+        
+        currentTransform = self._transformStack[self._pairNumber]
+        fixedImage = self._imageStack[self._pairNumber - 1]
+        movingImage = self._imageStack[self._pairNumber]
+        
+        registration = itk.itkImageRegistrationMethodF2F2_New()
+        # sum of squared differences
+        imageMetric = itk.itkMeanSquaresImageToImageMetricF2F2_New()
+        #imageMetric = itk.itkNormalizedCorrelationImageToImageMetricF2F2_New()
+        optimizer = itk.itkRegularStepGradientDescentOptimizer_New()
+        #optimizer = itk.itkConjugateGradientOptimizer_New()
+        interpolator = itk.itkLinearInterpolateImageFunctionF2D_New()
+
+        registration.SetOptimizer(optimizer.GetPointer())
+        registration.SetTransform(currentTransform.GetPointer()    )
+        registration.SetInterpolator(interpolator.GetPointer())
+        registration.SetMetric(imageMetric.GetPointer())
+        registration.SetFixedImage(fixedImage)
+        registration.SetMovingImage(movingImage)
+
+        registration.SetFixedImageRegion(fixedImage.GetBufferedRegion())
+
+        initialParameters = currentTransform.GetParameters()
+        registration.SetInitialTransformParameters( initialParameters )
+
+        #
+        #  Define optimizer parameters
+        #
+        optimizer.SetMaximumStepLength(  1 )
+        optimizer.SetMinimumStepLength(  0.01 )
+        optimizer.SetNumberOfIterations( maxIterations  )
+
+        # velly impoltant: the scales
+        # the larger a scale, the smaller the impact of that parameter on
+        # the calculated gradient
+        scalesDA = itk.itkArrayD(3)
+        scalesDA.SetElement(0, 1e-01)
+        scalesDA.SetElement(1, 1e-05)
+        scalesDA.SetElement(2, 1e-05)
+        optimizer.SetScales(scalesDA)
+
+        #
+        #  Start the registration process
+        #
+
+        def iterationEvent():
+            pm = "register2D optimizer value: %f stepsize: %f" % \
+                 (optimizer.GetValue(),
+                  optimizer.GetCurrentStepLength())
+
+            p = (optimizer.GetCurrentIteration() + 1) / maxIterations * 100.0
+            self._moduleManager.setProgress(p, pm)
+
+        pc2 = itk.itkPyCommand_New()
+        pc2.SetCommandCallable(iterationEvent)
+        optimizer.AddObserver(itk.itkIterationEvent(),
+                              pc2.GetPointer())
+
+        # FIXME: if this throws an exception, reset  transform!
+        registration.StartRegistration()
+
+        fpm = 'register2D registration done (final value: %0.2f).' % \
+              optimizer.GetValue()
+        self._moduleManager.setProgress(100.0, fpm)
+
+        print registration.GetLastTransformParameters().GetElement(0)
+        print registration.GetLastTransformParameters().GetElement(1)
+        print registration.GetLastTransformParameters().GetElement(2)        
+        
+        self._syncGUIToCurrentPair()
+        
+        currentTransform.Modified()
+        self._rescaler2.Update() # give ITK a chance to complain
+        self.viewerFrame.threedRWI.GetRenderWindow().Render()
+        
 
     def _resetCamera(self):
         """If an IPW is available (i.e. there's some data), this method
@@ -347,19 +439,26 @@ class register2D(moduleBase):
         self._rescaler2.Update() # give ITK a chance to complain...
 
 
-        # update GUI #####################################################
-        self.controlFrame.pairNumberSpinCtrl.SetRange(1,
-                                                      len(self._imageStack)-1)
-        self.controlFrame.pairNumberSpinCtrl.SetValue(pairNumber)
-
-        pda = self._transformStack[pairNumber].GetParameters()
-        self.controlFrame.rotationTextCtrl.SetValue(str(pda.GetElement(0)))
-        self.controlFrame.xTranslationTextCtrl.SetValue(str(pda.GetElement(1)))
-        self.controlFrame.yTranslationTextCtrl.SetValue(str(pda.GetElement(2)))
-
+        self._syncGUIToCurrentPair()
+        
         # we're going to create new ones, so take care of the old ones
         self._destroyIPWs()
         
         self._createIPWs()
 
         self._resetCamera()
+
+    def _syncGUIToCurrentPair(self):
+        # update GUI #####################################################
+        self.controlFrame.pairNumberSpinCtrl.SetRange(1,
+                                                      len(self._imageStack)-1)
+        self.controlFrame.pairNumberSpinCtrl.SetValue(self._pairNumber)
+
+        pda = self._transformStack[self._pairNumber].GetParameters()
+        self.controlFrame.rotationTextCtrl.SetValue(
+            '%.8f' % (pda.GetElement(0),))
+        self.controlFrame.xTranslationTextCtrl.SetValue(
+            '%.8f' % (pda.GetElement(1),))
+        self.controlFrame.yTranslationTextCtrl.SetValue(
+            '%.8f' % (pda.GetElement(2),))
+        

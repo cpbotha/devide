@@ -68,7 +68,7 @@ class controlFrame(wx.Frame):
         self.yTranslationTextCtrl = wx.TextCtrl(self.panel_2, -1, "")
         self.transformButtonId  =  wx.NewId()
         self.button_5 = wx.Button(self.panel_2, self.transformButtonId , "Trfm")
-        self.text_ctrl_3 = wx.TextCtrl(self.panel_2, -1, "")
+        self.maxIterationsTextCtrl = wx.TextCtrl(self.panel_2, -1, "")
         self.registerButtonId  =  wx.NewId()
         self.button_4 = wx.Button(self.panel_2, self.registerButtonId , "Register")
 
@@ -100,7 +100,7 @@ class controlFrame(wx.Frame):
         sizer_19.Add(self.yTranslationTextCtrl, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
         sizer_19.Add(self.button_5, 0, wx.ALIGN_CENTER_VERTICAL, 0)
         sizer_17.Add(sizer_19, 1, wx.BOTTOM|wx.EXPAND, 7)
-        sizer_20.Add(self.text_ctrl_3, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
+        sizer_20.Add(self.maxIterationsTextCtrl, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
         sizer_20.Add(self.button_4, 0, wx.ALIGN_CENTER_VERTICAL, 0)
         sizer_17.Add(sizer_20, 1, wx.EXPAND, 0)
         sizer_16.Add(sizer_17, 1, wx.EXPAND, 0)
