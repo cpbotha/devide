@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.12 2003/08/20 13:25:39 cpbotha Exp $
+# $Id: moduleBase.py,v 1.13 2003/09/01 21:43:53 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
@@ -38,7 +38,9 @@ class moduleBase(object):
         In addition, with python garbage collection, __del__ can cause
         uncollectable objects, so try to avoid it as far as possible.
         """
-	raise NotImplementedError
+
+        # we neatly get rid of some references
+        del self._moduleManager
 
     def getInputDescriptions(self):
 	"""Returns tuple of input descriptions, mostly used by the graph editor

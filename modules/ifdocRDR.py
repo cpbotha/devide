@@ -1,4 +1,4 @@
-# $Id: ifdocRDR.py,v 1.5 2003/09/01 16:39:54 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.6 2003/09/01 21:43:53 cpbotha Exp $
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import md5
@@ -9,6 +9,7 @@ import time
 import vtk
 from wxPython.wx import *
 
+# -------------------------------------------------------------------------
 class mFileMatrices(dict, subjectMixin, updateCallsExecuteModuleMixin):
     """Class for holding the matrices of the ifdoc m-file as output.
     """
@@ -28,6 +29,7 @@ class mFileMatrices(dict, subjectMixin, updateCallsExecuteModuleMixin):
         updateCallsExecuteModuleMixin.close(self)
 
         
+# -------------------------------------------------------------------------
 class ifdocRDR(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
@@ -38,7 +40,10 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.__init__(self)
         
         # setup our output
-        self._mFileMatrices = mFileMatrices()
+        self._mFileMatrices = mFileMatrices(self)
+
+        # setup the md5sum variable so that we know when the file has changed
+        self._md5HexDigest = ''
 
         # now initialise some config stuff
         self._config.dspFilename = ''
@@ -114,7 +119,23 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         variableDict = {}
         currentName = None
         currentMatrix = None
-        for line in fileLines:
+
+        numberOfProgressSteps = 20.0
+        progressStepSize = 100.0 / numberOfProgressSteps
+        linesPerStep = len(fileLines) / numberOfProgressSteps
+        progress = 0.0
+
+        print linesPerStep
+        print len(fileLines)
+        
+        for lineIdx in xrange(len(fileLines)):
+            if lineIdx % linesPerStep == 0:
+                progress += progressStepSize
+                self._moduleManager.setProgress(
+                    progress, "Parsing ifdoc m-file")
+                                                
+            line = fileLines[lineIdx]
+
             mo = poStartMatrix.search(line)
             if mo:
                 if currentName:
@@ -163,23 +184,36 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
                     currentName = None
                     currentMatrix = None
 
+        self._moduleManager.setProgress(
+            100.0, "Parsing ifdoc m-file [DONE]")
+
+
         # return our payload as a dict
         return variableDict
 
     def executeModule(self):
         mFile = open(self._config.mFilename)
         mLines = mFile.readlines()
-
+        mFile.close()        
 
         # now check with md5 if the file has changed!
-        mDict = self.parseMFile(mLines, ['ppos'])
+        m = md5.new()
+        for line in mLines:
+            m.update(line)
 
-        # we have to do it this way as we're using a special class
-        self._mFileMatrices.clear()
-        self._mFileMatrices.update(mDict)
+        newHexDigest = m.hexdigest()
+        if newHexDigest != self._md5HexDigest:
+            mDict = self.parseMFile(mLines, ['ppos'])
 
-        # now indicate that we've changed stuff
-        self._mFileMatrices.notify()
+            # we have to do it this way as we're using a special class
+            self._mFileMatrices.clear()
+            self._mFileMatrices.update(mDict)
+
+            # now indicate that we've changed stuff
+            self._mFileMatrices.notify()
+
+            # and update our digest
+            self._md5HexDigest = newHexDigest
 
     def view(self, parent_window=None):
         # if the window is already visible, raise it

@@ -1,8 +1,11 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.3 2003/09/01 16:39:54 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.4 2003/09/01 21:43:53 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 from moduleBase import moduleBase
+import moduleUtils
+import vtk
+from wxPython.wx import *
 
 class ifdocVWR(moduleBase):
 
@@ -10,15 +13,20 @@ class ifdocVWR(moduleBase):
         # base constructor
         moduleBase.__init__(self, moduleManager)
 
+        self._mFileMatrices = None
+
+        self._createViewFrames()
+
     def close(self):
-        pass
+        moduleBase.close(self)
+        del self._mFileMatrices
 
     def getInputDescriptions(self):
-        return ('IFDOC M file',)
+        return ('ifdoc m-file matrices',)
 
     def setInput(self, idx, inputStream):
         # don't forget to register as an observer
-        self.mData = inputStream
+        self._mFileMatrices = inputStream
 
     def getOutputDescriptions(self):
         return ()
@@ -61,8 +69,11 @@ class ifdocVWR(moduleBase):
             
     def view(self, parent_window=None):
         # if the window is already visible, raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        if not self.viewerFrame.Show(True):
+            self.viewerFrame.Raise()
+
+        if not self.controlFrame.Show(True):
+            self.controlFrame.Raise()
     
     
     def executeModuleRDR(self):
@@ -78,6 +89,41 @@ class ifdocVWR(moduleBase):
 
         time.sleep(0.5)
         self.doTimeStep(ppos, 0)
+
+    def _createViewFrames(self):
+
+        parentWindow = self._moduleManager.get_module_view_parent_window()        
+        # create the viewerFrame
+        import modules.resources.python.ifdocVWRFrames
+        reload(modules.resources.python.ifdocVWRFrames)
+
+        viewerFrame = modules.resources.python.ifdocVWRFrames.viewerFrame
+        self.viewerFrame = viewerFrame(parentWindow, id=-1, title='dummy')
+
+        # attach close handler
+        EVT_CLOSE(self.viewerFrame,
+                  lambda e, s=self: s.viewerFrame.Show(false))
+
+        self.viewerFrame.SetIcon(moduleUtils.getModuleIcon())
+
+        # add the renderer
+        self._threedRenderer = vtk.vtkRenderer()
+        self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
+        self.viewerFrame.threedRWI.GetRenderWindow().AddRenderer(
+            self._threedRenderer)
+        
+        # controlFrame creation and basic setup -------------------
+        controlFrame = modules.resources.python.ifdocVWRFrames.\
+                       controlFrame
+        self.controlFrame = controlFrame(parentWindow, id=-1,
+                                         title='dummy')
+        EVT_CLOSE(self.controlFrame,
+                  lambda e: self.controlFrame.Show(false))
+        self.controlFrame.SetIcon(moduleUtils.getModuleIcon())
+
+        # display the window
+        self.viewerFrame.Show(True)
+        self.controlFrame.Show(True)
 
     def _buildPipeline(self):
         # this is temporary

@@ -495,6 +495,8 @@ class moduleManager:
         self._dscas3_app.update_vtk_log_window()
 
     def setProgress(self, progress, message):
+        """Progress is in percent.
+        """
         self._dscas3_app.setProgress(progress, message)
 
     def _makeUniqueInstanceName(self, instanceName=None):
