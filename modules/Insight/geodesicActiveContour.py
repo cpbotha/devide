@@ -1,7 +1,8 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.3 2004/02/29 02:29:31 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.4 2004/03/01 10:59:51 cpbotha Exp $
 
 import fixitk as itk
+import genUtils
 from moduleBase import moduleBase
 import moduleUtils
 import moduleUtilsITK
@@ -21,7 +22,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
     geodesicActiveContour object.  Also see figure 9.18 in the ITK
     Software Guide.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     def __init__(self, moduleManager):
@@ -71,8 +72,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         moduleBase.close(self)
 
     def executeModule(self):
-        self._thresholder.Update()
-        self._vtkImporter.Update()
+        self.getOutput(0).Update()
 
     def getInputDescriptions(self):
         return ('Image Data', )
@@ -84,7 +84,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         return ('Image Data', )
 
     def getOutput(self, idx):
-        return self._vtkImporter.GetOutput()
+        return self._pSource.GetStructuredPointsOutput()
 
     def configToLogic(self):
         self._gradientMagnitude.SetSigma(self._config.sigma)
@@ -95,8 +95,8 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         # FIXME: make sure points are here
         seedPosition = itk.itkIndex3()
         # test position with r256 (this could take a while)
-        seedPosition.SetElement(0, 174)
-        seedPosition.SetElement(1, 132)
+        seedPosition.SetElement(0, 0)
+        seedPosition.SetElement(1, 0)
         seedPosition.SetElement(2, 0)        
 
         seedValue = - self._config.initialDistance
@@ -183,7 +183,31 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         thresholder.SetInput( geodesicActiveContour.GetOutput() );
         self._thresholder = thresholder
 
+    def _psExecute(self):
+        print "_psExecute()"
+
+        # ITK should trigger any exceptions here (we're calling Update()
+        # on the terminal part of the ITK pipeline)
+        try:
+            self._thresholder.Update()
+        except RuntimeError, e:
+            # there was a problem, make sure the psExecute knows it's not
+            # done yet...
+            genUtils.logError(str(e))
+
+        # copy information
+        out = self._pSource.GetStructuredPointsOutput()
+        inp = self._vtkImporter.GetOutput()
+        inp.Update()
+        out.CopyStructure(inp)
+        out.GetPointData().PassData(inp.GetPointData())
+        out.GetCellData().PassData(inp.GetCellData())
+
     def _createConnectPipeline(self):
+        """When creating a new VTK->ITK-VTK pipeline, copy this method,
+        as well as _psExecute.
+        """
+        
         # this is the main module input
         self._inputImageCast = vtk.vtkImageCast()
         self._inputImageCast.SetOutputScalarTypeToFloat()
@@ -206,7 +230,14 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         CVIPy.ConnectITKUS3ToVTK(
             self._itkExporter.GetPointer(), self._vtkImporter)
 
-        # final output is self._vtkImporter.GetOutput()
+        # we use this trick to make sure that any VTK updates are caught
+        # so that we have the opportunity call the ITK Update() manually
+        # from Python (so that we can catch exceptions)
+        # also see _psExecute
+        self._pSource = vtk.vtkProgrammableSource()
+        self._pSource.SetExecuteMethod(self._psExecute)
+
+        # final FINAL output is self._pSource.GetStructuredPointsOutput()
 
     def _destroyConnectPipeline(self):
         del self._inputImageCast
