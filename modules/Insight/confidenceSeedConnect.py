@@ -1,4 +1,4 @@
-# $Id: confidenceSeedConnect.py,v 1.2 2004/03/21 20:22:18 cpbotha Exp $
+# $Id: confidenceSeedConnect.py,v 1.3 2004/03/21 20:24:08 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -21,8 +21,12 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
     recalculated over all the currently selected points and the process is
     restarted.  This process is repeated for the user-defined number of
     iterations, or until now new pixels are added.
+
+    Due to weirdness in the underlying ITK filter, deleting all points
+    won't quite work.  In other words, the output of this module can
+    only be trusted if there's at least a single seed point.
     
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
