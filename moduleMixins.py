@@ -1,7 +1,8 @@
-# $Id: moduleMixins.py,v 1.10 2003/05/04 20:56:33 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.11 2003/05/13 09:22:32 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
+import moduleUtils
 
 class vtkPipelineConfigModuleMixin:
     """Mixin to use for modules that want to make use of the vtkPipeline
@@ -123,45 +124,6 @@ class vtkPipelineConfigModuleMixin:
         self.vtkPipelineConfigure(viewFrame, renderWin, objects)
 
 
-    # we could make a _createObjectAndPipelineIntrospection method as well,
-    # something in the style of moduleUtils.createECASButtons that does the
-    # whole shebang of also creating the UI bits.  This would mean that the
-    # module author only has to do his own UI bits.
-    def _setupObjectAndPipelineIntrospection(self, viewFrame, objectDict,
-                                             renderWindow,
-                                             objectChoice, objectChoiceId,
-                                             pipelineButtonId):
-        """Setup all object and pipeline introspection for standard module
-        views with a choice for objects and a button for pipeline
-        introspection.
-
-        viewFrame is the actual window of the module view.
-        objectDict is a dictionary with object name strings as keys and object
-        instances as values.
-        renderWindow is an optional renderWindow that'll be used for updating,
-        pass as None if you don't have this.
-        objectChoice is the object choice widget.
-        objectChoiceId is the event id connected to the objectChoice widget.
-        pipelineButtonId is the event id connected to the pipeline
-        introspection button.
-        """
-
-        # fill out the objectChoice with the object names
-        objectChoice.Clear()
-	for objectName in objectDict.keys():
-            objectChoice.Append(objectName)
-        # default on first object
-	objectChoice.SetSelection(0)
-
-        # setup the two default callbacks
-        EVT_CHOICE(viewFrame, objectChoiceId,
-                   lambda e: self._defaultObjectChoiceCallback(
-            viewFrame, renderWindow, objectChoice, objectDict))
-        
-        EVT_BUTTON(viewFrame, pipelineButtonId,
-                   lambda e: self._defaultPipelineCallback(
-            viewFrame, renderWindow, objectDict))
-
         
             
 # ----------------------------------------------------------------------------
@@ -224,7 +186,7 @@ class fileOpenDialogModuleMixin:
 # ----------------------------------------------------------------------------
 
 import resources.python.filenameViewModuleMixinFrame
-import moduleUtils
+
 
 class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                               vtkPipelineConfigModuleMixin):
@@ -271,10 +233,11 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                    lambda e: self.browseButtonCallback(browseMsg,
                                                        fileWildcard))
 
-        self._setupObjectAndPipelineIntrospection(
-            self._viewFrame, objectDict, None,
-            self._viewFrame.objectChoice, self._viewFrame.objectChoiceId,
-            self._viewFrame.pipelineButtonId)
+        
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self,
+            self._viewFrame, self._viewFrame.viewFramePanel,
+            objectDict, None)
 
         # new style standard ECAS buttons
         moduleUtils.createECASButtons(self, self._viewFrame,

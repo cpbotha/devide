@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.7 2003/05/04 19:08:51 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.8 2003/05/13 09:22:32 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -172,5 +172,96 @@ def bindCSAEO(module, view_frame):
     accel_table = wxAcceleratorTable(
         [(wxACCEL_NORMAL, WXK_ESCAPE, wxID_CANCEL)])
     view_frame.SetAcceleratorTable(accel_table)
+
+def createStandardObjectAndPipelineIntrospection(d3module,
+                                                 viewFrame, viewFramePanel,
+                                                 objectDict, renderWindow):
+       
+    """Given a dscas3 module and its viewframe, this will create a
+    standard wxChoice and wxButton (+ labels) UI for object and
+    pipeline introspection.  In addition, it'll call
+    setupObjectAndPipelineIntrospection in order to bind events to these
+    controls.
+
+    In order to use this, the module HAS to use the
+    vtkPipelineConfigModuleMixin.
+    """
+
+    ocLabel = wxStaticText(viewFramePanel, -1, "Examine the")
+    objectChoiceId = wxNewId()
+    objectChoice = wxChoice(viewFramePanel, objectChoiceId, choices=[])
+    pbLabel = wxStaticText(viewFramePanel, -1, "or")
+    pipelineButtonId = wxNewId()
+    pipelineButton = wxButton(viewFramePanel, pipelineButtonId, "Pipeline")
+
+    hSizer = wxBoxSizer(wxHORIZONTAL)
+    hSizer.Add(ocLabel, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
+    hSizer.Add(objectChoice, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+    hSizer.Add(pbLabel, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
+    hSizer.Add(pipelineButton, 0, wxALIGN_CENTER_VERTICAL, 0)
+
+    viewFramePanel.GetSizer().Add(hSizer, 1, wxALL|wxEXPAND, 5)
+
+    # force the sizer to calculate new layout with all children (because
+    # we've just added something)
+    viewFramePanel.GetSizer().Layout()
+    # fit and setsizehints (autolayout should remain on)    
+    viewFramePanel.GetSizer().Fit(viewFramePanel)
+    viewFramePanel.GetSizer().SetSizeHints(viewFramePanel)
+
+    # now we have to get the top level sizer to do its thing
+    # WORKAROUND - if we don't remove and add, the
+    # viewFrame.GetSizer().Layout() below doesn't do anything.
+    viewFrame.GetSizer().Remove(viewFramePanel)
+    viewFrame.GetSizer().Add(viewFramePanel, 1, wxEXPAND, 0)
+    # WORKAROUND ENDS
+    viewFrame.GetSizer().Layout() # this should update the minimum size
+    viewFrame.GetSizer().Fit(viewFrame)
+    viewFrame.GetSizer().SetSizeHints(viewFrame)
+    
+    # finally do the actual event setup
+    setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
+                                        renderWindow,
+                                        objectChoice, objectChoiceId,
+                                        pipelineButtonId)
+
+def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
+                                        renderWindow,
+                                        objectChoice, objectChoiceId,
+                                        pipelineButtonId):
+    """Setup all object and pipeline introspection for standard module
+    views with a choice for objects and a button for pipeline
+    introspection.  Call this if you have a wxChoice and wxButton ready!
+
+    viewFrame is the actual window of the module view.
+    objectDict is a dictionary with object name strings as keys and object
+    instances as values.
+    renderWindow is an optional renderWindow that'll be used for updating,
+    pass as None if you don't have this.
+    objectChoice is the object choice widget.
+    objectChoiceId is the event id connected to the objectChoice widget.
+    pipelineButtonId is the event id connected to the pipeline
+    introspection button.
+
+    In order to use this, the module HAS to use the
+    vtkPipelineConfigModuleMixin.
+
+    """
+
+    # fill out the objectChoice with the object names
+    objectChoice.Clear()
+    for objectName in objectDict.keys():
+        objectChoice.Append(objectName)
+    # default on first object
+    objectChoice.SetSelection(0)
+
+    # setup the two default callbacks
+    EVT_CHOICE(viewFrame, objectChoiceId,
+               lambda e: d3module._defaultObjectChoiceCallback(
+        viewFrame, renderWindow, objectChoice, objectDict))
+
+    EVT_BUTTON(viewFrame, pipelineButtonId,
+               lambda e: d3module._defaultPipelineCallback(
+        viewFrame, renderWindow, objectDict))
 
 

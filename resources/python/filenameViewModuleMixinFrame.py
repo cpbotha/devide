@@ -13,12 +13,6 @@ class filenameViewModuleMixinFrame(wxFrame):
         self.filenameText = wxTextCtrl(self.viewFramePanel, -1, "")
         self.browseButtonId  =  wxNewId()
         self.browseButton = wxButton(self.viewFramePanel, self.browseButtonId , "Browse")
-        self.label_1_copy_1 = wxStaticText(self.viewFramePanel, -1, "Examine the")
-        self.objectChoiceId  =  wxNewId()
-        self.objectChoice = wxChoice(self.viewFramePanel, self.objectChoiceId , choices=["vtkMarchingCubes"])
-        self.label_2_copy_1 = wxStaticText(self.viewFramePanel, -1, "or")
-        self.pipelineButtonId  =  wxNewId()
-        self.pipelineButton = wxButton(self.viewFramePanel, self.pipelineButtonId , "Pipeline")
 
         self.__set_properties()
         self.__do_layout()
@@ -27,24 +21,17 @@ class filenameViewModuleMixinFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: filenameViewModuleMixinFrame.__set_properties
         self.SetTitle("SomeModule")
-        self.objectChoice.SetSelection(0)
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: filenameViewModuleMixinFrame.__do_layout
         sizer_1 = wxBoxSizer(wxVERTICAL)
         sizer_5 = wxBoxSizer(wxVERTICAL)
-        sizer_4 = wxBoxSizer(wxHORIZONTAL)
         sizer_3 = wxBoxSizer(wxHORIZONTAL)
         sizer_3.Add(self.label_8_copy_1, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         sizer_3.Add(self.filenameText, 1, wxALIGN_CENTER_VERTICAL, 0)
         sizer_3.Add(self.browseButton, 0, wxALIGN_CENTER_VERTICAL, 0)
         sizer_5.Add(sizer_3, 1, wxALL|wxEXPAND, 5)
-        sizer_4.Add(self.label_1_copy_1, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-        sizer_4.Add(self.objectChoice, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_4.Add(self.label_2_copy_1, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-        sizer_4.Add(self.pipelineButton, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_5.Add(sizer_4, 1, wxALL|wxEXPAND, 5)
         self.viewFramePanel.SetAutoLayout(1)
         self.viewFramePanel.SetSizer(sizer_5)
         sizer_5.Fit(self.viewFramePanel)
