@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.20 2004/03/15 22:27:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.21 2004/03/17 12:52:37 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -39,14 +39,14 @@ import operator
 
 # -------------------------------------------------------------------------
 
-class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
+class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     
     """Slicing, dicing slice viewing class.
 
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.20 $
+    $Revision: 1.21 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -200,14 +200,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
     def getConfig(self):
         # implant some stuff into the _config object and return it
-
         self._config.savedPoints = self.selectedPoints.getSavePoints()
 
         # also save the visible bounds (this will be used during unpickling
         # to calculate pointwidget and text sizes and the like)
         self._config.boundsForPoints = self._threedRenderer.\
-                                       ComputeVisiblePropBounds()        
+                                       ComputeVisiblePropBounds()
 
+        self._config.implicitsState = self._implicits.getImplicitsState()
         
         return self._config
 
@@ -218,6 +218,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         self.selectedPoints.setSavePoints(
             savedPoints, self._config.boundsForPoints)
+
+        # we remain downwards compatible
+        if hasattr(self._config, 'implicitsState'):
+            self._implicits.setImplicitsState(self._config.implicitsState)
         
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
