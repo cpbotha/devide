@@ -15,9 +15,11 @@ class testModule(moduleBase, noConfigModuleMixin):
         # we'll be playing around with some vtk objects, this could
         # be anything
         self._testObject0 = vtk.vtkTriangleFilter()
+        self._testObject0b = vtk.vtkWindowedSincPolyDataFilter()
+        self._testObject0b.SetInput(self._testObject0.GetOutput())
         self._testObject1 = vtk.vtkCurvatures()
         self._testObject1.SetCurvatureTypeToMean()
-        self._testObject1.SetInput(self._testObject0.GetOutput())
+        self._testObject1.SetInput(self._testObject0b.GetOutput())
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
