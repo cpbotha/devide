@@ -46,4 +46,4 @@ if sv and sq:
     print "The frames have been written as %s*.png." % (fprefix,)
 
 else:
-    print "You have to mark a slice3dVWR module!"
+    print "You have to mark a slice3dVWR module and a superQuadric module!"
