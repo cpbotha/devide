@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.7 2004/03/14 17:41:33 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.8 2004/03/22 11:28:20 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -81,7 +81,7 @@ class selectedPoints(object, s3dcGridMixin):
              'Rename selected points',
              self._handlerPointsRename, True),
             ('---',), # important!  one-element tuple...
-            ('&Delete', 'Delete selected slices',
+            ('&Delete', 'Delete selected points',
              self._handlerPointsDelete, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(
@@ -320,11 +320,11 @@ class selectedPoints(object, s3dcGridMixin):
             # then remove it from our internal list
             del self._pointsList[idx]
 
-            # rerender
-            self.slice3dVWR.render3D()
+        # rerender
+        self.slice3dVWR.render3D()
 
-            # and sync up output points
-            self._syncOutputSelectedPoints()
+        # and sync up output points
+        self._syncOutputSelectedPoints()
 
     def _renamePoint(self, pointIdx, newName):
         """Given a point index and a new name, this will take care of all
