@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.1 2002/06/10 16:00:28 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.2 2002/08/28 14:59:40 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -60,6 +60,9 @@ icon_map = {'RenderWindow': 'renwin', 'Renderer': 'ren',
             'Assembly': 'actor', 'Python': 'python', 'Dummy1': 'question'}
 
 def get_icon (vtk_obj):
+    if not hasattr(vtk_obj, 'GetClassName'):
+        return None
+    
     strng = vtk_obj.GetClassName ()[3:]
     for key in icon_map.keys ():
 	if string.find (strng, key) > -1:
@@ -174,10 +177,13 @@ def get_vtk_objs (vtk_obj):
 		    else:
 			obj = col.GetNextItem ()
 		    icon = get_icon (obj)
-		    vtk_objs.append (["%s%d"%(icon[0], i), obj, icon[2]])
+                    if icon:
+                        vtk_objs.append (["%s%d"%(icon[0], i), obj, icon[2]])
 	    else:
 		obj = eval ("vtk_obj.Get%s ()"%method[0])
-                vtk_objs.append (get_icon (obj))
+                icon = get_icon(obj)
+                if icon:
+                    vtk_objs.append (icon)
 
     icon = icon_map['Source']
     try:
@@ -203,7 +209,8 @@ def get_vtk_objs (vtk_obj):
     else:
         if obj:
             icon = get_icon (obj)
-            vtk_objs.append (icon)
+            if icon:
+                vtk_objs.append (icon)
     
     return vtk_objs
 
@@ -213,6 +220,7 @@ def recursively_add_children(tree_ctrl, parent_node):
     Pass this function a wxTreeCtrl and _a_ node, and it will fill out
     everything below it by using Prabhu's code.
     """
+    
     children = get_vtk_objs(tree_ctrl.GetPyData(parent_node))
     for i in children:
         if not i[1].IsA("vtkRenderWindowInteractor"):
