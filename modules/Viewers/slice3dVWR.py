@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.21 2004/03/17 12:52:37 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.22 2004/03/18 11:46:42 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.21 $
+    $Revision: 1.22 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -59,7 +59,6 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
         self._numDataInputs = 7
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'inputData' : None,
-                         'observerID' : -1,
                          'vtkActor' : None, 'ipw' : None}
                        for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
@@ -240,15 +239,6 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
                 # remove data from the sliceDirections
                 self.sliceDirections.removeData(self._inputs[idx]['inputData'])
 
-                # remove our observer
-                if self._inputs[idx]['observerID'] >= 0:
-                    source = self._inputs[idx]['inputData'].GetSource()
-                    if source:
-                        source.RemoveObserver(
-                            self._inputs[idx]['observerID'])
-                    # whether we had a source or not, make sure to zero this
-                    self._inputs[idx]['observerID'] = -1
-
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     self._threedRenderer.RemoveActor(self._outline_actor)
                     self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
@@ -311,14 +301,6 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
                 # also store binding to the data itself
                 self._inputs[idx]['inputData'] = inputStream
 
-                # add an observer to this data and store the id
-                source = inputStream.GetSource()
-                if source:
-                    oid = source.AddObserver(
-                        'EndEvent',
-                        self.inputModifiedCallback)
-                    self._inputs[idx]['observerID'] = oid
-                
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     # things to setup when primary data is added
                     self._extractVOI.SetInput(inputStream)
@@ -826,10 +808,6 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     def voiWidgetEndInteractionCallback(self, o, e):
         # adjust the vtkExtractVOI with the latest coords
         self._extractVOI.SetVOI(self._currentVOI)
-
-    def inputModifiedCallback(self, o, e):
-        # the data has changed, so re-render what's on the screen
-        self.threedFrame.threedRWI.Render()
 
     def _rwiLeftButtonCallback(self, obj, event):
 
