@@ -1,4 +1,4 @@
-# $Id: symmetricDemonsRegistration.py,v 1.1 2004/12/05 20:13:34 cpbotha Exp $
+# $Id: symmetricDemonsRegistration.py,v 1.2 2004/12/06 18:01:46 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -10,7 +10,7 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
     """Performs symmetric forces demons registration on fixed and moving input
     images, returns deformation field.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -18,12 +18,17 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
 
         self._config.numberOfIterations = 50
+        self._config.deformationSmoothingStd = 1.0
         self._config.idiffThresh = 0.001
 
         configList = [
             ('Number of iterations:', 'numberOfIterations',
              'base:int', 'text',
              'Number of iterations for the Demons registration to run.'),
+            ('Standard deviation of vector smoothing:',
+             'deformationSmoothingStd', 'base:float', 'text',
+             'Standard deviation of Gaussian kernel used to smooth '
+             'intermediate deformation field'),            
             ('Intensity difference threshold:', 'idiffThresh',
              'base:float', 'text',
              'Voxels differing with less than this threshold are considered '
@@ -93,11 +98,14 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
 
     def configToLogic(self):
         self._demons.SetNumberOfIterations(self._config.numberOfIterations)
+        self._demons.SetStandardDeviations(
+            self._config.deformationSmoothingStd)
         self._demons.SetIntensityDifferenceThreshold(
             self._config.idiffThresh)
 
     def logicToConfig(self):
         self._config.numberOfIterations = self._demons.GetNumberOfIterations()
+        # we can't get the StandardDeviations back...
         self._config.idiffThresh = \
                                  self._demons.GetIntensityDifferenceThreshold()
         
