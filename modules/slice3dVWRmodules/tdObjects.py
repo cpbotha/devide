@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.10 2003/06/30 19:34:35 cpbotha Exp $
+# $Id: tdObjects.py,v 1.11 2003/06/30 22:21:40 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import math
@@ -197,12 +197,13 @@ class tdObjects:
                     newTransform = vtk.vtkTransform()
                     newTransform.Identity()
                     newTransform.PreMultiply()
+                    newTransform.Translate(vd)                    
                     tp0n = [-e for e in tp[0]]
-                    newTransform.Translate(tp0n)
+                    newTransform.Translate(tp[0])
                     newTransform.RotateWXYZ(
                         -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
-                    newTransform.Translate(tp[0])
-                    newTransform.Translate(vd)
+                    newTransform.Translate(tp0n)
+
                     newTransform.Concatenate(
                         objectDict['vtkActor'].GetMatrix())
 
