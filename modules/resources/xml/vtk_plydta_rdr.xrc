@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<resource>
+  <object class="wxPanel" name="PNL_VTK_PLYDTA_RDR_VIEW">
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>VTK Polydata Filename</label>
+            </object>
+            <flag>wxRIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="MV_ID_FILENAME">
+              <size>160,20</size>
+            </object>
+            <option>1</option>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="MV_ID_BROWSE">
+              <label>Browse</label>
+              <tooltip>Select the filename with a file open dialogue.</tooltip>
+            </object>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Examine the</label>
+            </object>
+            <flag>wxRIGHT|wxALIGN_CENTRE</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxChoice" name="MV_ID_VTK_OBJECT_CHOICE">
+              <content>
+                <item>vtkPolyDataReader</item>
+              </content>
+              <tooltip>Examine the internals of the VTK object.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>or</label>
+            </object>
+            <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="MV_ID_VTK_PIPELINE">
+              <label>Pipeline</label>
+              <tooltip>Browse the underlying VTK pipeline.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+              <tooltip>Close this dialogue without applying changes.</tooltip>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="MV_ID_SYNC">
+              <label>Sync</label>
+              <tooltip>Synchronise dialogue with configuration of underlying system.</tooltip>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="MV_ID_APPLY">
+              <label>Apply</label>
+              <tooltip>Modify configuration of underlying system as specified by this dialogue.</tooltip>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="MV_ID_EXECUTE">
+              <label>Execute</label>
+              <tooltip>Apply, then execute the module.</tooltip>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+              <tooltip>Apply, then close this dialogue.</tooltip>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+      </object>
+    </object>
+  </object>
+</resource>

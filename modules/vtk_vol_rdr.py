@@ -26,7 +26,8 @@ class vtk_vol_rdr(module_base,
         # declare this var here out of good habit
         self._view_frame = None
         # go on, create that view window
-        self.create_view_window(module_manager.get_module_view_parent_window())
+        parent_window = self._module_manager.get_module_view_parent_window()
+        self.create_view_window(parent_window)
         # make sure it's reflecting what it should
 	self.sync_config()
     
