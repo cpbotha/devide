@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.51 2002/08/26 09:17:56 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.52 2002/08/26 18:48:14 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -35,21 +35,17 @@ class vtk_slice_vwr(module_base,
         # call base constructor
         module_base.__init__(self, module_manager)
         self._num_inputs = 5
-        self._num_orthos = 3
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'vtkActor' : None}
                        for i in range(self._num_inputs)]
         # then the window containing the renderwindows
         self._view_frame = None
-        # the render windows themselves (4, 1 x 3d and 3 x ortho)
-        self._rwis = []
+        # we have a single RenderWindowInteractor
+        self._rwi = None
         self._ipws = []
         # the renderers corresponding to the render windows
-        self._renderers = []
+        self._render = None
 
-        # list of dictionaries for the "Heads Up Display" overlaid on
-        # each ortho view
-        self._ortho_huds = []
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
 
@@ -59,6 +55,8 @@ class vtk_slice_vwr(module_base,
         self._outline_actor = vtk.vtkActor()
         self._outline_actor.SetMapper(om)
         self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
+
+        # FIXME: continue here
 
         # list of lists of dictionaries
         # 3 element list (one per direction) of n-element lists of
@@ -189,6 +187,7 @@ class vtk_slice_vwr(module_base,
                     self._ortho_pipes[i].append(
                         {'input_idx' : idx,
                          'input_data' : input_stream,
+                         'vtkTextureMapToPlaneO' : vtk.vtkTextureMapToPlane(),
                          'vtkPlaneSourceO' : vtk.vtkPlaneSource(), 
                          'vtkActorO' : vtk.vtkActor()})
 
@@ -205,9 +204,14 @@ class vtk_slice_vwr(module_base,
                     # set up a plane source
                     cur_pipe['vtkPlaneSourceO'].SetXResolution(1)
                     cur_pipe['vtkPlaneSourceO'].SetYResolution(1)
+
+                    tm2p = cur_pipe['vtkTextureMapToPlaneO']
+                    tm2p.SetInput(cur_pipe['vtkPlaneSourceO'].GetOutput())
+                    tm2p.AutomaticPlaneGenerationOff()
+
                     # and connect it to a polydatamapper
                     mapper = vtk.vtkPolyDataMapper()
-                    mapper.SetInput(cur_pipe['vtkPlaneSourceO'].GetOutput())
+                    mapper.SetInput(tm2p.GetOutput())
                     cur_pipe['vtkActorO'].SetMapper(mapper)
                     # add the texture
                     cur_pipe['vtkActorO'].SetTexture(
@@ -514,7 +518,7 @@ class vtk_slice_vwr(module_base,
 
         # create and texture map the plane for ortho viewing
         ps = overlay_pipe['vtkPlaneSourceO']
-        self._sync_ortho_plane_with_ipw(ps, ipw)
+        self._sync_ortho_plane_with_ipw(overlay_pipe, ipw)
 
         # hmmm, we'll have to see if this makes overlays work, tee hee
         # the fact that we pack it in the order of addition should yield
@@ -589,23 +593,34 @@ class vtk_slice_vwr(module_base,
             else:
                 self._ortho_huds[ortho_idx]['axes_actor'].VisibilityOff()
 
-    def _sync_ortho_plane_with_ipw(self, plane_source, ipw):
+    def _sync_ortho_plane_with_ipw(self, overlay_pipe, ipw):
         # try and pull the data through
         ipw.GetInput().Update()
         rout = ipw.GetResliceOutput()
         rout.Update()
 
         output_bounds = rout.GetBounds()
-        plane_source.SetOrigin(output_bounds[0],
-                               output_bounds[2],
-                               0)
-        plane_source.SetPoint1(output_bounds[1],
-                               output_bounds[2],
-                               0)
-        plane_source.SetPoint2(output_bounds[0],
-                               output_bounds[3],
-                               0)
+        plane_source = overlay_pipe['vtkPlaneSourceO']
+        
+        # we want our plane source the same as the vtkImagePlaneWidget
+        # planesource, except "flat"
+        v1 = 3 * [0]        
+        ipw.GetVector1(v1)
+        v1m = reduce(operator.add, map(operator.mul, v1, v1)) ** .5
+        v2 = 3 * [0]        
+        ipw.GetVector2(v2)
+        v2m = reduce(operator.add, map(operator.mul, v2, v2)) ** .5
 
+        plane_source.SetOrigin(0,0,0)
+        plane_source.SetPoint1(v1m, 0, 0)
+        plane_source.SetPoint2(0, v2m, 0)
+
+        # we want our vtkTextureMapToPlane the same size as that of the
+        # vtkImagePlaneWidget
+        tm2p = overlay_pipe['vtkTextureMapToPlaneO']
+        tm2p.SetOrigin(0,0,0)
+        tm2p.SetPoint1(output_bounds[1] - output_bounds[0], 0, 0)
+        tm2p.SetPoint2(0, output_bounds[3] - output_bounds[2], 0)
 
     def _sync_pw_with_reslice(self, pw, reslice, update_placement=1):
         """Change plane-widget to be in sync with current reslice output.
@@ -700,7 +715,7 @@ class vtk_slice_vwr(module_base,
         cur_pipe = self._ortho_pipes[ortho_idx][0]
         
         # also update the pertinent ortho view
-        self._sync_ortho_plane_with_ipw(cur_pipe['vtkPlaneSourceO'],
+        self._sync_ortho_plane_with_ipw(cur_pipe,
                                         self._ipws[ortho_idx])
 
         # we have updated all layers, so we can now call this
