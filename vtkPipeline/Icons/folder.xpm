@@ -1,0 +1,28 @@
+/* XPM */
+static char *folder[] = {
+/* columns rows colors chars-per-pixel */
+"15 13 9 1",
+"  c black",
+". c #909000",
+"X c #cfcf60",
+"o c #ffcf90",
+"O c #ffff90",
+"+ c #c0c0c0",
+"@ c #ffffcf",
+"# c #efefef",
+"$ c None",
+/* pixels */
+"$$..... $$$$$$$",
+"$.#@@OO. $$$$$$",
+".XXXXXXX......$",
+".@@@@@@@@@@@OX ",
+".@OOOOOOOOOOoX ",
+".@OOOOOOOoOoOX ",
+".@OOOOOOOOoOoX ",
+".@OOOOOoOoOoOX ",
+".@OOOOOOoOoOoX ",
+".@OOOoOoOoOooX ",
+".@oOoOoOoOoooX ",
+".XXXXXXXXXXXXX ",
+"$              "
+};

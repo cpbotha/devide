@@ -1,0 +1,22 @@
+/* XPM */
+static char *minusnode[] = {
+/* columns rows colors chars-per-pixel */
+"11 11 5 1",
+"  c black",
+". c gray50",
+"X c #c0c0c0",
+"o c white",
+"O c None",
+/* pixels */
+"OOOOOOOOOOO",
+"O.........O",
+"O.ooooooo.O",
+"O.ooooooo.O",
+"O.ooooooo.O",
+"O.o     o.O",
+"O.ooooooo.O",
+"O.ooooooo.O",
+"O.ooooooo.O",
+"O.........O",
+"OOOOOOOOOOO"
+};

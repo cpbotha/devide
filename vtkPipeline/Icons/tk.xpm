@@ -1,0 +1,20 @@
+/* XPM */
+static char *tk[] = {
+/* columns rows colors chars-per-pixel */
+"14 11 3 1",
+"  c red",
+". c #c0c0c0",
+"X c None",
+/* pixels */
+"X       XXXXX ",
+"         XXX  ",
+"   XXXXX XX  X",
+" XXXXXX XX  XX",
+"X XXXX XXX X  ",
+"XXXXX  XX X X ",
+"XXXXX XXX  X X",
+"XXXX  XX    X ",
+"XXXX XXX    X ",
+"XXX  XXX XX  X",
+"XXX XXXXXXXXXX"
+};

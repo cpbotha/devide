@@ -1,0 +1,27 @@
+/* XPM */
+static char *file[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 5 1",
+"  c black",
+". c gray47",
+"X c gray72",
+"o c #f8f8f8",
+"O c white",
+/* pixels */
+"O.........ooooOO",
+"O.oooooooo..ooOO",
+"O.ooooooooXo.oOO",
+"O.oXooooooX   OO",
+"O.ooo  o  ooX OO",
+"O.ooooooooooX OO",
+"O.oo      ooX OO",
+"O.ooooooooooX OO",
+"O.oo      ooX OO",
+"O.ooooooooooX OO",
+"O.oo      ooX OO",
+"O.ooooooooooX OO",
+"O.ooooooooooX OO",
+"O.ooooooooooX OO",
+"O.XXXXXXXXXXX OO",
+"O             OO"
+};
