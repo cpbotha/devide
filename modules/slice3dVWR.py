@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.18 2003/04/25 10:24:06 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.19 2003/04/25 11:37:11 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -1392,14 +1392,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
             # if this is lockToSurface, lock it!
             if self._selectedPoints[idx]['lock_to_surface']:
-                ex,ey = pw.GetInteractor().GetEventPosition()
+                # convert the actual pointwidget position back to display coord
+                self._threedRenderer.SetWorldPoint(pw.GetPosition() + (1,))
+                self._threedRenderer.WorldToDisplay()
+                ex,ey,ez = self._threedRenderer.GetDisplayPoint()
                 # we use a vtkPropPicker - this is supposed to make use of
                 # the graphics hardware to pick rapidly
                 picker = vtk.vtkPropPicker()
-                picker.Pick(ex, ey, 0, self._threedRenderer)
-
-                pa = picker.GetActor()
-                if pa:
+                if picker.PickProp(ex, ey, self._threedRenderer):
                     xyz = picker.GetPickPosition()
                     pw.SetPosition(xyz)
 
