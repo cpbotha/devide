@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeRelease.sh,v 1.5 2004/06/23 18:38:05 cpbotha Exp $
+# $Id: makeRelease.sh,v 1.6 2005/01/12 22:32:52 cpbotha Exp $
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -18,22 +18,17 @@
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
 
-# make sure devide and vtkdevide sources are up to date
-echo "Updating devide and vtkdevide sources..."
-cd ..
-cvs -z3 update -dAP
-cd ../vtkdevide
-cvs -z3 update -dAP
-
-# make sure vtkdevide is up to date, conf and build
-echo "Building vtkdevide..."
-cmake .
-if [ `uname` == Linux ]; then
-make
+# make sure all our dependencies are up to date
+# first change to the dir containing the correct script (devide/utils)
+cd ../utils
+# then use our python script to make sure all is up to date
+if [ "$1" != noitk ]; then
+python updateAll.py --no-itk
 else
-./msBuild.bat
+python updateAll.py
 fi
-cd ../devide
+# go back to the devide dir
+cd ../
 
 # make documentation
 echo "Building documentation..."
