@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.52 2004/01/28 23:10:08 cpbotha Exp $
+# $Id: graphEditor.py,v 1.53 2004/01/28 23:18:05 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -592,32 +592,9 @@ class graphEditor:
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
         if event.LeftUp():
-            # whatever the case may be, rubberBanding stops
-            if self._rubberBandCoords:
-                # delete the rubberBand (rubberBandCoords should remain intact)
-                self._drawRubberBand(event, endRubberBand=True)
 
-                # now determine all glyphs inside of the rubberBand
-                allGlyphs = self._graphFrame.canvas.getObjectsOfClass(
-                    wxpc.coGlyph)
-
-                glyphsInRubberBand = []
-                for glyph in allGlyphs:
-                    if glyph.isInsideRect(self._rubberBandCoords[0],
-                                          self._rubberBandCoords[1],
-                                          self._rubberBandCoords[2],
-                                          self._rubberBandCoords[3]):
-                        glyphsInRubberBand.append(glyph)
-
-                if not event.ControlDown() and not event.ShiftDown():
-                    self._glyphSelection.removeAllGlyphs()
-
-                # hmmm, can't we be a bit more efficient with this and
-                # dc.BeginDrawing()?
-                for glyph in glyphsInRubberBand:
-                    self._glyphSelection.addGlyph(glyph)
-                
-                self._rubberBandCoords = None
+            # whatever the case may be, stop rubber banding
+            self._stopRubberBanding(event)
             
             # any dragged objects?
             if canvas.getDraggedObject() and \
@@ -1089,6 +1066,9 @@ class graphEditor:
             
     def _glyphButtonUp(self, glyph, eventName, event, module):
         if event.LeftUp():
+            # whatever the case may be, stop rubber banding.
+            self._stopRubberBanding(event)
+
             canvas = glyph.getCanvas()
 
             # when we receive the ButtonUp that ends the drag event, 
@@ -1378,7 +1358,34 @@ class graphEditor:
         except Exception, e:
             genUtils.logError('Could not delete module: %s' % (str(e)))
         
-                         
+    def _stopRubberBanding(self, event):
+        # whatever the case may be, rubberBanding stops
+        if self._rubberBandCoords:
+            # delete the rubberBand (rubberBandCoords should remain intact)
+            self._drawRubberBand(event, endRubberBand=True)
+
+            # now determine all glyphs inside of the rubberBand
+            allGlyphs = self._graphFrame.canvas.getObjectsOfClass(
+                wxpc.coGlyph)
+
+            glyphsInRubberBand = []
+            for glyph in allGlyphs:
+                if glyph.isInsideRect(self._rubberBandCoords[0],
+                                      self._rubberBandCoords[1],
+                                      self._rubberBandCoords[2],
+                                      self._rubberBandCoords[3]):
+                    glyphsInRubberBand.append(glyph)
+
+            if not event.ControlDown() and not event.ShiftDown():
+                self._glyphSelection.removeAllGlyphs()
+
+            # hmmm, can't we be a bit more efficient with this and
+            # dc.BeginDrawing()?
+            for glyph in glyphsInRubberBand:
+                    self._glyphSelection.addGlyph(glyph)
+                
+            self._rubberBandCoords = None
+        
             
             
 
