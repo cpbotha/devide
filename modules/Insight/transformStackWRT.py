@@ -1,4 +1,4 @@
-# $Id: transformStackWRT.py,v 1.3 2003/12/09 14:01:26 cpbotha Exp $
+# $Id: transformStackWRT.py,v 1.4 2003/12/09 16:37:10 cpbotha Exp $
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 from moduleBase import moduleBase
@@ -26,7 +26,7 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame(
             'Select a filename',
-            '2D Transform Stack file (*.2ts)|*.dts|All files (*)|*',
+            '2D Transform Stack file (*.2ts)|*.2ts|All files (*)|*',
             objectDict=None)
 
         # set up some defaults
