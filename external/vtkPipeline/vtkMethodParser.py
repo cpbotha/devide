@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.7 2004/05/18 23:10:00 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.8 2004/05/20 22:23:47 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -171,9 +171,11 @@ class VtkDirMethodParser:
 		except ValueError:
 		    pass
 		else:
-		    self.get_set_meths.append (method[3:])
-		    self.methods.remove (method)
-		    self.methods.remove (set_m)
+                    # GetInputMemoryLimit is obsolete
+                    if method not in ['GetInputMemoryLimit']:
+                        self.get_set_meths.append (method[3:])
+                        self.methods.remove (method)
+                        self.methods.remove (set_m)
 
 	self.clean_up_methods (vtk_obj)
 
