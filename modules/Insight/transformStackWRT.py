@@ -1,4 +1,4 @@
-# $Id: transformStackWRT.py,v 1.1 2003/12/09 11:18:32 cpbotha Exp $
+# $Id: transformStackWRT.py,v 1.2 2003/12/09 12:44:09 cpbotha Exp $
 
 import cPickle
 from register2D import transformStackClass
@@ -17,7 +17,7 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
-        # this is the output
+        # this is the input
         self._transformStack = None
 
         # we now have a viewFrame in self._viewFrame

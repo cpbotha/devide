@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.53 2003/12/09 11:18:32 cpbotha Exp $
+# $Id: __init__.py,v 1.54 2003/12/09 12:44:09 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -43,5 +43,6 @@ moduleList = ['Readers.dicomRDR',
 
               'Insight.imageStackRDR',
               'Insight.register2D',
-              'Insight.transformStackWRT']
+              'Insight.transformStackWRT',
+              'Insight.transformStackRDR']
 

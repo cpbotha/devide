@@ -85,7 +85,6 @@ class register2D(moduleBase):
             # let's setup for a new stack!
             try:
                 assert(isinstance(inputStream, imageStackClass))
-                print "about to call update"
                 inputStream.Update()
                 assert(len(inputStream) >= 2)
             except Exception:
@@ -256,8 +255,9 @@ class register2D(moduleBase):
         self.controlFrame.maxIterationsTextCtrl.SetValue(str(maxIterations))
 
     def _handlerShowControls(self, event):
-        if not self.controlFrame.Show(True):
-            self.controlFrame.Raise()
+        # make sure the window is visible and raised
+        self.controlFrame.Show(True)
+        self.controlFrame.Raise()
 
     def _handlerTransformButton(self, event):
         # take xtranslate, ytranslate, rotate and work it into the current
