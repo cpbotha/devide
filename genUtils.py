@@ -2,7 +2,7 @@ from wxPython.wx import *
 import string
 import traceback
 
-def log_error(msg):
+def logError(msg):
     # create nice formatted string with tracebacks and all
     dmsg = \
          string.join(traceback.format_exception(sys.exc_type,
