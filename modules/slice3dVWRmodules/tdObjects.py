@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.18 2003/08/06 21:47:18 cpbotha Exp $
+# $Id: tdObjects.py,v 1.19 2003/08/06 22:16:05 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -506,14 +506,20 @@ class tdObjects:
         return foundObjects
 
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
+        # make sure the transform is up to date
+        self._observerMotionBoxWidgetInteraction(eventObject, eventType)
+        
+        # and update the contours after we're done moving things around
+        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(
+            eventObject.GetProp3D())
+
+    def _observerMotionBoxWidgetInteraction(self, eventObject, eventType):
         bwTransform = vtk.vtkTransform()
         eventObject.GetTransform(bwTransform)
         eventObject.GetProp3D().SetUserTransform(bwTransform)
 
-        # and update the contours after we've moved things around
-        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(
-            eventObject.GetProp3D())
-
+        # FIXME: continue here: axis should also be transformed (and
+        # later also flattened!)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -694,6 +700,8 @@ class tdObjects:
 
                 bw.AddObserver('EndInteractionEvent',
                                self._observerMotionBoxWidgetEndInteraction)
+                bw.AddObserver('InteractionEvent',
+                               self._observerMotionBoxWidgetInteraction)
 
                 try:
                     ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
