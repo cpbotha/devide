@@ -1,3 +1,5 @@
-$Id: TODO,v 1.1 2002/05/06 19:20:43 cpbotha Exp $
+$Id: TODO,v 1.2 2002/05/19 15:15:00 cpbotha Exp $
 
-- change vtk_slice_vwr to use vtkImageActor
+- use the three axes provided by plane widget geometry to set resliceaxes
+  directioncosines of the imagereslice.
+
