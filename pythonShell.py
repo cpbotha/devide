@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.10 2004/06/23 09:30:06 cpbotha Exp $
+# $Id: pythonShell.py,v 1.11 2004/06/23 10:53:28 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -85,8 +85,6 @@ class pythonShell:
             # runfile also generates an IOError if it can't load the file
             execfile(path, globals(), self._psFrame.pyShell.interp.locals)
 
-            #
-            self._psFrame.pyShell.push('')
             
         except IOError,e:
             md = wx.MessageDialog(
@@ -94,6 +92,11 @@ class pythonShell:
                 'Could not open file %s: %s' % (path, str(e)), 'Error',
                 wx.OK|wx.ICON_ERROR)
             md.ShowModal()
+
+        # whatever happens, advance shell window with one line so
+        # the user can type again
+        self._psFrame.pyShell.push('')
+
 
         # redirect thingies back
         self._psFrame.pyShell.redirectStdout(False)
