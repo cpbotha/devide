@@ -1,4 +1,4 @@
-# $Id: histogram2D.py,v 1.5 2004/03/05 14:22:00 cpbotha Exp $
+# $Id: histogram2D.py,v 1.6 2004/03/19 14:25:43 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -54,6 +54,7 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
         self.setInput(0, None)
         self.setInput(1, None)
 
+        scriptedConfigModuleMixin.close(self)
         moduleBase.close(self)
 
     def getInputDescriptions(self):
