@@ -1,4 +1,4 @@
-# $Id: vtiWRT.py,v 1.3 2004/02/29 21:24:30 cpbotha Exp $
+# $Id: vtiWRT.py,v 1.4 2004/04/19 15:16:31 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -75,6 +75,7 @@ class vtiWRT(moduleBase, filenameViewModuleMixin):
 
     def executeModule(self):
         if len(self._writer.GetFileName()) and self._writer.GetInput():
+            self._writer.GetInput().UpdateInformation()
             self._writer.GetInput().SetUpdateExtentToWholeExtent()
             self._writer.GetInput().Update()
             self._writer.Write()
