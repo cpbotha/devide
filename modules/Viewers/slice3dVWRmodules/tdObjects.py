@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.15 2004/12/06 16:20:17 cpbotha Exp $
+# $Id: tdObjects.py,v 1.16 2004/12/06 21:21:42 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -1036,7 +1036,7 @@ class tdObjects(s3dcGridMixin):
         if not sObjects:
             md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                   "Select at least one object before "
-                                  "using AxisToSlice.",
+                                  "using rotate around axis.",
                                   "Information",
                                   wx.OK | wx.ICON_INFORMATION)
             md.ShowModal()
@@ -1052,6 +1052,8 @@ class tdObjects(s3dcGridMixin):
                                       % (objectDict['objectName'],),
                                       "Information",
                                       wx.OK | wx.ICON_INFORMATION)
+                md.ShowModal()
+                return
 
             else:
             
@@ -1096,7 +1098,22 @@ class tdObjects(s3dcGridMixin):
                         # create a transform with the requested rotation
                         newTransform = vtk.vtkTransform()
                         newTransform.Identity()
+                        # here we choose PostMultiply, i.e. A * M where M
+                        # is the current trfm and A is new so that our
+                        # actions have a natural order: Ta * R * To * O
+                        # where To is the translation back to the origin,
+                        # R is the rotation and Ta is the translation back
+                        # to where we started.  O is the object that is being
+                        # transformed
+                        newTransform.PostMultiply()
+                        # we have a vector from 0 to 1, so we have
+                        # to translate to 0 first
+                        newTransform.Translate([-e for e in twoPoints[0]])
+                        # do the rotation
                         newTransform.RotateWXYZ(angle, v)
+                        # then transform it back to point 0
+                        newTransform.Translate(twoPoints[0])
+                        # finally apply the transform
                         self._transformObjectProps(sObject, newTransform)
                         
                         # make sure everything dependent on this tdObject
