@@ -190,9 +190,24 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         dc.SetBackground(wx.wxBrush(self.GetBackgroundColour(), wx.wxSOLID))
         dc.Clear()
 
-        # draw all objects
-        for cobj in self._cobjects:
+        # draw glyphs last (always)
+        glyphs = []
+        theRest = []
+        for i in self._cobjects:
+            if isinstance(i, coGlyph):
+                glyphs.append(i)
+            else:
+                theRest.append(i)
+                
+        for cobj in theRest:
             cobj.draw(dc)
+
+        for cobj in glyphs:
+            cobj.draw(dc)
+        
+        # draw all objects
+        #for cobj in self._cobjects:
+        #    cobj.draw(dc)
 
         dc.EndDrawing()
 

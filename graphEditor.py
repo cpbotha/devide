@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.78 2004/05/06 13:02:28 cpbotha Exp $
+# $Id: graphEditor.py,v 1.79 2004/05/07 13:09:55 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -466,7 +466,7 @@ class graphEditor:
     
     def createModuleAndGlyph(self, x, y, moduleName):
         """Create a DeVIDE and a corresponding glyph at window event
-        position x,y.  x, y will be converted to real (canvavs-absolute)
+        position x,y.  x, y will be converted to real (canvas-absolute)
         coordinates internally.
         """
         
