@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.101 2004/08/15 22:38:49 cpbotha Exp $
+# $Id: __init__.py,v 1.102 2004/08/24 16:44:28 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -80,7 +80,8 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Insight.cannyEdgeDetection' : ('Insight',),
               'Insight.curvatureAnisotropicDiffusion' : ('Insight',),
               'Insight.gaussianConvolve' : ('Insight',),
-              'Insight.geodesicActiveContour' : ('Insight',),
+              'Insight.geodesicActiveContour' : ('Insight', 'Level Sets'),
+              'Insight.gvfgac' : ('Insight', 'Level Sets'),
               'Insight.nbCurvesLevelSet' : ('Insight',),
               'Insight.sigmoid' : ('Insight',),
               'Insight.watershed' : ('Insight', 'Morphology'),
@@ -91,6 +92,8 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Insight.discreteLaplacian' : ('Insight',),
               'Insight.nbhSeedConnect' : ('Insight',),
               'Insight.register2D' : ('Insight',),
+              'Insight.tpgac' : ('Insight', 'Level Sets'),
+
               'Insight.transform2D' : ('Insight',),
               'Insight.transformStackWRT' : ('Insight',),
               'Insight.transformStackRDR' : ('Insight',),
