@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.7 2004/06/02 22:16:19 cpbotha Exp $
+# $Id: tdObjects.py,v 1.8 2004/07/08 13:05:49 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -197,6 +197,9 @@ class tdObjects(s3dcGridMixin):
             ('Set &Colour',
              'Change colour of selected objects',
              self._handlerObjectSetColour, True),
+            ('Set O&pacity',
+             'Change opacity of selected objects',
+             self._handlerObjectSetOpacity, True),
             ('Con&touring On +',
              'Activate contouring for all selected objects',
              self._handlerObjectContourOn, True),
@@ -739,6 +742,37 @@ class tdObjects(s3dcGridMixin):
 
         if objs:
             self.slice3dVWR.render3D()
+
+    def _handlerObjectSetOpacity(self, event):
+
+
+        opacityText = wx.GetTextFromUser(
+            'Enter a new opacity value (0.0 to 1.0) for all selected '
+            'objects.')
+
+        if opacityText:
+            try:
+                opacity = float(opacityText)
+            except ValueError:
+                pass
+            else:
+                if opacity > 1.0:
+                    opacity = 1.0
+                elif opacity < 0.0:
+                    opacity = 0.0
+
+                objs = self._getSelectedObjects()                    
+                for obj in objs:
+                    prop = self.findPropByObject(obj)
+                    if prop:
+                        try:
+                            prop.GetProperty().SetOpacity(opacity)
+                        except AttributeError:
+                            # it could be a volume or somesuch...
+                            pass
+
+                if objs:
+                    self.slice3dVWR.render3D()
                     
     def _handlerObjectHide(self, event):
         objs = self._getSelectedObjects()
