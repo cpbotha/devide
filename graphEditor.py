@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.12 2003/05/09 09:08:42 cpbotha Exp $
+# $Id: graphEditor.py,v 1.13 2003/05/09 17:11:25 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -515,7 +515,7 @@ class graphEditor:
         line.updateEndPoints()
 
         #
-        overshoot = 4
+        overshoot = 5
 
         successfulInsert = True
         while successfulInsert:
@@ -569,6 +569,7 @@ class graphEditor:
                     if newY == ymin:
                         newY -= overshoot
                         # try the insert
+                        line.insertRoutingPoint(nearestClipPoint[0], newY)
                         successfulInsert = line.insertRoutingPoint(newX, newY)
 #                         if not successfulInsert:
 #                             # if it failed, it's because we added a duplicate
@@ -579,6 +580,7 @@ class graphEditor:
 #                             successfulInsert = si
                     else:
                         newY += overshoot
+                        line.insertRoutingPoint(nearestClipPoint[0], newY)
                         successfulInsert = line.insertRoutingPoint(newX, newY)
 #                         if not successfulInsert:
 #                             newY -= overshoot
@@ -604,6 +606,7 @@ class graphEditor:
                         newX += overshoot
                         
                     # duplicates should never happen here!
+                    line.insertRoutingPoint(newX, nearestClipPoint[1])
                     successfulInsert = line.insertRoutingPoint(newX, newY)
 
                 else:
