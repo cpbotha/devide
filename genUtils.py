@@ -3,6 +3,16 @@ import string
 import traceback
 import vtk
 
+def clampVariable(v, min, max):
+    """Make sure variable is on the range [min,max].  Return clamped variable.
+    """
+    if v < min:
+        v = min
+    elif v > max:
+        v = max
+
+    return v
+
 def logError(msg):
     # create nice formatted string with tracebacks and all
     ei = sys.exc_info()
