@@ -51,12 +51,14 @@ class register2D(moduleBase):
         del self._itkExporter2
         del self._vtkImporter2
 
-        del self._imageViewer
-        # nasty trick to take care of RenderWindow        
+        # nasty trick to take care of RenderWindow
+        self._threedRenderer.RemoveAllProps()
+        del self._threedRenderer
         self.viewerFrame.threedRWI.GetRenderWindow().WindowRemap()
         self.viewerFrame.Destroy()
         del self.viewerFrame
-
+        
+        # then do the controlFrame
         self.controlFrame.Destroy()
         del self.controlFrame
 
@@ -103,6 +105,12 @@ class register2D(moduleBase):
         self.viewerFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, viewerFrame)
 
+        self._threedRenderer = vtk.vtkRenderer()
+        self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
+        self.viewerFrame.threedRWI.GetRenderWindow().AddRenderer(
+            self._threedRenderer)
+        
+
         # we need to have two converters from itk::Image to vtkImageData,
         # hmmmm kay?
 
@@ -124,9 +132,6 @@ class register2D(moduleBase):
         CVIPy.ConnectITKUC2ToVTK(self._itkExporter2.GetPointer(),
                                 self._vtkImporter2)
         
-
-        self._imageViewer = vtk.vtkImageViewer2()
-        self._imageViewer.SetupInteractor(self.viewerFrame.threedRWI)
 
         # controlFrame creation
         controlFrame = modules.Insight.resources.python.\
@@ -160,14 +165,21 @@ class register2D(moduleBase):
         self._rescaler1.SetInput(self._imageStack[0])
         self._rescaler1.Update() # give ITK a chance to complain...
         self._rescaler2.SetInput(self._imageStack[1])
-        self._rescaler2.Update() # give ITK a chance to complain...        
+        self._rescaler2.Update() # give ITK a chance to complain...
 
 #        checker = vtk.vtkImageCheckerboard()
 #        checker.SetNumberOfDivisions(10, 10, 1)
 #        checker.SetInput1(self._vtkImporter1.GetOutput())
 #        checker.SetInput2(self._vtkImporter2.GetOutput())
 
-        print self._vtkImporter1.GetOutput()
+        self._ipw1 = vtk.vtkImagePlaneWidget()
+        self._vtkImporter1.Update()
+        self._ipw1.SetInput(self._vtkImporter1.GetOutput())
+        self._ipw1.SetPlaneOrientation(2)        
+        self._ipw1.SetInteractor(self.viewerFrame.threedRWI)
+        self._ipw1.On()
+        
+
         #self._imageViewer.SetInput(self._vtkImporter1.GetOutput())
 
-        #self._imageViewer.GetRenderWindow().Render()
+        self.viewerFrame.threedRWI.GetRenderWindow().Render()
