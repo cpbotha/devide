@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.97 2004/08/03 16:15:40 cpbotha Exp $
+# $Id: __init__.py,v 1.98 2004/08/12 16:48:00 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -48,6 +48,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Filters.polyDataNormals' : ('Filters',),
               'Filters.resampleImage' : ('Filters',),
               'Filters.seedConnect' : ('Filters',),
+              'Filters.selectConnectedComponents' : ('Filters',),
               'Filters.shellSplatSimple' : ('Filters',),
               'Filters.surfaceToDistanceField' : ('Filters',),
               'Filters.transformPolyData' : ('Filters',),
