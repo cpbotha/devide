@@ -72,7 +72,7 @@ class MainFrame(wxFrame):
         self.pushSliceSpinCtrlId  =  wxNewId()
         self.pushSliceSpinCtrl = wxSpinCtrl(self.notebook_1_copy_pane_6, self.pushSliceSpinCtrlId , "0", min=-100, max=100, style=wxSP_ARROW_KEYS)
         self.surfacePickActionRB = wxRadioBox(self.notebook_1_copy_pane_7, -1, "When I click on an object in the scene", choices=["Do nothing", "Place a point on its surface", "Configure the object", "Show a scalar bar for its input"], majorDimension=1, style=wxRA_SPECIFY_ROWS)
-        self.objectsListCtrl = wxListCtrl(self.notebook_1_copy_pane_7, -1, style=wxLC_REPORT|wxSUNKEN_BORDER)
+        self.objectsListGrid = wxGrid(self.notebook_1_copy_pane_7, -1)
         self.button_2 = wxButton(self.notebook_1_copy_pane_7, -1, "button_2")
 
         self.__set_properties()
@@ -82,7 +82,7 @@ class MainFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: MainFrame.__set_properties
         self.SetTitle("Slice3D Viewer")
-        self.panel_3.SetSize((677, 426))
+        self.panel_3.SetSize((711, 399))
         self.sliceCursorNameCombo.SetSelection(0)
         self.spointsGrid.CreateGrid(0, 3)
         self.spointsGrid.SetRowLabelSize(30)
@@ -92,12 +92,19 @@ class MainFrame(wxFrame):
         self.spointsGrid.SetColSize(0, 200)
         self.spointsGrid.SetColLabelValue(1, "Discrete")
         self.spointsGrid.SetColLabelValue(2, "Value")
-        self.spointsGrid.SetSize((668, 148))
+        self.spointsGrid.SetSize((698, 186))
         self.sliceNameChoice.SetSelection(0)
         self.sliceEnabledCheckBox.SetValue(1)
         self.sliceInteractionCheckBox.SetValue(1)
         self.acsChoice.SetSelection(0)
         self.surfacePickActionRB.SetSelection(0)
+        self.objectsListGrid.CreateGrid(2, 3)
+        self.objectsListGrid.EnableEditing(0)
+        self.objectsListGrid.EnableDragRowSize(0)
+        self.objectsListGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        self.objectsListGrid.SetColLabelValue(0, "Object Name")
+        self.objectsListGrid.SetColLabelValue(1, "Colour")
+        self.objectsListGrid.SetColLabelValue(2, "Visible")
         # end wxGlade
 
     def __do_layout(self):
@@ -179,7 +186,7 @@ class MainFrame(wxFrame):
         sizer_6.Fit(self.notebook_1_copy_pane_6)
         sizer_6.SetSizeHints(self.notebook_1_copy_pane_6)
         sizer_10.Add(self.surfacePickActionRB, 0, wxALL|wxEXPAND, 4)
-        sizer_3.Add(self.objectsListCtrl, 1, wxALL|wxEXPAND, 4)
+        sizer_3.Add(self.objectsListGrid, 1, wxEXPAND, 0)
         sizer_11.Add(self.button_2, 0, 0, 0)
         sizer_3.Add(sizer_11, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4)
         sizer_10.Add(sizer_3, 1, wxALL|wxEXPAND, 4)

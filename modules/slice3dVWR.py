@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.30 2003/06/15 20:56:23 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.31 2003/06/15 22:36:13 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -510,13 +510,17 @@ class tdObjects:
                       'GOLD',  'MAGENTA', 'GREY80',
                       'PURPLE']
 
-    def __init__(self, slice3dVWRThingy, listCtrl):
+    _gridNameCol = 0
+    _gridColourCol = 1
+    _gridVisibleCol = 2
+
+    def __init__(self, slice3dVWRThingy, grid):
         self._tdObjectsDict = {}
         self._objectId = 0
         
         self._slice3dVWR = slice3dVWRThingy
-        self._listCtrl = listCtrl
-        self._initialiseListCtrl()
+        self._grid = grid
+        self._initialiseGrid()
 
         # this will fix up wxTheColourDatabase
         colourdb.updateColourDB()
@@ -524,19 +528,19 @@ class tdObjects:
     def close(self):
         self._tdObjectsDict.clear()
         self._slice3dVWR = None
-        self._listCtrl = None
-        self._listCtrl.ClearAll()
+        self._grid.ClearGrid()
+        self._grid = None
 
-    def _initialiseListCtrl(self):
+    def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
         """
 
         # delete all items and columns
-        self._listCtrl.ClearAll()
+        self._grid.ClearGrid()
 
-        #
-        self._listCtrl.InsertColumn(0, 'Object Name')
-        self._listCtrl.InsertColumn(1, 'Colour')
+        self._grid.SetColSize(self._gridNameCol, 100)
+        self._grid.SetColSize(self._gridColourCol, 150)
+        self._grid.SetColSize(self._gridVisibleCol, 50)
 
     def addObject(self, tdObject):
         """Takes care of all the administration of adding a new 3-d object
@@ -544,17 +548,17 @@ class tdObjects:
         """
 
         if not self._tdObjectsDict.has_key(tdObject):
+            nrGridRows = self._grid.GetNumberRows()
             # we get to pick a colour and a name
-            nrLCItems = self._listCtrl.GetItemCount()            
             colourName = self._objectColours[
-                nrLCItems % len(self._objectColours)]
+                nrGridRows % len(self._objectColours)]
             objectName = "%s%d" % ('obj', self._objectId)
             self._objectId += 1
 
             # create a colour as well
             colour = wxTheColourDatabase.FindColour(colourName).asTuple()
             # normalise
-            colour = tuple([c / 255.0 for c in colour])
+            nColour = tuple([c / 255.0 for c in colour])
 
             # now actually create the necessary thingies and add the object
             # to the scene
@@ -574,7 +578,7 @@ class tdObjects:
                     mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
-                    actor.GetProperty().SetDiffuseColor(colour)
+                    actor.GetProperty().SetDiffuseColor(nColour)
                     self._slice3dVWR._threedRenderer.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
@@ -621,11 +625,12 @@ class tdObjects:
                 # the object has no GetClassName that's callable
                 raise Exception, 'tdObject has no GetClassName()'
 
-            # if we get this far, we've been able to do something
-
-            self._listCtrl.InsertStringItem(nrLCItems, objectName)
-            self._listCtrl.SetStringItem(nrLCItems, 1, colourName)
-            self._tdObjectsDict[tdObject]['listCtrlIndex'] = nrLCItems
+            self._grid.AppendRows()
+            self._grid.SetCellValue(nrGridRows, 0, objectName)
+            self._grid.SetCellValue(nrGridRows, 1, colourName)
+            self._grid.SetCellValue(nrGridRows, 2, 'Yes')
+            
+            self._tdObjectsDict[tdObject]['gridRow'] = nrGridRows
             
         # ends 
         else:
@@ -659,8 +664,7 @@ class tdObjects:
                   'Unhandled object type in tdObjects.removeObject()'
 
         # whatever the case may be, we need to remove it from the listCtrl
-        self._listCtrl.DeleteItem(
-            self._tdObjectsDict[tdObject]['listCtrlIndex'])
+        self._grid.DeleteRows(self._tdObjectsDict[tdObject]['gridRow'])
         # and from the dict
         del self._tdObjectsDict[tdObject]
         
@@ -732,7 +736,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
-                                    self._viewFrame.objectsListCtrl)
+                                    self._viewFrame.objectsListGrid)
 
         # create a default slice
         self._createSlice('Axial')
