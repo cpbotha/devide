@@ -72,7 +72,8 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
 pyz = PYZ(a.pure)
 
 
-options = [('f','','OPTION')] #+ [('v', '', 'OPTION')], # Python is ran with -v
+options = [('f','','OPTION')] # LD_LIBRARY_PATH is correctly set on Linux
+#+ [('v', '', 'OPTION')],     # Python is ran with -v
 
 exe = EXE(pyz,
           a.scripts + options,
