@@ -89,7 +89,8 @@ class moduleManager:
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inProgressCallback = mutex.mutex()
 
-        self._executionDisabled = True
+        # default is not to disable
+        self.enableExecution()
 
     def close(self):
         """Iterates through each module and closes it.
@@ -533,9 +534,16 @@ class moduleManager:
     def connectModules(self, output_module, output_idx,
                         input_module, input_idx):
         """Connect output_idx'th output of provider output_module to
-        input_idx'th input of consumer input_module.
+        input_idx'th input of consumer input_module.  If an error occurs
+        during connection, an exception will be raised.
         """
 
+        # if a port is already connected, refuse the connection!
+        if self._moduleDict[input_module].inputs[input_idx] != None:
+            raise Exception, \
+                  "%d'th input of module %s already connected." % \
+                  (input_idx, input_module.__class__.__name__)
+            
 	input_module.setInput(input_idx, output_module.getOutput(output_idx))
         
         # update the inputs thingy on the input_module
