@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.15 2004/06/23 13:35:40 cpbotha Exp $
+# $Id: pythonShell.py,v 1.16 2004/06/23 15:15:30 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -7,13 +7,12 @@ import wx
 
 class pythonShell:
 
-    def __init__(self, parentWindow, devideApp):
+    def __init__(self, parentWindow, icon, appDir):
         self._parentWindow = parentWindow
 
         self._psFrame = self._createFrame()
 
         # set icon
-        icon = devideApp.getApplicationIcon()
         self._psFrame.SetIcon(icon)
         # make sure that when the window is closed, we just hide it (teehee)
         wx.EVT_CLOSE(self._psFrame, self.close_ps_frame_cb)
@@ -22,7 +21,7 @@ class pythonShell:
                       self.close_ps_frame_cb)
 
         # we always start in this directory with our fileopen dialog
-        self._snippetsDir = os.path.join(devideApp.getAppDir(), 'snippets')
+        self._snippetsDir = os.path.join(appDir, 'snippets')
         wx.EVT_BUTTON(self._psFrame, self._psFrame.loadSnippetButton.GetId(),
                       self._handlerLoadSnippet)
 

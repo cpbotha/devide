@@ -282,7 +282,10 @@ class moduleManager:
         
 
     def get_app_dir(self):
-        return self._devide_app.get_appdir()
+        return self.getAppDir()
+
+    def getAppDir(self):
+        return self._devide_app.getAppDir()
 	
     def getAvailableModuleList(self):
 	return self._availableModuleList

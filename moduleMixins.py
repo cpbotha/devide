@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.48 2004/05/24 21:24:01 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.49 2004/06/23 15:15:30 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -39,7 +39,10 @@ class introspectModuleMixin(object):
         if obj not in self._pythonShells:
             icon = moduleUtils.getModuleIcon()
             
-            self._pythonShells[obj] = pythonShell(parentWindow, icon)
+            self._pythonShells[obj] = pythonShell(
+                parentWindow, icon,
+                self._moduleManager.getAppDir())
+            
             self._pythonShells[obj].injectLocals({'obj' : obj})
             self._pythonShells[obj].setStatusBarMessage(
                 "'obj' is bound to the introspected object")
