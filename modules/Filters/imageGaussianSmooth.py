@@ -1,5 +1,5 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: imageGaussianSmooth.py,v 1.4 2003/11/22 17:16:36 cpbotha Exp $
+# $Id: imageGaussianSmooth.py,v 1.5 2003/12/14 21:45:54 cpbotha Exp $
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
@@ -10,6 +10,9 @@ from wxPython.wx import *
 import vtk
 
 class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
+
+    """Performs 3D Gaussian filtering of the input volume.
+    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
