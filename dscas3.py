@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.49 2003/09/23 15:59:09 cpbotha Exp $
+# $Id: dscas3.py,v 1.50 2003/09/24 10:45:24 cpbotha Exp $
 
 DSCAS3_VERSION = '20030923'
 
@@ -225,6 +225,8 @@ class dscas3_app_t(wxApp):
             # theObject is of course a vtkEventOutputWindow
             textType = theObject.GetTextType()
             text = theObject.GetText()
+
+            #print "EOW: %d - %s" % (textType, text)
             
             if textType == 0:
                 # Text
