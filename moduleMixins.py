@@ -1,5 +1,6 @@
-# $Id: moduleMixins.py,v 1.16 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.17 2003/06/16 15:21:55 cpbotha Exp $
 
+from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import moduleUtils
@@ -253,7 +254,39 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
 
         if path != None:
             self._viewFrame.filenameText.SetValue(path)
-        
+
+# ----------------------------------------------------------------------------
+class colourDialogMixin:
+
+    def __init__(self, parent):
+        ccd = wxColourData()
+        # often-used BONE custom colour
+        ccd.SetCustomColour(0,wxColour(255, 239, 219))
+        # we want the detailed dialog under windows        
+        ccd.SetChooseFull(True)
+        # create the dialog
+        self._colourDialog = ColourDialog(parent, ccd)
+
+    def close(self):
+        # destroy the dialog
+        self._colourDialog.Destroy()
+        # remove all references
+        del self._colourDialog
+
+    def getColourDialogColour(self):
+        if self._colourDialog.ShowModal() == wxID_OK:
+            colour = self._colourDialog.GetColourData().GetColour()
+            return tuple([c / 255.0 for c in
+                          (colour.Red(), colour.Green(), colour.Blue())])
+        else:
+            return None
+
+    def setColourDialogColour(self, normalisedRGBTuple):
+        """This is the default colour we'll begin with.
+        """
+
+        R,G,B = [t * 255.0 for t in normalisedRGBTuple]
+        self._colourDialog.GetColourData().SetColour(wxColour(R, G, B))
 
 
 # ----------------------------------------------------------------------------
