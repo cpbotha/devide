@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.9 2003/04/09 22:38:50 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.10 2003/05/03 23:37:36 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -33,15 +33,23 @@ related to making the GUI persistent.
 
 import vtkMethodParser
 import types, string, re, traceback
-from wxPython.lib.PyCrust import shell, version
 
 try:
     from wxPython.wx import *
     from wxPython.html import *
+    from wxPython.lib.PyCrust import shell, version
 except ImportError:
     print "Cannot import the wxPython.{wx,html} modules. "\
           "Install it and try again."
     sys.exit (1)
+
+try:
+    # if we're being run from dscas3, this should work
+    from external.SwitchColourDialog import ColourDialog
+except ImportError:
+    # if not, fall back to old behaviour (but DO print a warning)
+    print "ConfigVtkObj WARNING: could not import external.SwitchColourDialog"
+    ColourDialog = wxColourDialog
 
 def print_err (msg):
     # create nice formatted string with tracebacks and all
@@ -530,10 +538,12 @@ class ConfigVtkObj:
                               colour_tuple[2] * 255.0)
         ccd = wxColourData()
         ccd.SetColour(cur_colour)
+        # often-used BONE custom colour
+        ccd.SetCustomColour(0,wxColour(255, 239, 219))
         # we want the detailed dialog under windows        
         ccd.SetChooseFull(True)
         # do that thang
-        dlg = wxColourDialog(parent, ccd)
+        dlg = ColourDialog(parent, ccd)
         
         if dlg.ShowModal() == wxID_OK:
             # the user wants this, we get to update the variables
