@@ -38,6 +38,8 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
 
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
+
+        moduleBase.close(self)
         
         # get rid of our reference
         del self._imageGradientMagnitude
