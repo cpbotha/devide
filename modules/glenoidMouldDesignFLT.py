@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.10 2003/03/24 16:08:59 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.11 2003/03/24 17:11:23 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -263,41 +263,6 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             for thing in stuff:
                 ap.AddInput(thing)
 
-            # now add outer guide cylinder, capped
-            cs1 = vtk.vtkCylinderSource()
-            cs1.SetResolution(32)
-            cs1.SetRadius(5) # 5 mm diameter
-            cs1.CappingOn()
-            cs1.SetHeight(15) # 15 mm height
-            cs1.SetCenter(0,0,0)
-            cs1.Update()
-            
-            # we have to transform this fucker...
-            csTrfm = vtk.vtkTransform()
-
-            # go half the height + 1mm upwards from surface
-            cs1Centre = map(operator.add,
-                            self._giaGlenoid, [- 8.5 * i for i in giaN])
-            csTrfm.Translate(cs1Centre)
-
-            # cylinder is oriented along y-axis (0,1,0)
-            # calc dot product (|a||b|cos(\phi))
-            cylDotGia = - giaN[1]
-            phiRads = math.acos(cylDotGia)
-            cp = [0,0,0]
-            vtk.vtkMath.Cross((-giaN[0], -giaN[1], -giaN[2]),
-                              (0.0, 1.0, 0.0), cp)
-            
-            csTrfm.RotateWXYZ(-phiRads * vtk.vtkMath.RadiansToDegrees(),
-                              cp[0], cp[1], cp[2])
-
-            csTPDF = vtk.vtkTransformPolyDataFilter()
-            csTPDF.SetTransform(csTrfm)
-
-            csTPDF.SetInput(cs1.GetOutput())
-            csTPDF.Update()
-            
-            ap.AddInput(csTPDF.GetOutput())
 
             # seems to be important for vtkAppendPolyData
             ap.Update()
@@ -321,10 +286,28 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             cylinder.SetCenter([0,0,0])
             cylinder.SetRadius(3)
 
+            # cylinder is oriented along y-axis (0,1,0) -
+            # we need to calculate the angle between the y-axis and the gia
+            # 1. calc dot product (|a||b|cos(\phi))
+            cylDotGia = - giaN[1]
+            # 2. because both factors are normals, angle == acos
+            phiRads = math.acos(cylDotGia)
+            # 3. cp is the vector around which gia can be turned to
+            #    coincide with the y-axis
+            cp = [0,0,0]
+            vtk.vtkMath.Cross((-giaN[0], -giaN[1], -giaN[2]),
+                              (0.0, 1.0, 0.0), cp)
+
+            # this transform will be applied to all points BEFORE they are
+            # tested on the cylinder implicit function
             trfm = vtk.vtkTransform()
-            print phiRads * vtk.vtkMath.RadiansToDegrees()
+            # it's premultiply by default, so the last operation will get
+            # applied FIRST:
+            # THEN rotate it around the cp axis so it's relative to the
+            # y-axis instead of the gia-axis
             trfm.RotateWXYZ(phiRads * vtk.vtkMath.RadiansToDegrees(),
                             cp[0], cp[1], cp[2])
+            # first translate the point back to the origin
             trfm.Translate(-self._giaGlenoid[0], -self._giaGlenoid[1],
                            -self._giaGlenoid[2])
 
@@ -338,9 +321,67 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 
             ap2 = vtk.vtkAppendPolyData()
             ap2.AddInput(cylinderClip.GetOutput())
+
+            # now add outer guide cylinder, NOT capped
+            cs1 = vtk.vtkCylinderSource()
+            cs1.SetResolution(32)
+            cs1.SetRadius(4) # 4 mm diameter
+            cs1.CappingOff()
+            cs1.SetHeight(15) # 15 mm height
+            cs1.SetCenter(0,0,0)
+            cs1.Update()
+
+            # inner cylinder
+            cs2 = vtk.vtkCylinderSource()
+            cs2.SetResolution(32)
+            cs2.SetRadius(3) # 3 mm diameter
+            cs2.CappingOff()
+            cs2.SetHeight(15) # 15 mm height
+            cs2.SetCenter(0,0,0)
+            cs2.Update()
+
+            # top cap
+            tc = vtk.vtkDiskSource()
+            tc.SetInnerRadius(3)
+            tc.SetOuterRadius(4)
+            tc.SetCircumferentialResolution(64)
+
+            tcTrfm = vtk.vtkTransform()
+
+            tcTrfm.RotateX(90)
+            tcTrfm.Translate(0,0,7.5)            
+            tcTPDF = vtk.vtkTransformPolyDataFilter()
+            tcTPDF.SetTransform(tcTrfm)
+            tcTPDF.SetInput(tc.GetOutput())
+
+            tubeAP = vtk.vtkAppendPolyData()
+            tubeAP.AddInput(cs1.GetOutput())
+            tubeAP.AddInput(cs2.GetOutput())
+            tubeAP.AddInput(tcTPDF.GetOutput())
+
+            # we have to transform this fucker as well
+            csTrfm = vtk.vtkTransform()
+            # go half the height + 1mm upwards from surface
+            cs1Centre = map(operator.add,
+                            self._giaGlenoid, [- 8.5 * i for i in giaN])
+            # once again, this is performed LAST
+            csTrfm.Translate(cs1Centre)
+            # and this FIRST (we have to rotate the OTHER way than for
+            # the implicit cylinder cutting, because the cylinder is
+            # transformed from y-axis to gia, not the other way round)
+            csTrfm.RotateWXYZ(-phiRads * vtk.vtkMath.RadiansToDegrees(),
+                              cp[0], cp[1], cp[2])
+            # actually perform the transform
+            csTPDF = vtk.vtkTransformPolyDataFilter()
+            csTPDF.SetTransform(csTrfm)
+            csTPDF.SetInput(tubeAP.GetOutput())
+            csTPDF.Update()
+
+            ap2.AddInput(csTPDF.GetOutput())
+
+
             ap2.Update()
             
-            #self._outputPolyData.DeepCopy(ap2.GetOutput())
             self._outputPolyData.DeepCopy(ap2.GetOutput())
 
     def view(self):
