@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.23 2003/02/01 02:17:47 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.24 2003/02/10 16:04:20 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -32,8 +32,16 @@ class vtk_hdf_rdr(moduleBase,
                               'HDF data (*.hdf)|*.hdf|All files (*)|*',
                               {'vtkHDFVolumeReader': self._reader})
 
-        # and make sure the GUI agrees with the logic
+        # setup defaults
+        self._config.filename = ''
+        
+        # now get logic to agree with it
+        self.configToLogic()
+        # and then bring the data all the way to the top
         self.syncViewWithLogic()
+
+        # and display the view
+        self.view()
 
     def close(self):
         # call close of this specific mixin
