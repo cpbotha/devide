@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.39 2004/06/21 16:30:44 cpbotha Exp $
+# $Id: devide.py,v 1.40 2004/06/22 15:11:40 cpbotha Exp $
 
 DEVIDE_VERSION = '20040621'
 
@@ -265,7 +265,7 @@ class devide_app_t(wx.App):
     def startPythonShell(self):
         if self._pythonShell == None:
             self._pythonShell = pythonShell(self.getMainWindow(),
-                                            self.getApplicationIcon())
+                                            self)
             self._pythonShell.injectLocals({'devideApp' : self})
             self._pythonShell.setStatusBarMessage(
                 "'devideApp' is bound to the main app class.")

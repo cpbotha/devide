@@ -12,6 +12,7 @@ class pythonShellFrame(wx.Frame):
         self.panel_1 = wx.Panel(self, -1)
         self.statusBar = self.CreateStatusBar(1)
         self.pyShell = py.shell.Shell(self.panel_1, -1)
+        self.loadSnippetButton = wx.Button(self.panel_1, -1, "Load Snippet")
         self.closeButton = wx.Button(self.panel_1, -1, "Close")
 
         self.__set_properties()
@@ -28,7 +29,7 @@ class pythonShellFrame(wx.Frame):
         for i in range(len(statusBar_fields)):
             self.statusBar.SetStatusText(statusBar_fields[i], i)
         self.pyShell.SetFocus()
-        self.panel_1.SetSize((662, 562))
+        self.panel_1.SetSize((670, 593))
         # end wxGlade
 
     def __do_layout(self):
@@ -38,7 +39,8 @@ class pythonShellFrame(wx.Frame):
         sizer_3 = wx.BoxSizer(wx.VERTICAL)
         sizer_6 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_3.Add(self.pyShell, 1, wx.EXPAND, 0)
-        sizer_6.Add(self.closeButton, 0, 0, 0)
+        sizer_6.Add(self.loadSnippetButton, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
+        sizer_6.Add(self.closeButton, 0, wx.ALIGN_CENTER_VERTICAL, 0)
         sizer_3.Add(sizer_6, 0, wx.TOP|wx.ALIGN_RIGHT, 7)
         sizer_2.Add(sizer_3, 1, wx.ALL|wx.EXPAND, 7)
         self.panel_1.SetAutoLayout(1)
