@@ -43,9 +43,11 @@ class register2D(moduleBase):
         moduleBase.close(self)
 
         # take care of pipeline thingies
+        del self._rescaler1
         del self._itkExporter1
         del self._vtkImporter1
 
+        del self._rescaler2
         del self._itkExporter2
         del self._vtkImporter2
 
@@ -104,18 +106,26 @@ class register2D(moduleBase):
         # we need to have two converters from itk::Image to vtkImageData,
         # hmmmm kay?
 
-        self._itkExporter1 = itk.itkVTKImageExportF2_New()
+        self._rescaler1 = itk.itkRescaleIntensityImageFilterF2UC2_New()
+        self._rescaler1.SetOutputMinimum(0)
+        self._rescaler1.SetOutputMaximum(255)
+        self._itkExporter1 = itk.itkVTKImageExportUC2_New()
+        self._itkExporter1.SetInput(self._rescaler1.GetOutput())
         self._vtkImporter1 = vtk.vtkImageImport()
-        CVIPy.ConnectITKF2ToVTK(self._itkExporter1.GetPointer(),
+        CVIPy.ConnectITKUC2ToVTK(self._itkExporter1.GetPointer(),
                                 self._vtkImporter1)
         
-        self._itkExporter2 = itk.itkVTKImageExportF2_New()
+        self._rescaler2 = itk.itkRescaleIntensityImageFilterF2UC2_New()
+        self._rescaler2.SetOutputMinimum(0)
+        self._rescaler2.SetOutputMaximum(255)
+        self._itkExporter2 = itk.itkVTKImageExportUC2_New()
+        self._itkExporter2.SetInput(self._rescaler2.GetOutput())
         self._vtkImporter2 = vtk.vtkImageImport()
-        CVIPy.ConnectITKF2ToVTK(self._itkExporter2.GetPointer(),
+        CVIPy.ConnectITKUC2ToVTK(self._itkExporter2.GetPointer(),
                                 self._vtkImporter2)
         
 
-        self._imageViewer = vtk.vtkImageViewer()
+        self._imageViewer = vtk.vtkImageViewer2()
         self._imageViewer.SetupInteractor(self.viewerFrame.threedRWI)
 
         # controlFrame creation
@@ -147,21 +157,17 @@ class register2D(moduleBase):
             return
         
 
-        print "e1 setinput"
-        print self._imageStack[0]
-        self._itkExporter1.SetInput(self._imageStack[0])
-        print "e1 update"
-        self._itkExporter1.Update() # give ITK a chance to complain...
-        print "e2 setinput"
-        self._itkExporter2.SetInput(self._imageStack[1])
-        print "e2 update"
-        self._itkExporter2.Update() # give ITK a chance to complain...        
+        self._rescaler1.SetInput(self._imageStack[0])
+        self._rescaler1.Update() # give ITK a chance to complain...
+        self._rescaler2.SetInput(self._imageStack[1])
+        self._rescaler2.Update() # give ITK a chance to complain...        
 
-        checker = vtk.vtkImageCheckerboard()
-        checker.SetNumberOfDivisions(10, 10, 1)
-        checker.SetInput1(self._vtkImporter1.GetOutput())
-        checker.SetInput2(self._vtkImporter2.GetOutput())
+#        checker = vtk.vtkImageCheckerboard()
+#        checker.SetNumberOfDivisions(10, 10, 1)
+#        checker.SetInput1(self._vtkImporter1.GetOutput())
+#        checker.SetInput2(self._vtkImporter2.GetOutput())
 
-        self._imageViewer.SetInput(self._vtkImporter1.GetOutput())
+        print self._vtkImporter1.GetOutput()
+        #self._imageViewer.SetInput(self._vtkImporter1.GetOutput())
 
-        self._imageViewer.GetRenderWindow().Render()
+        #self._imageViewer.GetRenderWindow().Render()
