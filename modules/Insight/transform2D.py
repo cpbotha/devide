@@ -1,4 +1,4 @@
-# $Id: transform2D.py,v 1.2 2003/12/09 16:20:40 cpbotha Exp $
+# $Id: transform2D.py,v 1.3 2003/12/18 14:27:46 cpbotha Exp $
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should
@@ -6,7 +6,7 @@
 
 from imageStackRDR import imageStackClass
 from moduleBase import moduleBase
-import InsightToolkit as itk
+import fixitk as itk
 from typeModules.transformStackClass import transformStackClass
 from typeModules.imageStackClass import imageStackClass
 import  vtk

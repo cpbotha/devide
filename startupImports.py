@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.6 2003/12/15 10:29:04 cpbotha Exp $
+# $Id: startupImports.py,v 1.7 2003/12/18 14:27:46 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -38,16 +38,18 @@ def doImports(progressMethod=defaultProgressMethod, useInsight=True):
                   ('vtk.rendering', 'Loading VTK Rendering.'),
                   ('vtk.hybrid', 'Loading VTK Hybrid.'),
                   ('vtk.patented', 'Loading VTK Patented.'),
-                  ('vxlnumerics', 'Loading VXL Numerics'),
-                  ('itkcommon', 'Loading ITK Common'),
-                  ('itkbasicfilters', 'Loading ITK BasicFilters'),
-                  ('itknumerics', 'Loading ITK Numerics'),
-                  ('itkalgorithms', 'Loading ITK Algorithms'),
-                  ('itkio', 'Loading ITK IO')]
+                  ('fixitk.vxlNumericsPythonTopLevel', 'Loading VXL Numerics'),
+                  ('fixitk.itkCommonPythonTopLevel', 'Loading ITK Common'),
+                  ('fixitk.itkBasicFiltersPythonTopLevel',
+                   'fixitk.Loading ITK BasicFilters'),
+                  ('fixitk.itkNumericsPythonTopLevel', 'Loading ITK Numerics'),
+                  ('fixitk.itkAlgorithmsPythonTopLevel', 'Loading ITK Algorithms'),
+                  ('fixitk.itkIOPythonTopLevel', 'Loading ITK IO')]
 
     if not useInsight:
         # remove ITK things from importList
         importList = [i for i in importList if
+                      not i[0].startswith('fixitk') and
                       not i[0].startswith('itk') and
                       not i[0].startswith('vxl')]
                   

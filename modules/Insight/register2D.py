@@ -1,4 +1,4 @@
-# $Id: register2D.py,v 1.10 2003/12/09 16:20:40 cpbotha Exp $
+# $Id: register2D.py,v 1.11 2003/12/18 14:27:46 cpbotha Exp $
 
 # TODO:
 # * if the input imageStackRDR is reconfigured to read a different stack
@@ -14,7 +14,7 @@ from typeModules.transformStackClass import transformStackClass
 from moduleBase import moduleBase
 import moduleUtils
 import operator
-import InsightToolkit as itk
+import fixitk as itk
 import ConnectVTKITKPython as CVIPy
 import vtk
 import wx

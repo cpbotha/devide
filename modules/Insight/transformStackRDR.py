@@ -1,7 +1,7 @@
-# $Id: transformStackRDR.py,v 1.3 2003/12/18 10:34:44 cpbotha Exp $
+# $Id: transformStackRDR.py,v 1.4 2003/12/18 14:27:46 cpbotha Exp $
 from typeModules.transformStackClass import transformStackClass
 import cPickle
-import InsightToolkit as itk
+import fixitk as itk
 import md5
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin

@@ -1,5 +1,5 @@
 from typeModules.imageStackClass import imageStackClass
-import InsightToolkit as itk
+import fixitk as itk
 from moduleBase import moduleBase
 from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
