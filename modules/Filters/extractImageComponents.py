@@ -1,4 +1,4 @@
-# $Id: extractImageComponents.py,v 1.1 2004/10/08 22:04:54 cpbotha Exp $
+# $Id: extractImageComponents.py,v 1.2 2004/11/02 16:29:18 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -11,7 +11,7 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
     Specify the indices of the components you wish to extract and the number
     of components.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -77,14 +77,21 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
         return self._extract.GetOutput()
 
     def logicToConfig(self):
-        self._config.numberOfComponents = self._extract.GetNumberOfComponents()
+        # numberOfComponents is 0-based !!
+        self._config.numberOfComponents = \
+                                        self._extract.GetNumberOfComponents()
+        self._config.numberOfComponents -= 1
+        
+        
         c = self._extract.GetComponents()
         self._config.component1 = c[0]
         self._config.component2 = c[1]
         self._config.component3 = c[2]
         
     def configToLogic(self):
+        # numberOfComponents is 0-based !!
         nc = self._config.numberOfComponents
+        nc += 1
 
         if nc == 1:
             self._extract.SetComponents(self._config.component1)
