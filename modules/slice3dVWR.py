@@ -1,12 +1,13 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.31 2003/06/15 22:36:13 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.32 2003/06/16 15:22:16 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
+from external.SwitchColourDialog import ColourDialog
 from genUtils import logError
 from genMixins import subjectMixin
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import vtkPipelineConfigModuleMixin, colourDialogMixin
 import moduleUtils
 import vtk
 from wxPython.wx import *
@@ -521,6 +522,7 @@ class tdObjects:
         self._slice3dVWR = slice3dVWRThingy
         self._grid = grid
         self._initialiseGrid()
+        self._bindEvents()
 
         # this will fix up wxTheColourDatabase
         colourdb.updateColourDB()
@@ -531,12 +533,44 @@ class tdObjects:
         self._grid.ClearGrid()
         self._grid = None
 
+    def _bindEvents(self):
+        svViewFrame = self._slice3dVWR.getViewFrame()
+        EVT_BUTTON(svViewFrame, svViewFrame.objectSetColourButtonId,
+                   self._handlerObjectSetColour)
+        
+        EVT_BUTTON(svViewFrame, svViewFrame.objectShowHideButtonId,
+                   self._handlerObjectShowHideHandler)
+
+    def _handlerObjectSetColour(self, event):
+        # get the first selected row in the grid
+        selectedRows = self._grid.GetSelectedRows()
+        if selectedRows:
+            objectNames = []
+            for sRow in selectedRows:
+                objectNames.append(
+                    self._grid.GetCellValue(sRow, self._gridNameCol)
+                    )
+
+            objs = self.findObjectsByNames(objectNames)
+
+            if objs:
+                self._slice3dVWR.setColourDialogColour(
+                    self._tdObjectsDict[objs[0]]['colour'])
+                
+                dColour = self._slice3dVWR.getColourDialogColour()
+                if dColour:
+                    for obj in objs:
+                        self._setObjectColour(obj, dColour)
+
+    def _handlerObjectShowHideHandler(self, event):
+        pass
+        
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
         """
 
         # delete all items and columns
-        self._grid.ClearGrid()
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())
 
         self._grid.SetColSize(self._gridNameCol, 100)
         self._grid.SetColSize(self._gridColourCol, 150)
@@ -548,10 +582,11 @@ class tdObjects:
         """
 
         if not self._tdObjectsDict.has_key(tdObject):
-            nrGridRows = self._grid.GetNumberRows()
+
             # we get to pick a colour and a name
             colourName = self._objectColours[
-                nrGridRows % len(self._objectColours)]
+                self._objectId % len(self._objectColours)]
+            # objectName HAS TO BE unique!
             objectName = "%s%d" % ('obj', self._objectId)
             self._objectId += 1
 
@@ -567,8 +602,6 @@ class tdObjects:
 
                 if tdObject.GetClassName() == 'vtkVolume':
                     self._slice3dVWR._threedRenderer.AddVolume(tdObject)
-                    self._slice3dVWR._threedRenderer.ResetCamera()
-                    self._slice3dVWR.render3D()
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkVolume',
                                                      'observerId' : None}
@@ -578,7 +611,6 @@ class tdObjects:
                     mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
-                    actor.GetProperty().SetDiffuseColor(nColour)
                     self._slice3dVWR._threedRenderer.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
@@ -607,9 +639,6 @@ class tdObjects:
                         # we switch it off as we mostly work with isosurfaces
                         mapper.ScalarVisibilityOff()
                 
-                    self._slice3dVWR._threedRenderer.ResetCamera()
-                    self._slice3dVWR.render3D()
-
                     # connect an event handler to the data
                     source = tdObject.GetSource()
                     if source:
@@ -625,16 +654,80 @@ class tdObjects:
                 # the object has no GetClassName that's callable
                 raise Exception, 'tdObject has no GetClassName()'
 
+            nrGridRows = self._grid.GetNumberRows()
             self._grid.AppendRows()
             self._grid.SetCellValue(nrGridRows, 0, objectName)
             self._grid.SetCellValue(nrGridRows, 1, colourName)
             self._grid.SetCellValue(nrGridRows, 2, 'Yes')
             
-            self._tdObjectsDict[tdObject]['gridRow'] = nrGridRows
+            self._tdObjectsDict[tdObject]['objectName'] = objectName
+            # and store the colour
+            self._setObjectColour(tdObject, nColour)
+
+            self._slice3dVWR._threedRenderer.ResetCamera()
+            self._slice3dVWR.render3D()
             
         # ends 
         else:
             raise Exception, 'Attempt to add same object twice.'
+
+    def findGridRowByName(self, objectName):
+        nrGridRows = self._grid.GetNumberRows()
+        rowFound = False
+        row = 0
+
+        while not rowFound and row < nrGridRows:
+            value = self._grid.GetCellValue(row, self._gridNameCol)
+            rowFound = (value == objectName)
+            row += 1
+
+        if rowFound:
+            # prepare and return the row
+            row -= 1
+            return row
+        
+        else:
+            return -1
+
+    def findObjectsByNames(self, objectNames):
+        """Given an objectName, return an object binding.
+        """
+        
+        dictItems = self._tdObjectsDict.items()
+        dictLen = len(dictItems)
+
+        objectFound = False
+        itemsIdx = 0
+
+        while not objectFound and itemsIdx < dictLen:
+            objectFound = objectName == dictItems[itemsIdx][1]['objectName']
+            itemsIdx += 1
+
+        if objectFound:
+            itemsIdx -= 1
+            return dictItems[itemsIdx][0]
+        else:
+            return None
+
+    def findObjectsByNames(self, objectNames):
+        """Given a sequence of object names, return a sequence with bindings
+        to all the found objects.  There could be less objects than names.
+        """
+
+        dictItems = self._tdObjectsDict.items()
+        dictLen = len(dictItems)
+
+        itemsIdx = 0
+        foundObjects = []
+
+        while itemsIdx < dictLen:
+            if dictItems[itemsIdx][1]['objectName'] in objectNames:
+                foundObjects.append(dictItems[itemsIdx][0])
+
+            itemsIdx += 1
+
+        return foundObjects
+            
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -663,18 +756,60 @@ class tdObjects:
             raise Exception,\
                   'Unhandled object type in tdObjects.removeObject()'
 
-        # whatever the case may be, we need to remove it from the listCtrl
-        self._grid.DeleteRows(self._tdObjectsDict[tdObject]['gridRow'])
+        # whatever the case may be, we need to remove it from the wxGrid
+        # first search for the correct objectName
+        nrGridRows = self._grid.GetNumberRows()
+        rowFound = False
+        row = 0
+        objectName = self._tdObjectsDict[tdObject]['objectName']
+
+        while not rowFound and row < nrGridRows:
+            value = self._grid.GetCellValue(row, self._gridNameCol)
+            rowFound = value == objectName
+            row += 1
+
+        if rowFound:
+            # and then delete just that row
+            row -= 1
+            self._grid.DeleteRows(row)
+            
         # and from the dict
         del self._tdObjectsDict[tdObject]
-        
+
+    def _setObjectColour(self, tdObject, dColour):
+        if self._tdObjectsDict.has_key(tdObject):
+            if self._tdObjectsDict[tdObject]['type'] == 'vtkPolyData':
+                objectDict = self._tdObjectsDict[tdObject]
+                
+                # in our metadata
+                objectDict['colour'] = dColour
+                
+                # change its colour in the scene                
+                actor = objectDict['vtkActor']
+                actor.GetProperty().SetDiffuseColor(dColour)
+
+                # and change its colour in the grid
+                row = self.findGridRowByName(objectDict['objectName'])
+                if row >= 0:
+                    r,g,b = [c * 255.0 for c in dColour]
+                    colour = wxColour(r,g,b)
+                    self._grid.SetCellBackgroundColour(
+                        row, self._gridColourCol, colour)
+                    
+                    # also search for the name
+                    cName = wxTheColourDatabase.FindName(colour)
+                    if not cName:
+                        cName = 'USER DEFINED'
+
+                    self._grid.SetCellValue(row, self._gridColourCol, cName)
+                    
 
     def _tdObjectModifiedCallback(self, o, e):
         self._slice3dVWR.render3D()
 
 # -------------------------------------------------------------------------
 
-class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
+class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     
     """Slicing, dicing slice viewing class.
 
@@ -687,6 +822,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     def __init__(self, moduleManager):
         # call base constructor
         moduleBase.__init__(self, moduleManager)
+        colourDialogMixin.__init__(
+            self, moduleManager.get_module_view_parent_window())
         self._numDataInputs = 5
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'inputData' : None,
@@ -765,6 +902,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         # don't forget to call the mixin close() methods
         vtkPipelineConfigModuleMixin.close(self)
+        colourDialogMixin.close(self)
         
         # unbind everything that we bound in our __init__
         del self._outline_source
@@ -977,6 +1115,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def getIPWPicker(self):
         return self._ipwPicker
+
+    def getViewFrame(self):
+        return self._viewFrame
 
     def render3D(self):
         """This will cause a render to be called on the encapsulated 3d
