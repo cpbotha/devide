@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.1 2002/05/07 13:16:10 cpbotha Exp $
+# $Id: dscas3.py,v 1.2 2002/05/07 14:25:20 cpbotha Exp $
 
 import os
 import sys
@@ -81,7 +81,9 @@ class main_window(wxFrame):
         self._status_stxt.SetLabel(message)
 
     def set_progress_gauge(self, progress):
-        #self._progress_gauge.SetValue(progress)
+        # you might want to use wxPyTypeCast on _progress_gauge, until the
+        # OOR is done for wxGauge as well
+        self._progress_gauge.SetValue(progress)
         pass
 
     def exit_cb(self, event):

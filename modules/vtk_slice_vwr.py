@@ -1,44 +1,43 @@
-# $Id: vtk_slice_vwr.py,v 1.16 2002/04/26 21:01:58 cpbotha Exp $
-from module_base import module_base
-from vtkpython import *
-import Tkinter
-from Tkconstants import *
-import Pmw
-from vtkTkRenderWidget import vtkTkRenderWidget
-import module_utils
+# $Id: vtk_slice_vwr.py,v 1.17 2002/05/07 14:25:22 cpbotha Exp $
 
+from module_base import module_base
+import vtk
+from wxPython.wx import *
+from wxPython.xrc import *
 
 class vtk_slice_vwr(module_base):
-    def __init__(self):
-        self.num_inputs = 5
-        self.num_orthos = 3
+    def __init__(self, module_manager):
+        # call base constructor
+        module_base.__init__(self, module_manager)
+        self._num_inputs = 5
+        self._num_orthos = 3
         # use list comprehension to create list keeping track of inputs
-	self.inputs = [{'Connected' : None, 'vtkActor' : None}
+	self._inputs = [{'Connected' : None, 'vtkActor' : None}
                        for i in range(self.num_inputs)]
         # then the window containing the renderwindows
-	self.rw_window = None
+	self._view_frame = None
         # the render windows themselves (4, 1 x 3d and 3 x ortho)
-	self.rws = []
+	self._rws = []
         # the last clicked/interacted with xy positions for every rw
-	self.rw_lastxys = []
+	self._rw_lastxys = []
         # the renderers corresponding to the render windows
-	self.renderers = []
+	self._renderers = []
 
         # list of lists of dictionaries
         # 3 element list (one per direction) of n-element lists of
         # ortho_pipelines, where n is the number of overlays,
         # where n can vary per direction
-        self.ortho_pipes = [[] for i in range(self.num_orthos)]
+        self._ortho_pipes = [[] for i in range(self.num_orthos)]
 
         # axial, sagittal, coronal reslice axes
-        self.InitialResliceAxes = [{'axes' : (1,0,0, 0,1,0, 0,0,1),
+        self._InitialResliceAxes = [{'axes' : (1,0,0, 0,1,0, 0,0,1),
                                     'origin' : (0,0,0)}, # axial (xy-plane)
                                    {'axes' : (0,0,1, 0,1,0, 1,0,0),
                                     'origin' : (0,0,0)}, # sagittal (yz-plane)
                                    {'axes' : (1,0,0, 0,0,1, 0,1,0),
                                     'origin' : (0,0,0)}] # coronal (zx-plane)
 	
-	self.create_window()
+	self._create_window()
 	
     def close(self):
         for idx in range(self.num_inputs):
@@ -53,12 +52,14 @@ class vtk_slice_vwr(module_base):
         if hasattr(self,'ortho_pipes'):
             del self.ortho_pipes
 	
-    def create_window(self):
-	self.rw_window = Tkinter.Toplevel(None)
-	self.rw_window.title("slice viewer")
-	# widthdraw hides the window, deiconify makes it appear again
-	self.rw_window.protocol("WM_DELETE_WINDOW", self.rw_window.withdraw)
-	
+    def _create_window(self):
+        # create main frame, make sure that when it's closed, it merely hides
+        parent_window = self._module_manager.get_module_view_parent_window()
+        self._view_frame = wxFrame(parent=parent_window, id=-1,
+                                   title='slice viewer')
+        EVT_CLOSE(self._view_frame,
+                  lambda e, s=self: s._view_frame.Show(false))
+        
 	# paned widget with two panes, one for 3d window the other for ortho
         # views
 	# default vertical (i.e. divider is horizontal line)
