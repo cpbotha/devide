@@ -18,6 +18,9 @@ class canvasObject(wx.wxObject):
     def draw(self, dc):
         pass
 
+    def getBounds(self):
+        raise NotImplementedError
+
     def getPosition(self):
         return self._position
 
@@ -57,8 +60,12 @@ class coRectangle(canvasObject):
 
     def draw(self, dc):
         # drawing rectangle!
+        dc.SetBrush(wx.wxBrush('BLUE', wx.wxSOLID))
         dc.DrawRectangle(self._position[0], self._position[1],
                          self._size[0], self._size[1])
+
+    def getBounds(self):
+        return (self._size)
 
     def hitTest(self, x, y):
         return x >= self._position[0] and \

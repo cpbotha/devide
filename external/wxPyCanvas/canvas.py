@@ -7,6 +7,8 @@ class canvas(wx.wxScrolledWindow):
 
         self._cobjects = []
         self._previousRealCoords = None
+        self._mouseDelta = (0,0)
+        self._draggedObject = None
 
         self.SetBackgroundColour("WHITE")
 
@@ -25,6 +27,12 @@ class canvas(wx.wxScrolledWindow):
         rx = ex + vsx * dx
         ry = ey + vsy * dy
 
+        if self._previousRealCoords:
+            self._mouseDelta = (rx - self._previousRealCoords[0],
+                                ry - self._previousRealCoords[1])
+        else:
+            self._mouseDelta = (0,0)
+
         mouseOnObject = False
         
         for cobject in self._cobjects:
@@ -40,7 +48,8 @@ class canvas(wx.wxScrolledWindow):
                     cobject.notifyObservers('enter', event)
 
                 if event.Dragging():
-                    cobject.notifyObservers('drag', event)
+                    if not self._draggedObject:
+                        self._draggedObject = cobject
 
                 elif event.ButtonUp():
                     cobject.notifyObservers('buttonUp', event)
@@ -51,10 +60,24 @@ class canvas(wx.wxScrolledWindow):
             # ends if cobject.hitTest(ex, ey)
             else:
                 if cobject.__hasMouse:
-                    if not event.Dragging():
-                        cobject.__hasMouse = False
-                        cobject.notifyObservers('exit', event)
+                    cobject.__hasMouse = False
+                    cobject.notifyObservers('exit', event)
 
+        if self._draggedObject:
+            # dragging locks onto an object, even if the mouse pointer
+            # is not inside that object - it will keep receiving drag
+            # events!
+            draggedObject = self._draggedObject
+            if event.ButtonUp():
+                # a button up anywhere cancels any drag
+                self._draggedObject = None
+
+            # so, the object can query canvas.getDraggedObject: if it's
+            # none, it means the drag has ended; if not, the drag is
+            # ongoing
+            draggedObject.notifyObservers('drag', event)
+
+        # store the previous real coordinates for mouse deltas
         self._previousRealCoords = (rx, ry)
                     
 
@@ -82,15 +105,32 @@ class canvas(wx.wxScrolledWindow):
             cobj.__hasMouse = False
             #cobj.draw()
 
-    def getPreviousRealCoords(self):
-        return self._previousRealCoords
+    def getMouseDelta(self):
+        return self._mouseDelta
 
-    def moveObject(self, cobj, delta):
-        cpos = cobj.getPosition()
-        npos = (cpos[0] + delta[0], cpos[1] + delta[1])
-        cobj.setPosition(npos)
-        self.Refresh()
-        
+    def getDraggedObject(self):
+        return self._draggedObject
+
+    def dragObject(self, cobj, delta):
+        if abs(delta[0]) > 0 or abs(delta[1]) > 0:
+            cpos = cobj.getPosition()
+            npos = (cpos[0] + delta[0], cpos[1] + delta[1])
+            cobj.setPosition(npos)
+            
+            dc = wx.wxClientDC(self)
+            self.PrepareDC(dc)
+            dc.BeginDrawing()
+
+            dc.SetBrush(wx.wxBrush('WHITE', wx.wxTRANSPARENT))
+            dc.SetPen(wx.wxPen('BLACK', 1, wx.wxDOT))
+            dc.SetLogicalFunction(wx.wxINVERT)
+            bounds = cobj.getBounds()
+            print bounds
+            dc.DrawRectangle(cpos[0], cpos[1], bounds[0], bounds[1])
+            dc.DrawRectangle(npos[0], npos[1], bounds[0], bounds[1])
+
+            dc.EndDrawing()
+
 def main():
 
     from canvasObject import coRectangle
@@ -98,7 +138,7 @@ def main():
     class App(wx.wxApp):
         def OnInit(self):
             frame = wx.wxFrame(None, -1, 'wxPyCanvasTest')
-            pc = canvas(frame, -1)
+            pc = canvas(frame, -1, (400, 300))
             pc.SetVirtualSize((1024, 1024))
             pc.SetScrollRate(20,20)
 
@@ -127,11 +167,12 @@ def main():
         print eventName
 
     def dragObserver(cobject, eventName, event, userData):
-        pr = cobject.getCanvas().getPreviousRealCoords()
-        if pr:
-            cobject.getCanvas().moveObject(cobject,
-                                           (event.GetX() - pr[0],
-                                            event.GetY() - pr[1]))
+        cobject.getCanvas().dragObject(cobject,
+                                       cobject.getCanvas().getMouseDelta())
+        
+        if not cobject.getCanvas().getDraggedObject():
+            # this means only one thing: the drag has just stopped!
+            cobject.getCanvas().Refresh()
             
     # the 0 will make it use the existing stdout
     app = App(0)
