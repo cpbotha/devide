@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.89 2004/10/12 23:24:59 cpbotha Exp $
+# $Id: graphEditor.py,v 1.90 2004/11/01 10:22:09 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -204,6 +204,7 @@ class graphEditor:
         # and also setup the module quick search
         self._quickSearchString = ''
         EVT_CHAR(self._graphFrame.canvas, self._handlerCanvasChar)
+        
 
         # setup the canvas...
         self._graphFrame.canvas.SetVirtualSize((2048, 2048))

@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.53 2004/10/29 14:25:01 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.54 2004/11/01 10:22:09 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -742,6 +742,8 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
               and the number of elements
 
     widgetType: text,
+                tupleText - your type spec HAS to be a tuple; text boxes
+                            are created in a horizontal sizer
                 checkbox,
                 choice - optional data is a list of choices,
                 filebrowser - optional data is a dict with fileMask and
@@ -749,6 +751,9 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                               {'fileMode' : wx.SAVE,
                                'fileMask' :
                         'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*'})
+                maskedText - optional data is the kwargs dict for
+                             MaskedTextCtrl instantiation, e.g.:
+                         {'mask': '\(#{3}, #{3}, #{3}\)', 'formatcodes':'F-_'}
 
     NOTE: this mixin assumes that your module is derived from moduleBase,
     e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
@@ -795,6 +800,27 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             if configTuple[3] == 'text':
                 widget = wx.TextCtrl(panel, -1, "")
 
+            elif configTuple[3] == 'tupleText':
+                # find out how many elements
+                typeD = configTuple[2]
+                castString, numString = typeD.split(':')[1].split(',')
+                num = int(numString)
+                textWidgets = []
+                twSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+                for i in range(num):
+                    textWidgets.append(wx.TextCtrl(panel, -1, ""))
+                    twSizer.Add(textWidgets[-1], 0, wx.ALIGN_CENTER_VERTICAL,
+                                1)
+                    if i < num - 1:
+                        twSizer.Add(wx.StaticText(panel, -1, ','), 0, wx.RIGHT,
+                                    border=4)
+
+                widget = None
+                widgets = textWidgets
+                widgetsSizer = twSizer
+                    
+
             elif configTuple[3] == 'maskedText':
                 widget = MaskedTextCtrl(panel, -1, '',
                                         **configTuple[5])
@@ -815,11 +841,21 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     fileMode=configTuple[5]['fileMode'],
                     labelText=None)
                 
-            if len(configTuple[4]) > 0:
-                widget.SetToolTip(wx.ToolTip(configTuple[4]))
+            if widget:
+                if len(configTuple[4]) > 0:
+                    widget.SetToolTip(wx.ToolTip(configTuple[4]))
+            
+                gridSizer.Add(widget, 0, wx.EXPAND, 0)
+                self._widgets[configTuple[0:5]] = widget
+
+            elif len(widgets) > 0:
+                if len(configTuple[4]) > 0:
+                    for w in widgets:
+                        w.SetToolTip(wx.ToolTip(configTuple[4]))
+                    
+                gridSizer.Add(widgetsSizer, 0, wx.EXPAND, 0)
+                self._widgets[configTuple[0:5]] = widgets
                 
-            gridSizer.Add(widget, 0, wx.EXPAND, 0)
-            self._widgets[configTuple[0:5]] = widget
 
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
@@ -843,6 +879,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
             if configTuple[3] == 'choice':
                 wv = widget.GetStringSelection()
+
+            elif configTuple[3] == 'tupleText':
+                widgets = widget
+                wv = []
+                for w in widgets:
+                    wv.append(w.GetValue())
+
+                wv = ','.join(wv)
                 
             else:
                 wv = widget.GetValue()
@@ -864,7 +908,12 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     wv, eval('self._config.%s' % (configTuple[1],)),
                     int(numString), eval(castString))
 
-                widget.SetValue(str(val))
+                if configTuple[3] == 'tupleText':
+                    for i in range(len(widgets)):
+                        widgets[i].SetValue(str(val[i]))
+                        
+                else:
+                    widget.SetValue(str(val))
 
             else:
                 raise ValueError, 'Invalid typeDescription.'
@@ -905,6 +954,24 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     else:
                         # some other tuple
                         widget.SetValue(str(val))
+
+            elif configTuple[3] == 'tupleText':
+                # for a tupleText, widget is a list
+                widgets = widget
+                  
+                if typeD.startswith('tuple'):
+                    # so this is a tuple
+                    # e.g. tuple:float,3
+                    castString, numString = typeD.split(':')[1].split(',')
+
+                    num = int(numString)
+                    t = tuple(val)
+
+                    for i in range(num):
+                        if castString == 'float':
+                            widgets[i].SetValue('%g' % (t[i],))
+                        else:
+                            widgets[i].SetValue(str(t[i]))
                         
             elif configTuple[3] == 'checkbox':
                 widget.SetValue(bool(val))

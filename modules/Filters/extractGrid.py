@@ -6,7 +6,7 @@ import vtk
 class extractGrid(scriptedConfigModuleMixin, moduleBase):
     """Subsamples input structured grid dataset.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -15,9 +15,8 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
         self._config.sampleRate = (100, 100, 125)
 
         configList = [
-            ('Sample rate:', 'sampleRate', 'base:str', 'maskedText',
-             'Subsampling rate.',
-             {'mask': '\(#{3}, #{3}, #{3}\)', 'formatcodes':'F-_'})]
+            ('Sample rate:', 'sampleRate', 'tuple:int,3', 'tupleText',
+             'Subsampling rate.')]
 
         scriptedConfigModuleMixin.__init__(self, configList)
 
