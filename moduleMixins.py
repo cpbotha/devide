@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.43 2004/05/20 18:18:15 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.44 2004/05/24 11:32:48 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -644,11 +644,10 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
             # according to DeVIDE, module output MUST have an Update()
             self.getOutput(i).Update()
 
-    
-        
-
-
-#
+        # it could be a writer, in that case, call the Write method.
+        if hasattr(self._theFilter, 'Write') and \
+           callable(self._theFilter.Write):
+            self._theFilter.Write()
 
 class scriptedConfigModuleMixin(introspectModuleMixin):
 

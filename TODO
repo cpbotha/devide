@@ -1,4 +1,6 @@
-$Id: TODO,v 1.25 2004/01/30 12:30:07 cpbotha Exp $
+$Id: TODO,v 1.26 2004/05/24 11:32:48 cpbotha Exp $
+
+* Embed ConfigVtkObj UI in simpleVTKObjects.
 
 * Colour input ports depending on whether the input is
   required... green for connected, red for unconnected, blue (or
@@ -8,10 +10,6 @@ $Id: TODO,v 1.25 2004/01/30 12:30:07 cpbotha Exp $
   main menubar structure, so we can place modules and segments ORCAD
   style yeah!  Hover mouse over correct position, then Alt M|C|F|3
   would for e.g. place a modules|core modules|filters|blaatFilter.
-
-* We REALLY should get some kind of unit-testing suite going, so that even
-  an Installed binary can be set through its paces with dscas3 --testSuite
-  or somesuch.
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -105,6 +103,10 @@ FIXED:
 
 
 DONE:
+
+* We REALLY should get some kind of unit-testing suite going, so that even
+  an Installed binary can be set through its paces with dscas3 --testSuite
+  or somesuch.
 
 * object menu for sliceVWR
 
