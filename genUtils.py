@@ -31,6 +31,25 @@ def logError(msg):
     # detail message
     wxLog_FlushActive()
 
+def logWarning(msg):
+    # create nice formatted string with tracebacks and all
+    ei = sys.exc_info()
+    dmsg = \
+         string.join(traceback.format_exception(ei[0],
+                                                ei[1],
+                                                ei[2]))
+    # we can't disable the timestamp yet
+    # wxLog_SetTimestamp()
+    # set the detail message
+    wxLogWarning(dmsg)
+    # then the most recent
+    wxLogWarning(msg)
+    # and flush... the last message will be the actual error
+    # message, what we did before will add to it to become the
+    # detail message
+    wxLog_FlushActive()
+    
+
 def flattenProp3D(prop3D):
     """Get rid of the UserTransform() of an actor by integrating it with
     the 'main' matrix.
