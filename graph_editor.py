@@ -1,5 +1,8 @@
 import sys, re
-import Tix, tkMessageBox
+import Tkinter
+from Tkconstants import *
+import Pmw
+import external.Tree
 
 def coords_to_ltriangle(x, y):
     return (x, y, x - 6, y - 3, x - 6, y + 3)
@@ -155,9 +158,9 @@ class glyph:
 		self.canvas.coords(cur_input['line'], coords[0], coords[1], coords[2], coords[3])
 		
     def b1click_cb(self, event):
-	if self.graph_editor.get_mode() == 'delete':
+	if self.graph_editor.get_mode() == 'Delete':
 	    self.graph_editor.delete_glyph(self)
-	elif self.graph_editor.get_mode() == 'view':
+	elif self.graph_editor.get_mode() == 'View':
 	    self.graph_editor.view_glyph(self)
 	
     def output_drag_cb(self, event, item):
@@ -167,26 +170,26 @@ class glyph:
 	    self.canvas.coords(self.cur_output_line, self.canvas.coords(item)[0], self.canvas.coords(item)[1], event.x, event.y)
 	    
     def input_enter_cb(self, event):
-	item = self.canvas.find_withtag(Tix.CURRENT)
+	item = self.canvas.find_withtag(CURRENT)
 	if len(item) == 1:
 	    idx = self.find_input_idx(item[0])
 	    if (idx > -1):
 		self.graph_editor.set_status("Input " + self.get_module_instance().get_input_descriptions()[idx])
 	
     def input_click_cb(self, event):
-	item = self.canvas.find_withtag(Tix.CURRENT)
+	item = self.canvas.find_withtag(CURRENT)
 	if len(item) == 1:
 	    idx = self.find_input_idx(item[0])
 	    if (idx > -1):
-		if self.graph_editor.get_mode() == 'edit':
+		if self.graph_editor.get_mode() == 'Edit':
 		    self.graph_editor.glyph_input_clicked(self, idx)
-		elif self.graph_editor.get_mode() == 'delete':
+		elif self.graph_editor.get_mode() == 'Delete':
 		    self.graph_editor.disconnect_glyphs(self.inputs[idx]['glyph'], self, idx)
 	elif (len(item) > 1):
 	    print "This shouldn't happen!!"
     
     def output_enter_cb(self, event):
-	item = self.canvas.find_withtag(Tix.CURRENT)
+	item = self.canvas.find_withtag(CURRENT)
 	if len(item) == 1:
 	    idx = self.outputs.index(item[0])
 	    if (idx > -1):
@@ -194,7 +197,7 @@ class glyph:
 	
 	
     def output_click_cb(self, event):
-	item = self.canvas.find_withtag(Tix.CURRENT)
+	item = self.canvas.find_withtag(CURRENT)
 	if (len(item) == 1):
 	    # find the item
 	    idx = self.outputs.index(item[0])
@@ -215,6 +218,14 @@ class glyph:
 # graph_editor class
 # ----------------------------------------------------------------------------
 
+class my_tree_node(external.Tree.Node):
+    def __init__(self, *args, **kw_args):
+	# call superclass (actually, I have no idea about this (self,)+args!)
+	apply(external.Tree.Node.__init__, (self,)+args, kw_args)
+	self.widget.tag_bind(self.symbol, '<1>', lambda e, self=self: self.widget.move_cursor(self))
+	self.widget.tag_bind(self.label, '<1>', lambda e, self=self: self.widget.move_cursor(self))
+	self.widget.tag_bind(self.label, '<Double-1>', lambda e, self=self: self.toggle_state()) # e is the event parameter that gets passed
+	
 class graph_editor:
     def __init__(self, dscas3_main):
 	self.dscas3_main = dscas3_main
@@ -225,77 +236,97 @@ class graph_editor:
 	self.conn_ip = {'glyph0': None, 'out_idx': -1, 'glyph1': None, 'in_idx': -1}
     
 	# create window for the glyph editor
-	self.window = Tix.Toplevel()
+	self.window = Tkinter.Toplevel()
 	# FIXME: we need to set some better close method
 	self.window.title("dscas3 graph editor")
 	self.window.protocol ("WM_DELETE_WINDOW", self.window.destroy)
 	
 	# sunken label with border width 1
-        self.status = Tix.Label(self.window, relief=Tix.SUNKEN, bd=1, anchor=Tix.W)
-        self.status.pack(side=Tix.BOTTOM, fill=Tix.X, padx=2, pady=1)
+        self.status = Tkinter.Label(self.window, relief=SUNKEN, bd=1, anchor=W)
+        self.status.pack(side=BOTTOM, fill=X, padx=2, pady=1)
 	self.status['text'] = "hello"
 	
-	# apparently we can do cool stuff like this too
-	self.module_tree = Tix.Tree(self.window, scrollbar=Tix.AUTO)
-	self.module_tree.pack(side=Tix.LEFT, fill=Tix.BOTH)
+	tree_frame = Tkinter.Frame(self.window)
+	tree_frame.pack(side=LEFT, fill=Y, expand=0)
+	
+	self.module_tree = external.Tree.Tree(master=tree_frame, root_id='.', root_label='Modules', get_contents_callback=self.get_tree_node_contents, node_class=my_tree_node)
+	self.module_tree.root.expand()
 
-	hlist = self.module_tree.subwidget_list['hlist']
-	hlist['drawbranch'] = 1
-	hlist['separator'] = '.'
-	hlist.add("Readers", text="Readers")
-	hlist.add("Writers", text="Writers")
-	hlist.add("Views", text="Views")
-	hlist.add("Filters", text="Filters")
-	reader_re = re.compile(".*rdr$", re.I)
-	writer_re = re.compile(".*wrt$", re.I)
-	view_re = re.compile(".*vwr$", re.I)
-	filter_re = re.compile(".*flt$", re.I)	
-	for i in self.dscas3_main.get_module_manager().get_module_list():
-	    if reader_re.search(i):
-		hlist.add("Readers." + i, text=i)
-	    elif writer_re.search(i):
-		hlist.add("Writers." + i, text=i)
-	    elif view_re.search(i):
-		hlist.add("Views." + i, text=i)
-	    elif filter_re.search(i):
-		hlist.add("Filters." + i, text=i)
-	# do openings and closings automatically
-	self.module_tree.autosetmode()
+	# let's just create and pack this first
+	sb=Tkinter.Scrollbar(tree_frame, orient=HORIZONTAL)
+	sb.pack(side=BOTTOM, fill=X)
+	self.module_tree.configure(xscrollcommand=sb.set)
+	sb.configure(command=self.module_tree.xview)
+	
+	# then the module_tree
+	self.module_tree.pack(side=LEFT, fill=Y, expand=0)
+	
+	# and then the vertical scrollbar
+	sb=Tkinter.Scrollbar(tree_frame)
+	sb.pack(side=LEFT, fill=Y)
+	self.module_tree.configure(yscrollcommand=sb.set)
+	sb.configure(command=self.module_tree.yview)
+
+
 	
 	
 	# create canvas for drawing glyph layouts on
-	self.canvas = Tix.Canvas(self.window)
+	self.canvas = Tkinter.Canvas(self.window)
 	self.canvas.bind("<Button-1>", self.canvas_b1click_cb)
-	self.canvas.pack(side=Tix.LEFT, expand=1, fill=Tix.BOTH)
-	
+	self.canvas.pack(side=LEFT, expand=1, fill=BOTH)
 	
 	# frame
-	self.command_frame = Tix.Frame(self.window)
-	self.command_frame.pack(side=Tix.LEFT, fill=Tix.BOTH)
-
+	self.command_frame = Tkinter.Frame(self.window)
+	self.command_frame.pack(side=LEFT, fill=BOTH)
+	
 	# then some command buttons
-	self.command_frame.mode_select = Tix.Select(self.command_frame, radio=1, allowzero=0, orientation=Tix.VERTICAL)
-	self.command_frame.mode_select.add('edit', text='Edit')
-	self.command_frame.mode_select.add('delete', text='Delete')
-	self.command_frame.mode_select.add('view', text='View')
+	self.command_frame.mode_select = Pmw.RadioSelect(self.command_frame, buttontype='radiobutton', orient='vertical')
+
+	self.command_frame.mode_select.add('Edit')
+	self.command_frame.mode_select.add('Delete')
+	self.command_frame.mode_select.add('View')
 	
-	self.command_frame.mode_select['value'] = 'edit'
-	self.command_frame.mode_select.pack(side=Tix.TOP)
+	self.command_frame.mode_select.invoke('Edit')
 	
+	self.command_frame.mode_select.pack(side=TOP)
+	
+    def get_tree_node_contents(self, node):
+	if node.full_id() == ('.',):
+	    node.widget.add_node('Readers', 'rdr', 1)
+	    node.widget.add_node('Writers', 'wrt', 1)
+	    node.widget.add_node('Viewers', 'vwr', 1)
+	    node.widget.add_node('Filters', 'flt', 1)
+	else:
+	    # we're in one of the sublists, and this has just been opened
+	    # we should get the module_manager to rescan for new modules
+	    # (this is not working yet)
+	    self.dscas3_main.get_module_manager().scan_modules()
+	    # compile regular expresion for something like: ".*rdr$"
+	    cre = re.compile(".*%s$" % (node.full_id()[1]), re.I)
+	    for i in self.dscas3_main.get_module_manager().get_module_list():
+		if cre.search(i):
+		    node.widget.add_node(name=i, id=i, flag=0)
+		    
+    def get_currently_selected_module_type(self):
+	tree_node = self.module_tree.cursor_node(None)
+	print tree_node.full_id()
+	# it can only be a module if it's this deep in the tree, mmkay?
+	if tree_node and len(tree_node.full_id()) == 3:
+	    return tree_node.full_id()[2]
+	else:
+	    return None
 	
     def create_glyph(self, x, y):
 	# see what's selected in the tree (make sure it's not a section heading)
-	sel_tuple = self.module_tree.subwidget_list['hlist'].info_selection()
-	if (len(sel_tuple) == 1):
-	    module_search = re.search(".*\.(.*)", sel_tuple[0])
-	    if (module_search and module_search.group(1)):
-		temp_module = self.dscas3_main.get_module_manager().create_module(module_search.group(1))
-		if temp_module:
-		    self.glyphs.append(glyph(self, self.canvas, (x,y),
-		    temp_module))
+	module_type = self.get_currently_selected_module_type()
+	if module_type:
+	    temp_module = self.dscas3_main.get_module_manager().create_module(module_type)
+	    if temp_module:
+		self.glyphs.append(glyph(self, self.canvas, (x,y),
+		temp_module))
 		    
     def delete_glyph(self, glyph):
-	try:
+        try:
 	    # iterate through all glyphs, finding out whether this glyph is an
 	    # input glyph for it
 	    for cur_input_glyph in self.glyphs:
@@ -323,8 +354,8 @@ class graph_editor:
 	glyph.get_module_instance().view()
 	
     def canvas_b1click_cb(self, event):
-	if self.get_mode() == 'edit':
-	    item = self.canvas.find_withtag(Tix.CURRENT)
+	if self.get_mode() == 'Edit':
+	    item = self.canvas.find_withtag(CURRENT)
 	    item_type = self.canvas.type(item)
 	    # we only create a glyph if we don't click on anything already in the canvas
 	    if item_type == None:
@@ -365,7 +396,7 @@ class graph_editor:
 	input_glyph.disconnect_from(output_glyph, input_idx)
 	
     def get_mode(self):
-	return self.command_frame.mode_select['value']
+	return self.command_frame.mode_select.getcurselection()
 	
     def set_status(self, text):
 	self.status['text'] = text

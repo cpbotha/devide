@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import sys
-import Tix
+import Tkinter
 import tkMessageBox
+from Tkconstants import *
+import Pmw
 
 from graph_editor import graph_editor
 from module_manager import module_manager
@@ -14,14 +16,13 @@ class dscas3_main:
 	self.root.protocol ("WM_DELETE_WINDOW", self.quit)
 	
 	# interpreter input line
-	self.pyco = Tix.ComboBox(self.root, editable=Tix.TRUE, history=Tix.TRUE, anchor=Tix.E, command=self.pyco_exec)
-	self.pyco.pack(side=Tix.TOP, fill=Tix.X)
+	self.pyco = Pmw.ComboBox(self.root, label_text = 'Python', labelpos = 'nw', selectioncommand=self.pyco_exec)
+	self.pyco.pack(side=TOP, fill=X)
 
 	# button box
-	box = Tix.ButtonBox(self.root, orientation=Tix.HORIZONTAL)
-	box.add('ok', text='Quit', underline=0, width=6,
-	command=self.quit)
-	box.pack(side=Tix.TOP, fill=Tix.X, expand=1)
+	box = Pmw.ButtonBox(self.root)
+	box.add('Quit', underline=0, command=self.quit)
+	box.pack(side=TOP, fill=X, expand=1)
 	
 	# this will instantiate the module manager and get a list of plugins
 	self.module_manager = module_manager()
@@ -43,7 +44,8 @@ class dscas3_main:
 	
 
 # create main window
-root = Tix.Tk()
+root = Tkinter.Tk()
+Pmw.initialise(root, fontScheme = 'pmw1')
 dscas3_main(root)
 # start event loop of main window
 root.mainloop()

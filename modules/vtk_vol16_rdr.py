@@ -13,6 +13,7 @@ class vtk_vol16_rdr(module_base):
 	self.image_range = Tix.StringVar()
 	self.data_dimensions = Tix.StringVar()
 	self.data_spacing = Tix.StringVar()
+
 	self.sync_config()
 	
     def __del__(self):
@@ -67,7 +68,7 @@ class vtk_vol16_rdr(module_base):
 	
 	# the file prefix entry box
 	Tix.Label(config_window, text="File Prefix").grid(row=0)
-	Tix.Entry(config_window, textvariable=self.file_prefix).grid(row=0, column=1)
+	Tix.FileEntry(config_window, variable=self.file_prefix).grid(row=0, column=1)
 
 	# radios for endianness
 	Tix.Label(config_window, text="Endianness").grid(row=1)
@@ -96,9 +97,21 @@ class vtk_vol16_rdr(module_base):
 
 	box2 = Tix.ButtonBox(config_window, orientation=Tix.HORIZONTAL)
 	box2.add('cancel', text='Cancel', underline=0, command=config_window.destroy)
-	box2.add('sync', text='Sync', underline=0, command=self.sync_config)	
+	# synch settings with underlying code
+	box2.add('sync', text='Sync', underline=0, command=self.sync_config)
+	# apply settings
 	box2.add('apply', text='Apply', underline=0, command=self.apply_config)
-	box2.add('exec', text='Execute', underline=0, command=self.execute_module)
-	box2.add('ok', text='Ok', underline=0, command=lambda self=self, config_window=config_window: self.apply_config() and config_window.destroy())
+	# apply and execute
+	box2.add('exec', text='Execute', underline=0, command=lambda self=self: (self.apply_config(), self.execute_module()))
+	# apply and close dialog
+	box2.add('ok', text='Ok', underline=0, command=lambda self=self, config_window=config_window: (self.apply_config(), config_window.destroy()))
+
+	balloon = Tix.Balloon(config_window)
+	balloon.bind_widget(box2.subwidget('cancel'), balloonmsg='Close this dialogue without applying.')
+	balloon.bind_widget(box2.subwidget('sync'), balloonmsg='Synchronise dialogue with configuration of underlying system.')
+	balloon.bind_widget(box2.subwidget('apply'), balloonmsg='Modify configuration of underlying system as specified by this dialogue.')
+	balloon.bind_widget(box2.subwidget('exec'), balloonmsg='Apply, then execute the module.')
+	balloon.bind_widget(box2.subwidget('ok'), balloonmsg='Apply, then close the window.')
+	
 	box2.grid(row=6, column=0, columnspan=2, sticky=Tix.W + Tix.E)
 	
