@@ -25,37 +25,65 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
         # we'll be playing around with some vtk objects, this could
         # be anything
 
-        self._thresh = vtk.vtkThresholdPoints()
-        self._thresh.ThresholdByUpper(1)
-        self._del2d = vtk.vtkDelaunay2D()
-        self._del2d.SetInput(self._thresh.GetOutput())
-        self._geom = vtk.vtkGeometryFilter()
-        self._geom.SetInput(self._del2d.GetOutput())
+#         self._thresh = vtk.vtkThresholdPoints()
+#         self._thresh.ThresholdByUpper(1)
+#         self._del2d = vtk.vtkDelaunay2D()
+#         self._del2d.SetInput(self._thresh.GetOutput())
+#         self._geom = vtk.vtkGeometryFilter()
+#         self._geom.SetInput(self._del2d.GetOutput())
 
         #self._cast = vtk.vtkImageCast()
         #self._cast.SetOutputScalarType(vtk.VTK_SHORT)
         #self._distance = vtk.vtkImageCityBlockDistance()
         #self._distance.SetInput(self._cast.GetOutput())        
-        #self._distance = vtk.vtkImageEuclideanDistance()
+
+        self._distance = vtk.vtkImageEuclideanDistance()
         #self._distance.ConsiderAnisotropyOn()
+        self._pf1 = vtk.vtkProgrammableFilter() # yeah
+        self._pf1.SetInput(self._distance.GetOutput())
+        self._pf1.SetExecuteMethod(self.pf1Execute)
 
-        moduleUtils.setupVTKObjectProgress(self, self._thresh,
-                                           'Extracting geometry...')
-        moduleUtils.setupVTKObjectProgress(self, self._del2d,
-                                           'Calculating Delaunay3D...')
-        moduleUtils.setupVTKObjectProgress(self, self._geom,
-                                           'Extracting geometry...')
-        
+        moduleUtils.setupVTKObjectProgress(self, self._distance,
+                                           'Calculating distance field...')
+        moduleUtils.setupVTKObjectProgress(self, self._pf1,
+                                           'Signing distance field...')
         
         
 
-        self._iObj = self._thresh
-        self._oObj = self._thresh
+        self._iObj = self._distance
+        self._oObj = self._pf1
         
-        self._viewFrame = self._createViewFrame({'thresh' :
-                                                 self._thresh,
-                                                 'delaunay3d' :
-                                                 self._del2d})
+        self._viewFrame = self._createViewFrame({'distance' :
+                                                 self._distance,
+                                                 'pf1' :
+                                                 self._pf1})
+
+    def pf1Execute(self):
+        inputData = self._pf1.GetStructuredPointsInput()
+        outputData = self._pf1.GetOutput()
+
+        zdim = inputData.GetWholeExtent()[5]
+        for z in xrange(zdim + 1):
+
+            for x in xrange(inputData.GetWholeExtent()[1] + 1):
+                signFlip = False
+                prevVal = -1
+                for y in xrange(inputData.GetWholeExtent()[3] + 1):
+                    val = inputData.GetScalarComponentAsDouble(x,y,z,0)
+                    
+                    if val == 0 and prevVal != 0:
+                        signFlip = not signFlip
+                        
+                    if signFlip:
+                        outputData.SetScalarComponentFromDouble(x,y,z,0,-val)
+                    else:
+                        # this is necessary (CopyStructure doesn't do it)
+                        outputData.SetScalarComponentFromDouble(x,y,z,0,val)
+
+                    prevVal = val
+
+            self._pf1.UpdateProgress(z / float(zdim))
+                        
 
 
     def close(self):
@@ -66,9 +94,8 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # get rid of our reference
-        del self._thresh
-        del self._del2d
-        del self._geom
+        del self._distance
+        del self._pf1
         del self._iObj
         del self._oObj
 
