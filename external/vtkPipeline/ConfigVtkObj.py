@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.19 2004/05/24 11:33:02 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.20 2004/05/24 12:35:00 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -202,8 +202,12 @@ class ConfigVtkObj:
     These show()/hide() semantics have been added to make it easier to have
     persistent ConfigVtkObj's.  Please see the end of vtkPipeline for an
     example.
+
+    If frame and panel are NOT None, ConfigVtkObj will generate its UI
+    into the given frame and panel.  The panel that you pass HAS to have
+    a top-level sizer.
     """
-    def __init__ (self, parent, renwin, vtk_obj):
+    def __init__ (self, parent, renwin, vtk_obj, frame=None, panel=None):
         """This initialiser will setup everything and construct the ui.
 
         You have to call show() to make it appear, however.
@@ -213,6 +217,16 @@ class ConfigVtkObj:
         self._parent = parent
 	self._renwin = renwin
         self._vtk_obj = vtk_obj
+
+        if frame and panel:
+            self._frame = frame
+            self._panel = panel
+            self._ownFrameAndPanel = False
+        else:
+            self._frame = None
+            self._panel = None
+            self._ownFrameAndPanel = True
+        
 	self.parser = vtkMethodParser.VtkMethodParser ()
 	self.state_patn = re.compile ("To[A-Z0-9]")
         self.update_meth = None
@@ -235,31 +249,33 @@ class ConfigVtkObj:
         # ################################################################
         # now create all the actual widget/ui elements
         # ################################################################
-        self._frame = wxFrame(parent=self._parent, id=-1,
-                              title="Configure %s"%
-                              self._vtk_obj.GetClassName ())
-        # if the user closes the frame, we just hide ourselves (tee hee)
-        EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
+        if self._ownFrameAndPanel:
+            self._frame = wxFrame(parent=self._parent, id=-1,
+                                  title="Configure %s"%
+                                  self._vtk_obj.GetClassName ())
+            # if the user closes the frame, we just hide ourselves (tee hee)
+            EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
 
-        # then the panel which we'll populate
-        panel = wxPanel(parent=self._frame, id=-1)
+            # then the panel which we'll populate
+            self._panel = wxPanel(parent=self._frame, id=-1)
 
         # first with a vertical sizer, settings at the top, buttons
-        # + controls at the bottom
-        top_sizer = wxBoxSizer(wxVERTICAL)
+        # + controls at the bottom - this sizer7 will have a 7px border
+        sizer7 = wxBoxSizer(wxVERTICAL)
 
-        self._notebook = wxNotebook(parent=panel, id=-1,
+        self._notebook = wxNotebook(parent=self._panel, id=-1,
                                     size=(640,480))
         nbsizer = wxNotebookSizer(self._notebook)
 
-        top_sizer.Add(nbsizer, option=0,
-                      flag=wxEXPAND|wxLEFT|wxTOP|wxRIGHT, border=7)
+        sizer7.Add(nbsizer, option=0,
+                   flag=wxEXPAND)
 
 	self.make_gui_vars ()
 
-        # the sizer returned by make_control_gui has a border of 7 all
-        # around.
-	top_sizer.Add(self.make_control_gui(panel), option=1, flag=wxEXPAND)
+        # the sizer returned by make_control_gui has no border... we want
+        # a border of 7 between the control_gui and the notebook
+	sizer7.Add(self.make_control_gui(self._panel), option=1,
+                   flag=wxEXPAND|wxTOP, border=7)
         
 	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
         self._notebook.AddPage(self.make_state_gui(self._notebook), 'States')
@@ -267,10 +283,18 @@ class ConfigVtkObj:
         self._notebook.AddPage(self.make_get_set_gui(self._notebook),
                                'Get-Set')
 
-        panel.SetAutoLayout(True)
-        panel.SetSizer(top_sizer)
-        top_sizer.Fit(self._frame)
-        top_sizer.SetSizeHints(self._frame)
+
+        if self._ownFrameAndPanel:
+            topSizer = wxBoxSizer(wxVERTICAL)
+            topSizer.Add(sizer7, 1, wxALL|wxEXPAND, 7)
+        
+            self._panel.SetAutoLayout(True)
+            self._panel.SetSizer(topSizer)
+            topSizer.Fit(self._frame)
+            topSizer.SetSizeHints(self._frame)
+        else:
+            # we assume the given panel already has a sizer
+            self._panel.GetSizer().Add(sizer7, 1, wxALL|wxEXPAND, 7)
 
         if self.vtk_warn > -1:
             self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
@@ -337,10 +361,8 @@ class ConfigVtkObj:
         """
         vert_sizer = wxBoxSizer(wxVERTICAL)
         command_sizer = wxBoxSizer(wxHORIZONTAL)
-        button_sizer = wxBoxSizer(wxHORIZONTAL)
-        vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND|wxALL, border=7)
-        vert_sizer.Add(button_sizer, 0, wxLEFT|wxBOTTOM|wxRIGHT|wxALIGN_RIGHT,
-                       7)
+
+        vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND)
 
         command_entry = py.shell.Shell(parent=parent, id=-1,
                                        introText="Bish.",
@@ -349,40 +371,47 @@ class ConfigVtkObj:
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
 
 
-        apply_id = wxNewId()
-        apply_button = wxButton(parent, id=apply_id,
-                                 label="Apply")
-        button_sizer.Add(apply_button, 0, wxRIGHT, 7)
-        EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
-        apply_button.SetToolTip(wxToolTip(
-            'Modify configuration of the underlying class as specified ' \
-            'by this dialogue.'))
-        apply_button.SetDefault()
+        if self._ownFrameAndPanel:
+            # we only make the command buttons if we're NOT being put
+            # into someone else's panel
+            button_sizer = wxBoxSizer(wxHORIZONTAL)
+            vert_sizer.Add(button_sizer, 0, wxTOP|wxALIGN_RIGHT,
+                           7)
+            
+            apply_id = wxNewId()
+            apply_button = wxButton(parent, id=apply_id,
+                                     label="Apply")
+            button_sizer.Add(apply_button, 0, wxRIGHT, 7)
+            EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
+            apply_button.SetToolTip(wxToolTip(
+                'Modify configuration of the underlying class as specified ' \
+                'by this dialogue.'))
+            apply_button.SetDefault()
 
-        closeButtonId = wxNewId()
-        closeButton = wxButton(parent, closeButtonId, label="Close")
-        button_sizer.Add(closeButton, 0, wxRIGHT, 7)
-        EVT_BUTTON(parent, closeButtonId, lambda e, s=self: s.cancel())
-        closeButton.SetToolTip(wxToolTip(
-            'Hide this dialogue without applying changes.'))
+            closeButtonId = wxNewId()
+            closeButton = wxButton(parent, closeButtonId, label="Close")
+            button_sizer.Add(closeButton, 0, wxRIGHT, 7)
+            EVT_BUTTON(parent, closeButtonId, lambda e, s=self: s.cancel())
+            closeButton.SetToolTip(wxToolTip(
+                'Hide this dialogue without applying changes.'))
 
 
-        syncButtonId = wxNewId()
-        syncButton = wxButton(parent, syncButtonId,
-                              label="Sync")
-        button_sizer.Add(syncButton, 0, wxRIGHT, 7)
-        EVT_BUTTON(parent, syncButtonId, lambda e, s=self: s.update_gui())
-        syncButton.SetToolTip(wxToolTip(
-            'Synchronise this dialogue with the configuration of the ' \
-            'underlying class.'))
+            syncButtonId = wxNewId()
+            syncButton = wxButton(parent, syncButtonId,
+                                  label="Sync")
+            button_sizer.Add(syncButton, 0, wxRIGHT, 7)
+            EVT_BUTTON(parent, syncButtonId, lambda e, s=self: s.update_gui())
+            syncButton.SetToolTip(wxToolTip(
+                'Synchronise this dialogue with the configuration of the ' \
+                'underlying class.'))
 
-        classdoc_id = wxNewId()
-        classdoc_button = wxButton(parent, id=classdoc_id,
-                                   label="Class Documentation")
-        button_sizer.Add(classdoc_button, 0, wxRIGHT, 7)
-        EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
-        classdoc_button.SetToolTip(wxToolTip(
-            'Show class documentation for the current class.'))
+            classdoc_id = wxNewId()
+            classdoc_button = wxButton(parent, id=classdoc_id,
+                                       label="Class Documentation")
+            button_sizer.Add(classdoc_button, 0, wxRIGHT, 7)
+            EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
+            classdoc_button.SetToolTip(wxToolTip(
+                'Show class documentation for the current class.'))
 
         return vert_sizer
 
@@ -707,8 +736,14 @@ class ConfigVtkObj:
         del self._vtk_obj
         # also lose our renwin binding, thank you
         del self._renwin
-        # now get rid of the user interface as well
-        self._frame.Destroy()
+        if self._ownFrameAndPanel:
+            # now get rid of the user interface as well
+            self._frame.Destroy()
+        else:
+            # these are not ours, just remove our bindings
+            del self._frame
+            del self._panel
+        
 
     def render(self):
 	"Render scene and update anything that needs updating."
