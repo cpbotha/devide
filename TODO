@@ -1,4 +1,14 @@
-$Id: TODO,v 1.26 2004/05/24 11:32:48 cpbotha Exp $
+$Id: TODO,v 1.27 2004/07/20 15:06:11 cpbotha Exp $
+
+HIGH-PRIORITY
+
+* ship VTK and ITK build environments with devide so that mortals can build
+  extension modules easily.
+* think of scheme to pass active module parameters to consumer modules
+
+
+
+NORMAL PRIORITY
 
 * Embed ConfigVtkObj UI in simpleVTKObjects.
 
