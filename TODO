@@ -1,4 +1,4 @@
-$Id: TODO,v 1.14 2003/08/15 15:49:09 cpbotha Exp $
+$Id: TODO,v 1.15 2003/08/18 22:22:04 cpbotha Exp $
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -27,6 +27,14 @@ $Id: TODO,v 1.14 2003/08/15 15:49:09 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+- when a plane gets hidden, the interaction button should be disabled
+  (else the user can muck about with interaction, and we don't want that)
+  in general, make sure of consistency with show/hide and interaction
+
+- there is still some weirdness with planes and contours not always being
+  deactivated... this was too quick so I don't know how to reproduce this
+  easily.
 
 FIXED:
 
