@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.16 2003/05/12 22:15:11 cpbotha Exp $
+# $Id: graphEditor.py,v 1.17 2003/05/13 12:47:04 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -372,14 +372,6 @@ class graphEditor:
             pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
             EVT_MENU(self._graphFrame.canvas, del_id,
                      lambda e: self._deleteModule(module, glyph))
-
-            mcs_id = wxNewId()
-            pmenu.AppendItem(wxMenuItem(pmenu, mcs_id,
-                                        'Make current'))
-            EVT_MENU(self._graphFrame.canvas, mcs_id,
-                     lambda e, s=self, glyph=glyph:
-                     s._dscas3_app.getModuleManager().set_current_module(
-                glyph.get_module_instance()))
 
             # popup that menu!
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),

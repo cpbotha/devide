@@ -44,8 +44,6 @@ class moduleManager:
 	# make first scan of available modules
 	self.scanModules()
 
-        self._current_module = None
-
     def close(self):
         """Iterates through each module and closes it.
 
@@ -190,10 +188,6 @@ class moduleManager:
         instance.view()
     
     def deleteModule(self, instance):
-        # first make sure current_module isn't bound to the instance
-        if self._current_module == instance:
-            self._current_module = None
-
         # first disconnect all outgoing connections
         inputs = self._moduleDict[instance].inputs
         outputs = self._moduleDict[instance].outputs
@@ -294,12 +288,6 @@ class moduleManager:
         last call.
         """
         self._dscas3_app.update_vtk_log_window()
-
-    def set_current_module(self, module):
-        self._current_module = module
-
-    def get_current_module(self):
-        return self._current_module
 
     def setProgress(self, progress, message):
         self._dscas3_app.setProgress(progress, message)
