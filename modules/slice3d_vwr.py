@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.38 2003/03/06 23:11:11 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.39 2003/03/07 01:07:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -366,6 +366,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
 #################################################################
         
     def close(self):
+        print "starting close"
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
 
@@ -409,7 +410,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
 	# hide it so long
 	#self._viewFrame.Show(0)
 
-        self._viewFrame.threedRWI.GetRenderWindow().SetSize(10,10)
+        #self._viewFrame.threedRWI.GetRenderWindow().SetSize(10,10)
         self._viewFrame.threedRWI.GetRenderWindow().WindowRemap()        
         
         # all the RenderWindow()s are now reparented, so we can destroy
