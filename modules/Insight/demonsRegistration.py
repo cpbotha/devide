@@ -1,4 +1,4 @@
-# $Id: demonsRegistration.py,v 1.3 2004/12/06 18:01:46 cpbotha Exp $
+# $Id: demonsRegistration.py,v 1.4 2004/12/07 01:07:56 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -10,7 +10,13 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
     """Performs demons registration on fixed and moving input images, returns
     deformation field.
 
-    $Revision: 1.3 $
+    NOTE: remember to update help w.r.t. inverse direction of vectors in
+    deformation field.
+
+    Also read this thread:
+    http://public.kitware.com/pipermail/insight-users/2004-November/011002.html
+
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):

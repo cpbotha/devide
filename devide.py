@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.71 2004/12/05 16:03:05 cpbotha Exp $
+# $Id: devide.py,v 1.72 2004/12/07 01:07:56 cpbotha Exp $
 
 DEVIDE_VERSION = '20041201'
 
@@ -353,6 +353,11 @@ class devide_app_t(wx.App):
                     self._mainFrame.progressGauge.SetValue(
                         int(round(progress)))
                     self._mainFrame.progressText.SetLabel(message)
+
+                    # we also output an informative message to standard out
+                    # in cases where DeVIDE is very busy, this is quite
+                    # handy.
+                    print "%s: %.2f" % (message, progress)
 
                     # activate the busy cursor (we're a bit more lenient
                     # on its epsilon)
