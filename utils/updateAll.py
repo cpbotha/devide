@@ -1,7 +1,7 @@
 # updates all DeVIDE dependencies except ITK and VTK
 # i.e. do a cvs update, a cmake and a build of:
 # vtkdevide, vtktud, wrapitk and, depending on ITK: wrapitk, ConnectVTKITK
-# $Id: updateAll.py,v 1.2 2005/01/06 21:09:36 cpbotha Exp $
+# $Id: updateAll.py,v 1.3 2005/01/11 22:42:06 cpbotha Exp $
 # authored by Charl P. Botha http://cpbotha.net/
 
 import os
@@ -39,26 +39,25 @@ def updatedevide():
     os.chdir(defaults.devideTopLevel)
     os.system(cvsUpdateCommand)
 
-def standardUpdateAndBuild(source, binary, slnFile):
-    print 'CVS updating %s' % (source,)
+def standardUpdate(source):
+    print '\nCVS updating %s\n' % (source,)
     os.chdir(source)
     os.system(cvsUpdateCommand)
 
-    print 'Updating build config in %s' % (binary,)
+def standardBuild(binary, slnFile):
+    print '\nUpdating build config in %s' % (binary,)
     os.chdir(binary)
     os.system('cmake .')
-
 
     if os.name == 'posix':
         theBuildCommand = buildCommand
     else:
         theBuildCommand = buildCommand % (slnFile,)
 
-    print 'Building with "%s"' % (theBuildCommand,)
+    print 'Building with "%s"\n' % (theBuildCommand,)
 
     os.system(theBuildCommand)
     
-
 def updatevtkdevide():
     standardUpdateAndBuild(defaults.vtkdevideSource, defaults.vtkdevideBinary,
                            'vtkdevide.sln')
@@ -71,11 +70,20 @@ def updatewrapitk():
     standardUpdateAndBuild(defaults.wrapitkSource, defaults.wrapitkBinary,
                            'wrapitk.sln')
 
+def doUpdates():
+    standardUpdate(defaults.devideTopLevel)
+    standardUpdate(defaults.vtkdevideSource)
+    standardUpdate(defaults.vtktudSource)
+    standardUpdate(defaults.wrapitkSource)
+
+def doBuilds():
+    standardBuild(defaults.vtkdevideBinary, 'vtkdevide.sln')
+    standardBuild(defaults.vtktudBinary, 'vtutud.sln')
+    standardBuild(defaults.wrapitkBinary, 'wrapitk.sln')
+
 def main():
-    updatedevide()
-    updatevtkdevide()
-    updatevtktud()
-    updatewrapitk()
+    doUpdates()
+    doBuilds()
 
 if __name__ == '__main__':
     main()
