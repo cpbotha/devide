@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeRelease.sh,v 1.2 2004/03/20 18:14:01 cpbotha Exp $
+# $Id: makeRelease.sh,v 1.3 2004/05/25 08:44:36 cpbotha Exp $
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -54,7 +54,7 @@ if [ `uname` != Linux ]; then
 f:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`.exe
 else
-cp devide.tar.gz devide`date +%Y%m%d`.tar.gz
+cp devide.tar.bz2 devide`date +%Y%m%d`.tar.bz2
 fi
 
 cd ../
@@ -75,7 +75,7 @@ if [ `uname` != Linux ]; then
 f:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`itk.exe
 else
-cp devide.tar.gz devide`date +%Y%m%d`itk.tar.gz
+cp devide.tar.bz2 devide`date +%Y%m%d`itk.tar.bz2
 fi
 
 cd ../
