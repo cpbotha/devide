@@ -9,7 +9,7 @@ class decimateFLTViewFrame(wxFrame):
         kwds["style"] = wxCAPTION|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxSYSTEM_MENU|wxRESIZE_BORDER
         wxFrame.__init__(self, *args, **kwds)
         self.viewFramePanel = wxPanel(self, -1)
-        self.label_8_copy_1 = wxStaticText(self.viewFramePanel, -1, "Target reduction (%)")
+        self.label_8_copy_1_copy = wxStaticText(self.viewFramePanel, -1, "Target reduction (%)")
         self.targetReductionText = wxTextCtrl(self.viewFramePanel, -1, "")
 
         self.__set_properties()
@@ -25,10 +25,12 @@ class decimateFLTViewFrame(wxFrame):
         # begin wxGlade: decimateFLTViewFrame.__do_layout
         sizer_1 = wxBoxSizer(wxVERTICAL)
         sizer_5 = wxBoxSizer(wxVERTICAL)
-        sizer_3 = wxBoxSizer(wxHORIZONTAL)
-        sizer_3.Add(self.label_8_copy_1, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
-        sizer_3.Add(self.targetReductionText, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_5.Add(sizer_3, 1, wxALL|wxEXPAND, 7)
+        tlSizer7 = wxBoxSizer(wxVERTICAL)
+        sizer_13 = wxBoxSizer(wxHORIZONTAL)
+        sizer_13.Add(self.label_8_copy_1_copy, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
+        sizer_13.Add(self.targetReductionText, 0, wxALIGN_CENTER_VERTICAL, 0)
+        tlSizer7.Add(sizer_13, 1, wxEXPAND, 0)
+        sizer_5.Add(tlSizer7, 1, wxALL|wxEXPAND, 7)
         self.viewFramePanel.SetAutoLayout(1)
         self.viewFramePanel.SetSizer(sizer_5)
         sizer_5.Fit(self.viewFramePanel)

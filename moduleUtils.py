@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.17 2003/09/06 16:14:01 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.18 2003/09/21 16:37:19 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -34,7 +34,9 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
     IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
     the viewFramePanel.  This is the default for wxGlade created dialogs
     with a top-level panel.  The viewFramePanel's sizer must be a
-    vertical box sizer.
+    vertical box sizer that contains ANOTHER sizer with a 7 pixel border
+    all around.  These ECAS buttons will be in a sibling sizer to that
+    ANOTHER sizer.
 
     The Execute, Close, Apply and Sync buttons will be created with the
     viewFramePanel as their parent.  They will be added to a horizontal sizer
@@ -82,14 +84,21 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
     viewFrame.syncButton.SetToolTip(wxToolTip(
         "Synchronise dialogue with configuration of underlying system."))
 
-    # add them to their own sizer, each with a border of 4 pixels
+    # add them to their own sizer, each with a border of 4 pixels on the right
     buttonSizer = wxBoxSizer(wxHORIZONTAL)
     for button in (viewFrame.executeButton, viewFrame.closeButton,
-                   viewFrame.applyButton, viewFrame.syncButton):
-        buttonSizer.Add(button, 0, wxALL, 4)
+                   viewFrame.applyButton):
+        buttonSizer.Add(button, 0, wxRIGHT, 7)
 
-    # add the buttonSizer to the viewFramePanel sizer with a border of 5 pixels
-    viewFramePanel.GetSizer().Add(buttonSizer, 0, wxALL|wxALIGN_RIGHT, 5)
+    # except for the right-most button, which has no border
+    buttonSizer.Add(viewFrame.syncButton, 0)
+
+    # add the buttonSizer to the viewFramePanel sizer with a border of 7 pixels
+    # on the left, right and bottom... remember, this is below a sizer with
+    # a 7 pixel border all around!
+    # (we do it with 8, because the default execute button is quite big!)
+    viewFramePanel.GetSizer().Add(buttonSizer, 0,
+                                  wxLEFT|wxRIGHT|wxBOTTOM|wxALIGN_RIGHT, 8)
     # force the sizer to calculate new layout with all children (because
     # we've just added something)
     viewFramePanel.GetSizer().Layout()
@@ -193,7 +202,9 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
     the viewFramePanel.  This is the default for wxGlade created dialogs
     with a top-level panel.  The viewFramePanel's sizer must be a
-    vertical box sizer.
+    vertical box sizer.  That sizer must contain yet ANOTHER sizer with a 7
+    pixel border all around.  The introspection controls will be created
+    as a sibling to the ANOTHER sizer.  Also see the moduleWriting guide.
     
     """
 
@@ -205,12 +216,17 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     pipelineButton = wxButton(viewFramePanel, pipelineButtonId, "Pipeline")
 
     hSizer = wxBoxSizer(wxHORIZONTAL)
-    hSizer.Add(ocLabel, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-    hSizer.Add(objectChoice, 1, wxALIGN_CENTER_VERTICAL, 0)
-    hSizer.Add(pbLabel, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
+    hSizer.Add(ocLabel, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+    hSizer.Add(objectChoice, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+    hSizer.Add(pbLabel, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(pipelineButton, 0, wxALIGN_CENTER_VERTICAL, 0)
 
-    viewFramePanel.GetSizer().Add(hSizer, 0, wxALL|wxEXPAND, 5)
+    # this will usually get added right below an existing sizer with 7 points
+    # border all around.  Below us the ECAS buttons will be added and these
+    # assume that there is a 7 pixel border above them, which is why we
+    # supply a 7 pixel below us.
+    viewFramePanel.GetSizer().Add(hSizer, 0,
+                                  wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 7)
 
     # force the sizer to calculate new layout with all children (because
     # we've just added something)
