@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.63 2002/09/13 15:38:01 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.64 2002/09/16 16:03:59 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -42,6 +42,7 @@ class vtk_slice_vwr(module_base,
         # we have a single RenderWindowInteractor
         self._rwi = None
         self._ipws = []
+        self._overlay_ipws = []
         # list of current cursors, one cursor for each ipw
         self._current_cursors = []
         # the renderers corresponding to the render windows
@@ -135,10 +136,28 @@ class vtk_slice_vwr(module_base,
                 # if we already have an ImageData input, we can't take anymore
                 for input in self._inputs:
                     if input['Connected'] == 'vtkImageData':
-                        raise TypeError, "You have tried to add volume data " \
-                              "the slice viewer which already has a " \
-                              "connected volume data set.  Disconnect the " \
-                              "old dataset first."
+
+                        # this means we might be getting on overlay, let's
+                        # check it for size and spacing
+                        input_stream.Update()
+
+                        main_input = self._ipws[0].GetInput()
+
+                        if input_stream.GetExtent() == \
+                               main_input.GetExtent() and \
+                               input_stream.GetSpacing() == \
+                               main_input.GetSpacing():
+                            
+                            pass
+                            
+                        else:
+                            raise TypeError, \
+                                  "You have tried to add volume data to" \
+                                  "the slice viewer that already has a " \
+                                  "connected volume data set.  Disconnect " \
+                                  "the old dataset first or make sure that "\
+                                  "the new dataset has the same dimensions "\
+                                  "so that it can be used as overlay."
 
                 # make sure it's current
                 input_stream.Update()
@@ -487,7 +506,7 @@ class vtk_slice_vwr(module_base,
         
         input_data = self._ipws[0].GetInput()
         ispacing = input_data.GetSpacing()
-        iorigin = input_data.GetSpacing()
+        iorigin = input_data.GetOrigin()
         # calculate real coords
         coords = map(operator.add, iorigin,
                      map(operator.mul, ispacing, cursor[0:3]))
