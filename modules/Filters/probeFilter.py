@@ -13,7 +13,7 @@ class probeFilter(noConfigModuleMixin, moduleBase):
     i.e. the interpolated values will be associated as the attributes of the
     polydata points.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -39,7 +39,8 @@ class probeFilter(noConfigModuleMixin, moduleBase):
                                            'Mapping source on input')
 
         self._viewFrame = self._createViewFrame(
-            {'vtkProbeFilter' : self._probeFilter})
+            {'Module (self)' : self,
+             'vtkProbeFilter' : self._probeFilter})
 
         # pass the data down to the underlying logic
         self.configToLogic()
@@ -75,7 +76,7 @@ class probeFilter(noConfigModuleMixin, moduleBase):
             self._probeFilter.SetSource(inputStream)
 
     def getOutputDescriptions(self):
-        return ('Input with mapped source values', )
+        return ('Input with mapped source values',)
 
     def getOutput(self, idx):
         return self._probeFilter.GetOutput()
