@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.17 2002/06/10 16:58:33 cpbotha Exp $
+# $Id: module_base.py,v 1.18 2002/08/16 11:46:24 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -160,7 +160,7 @@ class module_mixin_vtk_pipeline_config:
             
 # ----------------------------------------------------------------------------
 
-from wxPython.wx import wxFileDialog, wxOPEN, wxID_OK
+from wxPython.wx import wxFileDialog, wxDirDialog, wxOPEN, wxID_OK
 
 class module_mixin_fo_dialog:
     """Module mixin to make use of file open dialog."""
@@ -195,3 +195,23 @@ class module_mixin_fo_dialog:
             for key in self._fo_dlgs.keys():
                 self._fo_dlgs[key].Destroy()
             self._fo_dlgs.clear()
+
+    def dn_browse(self, parent, message, default_path=""):
+        """Utility method to make use of wxDirDialog.
+
+        This function will open up exactly one dialog per 'message' and this
+        dialog won't be destroyed.  This function is more or less identical
+        to fn_browse().
+        """
+        if not hasattr(self, '_do_dlgs'):
+            self._do_dlgs = {}
+
+        if not self._do_dlgs.has_key(message):
+            self._do_dlgs[message] = wxDirDialog(parent, message, default_path)
+
+        if self._do_dlgs[message].ShowModal() == wxID_OK:
+            return self._do_dlgs[message].GetPath()
+        else:
+            return None
+
+        
