@@ -1,4 +1,4 @@
-# $Id: transformStackRDR.py,v 1.2 2003/12/09 14:01:26 cpbotha Exp $
+# $Id: transformStackRDR.py,v 1.3 2003/12/18 10:34:44 cpbotha Exp $
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 import InsightToolkit as itk
@@ -84,7 +84,8 @@ class transformStackRDR(moduleBase, filenameViewModuleMixin):
 
     def _readTransformStack(self, filename):
         try:
-            transformFile = file(filename)
+            # binary mode
+            transformFile = file(filename, 'rb')
         except IOError, ioemsg:
             raise IOError, 'Could not open %s for reading:\n%s' % \
                   (filename, ioemsg)

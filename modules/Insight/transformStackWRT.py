@@ -1,4 +1,4 @@
-# $Id: transformStackWRT.py,v 1.4 2003/12/09 16:37:10 cpbotha Exp $
+# $Id: transformStackWRT.py,v 1.5 2003/12/18 10:34:44 cpbotha Exp $
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 from moduleBase import moduleBase
@@ -98,7 +98,8 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
 
         # let's try and open the file
         try:
-            transformFile = file(filename, 'w')
+            # opened for binary writing
+            transformFile = file(filename, 'wb')
         except IOError, ioemsg:
             raise IOError, 'Could not open %s for writing:\n%s' % \
                   (filename, ioemsg)
@@ -112,7 +113,7 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
             paramsTup = tuple([pda.GetElement(i) for i in range(nop)])
             pickleList.append((name, paramsTup))
 
-        cPickle.dump(pickleList, transformFile)
+        cPickle.dump(pickleList, transformFile, True)
 
         
             
