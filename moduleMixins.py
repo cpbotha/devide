@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.28 2004/03/05 14:21:46 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.29 2004/03/07 15:45:13 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -415,7 +415,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
               in the case of tuple, the actual cast followed by a comma
               and the number of elements
 
-    widgetType: text (more to come)
+    widgetType: text, checkbox
 
     NOTE: this mixin assumes that your module is derived from moduleBase,
     e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
@@ -458,12 +458,17 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         for configTuple in self._configList:
             label = wx.StaticText(panel, -1, configTuple[0])
             gridSizer.Add(label, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-            text = wx.TextCtrl(panel, -1, "")
-            if len(configTuple[4]) > 0:
-                text.SetToolTip(wx.ToolTip(configTuple[4]))
+            widget = None
+            if configTuple[3] == 'text':
+                widget = wx.TextCtrl(panel, -1, "")
+            else: # checkbox
+                widget = wx.CheckBox(panel, -1, "")
                 
-            gridSizer.Add(text, 0, wx.EXPAND, 0)
-            self._widgets[configTuple[0]] = text
+            if len(configTuple[4]) > 0:
+                widget.SetToolTip(wx.ToolTip(configTuple[4]))
+                
+            gridSizer.Add(widget, 0, wx.EXPAND, 0)
+            self._widgets[configTuple[0]] = widget
 
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
@@ -514,7 +519,10 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             widget = self._widgets[configTuple[0]]
             val = getattr(self._config, configTuple[1])
             # only supporting 'text' widgets for now
-            widget.SetValue(str(val))
+            if configTuple[3] == 'text':
+                widget.SetValue(str(val))
+            else: # checkbox
+                widget.SetValue(bool(val))
 
     def view(self):
         self._viewFrame.Show(True)

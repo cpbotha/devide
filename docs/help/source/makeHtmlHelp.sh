@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeHtmlHelp.sh,v 1.2 2004/03/07 02:34:22 cpbotha Exp $
+# $Id: makeHtmlHelp.sh,v 1.3 2004/03/07 15:45:13 cpbotha Exp $
 
 # go to dir containing script
 cd `dirname $0`
@@ -15,6 +15,9 @@ TEX2RTF='f:/apps/Tex2RTF/tex2rtf.exe'
 fi
 
 $TEX2RTF devideHelp.tex build/devideHelp -macros devideHelp.ini
+# now copy figures
+cp figures/* build
+
 # devideHelp.htb is in appDir/docs/help/
 # this script is in appDir/docs/help/source
 rm ../devideHelp.htb

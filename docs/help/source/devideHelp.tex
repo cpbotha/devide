@@ -26,6 +26,7 @@
 \setfooter{\thepage}{}{}{}{}{\thepage}%
 \tableofcontents%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter*{Copyright notice}%
 \setheader{{\it COPYRIGHT}}{}{}{}{}{{\it COPYRIGHT}}%
 \setfooter{\thepage}{}{}{}{}{\thepage}%
@@ -51,13 +52,74 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}%
 \pagenumbering{arabic}%
 \setheader{{\it CHAPTER \thechapter}}{}{}{}{}{{\it CHAPTER \thechapter}}%
 \setfooter{\thepage}{}{}{}{}{\thepage}%
-This is the user manual and help file for the DeVIDE software
-package.  DeVIDE of course expands to Delft Visualisation and Image
-processing Development Environment.
+This is the user manual and help file for the DeVIDE software package.
+DeVIDE is the Delft Visualisation and Image processing Development
+Environment.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Graph Editor}
+\pagenumbering{arabic}%
+\setheader{{\it CHAPTER \thechapter}}{}{}{}{}{{\it CHAPTER \thechapter}}%
+\setfooter{\thepage}{}{}{}{}{\thepage}%
+
+The DeVIDE Graph Editor is a visual programming interface where glyphs
+representing the underlying DeVIDE modules can be connected together
+to form new programs.  It's the most flexible way of working with
+DeVIDE, short of directly interfacing with the underlying code.
+
+This chapter will give a brief overview of graph editor usage.
+
+\section{A few important tips}
+Before we start, a few productivity-enhancing secrets of the Graph
+Editor are revealed here.
+
+\subsection{Getting module-specific help}
+Many modules have module-specific help-text built in.  To see this
+help-text, create the relevant module-glyph on the canvas, right click
+on the module, and select ``Help on Module''.
+
+Also remember that selected (special) modules are documented in the
+chapter \helpref{Special Modules}{secSpecialModules}.
+
+\subsection{Reading data, quickly}
+Dragging and dropping certain data-files on the Graph Editor canvas
+will cause the system to automatically create and configure the
+applicable module.  For example: selecting, dragging and dropping a
+collection of DICOM .dcm files on the canvas will result in a dicomRDR
+glyph to be created and pre-configured with the list of files that has
+been dropped.
+
+\subsection{Re-using networks, quickly}
+Dragging and dropping a .dvn (DeVIDE Network) file on the canvas will
+instantly load the network and build it at the mouse position.  This
+will not destroy any of your current networks on the canvas.
+
+\subsection{Quick-type module find}
+Select the module categories that you want to work with.  Now focus
+the canvas by clicking on it with your mouse.  Modules can now be
+quickly selected by typing the first few letters in their names.  Once
+the module you want is highlighted, press the ``Enter'' key to place
+it.
+
+\section{A small sample network}
+The Graph Editor is explained by putting together a simple network for
+the creating of a volume and the subsequent extraction of an
+iso-surface from the synthesised volume.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Special modules}\label{secSpecialModules}
+\pagenumbering{arabic}%
+\setheader{{\it CHAPTER \thechapter}}{}{}{}{}{{\it CHAPTER \thechapter}}%
+\setfooter{\thepage}{}{}{}{}{\thepage}%
+
+
+
+\section{The slice3dVWR}
 
 %\bibliography{refs}
 %\addcontentsline{toc}{chapter}{Bibliography}
