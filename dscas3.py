@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.18 2003/02/23 23:35:41 cpbotha Exp $
+# $Id: dscas3.py,v 1.19 2003/02/24 12:04:41 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
@@ -270,7 +270,8 @@ class dscas3_app_t(wxApp):
                    # we want wx to update its UI, but it shouldn't accept any
                    # user input, else things can get really crazy.
                    #print "calling yield"
-                   wxSafeYield(None, 1)
+                   #wxSafeYield(None, 1)
+                   wxSafeYield()
                    # the following two calls don't seem to do the trick
                    #self._mainFrame.Refresh()
                    #self._mainFrame.Update()
