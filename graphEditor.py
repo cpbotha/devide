@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.15 2003/05/12 15:47:30 cpbotha Exp $
+# $Id: graphEditor.py,v 1.16 2003/05/12 22:15:11 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -569,16 +569,18 @@ class graphEditor:
                         
                     # if there are clips on the new segment, add an extra
                     # node to avoid those clips!
-                    newSegmentClipped = False
-                    glyph = allGlyphs[0]
-#                     while not newSegmentClipped:
-#                         cp = self._cohenSutherLandClip(x0,y0,newX,newY)
-#                         if cp:
-#                             newSegmentClipped = True
-                        
-#                     if newSegmentClipped:
-#                         print "Extra node added to avoid new clips."
-#                         line.insertRoutingPoint(nearestClipPoint[0], newY)
+                    for glyph in allGlyphs:
+                        (xmin2, ymin2), (xmax2, ymax2) = \
+                                glyph.getTopLeftBottomRight()
+                        cp2 = self._cohenSutherLandClip(x0,y0,newX,newY,
+                                                        xmin2, ymin2,
+                                                        xmax2, ymax2)
+                        if cp2:
+                            break
+                     
+                    if cp2:
+                        print "Extra node added to avoid new clips."
+                        line.insertRoutingPoint(nearestClipPoint[0], newY)
                         
                     successfulInsert = line.insertRoutingPoint(newX, newY)
                     
@@ -597,19 +599,20 @@ class graphEditor:
                     else:
                         newX += overshoot
 
-
                     # if there are clips on the new segment, add an extra
                     # node to avoid those clips!
-                    newSegmentClipped = False
-                    glyph = allGlyphs[0]
-#                     while not newSegmentClipped:
-#                         cp = self._cohenSutherLandClip(x0,y0,newX,newY)
-#                         if cp:
-#                             newSegmentClipped = True
-                        
-#                     if newSegmentClipped:
-#                         print "Extra node added to avoid new clips."
-#                         line.insertRoutingPoint(newX, nearestClipPoint[1])
+                    for glyph in allGlyphs:
+                        (xmin2, ymin2), (xmax2, ymax2) = \
+                                glyph.getTopLeftBottomRight()
+                        cp2 = self._cohenSutherLandClip(x0,y0,newX,newY,
+                                                        xmin2, ymin2,
+                                                        xmax2, ymax2)
+                        if cp2:
+                            break
+                     
+                    if cp2:
+                        print "Extra node added to avoid new clips."
+                        line.insertRoutingPoint(newX, nearestClipPoint[1])
                         
                     successfulInsert = line.insertRoutingPoint(newX, newY)
 
