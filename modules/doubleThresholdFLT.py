@@ -2,43 +2,43 @@ from module_base import module_base, filenameViewModuleMixin
 from wxPython.wx import *
 import vtk
 
-class vtkStructPtsWRT(module_base, filenameViewModuleMixin):
+class doubleThresholdFLT(module_base):
 
     def __init__(self, module_manager):
 
         # call parent constructor
         module_base.__init__(self, module_manager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
-        self._writer = vtk.vtkStructuredPointsWriter()
-        # we do this to save space - if you're going to be transporting files
-        # to other architectures, change this to ASCII
-        self._writer.SetFileTypeToBinary()
+        self._imageThreshold = vtk.vtkImageThreshold()
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('VTK Structured Points Writer',
                               'Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
                               {'vtkStructuredPointsWriter': self._writer})
+
+        self._viewFrame = None
+        self._createViewFrame()
+        self._viewFrame.Show(1)
         
     def close(self):
-        # we should disconnect all inputs
-        self.set_input(0, None)
-        del self._writer
-        filenameViewModuleMixin.close(self)
+        # we play it safe... (the graph_editor/module_manager should have
+        # disconnected us by now)
+        set_input(0, None)
+        # get rid of our reference
+        del self._imageThreshold
 
     def get_input_descriptions(self):
-	return ('vtkStructuredPoints',)
+	return ('vtkImageData',)
     
     def set_input(self, idx, input_stream):
-        self._writer.SetInput(input_stream)
+        self._imageThreshold.SetInput(input_stream)
     
     def get_output_descriptions(self):
-	return ()
+	return ('vtkImageData',)
     
     def get_output(self, idx):
-        raise Exception
+        return self._imageThreshold.GetOutput()
     
     def sync_config(self):
         filename = self._writer.GetFileName()
