@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.30 2003/03/05 00:07:30 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.31 2003/03/05 00:15:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -618,9 +618,6 @@ class slice3d_vwr(moduleBase,
             EVT_BUTTON(self._viewFrame, orthoPanels[i].storeId,
                        lambda e, i=i: self._storeCursorCallback(i))
             
-            
-
-        
         EVT_NOTEBOOK_PAGE_CHANGED(self._viewFrame,
                                   self._viewFrame.acsNotebookId,
                                   self._acs_nb_page_changed_cb)
