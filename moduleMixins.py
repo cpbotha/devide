@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.57 2004/11/21 22:03:34 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.58 2004/11/22 18:22:52 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -878,6 +878,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
     # legacy
     _createWindow = _createViewFrame
+
+    def _getWidget(self, configTupleIndex):
+        """Returns widget(s) given the index of the relevant configTuple in
+        the configList structure.
+        """
+        
+        return self._widgets[self._configList[configTupleIndex][0:5]]
+    
 
     def viewToConfig(self):
         for configTuple in self._configList:
