@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.10 2003/03/09 23:34:26 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.11 2003/05/13 12:50:05 cpbotha Exp $
 
 import genUtils
 import os
@@ -42,9 +42,6 @@ class dicomRDR(moduleBase,
         # do the normal thang (down to logic, up again)
         self.configToLogic()
         self.syncViewWithLogic()
-
-	# display it
-        self.view()
 	
     def close(self):
         # this will take care of all the vtkPipeline windows
