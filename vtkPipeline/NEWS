@@ -1,0 +1,112 @@
+Sat Nov 17 17:33:59 2001 Prabhu Ramachandran <prabhu_r@users.sf.net>
+
+    (*) Now installed using distutils as a separate module.
+    vtkPipeline is bundled with MayaVi and is no longer packaged
+    separately.
+
+    (*) Cleaned up the pickled output of the vtkPickler.  Also cleaned
+    up the vtkMethodParser and the vtkPipeline classes.
+
+    (*) Huge speed up (by a factor of 50 or more) in the "expand all"
+    feature of the pipeline browser, thanks to Dan Blezek
+    <blezek@crd.ge.com>.
+
+    (*) Intelligently disable useless VTK warning messages that are
+    shown when the pickler or the vtkPipeline code is used by turning
+    these messages off using the GlobalWarningDisplay flag
+    appropriately.
+
+    (*) Fixed various bugs.
+
+
+Fri May 11 18:59:58 2001  Prabhu Ramachandran <prabhu@aero.iitm.ernet.in>
+	
+	* Version 1.1 released.
+
+	* Added a vtkPipelineSegmentBrowser that can show a segment of a
+	VTK pipeline.  Given a set of VTK objects it displays the part of
+	the VTK pipeline starting from those objects.
+
+	* Disabled setting the ReferenceCount since this is a dangerous
+	thing to do.  The ReferenceCount is only displayed.
+
+	* Cleaned up the namespace.  I no longer use from module import *
+	anywhere.  So the code should be "import safe".
+
+	* Fixed some memory issues by removing some of the circular
+	references in the vtkPipeline code.
+
+	* Fixed long standing bug in the ConfigVtkObj class wherein the
+	SetAaToBb type of VTK methods would not be initialized properly.
+	The update method also handles such methods now.
+
+	* Added a set_update_method to the ConfigVtkObj class.  This can
+	be used to call a particular function when anything is changed
+	during the configuration.
+
+	* Made the vtkPickler load configurations gracefully even if some
+	of the saved methods don't exist in the current installation of
+	VTK.
+
+	
+Mon Jan 15 15:44:18 2001  Prabhu Ramachandran <prabhu@aero.iitm.ernet.in>
+
+	* Version 1.0 released.
+
+	* File Icons/coord.gif was not a GIF: fixed.
+
+	* Changed code to use str() instead of repr().  Latest nightlies
+	didnt work with repr().  Also removed variables that were named
+	'str'.
+
+	* Added support for David Gobbi's neat improvements to the Python
+	bindings.  Older versions also should work fine.
+
+	* Fixed a silly bug that caused segfaults for Readers with methods
+	that have an 'InputString'.  Thanks to Marco Morandini
+	<morandini@aero.polimini.it> for reporting this bug.
+
+	* Added a new VtkShowDoc class that is used to show VTK class
+	documentation by using the __doc__ attribute.  This is used to
+	provide documentation while configuring any VTK object.
+
+
+Sat Oct 28 15:17:22 2000  Prabhu Ramachandran <prabhu@aero.iitm.ernet.in>
+
+	* Version 0.9 released.
+
+	* Added a VtkPickler class that helps save and load the state of
+	any VTK object.
+
+	* Cleaned up the classes and separated the functionality to two
+	separate modules, ConfigVtkObj and vtkMethodParser.
+
+	* Added debug functions to aid debugging when strange segfaults
+	occur.
+
+	* Fixed some bugs for the various readers.
+
+	* Forced the pipeline browser to check for Input and Source
+	objects.
+
+
+Sat Oct  7 21:57:22 2000  Prabhu Ramachandran <prabhu@aero.iitm.ernet.in>
+
+	* Version 0.8 released.
+
+	* Any configuration option of the form Set*Color can now be set
+	using a GUI color chooser!
+
+	* Improved capability of apply button in configurator by doing a
+	RenderWindow.Render().
+
+	* Added an update button to the configurator.
+
+	* Added a refresh button to the browser.
+
+	* Added keyboard accelerators for browser and configurator.
+
+	* Fixed some bugs.
+
+	
+No news for earlier releases.
