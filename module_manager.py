@@ -23,6 +23,8 @@ class module_manager:
 	# make first scan of available modules
 	self.scan_modules()
 
+        self._current_module = None
+
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files."""
@@ -78,6 +80,9 @@ class module_manager:
         instance.view()
     
     def delete_module(self, instance):
+        # first make sure current_module isn't bound to the instance
+        if self._current_module == instance:
+            self._current_module = None
         # interesting... here we simply take the module out... this means
         # that with VTK ref counted things other modules that were dependent
         # on this can probably still continue with life
@@ -118,6 +123,13 @@ class module_manager:
         last call.
         """
         self._dscas3_app.update_vtk_log_window()
+
+    def set_current_module(self, module):
+        self._current_module = module
+
+    def get_current_module(self):
+        return self._current_module
+    
 
 	
 

@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.46 2002/07/03 15:48:45 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.47 2002/07/04 15:56:48 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -302,9 +302,16 @@ class vtk_slice_vwr(module_base,
 # utility methods
 #################################################################
 
-    def _add_sel_point(self, point):
+    def _add_sel_point(self, point, ortho_idx):
         self._sel_points.append(point)
-        self._spoint_listctrl.InsertStringItem(0, str(point))
+        # *sniff* *sob* It's unreadable, but why's it so pretty?
+        pos_str = "%s, %s, %s" % tuple([str(round(i,1)) for i in point])
+        self._spoint_listctrl.InsertStringItem(0, pos_str)
+        # now find the value(s) at this point
+        cur_pipe = self._ortho_pipes[ortho_idx]
+        reslice = cur_pipe[0]['vtkImageReslice']
+        input_data = reslice.GetInput()
+        
 
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
@@ -858,7 +865,7 @@ class vtk_slice_vwr(module_base,
                    inpoint[2] >= input_bounds[4] and \
                    inpoint[2] <= input_bounds[5]:
 
-                    self._add_sel_point(inpoint[0:3])
+                    self._add_sel_point(inpoint[0:3], r_idx - 1)
 
                     self._ortho_huds[r_idx - 1]['vtkAxes'].SetOrigin(ppx,ppy,
                                                                      0.5)
