@@ -1,5 +1,5 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.8 2003/09/07 19:48:29 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.9 2003/09/16 16:34:56 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
@@ -224,12 +224,14 @@ class ifdocVWR(moduleBase):
         self.viewerFrame.Show(True)
         self.controlFrame.Show(True)
 
+
     def _buildPipeline(self):
         # this is temporary
         self._appendPolyData = vtk.vtkAppendPolyData()
 
         self._lineSourceDict = {}
-        for lineName in ['acts', 'acai', 'tsai', 'ghe', 'ew', 'tline']:
+        for lineName in ['acts', 'acai', 'tsai', 'ghe', 'ew', 'tline',
+                         'scac', 'susr', 'ijsc']:
             lineSource = vtk.vtkLineSource()
             tubeFilter = vtk.vtkTubeFilter()
             tubeFilter.SetInput(lineSource.GetOutput())
@@ -251,7 +253,9 @@ class ifdocVWR(moduleBase):
 
         actor.GetProperty().SetColor(0,1.0,0)
 
-
+        # test polydata
+        #pdReader = vtk.vtkPolyDataReader()
+        #pdReader.SetFileName('/home/cpbotha/
         
     def doTimeStep(self, timeStep):
         """timeStep is 0-based.
@@ -273,6 +277,15 @@ class ifdocVWR(moduleBase):
 
         self._lineSourceDict['ew'].SetPoint1(currentTimeStep['er'])
         self._lineSourceDict['ew'].SetPoint2(currentTimeStep['wr'])
+
+        self._lineSourceDict['scac'].SetPoint1(currentTimeStep['sc'])
+        self._lineSourceDict['scac'].SetPoint2(currentTimeStep['ac'])
+
+        self._lineSourceDict['susr'].SetPoint1(currentTimeStep['su'])
+        self._lineSourceDict['susr'].SetPoint2(currentTimeStep['sr'])
+
+        self._lineSourceDict['ijsc'].SetPoint1(currentTimeStep['ij'])
+        self._lineSourceDict['ijsc'].SetPoint2(currentTimeStep['sc'])
         
         # make sure everything is up to date
         self._appendPolyData.Update()

@@ -1,5 +1,5 @@
 # ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocRDR.py,v 1.10 2003/09/07 19:48:29 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.11 2003/09/16 16:34:56 cpbotha Exp $
 # module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
@@ -129,7 +129,8 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         
         rowIdx = 0
         for pointName in ['ac', 'ts', 'ai', 'ghr', 'er', 'em', 'el', 'wr',
-                          'hcog']:
+                          'hcog',
+                          'ij', 'sc', 'aa', 'su', 'sr']: # newly added
             rows = pposMatrix[rowIdx:rowIdx+3]
             # go through all timesteps, storing the currently active point
             for timeStep in xrange(len(mData.ppos)):
