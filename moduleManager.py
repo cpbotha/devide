@@ -227,13 +227,14 @@ class moduleManager:
         # don't guard it like this)
         if self._executionDisabled:
             return
+
+        # and then set the variable
+        self._executionDisabled = True        
         
+        # only then actually disable
         for moduleInstance in self._moduleDict:
             if hasattr(moduleInstance, 'disableExecution'):
                 moduleInstance.disableExecution()
-
-        self._executionDisabled = True
-            
 
     def enableExecution(self):
         """This will call enableExecution on all modules that have this
@@ -246,8 +247,6 @@ class moduleManager:
                 moduleInstance.enableExecution()
 
         self._executionDisabled = False
-              
-
 
     def interruptExecution(self):
         """Stop as much of the demand driven execution as possible.
