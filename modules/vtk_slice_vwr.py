@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.65 2002/09/17 15:35:43 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.66 2002/09/24 15:37:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -185,6 +185,8 @@ class vtk_slice_vwr(module_base,
 
                 self._rwi.Render()
                 self._inputs[idx]['Connected'] = 'vtkImageData'
+
+                print self._ipws[0]
 
             else:
                 raise TypeError, "Wrong input type!"
@@ -409,8 +411,14 @@ class vtk_slice_vwr(module_base,
 
     def _remove_cursor(self, idx):
 
-        # remove the actor from the renderer
-        self._renderer.RemoveActor(self._sel_points[idx]['actor'])
+        # remove the sphere actor from the renderer
+        self._renderer.RemoveActor(self._sel_points[idx]['sphere_actor'])
+        # then deactivate and disconnect the point widget
+        pw = self._sel_points[idx]['point_widget']
+        pw.SetInput(None)
+        pw.Off()
+        pw.SetInteractor(None)
+        # rerender
         self._rwi.Render()
 
         # remove the entry from the wxListCtrl
@@ -471,14 +479,11 @@ class vtk_slice_vwr(module_base,
             ipw.SetPlaneOrientation(idx)
             idx -= 1
             ipw.SetSliceIndex(0)
-            #ipw.SetPicker(some_same_picker)
-            #ipw.SetKeyPressActivationValue('x')
             ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
 
             # see if the creator of the input_data can tell
             # us something about Window/Level
             input_data_source = ipw.GetInput().GetSource()
-            print input_data_source.__class__
 
             if hasattr(input_data_source, 'GetWindowCenter') and \
                callable(input_data_source.GetWindowCenter):
@@ -523,47 +528,68 @@ class vtk_slice_vwr(module_base,
         coords = map(operator.add, iorigin,
                      map(operator.mul, ispacing, cursor[0:3]))
         
-        # setup a pipeline to indicate position of selected point
-        axes = vtk.vtkAxes()
-        axes.SetOrigin(coords)
-        axes.SetScaleFactor(30.0)
-        axes.SymmetricOn()
+        # we use a pointwidget
 
-        axes_tf = vtk.vtkTubeFilter()
-        axes_tf.SetInput(axes.GetOutput())
+        pw = vtk.vtkPointWidget()
+        pw.SetInput(input_data)
+        pw.PlaceWidget()
+        pw.SetPosition(coords)
+        # make priority higher than the default of vtk3DWidget so
+        # that imageplanes behind us don't get selected the whole time
+        pw.SetPriority(0.6)
+        pw.SetInteractor(self._rwi)
+        pw.AllOff()
+        pw.On()
+
+        ss = vtk.vtkSphereSource()
         bounds = input_data.GetBounds()
-        axes_tf.SetRadius((bounds[1] - bounds[0]) / 100.0)
-        axes_tf.SetNumberOfSides(6)
-
-        axes_mapper = vtk.vtkPolyDataMapper()
-        axes_mapper.SetInput(axes_tf.GetOutput())
+        ss.SetRadius((bounds[1] - bounds[0]) / 50.0)
+        sm = vtk.vtkPolyDataMapper()
+        sm.SetInput(ss.GetOutput())
+        sa = vtk.vtkActor()
+        sa.SetMapper(sm)
+        sa.SetPosition(coords)
+        sa.GetProperty().SetColor(1.0,0.0,0.0)
         
-        axes_actor = vtk.vtkActor()
-        axes_actor.SetMapper(axes_mapper)
-        #axes_actor.PickableOff()
-        axes_actor.GetProperty().BackfaceCullingOff()
-        self._renderer.AddActor(axes_actor)
+        self._renderer.AddActor(sa)
+
+        def pw_si_cb(pw, evt_name):
+            # we have to find pw in our list
+            pwidgets = map(lambda i: i['point_widget'], self._sel_points)
+            if pw in pwidgets:
+                idx = pwidgets.index(pw)
+                # toggle the selection for this point in our list
+                self._spoint_listctrl.SetItemState(idx,
+                                                   wxLIST_STATE_SELECTED,
+                                                   wxLIST_STATE_SELECTED)
+                # get its position and transfer it to the sphere actor that
+                # we use
+                pos = pw.GetPosition()
+                self._sel_points[idx]['sphere_actor'].SetPosition(pos)
+
+                # then we have to update our internal record of this point
+                x,y,z = map(round,
+                            map(operator.div,
+                            map(operator.sub, pos, iorigin), ispacing))
+                val = input_data.GetScalarComponentAsFloat(x,y,z, 0)
+                # the cursor is a tuple with discrete position and value
+                self._sel_points[idx]['cursor'] = (x,y,z,val)
+                # 'coords' is the world coordinates
+                self._sel_points[idx]['coords'] = pos
+                # now update the listctrl as well
+                pos_str = "%s, %s, %s" % (x,y,z)
+                self._spoint_listctrl.SetStringItem(idx, 0, pos_str)
+                self._spoint_listctrl.SetStringItem(idx, 1, str(val))
+                
+
+        pw.AddObserver('StartInteractionEvent', pw_si_cb)
+        pw.AddObserver('InteractionEvent', pw_si_cb)
         
         # store the cursor (discrete coords) the coords and the actor
         self._sel_points.append({'cursor' : cursor, 'coords' : coords,
-                                 'actor' : axes_actor})
+                                 'point_widget' : pw,
+                                 'sphere_actor' : sa})
 
-        def ca_pe_cb(actor, evtname):
-
-            # we have to search for "actor" in the _self_points :(
-            actors = map(lambda i: i['actor'], self._sel_points)
-
-            if actor in actors:
-                # aidx == wxListCtrl long index
-                aidx = actors.index(actor)
-                # toggle the selection
-                self._spoint_listctrl.SetItemState(aidx,
-                                                   wxLIST_STATE_SELECTED,
-                                                   wxLIST_STATE_SELECTED)
-                                                   
-                #self._spoint_listctrl(actors.index(actor))
-                
-        axes_actor.AddObserver('PickEvent', ca_pe_cb)
         
         # *sniff* *sob* It's unreadable, but why's it so pretty?
         # this just formats the real point
