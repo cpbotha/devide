@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3,v 1.21 2002/04/24 16:09:58 cpbotha Exp $
+# $Id: dscas3,v 1.22 2002/04/27 00:51:56 cpbotha Exp $
 
 import os
 import sys
@@ -114,7 +114,7 @@ class dscas3_app_t(wxApp):
         self._python_shell = None
 	
 	# this will instantiate the module manager and get a list of plugins
-	self.module_manager = module_manager()
+	self.module_manager = module_manager(self)
 	# then start up a default graph_editor
         #self.graph_editor = graph_editor(self)
 

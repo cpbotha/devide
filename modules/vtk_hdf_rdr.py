@@ -1,6 +1,9 @@
-# $Id: vtk_hdf_rdr.py,v 1.7 2002/04/26 21:01:58 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.8 2002/04/27 00:51:56 cpbotha Exp $
 
 from module_base import module_base
+from wxPython.wx import *
+from wxPython.xrc import *
+import os
 import vtkpython
 import vtkcpbothapython
 import module_utils
@@ -11,16 +14,24 @@ class vtk_hdf_rdr(module_base):
     The platform makes use of HDF SDS with a custom spacing attribute.
     """
     
-    def __init__(self):
+    def __init__(self, module_manager):
+        # call the base class __init__ (atm it just stores module_manager)
+        module_base.__init__(self, module_manager)
 	self.reader = vtkcpbothapython.vtkHDFVolumeReader()
-	#self.sync_config()
+
+        #
+        self._fo_dlg = None
         # declare this var here out of good habit
-        self.config_window = None
+        self._view_frame = None
         # go on, create that view window
-        #self.create_view_window()
+        self.create_view_window(module_manager.get_module_view_parent_window())
+        # make sure it's reflecting what it should
+	self.sync_config()
     
     def close(self):
-        #self.config_window.destroy()
+        if self._fo_dlg != None:
+            self._fo_dlg.Destroy()
+        self._view_frame.Destroy()
 	if hasattr(self, 'reader'):
 	    del self.reader
 	    
@@ -37,10 +48,12 @@ class vtk_hdf_rdr(module_base):
 	return self.reader.GetOutput()
 
     def sync_config(self):
-	self.filename.set(self.reader.get_hdf_filename())
+        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
+        fn_text.SetValue(self.reader.get_hdf_filename())
 	
     def apply_config(self):
-	self.reader.set_hdf_filename(self.filename.get())
+        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')        
+        self.reader.set_hdf_filename(fn_text.GetValue())
 	
     def execute_module(self):
 	self.reader.Update()
@@ -51,51 +64,56 @@ class vtk_hdf_rdr(module_base):
         This method sets up the config window and immediately hides it.  When
         the user wants to view/config, the window is simply de-iconised.
         """
-        
-	# also show some intance name for this, or index into the module list
-	self.config_window = Tkinter.Toplevel(parent_window)
-	self.config_window.title("vtk_hdf_rdr.py configuration")
-	self.config_window.protocol ("WM_DELETE_WINDOW",
-                                self.config_window.withdraw)
-        self.config_window.withdraw()
 
-	efb_frame = Tkinter.Frame(self.config_window)
-        efb_frame.pack(side=TOP, fill=X, expand=1, padx=5, pady=5)
-        
-	# the file prefix entry box
-        Pmw.EntryField(efb_frame,
-                       labelpos = 'w',
-                       label_text = 'Filename:',
-                       validate = None,
-                       entry_textvariable = self.filename).pack(side=LEFT,
-                                                                fill=X,
-                                                                expand=1)
+        # first create the fram and make sure that when the user closes it
+        # it only hides itself, tee hee
+        self._view_frame = wxFrame(parent=parent_window, id=-1,
+                                   title='vtk_hdf_rdr configuration')
+        EVT_CLOSE(self._view_frame,
+                  lambda e, s=self: s._view_frame.Show(false))
 
-        browse_button = Tkinter.Button(efb_frame, text="Browse",
-                                       command=lambda mu=module_utils, s=self:
-                                       mu.fileopen_stringvar([("HDF files", "*.hdf"),("All files", "*.*")], s.filename))
-        browse_button.pack(side=LEFT)
+        # get out the panel resource that is constitutes this view
+        res_path = os.path.join(self._module_manager.get_modules_xml_res_dir(),
+                                'vtk_hdf_rdr.xrc')
+        res = wxXmlResource(res_path)
+        panel = res.LoadPanel(self._view_frame, 'PNL_VTK_HDF_RDR_VIEW')
 
-	# button box
-	box1 = Pmw.ButtonBox(self.config_window)
-	box1.add('vtkHDFVolumeReader', command=lambda self=self,
-                 mu=module_utils,
-                 pw=parent_window: mu.configure_vtk_object(self.reader, pw))
-	box1.add('Pipeline',
-                 command=lambda self=self, pw=parent_window,
-                 mu=module_utils, vtk_objs=(self.reader):
-                 mu.browse_vtk_pipeline(vtk_objs, pw))
-	box1.pack(side=TOP, fill=X, expand=1)
-	box1.alignbuttons()
+        # as per usual make one more top level sizer and add only the panel
+        top_sizer = wxBoxSizer(wxVERTICAL)
+        top_sizer.Add(panel, option=1, flag=wxEXPAND)
 
-	module_utils.CSAEO_box(self, self.config_window).pack(side=TOP, fill=X,
-                                                              expand=1)
-        
+        # then make sure the frame will use the top_level sizer
+        self._view_frame.SetAutoLayout(true)
+        self._view_frame.SetSizer(top_sizer)
+        # make the frame big enough to fit the sizer
+        top_sizer.Fit(self._view_frame)
+        # make sure the frame can't get smaller than the minimum sizer size
+        top_sizer.SetSizeHints(self._view_frame)
+
+        # bind events specific to this bitch
+        EVT_BUTTON(self._view_frame, XMLID('MV_ID_BROWSE'), self.fn_browse_cb)
+
+        # bind events to the standard cancel, sync, apply, execute, ok buttons
+        module_utils.bind_CSAEO(self, self._view_frame)
+            
     def view(self, parent_window=None):
 	# first make sure that our variables agree with the stuff that
         # we're configuring
 	self.sync_config()
-        self.config_window.deiconify()
+        self._view_frame.Show(true)
+        
+    def fn_browse_cb(self, event):
+        # we keep the dialog hanging around, it makes it easier if the user
+        # is trying out different files in different directories
+        if self._fo_dlg == None:
+            wildcard = "HDF files (*.hdf)|*.hdf|All files (*)|*"
+            self._fo_dlg = wxFileDialog(self._view_frame,
+                                        "Choose an HDF filename", "", "",
+                                        wildcard, wxOPEN)
+        # the dialog will hide itself with either ok or cancel
+        if self._fo_dlg.ShowModal() == wxID_OK:
+                    fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
+                    fn_text.SetValue(self._fo_dlg.GetPath())
         
 	
     

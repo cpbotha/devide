@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.12 2002/04/26 21:01:58 cpbotha Exp $
+# $Id: module_base.py,v 1.13 2002/04/27 00:51:56 cpbotha Exp $
 
 class module_base:
     """Base class for all modules.
@@ -7,8 +7,11 @@ class module_base:
     of these methods.
     """
     
-    def __init__(self):
-	raise NotImplementedError
+    def __init__(self, module_manager):
+        """We need to know where the module manager is so we can query
+        it about the module path, e.g.
+        """
+        self._module_manager = module_manager
 	
     def close(self):
 	"""Idempotent method for de-initialising module as far as possible.
@@ -21,7 +24,7 @@ class module_base:
         uncollectable objects, so try to avoid it as far as possible.
         """
 	raise NotImplementedError
-	
+
     def get_input_descriptions(self):
 	"""Returns tuple of input descriptions, mostly used by the graph editor
 	to make a nice glyph for this module."""

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.23 2002/04/26 22:32:54 cpbotha Exp $
+# $Id: graph_editor.py,v 1.24 2002/04/27 00:51:56 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -506,11 +506,21 @@ class graph_editor:
 
     def mshape_rightclick_cb(self, x, y, keys, attachment, glyph):
         pmenu = wxMenu(glyph.get_name())
+
+        vc_id = wxNewId()
+        pmenu.AppendItem(wxMenuItem(pmenu, vc_id, "View-Configure"))
+        EVT_MENU(self._shape_canvas, vc_id,
+                 lambda e, s=self, glyph=glyph: s.vc_shape_cb(glyph))
+        
         del_id = wxNewId()
         pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
         EVT_MENU(self._shape_canvas, del_id,
                  lambda e, s=self, glyph=glyph: s.del_shape_cb(glyph))
         self._shape_canvas.PopupMenu(pmenu, wxPoint(x, y))
+
+    def vc_shape_cb(self, glyph):
+        mm =self._dscas3_app.get_module_manager()
+        mm.view_module(glyph.get_module_instance())
 
     def del_shape_cb(self, glyph):
         try:
