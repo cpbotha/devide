@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.49 2002/07/29 17:09:52 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.50 2002/08/01 20:46:54 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -369,8 +369,7 @@ class vtk_slice_vwr(module_base,
         self._renderers.append(vtk.vtkRenderer())
         #self._renderers[-1].SetBackground(1,1,1)
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        #istyle = vtk.vtkInteractorStyleImage()
-        istyle = self._rwis[-1].GetInteractorStyle()
+        istyle = vtk.vtkInteractorStyleImage()
         print istyle.GetClassName()
         istyle.AddObserver('LeftButtonPressEvent', self._istyle_img_cb)        
         istyle.AddObserver('MouseMoveEvent', self._istyle_img_cb)
