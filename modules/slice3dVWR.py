@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.39 2003/06/24 15:40:42 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.40 2003/06/24 16:51:53 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -9,7 +9,9 @@ from genMixins import subjectMixin
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin, colourDialogMixin
 import moduleUtils
+import time
 import vtk
+import vtkdscas
 from wxPython.wx import *
 from wxPython.grid import *
 from wxPython.lib import colourdb
@@ -1061,6 +1063,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # set the whole UI up!
         self._create_window()
 
+        # our interactor styles
+        self._cInteractorStyle = vtk.vtkInteractorStyleTrackballCamera()
+        self._aInteractorStyle = vtkdscas.\
+                                 vtkInteractorStyleTrackballActorConstrained()
+
+        # set the default
+        self._viewFrame.threedRWI.SetInteractorStyle(self._cInteractorStyle)
+
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
                                     self._viewFrame.objectsListGrid)
@@ -1100,6 +1110,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         del self._cube_axes_actor2d
         del self._voi_widget
         del self._extractVOI
+
+        del self._cInteractorStyle
+        del self._aInteractorStyle
         
         # take care of all our bindings to renderers
         del self._threedRenderer
@@ -1370,10 +1383,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
         self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
-
-        # make sure it's a trackball actor style thingy
-        istyle = vtk.vtkInteractorStyleTrackballCamera()
-        self._viewFrame.threedRWI.SetInteractorStyle(istyle)
 
         # add possible point names
         self._viewFrame.sliceCursorNameCombo.Clear()
@@ -1966,7 +1975,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self.render3D()
 
     def _handlerMouseMovesChoice(self, event):
-        pass
+        mmcs = self._viewFrame.mouseMovesChoice.GetSelection()
+
+        if mmcs == 0:
+            self._viewFrame.threedRWI.SetInteractorStyle(
+                self._cInteractorStyle)
+        else:
+            self._viewFrame.threedRWI.SetInteractorStyle(
+                self._aInteractorStyle)
 
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
