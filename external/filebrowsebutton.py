@@ -7,7 +7,7 @@
 #
 # Author:      Mike Fletcher
 #
-# RCS-ID:      $Id: filebrowsebutton.py,v 1.1 2004/05/24 10:00:24 cpbotha Exp $
+# RCS-ID:      $Id: filebrowsebutton.py,v 1.2 2004/05/24 10:11:43 cpbotha Exp $
 # Copyright:   (c) 2000 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
@@ -94,17 +94,22 @@ class FileBrowseButton(wxPanel):
 
         if self.labelText:
             self.label = self.createLabel( )
-            box.Add( self.label, 0, wxCENTER )
+            box.Add( self.label, 0, wxALIGN_CENTER_HORIZONTAL )
+            textLeftBorder = 5
+        else:
+            textLeftBorder = 0
 
         self.textControl = self.createTextControl()
-        box.Add( self.textControl, 1, wxLEFT|wxCENTER, 5)
+        box.Add( self.textControl, 1, wxLEFT|wxALIGN_CENTER_HORIZONTAL,
+                 textLeftBorder)
 
         self.browseButton = self.createBrowseButton()
-        box.Add( self.browseButton, 0, wxLEFT|wxCENTER, 5)
+        box.Add( self.browseButton, 0, wxLEFT|wxALIGN_CENTER_HORIZONTAL, 5)
 
         # add a border around the whole thing and resize the panel to fit
         outsidebox = wxBoxSizer(wxVERTICAL)
-        outsidebox.Add(box, 1, wxEXPAND|wxALL, 3)
+        # this border was 3, we don't want that thanks.
+        outsidebox.Add(box, 1, wxEXPAND|wxALL, 0)
         outsidebox.Fit(self)
 
         self.SetAutoLayout(True)

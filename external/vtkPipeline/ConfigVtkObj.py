@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.17 2004/05/24 10:00:52 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.18 2004/05/24 10:11:46 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -492,11 +492,11 @@ class ConfigVtkObj:
                 EVT_BUTTON(panel, cbut_id,
                            lambda e, s=self, i=i, p=parent:
                            s.set_color(e, i, p))
-                grid_sizer.Add(cbut)
+                grid_sizer.Add(cbut, 0, wxALIGN_CENTER_VERTICAL)
 
 	    else:
                 st = wxStaticText(parent=panel, id=-1, label="Set"+m[3:])
-                grid_sizer.Add(st)
+                grid_sizer.Add(st, 0, wxALIGN_CENTER_VERTICAL)
 
             if m.endswith('FileName'):
                 fbb = FileBrowseButton(
@@ -508,7 +508,8 @@ class ConfigVtkObj:
                 self.get_set_texts[i] = fbb
                 
                 #fbbId = fbb.GetId()
-                grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
+                grid_sizer.Add(self.get_set_texts[i], 0,
+                               wxEXPAND|wxALIGN_CENTER_VERTICAL)
                 
                 
             else:
@@ -519,7 +520,8 @@ class ConfigVtkObj:
                 
                 EVT_TEXT(parent, gst_id,
                          lambda event, s=self, i=i: s.get_set_cb(event, i))
-                grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
+                grid_sizer.Add(self.get_set_texts[i],
+                               flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
 
         return panel
 
@@ -748,10 +750,14 @@ if __name__ == "__main__":
     axes.SetCamera (ren.GetActiveCamera ())
     renWin.Render ()
 
-    for obj in (renWin, ren, cone, coneMapper, coneActor,
-                coneActor.GetProperty(), axes):
-	print "Configuring", obj.GetClassName (), "..."
-	conf = ConfigVtkObj(frame, renWin, obj)
-        conf.show()
+#    for obj in (renWin, ren, cone, coneMapper, coneActor,
+#                coneActor.GetProperty(), axes):
+#	print "Configuring", obj.GetClassName (), "..."
+#	conf = ConfigVtkObj(frame, renWin, obj)
+#        conf.show()
+
+    r = vtkpython.vtkXMLPolyDataReader()
+    conf = ConfigVtkObj(frame, None, r)
+    conf.show()
 
     app.MainLoop ()
