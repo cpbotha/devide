@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.7 2004/01/30 12:46:59 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.8 2004/01/30 12:47:20 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -16,6 +16,8 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
     calculates a 3D distance field, processes this field to yield a signed
     distance field, extracts an isosurface and then clips off extraneous
     surfaces.
+    
+    $Revision: 1.8 $
     """
     
 
