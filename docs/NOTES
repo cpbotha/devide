@@ -1,6 +1,7 @@
 Current ITK/VTK notes
 ---------------------
 
+*****
 As of 20031201: Rude bug with CVS ITK, VTK and DICOMParser.  Both ITK and VTK
 use the same DICOMParser and it seems that the wrong code is being executed
 at dynamic linking due to symbols being identical.  See my posting:
@@ -9,3 +10,15 @@ http://www.itk.org/pipermail/insight-users/2003-December/005716.html
 Temporary fix: comment out DICOM thingies in RegisterBuiltInFactories() in
 Code/IO/itkImageIOFactory.cxx
 
+*****
+As of 20031213:
+If you want to use ITK along with VTK-CVS
+please do the following:
+
+1) go to
+Insight/Code/BasicFilters/itkVTKImageImport.h
+and uncomment/comment lines 79-82.
+
+2) then go to
+Insight/Code/BasicFilters/itkVTKImageExportBase.h
+and uncomment/comment lines 52-55. 
