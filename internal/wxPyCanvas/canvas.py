@@ -53,49 +53,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             self._mouseDelta = (0,0)
 
 
-        # FIXME: store binding to object which "has" the mouse
-        # on subsequent tries, we DON'T have to check all objects, only the
-        # one which had the mouse on the previous try... only if it "loses"
-        # the mouse, do we enter the mean loop again.
 
-        mouseOnObject = False
-        
-        for cobject in self._cobjects:
-            if cobject.hitTest(rx, ry):
-                mouseOnObject = True
-
-                cobject.notifyObservers('motion', event)
-
-                if not cobject.__hasMouse:
-                    cobject.__hasMouse = True
-                    cobject.notifyObservers('enter', event)
-
-                if event.Dragging():
-                    if not self._draggedObject:
-                        self._draggedObject = cobject
-
-                elif event.ButtonUp():
-                    cobject.notifyObservers('buttonUp', event)
-
-                elif event.ButtonDown():
-                    cobject.notifyObservers('buttonDown', event)
-
-            # ends if cobject.hitTest(ex, ey)
-            else:
-                if cobject.__hasMouse:
-                    cobject.__hasMouse = False
-                    cobject.notifyObservers('exit', event)
-
-        if not mouseOnObject:
-            # we only get here if the mouse is not inside any canvasObject
-            # (but it could be dragging a canvasObject!)
-            if event.Dragging():
-                self.notifyObservers('drag', event)
-            elif event.ButtonUp():
-                self.notifyObservers('buttonUp', event)
-            elif event.ButtonDown():
-                self.notifyObservers('buttonDown', event)
-                    
         if self._draggedObject:
             # dragging locks onto an object, even if the mouse pointer
             # is not inside that object - it will keep receiving drag
@@ -110,7 +68,60 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             # ongoing
             draggedObject.notifyObservers('drag', event)
 
+        else:
             
+            # FIXME: store binding to object which "has" the mouse
+            # on subsequent tries, we DON'T have to check all objects, only the
+            # one which had the mouse on the previous try... only if it "loses"
+            # the mouse, do we enter the mean loop again.
+
+            mouseOnObject = False
+        
+            for cobject in self._cobjects:
+                if cobject.hitTest(rx, ry):
+                    mouseOnObject = True
+
+                    cobject.notifyObservers('motion', event)
+
+                    if not cobject.__hasMouse:
+                        cobject.__hasMouse = True
+                        cobject.notifyObservers('enter', event)
+                        
+                    if event.Dragging():
+                        if not self._draggedObject:
+                            # this means the user has dragged the mouse
+                            # over an object... which means mouseOnObject
+                            # is technically true, but because we want the
+                            # canvas to get this kind of dragEvent, we
+                            # set it to false
+                            mouseOnObject = False
+
+                    elif event.ButtonUp():
+                        cobject.notifyObservers('buttonUp', event)
+
+                    elif event.ButtonDown():
+                        if event.LeftDown():
+                            if not self._draggedObject:
+                                self._draggedObject = cobject
+                            
+                        cobject.notifyObservers('buttonDown', event)
+
+                # ends if cobject.hitTest(ex, ey)
+                else:
+                    if cobject.__hasMouse:
+                        cobject.__hasMouse = False
+                        cobject.notifyObservers('exit', event)
+
+            if not mouseOnObject:
+                # we only get here if the mouse is not inside any canvasObject
+                # (but it could be dragging a canvasObject!)
+                if event.Dragging():
+                    self.notifyObservers('drag', event)
+                elif event.ButtonUp():
+                    self.notifyObservers('buttonUp', event)
+                elif event.ButtonDown():
+                    self.notifyObservers('buttonDown', event)
+                    
 
         # store the previous real coordinates for mouse deltas
         self._previousRealCoords = (rx, ry)
@@ -149,6 +160,8 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
     def removeObject(self, cobj):
         if cobj and cobj in self._cobjects:
             cobj.setCanvas(None)
+            if self._draggedObject == cobj:
+                self._draggedObject = None
             del self._cobjects[self._cobjects.index(cobj)]
 
     def getMouseDelta(self):

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.29 2003/06/07 19:53:47 cpbotha Exp $
+# $Id: graphEditor.py,v 1.30 2003/06/08 00:42:49 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -45,6 +45,11 @@ class glyphSelection:
         # redraw it
         self._canvas.drawObject(glyph)
 
+    def getSelectedGlyphs(self):
+        """Returns a list with the selected glyphs.  Do not modify externally.
+        """
+        return self._selectedGlyphs
+
     def removeGlyph(self, glyph):
         """Remove a glyph from the selection.
         """
@@ -53,7 +58,7 @@ class glyphSelection:
             return
 
         del self._selectedGlyphs[self._selectedGlyphs.index(glyph)]
-        self._selectedGlyphs.selected = False
+        glyph.selected = False
         self._canvas.drawObject(glyph)
 
     def removeAllGlyphs(self):
@@ -125,8 +130,13 @@ class graphEditor:
                                             self._canvasButtonDown)
         self._graphFrame.canvas.addObserver('buttonUp',
                                             self._canvasButtonUp)
+        self._graphFrame.canvas.addObserver('drag',
+                                            self._canvasDrag)
 
+        # initialise selection
         self._glyphSelection = glyphSelection(self._graphFrame.canvas)
+
+        self._rubberBandCoords = None
         
         # now display the shebang
         self.show()
@@ -261,6 +271,46 @@ class graphEditor:
         
         dc.EndDrawing()
 
+    def _drawRubberBand(self, event, endRubberBand=False):
+        """Set endRubberBand to True if this is the terminating rubberBand,
+        i.e. the last one that gets drawn to erase the previous one when the
+        user is done playing with us.
+        """
+        
+        # make a DC to draw on
+        dc = wxClientDC(self._graphFrame.canvas)
+        self._graphFrame.canvas.PrepareDC(dc)
+
+        dc.BeginDrawing()
+        
+        # dotted line
+        dc.SetBrush(wxBrush('WHITE', wx.wxTRANSPARENT))
+        dc.SetPen(wxPen('BLACK', 1, wxDOT))
+        dc.SetLogicalFunction(wxINVERT) # NOT dst
+
+        if not self._rubberBandCoords:
+            # the user is just beginning to rubberBand
+            self._rubberBandCoords = [event.realX, event.realY, 0, 0]
+            dc.DrawRectangle(
+                self._rubberBandCoords[0], self._rubberBandCoords[1],
+                self._rubberBandCoords[2], self._rubberBandCoords[3])
+
+        else:
+            dc.DrawRectangle(
+                self._rubberBandCoords[0], self._rubberBandCoords[1],
+                self._rubberBandCoords[2], self._rubberBandCoords[3])
+
+            if not endRubberBand:
+                self._rubberBandCoords[2] = event.realX - \
+                                            self._rubberBandCoords[0]
+                self._rubberBandCoords[3] = event.realY - \
+                                            self._rubberBandCoords[1]
+
+                dc.DrawRectangle(
+                    self._rubberBandCoords[0], self._rubberBandCoords[1],
+                    self._rubberBandCoords[2], self._rubberBandCoords[3])
+
+            dc.EndDrawing()
 
     def _disconnect(self, glyph, inputIdx):
         """Disconnect inputIdx'th input of glyph.
@@ -290,10 +340,39 @@ class graphEditor:
 
     def _canvasButtonDown(self, canvas, eventName, event, userData):
         # we should only get this if there's no glyph involved
-        self._glyphSelection.removeAllGlyphs()
+        if not event.ShiftDown() and not event.ControlDown():
+            self._glyphSelection.removeAllGlyphs()
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
         if event.LeftUp():
+            # whatever the case may be, rubberBanding stops
+            if self._rubberBandCoords:
+                # delete the rubberBand (rubberBandCoords should remain intact)
+                self._drawRubberBand(event, endRubberBand=True)
+
+                # now determine all glyphs inside of the rubberBand
+                allGlyphs = self._graphFrame.canvas.getObjectsOfClass(
+                    wxpc.coGlyph)
+
+                glyphsInRubberBand = []
+                for glyph in allGlyphs:
+                    if glyph.isInsideRect(self._rubberBandCoords[0],
+                                          self._rubberBandCoords[1],
+                                          self._rubberBandCoords[2],
+                                          self._rubberBandCoords[3]):
+                        glyphsInRubberBand.append(glyph)
+
+                if not event.ControlDown() and not event.ShiftDown():
+                    self._glyphSelection.removeAllGlyphs()
+
+                # hmmm, can't we be a bit more efficient with this and
+                # dc.BeginDrawing()?
+                for glyph in glyphsInRubberBand:
+                    self._glyphSelection.addGlyph(glyph)
+                
+                self._rubberBandCoords = None
+            
+            # any dragged objects?
             if canvas.getDraggedObject() and \
                    canvas.getDraggedObject().draggedPort and \
                    canvas.getDraggedObject().draggedPort != (-1,-1):
@@ -304,7 +383,10 @@ class graphEditor:
                     inputIdx = canvas.getDraggedObject().draggedPort[1]
                     self._disconnect(canvas.getDraggedObject(),
                                      inputIdx)
-            
+
+    def _canvasDrag(self, canvas, eventName, event, userData):
+        if event.LeftIsDown():
+            self._drawRubberBand(event)
 
     def _checkAndConnect(self, draggedObject, draggedPort,
                          droppedObject, droppedInputPort):
@@ -389,6 +471,22 @@ class graphEditor:
 
         except Exception, e:
             genUtils.logError('Could not connect modules: %s' % (str(e)))
+
+    def _deleteSelectedGlyphs(self):
+        """Delete all currently selected glyphs.
+        """
+
+        # we have to make a deep copy, as we're going to be deleting stuff
+        # from this list
+        deadGlyphs = [glyph for glyph in \
+                      self._glyphSelection.getSelectedGlyphs()]
+        
+        for glyph in deadGlyphs:
+            # delete the glyph, do not refresh the canvas
+            self._deleteModule(glyph, False)
+
+        # finally we can let the canvas redraw
+        self._graphFrame.canvas.Refresh()
 
     def loadNetwork(self, filename, position=(-1,-1)):
         print "Loading from %s" % (filename)
@@ -552,9 +650,18 @@ class graphEditor:
 
         # when we get here, glyph.draggedPort CAN't BE None
         if glyph.draggedPort == (-1, -1):
-            # this means that there's no port involved, so the glyph itself
-            # gets dragged
-            canvas.dragObject(glyph, canvas.getMouseDelta())
+            # this means that there's no port involved, so the glyph itself,
+            # or the current selection of glyphs, gets dragged
+            if glyph in self._glyphSelection.getSelectedGlyphs():
+                # move the whole selection (MAN THIS IS CLEAN)
+                for glyph in self._glyphSelection.getSelectedGlyphs():
+                    canvas.dragObject(glyph, canvas.getMouseDelta())
+            else:
+                # or just the glyph under the mouse
+                # this clause should never happen, as the dragged glyph
+                # always has the selection.
+                canvas.dragObject(glyph, canvas.getMouseDelta())
+                
         else:
             if glyph.draggedPort[0] == 1:
                 # the user is attempting a new connection starting with
@@ -611,16 +718,28 @@ class graphEditor:
                      lambda e: self._viewConfModule(module))
 
             del_id = wxNewId()
-            pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
+            pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete Module'))
             EVT_MENU(self._graphFrame.canvas, del_id,
                      lambda e: self._deleteModule(glyph))
+
+            if self._glyphSelection.getSelectedGlyphs():
+                dels_id = wxNewId()
+                pmenu.AppendItem(
+                    wxMenuItem(pmenu, dels_id, 'Delete Selected Modules'))
+                EVT_MENU(self._graphFrame.canvas, dels_id,
+                         lambda e: self._deleteSelectedGlyphs())
+            
 
             # popup that menu!
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
                                                              event.GetY()))
         elif event.LeftDown():
             if event.ControlDown() or event.ShiftDown():
-                self._glyphSelection.addGlyph(glyph)
+                # with control or shift you can add or remove that glyph
+                if glyph.selected:
+                    self._glyphSelection.removeGlyph(glyph)
+                else:
+                    self._glyphSelection.addGlyph(glyph)
             else:
                 # if the user already has a selection of which this is a part,
                 # we're not going to muck around with that.
@@ -880,6 +999,10 @@ class graphEditor:
 
     def _deleteModule(self, glyph, refreshCanvas=True):
         try:
+            # FIRST remove it from any selections; we have to do this
+            # while everything is still more or less active
+            self._glyphSelection.removeGlyph(glyph)
+            
             # first we disconnect all consumers
             consumerList = []
             for lines in glyph.outputLines:
@@ -905,9 +1028,7 @@ class graphEditor:
             canvas.removeObject(glyph)
             # take care of possible lyings around
             glyph.close()
-            # it might also be part of a selection
-            self._glyphSelection.removeAllGlyphs()
-            
+
             # after all that work, we deserve a redraw
             if refreshCanvas:
                 canvas.Refresh()

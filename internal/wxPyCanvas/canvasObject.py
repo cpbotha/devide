@@ -39,6 +39,9 @@ class canvasObject(wx.wxObject, canvasSubject):
     def hitTest(self, x, y):
         return False
 
+    def isInsideRect(self, x, y, width, height):
+        return False
+
     def setCanvas(self, canvas):
         self._canvas = canvas
 
@@ -65,10 +68,21 @@ class coRectangle(canvasObject):
                  self._position[1] + self._size[1] - 1))
 
     def hitTest(self, x, y):
+        # think carefully about the size of the rectangle...
+        # e.g. from 0 to 2 is size 2 (spaces between vertices)
         return x >= self._position[0] and \
                x <= self._position[0] + self._size[0] and \
                y >= self._position[1] and \
                y <= self._position[1] + self._size[1]
+
+    def isInsideRect(self, x, y, width, height):
+        x0 = (self._position[0] - x)
+        y0 = (self._position[1] - y)
+        return x0 >= 0 and x0 <= width and \
+               y0 >= 0 and y0 <= height and \
+               x0 + self._size[0] <= width and \
+               y0 + self._size[1] <= height
+               
 
 #############################################################################
 
