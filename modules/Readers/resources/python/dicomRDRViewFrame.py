@@ -26,6 +26,7 @@ class dicomRDRViewFrame(wxFrame):
         self.referring_physician_text = wxTextCtrl(self.viewFramePanel, -1, "", style=wxTE_READONLY)
         self.label_11_copy_copy = wxStaticText(self.viewFramePanel, -1, "Dimensions:")
         self.dimensions_text = wxTextCtrl(self.viewFramePanel, -1, "", style=wxTE_READONLY)
+        self.estimateSliceThicknessCheckBox = wxCheckBox(self.viewFramePanel, -1, "Estimate Slice Thickness")
 
         self.__set_properties()
         self.__do_layout()
@@ -41,6 +42,7 @@ class dicomRDRViewFrame(wxFrame):
         self.study_description_text.SetBackgroundColour(wxColour(192, 192, 192))
         self.referring_physician_text.SetBackgroundColour(wxColour(192, 192, 192))
         self.dimensions_text.SetBackgroundColour(wxColour(192, 192, 192))
+        self.estimateSliceThicknessCheckBox.SetValue(1)
         # end wxGlade
 
     def __do_layout(self):
@@ -75,6 +77,7 @@ class dicomRDRViewFrame(wxFrame):
         mdata_sizer.Add(self.dimensions_text, 1, wxLEFT|wxEXPAND, 2)
         mdata_sizer.AddGrowableCol(1)
         sizer_2.Add(mdata_sizer, 0, wxEXPAND, 7)
+        sizer_2.Add(self.estimateSliceThicknessCheckBox, 0, wxTOP, 7)
         sizer_6.Add(sizer_2, 1, wxALL|wxEXPAND, 7)
         self.viewFramePanel.SetAutoLayout(1)
         self.viewFramePanel.SetSizer(sizer_6)

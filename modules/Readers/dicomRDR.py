@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.9 2004/03/04 17:31:26 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.10 2004/03/05 10:20:43 cpbotha Exp $
 
 import genUtils
 import os
@@ -16,6 +16,15 @@ import moduleUtils
 class dicomRDR(moduleBase,
                vtkPipelineConfigModuleMixin,
                fileOpenDialogModuleMixin):
+
+    """Module for reading DICOM data.
+
+    Add DICOM files (they may be from multiple series) by using the 'Add'
+    button on the view/config window.  You can select multiple files in
+    the File dialog by holding shift or control whilst clicking.
+
+    $Revision: 1.10 $
+    """
     
     def __init__(self, moduleManager):
         # call the constructor in the "base"
@@ -35,6 +44,7 @@ class dicomRDR(moduleBase,
         # setup some defaults
         self._config.dicomFilenames = []
         self._config.seriesInstanceIdx = 0
+        self._config.estimateSliceThickness = 1
 
         # do the normal thang (down to logic, up again)
         self.configToLogic()
@@ -70,6 +80,10 @@ class dicomRDR(moduleBase,
             self._config.dicomFilenames.append(
                 self._reader.get_dicom_filename(i))
 
+        self._config.estimateSliceThickness = self._reader.\
+                                              GetEstimateSliceThickness()
+        
+
     def configToLogic(self):
         self._reader.SetSeriesInstanceIdx(self._config.seriesInstanceIdx)
         
@@ -85,6 +99,9 @@ class dicomRDR(moduleBase,
         # if we've added the same list as we added at the previous exec
         # of apply_config(), the dicomreader is clever enough to know that
         # it doesn't require an update.  Yay me.
+
+        self._reader.SetEstimateSliceThickness(
+            self._config.estimateSliceThickness)
 
 
     def viewToConfig(self):
@@ -108,6 +125,10 @@ class dicomRDR(moduleBase,
         if len(self._config.dicomFilenames) == 0:
             wx.LogError('Empty directory specified, not attempting '
                        'change in config.')
+
+        self._config.estimateSliceThickness = self._viewFrame.\
+                                              estimateSliceThicknessCheckBox.\
+                                              GetValue()
 
 
     def configToView(self):
@@ -164,6 +185,9 @@ class dicomRDR(moduleBase,
         ds = self._reader.GetDataSpacing()
         self._viewFrame.dimensions_text.SetValue(
             '%d x %d x %d at %.2f x %.2f x %.2f mm / voxel' % tuple(dd + ds))
+
+        self._viewFrame.estimateSliceThicknessCheckBox.SetValue(
+            self._config.estimateSliceThickness)
     
     def executeModule(self):
         # get the vtkDICOMVolumeReader to try and execute
