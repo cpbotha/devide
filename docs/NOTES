@@ -1,21 +1,11 @@
-Building tix with TCL/TK already installed:
--------------------------------------------
+Current ITK/VTK notes
+---------------------
 
-* in tix unix dir:
-./configure  --prefix=/usr --with-tclconfig=/usr/lib/tcl8.3 \
---with-tkconfig=/usr/lib/tk8.3 --with-tclinclude=/usr/include/tcl8.3 \
---with-tkinclude=/usr/include/tcl8.3
+As of 20031201: Rude bug with CVS ITK, VTK and DICOMParser.  Both ITK and VTK
+use the same DICOMParser and it seems that the wrong code is being executed
+at dynamic linking due to symbols being identical.  See my posting:
+http://www.itk.org/pipermail/insight-users/2003-December/005716.html
 
-* in appropriate tix unix/tkx.y dir:
-./configure  --prefix=/usr --with-tclconfig=/usr/lib/tcl8.3 \
---with-tkconfig=/usr/lib/tk8.3 --with-tclinclude=/usr/include/tcl8.3 \
---with-tkinclude=/usr/include/tcl8.3 --enable-shared
+Temporary fix: comment out DICOM thingies in RegisterBuiltInFactories() in
+Code/IO/itkImageIOFactory.cxx
 
-* in unix dir:
-  make && make install
-
-Misc
-----
-
-http://www.graphviz.org/
-http://www.zpr.uni-koeln.de/~gato/ -- contains gred, graph editor in tkinter
