@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.26 2003/05/05 13:20:11 cpbotha Exp $
+# $Id: dscas3.py,v 1.27 2003/05/06 23:07:56 cpbotha Exp $
 
-DSCAS3_VERSION = '20030505'
+DSCAS3_VERSION = '20030507'
 
 import os
 import stat
