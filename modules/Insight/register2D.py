@@ -1,4 +1,4 @@
-# $Id: register2D.py,v 1.13 2004/03/29 15:02:11 cpbotha Exp $
+# $Id: register2D.py,v 1.14 2004/12/05 00:42:42 cpbotha Exp $
 
 # TODO:
 # * if the input imageStackRDR is reconfigured to read a different stack
@@ -224,24 +224,24 @@ class register2D(moduleBase):
         print self._transform1.GetParameters()
 
 
-        self._rescaler1 = itk.itkRescaleIntensityImageFilterF2UC2_New()
+        self._rescaler1 = itk.itkRescaleIntensityImageFilterF2F2_New()
         self._rescaler1.SetOutputMinimum(0)
         self._rescaler1.SetOutputMaximum(255)
-        self._itkExporter1 = itk.itkVTKImageExportUC2_New()
+        self._itkExporter1 = itk.itkVTKImageExportF2_New()
         self._itkExporter1.SetInput(self._rescaler1.GetOutput())
         self._vtkImporter1 = vtk.vtkImageImport()
-        CVIPy.ConnectITKUC2ToVTK(self._itkExporter1.GetPointer(),
+        CVIPy.ConnectITKF2ToVTK(self._itkExporter1.GetPointer(),
                                 self._vtkImporter1)
 
         self._resampler2 = None
 
-        self._rescaler2 = itk.itkRescaleIntensityImageFilterF2UC2_New()
+        self._rescaler2 = itk.itkRescaleIntensityImageFilterF2F2_New()
         self._rescaler2.SetOutputMinimum(0)
         self._rescaler2.SetOutputMaximum(255)
-        self._itkExporter2 = itk.itkVTKImageExportUC2_New()
+        self._itkExporter2 = itk.itkVTKImageExportF2_New()
         self._itkExporter2.SetInput(self._rescaler2.GetOutput())
         self._vtkImporter2 = vtk.vtkImageImport()
-        CVIPy.ConnectITKUC2ToVTK(self._itkExporter2.GetPointer(),
+        CVIPy.ConnectITKF2ToVTK(self._itkExporter2.GetPointer(),
                                 self._vtkImporter2)
         
     
