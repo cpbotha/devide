@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.4 2003/02/10 12:18:13 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.5 2003/02/10 15:31:33 cpbotha Exp $
 
 import gen_utils
 import os
@@ -24,13 +24,13 @@ class dicomRDR(moduleBase,
         # setup necessary VTK objects
 	self._reader = vtkdscas.vtkDICOMVolumeReader()
 
-        # this part of the config is stored only in the config, and not in
-        # the reader.
-        self._config.dicomDirname = None
-        self._config._dicomFilenames = []
-
-        self._viewFrame = None
+        self._viewFrame = ""
         self._createViewFrame()
+
+        # setup some defaults
+        self._config.dicomDirname = ""
+        self._config.dicomFilenames = []
+        self._config.seriesInstanceIdx = -1
 
         # do the normal thang (down to logic, up again)
         self.configToLogic()
@@ -60,7 +60,7 @@ class dicomRDR(moduleBase,
         self._config.seriesInstanceIdx = self._reader.GetSeriesInstanceIdx()
         # refresh our list of dicomFilenames
         del self._config.dicomFilenames[:]
-        for i in range(self._reader.get_number_of_filenames()):
+        for i in range(self._reader.get_number_of_dicom_filenames()):
             self._config.dicomFilenames.append(
                 self._reader.get_dicom_filename(i))
 
@@ -94,6 +94,7 @@ class dicomRDR(moduleBase,
             filenames_init = os.listdir(self._config.dicomDirname)
         except Exception, e:
             gen_utils.log_error('Could not read DICOM directory: %s' % e)
+            return
 
         # go through list of files in directory, perform trivial tests
         # and create a new list of files 
@@ -157,20 +158,11 @@ class dicomRDR(moduleBase,
                                                   (str(dd), str(ds)))
     
     
-    def sync_config(self):
-        # get our internal dirname (what use is this; it'll never change...
-        # we also probably can't query the dirname from the DICOM reader
-        if self._config.dicomDirname:
-            self._viewFrame.dirname_text.SetValue(self._config.dicomDirname)
-        else:
-            self._viewFrame.dirname_text.SetValue("")
-
-        
-
-	
-    def apply_config(self):
-
-    def execute_module(self):
+    def executeModule(self):
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module - you could do this in __init__ as well, it seems
+        # neater here though
         self._reader.SetProgressText('Reading DICOM data')
         mm = self._moduleManager
         self._reader.SetProgressMethod(lambda s=self, mm=mm:
@@ -178,12 +170,16 @@ class dicomRDR(moduleBase,
         
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
+        
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
         # pop up.  you should do this in all your modules right after you
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._moduleManager.vtk_poll_error()
+
+        # indicate that we're done
+        mm.setProgress(100, 'DONE Reading DICOM data')
 
     def _createViewFrame(self):
         import modules.resources.python.dicomRDRViewFrame
@@ -204,23 +200,21 @@ class dicomRDR(moduleBase,
         EVT_BUTTON(self._viewFrame, self._viewFrame.VTK_PIPELINE_ID,
                    self.vtk_pipeline_cb)
 
-        module_utils.bind_CSAEO2(self, self._viewFrame)
+        moduleUtils.bindCSAEO(self, self._viewFrame)
 
         # bind events to the standard cancel, sync, apply, execute, ok buttons
-#        module_utils.bind_CSAEO(self, self._viewFrame)
+#        moduleUtils.bind_CSAEO(self, self._viewFrame)
 
 
 
     def view(self, parent_window=None):
-	# first make sure that our variables agree with the stuff that
-        # we're configuring
-	self.sync_config()
-        self._viewFrame.Show(true)
+        if not self._viewFrame.Show(true):
+            self._viewFrame.Raise()
         
     def dn_browse_cb(self, event):
-        path = self.dn_browse(self._viewFrame,
-                              "Choose a DICOM directory",
-                              self._moduleManager.get_app_dir())
+        path = self.dirnameBrowse(self._viewFrame,
+                                  "Choose a DICOM directory",
+                                  self._moduleManager.get_app_dir())
 
         if path != None:
             self._viewFrame.dirname_text.SetValue(path)
