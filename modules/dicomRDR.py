@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.2 2003/02/08 01:02:34 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.3 2003/02/09 01:02:04 cpbotha Exp $
 
 import gen_utils
 import os
@@ -26,8 +26,8 @@ class dicomRDR(moduleBase,
 
         # this part of the config is stored only in the config, and not in
         # the reader.
-        self._config.dicom_dirname = None
-        self._config.dicom_filenames = []
+        self._config.dicomDirname = None
+        self._dicom_filenames = []
 
         self._viewFrame = None
         self._createViewFrame()
@@ -57,13 +57,71 @@ class dicomRDR(moduleBase,
 
 
     def logicToConfig(self):
-        pass # FIXME: continue here
+        # there's nothing that we can get from the underlying reader
+        pass
+
+    def configToLogic(self):
+        # get a list of files in the indicated directory, stuff them all
+        # into the dicom reader
+        if self._config.dicomDirname == None or \
+           self._config.dicomDirname == "":
+            return
+        try:
+            filenames_init = os.listdir(self._config.dicomDirname)
+        except Exception, e:
+            gen_utils.log_error('Could not read DICOM directory: %s' % e)
+
+        # go through list of files in directory, perform trivial tests
+        # and create a new list of files 
+        dicom_fullnames = []
+        for filename in filenames_init:
+            # make full filename
+            fullname = os.path.join(self._config.dicomDirname, filename)
+            # at the moment, we check that it's a regular file
+            if stat.S_ISREG(os.stat(fullname)[stat.ST_MODE]):
+                dicom_fullnames.append(fullname)
+
+        if len(dicom_fullnames) == 0:
+            wxLogError('Empty directory specified, not attempting '
+                       'change in config.')
+            return
+
+        # this will clear only the dicom_filenames_buffer without setting
+        # mtime of the vtkDICOMVolumeReader
+        self._reader.clear_dicom_filenames()
+
+        for fullname in dicom_fullnames:
+            # this will simply add a file to the buffer list of the
+            # vtkDICOMVolumeReader (will not set mtime)
+            print "%s\n" % fullname
+            self._reader.add_dicom_filename(fullname)
+        
+        # if we've added the same list as we added at the previous exec
+        # of apply_config(), the dicomreader is clever enough to know that
+        # it doesn't require an update.  Yay me.
+
+        # also apply the SeriesInstanceIDX
+        self._reader.SetSeriesInstanceIdx(
+            self._viewFrame.si_idx_spin.GetValue())
+
+        # we perform this call, as it will result in an ExecuteInfo of the
+        # DICOMReader, thus yielding bunches of interesting information
+        self.sync_config()
+        
+        pass
+
+    def viewToConfig(self):
+        self._config.dicomDirname = self._viewFrame.dirname_text.GetValue()        
+
+    def configToView(self):
+        pass
+    
     
     def sync_config(self):
         # get our internal dirname (what use is this; it'll never change...
         # we also probably can't query the dirname from the DICOM reader
-        if self._dicom_dirname:
-            self._viewFrame.dirname_text.SetValue(self._dicom_dirname)
+        if self._config.dicomDirname:
+            self._viewFrame.dirname_text.SetValue(self._config.dicomDirname)
         else:
             self._viewFrame.dirname_text.SetValue("")
 
@@ -106,53 +164,6 @@ class dicomRDR(moduleBase,
 
 	
     def apply_config(self):
-        # get a list of files in the indicated directory, stuff them all
-        # into the dicom reader
-        self._dicom_dirname = self._viewFrame.dirname_text.GetValue()
-
-        if self._dicom_dirname == None or self._dicom_dirname == "":
-            return
-        try:
-            filenames_init = os.listdir(self._dicom_dirname)
-        except Exception, e:
-            gen_utils.log_error('Could not read DICOM directory: %s' % e)
-
-        # go through list of files in directory, perform trivial tests
-        # and create a new list of files 
-        dicom_fullnames = []
-        for filename in filenames_init:
-            # make full filename
-            fullname = os.path.join(self._dicom_dirname, filename)
-            # at the moment, we check that it's a regular file
-            if stat.S_ISREG(os.stat(fullname)[stat.ST_MODE]):
-                dicom_fullnames.append(fullname)
-
-        if len(dicom_fullnames) == 0:
-            wxLogError('Empty directory specified, not attempting '
-                       'change in config.')
-            return
-
-        # this will clear only the dicom_filenames_buffer without setting
-        # mtime of the vtkDICOMVolumeReader
-        self._reader.clear_dicom_filenames()
-
-        for fullname in dicom_fullnames:
-            # this will simply add a file to the buffer list of the
-            # vtkDICOMVolumeReader (will not set mtime)
-            print "%s\n" % fullname
-            self._reader.add_dicom_filename(fullname)
-        
-        # if we've added the same list as we added at the previous exec
-        # of apply_config(), the dicomreader is clever enough to know that
-        # it doesn't require an update.  Yay me.
-
-        # also apply the SeriesInstanceIDX
-        self._reader.SetSeriesInstanceIdx(
-            self._viewFrame.si_idx_spin.GetValue())
-
-        # we perform this call, as it will result in an ExecuteInfo of the
-        # DICOMReader, thus yielding bunches of interesting information
-        self.sync_config()
 
     def execute_module(self):
         self._reader.SetProgressText('Reading DICOM data')
