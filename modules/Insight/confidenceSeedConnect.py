@@ -1,4 +1,4 @@
-# $Id: confidenceSeedConnect.py,v 1.3 2004/03/21 20:24:08 cpbotha Exp $
+# $Id: confidenceSeedConnect.py,v 1.4 2004/04/15 22:49:46 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -26,7 +26,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
     won't quite work.  In other words, the output of this module can
     only be trusted if there's at least a single seed point.
     
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):
@@ -150,7 +150,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
             for ip in self._inputPoints:
                 # bugger, it could be that our input dataset has an extent
                 # that doesn't start at 0,0,0... ITK doesn't understand this
-                x,y,z = ip['discrete']
+                x,y,z = [int(i) for i in ip['discrete']]
                 idx = itk.itkIndex3()
                 idx.SetElement(0, x)
                 idx.SetElement(1, y)
