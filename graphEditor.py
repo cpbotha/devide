@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.75 2004/04/19 16:21:23 cpbotha Exp $
+# $Id: graphEditor.py,v 1.76 2004/04/19 22:17:44 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1227,7 +1227,11 @@ class graphEditor:
                 if len(cValStr) > 80:
                     cValStr = 'Compacted'
 
-                configList.append('%s : %s' % (configKey, cValStr))
+                # just replace all \'s with /'s... else we have to futz
+                # with raw strings all the way through!
+                configList.append('%s : %s' %
+                                  (configKey,
+                                   cValStr.replace('\\', '/')))
 
             configString = '\\n'.join(configList)
             
