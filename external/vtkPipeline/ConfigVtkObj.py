@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.15 2004/03/22 13:55:20 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.16 2004/05/19 12:27:46 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -249,10 +249,13 @@ class ConfigVtkObj:
                                     size=(640,480))
         nbsizer = wxNotebookSizer(self._notebook)
 
-        top_sizer.Add(nbsizer, option=0, flag=wxEXPAND)
+        top_sizer.Add(nbsizer, option=0,
+                      flag=wxEXPAND|wxLEFT|wxTOP|wxRIGHT, border=7)
 
 	self.make_gui_vars ()
 
+        # the sizer returned by make_control_gui has a border of 7 all
+        # around.
 	top_sizer.Add(self.make_control_gui(panel), option=1, flag=wxEXPAND)
         
 	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
@@ -332,39 +335,51 @@ class ConfigVtkObj:
         vert_sizer = wxBoxSizer(wxVERTICAL)
         command_sizer = wxBoxSizer(wxHORIZONTAL)
         button_sizer = wxBoxSizer(wxHORIZONTAL)
-        vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND)
-        vert_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTRE_HORIZONTAL)
+        vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND|wxALL, border=7)
+        vert_sizer.Add(button_sizer, 0, wxLEFT|wxBOTTOM|wxRIGHT|wxALIGN_RIGHT,
+                       7)
 
-        command_entry = py.shell.Shell(parent=parent, id=-1, introText="Bish.",
+        command_entry = py.shell.Shell(parent=parent, id=-1,
+                                       introText="Bish.",
                                        size=(400,200), style=0,
                                        locals={'obj' : self._vtk_obj})
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
 
-        classdoc_id = wxNewId()
-        classdoc_button = wxButton(parent, id=classdoc_id,
-                                   label="Class Documentation")
-        button_sizer.Add(classdoc_button, 0, wxALL, 4)
-        EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
 
-        update_id = wxNewId()
-        update_button = wxButton(parent, id=update_id,
-                                 label="Update")
-        button_sizer.Add(update_button, 0, wxALL, 4)
-        EVT_BUTTON(parent, update_id, lambda e, s=self: s.update_gui())
-        
         apply_id = wxNewId()
         apply_button = wxButton(parent, id=apply_id,
                                  label="Apply")
-        button_sizer.Add(apply_button, 0, wxALL, 4)
+        button_sizer.Add(apply_button, 0, wxRIGHT, 7)
         EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
+        apply_button.SetToolTip(wxToolTip(
+            'Modify configuration of the underlying class as specified' \
+            'by this dialogue.'))
+        apply_button.SetDefault()
 
-        ok_button = wxButton(parent, wxID_OK, label="OK")
-        button_sizer.Add(ok_button, 0, wxALL, 4)
-        EVT_BUTTON(parent, wxID_OK, lambda e, s=self: s.ok_done())
+        closeButtonId = wxNewId()
+        closeButton = wxButton(parent, closeButtonId, label="Close")
+        button_sizer.Add(closeButton, 0, wxRIGHT, 7)
+        EVT_BUTTON(parent, closeButtonId, lambda e, s=self: s.cancel())
+        closeButton.SetToolTip(wxToolTip(
+            'Hide this dialogue without applying changes.'))
 
-        cancel_button = wxButton(parent, wxID_CANCEL, label="Cancel")
-        button_sizer.Add(cancel_button, 0, wxALL, 4)
-        EVT_BUTTON(parent, wxID_CANCEL, lambda e, s=self: s.cancel())
+
+        syncButtonId = wxNewId()
+        syncButton = wxButton(parent, syncButtonId,
+                              label="Sync")
+        button_sizer.Add(syncButton, 0, wxRIGHT, 7)
+        EVT_BUTTON(parent, syncButtonId, lambda e, s=self: s.update_gui())
+        syncButton.SetToolTip(wxToolTip(
+            'Synchronise this dialogue with the configuration of the ' \
+            'underlying class.'))
+
+        classdoc_id = wxNewId()
+        classdoc_button = wxButton(parent, id=classdoc_id,
+                                   label="Class Documentation")
+        button_sizer.Add(classdoc_button, 0, wxRIGHT, 7)
+        EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
+        classdoc_button.SetToolTip(wxToolTip(
+            'Show class documentation for the current class.'))
 
         return vert_sizer
 
@@ -617,11 +632,6 @@ class ConfigVtkObj:
         if self.vtk_warn > -1:
             self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
 		
-    def ok_done (self, event=None):
-	"Ok button clicked."
-	self.apply_changes()
-        self.hide()
-
     def cancel (self, event=None):
 	"Cancel button clicked."
         self.hide()

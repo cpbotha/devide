@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.22 2004/05/10 12:40:04 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.23 2004/05/19 12:27:45 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -6,6 +6,7 @@ from external.vtkPipeline.vtkPipeline import \
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 import resources.graphics.images
 
+# REMOVE THIS: it's not being used anywhere anymore
 def bind_CSAEO(module, view_frame):
     # it seems wxID_CANCEL (and probably some others) is an exception
     # if you use XMLID on it, it just don't work dude
@@ -84,6 +85,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
     viewFrame.syncButton.SetToolTip(wxToolTip(
         "Synchronise dialogue with configuration of underlying system."))
 
+
     # add them to their own sizer, each with a border of 4 pixels on the right
     buttonSizer = wxBoxSizer(wxHORIZONTAL)
     for button in (viewFrame.executeButton, viewFrame.closeButton,
@@ -142,6 +144,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
     viewFrame.SetAcceleratorTable(accel_table)
     
 
+# REMOVE THIS: IT'S NOT BEING USED ANYWHERE
 def bindCSAEO(module, view_frame):
     """Bind events to buttons in standard view/config module dialogue.
 
