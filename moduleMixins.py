@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.31 2004/03/15 22:27:51 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.32 2004/03/15 22:28:38 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -538,7 +538,6 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             elif configTuple[3] == 'checkbox': # checkbox
                 widget.SetValue(bool(val))
             else: # choice
-                print str(val)
                 widget.SetStringSelection(str(val))
 
     def view(self):
