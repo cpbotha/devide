@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.14 2003/05/20 22:50:03 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.15 2003/05/20 23:04:43 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -308,7 +308,7 @@ def setupVTKObjectProgress(d3module, obj, progressText):
     # the objects never die... this way, there are no refs
     # in addition, the AddObserver is the standard way for doing this
     # we should probably not use ProgressText though...
-    obj.SetProgressText(progressText)    
-    mm = d3module._moduleManager    
+    obj.SetProgressText(progressText)
+    mm = d3module._moduleManager
     obj.AddObserver('ProgressEvent', lambda vtko, name:
                     mm.vtk_progress_cb(vtko))
