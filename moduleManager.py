@@ -132,8 +132,9 @@ class moduleManager:
                     tl = ""
                     for i in range(3):
                         tl += choice(chars)
-                    instanceName == "%s%s%d" (instanceName, tl,
-                                              len(self._moduleDict))
+                        
+                    instanceName == "%s%s%d" % (instanceName, tl,
+                                                len(self._moduleDict))
                 
             self._moduleDict[moduleInstance] = metaModule(moduleInstance,
                                                           instanceName)
