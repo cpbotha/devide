@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.4 2003/09/23 14:53:48 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.5 2003/10/15 20:18:30 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -474,6 +474,46 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         return inputData
 
+    def getValueAtPositionInInputData(self, worldPosition):
+        """Try and find out what the primary image data input value is at
+        worldPosition.
+
+        If there is no inputData, or the worldPosition is outside of the
+        inputData, None is returned.
+        """
+        
+        inputData = self.getPrimaryInput()
+
+        if inputData:
+            # then we have to update our internal record of this point
+            ispacing = inputData.GetSpacing()
+            iorigin = inputData.GetOrigin()
+            discrete = map(
+                round, map(
+                operator.div,
+                map(operator.sub, worldPosition, iorigin), ispacing))
+                
+            validPos = True
+            extent = inputData.GetExtent()
+            for d in range(3):
+                if discrete[d]< extent[d*2] or discrete[d] > extent[d*2+1]:
+                    validPos = False
+                    break
+
+            if validPos:
+                # we rearch this else if the for loop completed normally
+                val = inputData.GetScalarComponentAsFloat(discrete[0],
+                                                          discrete[1],
+                                                          discrete[2], 0)
+            else:
+                val = None
+
+        else:
+            val = None
+
+        return (val, discrete)
+        
+
     def _resetAll(self):
         """Arrange everything for a single overlay in a single ortho view.
 
@@ -577,19 +617,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         if self.selectedPoints.hasWorldPoint(xyz):
             return
 
-        inputData = self.getPrimaryInput()
-            
-        if inputData:
-            # get the discrete coords of this point
-            ispacing = inputData.GetSpacing()
-            iorigin = inputData.GetOrigin()
-            discrete = map(round,
-                           map(operator.div,
-                               map(operator.sub, xyz, iorigin), ispacing))
-            val = inputData.GetScalarComponentAsFloat(discrete[0],discrete[1],
-                                                      discrete[2], 0)
-        else:
-            discrete = (0, 0, 0)
+        val, discrete = self.getValueAtPositionInInputData(xyz)
+        if val == None:
+            discrete = (0,0,0)
             val = 0
 
         pointName = self.controlFrame.sliceCursorNameCombo.GetValue()

@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.3 2003/10/15 11:23:21 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.4 2003/10/15 20:18:30 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -275,19 +275,8 @@ class selectedPoints(object, s3dcGridMixin):
             if ta:
                 ta.SetPosition(pos)
 
-            inputData = self.slice3dVWR.getPrimaryInput()
-
-            if inputData:
-                # then we have to update our internal record of this point
-                ispacing = inputData.GetSpacing()
-                iorigin = inputData.GetOrigin()
-                discrete = map(round,
-                               map(operator.div,
-                                   map(operator.sub, pos, iorigin), ispacing))
-                val = inputData.GetScalarComponentAsFloat(discrete[0],
-                                                          discrete[1],
-                                                          discrete[2], 0)
-            else:
+            val, discrete = self.slice3dVWR.getValueAtPositionInInputData(pos)
+            if val == None:
                 discrete = (0, 0, 0)
                 val = 0
                 
