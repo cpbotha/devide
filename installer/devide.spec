@@ -27,6 +27,10 @@ docsTree = Tree(os.path.join(D3_DIR, 'docs'), 'docs', ['CVS', 'source'])
 userModulesTree = Tree(os.path.join(D3_DIR, 'userModules'), 'userModules',
                        ['CVS', '*~'])
 
+# the extra modulePacks
+modulePacksTree = Tree(os.path.join(D3_DIR, 'modulePacks'), 'modulePacks',
+                       ['CVS', '*~'])
+
 # VTKPIPELINE ICONS
 
 # unfortunately, due to the vtkPipeline design, these want to live one
@@ -76,8 +80,9 @@ exe = EXE(pyz,
 
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
-allBinaries = a.binaries + userModulesTree + vpli + extraLibs + \
-              segTree + dataTree + docsTree
+allBinaries = a.binaries + userModulesTree + modulePacksTree + vpli + \
+              extraLibs + segTree + dataTree + docsTree
+
 # make sure removeNames is lowercase
 removeNames = [i.lower() for i in removeNames]
 # make new list of 3-element tuples of shipable things
