@@ -1,4 +1,4 @@
-$Id: TODO,v 1.18 2003/09/06 16:14:01 cpbotha Exp $
+$Id: TODO,v 1.19 2003/10/06 23:48:42 cpbotha Exp $
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -27,6 +27,10 @@ $Id: TODO,v 1.18 2003/09/06 16:14:01 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+- on Win 2000, modules with many ports are too narrow (i.e. the font is too
+  narrow, so the knobs come out the side, if you know what I mean; gimme
+  a break, it's 01:50)
 
 - nobody but the moduleManager is allowed to call executeModule; actually,
   probably no-one is allowed to call any of the other methods either
