@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.26 2002/05/03 16:16:16 cpbotha Exp $
+# $Id: graph_editor.py,v 1.27 2002/05/14 15:10:52 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -10,6 +10,15 @@ import traceback
 
 # we have to call this to do some global OGL init
 wxOGLInitialize()
+
+# wxGTK 2.3.2.1 bugs with mouse capture (BADLY), so we disable this
+try:
+    WX_USE_X_CAPTURE
+except NameError:
+    if wxPlatform == '__WXMSW__':
+        WX_USE_X_CAPTURE = 1
+    else:
+        WX_USE_X_CAPTURE = 0
 
 # ----------------------------------------------------------------------------
 class wxFRectangleShape(wxRectangleShape):
@@ -435,12 +444,14 @@ class graph_editor:
 
         # after doing our setup, we capture the mouse so things don't
         # get confused when the user waves his wand outside the canvas
-        self._shape_canvas.CaptureMouse()        
+        if WX_USE_X_CAPTURE:
+            self._shape_canvas.CaptureMouse()        
 
     def inout_enddragleft_cb(self, parent_glyph, io_shape,
                              x, y, keys, attachment):
         # give the mouse back ASAP, else people get angry, he he
-        self._shape_canvas.ReleaseMouse()
+        if WX_USE_X_CAPTURE:
+            self._shape_canvas.ReleaseMouse()
 
         # find shape that we're close to (we will need this in both cases)
         f_ret = self._shape_canvas.FindShape(x, y, None)
