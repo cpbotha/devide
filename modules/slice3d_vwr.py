@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.9 2003/01/23 17:45:48 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.10 2003/01/24 10:45:54 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -630,20 +630,23 @@ class slice3d_vwr(module_base,
                                  'text_actor' : ta})
 
         
-        # *sniff* *sob* It's unreadable, but why's it so pretty?
-        # this just formats the real point
-        pos_str = "%s, %s, %s" % tuple(cursor[0:3])
-
         self._view_frame.spointsGrid.AppendRows()
+	self._view_frame.spointsGrid.AdjustScrollbars()        
         row = self._view_frame.spointsGrid.GetNumberRows() - 1
-	self._view_frame.spointsGrid.AdjustScrollbars()
-        self._view_frame.spointsGrid.SetCellValue(row, 0, pos_str)
-        self._view_frame.spointsGrid.SetCellValue(row, 1, str(cursor[3]))
+        self._syncGridRowToSelPoints(row)
         
         # make sure self._vtk_points is up to date
         self._sync_vtk_points()
 
         self._view_frame.threedRWI.Render()
+
+    def _syncGridRowToSelPoints(self, row):
+        # *sniff* *sob* It's unreadable, but why's it so pretty?
+        # this just formats the real point
+        cursor = self._sel_points[row]['cursor']
+        pos_str = "%s, %s, %s" % tuple(cursor[0:3])
+        self._view_frame.spointsGrid.SetCellValue(row, 0, pos_str)
+        self._view_frame.spointsGrid.SetCellValue(row, 1, str(cursor[3]))
 
     def _sync_vtk_points(self):
         """Sync up the output vtkPoints and names to _sel_points.
@@ -697,9 +700,8 @@ class slice3d_vwr(module_base,
         if pw in pwidgets:
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list
-            self._spoint_listctrl.SetItemState(idx,
-                                               wxLIST_STATE_SELECTED,
-                                               wxLIST_STATE_SELECTED)
+            self._view_frame.spointsGrid.SelectRow(idx)
+
             # get its position and transfer it to the sphere actor that
             # we use
             pos = pw.GetPosition()
@@ -721,10 +723,8 @@ class slice3d_vwr(module_base,
             self._sel_points[idx]['cursor'] = (x,y,z,val)
             # 'coords' is the world coordinates
             self._sel_points[idx]['coords'] = pos
-            # now update the listctrl as well
-            pos_str = "%s, %s, %s" % (x,y,z)
-            self._spoint_listctrl.SetStringItem(idx, 0, pos_str)
-            self._spoint_listctrl.SetStringItem(idx, 1, str(val))
+
+            self._syncGridRowToSelPoints(idx)
             
 
     # DEPRECATED CODE

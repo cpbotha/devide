@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.12 2003/01/23 16:54:43 cpbotha Exp $
+# $Id: dscas3.py,v 1.13 2003/01/24 10:45:51 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
 import os
 import stat
+import string
 import sys
 
 from assistants import assistants
