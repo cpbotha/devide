@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.66 2002/09/24 15:37:21 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.67 2002/09/24 15:41:02 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -185,8 +185,6 @@ class vtk_slice_vwr(module_base,
 
                 self._rwi.Render()
                 self._inputs[idx]['Connected'] = 'vtkImageData'
-
-                print self._ipws[0]
 
             else:
                 raise TypeError, "Wrong input type!"
