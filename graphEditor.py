@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.6 2003/05/07 23:34:13 cpbotha Exp $
+# $Id: graphEditor.py,v 1.7 2003/05/07 23:45:04 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -153,6 +153,8 @@ class graphEditor:
                     co.addObserver('drag',
                                    self._glyphDrag, temp_module)
 
+                    # REROUTE ALL LINES THAT CROSS THIS GLYPH
+
                     canvas.Refresh()
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
@@ -220,6 +222,8 @@ class graphEditor:
             l1 = wxpc.coLine(fromObject, fromOutputIdx,
                              toObject, toInputIdx)
             self._graphFrame.canvas.addObject(l1)
+
+            # ROUTE THIS LINE
 
             # also record the line in the glyphs
             toObject.inputLines[toInputIdx] = l1
@@ -305,10 +309,12 @@ class graphEditor:
                 for lines in glyph.outputLines:
                     for line in lines:
                         line.updateEndPoints()
+                        # REROUTE LINE
 
                 for line in glyph.inputLines:
                     if line:
                         line.updateEndPoints()
+                        # REROUTE LINE
 
             # switch off the draggedPort
             glyph.draggedPort = None
