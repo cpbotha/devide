@@ -22,6 +22,12 @@ class MainFrame(wxFrame):
         self.voiPanel = wxPanel(self.notebook_1_copy, -1)
         self.notebook_1_pane_1_copy = wxPanel(self.notebook_1_copy, -1)
         self.threedRWI = wxVTKRenderWindowInteractor(self.panel_1, -1)
+        self.label_1_copy_copy_copy_2_copy = wxStaticText(self.notebook_1_pane_1_copy, -1, "Cursor at")
+        self.sliceCursorText = wxTextCtrl(self.notebook_1_pane_1_copy, -1, "")
+        self.label_4_copy_copy_copy_2_copy = wxStaticText(self.notebook_1_pane_1_copy, -1, "Name")
+        self.sliceCursorNameCombo = wxComboBox(self.notebook_1_pane_1_copy, -1, choices=["Point 1", "Point 2", "Point 3", "Point 4"], style=wxCB_DROPDOWN)
+        self.sliceStoreButtonId  =  wxNewId()
+        self.button_6_copy_copy_copy_2_copy = wxButton(self.notebook_1_pane_1_copy, self.sliceStoreButtonId , "Store this point")
         self.spointsGrid = wxGrid(self.notebook_1_pane_1_copy, -1)
         self.pointsSelectAllButtonId  =  wxNewId()
         self.pointsSelectAllButton = wxButton(self.notebook_1_pane_1_copy, self.pointsSelectAllButtonId , "Select all")
@@ -61,18 +67,10 @@ class MainFrame(wxFrame):
         self.acsChoice = wxChoice(self.notebook_1_copy_pane_6, self.acsChoiceId , choices=["Reset to Axial", "Reset to Coronal", "Reset to Sagittal"])
         self.destroySliceButtonId  =  wxNewId()
         self.button_3_copy_2 = wxButton(self.notebook_1_copy_pane_6, self.destroySliceButtonId , "Destroy Slice")
-        self.pushSliceLabel_copy_2 = wxStaticText(self.notebook_1_copy_pane_6, -1, "Push slice")
+        self.pushSliceLabel = wxStaticText(self.notebook_1_copy_pane_6, -1, "Push slice")
         self.pushSliceSpinCtrlId  =  wxNewId()
         self.pushSliceSpinCtrl = wxSpinCtrl(self.notebook_1_copy_pane_6, self.pushSliceSpinCtrlId , "0", min=-100, max=100, style=wxSP_ARROW_KEYS)
-        self.static_line_2 = wxStaticLine(self.notebook_1_copy_pane_6, -1)
-        self.label_1_copy_copy_copy_2 = wxStaticText(self.notebook_1_copy_pane_6, -1, "Cursor at")
-        self.sliceCursorText = wxTextCtrl(self.notebook_1_copy_pane_6, -1, "")
-        self.label_4_copy_copy_copy_2 = wxStaticText(self.notebook_1_copy_pane_6, -1, "Name")
-        self.sliceCursorNameCombo = wxComboBox(self.notebook_1_copy_pane_6, -1, choices=["Point 1", "Point 2", "Point 3", "Point 4"], style=wxCB_DROPDOWN)
-        self.sliceStoreButtonId  =  wxNewId()
-        self.button_6_copy_copy_copy_2 = wxButton(self.notebook_1_copy_pane_6, self.sliceStoreButtonId , "Store this in Selected Points")
-        self.static_line_3 = wxStaticLine(self.notebook_1_copy_pane_6, -1)
-        self.surfacePickActionRB = wxRadioBox(self.notebook_1_copy_pane_7, -1, "When I click on an object in the scene", choices=["Do nothing", "Place a point on its surface", "Configure the object", "Show a scalar bar for its input"], majorDimension=1, style=wxRA_SPECIFY_ROWS)
+        self.surfacePickActionRB = wxRadioBox(self.notebook_1_copy_pane_7, -1, "When I click on an object in the scene", choices=["Do nothing", "Place a point on its surface", "Configure the object", "Show a scalar bar for its input"], majorDimension=1, style=wxRA_SPECIFY_COLS)
 
         self.__set_properties()
         self.__do_layout()
@@ -81,20 +79,21 @@ class MainFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: MainFrame.__set_properties
         self.SetTitle("Slice3D Viewer")
-        self.SetSize((798, 710))
+        self.SetSize((674, 681))
+        self.sliceCursorNameCombo.SetSelection(0)
         self.spointsGrid.CreateGrid(0, 3)
+        self.spointsGrid.SetRowLabelSize(30)
         self.spointsGrid.EnableEditing(0)
         self.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
         self.spointsGrid.SetColLabelValue(0, "World")
         self.spointsGrid.SetColSize(0, 200)
         self.spointsGrid.SetColLabelValue(1, "Discrete")
         self.spointsGrid.SetColLabelValue(2, "Value")
-        self.spointsGrid.SetSize((777, 182))
+        self.spointsGrid.SetSize((643, 111))
         self.sliceNameChoice.SetSelection(0)
         self.sliceEnabledCheckBox.SetValue(1)
         self.sliceInteractionCheckBox.SetValue(1)
         self.acsChoice.SetSelection(0)
-        self.sliceCursorNameCombo.SetSelection(0)
         self.surfacePickActionRB.SetSelection(0)
         # end wxGlade
 
@@ -105,7 +104,6 @@ class MainFrame(wxFrame):
         sizer_9 = wxBoxSizer(wxHORIZONTAL)
         sizer_10 = wxBoxSizer(wxVERTICAL)
         sizer_6 = wxBoxSizer(wxVERTICAL)
-        sizer_13_copy_copy = wxBoxSizer(wxHORIZONTAL)
         sizer_20_copy_1_copy = wxBoxSizer(wxHORIZONTAL)
         sizer_7 = wxBoxSizer(wxHORIZONTAL)
         sizer_18_copy = wxBoxSizer(wxHORIZONTAL)
@@ -114,17 +112,22 @@ class MainFrame(wxFrame):
         grid_sizer_4_copy = wxFlexGridSizer(2, 2, 0, 0)
         sizer_10_copy = wxBoxSizer(wxVERTICAL)
         sizer_11_copy = wxBoxSizer(wxHORIZONTAL)
-        sizer_2 = wxBoxSizer(wxVERTICAL)
-        sizer_2.Add(self.threedRWI, 1, wxEXPAND, 0)
-        sizer_8.Add(sizer_2, 1, wxEXPAND, 0)
-        sizer_10_copy.Add(self.spointsGrid, 1, wxEXPAND, 0)
-        sizer_11_copy.Add(self.pointsSelectAllButton, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_11_copy.Add(self.pointsDeselectAllButton, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_11_copy.Add(self.pointsRemoveButton, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_11_copy.Add(self.button_5, 0, wxALIGN_CENTER_VERTICAL, 0)
+        sizer_13_copy_copy = wxBoxSizer(wxHORIZONTAL)
+        sizer_8.Add(self.threedRWI, 1, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
+        sizer_13_copy_copy.Add(self.label_1_copy_copy_copy_2_copy, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
+        sizer_13_copy_copy.Add(self.sliceCursorText, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+        sizer_13_copy_copy.Add(self.label_4_copy_copy_copy_2_copy, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
+        sizer_13_copy_copy.Add(self.sliceCursorNameCombo, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+        sizer_13_copy_copy.Add(self.button_6_copy_copy_copy_2_copy, 0, wxEXPAND, 0)
+        sizer_10_copy.Add(sizer_13_copy_copy, 0, wxALL|wxEXPAND, 4)
+        sizer_10_copy.Add(self.spointsGrid, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4)
+        sizer_11_copy.Add(self.pointsSelectAllButton, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+        sizer_11_copy.Add(self.pointsDeselectAllButton, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+        sizer_11_copy.Add(self.pointsRemoveButton, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
+        sizer_11_copy.Add(self.button_5, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_11_copy.Add(self.button_6, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_10_copy.Add(sizer_11_copy, 0, wxEXPAND, 0)
-        sizer_10_copy.Add(self.pointInteractionCheckBox, 0, wxALIGN_CENTER_VERTICAL, 0)
+        sizer_10_copy.Add(sizer_11_copy, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4)
+        sizer_10_copy.Add(self.pointInteractionCheckBox, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxALIGN_CENTER_VERTICAL, 4)
         self.notebook_1_pane_1_copy.SetAutoLayout(1)
         self.notebook_1_pane_1_copy.SetSizer(sizer_10_copy)
         sizer_10_copy.Fit(self.notebook_1_pane_1_copy)
@@ -152,24 +155,16 @@ class MainFrame(wxFrame):
         label_2 = wxStaticText(self.notebook_1_copy_pane_6, -1, "New slice name:")
         sizer_7.Add(label_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
         sizer_7.Add(self.createSliceText, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
-        sizer_7.Add(self.button_2_copy_2, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_6.Add(sizer_7, 0, wxTOP|wxBOTTOM|wxEXPAND, 4)
+        sizer_7.Add(self.button_2_copy_2, 0, wxALIGN_CENTER_VERTICAL, 7)
+        sizer_6.Add(sizer_7, 0, wxALL|wxEXPAND, 4)
         sizer_20_copy_1_copy.Add(self.sliceEnabledCheckBox, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_20_copy_1_copy.Add(self.sliceInteractionCheckBox, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_20_copy_1_copy.Add(self.orthoViewCheckBox, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_20_copy_1_copy.Add(self.acsChoice, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_20_copy_1_copy.Add(self.button_3_copy_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
-        sizer_20_copy_1_copy.Add(self.pushSliceLabel_copy_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
-        sizer_20_copy_1_copy.Add(self.pushSliceSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_6.Add(sizer_20_copy_1_copy, 0, wxBOTTOM, 4)
-        sizer_6.Add(self.static_line_2, 0, wxBOTTOM|wxEXPAND, 4)
-        sizer_13_copy_copy.Add(self.label_1_copy_copy_copy_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
-        sizer_13_copy_copy.Add(self.sliceCursorText, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
-        sizer_13_copy_copy.Add(self.label_4_copy_copy_copy_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
-        sizer_13_copy_copy.Add(self.sliceCursorNameCombo, 1, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
-        sizer_13_copy_copy.Add(self.button_6_copy_copy_copy_2, 0, wxEXPAND, 0)
-        sizer_6.Add(sizer_13_copy_copy, 0, wxBOTTOM|wxEXPAND, 4)
-        sizer_6.Add(self.static_line_3, 0, wxBOTTOM|wxEXPAND, 4)
+        sizer_20_copy_1_copy.Add(self.pushSliceLabel, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
+        sizer_20_copy_1_copy.Add(self.pushSliceSpinCtrl, 0, wxALIGN_CENTER_VERTICAL, 7)
+        sizer_6.Add(sizer_20_copy_1_copy, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4)
         self.notebook_1_copy_pane_6.SetAutoLayout(1)
         self.notebook_1_copy_pane_6.SetSizer(sizer_6)
         sizer_6.Fit(self.notebook_1_copy_pane_6)
@@ -185,12 +180,12 @@ class MainFrame(wxFrame):
         self.notebook_1_copy.AddPage(self.notebook_1_copy_pane_6, "Slices")
         self.notebook_1_copy.AddPage(self.notebook_1_copy_pane_7, "Objects")
         sizer_9.Add(wxNotebookSizer(self.notebook_1_copy), 1, wxEXPAND, 0)
-        sizer_8.Add(sizer_9, 0, wxEXPAND, 0)
+        sizer_8.Add(sizer_9, 0, wxALL|wxEXPAND, 7)
         self.panel_1.SetAutoLayout(1)
         self.panel_1.SetSizer(sizer_8)
         sizer_8.Fit(self.panel_1)
         sizer_8.SetSizeHints(self.panel_1)
-        sizer_1.Add(self.panel_1, 1, wxEXPAND, 7)
+        sizer_1.Add(self.panel_1, 1, wxEXPAND, 0)
         self.SetAutoLayout(1)
         self.SetSizer(sizer_1)
         self.Layout()
@@ -237,37 +232,4 @@ class orthoViewFrame(wxFrame):
         # end wxGlade
 
 # end of class orthoViewFrame
-
-
-class slice3d_vwr_frame(wxFrame):
-    def __init__(self, *args, **kwds):
-        # content of this block not found: did you rename this class?
-        pass
-
-    def __set_properties(self):
-        # content of this block not found: did you rename this class?
-        pass
-
-    def __do_layout(self):
-        # content of this block not found: did you rename this class?
-        pass
-
-# end of class slice3d_vwr_frame
-
-
-class slice_viewer_frame(wxFrame):
-    def __init__(self, *args, **kwds):
-        # content of this block not found: did you rename this class?
-        pass
-
-    def __set_properties(self):
-        # content of this block not found: did you rename this class?
-        pass
-
-    def __do_layout(self):
-        # content of this block not found: did you rename this class?
-        pass
-
-# end of class slice_viewer_frame
-
 
