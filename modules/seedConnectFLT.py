@@ -1,3 +1,6 @@
+# TODO: vtkImageCast - cast whatever to unsigned char output
+
+
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
@@ -12,27 +15,37 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
 
+        self._imageCast = vtk.vtkImageCast()
+        self._imageCast.SetOutputScalarTypeToUnsignedChar()
         self._seedConnect = vtk.vtkImageSeedConnectivity()
+        self._seedConnect.SetInput(self._imageCast.GetOutput())
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
+        # your module
         self._seedConnect.SetProgressText('performing region growing')
         mm = self._moduleManager
         self._seedConnect.SetProgressMethod(lambda s=self, mm=mm:
                                                mm.vtk_progress_cb(
             s._seedConnect))
+
+        self._imageCast.SetProgressText('casting data to unsigned char')
+        mm = self._moduleManager
+        self._imageCast.SetProgressMethod(lambda s=self, mm=mm:
+                                               mm.vtk_progress_cb(
+            s._imageCast))
+        
         
         # we'll use this to keep a binding (reference) to the passed object
         self._vtkPoints = None
+        self._vtkPointsOID = -1
         # this will be our internal list of points
         self._seedPoints = []
 
         # now setup some defaults before our sync
-        self._config.inputConnectValue = 1.0
-        self._config.outputConnectedValue = 1.0
-        self._config.outputUnconnectedValue = 0.0
+        self._config.inputConnectValue = 1
+        self._config.outputConnectedValue = 1
+        self._config.outputUnconnectedValue = 0
 
         self._viewFrame = None
         self._createViewFrame()
@@ -56,6 +69,8 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # take out our view interface
         self._viewFrame.Destroy()
         # get rid of our reference
+        del self._imageCast
+        self._seedConnect.SetInput(None)
         del self._seedConnect
 
     def getInputDescriptions(self):
@@ -64,13 +79,22 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
     def setInput(self, idx, inputStream):
         if idx == 0:
             # will work for None and not-None
-            self._seedConnect.SetInput(inputStream)
+            self._imageCast.SetInput(inputStream)
         else:
+            if inputStream is None:
+                if self._vtkPointsOID >= 0:
+                    self._vtkPoints.RemoveObserver(self._vtkPointsOID)
+                    self._vtkPointsOID = -1
+                
+            else:
+                oid = inputStream.AddObserver('ModifiedEvent',
+                                              self.\
+                                              _vtkPointsModifiedCallback)
+                self._vtkPointsOID = oid
+
             self._vtkPoints = inputStream
-#        if not inputStream is None:
-#            # get scalar bounds
-#            minv, maxv = inputStream.GetScalarRange()
-#            self._viewFrame.isoValueSlider.SetRange(minv, maxv)
+
+            self._vtkPointsModifiedCallback(None, None)
     
     def getOutputDescriptions(self):
 	return (self._seedConnect.GetOutput().GetClassName(),)
@@ -94,14 +118,32 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
                                                     outputUnconnectedValue)
 
     def viewToConfig(self):
-        self._config.inputConnectValue = self._viewFrame.\
-                                         inputConnectValueText.GetValue()
-        self._config.isoValue = self._viewFrame.isoValueSlider.GetValue()
-        self._config.rtu = self._viewFrame.realtimeUpdateCheckBox.GetValue()
+        try:
+            icv = int(self._viewFrame.inputConnectValueText.GetValue())
+        except ValueError:
+            icv = self._config.inputConnectValue
+
+        try:
+            ocv = int(self._viewFrame.outputConnectedValueText.GetValue())
+        except ValueError:
+            ocv = self._config.outputConnectedValue
+
+        try:
+            ouv = int(self._viewFrame.outputUnconnectedValueText.GetValue())
+        except ValueError:
+            ouv = self._config.outputUnconnectedValue
+            
+        self._config.inputConnectValue = icv
+        self._config.outputConnectedValue = ocv
+        self._config.outputUnconnectedValue = ouv
 
     def configToView(self):
-        self._viewFrame.isoValueSlider.SetValue(self._config.isoValue)
-        self._viewFrame.realtimeUpdateCheckBox.SetValue(self._config.rtu)
+        icv = str(self._config.inputConnectValue)
+        self._viewFrame.inputConnectValueText.SetValue(icv)
+        ocv = str(self._config.outputConnectedValue)        
+        self._viewFrame.outputConnectedValueText.SetValue(ocv)
+        ouv = str(self._config.outputUnconnectedValue)
+        self._viewFrame.outputUnconnectedValueText.SetValue(ouv)
 
     def executeModule(self):
         self._seedConnect.Update()
@@ -121,13 +163,13 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.resources.python.marchingCubesFLTViewFrame
-        reload(modules.resources.python.marchingCubesFLTViewFrame)
+        import modules.resources.python.seedConnectFLTViewFrame
+        reload(modules.resources.python.seedConnectFLTViewFrame)
 
         # find our parent window and instantiate the frame
         pw = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = modules.resources.python.marchingCubesFLTViewFrame.\
-                          marchingCubesFLTViewFrame(pw, -1, 'dummy')
+        self._viewFrame = modules.resources.python.seedConnectFLTViewFrame.\
+                          seedConnectFLTViewFrame(pw, -1, 'dummy')
 
         # make sure that a close of that window does the right thing
         EVT_CLOSE(self._viewFrame,
@@ -136,31 +178,6 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # default binding for the buttons at the bottom
         moduleUtils.bindCSAEO(self, self._viewFrame)        
 
-        # connect slider to its callback for instant processing
-        EVT_SCROLL(self._viewFrame.isoValueSlider,
-                   self._sliderCallback())
-
-        # the checkbox should directly modify its own bit of the self._config
-        EVT_CHECKBOX(self._viewFrame,
-                     self._viewFrame.realtimeUpdateCheckBoxId,
-                     self._realtimeUpdateCheckBoxCallback)
-
-        # and now the standard examine object/pipeline stuff
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   self.vtkObjectChoiceCallback)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   self.vtkPipelineCallback)
-        
-        
-
-    def _sliderCallback(self):
-        if self._config.rtu:
-            self.applyViewToLogic()
-            self.executeModule()
-
-    def _realtimeUpdateCheckBoxCallback(self, event):
-        self._config.rtu = self._viewFrame.realtimeUpdateCheckBox.GetValue()
-        
     def vtkObjectChoiceCallback(self, event):
         self.vtkObjectConfigure(self._viewFrame, None,
                                 self._seedConnect)
@@ -169,3 +186,21 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # move this to module utils too, or to base...
         self.vtkPipelineConfigure(self._viewFrame, None,
                                   (self._seedConnect,))
+
+    def _vtkPointsModifiedCallback(self, event, obj):
+        # extract a list from the input vtkPoints
+        tempList = []
+        if self._vtkPoints:
+            for i in range(self._vtkPoints.GetNumberOfPoints() / 2):
+                tempList.append(self._vtkPoints.GetPoint(i*2))
+
+        if tempList != self._seedPoints:
+            self._seedPoints = tempList
+            self._seedConnect.RemoveAllSeeds()
+            for seedPoint in self._seedPoints:
+                self._seedConnect.AddSeed(seedPoint[0], seedPoint[1],
+                                          seedPoint[2])
+                print "adding %s" % (str(seedPoint))
+
+
+

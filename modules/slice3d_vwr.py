@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.21 2003/02/19 22:24:27 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.22 2003/02/23 23:16:01 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -55,6 +55,7 @@ class slice3d_vwr(moduleBase,
         self._sel_points = []
         # this will be passed on as input to the next component
         self._vtk_points = vtk.vtkPoints()
+        self._vtk_points.SetDataTypeToDouble()
         # this is an extra output with text descriptions for each points
         self._vtk_points_names = []
 
@@ -768,6 +769,7 @@ class slice3d_vwr(moduleBase,
         for i in self._sel_points:
             x,y,z,v = i['cursor']
             self._vtk_points.InsertNextPoint(x,y,z)
+            self._vtk_points.InsertNextPoint(i['coords'])
             self._vtk_points_names.append(i['name'])
 
         # and then make sure the vtkPoints knows that it has been modified
