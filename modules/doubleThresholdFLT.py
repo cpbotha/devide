@@ -1,4 +1,4 @@
-from module_base import module_base, filenameViewModuleMixin
+from module_base import module_base
 from wxPython.wx import *
 import vtk
 
@@ -11,6 +11,17 @@ class doubleThresholdFLT(module_base):
 
         self._imageThreshold = vtk.vtkImageThreshold()
 
+        self._outputTypes = {'Double': 'VTK_DOUBLE',
+                             'Float' : 'VTK_FLOAT',
+                             'Long'  : 'VTK_LONG',
+                             'Unsigned Long' : 'VTK_UNSIGNED_LONG',
+                             'Integer' : 'VTK_INT',
+                             'Unsigned Integer' : 'VTK_UNSIGNED_INT',
+                             'Short' : 'VTK_SHORT',
+                             'Unsigned Short' : 'VTK_UNSIGNED_SHORT',
+                             'Char' : 'VTK_CHAR',
+                             'Unsigned Char' : 'VTK_UNSIGNED_CHAR'}
+
         self._viewFrame = None
         self._createViewFrame()
         self._viewFrame.Show(1)
@@ -18,7 +29,7 @@ class doubleThresholdFLT(module_base):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        set_input(0, None)
+        self.set_input(0, None)
         # get rid of our reference
         del self._imageThreshold
 
@@ -35,6 +46,15 @@ class doubleThresholdFLT(module_base):
         return self._imageThreshold.GetOutput()
     
     def sync_config(self):
+        
+        self._imageThreshold.GetLowerThreshold()
+        self._imageThreshold.GetUpperThreshold()
+        self._imageThreshold.GetReplaceIn()
+        self._imageThreshold.GetInValue()
+        self._imageThreshold.GetReplaceOut()
+        self._imageThreshold.GetOutValue()
+        self._imageThreshold.GetOutputScalarType()
+        
         filename = self._writer.GetFileName()
         if filename == None:
             filename = ''
@@ -76,6 +96,8 @@ class doubleThresholdFLT(module_base):
         import modules.resources.python.doubleThresholdFLTFrame
         reload(modules.resources.python.doubleThresholdFLTFrame)
         pw = self._module_manager.get_module_view_parent_window()
+
         self._viewFrame = modules.resources.python.doubleThresholdFLTFrame.\
                           doubleThresholdFLTFrame(pw, -1, 'dummy')
 
+        
