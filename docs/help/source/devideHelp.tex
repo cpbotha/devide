@@ -1,0 +1,71 @@
+\documentstyle[a4,makeidx,verbatim,texhelp,fancyhea,mysober,mytitle]{report}%
+%\input{psbox.tex}
+\newcommand{\commandref}[2]{\helpref{{\tt $\backslash$#1}}{#2}}%
+\newcommand{\commandrefn}[2]{\helprefn{{\tt $\backslash$#1}}{#2}\index{#1}}%
+\newcommand{\commandpageref}[2]{\latexignore{\helprefn{{\tt $\backslash$#1}}{#2}}\latexonly{{\tt $\backslash$#1} {\it page \pageref{#2}}}\index{#1}}%
+\newcommand{\indexit}[1]{#1\index{#1}}%
+\newcommand{\inioption}[1]{{\bf {\tt #1}}\index{#1}}%
+\parskip=10pt%
+\parindent=0pt%
+%\backgroundcolour{255;255;255}\textcolour{0;0;0}% Has an effect in HTML only
+\winhelpignore{\title{Manual for DeVIDE}
+\author{Charl P. Botha}%
+\date{2004}%
+}%
+\winhelponly{\title{Manual for DeVIDE}%
+\author{by Charl P. Botha}%
+}%
+\makeindex%
+\begin{document}%
+\maketitle%
+\pagestyle{fancyplain}%
+\bibliographystyle{plain}%
+\pagenumbering{roman}%
+\setheader{{\it CONTENTS}}{}{}{}{}{{\it CONTENTS}}%
+\setfooter{\thepage}{}{}{}{}{\thepage}%
+\tableofcontents%
+
+\chapter*{Copyright notice}%
+\setheader{{\it COPYRIGHT}}{}{}{}{}{{\it COPYRIGHT}}%
+\setfooter{\thepage}{}{}{}{}{\thepage}%
+DeVIDE is copyright (c) 2004 by Charl P. Botha <cpbotha@ieee.org>
+
+This software is licensed exclusively for research use by authorised
+parties.  All unauthorised use or distribution is strictly prohibited.
+
+Any modifications made to this software, with exception of work in the
+userModules/ tree, shall be sent to the author for possible inclusion
+in future versions.  Ownership and copyright of said modifications
+shall be unconditionally ceded to the author.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+\chapter{Introduction}%
+\pagenumbering{arabic}%
+\setheader{{\it CHAPTER \thechapter}}{}{}{}{}{{\it CHAPTER \thechapter}}%
+\setfooter{\thepage}{}{}{}{}{\thepage}%
+This is the user manual and help file for the DeVIDE software
+package.  DeVIDE of course expands to Delft Visualisation and Image
+processing Development Environment.
+
+%\bibliography{refs}
+%\addcontentsline{toc}{chapter}{Bibliography}
+%\setheader{{\it REFERENCES}}{}{}{}{}{{\it REFERENCES}}%
+%\setfooter{\thepage}{}{}{}{}{\thepage}%
+
+\addcontentsline{toc}{chapter}{Index}
+\setheader{{\it INDEX}}{}{}{}{}{{\it INDEX}}%
+\setfooter{\thepage}{}{}{}{}{\thepage}%
+\printindex%
+
+\end{document}

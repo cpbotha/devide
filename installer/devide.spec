@@ -20,8 +20,8 @@ print "[*] mainScript == %s" % (mainScript)
 segTree = Tree(os.path.join(D3_DIR, 'segments'), 'segments', ['CVS'])
 # arb data
 dataTree = Tree(os.path.join(D3_DIR, 'data'), 'data', ['CVS'])
-# miscellaneous files
-docsTree = Tree(os.path.join(D3_DIR, 'docs'), 'docs', ['CVS'])
+# documents and help, exclude help source
+docsTree = Tree(os.path.join(D3_DIR, 'docs'), 'docs', ['CVS', 'source'])
 
 # USER MODULES
 userModulesTree = Tree(os.path.join(D3_DIR, 'userModules'), 'userModules',

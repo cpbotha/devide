@@ -17,16 +17,18 @@ class mainFrame(wxFrame):
         self.fileExitId  =  wxNewId()
         self.windowGraphEditorId  =  wxNewId()
         self.windowPythonShellId  =  wxNewId()
+        self.helpContentsId  =  wxNewId()
         self.helpAboutId  =  wxNewId()
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(self.fileExitId , "E&xit", "Exit DSCAS")
+        wxglade_tmp_menu.Append(self.fileExitId , "E&xit", "Exit DSCAS", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(self.windowGraphEditorId , "&Graph Editor", "Open up the graph editor window")
-        wxglade_tmp_menu.Append(self.windowPythonShellId , "&Python Shell", "Show the Python Shell interface")
+        wxglade_tmp_menu.Append(self.windowGraphEditorId , "&Graph Editor", "Open up the graph editor window", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.windowPythonShellId , "&Python Shell", "Show the Python Shell interface", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Window")
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DeVIDE")
+        wxglade_tmp_menu.Append(self.helpContentsId , "&Contents", "Show the main help contents", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DeVIDE", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that even the longest of messages eek.")
@@ -46,7 +48,7 @@ class mainFrame(wxFrame):
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         self.progressText.SetFont(wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
-        self.progressGauge.SetBackgroundColour(wxColour(50, 153, 204))
+        self.progressGauge.SetBackgroundColour(wxColour(50, 50, 204))
         self.progressRaiseCheckBox.SetValue(1)
         # end wxGlade
 
