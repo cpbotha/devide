@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.5 2004/01/15 11:01:22 cpbotha Exp $
+# $Id: tdObjects.py,v 1.6 2004/02/24 11:12:00 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -608,7 +608,7 @@ class tdObjects(object, s3dcGridMixin):
         if t == 'vtkPolyData':
             return self._tdObjectsDict[tdObject]['vtkActor']
         else:
-            return KeyError
+            raise KeyError
         
 
     def getPickableProps(self):

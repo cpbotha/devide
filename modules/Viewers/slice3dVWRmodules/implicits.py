@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.6 2004/02/23 22:47:25 cpbotha Exp $
+# $Id: implicits.py,v 1.7 2004/02/24 11:12:00 cpbotha Exp $
 # TODO:
 # * at creation, there's a radiobox with the choices of placement:
 #   visiblePropBounds, primary input, manual (extent is entered), default
@@ -15,6 +15,7 @@ class implicitInfo:
         self.name = None
         self.type = None
         self.widget = None
+        self.function = None
 
 class implicits(object, s3dcGridMixin):
     _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0)]
@@ -24,6 +25,9 @@ class implicits(object, s3dcGridMixin):
 
     _implicitTypes = ['Plane']
 
+    _boundsTypes = ['Primary Input', 'Selected object', 'Visible objects',
+                    'Manual']
+
     def __init__(self, slice3dVWRThingy, implicitsGrid):
         self.slice3dVWR = slice3dVWRThingy
         self._grid = implicitsGrid
@@ -31,24 +35,20 @@ class implicits(object, s3dcGridMixin):
         # dict with name as key, values are implicitInfo classes
         self._implicitsDict = {}
 
+        # we have to update this function when:
+        # * a new implicit is created
+        # * an implicit is deleted
+        # * the user has adjusted the representative widget
+        self.outputImplicitFunction = vtk.vtkImplicitBoolean()
+        self.outputImplicitFunction.SetOperationTypeToIntersection()
+
         self._initialiseGrid()
+
+        self._setupGUI()
 
         self._bindEvents()
 
-        # setup choice component
-        # first clear
-        cf = self.slice3dVWR.controlFrame
-        cf.implicitTypeChoice.Clear()
-        for implicitType in self._implicitTypes:
-            cf.implicitTypeChoice.Append(implicitType)
-            
-        cf.implicitTypeChoice.SetSelection(0)
-        cf.implicitNameText.SetValue("implicit 0")
 
-        # fill out our drop-down menu
-        self._disableMenuItems = self._appendGridCommandsToMenu(
-            self.slice3dVWR.controlFrame.implicitsMenu,
-            self.slice3dVWR.controlFrame, disable=True)
 
     def close(self):
         # delete all implicits, the good way
@@ -84,43 +84,124 @@ class implicits(object, s3dcGridMixin):
             rwi = self.slice3dVWR.threedFrame.threedRWI
             ren = self.slice3dVWR._threedRenderer
 
-            # we're going to try to calculate some bounds
-            # first see if we have some props
-            bounds = self.slice3dVWR._threedRenderer.\
-                     ComputeVisiblePropBounds()
-            b0 = bounds[1] - bounds[0]
-            b1 = bounds[3] - bounds[2]
-            b2 = bounds[5] - bounds[4]
 
-            if b0 <= 0 or b1 <= 0 or b2 <= 0:
-                # not good enough...                    
-                bounds = None
+            # let's find out which bounds the user wanted
+            cf = self.slice3dVWR.controlFrame
+            bt = cf.implicitBoundsChoice.GetStringSelection()
 
             pi = None
-            if bounds != None:
+            bounds = None
+
+            bti = self._boundsTypes.index(bt)
+
+            if bti == 0:
+                # primary input
                 pi = self.slice3dVWR.getPrimaryInput()
+                if pi == None:
+                    md = wx.MessageDialog(
+                        cf,
+                        "There is no primary input. "
+                        "Please try another bounds type.",
+                        "Information",
+                        wx.OK | wx.ICON_INFORMATION)
+                    md.ShowModal()
+
+                    return
+
+            elif bti == 1:
+                # selected object
+                objs = self.slice3dVWR._tdObjects._getSelectedObjects()
+                if not objs:
+                    md = wx.MessageDialog(
+                        cf,
+                        "No object has been selected. "
+                        "Please try another bounds type or select an object.",
+                        "Information",
+                        wx.OK | wx.ICON_INFORMATION)
+                    md.ShowModal()
+
+                    return
+
+                try:
+                    prop = self.slice3dVWR._tdObjects.findPropByObject(objs[0])
+                    bounds = prop.GetBounds()
+                except KeyError:
+                    # this should never ever happen
+                    return
+
+            elif bti == 2:
+                # visible objects
+                bounds = self.slice3dVWR._threedRenderer.\
+                         ComputeVisiblePropBounds()
+
+            elif bti == 3:
+                # manual
+                v = cf.implicitManualBoundsText.GetValue()
+                t = genUtils.textToTypeTuple(v, (-1, 1, -1, 1, -1, 1),
+                                             6, float)
+                cf.implicitManualBoundsText.SetValue(str(t))
+                        
+
+            if bounds:
+                b0 = bounds[1] - bounds[0]
+                b1 = bounds[3] - bounds[2]
+                b2 = bounds[5] - bounds[4]
+
+                if b0 <= 0 or b1 <= 0 or b2 <= 0:
+                    # not good enough...                    
+                    bounds = None
+
+                    md = wx.MessageDialog(
+                        cf,
+                        "Resultant bounds are invalid. "
+                        "Please try again.",
+                        "Information",
+                        wx.OK | wx.ICON_INFORMATION)
+                    md.ShowModal()
+
+                    return
+                    
+            # at this stage, you MUST have pi or bounds!
 
             if implicitType == "Plane":
                 implicitWidget = vtk.vtkImplicitPlaneWidget()
-
-                #implicitWidget.SetIn
-                if bounds != None:
-                    implicitWidget.PlaceWidget(bounds)
-                elif pi != None:
+                implicitWidget.SetPlaceFactor(1.25)
+                if pi != None:
                     implicitWidget.SetInput(pi)
                     implicitWidget.PlaceWidget()
+                elif bounds != None:
+                    implicitWidget.PlaceWidget(bounds)
                 else:
-                    implicitWidget.PlaceWidget(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)
+                    # this can never happen
+                    pass
 
                 implicitWidget.SetInteractor(rwi)
                 implicitWidget.On()
+
+                # create the implicit function
+                implicitFunction = vtk.vtkPlane()
+                # sync it to the initial widget
+                self._syncPlaneFunctionToWidget(implicitWidget)
+                # add it to the output
+                self.outputImplicitFunction.AddFunction(implicitFunction)
+
+                # now add an observer to the widget
+                def observerImplicitPlaneWidget(widget, eventName):
+                    # sync it to the initial widget
+                    self._syncPlaneFunctionToWidget(widget)
+
+                oId = implicitWidget.AddObserver('EndInteractionEvent',
+                                                 observerImplicitPlaneWidget)
+                    
 
             if implicitWidget:
                 # first add to our internal thingy
                 ii = implicitInfo()
                 ii.name = implicitName
-                ii.type = implicitType                
+                ii.type = implicitType
                 ii.widget = implicitWidget
+                ii.oId = oId
+                ii.function = implicitFunction
                 
                 self._implicitsDict[implicitName] = ii
 
@@ -149,12 +230,15 @@ class implicits(object, s3dcGridMixin):
             # delete that row
             self._grid.DeleteRows(dRow)
 
+        ii = self._implicitsDict[name]
+
         # take care of the widget
-        w = self._implicitsDict[name].widget
+        w = ii.widget
+        w.RemoveObserver(ii.oId)
         w.Off()
         w.SetInteractor(None)
 
-        # FIXME: take care of the function
+        self.outputImplicitFunction.RemoveFunction(ii.function)
 
         # finally remove our record of everything
         del self._implicitsDict[name]
@@ -517,7 +601,44 @@ class implicits(object, s3dcGridMixin):
                 genUtils.setGridCellYesNo(
                     self._grid, gridRow, self._gridEnabledCol, ii.enabled)
 
-
+    def _setupGUI(self):
+        # fill out our drop-down menu
+        self._disableMenuItems = self._appendGridCommandsToMenu(
+            self.slice3dVWR.controlFrame.implicitsMenu,
+            self.slice3dVWR.controlFrame, disable=True)
+        
+        # setup choice component
+        # first clear
+        cf = self.slice3dVWR.controlFrame
+        cf.implicitTypeChoice.Clear()
+        for implicitType in self._implicitTypes:
+            cf.implicitTypeChoice.Append(implicitType)
             
+        cf.implicitTypeChoice.SetSelection(0)
+        cf.implicitNameText.SetValue("implicit 0")
+
+        # setup bounds type thingies
+        cf.implicitBoundsChoice.Clear()
+        for t in self._boundsTypes:
+            cf.implicitBoundsChoice.Append(t)
+
+        cf.implicitBoundsChoice.SetSelection(0)
+
+        # setup default value for the manual bounds thingy
+        cf.implicitManualBoundsText.SetValue('(-1, 1, -1, 1, -1, 1)')
 
 
+    def _syncPlaneFunctionToWidget(self, widget):
+
+        # let's find widget in our records
+        found = False
+        for name, ii in self._implicitsDict.items():
+            if ii.widget == widget:
+                found  = True
+                break
+
+        if found:
+            ii.function.SetOrigin(ii.widget.GetOrigin())
+            # FIXME: incorporate "sense" setting
+            ii.function.SetNormal(ii.widget.GetNormal())
+            

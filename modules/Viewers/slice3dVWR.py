@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.14 2004/02/23 22:28:35 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.15 2004/02/24 11:11:54 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -342,14 +342,17 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
     def getOutputDescriptions(self):
         return ('Selected points',
-                'Volume of Interest (vtkStructuredPoints)')
+                'Volume of Interest (vtkStructuredPoints)',
+                'Implicit Function')
         
 
     def getOutput(self, idx):
         if idx == 0:
             return self.selectedPoints.outputSelectedPoints
-        else:
+        elif idx == 1:
             return self._extractVOI.GetOutput()
+        else:
+            return self._implicits.outputImplicitFunction
 
     def view(self):
         if not self.controlFrame.Show(True):
