@@ -101,12 +101,7 @@ class canvasFrame(wxFrame):
 class modulePaletteFrame(wxFrame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: modulePaletteFrame.__init__
-
-        if( platform == 'win32' ):        
-            kwds["style"] = wxCAPTION|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxSYSTEM_MENU|wxRESIZE_BORDER|wxSTAY_ON_TOP
-        else:
-            kwds["style"] = wxCAPTION|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxSYSTEM_MENU|wxRESIZE_BORDER|wxFRAME_FLOAT_ON_PARENT
-            
+        kwds["style"] = wxCAPTION|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxSYSTEM_MENU|wxRESIZE_BORDER|wxFRAME_FLOAT_ON_PARENT
         wxFrame.__init__(self, *args, **kwds)
         self.panel_1 = wxPanel(self, -1)
         self.modCatsListSplitterWindow = wxSplitterWindow(self.panel_1, -1)
