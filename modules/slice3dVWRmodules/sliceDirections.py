@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.13 2003/09/15 10:17:43 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.14 2003/09/15 11:55:30 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -10,12 +10,13 @@ import modules.slice3dVWRmodules.sliceDirection
 reload(modules.slice3dVWRmodules.sliceDirection)
 
 from modules.slice3dVWRmodules.sliceDirection import sliceDirection
+from modules.slice3dVWRmodules.shared import s3dcGridMixin
 
 import vtk
 import wx
 import wx.grid
 
-class sliceDirections(object):
+class sliceDirections(object, s3dcGridMixin):
 
     _gridCols = [('Slice Name', 0), ('Enabled', 0), ('Interaction', 0)]
 
@@ -40,9 +41,9 @@ class sliceDirections(object):
         self._bindEvents()
 
         # fill out our drop-down menu
-        self._appendGridCommandsToMenu(
+        self._disableMenuItems = self._appendGridCommandsToMenu(
             self.slice3dVWR.controlFrame.slicesMenu,
-            self.slice3dVWR.controlFrame, disable=False)
+            self.slice3dVWR.controlFrame, disable=True)
 
         # create the first slice
         self._createSlice('Axial')
@@ -102,28 +103,11 @@ class sliceDirections(object):
             ('Delete', 'Delete selected slices',
              self._handlerSliceDelete, True)]
 
-        disableList = []
-        for command in commandsTuple:
-            if command[0] == '---':
-                mi = wx.MenuItem(menu, wx.ID_SEPARATOR)
-                menu.AppendItem(mi)
-            else:
-                id = wx.NewId()
-                mi = wx.MenuItem(
-                    menu, id, command[0], command[1])
-                menu.AppendItem(mi)
-                wx.EVT_MENU(
-                    eventWidget, id, command[2])
-                
-                if disable:
-                    disableList.append(mi)
-                    if not self._grid.GetSelectedRows() and command[3]:
-                        mi.Enable(False)
-
-        # the disableList can be used later if the menu is created for use
-        # in the frame menubar
+        disableList = self._appendGridCommandsTupleToMenu(
+            menu, eventWidget, commandsTuple, disable)
+        
         return disableList
-
+        
     def _bindEvents(self):
         controlFrame = self.slice3dVWR.controlFrame
 
@@ -137,15 +121,8 @@ class sliceDirections(object):
         wx.grid.EVT_GRID_LABEL_RIGHT_CLICK(
             self._grid, self._handlerGridRightClick)
 
-        def gsc(event):
-            self._grid.GetSelectionBlockTopLeft()
-            self._grid.GetSelectionBlockBottomRight()
-            
-#        wx.grid.EVT_GRID_SELECT_CELL(
-#            self._grid, gsc)
-
         wx.grid.EVT_GRID_RANGE_SELECT(
-            self._grid, gsc)
+            self._grid, self._handlerGridRangeSelect)
         
 
     def close(self):
