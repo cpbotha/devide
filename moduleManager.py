@@ -771,7 +771,7 @@ class moduleManager:
         
         # first we make sure we have a unique instance name
         if not instanceName:
-            instanceName = "d3m%d" % (len(self._moduleDict),)
+            instanceName = "dvm%d" % (len(self._moduleDict),)
 
         # now make sure that instanceName is unique
         uniqueName = False

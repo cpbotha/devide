@@ -264,12 +264,25 @@ class coGlyph(coRectangle):
         portsWidth = 2 * coGlyph._horizBorder + \
                      maxPorts * coGlyph._pWidth + \
                      (maxPorts - 1 ) * coGlyph._horizSpacing
+
+        # determine maximum textwidth and height
+        tex = 0
+        tey = 0
+
+        for l in self._label:
+            temptx, tempty = dc.GetTextExtent(l)
+
+            if temptx > tex:
+                tex = temptx
+
+            if tempty > tey:
+                tey = tempty
         
-        tex, tey = dc.GetTextExtent(self._label)
+        # this will be calculated with the max width, so fine
         textWidth = tex + 2 * coGlyph._horizBorder
         
         self._size = (max(textWidth, portsWidth),
-                      tey + 2 * coGlyph._vertBorder)
+                      tey * len(self._label) + 2 * coGlyph._vertBorder)
 
         # draw the main rectangle
         dc.DrawRectangle(self._position[0], self._position[1],
@@ -277,11 +290,13 @@ class coGlyph(coRectangle):
 
         #dc.DrawRoundedRectangle(self._position[0], self._position[1],
         #                        self._size[0], self._size[1], radius=5)
-        
-        
-        dc.DrawText(self._label,
-                    self._position[0] + coGlyph._horizSpacing,
-                    self._position[1] + coGlyph._vertBorder)
+
+        initY = self._position[1] + coGlyph._vertBorder
+        for l in self._label:
+            dc.DrawText(l,
+                        self._position[0] + coGlyph._horizSpacing,
+                        initY)
+            initY += tey
 
         # then the inputs
         horizOffset = self._position[0] + coGlyph._horizBorder

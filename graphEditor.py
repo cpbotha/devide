@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.85 2004/07/06 12:49:55 cpbotha Exp $
+# $Id: graphEditor.py,v 1.86 2004/07/26 14:39:54 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -432,16 +432,17 @@ class graphEditor:
                 ni.Enable(False)
         
 
-    def createGlyph(self, rx, ry, moduleName, moduleInstance):
+    def createGlyph(self, rx, ry, labelList, moduleInstance):
         """Create only a glyph on the canvas given an already created
-        moduleInstance.  The glyph instance is returned.
+        moduleInstance.  labelList is a list of strings that will be printed
+        inside the glyph representation.  The glyph instance is returned.
         """
         
 
         co = wxpc.coGlyph((rx, ry),
                           len(moduleInstance.getInputDescriptions()),
                           len(moduleInstance.getOutputDescriptions()),
-                          moduleName, moduleInstance)
+                          labelList, moduleInstance)
         
         canvas = self._graphFrame.canvas
         canvas.addObject(co)
@@ -481,7 +482,9 @@ class graphEditor:
             if temp_module:
                 # create and draw the actual glyph
                 rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
-                glyph = self.createGlyph(rx,ry,moduleName.split('.')[-1],temp_module)
+                iName = mm.getInstanceName(temp_module)
+                gLabel = [moduleName.split('.')[-1], iName]
+                glyph = self.createGlyph(rx,ry,gLabel,temp_module)
 
                 # route all lines
                 self._routeAllLines()
@@ -1118,10 +1121,12 @@ class graphEditor:
         for newModulePickledName in newModulesDict.keys():
             position = glyphPosDict[newModulePickledName]
             moduleInstance = newModulesDict[newModulePickledName]
+            gLabel = [moduleInstance.__class__.__name__,
+                      mm.getInstanceName(moduleInstance)]
             newGlyph = self.createGlyph(
                 position[0] - reposCoords[0] + origin[0],
                 position[1] - reposCoords[1] + origin[1],
-                moduleInstance.__class__.__name__,
+                gLabel,
                 moduleInstance)
             newGlyphDict[newModulePickledName] = newGlyph
 
