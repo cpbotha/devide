@@ -1,4 +1,4 @@
-# $Id: gradientMagnitudeGaussian.py,v 1.1 2004/03/11 12:44:22 cpbotha Exp $
+# $Id: gradientMagnitudeGaussian.py,v 1.2 2004/03/25 12:32:15 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -11,7 +11,7 @@ class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
     """Calculates gradient magnitude of an image by convolving with the
     derivative of a Guassian.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -33,7 +33,8 @@ class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
         self._gradientMagnitude = g
         
         moduleUtilsITK.setupITKObjectProgress(
-            self, g, 'itkGradientMagnitudeRecursiveGaussianImageFilter',
+            self, g,
+            'itkGradientMagnitudeRecursiveGaussianImageFilter',
             'Calculating gradient image')
 
         self._createWindow(
