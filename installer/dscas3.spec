@@ -33,7 +33,8 @@ vpli = [(os.path.join('Icons', i),
 
 if sys.platform.startswith('win'):
     extraLibs = []
-    removeLibs = []
+    removeNames = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
+                   'netapi32.dll', 'opengl32.dll']
 else:
     # under linux, libpython is shared -- McMillan installer doesn't know
     # about this...
@@ -44,10 +45,10 @@ else:
                  ('libdf.so.4', '/usr/lib/libdf.so.4','BINARY')]
     
     # these libs will be removed from the package
-    removeLibs = [('libGLU.so.1', '', ''), ('libICE.so.6','',''),
-                  ('libSM.so.6', '', ''), ('libX11.so.6', '', ''), 
-                  ('libXext.so.6', '', ''), ('libXi.so.6', '', ''), 
-                  ('libXt.so.6', '', '')]
+    removeNames = ['libGLU.so.1', 'libICE.so.6',
+                   'libSM.so.6', 'libX11.so.6',
+                   'libXext.so.6', 'libXi.so.6', 
+                   'libXt.so.6']
 
 ##########################################################################
 
@@ -63,14 +64,22 @@ pyz = PYZ(a.pure)
 
     
 exe = EXE(pyz,
-          a.scripts, #+ [('v', '', 'OPTION')],
+          a.scripts + [('v', '', 'OPTION')],
           exclude_binaries=1,
           name=exeName,
           debug=0,
           strip=0,
           console=1 )
 
+# we do it this way so that removeLibs doesn't have to be case-sensitive
+# first add together everything that we want to ship
+allBinaries = a.binaries + umods + vpli + extraLibs
+# make sure removeNames is lowercase
+removeNames = [i.lower() for i in removeNames]
+# make new list of 3-element tuples of shipable things
+binaries = [i for i in allBinaries if i[0].lower() not in removeNames]
+
 coll = COLLECT( exe,
-               a.binaries + umods + vpli + extraLibs - removeLibs,
+               binaries,
                strip=0,
                name='distdscas3')
