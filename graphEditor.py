@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.59 2004/02/20 23:19:55 cpbotha Exp $
+# $Id: graphEditor.py,v 1.60 2004/02/20 23:38:51 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -561,9 +561,10 @@ class graphEditor:
         idx = -1
         
         updateSelectionAndStatusBar = False
-
-        # 'A' - 'z'
-        if key >= 65 and key <= 122:
+        validKeys = range(ord('A'), ord('Z')) + range(ord('a'), ord('z')) + \
+                    range(ord('0'), ord('9'))
+        
+        if key in validKeys:
             qss = qss + chr(key)
 
             idx = prefixSearch(qss)
@@ -581,6 +582,15 @@ class graphEditor:
             # place currently selected module at current mouse pos
             # and zero current qss
 
+            # first check that we have a valid mouse pos
+            cst = self._graphFrame.canvas.GetClientSizeTuple()
+            if event.GetX() < 0 or event.GetX() >= cst[0] or \
+               event.GetY() < 0 or event.GetY() >= cst[1]:
+                # just bail out of this function... the user is trying
+                # to place us ass-backwards out of the canvas
+                return
+            
+
             mlc = self._graphFrame.modulesListCtrl
             if mlc.GetSelectedItemCount():
                 for idx in range(mlc.GetItemCount()):
@@ -591,12 +601,18 @@ class graphEditor:
                         # break out of the for loop
                         break
 
+            # this is independent from the other things... the fact that the
+            # user is pressing enter doesn't necessarily mean that she was
+            # busy quick-typing.  so after we've handled, we can bail
+            return
+
         elif key == WXK_ESCAPE:
             idx = -1
             qss = ''
             updateSelectionAndStatusBar = True
 
         else:
+            # we don't want any other keys, let the others have them
             event.Skip()
 
 
@@ -606,16 +622,20 @@ class graphEditor:
                 self._graphFrame.modulesListCtrl.SetItemState(
                     idx, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
                 self._graphFrame.modulesListCtrl.EnsureVisible(idx)
+                # we only update the string if it was found
+                self._quickSearchString = qss
 
             else:
-                # deselect everything
-                for idx in range(
-                    self._graphFrame.modulesListCtrl.GetItemCount()):
-                    self._graphFrame.modulesListCtrl.SetItemState(
-                        idx, 0, wxLIST_STATE_SELECTED)
-                    
+                if qss == '':
+                    # this means the search was cancelled, so we have
+                    # to deselect everything and cancel the status bar disp
+                    for idx in range(
+                        self._graphFrame.modulesListCtrl.GetItemCount()):
+                        self._graphFrame.modulesListCtrl.SetItemState(
+                            idx, 0, wxLIST_STATE_SELECTED)
 
-            self._quickSearchString = qss
+                    self._quickSearchString = qss
+
             self._graphFrame.GetStatusBar().SetStatusText(
                 self._quickSearchString)
 
