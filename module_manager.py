@@ -77,26 +77,16 @@ class module_manager:
                           [bool(name in modules.module_list)]
             fullName = mtypePrefix + '.' + name
 
-            # determine whether this is a new import
-            if not sys.modules.has_key(fullName):
-                newModule = True
+            if mtypePrefix == 'userModules':
+                # the name userModules doesn't exist yet, so we have to
+                # do this assignment, emulating what an import would have
+                # done
+                userModules = self.importReload(fullName)
             else:
-                newModule = False
-                
-	    # import the correct module - we have to do this in anycase to
-            # get the thing into our local namespace
-            exec('import ' + fullName)
-            
-            # there can only be a reload if this is not a newModule
-            if not newModule:
-                if not hasattr(modules, '__importsub__') or \
-                   mtypePrefix == 'userModules':
-                    # we only reload if we're not running from an Installer
-                    # package (the __importsub__ check) OR if we are running
-                    # from Installer, but it's a userModule; there's no sense
-                    # in reloading a module from an Installer package as these
-                    # can never change in anycase
-                    exec('reload(' + fullName + ')')
+                # the name 'modules' does (as this module does an import
+                # modules), so we don't have bind the result of the
+                # importReload call, it's available via the existing binding
+                self.importReload(fullName)
                 
             print "imported: " + str(id(sys.modules[fullName]))
 	    # then instantiate the requested class
@@ -112,8 +102,64 @@ class module_manager:
 	# return the instance
 	return self.modules[-1]
 
+    def importReload(self, fullName):
+        """This will import and reload a module if necessary.  Use this only
+        for things in modules or userModules.
+
+        If we're NOT running installed, this will run import on the module.
+        If it's not the first time this module is imported, a reload will
+        be run straight after.
+
+        If we're running installed, reloading only makes sense for things in
+        userModules, so it's only done for these modules.  At the moment,
+        the stock Installer reload() is broken.  Even with my fixes, it doesn't
+        recover memory used by old modules, see:
+        http://trixie.triqs.com/pipermail/installer/2003-May/000303.html
+        This is one of the reasons we try to avoid unnecessary reloads.
+
+        You should use this as follows:
+        full = moduleManager.importReloadModule('full.path.to.my.module')
+        so that the module is actually brought into the calling namespace.
+        """
+
+        # this should yield modules or userModules
+        modulePrefix = fullName.split('.')[0]
+
+        # determine whether this is a new import
+        if not sys.modules.has_key(fullName):
+            newModule = True
+        else:
+            newModule = False
+                
+        # import the correct module - we have to do this in anycase to
+        # get the thing into our local namespace
+        exec('import ' + fullName)
+            
+        # there can only be a reload if this is not a newModule
+        if not newModule:
+            if not self.isInstalled() or \
+                   modulePrefix == 'userModules':
+                # we only reload if we're not running from an Installer
+                # package (the __importsub__ check) OR if we are running
+                # from Installer, but it's a userModule; there's no sense
+                # in reloading a module from an Installer package as these
+                # can never change in anycase
+                exec('reload(' + fullName + ')')
+
+        # we need to inject the import into the calling dictionary...
+        # importing my.module results in "my" in the dictionary, so we
+        # split at '.' and return the object bound to that name
+        return locals()[modulePrefix]
+
+    def isInstalled(self):
+        """Returns True if dscas3 is running from an Installed state.
+        Installed of course refers to being installed with Gordon McMillan's
+        Installer.  This can be used by dscas3 modules to determine whether
+        they should use reload or not.
+        """
+        return hasattr(modules, '__importsub__')
+
     def view_module(self, instance):
-        print dir(modules)
         instance.view()
     
     def delete_module(self, instance):

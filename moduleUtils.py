@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.4 2003/03/06 21:06:49 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.5 2003/05/04 02:01:53 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -62,8 +62,7 @@ def bindCSAEO(module, view_frame):
 
     # setup some hotkeys as well
     accel_table = wxAcceleratorTable(
-        [(wxACCEL_NORMAL, WXK_ESCAPE, wxID_CANCEL),
-         (wxACCEL_NORMAL, WXK_RETURN, wxID_OK)])
+        [(wxACCEL_NORMAL, WXK_ESCAPE, wxID_CANCEL)])
     view_frame.SetAcceleratorTable(accel_table)
 
 
