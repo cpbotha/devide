@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.19 2003/04/25 11:37:11 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.20 2003/04/28 11:26:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -73,6 +73,7 @@ class sliceDirection:
                     self._ipws.append(vtk.vtkImagePlaneWidget())
                     self._ipws[-1].SetInput(inputData)
                     self._ipws[-1].UserControlledLookupTableOn()
+                    self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
 
                 # now make sure they have the right lut and are synched
                 # with the main IPW

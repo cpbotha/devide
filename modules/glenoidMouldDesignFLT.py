@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.17 2003/04/25 16:49:42 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.18 2003/04/28 11:26:21 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -96,7 +96,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         if self._giaHumerus and self._giaGlenoid and \
            len(self._glenoidEdge) >= 6 and self._inputPolyData:
 
-            BUSY WITH glenoidEdgeImplicitFunction
+            # _glenoidEdgeImplicitFunction
             
             # construct eight planes with the insertion axis as mid-line
             # the planes should go somewhat further proximally than the
@@ -547,7 +547,13 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         return fbzPlane
 
     def _glenoidEdgeImplicitFunction(self, giaGlenoid, edgePoints):
-        FIXME CONTINUE HERE
+        """Given the on-glenoid point of the glenoid insertion axis and 6
+        points (in sequence) around the glenoid edge, this will construct
+        a vtk implicit function that can be used to check whether surface
+        points are inside or outside.
+        """
+
+        
 
     def _lineExtrudeHouse(self, edgeLine, cutPlane):
         """Extrude the house (square with triangle as roof) along edgeLine.
