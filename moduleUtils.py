@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.21 2004/05/10 09:12:06 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.22 2004/05/10 12:40:04 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -330,6 +330,7 @@ def setupVTKObjectProgress(d3module, obj, progressText):
     mm = d3module._moduleManager
     obj.AddObserver(
         'ProgressEvent', lambda vtko, name:
-        mm.genericProgressCallback(vtko.GetClassName(),
+        mm.genericProgressCallback(vtko,
+                                   vtko.GetClassName(),
                                    vtko.GetProgress(),
                                    progressText))

@@ -1,4 +1,4 @@
-# $Id: moduleUtilsITK.py,v 1.3 2004/03/25 12:32:10 cpbotha Exp $
+# $Id: moduleUtilsITK.py,v 1.4 2004/05/10 12:40:04 cpbotha Exp $
 
 import fixitk as itk
 
@@ -27,7 +27,7 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText):
     mm = dvModule._moduleManager
 
     def commandCallable():
-        mm.genericProgressCallback(
+        mm.genericProgressCallback(getattr(dvModule, objAttrString),
             nameOfObject, getattr(dvModule, objAttrString).GetProgress(),
             progressText)
 

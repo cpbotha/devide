@@ -38,6 +38,7 @@ class mainFrame(wxFrame):
         self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that even the longest of messages eek.")
         self.progressGauge = wxGauge(self.panel_1, -1, 100)
         self.progressRaiseCheckBox = wxCheckBox(self.panel_1, -1, "Raise this window when the progress is updated.")
+        self.blockExecutionCheckBox = wxCheckBox(self.panel_1, -1, "Block / interrupt network execution - CAUTION.")
 
         self.__set_properties()
         self.__do_layout()
@@ -53,16 +54,21 @@ class mainFrame(wxFrame):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         self.progressText.SetFont(wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
         self.progressGauge.SetBackgroundColour(wxColour(50, 50, 204))
+        self.progressRaiseCheckBox.SetToolTipString("Each time the progress is updated, this window will be brought to the front.  If you do not wish this behaviour, uncheck this box.")
         self.progressRaiseCheckBox.SetValue(1)
+        self.blockExecutionCheckBox.SetToolTipString("This will stop or shorten the execution of a DeVIDE network.  Uncheck to go back to the normal behaviour.  Sometimes it may be necessary to cycle this twice if the network starts up again.")
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: mainFrame.__do_layout
         sizer_1 = wxBoxSizer(wxVERTICAL)
         sizer_3 = wxBoxSizer(wxVERTICAL)
-        sizer_3.Add(self.progressText, 0, wxLEFT|wxRIGHT|wxTOP, 5)
-        sizer_3.Add(self.progressGauge, 0, wxLEFT|wxRIGHT|wxEXPAND, 5)
-        sizer_3.Add(self.progressRaiseCheckBox, 0, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5)
+        sizer_2 = wxBoxSizer(wxVERTICAL)
+        sizer_2.Add(self.progressText, 0, 0, 4)
+        sizer_2.Add(self.progressGauge, 0, wxEXPAND, 5)
+        sizer_2.Add(self.progressRaiseCheckBox, 0, wxTOP|wxEXPAND|wxALIGN_CENTER_VERTICAL, 7)
+        sizer_2.Add(self.blockExecutionCheckBox, 0, wxTOP, 4)
+        sizer_3.Add(sizer_2, 1, wxALL|wxEXPAND, 7)
         self.panel_1.SetAutoLayout(1)
         self.panel_1.SetSizer(sizer_3)
         sizer_3.Fit(self.panel_1)

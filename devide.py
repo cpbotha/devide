@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.31 2004/05/09 21:34:19 cpbotha Exp $
+# $Id: devide.py,v 1.32 2004/05/10 12:40:04 cpbotha Exp $
 
 DEVIDE_VERSION = '20040506'
 
@@ -121,6 +121,10 @@ class devide_app_t(wx.App):
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
                     self.aboutCallback)
 
+        wx.EVT_CHECKBOX(
+            self._mainFrame, self._mainFrame.blockExecutionCheckBox.GetId(),
+            self._handlerBlockExecution)
+
         self._mainFrame.Show(1)
         self.SetTopWindow(self._mainFrame)
 
@@ -223,6 +227,13 @@ class devide_app_t(wx.App):
     def get_appdir(self):
         return self.getAppDir()
 
+    def _handlerBlockExecution(self, event):
+        if self._mainFrame.blockExecutionCheckBox.GetValue():
+            self.moduleManager.disableExecution()
+
+        else:
+            self.moduleManager.enableExecution()
+
     def _handlerHelpContents(self, event):
         self.showHelp()
 
@@ -308,8 +319,17 @@ class devide_app_t(wx.App):
                         self._mainFrame.Raise()
 
                     # we want wx to update its UI, but it shouldn't accept any
-                    # user input, else things can get really crazy.
-                    wx.SafeYield()
+                    # user input, else things can get really crazy. -
+                    # we do keep interaction for the main window enabled,
+                    # but we disable all menus.
+                    menuCount = self._mainFrame.GetMenuBar().GetMenuCount()
+                    for menuPos in range(menuCount):
+                        self._mainFrame.GetMenuBar().EnableTop(menuPos, False)
+                        
+                    wx.SafeYield(win=self._mainFrame)
+
+                    for menuPos in range(menuCount):
+                        self._mainFrame.GetMenuBar().EnableTop(menuPos, True)
 
             # unset the mutex thingy
             self._inProgress.unlock()

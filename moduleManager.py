@@ -79,6 +79,8 @@ class moduleManager:
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inProgressCallback = mutex.mutex()
 
+        self._executionEnabled = True
+
     def close(self):
         """Iterates through each module and closes it.
 
@@ -165,6 +167,77 @@ class moduleManager:
         recursiveDirectoryD3MNSearch(os.path.join(appDir, 'segments'),
                                      None, segmentList)
         self.availableSegmentsList = segmentList
+
+    def disableExecution(self):
+        """Stop as much of the demand driven execution as possible.
+        """
+
+        self._executionEnabled = False
+        for moduleInstance, metaModule in self._moduleDict.items():
+            className = moduleInstance.__class__.__name__
+
+            # first disable all slice3dVWRs
+            if className == 'slice3dVWR':
+                # this will stop its RWI from rendering
+                moduleInstance.threedFrame.Enable(False)
+                moduleInstance.threedFrame.Show(0)
+
+            # now go through all the module's attributes calling
+            # SetAbortExecute() and SetAbortGenerateData() everywhere
+            for attrName in dir(moduleInstance):
+                obj = getattr(moduleInstance, attrName)
+                try:
+                    obj.SetAbortExecute(1)
+                except Exception:
+                    pass
+                else:
+                    print "Successfully called SetAbortExecute(1) on %s.%s" \
+                          % (moduleInstance, obj.GetClassName())
+
+                try:
+                    obj.SetAbortGenerateData(1)
+                except Exception:
+                    pass
+                else:
+                    print "Successfully called SetAbortGenerateData(1) on " \
+                          "%s.%s" \
+                          % (moduleInstance, obj.__class__)
+
+    def enableExecution(self):
+        """Restart all execution.
+        """
+
+        self._executionEnabled = True
+        # FIXME: we ONLY want to do this if we're not inProgress
+        for moduleInstance, metaModule in self._moduleDict.items():
+            className = moduleInstance.__class__.__name__
+
+            # first disable all slice3dVWRs
+            if className == 'slice3dVWR':
+                # this will restart the RWI
+                moduleInstance.threedFrame.Enable(True)
+
+            # now go through all the module's attributes calling
+            # SetAbortExecute() and SetAbortGenerateData() everywhere
+            for attrName in dir(moduleInstance):
+                obj = getattr(moduleInstance, attrName)
+                try:
+                    obj.SetAbortExecute(0)
+                except Exception:
+                    pass
+                else:
+                    print "Successfully called SetAbortExecute(0) on %s.%s" \
+                          % (moduleInstance, obj.GetClassName())
+
+                try:
+                    obj.SetAbortGenerateData(0)
+                except Exception:
+                    pass
+                else:
+                    print "Successfully called SetAbortGenerateData(0) on " \
+                          "%s.%s" \
+                          % (moduleInstance, obj.__class__)
+        
 
     def get_app_dir(self):
         return self._devide_app.get_appdir()
@@ -562,12 +635,31 @@ class moduleManager:
 
         return (pmsDict, connectionList)
 
-    def genericProgressCallback(self,
+    def genericProgressCallback(self, progressObject,
                                 progressObjectName, progress, progressText):
         """progress between 0.0 and 1.0.
         """
+
         
         if self._inProgressCallback.testandset():
+
+            # first check if execution has been disabled
+            # the following bit of code is risky: the ITK to VTK bridges
+            # seem to be causing segfaults when we abort too soon
+#             if not self._executionEnabled:
+#                 try:
+#                     progressObject.SetAbortExecute(1)
+#                 except Exception:
+#                     pass
+
+#                 try:
+#                     progressObject.SetAbortGenerateData(1)
+#                 except Exception:
+#                     pass
+                    
+#                 progress = 1.0
+#                 progressText = 'Execution ABORTED.'
+            
             progressP = progress * 100.0
             fullText = '%s: %s' % (progressObjectName, progressText)
             if abs(progressP - 100.0) < 0.01:
