@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.52 2003/10/05 00:08:17 cpbotha Exp $
+# $Id: dscas3.py,v 1.53 2003/10/05 19:29:58 cpbotha Exp $
 
 DSCAS3_VERSION = '20031006'
 
@@ -357,7 +357,7 @@ class dscas3_app_t(wxApp):
         http://cpbotha.net/phd/
         </p>
         <p>Unauthorised use or distribution strictly prohibited.
-        See LICENSE.txt in the installation directory for detailed terms of
+        See LICENSE.txt in the docs directory for detailed terms of
         use.
         </p>
         <p>
