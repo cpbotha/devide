@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.8 2004/03/11 10:50:04 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.9 2004/03/11 14:42:42 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -21,6 +21,7 @@ class sliceDirection:
                     'Hue Fusion' : 'hueFusion',
                     'Hue/Value Fusion' : 'hueValueFusion',
                     'Green Opacity Range' : 'greenOpacityRange',
+                    'Red Opacity Range' : 'redOpacityRange',
                     'Blue Opacity Range' : 'blueOpacityRange',
                     'Hue Opacity Range' : 'hueOpacityRange'}
 
@@ -638,6 +639,12 @@ class sliceDirection:
             
         elif mode == 'greenOpacityRange':
             lut.SetHueRange((greenHue, greenHue))
+            lut.SetAlphaRange((0.0, 1.0))
+            lut.SetValueRange((1.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'redOpacityRange':
+            lut.SetHueRange((redHue, redHue))
             lut.SetAlphaRange((0.0, 1.0))
             lut.SetValueRange((1.0, 1.0))
             lut.SetSaturationRange((1.0, 1.0))
