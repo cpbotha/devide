@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.40 2003/06/24 16:51:53 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.41 2003/06/27 13:08:52 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -74,7 +74,8 @@ class sliceDirection:
             mapper.ScalarVisibilityOff()
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.GetProperty().SetColor(0.0, 1.0, 0.0)
+            c = self._slice3dViewer._tdObjects.getObjectColour(contourObject)
+            actor.GetProperty().SetColor(c)
             actor.GetProperty().SetInterpolationToFlat()
 
             # add it to the renderer
@@ -665,8 +666,21 @@ class tdObjects:
         return objs
 
     def getContourObjects(self):
+        """Returns a list of objects that have contouring activated.
+        """
         return [o['tdObject'] for o in self._tdObjectsDict.values()
                 if o['contour']]
+
+    def getObjectColour(self, tdObject):
+        """Given tdObject, this will return that object's current colour
+        in the scene.  If the tdObject doesn't exist in our list, it gets
+        green by default.
+        """
+        
+        try:
+            return self._tdObjectsDict[tdObject]['colour']
+        except:
+            return (0.0, 1.0, 0.0)
 
     def _handlerObjectContour(self, event):
         objs = self._getSelectedObjects()
