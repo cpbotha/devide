@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.1 2004/02/22 19:09:00 cpbotha Exp $
+# $Id: implicits.py,v 1.2 2004/02/22 21:15:31 cpbotha Exp $
 #
 
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -9,29 +9,26 @@ import wx
 # -------------------------------------------------------------------------
 
 class implicits(object, s3dcGridMixin):
-    _gridCols = [('Point Name', 0), ('World', 150), ('Discrete', 100),
-                 ('Value', 0)]
+    _gridCols = [('Name', 0), ('Type', 0), ('Enabled', 100),
+                 ('Interaction', 0)]
     _gridNameCol = 0
-    _gridWorldCol = 1
-    _gridDiscreteCol = 2
-    _gridValueCol = 3
+    _gridTypeCol = 1
+    _gridEnabledCol = 2
+    _gridInteractionCol = 3
 
-    def __init__(self, slice3dVWRThingy, pointsGrid):
+    def __init__(self, slice3dVWRThingy, implicitsGrid):
         self.slice3dVWR = slice3dVWRThingy
-        self._grid = pointsGrid
+        self._grid = implicitsGrid
 
-        self._pointsList = []
+        #self._pointsList = []
 
         self._initialiseGrid()
-
-        # this will be passed on as input to the next component
-        self.outputSelectedPoints = outputSelectedPoints()
 
         self._bindEvents()
 
         # fill out our drop-down menu
         self._disableMenuItems = self._appendGridCommandsToMenu(
-            self.slice3dVWR.controlFrame.pointsMenu,
+            self.slice3dVWR.controlFrame.implicitsMenu,
             self.slice3dVWR.controlFrame, disable=True)
 
     def close(self):
@@ -43,8 +40,9 @@ class implicits(object, s3dcGridMixin):
         """
 
         commandsTuple = [
-            ('&Store Point', 'Store the current cursor as point',
-             self._handlerStoreCursorAsPoint, False),
+            ('&Create Implicit', 'Create a new implicit with the currently '
+             'selected name and type',
+             self._handlerCreateImplicit, False),
             ('---',),
             ('Select &All', 'Select all slices',
              self._handlerPointsSelectAll, False),
@@ -74,8 +72,8 @@ class implicits(object, s3dcGridMixin):
         controlFrame = self.slice3dVWR.controlFrame
         
         # the store button
-        wx.EVT_BUTTON(controlFrame, controlFrame.sliceStoreButtonId,
-                      self._handlerStoreCursorAsPoint)
+        wx.EVT_BUTTON(controlFrame, controlFrame.createImplicitButtonId,
+                      self._handlerCreateImplicit)
 
 
         wx.grid.EVT_GRID_CELL_RIGHT_CLICK(
@@ -129,10 +127,10 @@ class implicits(object, s3dcGridMixin):
         grid.
         """
 
-        pmenu = wx.Menu('Points Context Menu')
+        imenu = wx.Menu('Implicits Context Menu')
 
-        self._appendGridCommandsToMenu(pmenu, self._grid)
-        self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
+        self._appendGridCommandsToMenu(imenu, self._grid)
+        self._grid.PopupMenu(imenu, gridEvent.GetPosition())
 
     def _handlerPointsRename(self, event):
         rslt = wx.GetTextFromUser(
@@ -166,14 +164,8 @@ class implicits(object, s3dcGridMixin):
         for idx in self._grid.GetSelectedRows():
             self._pointsList[idx]['pointWidget'].Off()
         
-    def _handlerStoreCursorAsPoint(self, event):
-        """Call back for the store cursor button.
-
-        Calls store cursor method on [x,y,z,v].
-        """
-        self._storeCursor(self.slice3dVWR.sliceDirections.currentCursor)
-
-
+    def _handlerCreateImplicit(self, event):
+        pass
 
     def hasWorldPoint(self, worldPoint):
         worldPoints = [i['world'] for i in self._pointsList]

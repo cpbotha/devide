@@ -1,5 +1,5 @@
 # shared.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: shared.py,v 1.2 2003/10/17 15:59:10 cpbotha Exp $
+# $Id: shared.py,v 1.3 2004/02/22 21:15:31 cpbotha Exp $
 #
 
 import wx
@@ -52,6 +52,8 @@ class s3dcGridMixin(object):
                                        commandsTuple, disable=True):
         """Appends the slice grid commands to a menu.  This can be used
         to build up the context menu or the drop-down one.
+
+        Returns a list with bindings to menu items that have to be disabled.
         """
 
         disableList = []

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.12 2004/01/15 11:01:21 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.13 2004/02/22 21:15:31 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -18,11 +18,14 @@ import modules.Viewers.slice3dVWRmodules.selectedPoints
 reload(modules.Viewers.slice3dVWRmodules.selectedPoints)
 import modules.Viewers.slice3dVWRmodules.tdObjects
 reload(modules.Viewers.slice3dVWRmodules.tdObjects)
+import modules.Viewers.slice3dVWRmodules.implicits
+reload(modules.Viewers.slice3dVWRmodules.implicits)
 
 
 from modules.Viewers.slice3dVWRmodules.sliceDirections import sliceDirections
 from modules.Viewers.slice3dVWRmodules.selectedPoints import selectedPoints
 from modules.Viewers.slice3dVWRmodules.tdObjects import tdObjects
+from modules.Viewers.slice3dVWRmodules.implicits import implicits
 
 import time
 import vtk
@@ -108,6 +111,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
                                     self.controlFrame.objectsListGrid)
+
+        self._implicits = implicits(self,
+                                    self.controlFrame.implicitsGrid)
 
     #################################################################
     # module API methods
