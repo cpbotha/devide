@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.6 2003/06/16 15:22:01 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.7 2003/09/01 20:50:18 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -26,6 +26,13 @@ text-labels and their associated controls should be 3 pixels apart.
 
 Since it makes things with sizers much easier, you can do 8 instead of 7.
 You'll see why. :)
+
+IMPORTANT TIP:
+
+Always start with a frame, top-level sizer, panel, sizer in panel and
+then a single sizer in that sizer.  This last sizer will contain
+everything and make it possible for us to make a 7 pixel border around
+the edge.  Trust me on this.
 
 NAMING CONVENTION
 -----------------
