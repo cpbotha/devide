@@ -17,15 +17,21 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
 
         # we'll be playing around with some vtk objects, this could
         # be anything
+        self._geometryFilter = vtk.vtkImageDataGeometryFilter()
         self._reconstructionFilter = vtk.vtkSurfaceReconstructionFilter()
         self._mc = vtk.vtkMarchingCubes()
         self._mc.SetInput(self._reconstructionFilter.GetOutput())
         self._mc.SetValue(0, 0.0)
 
+        moduleUtils.setupVTKObjectProgress(self, self._geometryFilter,
+                                           'Extracting geometry...')
         moduleUtils.setupVTKObjectProgress(self, self._reconstructionFilter,
                                            'Reconstructing...')
         moduleUtils.setupVTKObjectProgress(self, self._mc,
                                            'Extracting surface...')
+
+        self._iObj = self._geometryFilter
+        self._oObj = self._geometryFilter
         
         self._viewFrame = self._createViewFrame({'reconstructionFilter' :
                                                  self._reconstructionFilter,
@@ -43,18 +49,21 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
         # get rid of our reference
         del self._reconstructionFilter
         del self._mc
+        del self._geometryFilter
+        del self._iObj
+        del self._oObj
 
     def getInputDescriptions(self):
 	return ('vtkImageData',)
 
     def setInput(self, idx, inputStream):
-        self._reconstructionFilter.SetInput(inputStream)
+        self._iObj.SetInput(inputStream)
 
     def getOutputDescriptions(self):
-        return (self._mc.GetOutput().GetClassName(),)
+        return (self._oObj.GetOutput().GetClassName(),)
 
     def getOutput(self, idx):
-        return self._mc.GetOutput()
+        return self._oObj.GetOutput()
 
     def logicToConfig(self):
         pass
@@ -69,7 +78,7 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
         pass
 
     def executeModule(self):
-        self._mc.Update()
+        self._oObj.Update()
 
     def view(self, parent_window=None):
         self._viewFrame.Show(True)
