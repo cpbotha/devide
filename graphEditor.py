@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.48 2003/10/05 17:30:27 cpbotha Exp $
+# $Id: graphEditor.py,v 1.49 2003/10/15 21:58:00 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -132,7 +132,7 @@ class graphEditor:
                             self.treeCtrlBeginDragHandler)
 
         # setup the canvas...
-        self._graphFrame.canvas.SetVirtualSize((1024, 1024))
+        self._graphFrame.canvas.SetVirtualSize((2048, 2048))
         self._graphFrame.canvas.SetScrollRate(20,20)
 
         # the canvas is a drop target
@@ -184,7 +184,9 @@ class graphEditor:
         if itemText.startswith(modp):
             self.createModuleAndGlyph(x, y, itemText[len(modp):])
         elif itemText.startswith(segp):
-            self._loadAndRealiseNetwork(itemText[len(segp):], (x,y),
+            # we have to convert the event coords to real coords
+            rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
+            self._loadAndRealiseNetwork(itemText[len(segp):], (rx,ry),
                                         reposition=True)
 
 
@@ -286,6 +288,11 @@ class graphEditor:
         return co
     
     def createModuleAndGlyph(self, x, y, moduleName):
+        """Create a DSCAS3 and a corresponding glyph at window event
+        position x,y.  x, y will be converted to real (canvavs-absolute)
+        coordinates internally.
+        """
+        
         # check that it's a valid module name
         if moduleName in self._availableModuleList:
             # we have a valid module, we should try and instantiate
@@ -392,9 +399,11 @@ class graphEditor:
             # itself, e.g. modules.Filters.doubleThreshold
             mParts = moduleName.split('.')
             if len(mParts) == 2:
+                # this is one level deep, e.g. modules.blaatFilter
                 lastName = mParts[1]
                 catNode = rootDict[mParts[0]]
             else:
+                # this is two levels deep, e.g. modules.Filters.maatFilter
                 lastName = mParts[2]
                 try:
                     catNode = catDict[mParts[1]]
@@ -784,6 +793,9 @@ class graphEditor:
                                reposition=False):
         """Attempt to load (i.e. unpickle) a D3N network file and recreate
         this network on the canvas.
+
+        The position has to be real (i.e. canvas-absolute and NOT event)
+        coordinates.
         """
 
         try:
