@@ -1,9 +1,10 @@
-# $Id: vtk_slice_vwr.py,v 1.18 2002/05/08 12:04:03 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.19 2002/05/12 01:51:16 cpbotha Exp $
 
 from module_base import module_base
 import vtk
 from wxPython.wx import *
 from wxPython.xrc import *
+from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 
 class vtk_slice_vwr(module_base):
     def __init__(self, module_manager):
@@ -13,7 +14,7 @@ class vtk_slice_vwr(module_base):
         self._num_orthos = 3
         # use list comprehension to create list keeping track of inputs
 	self._inputs = [{'Connected' : None, 'vtkActor' : None}
-                       for i in range(self.num_inputs)]
+                       for i in range(self._num_inputs)]
         # then the window containing the renderwindows
 	self._view_frame = None
         # the render windows themselves (4, 1 x 3d and 3 x ortho)
@@ -27,7 +28,7 @@ class vtk_slice_vwr(module_base):
         # 3 element list (one per direction) of n-element lists of
         # ortho_pipelines, where n is the number of overlays,
         # where n can vary per direction
-        self._ortho_pipes = [[] for i in range(self.num_orthos)]
+        self._ortho_pipes = [[] for i in range(self._num_orthos)]
 
         # axial, sagittal, coronal reslice axes
         self._InitialResliceAxes = [{'axes' : (1,0,0, 0,1,0, 0,0,1),
@@ -41,7 +42,8 @@ class vtk_slice_vwr(module_base):
 	
     def close(self):
         for idx in range(self._num_inputs):
-            self.set_input(idx, None)
+            pass
+            #self.set_input(idx, None)
 	if hasattr(self, '_renderers'):
 	    del self._renderers
 	if hasattr(self, '_rws'):
@@ -59,64 +61,129 @@ class vtk_slice_vwr(module_base):
                                    title='slice viewer')
         EVT_CLOSE(self._view_frame,
                   lambda e, s=self: s._view_frame.Show(false))
-        
-	# paned widget with two panes, one for 3d window the other for ortho
-        # views
-	# default vertical (i.e. divider is horizontal line)
-	# hull width and height refer to the whole thing!
-	rws_pane = Pmw.PanedWidget(self.rw_window,
-                                   hull_width=600, hull_height=400)
-	rws_pane.add('top3d', size=200)
-        rws_pane.add('orthos', size=200)	
 
-	# the 3d window
-	self.rws.append(vtkTkRenderWidget(rws_pane.pane('top3d'),
-                                          width=600, height=200))
-	self.rw_lastxys.append({'x' : 0, 'y' : 0})
-	self.renderers.append(vtkRenderer())
-        
-	# add last appended renderer to last appended vtkTkRenderWidget
-	self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
-	self.rws[-1].pack(side=TOP, fill=BOTH, expand=1) # 3d window
-	
-	# pane containing three ortho views
-	ortho_pane = Pmw.PanedWidget(rws_pane.pane('orthos'),
-                                     orient='horizontal',
-                                     hull_width=600, hull_height=150)
-	ortho_pane.pack(side=TOP, fill=BOTH, expand=1)
-	
-	ortho_pane.add('ortho0', size=200)
-	ortho_pane.add('ortho1', size=200)
-	ortho_pane.add('ortho2', size=200)	
-	for i in range(self.num_orthos):
-	    self.rws.append(vtkTkRenderWidget(ortho_pane.pane('ortho%d' % (i)),
-                                              width=200, height=150))
-	    self.rw_lastxys.append({'x' : 0, 'y' : 0})	    
-	    self.renderers.append(vtkRenderer())
-	    # add last appended renderer to last appended vtkTkRenderWidget
-	    self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
 
-	    self.rws[-1].pack(side=TOP, fill=BOTH, expand=1)
-	    Tkinter.Button(ortho_pane.pane('ortho%d' % (i)), text='blah').\
-                                                     pack(side=TOP)
+        # panel inside the frame
+        panel = wxPanel(self._view_frame, id=-1)
+
+        # top level split window
+        tl_splitwin = wxSplitterWindow(parent=panel, id=-1, size=(640,480))
+        
+        # top split window with 3d and ortho view
+        #########################################
+        top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
+        # 3d view
+        td_panel = wxPanel(top_splitwin, id=-1)
+        self._rws.append(wxVTKRenderWindow(td_panel, -1))
+        self._renderers.append(vtk.vtkRenderer())
+        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        td_panel_sizer = wxBoxSizer(wxVERTICAL)
+        td_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        td_panel.SetAutoLayout(true)
+        td_panel.SetSizer(td_panel_sizer)
+        # ortho view
+        o0_panel = wxPanel(top_splitwin, id=-1)
+        self._rws.append(wxVTKRenderWindow(o0_panel, -1))
+        self._renderers.append(vtk.vtkRenderer())
+        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        o0_panel_sizer = wxBoxSizer(wxVERTICAL)
+        o0_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        o0_panel.SetAutoLayout(true)
+        o0_panel.SetSizer(o0_panel_sizer)
+        # then split the splitwin
+        top_splitwin.SplitVertically(td_panel, o0_panel, 320)
+
+        # bottom split window with two (2) ortho views
+        ##############################################
+        bottom_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
+        # first ortho
+        o1_panel = wxPanel(bottom_splitwin, id=-1)
+        self._rws.append(wxVTKRenderWindow(o1_panel, -1))
+        self._renderers.append(vtk.vtkRenderer())
+        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        o1_panel_sizer = wxBoxSizer(wxVERTICAL)
+        o1_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        o1_panel.SetAutoLayout(true)
+        o1_panel.SetSizer(o1_panel_sizer)
+        # second ortho
+        o2_panel = wxPanel(bottom_splitwin, id=-1)
+        self._rws.append(wxVTKRenderWindow(o2_panel, -1))
+        self._renderers.append(vtk.vtkRenderer())
+        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        o2_panel_sizer = wxBoxSizer(wxVERTICAL)
+        o2_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        o2_panel.SetAutoLayout(true)
+        o2_panel.SetSizer(o2_panel_sizer)
+        # then split the splitwin
+        bottom_splitwin.SplitVertically(o1_panel, o2_panel, 320)
+
+        # finally split the top level split win
+        #######################################
+        tl_splitwin.SplitHorizontally(top_splitwin, bottom_splitwin, 240)
+
+
+        tl_sizer = wxBoxSizer(wxVERTICAL)
+        tl_sizer.Add(tl_splitwin, option=1, flag=wxEXPAND)
+
+        # the panel will make use of the sizer to calculate layout
+        panel.SetAutoLayout(true)
+        panel.SetSizer(tl_sizer)
+        # tell the frame to size itself around us
+        tl_sizer.Fit(self._view_frame)
+        tl_sizer.SetSizeHints(self._view_frame)
+        
+
+        
+# 	# the 3d window
+# 	self.rws.append(vtkTkRenderWidget(rws_pane.pane('top3d'),
+#                                           width=600, height=200))
+# 	self.rw_lastxys.append({'x' : 0, 'y' : 0})
+# 	self.renderers.append(vtkRenderer())
+        
+# 	# add last appended renderer to last appended vtkTkRenderWidget
+# 	self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
+# 	self.rws[-1].pack(side=TOP, fill=BOTH, expand=1) # 3d window
+	
+# 	# pane containing three ortho views
+# 	ortho_pane = Pmw.PanedWidget(rws_pane.pane('orthos'),
+#                                      orient='horizontal',
+#                                      hull_width=600, hull_height=150)
+# 	ortho_pane.pack(side=TOP, fill=BOTH, expand=1)
+	
+# 	ortho_pane.add('ortho0', size=200)
+# 	ortho_pane.add('ortho1', size=200)
+# 	ortho_pane.add('ortho2', size=200)	
+# 	for i in range(self.num_orthos):
+# 	    self.rws.append(vtkTkRenderWidget(ortho_pane.pane('ortho%d' % (i)),
+#                                               width=200, height=150))
+# 	    self.rw_lastxys.append({'x' : 0, 'y' : 0})	    
+# 	    self.renderers.append(vtkRenderer())
+# 	    # add last appended renderer to last appended vtkTkRenderWidget
+# 	    self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
+
+# 	    self.rws[-1].pack(side=TOP, fill=BOTH, expand=1)
+# 	    Tkinter.Button(ortho_pane.pane('ortho%d' % (i)), text='blah').\
+#                                                      pack(side=TOP)
 	    
-	rws_pane.pack(side=TOP, fill=BOTH, expand=1)
+# 	rws_pane.pack(side=TOP, fill=BOTH, expand=1)
+
+        self._view_frame.Show(true)
 	
-	# bind event handlers
-	for rw in self.rws[1:]:
-	    # we need to keep track of a last mouse activity
-	    rw.bind('<Any-ButtonPress>', lambda e,s=self,rw=rw:
-                    s.rw_starti_cb(e.x,e.y,rw))
-	    rw.bind('<Any-ButtonRelease>', lambda e,s=self,rw=rw:
-                    s.rw_endi_cb(e.x,e.y,rw))
-	    # we're going to use this to change current slice
-	    rw.bind('<B1-Motion>', lambda e,s=self,rw=rw:
-                    s.rw_slice_cb(e.x,e.y,rw))
+# 	# bind event handlers
+# 	for rw in self.rws[1:]:
+# 	    # we need to keep track of a last mouse activity
+# 	    rw.bind('<Any-ButtonPress>', lambda e,s=self,rw=rw:
+#                     s.rw_starti_cb(e.x,e.y,rw))
+# 	    rw.bind('<Any-ButtonRelease>', lambda e,s=self,rw=rw:
+#                     s.rw_endi_cb(e.x,e.y,rw))
+# 	    # we're going to use this to change current slice
+# 	    rw.bind('<B1-Motion>', lambda e,s=self,rw=rw:
+#                     s.rw_slice_cb(e.x,e.y,rw))
 
 
     def get_input_descriptions(self):
 	# concatenate it num_inputs times (but these are shallow copies!)
-	return self.num_inputs * \
+	return self._num_inputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
     
     def setup_ortho_plane(self, cur_pipe):
@@ -214,12 +281,12 @@ class vtk_slice_vwr(module_base):
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
             if input_stream.GetClassName() == 'vtkPolyData':
-		mapper = vtkPolyDataMapper()
+		mapper = vtk.vtkPolyDataMapper()
 		mapper.SetInput(input_stream)
-		self.inputs[idx]['vtkActor'] = vtkActor()
-		self.inputs[idx]['vtkActor'].SetMapper(mapper)
-		self.renderers[0].AddActor(self.inputs[idx]['vtkActor'])
-		self.inputs[idx]['Connected'] = 'vtkPolyData'
+		self._inputs[idx]['vtkActor'] = vtk.vtkActor()
+		self._inputs[idx]['vtkActor'].SetMapper(mapper)
+		self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
+		self._inputs[idx]['Connected'] = 'vtkPolyData'
             elif input_stream.GetClassName() == 'vtkStructuredPoints':
                 # find the maximum number of layers
                 #max([len(i) for i in self.ortho_pipes])
