@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.31 2003/05/04 21:24:28 cpbotha Exp $
+# $Id: __init__.py,v 1.32 2003/05/13 10:33:31 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -20,5 +20,6 @@ module_list = ['contourFLT',
                'vtkPolyDataRDR',
                'vtkPolyDataWRT',
                'vtkStructPtsRDR',               
-               'vtkStructPtsWRT']
+               'vtkStructPtsWRT',
+               'wsMeshSmoothFLT']
 

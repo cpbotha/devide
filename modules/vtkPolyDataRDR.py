@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.10 2003/05/02 16:46:51 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.11 2003/05/13 10:33:31 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -49,9 +49,6 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
 
-        # finally we can display the GUI
-        self._viewFrame.Show(1)
-	
     def close(self):
         del self._reader
         # call the close method of the mixin
