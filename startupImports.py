@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.7 2003/12/18 14:27:46 cpbotha Exp $
+# $Id: startupImports.py,v 1.8 2004/02/27 10:35:06 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -29,7 +29,7 @@ if dl and (os.name == 'posix'):
 def defaultProgressMethod(percentage, message):
     print "%s [%3.2f]" % (message, percentage)
 
-def doImports(progressMethod=defaultProgressMethod, useInsight=True):
+def doImports(progressMethod, mainConfig):
     importList = [('vtk.common', 'Loading VTK Common.'),
                   ('vtk.filtering', 'Loading VTK Filtering.'),
                   ('vtk.io', 'Loading VTK IO.'),
@@ -46,7 +46,7 @@ def doImports(progressMethod=defaultProgressMethod, useInsight=True):
                   ('fixitk.itkAlgorithmsPythonTopLevel', 'Loading ITK Algorithms'),
                   ('fixitk.itkIOPythonTopLevel', 'Loading ITK IO')]
 
-    if not useInsight:
+    if not mainConfig.useInsight or not mainConfig.itkPreImport:
         # remove ITK things from importList
         importList = [i for i in importList if
                       not i[0].startswith('fixitk') and

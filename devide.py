@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.9 2004/02/26 08:31:25 cpbotha Exp $
+# $Id: devide.py,v 1.10 2004/02/27 10:35:06 cpbotha Exp $
 
 DEVIDE_VERSION = '20040225'
 
@@ -28,6 +28,7 @@ class mainConfigClass(object):
     def __init__(self):
         import defaults
         self.useInsight = defaults.USE_INSIGHT
+        self.itkPreImport = True
         
         self._parseCommandLine()
 
@@ -35,13 +36,15 @@ class mainConfigClass(object):
         print "-h or --help               : Display this message."
         print "--insight or --itk         : Use ITK-based modules."
         print "--no-insight or --no-itk   : Do not use ITK-based modules."
+        print "--no-itk-preimport         : Do not pre-import ITK."
 
     def _parseCommandLine(self):
         try:
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-itk', 'no-insight', 'itk', 'insight'])
+                ['help', 'no-itk', 'no-insight', 'itk', 'insight',
+                 'no-itk-preimport'])
         except getopt.GetoptError,e:
             self.dispUsage()
             sys.exit(1)
@@ -56,6 +59,9 @@ class mainConfigClass(object):
 
             elif o in ('--no-itk', '--no-insight'):
                 self.useInsight = False
+
+            elif o in ('--no-itk-preimport',):
+                self.itkPreImport = False
 
 # ---------------------------------------------------------------------------
 class devide_app_t(wx.App):
@@ -116,7 +122,7 @@ class devide_app_t(wx.App):
         # pre-import VTK and optionally ITK (these are BIG libraries)
         import startupImports
         startupImports.doImports(
-            self.setProgress, useInsight=self.mainConfig.useInsight)
+            self.setProgress, mainConfig=self.mainConfig)
 
         # perform post initialisation and pre-loading imports
         postWxInitImports()
