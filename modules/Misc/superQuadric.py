@@ -1,4 +1,4 @@
-# $Id: superQuadric.py,v 1.1 2004/03/07 15:45:13 cpbotha Exp $
+# $Id: superQuadric.py,v 1.2 2004/03/07 20:11:30 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -8,7 +8,7 @@ import vtk
 class superQuadric(scriptedConfigModuleMixin, moduleBase):
     """Generates a SuperQuadric implicit function and polydata as outputs.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -81,7 +81,6 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         del self._superquadric
         
     def executeModule(self):
-        self._superquadric.Update()
         self._superquadricSource.Update()
 
     def getInputDescriptions(self):

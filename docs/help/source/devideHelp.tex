@@ -61,6 +61,8 @@ This is the user manual and help file for the DeVIDE software package.
 DeVIDE is the Delft Visualisation and Image processing Development
 Environment.
 
+This manual is in a very early stage of development. :)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Graph Editor}
 \pagenumbering{arabic}%
@@ -107,9 +109,77 @@ the module you want is highlighted, press the ``Enter'' key to place
 it.
 
 \section{A small sample network}
-The Graph Editor is explained by putting together a simple network for
-the creating of a volume and the subsequent extraction of an
-iso-surface from the synthesised volume.
+The Graph Editor is introduced by putting together a simple network for
+rendering the 3D 0-surface of a Super Quadric.  It's far simpler than
+it sounds.
+
+\subsection{Constructing the network}
+Start by building the network shown in figure \ref{figGFN}.  First
+select the ``Sources'' category on the top left of the Graph Editor.
+Drag and drop the ``superQuadric'' module from the modules list on the
+bottom left to the canvas.  You should see the ``superQuadric'' glyph
+being created.
+
+\begin{figure}
+$$\image{5cm;0cm}{figures/geFirstNetwork}$$
+\caption{Your first DeVIDE network.}\label{figGFN}
+\end{figure}
+
+Now do the same for the ``slice3dVWR'' module in the ``Viewers''
+category.  Note that you can select multiple categories by holding the
+Shift key and clicking a category (this will select all categories between the
+previous selected category and your current click) or holding the
+control key and clicking (this will select the currently clicked
+module along with any previously selected modules).  The module list
+will contain all modules in all selected categories.  The modules are
+always alphabetically sorted.
+
+Connect the second output of the ``superQuadric'' glyph to any input
+of the ``slice3dVWR'' glyph by dragging the mouse, with the left
+button depressed, from the output port to the input port.  Note that
+hovering the mouse pointer over any port shows more information about
+that port in the status bar of the Graph Editor.
+
+\subsection{Admiring your results}
+Right-click on the slice3dVWR module and select ``View-Configure'' to
+see the 3D surface representing the 0-surface of the generated Super
+Quadric.  Note that this is how one activates the graphical interface
+of any glyph on the canvas.  You can rotate your viewpoint around the
+generated 3D object by dragging with your left mouse button.  Dragging
+with the right button will zoom.  Dragging with the middle button will
+pan the viewpoint.
+
+The network can be saved by selecting ``Save'' from the ``File''
+menu.  The default extension for a DeVIDE network is .dvn.
+
+\subsection{Warping the Super Quadric}
+The slice3dVWR is a very special DeVIDE module.  Because of this, its
+View/Config interface is non-standard.  Right click on the
+``superQuadric'' glyph and select ``View-Config'' to see a more
+standard user interface.  This interface is shown in figure
+\ref{figSuperQuadricView}.
+
+\begin{figure}
+$$\image{5cm;0cm}{figures/superQuadricView}$$
+\caption{The superQuadric View/Config window.}\label{figSuperQuadricView}
+\end{figure}
+
+Most module View/Config windows have the set of buttons at the
+bottom.  If you make any changes to any of the module parameters, you
+have to click on the ``Apply'' button (in which case the parameters
+will be transferred to the underlying logic) or the ``Execute''
+button, (in which case the new parameters will be transferred to the
+underlying logic and the module will be asked to re-perform its
+executing with the modified paramaters).  Clicking on the ``Sync''
+button will transfer all parameters from the underlying logic to the
+GUI.  In other words, if you've made changes to the parameters but you
+would like to revert them, and you haven't applied them yet, click on
+the ``Sync'' button to revert.
+
+Change the ``Phi Roundness'' parameter to $3.0$ and click on
+``Execute'' or simple press the Enter key.  Pressing ``Enter'' is
+effectively the same as clicking on ``Execute''.  See the results of
+your changes in the slice3dVWR window.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Special modules}\label{secSpecialModules}
@@ -117,9 +187,17 @@ iso-surface from the synthesised volume.
 \setheader{{\it CHAPTER \thechapter}}{}{}{}{}{{\it CHAPTER \thechapter}}%
 \setfooter{\thepage}{}{}{}{}{\thepage}%
 
-
-
 \section{The slice3dVWR}
+TBD.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Useful patterns}
+This chapter shows some useful patterns, i.e. networks that solve
+specific problems.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Creating new modules}
+TBD.
 
 %\bibliography{refs}
 %\addcontentsline{toc}{chapter}{Bibliography}
