@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.21 2002/05/12 22:01:33 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.22 2002/05/13 16:55:23 cpbotha Exp $
 
 from module_base import module_base
 import vtk
@@ -7,6 +7,106 @@ from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 
 # ---------------------------------------------------------------------------
+class wxVTKRenderWindow3D(wxVTKRenderWindow):
+    def __init__(self, parent, ID, *args, **kw):
+        wxVTKRenderWindow.__init__(self, parent, ID, args, kw)
+        self._RenderWindowInteractor = vtk.vtkGenericRenderWindowInteractor()
+        self._RenderWindowInteractor.AddObserver('CreateTimerEvent',
+                                                 self._rwi_timer_cb)
+        self._RenderWindowInteractor.AddObserver('DestroyTimerEvent',
+                                                 self._rwi_timer_cb)
+        self._RenderWindowInteractor.SetRenderWindow(self.GetRenderWindow())
+        self._RenderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
+
+        tid = wxNewId()
+        self._timer = wxTimer(self, tid)
+        EVT_TIMER(self, tid, self._wx_timer_cb)
+
+    def GetInteractor(self):
+        return self._RenderWindowInteractor
+
+    def _set_mouse_event_information(self, event):
+        rwi = self._RenderWindowInteractor
+        (rx, ry) = self._RenderWindow.GetSize()
+        rwi.SetEventInformation(event.GetX(), ry - event.GetY(),
+                                event.ControlDown(), event.ShiftDown(),
+                                chr(0), 0, '')
+
+    def _set_kb_event_information(self, event):
+        rwi = self._RenderWindowInteractor
+        (rx, ry) = self._RenderWindow.GetSize()
+        if event.GetKeyCode() < 256:
+            keysym = chr(event.GetKeyCode())
+            repeat = 1
+        else:
+            keysym = chr(0)
+            repeat = 0
+            
+        rwi.SetEventInformation(event.GetX(), ry - event.GetY(),
+                                event.ControlDown(), event.ShiftDown(),
+                                keysym, repeat, '')
+        
+
+    def _OnButtonDown(self, event):
+        self._set_mouse_event_information(event)
+        if event.LeftDown():
+            self._RenderWindowInteractor.LeftButtonPressEvent()
+        elif event.RightDown():
+            self._RenderWindowInteractor.RightButtonPressEvent()
+        elif event.MiddleDown():
+            self._RenderWindowInteractor.MiddleButtonPressEvent()
+
+    def _OnButtonUp(self, event):
+        self._set_mouse_event_information(event)
+        if event.LeftUp():
+            self._RenderWindowInteractor.LeftButtonReleaseEvent()
+        elif event.RightUp():
+            self._RenderWindowInteractor.RightButtonReleaseEvent()
+        elif event.MiddleUp():
+            self._RenderWindowInteractor.MiddleButtonReleaseEvent()
+
+    def _OnEnterWindow(self, event):
+        self.OnEnterWindow(event)
+        self._set_mouse_event_information(event)
+        self._RenderWindowInteractor.EnterEvent()
+
+    def _OnLeaveWindow(self, event):
+        self.OnLeaveWindow(event)
+        self._set_mouse_event_information(event)
+        self._RenderWindowInteractor.LeaveEvent()
+        
+
+    def OnMotion(self, event):
+        self._set_mouse_event_information(event)
+        self._RenderWindowInteractor.MouseMoveEvent()
+
+    def OnKeyDown(self, event):
+        self._set_kb_event_information(event)
+        #self._RenderWindowInteractor.KeyPressEvent()
+        self._RenderWindowInteractor.CharEvent()
+
+    def OnKeyUp(self, event):
+        pass
+        #self._set_kb_event_information(event)
+        #self._RenderWindowInteractor.KeyReleaseEvent()
+        
+    def OnLeftDown(self, event):
+        self._set_mouse_event_information(event)
+        self._RenderWindowInteractor.LeftButtonPressEvent()
+
+    def OnLeftUp(self, event):
+        self._set_mouse_event_information(event)
+        self._RenderWindowInteractor.LeftButtonReleaseEvent()
+
+    def _rwi_timer_cb(self, vtk_object, event_name):
+        if event_name == 'CreateTimerEvent':
+            self._timer.Start(10, true)
+        elif event_name == 'DestroyTimerEvent':
+            pass
+
+    def _wx_timer_cb(self, event):
+        self._RenderWindowInteractor.TimerEvent()
+
 class wxVTKRenderWindowSlice(wxVTKRenderWindow):
     def Rotate(self, event):
         pass
@@ -63,6 +163,7 @@ class vtk_slice_vwr(module_base):
 	self._view_frame = None
         # the render windows themselves (4, 1 x 3d and 3 x ortho)
 	self._rws = []
+        self._pws = []
         # the last clicked/interacted with xy positions for every rw
 	self._rw_lastxys = []
         # the renderers corresponding to the render windows
@@ -97,6 +198,18 @@ class vtk_slice_vwr(module_base):
 	    del self._view_frame
         if hasattr(self,'_ortho_pipes'):
             del self._ortho_pipes
+
+    def _create_ortho_panel(self, parent):
+        panel = wxPanel(parent, id=-1)
+        self._rws.append(wxVTKRenderWindowSlice(panel, -1))
+        self._pws.append(vtk.vtkPlaneWidget())        
+        self._renderers.append(vtk.vtkRenderer())
+        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        panel_sizer = wxBoxSizer(wxVERTICAL)
+        panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
+        panel.SetAutoLayout(true)
+        panel.SetSizer(panel_sizer)
+        return panel
 	
     def _create_window(self):
         # create main frame, make sure that when it's closed, it merely hides
@@ -118,7 +231,7 @@ class vtk_slice_vwr(module_base):
         top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
         # 3d view
         td_panel = wxPanel(top_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindow(td_panel, -1))
+        self._rws.append(wxVTKRenderWindow3D(td_panel, -1))
         self._renderers.append(vtk.vtkRenderer())
         self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         td_panel_sizer = wxBoxSizer(wxVERTICAL)
@@ -126,38 +239,17 @@ class vtk_slice_vwr(module_base):
         td_panel.SetAutoLayout(true)
         td_panel.SetSizer(td_panel_sizer)
         # ortho view
-        o0_panel = wxPanel(top_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindowSlice(o0_panel, -1))
-        self._renderers.append(vtk.vtkRenderer())
-        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        o0_panel_sizer = wxBoxSizer(wxVERTICAL)
-        o0_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
-        o0_panel.SetAutoLayout(true)
-        o0_panel.SetSizer(o0_panel_sizer)
-        # then split the splitwin
+        o0_panel = self._create_ortho_panel(top_splitwin)
+
         top_splitwin.SplitVertically(td_panel, o0_panel, 320)
 
         # bottom split window with two (2) ortho views
         ##############################################
         bottom_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
-        # first ortho
-        o1_panel = wxPanel(bottom_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindowSlice(o1_panel, -1))
-        self._renderers.append(vtk.vtkRenderer())
-        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        o1_panel_sizer = wxBoxSizer(wxVERTICAL)
-        o1_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
-        o1_panel.SetAutoLayout(true)
-        o1_panel.SetSizer(o1_panel_sizer)
         # second ortho
-        o2_panel = wxPanel(bottom_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindowSlice(o2_panel, -1))
-        self._renderers.append(vtk.vtkRenderer())
-        self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        o2_panel_sizer = wxBoxSizer(wxVERTICAL)
-        o2_panel_sizer.Add(self._rws[-1], option=1, flag=wxEXPAND)
-        o2_panel.SetAutoLayout(true)
-        o2_panel.SetSizer(o2_panel_sizer)
+        o1_panel = self._create_ortho_panel(bottom_splitwin)
+        # third ortho
+        o2_panel = self._create_ortho_panel(bottom_splitwin)
         # then split the splitwin
         bottom_splitwin.SplitVertically(o1_panel, o2_panel, 320)
 
@@ -371,10 +463,29 @@ class vtk_slice_vwr(module_base):
 		    
 		    self.setup_ortho_plane(cur_pipe)
                     self.update_3d_plane(cur_pipe, 0)
+
+
+                    if len(self._ortho_pipes[i]) == 1:
+                        self._pws[i].SetProp3D(cur_pipe['vtkActor3'])
+                        if i == 0:
+                            self._pws[i].NormalToZAxisOn()
+                        elif i == 1:
+                            self._pws[i].NormalToXAxisOn()
+                        else:
+                            self._pws[i].NormalToYAxisOn()
+                        self._pws[i].SetResolution(20)
+                        self._pws[i].SetRepresentationToOutline()
+                        self._pws[i].SetPlaceFactor(1)
+                        self._pws[i].PlaceWidget()
+                        rwi = self._rws[0].GetInteractor()
+                        self._pws[i].SetInteractor(rwi)
+                        self._pws[i].On()
+                                 
 		    if len(self._ortho_pipes[i]) == 1:
 			self.setup_camera(cur_pipe, self._renderers[i+1])
                         
                     self._renderers[0].ResetCamera()
+
                 self._inputs[idx]['Connected'] = 'vtkStructuredPoints'
 
 	    else:
