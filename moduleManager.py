@@ -79,7 +79,11 @@ class moduleManager:
         # executing all by themselves and usually do... when we break down
         # a network, we should take these out first.  when we build a network
         # we should put them down last
-        self.dangerousConsumerModules = ['slice3dVWR', 'histogramSegment']
+
+        # slice3dVWRs must be connected LAST, histogramSegment second to last
+        # and all the rest before them
+        self.consumerTypeTable = {'slice3dVWR' : 5,
+                                'histogramSegment' : 4}
 
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE moduleManager instance)
@@ -577,9 +581,11 @@ class moduleManager:
                 newModulesDict[pmsTuple[1].instanceName] = newModule
 
         # now we're going to connect all of the successfully created
-        # modules together; first type 1 connections, then type 2 then type 3
+        # modules together; we iterate DOWNWARDS through the different
+        # consumerTypes
+        
         newConnections = []
-        for connectionType in range(3):
+        for connectionType in range(max(self.consumerTypeTable.values()) + 1):
             typeConnections = [connection for connection in connectionList
                                if connection.connectionType == connectionType]
             
@@ -691,16 +697,22 @@ class moduleManager:
 
                         # find the type of connection (1, 2, 3), work from
                         # the back...
-                        if outputConnection[0].__class__.__name__ in \
-                           ['slice3dVWR']:
-                            connectionType = 2
+                        moduleClassName = \
+                                        outputConnection[0].__class__.__name__
+                        
+                        if moduleClassName in self.consumerTypeTable:
+                            connectionType = self.consumerTypeTable[
+                                moduleClassName]
                         else:
                             connectionType = 1
                             # FIXME: we still have to check for 0: iterate
                             # through all inputs, check that none of the
                             # supplier modules are in the list that we're
                             # going to pickle
-                            
+
+                        print '%s has connection type %d' % \
+                              (outputConnection[0].__class__.__name__,
+                               connectionType)
                         
                         connection = pickledConnection(
                             mModule.instanceName, outputIdx,

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.87 2004/08/06 12:42:15 cpbotha Exp $
+# $Id: graphEditor.py,v 1.88 2004/08/23 09:49:59 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1024,19 +1024,38 @@ class graphEditor:
 
         mm = self._devide_app.getModuleManager()
 
-        # we take care of the "difficult" modules first
-        safeGlyphs = []
-        for glyph in allGlyphs:
-            if glyph.moduleInstance.__class__.__name__ \
-               in mm.dangerousConsumerModules:
-                self._deleteModule(glyph)
-            else:
-                safeGlyphs.append(glyph)
+        # we take care of the "difficult" modules first, so sort module
+        # types from high to low
+        maxConsumerType = max(mm.consumerTypeTable.values())
 
-        # and then the rest
-        for glyph in safeGlyphs:
-            # delete each module, do NOT refresh canvas
-            self._deleteModule(glyph, False)
+        # go through consumerTypes from high to low, deleting as we go
+        for consumerType in range(maxConsumerType, -1, -1):
+            for glyph in allGlyphs:
+                if glyph in mm.consumerTypeTable:
+                    moduleClassName = glyph.moduleInstance.__class__.__name__
+                    currentConsumerType = mm.consumerTypeTable[
+                        moduleClassName]
+                else:
+                    # default filter
+                    currentConsumerType = 1
+
+                if currentConsumerType == consumerType:
+                    self._deleteModule(glyph)
+                    
+
+        
+#         safeGlyphs = []
+#         for glyph in allGlyphs:
+#             if glyph.moduleInstance.__class__.__name__ \
+#                in mm.dangerousConsumerModules:
+#                 self._deleteModule(glyph)
+#             else:
+#                 safeGlyphs.append(glyph)
+
+#         # and then the rest
+#         for glyph in safeGlyphs:
+#             # delete each module, do NOT refresh canvas
+#             self._deleteModule(glyph, False)
 
         # only here!
         self._graphFrame.canvas.redraw()
