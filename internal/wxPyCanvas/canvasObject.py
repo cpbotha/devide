@@ -121,8 +121,8 @@ class coLine(canvasObject):
     def draw(self, dc):
         # lines are 2 pixels thick
         dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
-        #dc.DrawLines(self._linePoints)
-        dc.DrawSpline(self._linePoints)
+        dc.DrawLines(self._linePoints)
+        #dc.DrawSpline(self._linePoints)
 
     def getBounds(self):
         # totally hokey: for now we just return the bounding box surrounding

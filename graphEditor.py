@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.77 2004/05/06 12:26:03 cpbotha Exp $
+# $Id: graphEditor.py,v 1.78 2004/05/06 13:02:28 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1646,11 +1646,15 @@ class graphEditor:
         line.updateEndPoints()
 
         # this should be 5 for straight line drawing
-        # at least 10 for spline drawing
-        overshoot = 10
+        # at least 10 for spline drawing; also remember to change
+        # the DrawLines -> DrawSplines in coLine as well as
+        # coLine.updateEndPoints() (at the moment they use port height
+        # to get that bit out of the glyph)
+        overshoot = 5
         # sometimes, for instance for spline routing, we need something
         # extra... for straight line drawing, this should be = overshoot
-        moreOvershoot = 2 * overshoot
+        #moreOvershoot = 2 * overshoot
+        moreOvershoot = overshoot
 
         successfulInsert = True
         while successfulInsert:
