@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.7 2002/05/03 11:44:52 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.8 2002/05/07 08:31:03 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -31,8 +31,9 @@
 #   http://cpbotha.net/
 
 
-"""  This python program/module creates a graphical VTK pipeline
-browser.   The pipeline tree is made using the TreeWidget from IDLE.
+""" This python program/module creates a graphical VTK pipeline
+browser.
+
 The objects in the pipeline can be configured.  The configuration is
 done by using the ConfigVtkObj class.
 """
@@ -57,7 +58,6 @@ icon_map = {'RenderWindow': 'renwin', 'Renderer': 'ren',
 	    'Coordinate': 'coord', 'Source': 'data', 
             'LookupTable': 'colormap', 'Reader': 'data',
             'Assembly': 'actor', 'Python': 'python', 'Dummy1': 'question'}
-
 
 def get_icon (vtk_obj):
     strng = vtk_obj.GetClassName ()[3:]
@@ -230,7 +230,14 @@ def recursively_add_children(tree_ctrl, parent_node):
 
 
 class vtkPipelineBrowser:
-    "Browses the VTK pipleline given a vtkRenderWindow."
+    """Browses the VTK pipleline given a vtkRenderWindow or given a set of
+    VTK objects, in which case it shows pipeline segments.
+
+    Construct a vtkPipeline with the correct parameters (see the __init__()
+    documentation, then use show() to display the window.  Closing the window
+    will NOT destroy it, it will only cause a hide().  To destroy the window,
+    make use of the vtkPipelineBrowser.close() method from the calling code.
+    """
 
     def __init__ (self, parent, renwin, objs=None):
         """Constructor of the vtkPipelineBrowser.
@@ -238,7 +245,8 @@ class vtkPipelineBrowser:
         If objs == None, this class assumes that you want a full pipeline
         which it will extract starting at the renwin.  If you have some
         vtk objects however, this class will act as a segment browser with
-        those objects as the root nodes.
+        those objects as the root nodes.  In the latter case, the renwin
+        will still be used for performing updates.
         """
         
 	self.renwin = renwin
@@ -317,6 +325,11 @@ class vtkPipelineBrowser:
         self.refresh()
 
     def refresh (self, event=None):
+        """Re-calculates the tree.
+
+        If the pipeline has changed, this can be called to extract a new
+        pipeline.
+        """
         self.clear()
 
         if self._objs == None or len(self._objs) == 0:
@@ -352,6 +365,13 @@ class vtkPipelineBrowser:
         self._tree_ctrl.Expand(self._root)
 
     def show(self):
+        """Make the window visible.
+
+        After the vtkPipeline has been instantiated, show() must be called
+        to make it visible.  In addition, if the user closes the window, it
+        can be made visible again by calling show().  These symantics have
+        been chosen to facilitate persistent vtkPipelines.
+        """
         self._frame.Show(true)
         # make sure the window comes to the top; this is usually not
         # needed right after creation, but show() often gets called because
@@ -359,12 +379,21 @@ class vtkPipelineBrowser:
         self._frame.Raise()
 
     def hide(self):
+        """Make the window invisible.
+
+        This is called when the user closes the window.
+        """
         self._frame.Show(false)
 
     def clear (self):
         self._tree_ctrl.DeleteAllItems()
 
     def close(self, event=None):
+        """This will destroy the frame/window.
+
+        Make use of this method if you really want to destroy the window and
+        don't just want to make it invisible.
+        """
         self.clear()
         self._frame.Destroy()
 
@@ -389,6 +418,7 @@ class vtkPipelineBrowser:
             self._config_vtk_objs[obj].show()
 
 def main ():
+    # example code...
     import vtkpython
     from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
     

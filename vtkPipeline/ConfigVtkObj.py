@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.5 2002/05/02 15:27:51 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.6 2002/05/07 08:31:03 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -30,18 +30,13 @@
 #   Charl P. Botha <cpbotha@ieee.org>
 #   http://cpbotha.net/
 
-""" This program/module takes a VTK object and provides a GUI
-configuration for it.  Right now Tkinter is used for the GUI.
+"""This program/module takes a VTK object and provides a GUI
+configuration for it.
 
-note by cpbotha:
-Actually, I've gone and changed it to wxPython.  I was a bit lazy,
-so I've actually nuked the tk bits instead of nicely adding the
-wxPython as option.  I think that the author (ha ha) could perhaps
-get wonders done with a contextual diff. :)
-
-A good idea would be to abstract non ui-specific code into a
-base class.
-
+The code, originally by Prabhu Ramachandran, used TkInter as GUI.  That
+version is the original one and is actively maintained.  I (Charl Botha)
+converted the code to wxPython and made some other changes, primarily
+related to making the GUI persistent.
 """
 
 import vtkMethodParser
@@ -70,7 +65,6 @@ def prn (x):
     print x
 
 class VtkShowDoc:
-    
     """ This class displays the documentation included in the __doc__
     attribute of the VTK object and its methods.
 
@@ -198,6 +192,10 @@ class ConfigVtkObj:
     construct an instance, then call show().  If the user closes the window,
     it will only be hidden, not destroyed.  To destroy, you have to call
     close().
+
+    These show()/hide() semantics have been added to make it easier to have
+    persistent ConfigVtkObj's.  Please see the end of vtkPipeline for an
+    example.
     """
     def __init__ (self, parent, renwin, vtk_obj):
         """This initialiser will setup everything and construct the ui.
@@ -216,6 +214,7 @@ class ConfigVtkObj:
         self.create_ui()
 
     def create_ui(self):
+        "Internal function called by constructor to create user interface."
         self.vtk_warn = -1
         try:
             self.vtk_warn = self._vtk_obj.GetGlobalWarningDisplay ()
