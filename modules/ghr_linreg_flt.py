@@ -1,5 +1,5 @@
 # ghr_linreg_flt.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: ghr_linreg_flt.py,v 1.1 2002/09/30 15:30:43 cpbotha Exp $
+# $Id: ghr_linreg_flt.py,v 1.2 2002/10/01 13:15:56 cpbotha Exp $
 # double-threshold seed connectivity segmentation filter
 
 from gen_utils import log_error
@@ -11,7 +11,7 @@ from wxPython.wx import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 class ghr_linreg_flt(module_base,
-                   module_mixin_vtk_pipeline_config):
+                     module_mixin_vtk_pipeline_config):
     """GH-r linear regression filter.
 
     Determines gleno-humeral centre of rotation with a linear regression

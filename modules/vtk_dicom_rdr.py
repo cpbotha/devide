@@ -1,4 +1,4 @@
-# $Id: vtk_dicom_rdr.py,v 1.8 2002/08/22 17:16:31 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.9 2002/10/01 13:15:56 cpbotha Exp $
 
 # wxGlade doesn't support wxFlexGridSizer yet so:
 # - change wxGridSizer to wxFlexGridSizer
@@ -27,7 +27,6 @@ class vtk_dicom_rdr(module_base,
 
         # setup necessary VTK objects
 	self._reader = vtkcpbothapython.vtkDICOMVolumeReader()
-        self._reader.DebugOn()
 
         # this part of the config is stored in this module, and not in
         # the reader.
