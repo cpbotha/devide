@@ -1,20 +1,54 @@
+from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import InsightToolkit as itk
 from moduleBase import moduleBase
 import wx
 
+class imageStackClass(list,
+                      subjectMixin,
+                      updateCallsExecuteModuleMixin):
+    
+    def __init__(self, d3Module):
+        # call base ctors
+        subjectMixin.__init__(self)
+        updateCallsExecuteModuleMixin.__init__(self, d3Module)
+
+    def close(self):
+        subjectMixin.close(self)
+        updateCallsExecuteModuleMixin.close(self)
+        
+    
+
 class imageStackRDR(moduleBase):
+    """Loads a list of images as ITK Images.
+
+    This list can e.g. be used as input to the 2D registration module.
+    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
+        # list of ACTUAL itk images
+        self._imageStack = imageStackClass(self)
+
         self._viewFrame = None
         self._createViewFrame()
+
+        # list of names that are to be loaded
+        self._config._imageFileNames
+        # we'll use this variable to check when we need to reload
+        # filenames.
+        self._imageFileNamesChanged = True
 
         self.configToLogic()
         self.syncViewWithLogic()
 
     def close(self):
+        # take care of our refs to all the loaded images
+        self._imageStack.close()
+        self._imageStack = []
+        # destroy GUI
         self._viewFrame.Destroy()
+        # base classes taken care of
         moduleBase.close(self)
 
     def getInputDescriptions(self):
@@ -30,26 +64,23 @@ class imageStackRDR(moduleBase):
         return self._imageStack
 
     def logicToConfig(self):
-        self._config.standardDeviation = self._imageGaussianSmooth.\
-                                         GetStandardDeviations()
-        self._config.radiusCutoff = self._imageGaussianSmooth.\
-                                    GetRadiusFactors()
+        pass
 
     def configToLogic(self):
-        self._imageGaussianSmooth.SetStandardDeviations(
-            self._config.standardDeviation)
-        self._imageGaussianSmooth.SetRadiusFactors(
-            self._config.radiusCutoff)
+        pass
 
     def viewToConfig(self):
-        # continue with textToTuple in genUtils
-        stdText = self._viewFrame.stdTextCtrl.GetValue()
-        self._config.standardDeviation = genUtils.textToTypeTuple(
-            stdText, self._config.standardDeviation, 3, float)
+        count = self._viewFrame.fileNamesListBox.GetCount()
+        tempList = []
+        for n in range(count):
+            tempList.append(self._viewFrame.fileNamesListBox.GetString(n))
+
         
-        cutoffText = self._viewFrame.radiusCutoffTextCtrl.GetValue()
-        self._config.radiusCutoff = genUtils.textToTypeTuple(
-            cutoffText, self._config.radiusCutoff, 3, float)
+        if tempList != self._config._imageFileNames:
+            # this is a new list
+            self._imageFileNamesChanged = True
+            # copy it...
+
 
     def configToView(self):
         stdText = '(%.2f, %.2f, %.2f)' % self._config.standardDeviation
