@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.2 2002/04/29 11:25:12 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.3 2002/04/29 16:57:42 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
 #
 # Copyright (C) 2000 Prabhu Ramachandran
+# Conversion to wxPython copyright (c) 2002 Charl P. Botha
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -25,9 +26,18 @@
 # Author contact information:
 #   Prabhu Ramachandran <prabhu_r@users.sf.net>
 #   http://www.aero.iitm.ernet.in/~prabhu/
+#
+#   Charl P. Botha <cpbotha@ieee.org>
+#   http://cpbotha.net/
 
 """ This program/module takes a VTK object and provides a GUI
 configuration for it.  Right now Tkinter is used for the GUI.
+
+note by cpbotha:
+Actually, I've gone and changed it to wxPython.  I was a bit lazy,
+so I've actually nuked the tk bits instead of nicely adding the
+wxPython as option.  I think that the author (ha ha) could perhaps
+get wonders done with a contextual diff. :)
 
 """
 
@@ -35,23 +45,22 @@ import vtkMethodParser
 import types, string, re
 
 try:
-    import Tkinter
+    from wxPython.wx import *
 except ImportError:
-    print "Cannot import the Tkinter module. Install it and try again."
+    print "Cannot import the wxPython.wx module. Install it and try again."
     sys.exit (1)
 
-try:
-    import tkMessageBox
-    import tkColorChooser
-except ImportError:
-    print "Cannot import the tkMessageBox or tkColorChooser module."
-    print "Install the modules and try again."
-    sys.exit (1)
-
-print_info = tkMessageBox.showinfo
+#print_info = tkMessageBox.showinfo
 
 def print_err (msg):
-    tkMessageBox.showerror ("ERROR", msg)
+    # create nice formatted string with tracebacks and all
+    dmsg = \
+         string.join(traceback.format_exception(sys.exc_type,
+                                                sys.exc_value,
+                                                sys.exc_traceback))
+    wxLogError(dmsg)
+    wxLogError(msg)
+    wxLog_FlushActive()
 
 # use this to print stuff for the user command run from the GUI
 def prn (x):
@@ -68,8 +77,8 @@ class VtkShowDoc:
     """ This class displays the documentation included in the __doc__
     attribute of the VTK object and its methods."""
 
-    def __init__ (self, master=None):
-        self.master = master
+    def __init__ (self, parent_frame=None):
+        self._parent_frame = parent_frame
         
     def check_obj (self):
         try:
@@ -98,49 +107,49 @@ class VtkShowDoc:
             self.add_doc ()
 
     def setup (self):
-        self.root = Tkinter.Toplevel (self.master)
-        self.root.title ("Class Documentation for %s"%
-                         self.obj.GetClassName ())
-        self.root.protocol ("WM_DELETE_WINDOW", self.quit)
-        f = Tkinter.Frame (self.root)
-        f.pack (side='top', fill='both', expand=1)
-        f.rowconfigure (0, weight=1)
-        f.columnconfigure (0, weight=1)
-        scr1 = Tkinter.Scrollbar (f, orient='vertical')
-        scr2 = Tkinter.Scrollbar (f, orient='horizontal')
-        self.txt = Tkinter.Text (f, yscrollcommand=scr1.set,
-                                 xscrollcommand=scr2.set,state='normal')
-        scr1.config (command=self.txt.yview) 
-        scr2.config (command=self.txt.xview) 
-        self.txt.grid (row=0, column=0, sticky='ewns')
-        scr1.grid (row=0, column=1, sticky='ns')
-        scr2.grid (row=1, column=0, columnspan=2, sticky='ew')
+        self._frame = wxFrame(parent = self._parent_frame, id=-1,
+                              title='Class Documentation for %s' %
+                              self.obj.GetClassName ())
+        EVT_CLOSE(self._frame, lambda e, s=self: s.quit)
 
-        self.close_but = Tkinter.Button (self.root, text="Close", fg="red",
-                                         underline=0, command=self.quit)
+        # make panel that will contain htmlwindow and close button
+        panel = wxPanel(parent=self._frame, id=-1)
 
-        self.close_but.pack (side='bottom')
-	self.root.bind ("<Alt-c>", self.quit)
+        # then the html window
+        self._html_window = wxHtmlWindow(parent=panel, id=-1)
+
+        close_id = wxNewId()
+        close_button = wxButton(parent=panel, id=close_id, label="Close")
+
+        top_sizer = wxBoxSizer(wxVERTICAL)
+        top_sizer.Add(self._html_window, option=1, flag=wxEXPAND)
+        top_sizer.Add(close_button, option=0, flag=wxALIGN_CENTER_HORIZONTAL)
+
+        panel.SetAutoLayout(true)
+        panel.SetSizer(top_sizer)
+        top_sizer.Fit(self._frame)
+        top_sizer.SetSizeHints(self._frame)
+
+	#self.root.bind ("<Alt-c>", self.quit)
             
-        self.txt.tag_config ("heading", foreground="blue",
-                             underline=1, justify='center')
-        self.txt.tag_config ("subheading", foreground="blue",
-                             underline=1, justify='left')
-        self.txt.tag_config ("item", underline=1, justify='left')
-        self.txt.tag_config ("data", wrap='word')
+        #self.txt.tag_config ("heading", foreground="blue",
+        #                     underline=1, justify='center')
+        #self.txt.tag_config ("subheading", foreground="blue",
+        #                     underline=1, justify='left')
+        #self.txt.tag_config ("item", underline=1, justify='left')
+        #self.txt.tag_config ("data", wrap='word')
     
     def add_doc (self):
         data_ = self.obj.GetClassName ()
-        self.txt.insert ('end', "Class Documentation for %s\n\n"%data_,
-                         "heading")
-        data_ = self.obj.__doc__ + "\n\n"
-        self.txt.insert ('end', data_, "data")
-        data_ = "Please note that all the documented methods are not "\
-                "configurable using the GUI provided.\n\n\n"
-        self.txt.insert ('end', data_, "data")
-        
-        data_ = "Class method documentation:\n\n"
-        self.txt.insert ('end', data_, "subheading")
+
+        the_html = "<h1>Class Documentation for %s</h1><br><br>" % data_
+
+        the_html = the_html + \
+                   string.join(string.split(self.obj.__doc__, '\n'), '<br>')
+        the_html = the_html + '<br><br>' + \
+                   "Please note that all the documented methods are not "\
+                   "configurable using the GUI provided.<br><br><br>"\
+                   "<h2>Class method documentation</h2><br><br>"
 
         for i in dir (self.obj):
             if i == '__class__':
@@ -150,11 +159,13 @@ class VtkShowDoc:
             except AttributeError:
                 pass
             else:
-                self.txt.insert ('end', i + ":\n", "item")
-                self.txt.insert ('end', data_ +"\n\n", "data")
+                the_html = the_html + \
+                           "<h3>%s</h3><br>" + \
+                           string.join(string.split(data_,'\n'),'<br') + \
+                           "<br><br>"
 
     def quit (self, event=None):
-        self.root.destroy ()
+        self._frame.Destroy()
 
 
 class ConfigVtkObj:
@@ -164,7 +175,7 @@ class ConfigVtkObj:
     VtkMethodParser class. """
 
     def __init__ (self, renwin=None):
-	# This vairable is used to do a redraw on changing the objects
+	# This variable is used to do a redraw on changing the objects
 	# properties.
 	self.renwin = renwin
 	self.parser = vtkMethodParser.VtkMethodParser ()
@@ -198,7 +209,7 @@ class ConfigVtkObj:
                 break
         return i
 
-    def configure (self, master, vtk_obj):
+    def configure(self, parent_frame, vtk_obj):
 	"Configure the vtk_object passed."
 	self.vtk_obj = vtk_obj
         self.vtk_warn = -1
@@ -209,141 +220,226 @@ class ConfigVtkObj:
         else:
             vtk_obj.GlobalWarningDisplayOff ()
 	self.parse_methods (vtk_obj)
-	self.make_gui (master)
+	self.make_gui (parent_frame)
         if self.vtk_warn > -1:
             self.vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
 
-    def make_gui (self, master):
+    def make_gui (self, parent_window):
 	"Makes the configuration GUI."
-	self.root = Tkinter.Toplevel (master)
-	self.root.title ("Configure %s"%self.vtk_obj.GetClassName ())
-        self.root.protocol ("WM_DELETE_WINDOW", self.cancel)
-	frame = Tkinter.Frame (self.root)
-	frame.pack (side='top', expand=1, fill='both')
-	left = Tkinter.Frame (frame)
-	left.grid (row=0, column=0, sticky='nw')
-	right = Tkinter.Frame (frame)
-	right.grid (row=0, column=1, sticky='nw')
+
+        # the top level frame
+        self._frame = wxFrame(parent=parent_window, id=-1,
+                              title="Configure %s"%
+                              self.vtk_obj.GetClassName ())
+        EVT_CLOSE(self._frame, lambda e, s=self: s.cancel)
+
+        # then the panel which we'll populate
+        panel = wxPanel(parent=self._frame, id=-1)
+
+        # first with a vertical sizer, settings at the top, buttons
+        # + controls at the bottom
+        top_sizer = wxBoxSizer(wxVERTICAL)
+
+        self._notebook = wxNotebook(parent=panel, id=-1,
+                                    size=(640,480))
+        nbsizer = wxNotebookSizer(self._notebook)
+
+        top_sizer.Add(nbsizer, option=1, flag=wxEXPAND)
+
+	#frame = Tkinter.Frame (self.root)
+	#frame.pack (side='top', expand=1, fill='both')
+	#left = Tkinter.Frame (frame)
+	#left.grid (row=0, column=0, sticky='nw')
+	#right = Tkinter.Frame (frame)
+	#right.grid (row=0, column=1, sticky='nw')
 
 	self.make_gui_vars ()
-	self.make_control_gui (self.root)
-	self.make_toggle_gui (left)
-	self.make_state_gui (left)
-	self.make_get_gui (right)
-	self.make_get_set_gui (right)
+
+	top_sizer.Add(self.make_control_gui(panel), option=0, flag=wxEXPAND)
+        
+	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
+        self._notebook.AddPage(self.make_state_gui(self._notebook), 'States')
+        #self._notebook.AddPage(self.make_get_gui(self._notebook), 'Gets')
+        self._notebook.AddPage(self.make_get_set_gui(self._notebook),
+                               'Get-Set')
+
+        panel.SetAutoLayout(true)
+        panel.SetSizer(top_sizer)
+        top_sizer.Fit(self._frame)
+        top_sizer.SetSizeHints(self._frame)
+
+        self._frame.Show(true)
 
     def make_gui_vars (self):
 	"Create the various variables used for the GUI."
-	self.user_command = Tkinter.StringVar ()
-	self.toggle_var = []
-	for i in range (0, len (self.toggle_meths)):
-	    self.toggle_var.append (Tkinter.IntVar ())
-	    self.toggle_var[i].set (-1)
+	#self.user_command = Tkinter.StringVar ()
+	self.toggle_var = [-1 for i in self.toggle_meths]
+        self.state_var = [-1 for i in self.state_meths]
+        self.get_set_var = ["" for i in self.get_set_meths]
+        self.get_set_texts = [None for i in self.get_set_var]
 
-	self.state_var = []
-	for i in range (0, len (self.state_meths)):
-	    self.state_var.append (Tkinter.IntVar ())
-	    self.state_var[i].set (-1)
 
-	self.get_set_var = []
-	for i in range (0, len (self.get_set_meths)):
-	    self.get_set_var.append (Tkinter.StringVar ())
-	    self.get_set_var[i].set ("")
+	#self.get_set_var = []
+	#for i in range (0, len (self.get_set_meths)):
+	#    self.get_set_var.append (Tkinter.StringVar ())
+	#    self.get_set_var[i].set ("")
 
-	self.get_lab = []
-	for i in range (0, len (self.get_meths)):
-	    self.get_lab.append (None)
+	#self.get_lab = []
+	#for i in range (0, len (self.get_meths)):
+	#    self.get_lab.append (None)
 
-    def make_control_gui (self, master):
-	"Make the main controls and the user command entry."
-	frame = Tkinter.Frame (master)
-	frame.pack (side='bottom', expand=1, fill='both')
-	lab = Tkinter.Label (frame, text="Click on the \"Command\" "\
-                             "button for help on it.")
-	lab.grid (row=0, column=0, columnspan=4, sticky='ew')
-	help = Tkinter.Button (frame, text="Command:", 
-                               command=self.help_user)
-	help.grid (row=1, column=0, sticky='ew')
-	entr = Tkinter.Entry (frame, width=20, relief='sunken', 
-                              textvariable=self.user_command)
-	entr.grid (row=1, column=1,  columnspan=3, sticky='ew')
-	entr.bind ("<Return>", self.run_command)
+    def make_control_gui (self, parent):
+        """Makes all the control GUI elements.
 
-	help_b = Tkinter.Button (frame, text="Class Documentation",
-                                 underline=6, command=self.show_doc)
-	help_b.grid (column=0, row=2, padx=2, pady=2, sticky='ew')
-	b0 = Tkinter.Button (frame, text="Update", underline=0, 
-                             command=self.update_gui)
-	b0.grid (column=1, row=2, padx=2, pady=2, sticky='ew')
-	b = Tkinter.Button (frame, text="Apply", underline=0,
-                            command=self.apply_changes)
-	b.grid (column=2, row=2, padx=2, pady=2, sticky='ew')
-	b1 = Tkinter.Button (frame, text="Ok", underline=0,
-                             command=self.ok_done)
-	b1.grid (column=3, row=2, padx=2, pady=2, sticky='ew')
-	b2 = Tkinter.Button (frame, text="Cancel", underline=0,
-                             command=self.cancel)
-	b2.grid (column=4, row=2, padx=2, pady=2, sticky='ew')
+        This will create the control buttons and the command line
+        interface bit.  All the controls must be children of the parameter
+        parent.  This method must return a sizer that can be added to the
+        top level sizer.
+        """
+        vert_sizer = wxBoxSizer(wxVERTICAL)
+        command_sizer = wxBoxSizer(wxHORIZONTAL)
+        button_sizer = wxBoxSizer(wxHORIZONTAL)
+        vert_sizer.Add(command_sizer, option=0, flag=wxEXPAND)
+        vert_sizer.Add(button_sizer, option=0, flag=wxEXPAND)
 
-	# keyboard accelerators
-	self.root.bind ("<Alt-d>", self.show_doc)
-	self.root.bind ("<Alt-u>", self.update_gui)
-	self.root.bind ("<Alt-a>", self.apply_changes)
-	self.root.bind ("<Alt-o>", self.ok_done)
-	self.root.bind ("<Alt-c>", self.cancel)
+        # the button that will show a little help dialog...
+        command_help_id = wxNewId()
+        command_button = wxButton(parent, id=command_help_id, label="Help")
+        # just defaults for the button, we just want its default size
+        command_sizer.Add(command_button)
+        EVT_BUTTON(parent, command_help_id, lambda e, s=self: s.help_user())
 
-    def make_toggle_gui (self, master):
-	"Create the toggle methods.  (On/Off methods)"
-	frame = Tkinter.Frame (master, relief='ridge', bd=2)
-	frame.pack (side='top', expand=1, fill='both')
+        
+        command_entry_id = wxNewId()
+        command_entry = wxTextCtrl(parent, id=command_entry_id)
+        command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
+        EVT_TEXT_ENTER(parent, command_entry_id,
+                       lambda e, s=self: s.run_command())
+
+        classdoc_id = wxNewId()
+        classdoc_button = wxButton(parent, id=classdoc_id,
+                                   label="Class Documentation")
+        button_sizer.Add(classdoc_button)
+        EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
+
+        update_id = wxNewId()
+        update_button = wxButton(parent, id=update_id,
+                                 label="Update")
+        button_sizer.Add(update_button)
+        EVT_BUTTON(parent, update_id, lambda e, s=self: s.update_gui())
+        
+        apply_id = wxNewId()
+        apply_button = wxButton(parent, id=apply_id,
+                                 label="Apply")
+        button_sizer.Add(apply_button)
+        EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
+
+        ok_button = wxButton(parent, wxID_OK, label="OK")
+        button_sizer.Add(ok_button)
+        EVT_BUTTON(parent, wxID_OK, lambda e, s=self: s.ok_done())
+
+        cancel_button = wxButton(parent, wxID_CANCEL, label="Cancel")
+        button_sizer.Add(cancel_button)
+        EVT_BUTTON(parent, wxID_CANCEL, lambda e, s=self: s.cancel())
+
+        return vert_sizer
+
+    def make_toggle_gui (self, parent):
+	"""Create the toggle methods.
+
+        This method should do whatever it does into a panel that it creates.
+        This panel should be returned, as it's going to be stuffed in a
+        notebook, typically the parent.  Remember that the panel should be
+        child to the parent.
+        """
+        panel = wxPanel(parent, id=-1)
+        vert_sizer = wxBoxSizer(wxVERTICAL)
+        panel.SetAutoLayout(true)
+        panel.SetSizer(vert_sizer)
+        
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.toggle_meths[i][:-2]
-	    self.toggle_var[i].set (eval ("self.vtk_obj.%s ()"%m))
-	    b = Tkinter.Checkbutton (frame, text=self.toggle_meths[i], 
-                                     variable=self.toggle_var[i],
-                                     onvalue=1, offvalue=0)
-	    b.grid (row=i, column=0, sticky='w')
+	    self.toggle_var[i] = eval ("self.vtk_obj.%s ()"%m)
+            cb_id = wxNewId()
+            cb = wxCheckBox(parent=panel, id=cb_id, label=self.toggle_meths[i])
+            cb.SetValue(self.toggle_var[i])
+            EVT_CHECKBOX(panel, cb_id,
+                         lambda event, s=self, i=i: s.toggle_cb(event, i))
+            vert_sizer.Add(cb, option=0, flag=wxEXPAND)
+
+        return panel
+
+    def toggle_cb(self, event, i):
+        """Event handler to simulate tk's groovy active variables.
+
+        When the user clicks a checkbox, this callback gets triggered and
+        modifies our internal variable.  Neat.
+        """
+        self.toggle_var[i] = event.GetEventObject().GetValue()
 	    
-    def make_state_gui (self, master):
+    def make_state_gui (self, parent):
 	"Create the state methods.  (SetAToB methods)"
-	frame = Tkinter.Frame (master, relief='ridge', bd=2)
-	frame.pack (side='top', expand=1, fill='both')
+        panel = wxPanel(parent, id=-1)
+        vert_sizer = wxBoxSizer(wxVERTICAL)
+        panel.SetAutoLayout(true)
+        panel.SetSizer(vert_sizer)
+        
 	n_meth = len (self.state_meths)
 	rw = 0
 	for i in range (0, n_meth):
 	    meths = self.state_meths[i]
-            self.state_var[i].set (self.get_state (meths))
-	    for j in range (0, len (meths)):
-		b = Tkinter.Radiobutton (frame, text=meths[j], 
-                                         variable=self.state_var[i],
-                                         value=j)
-		b.grid (row=rw, column=0, sticky='w')
-		rw = rw + 1
+            self.state_var[i] = self.get_state (meths)
 
-    def make_get_set_gui (self, master):
+            # these 2 lines ripped from get_state
+            end = self.state_patn.search (meths[0]).start ()
+            get_m = 'G'+meths[0][1:end]
+            
+            rb_id = wxNewId()
+            rb = wxRadioBox(parent=panel, id=rb_id, label=get_m,
+                            choices=meths,
+                            majorDimension=2, style=wxRA_SPECIFY_COLS)
+            rb.SetSelection(self.state_var[i])
+            EVT_RADIOBOX(panel, rb_id,
+                         lambda event, s=self, i=i: s.radiobox_cb(event, i))
+            vert_sizer.Add(rb, flag=wxEXPAND)
+
+        return panel
+
+    def radiobox_cb(self, event, i):
+        self.state_var[i] = event.GetEventObject().GetSelection()
+
+    def make_get_set_gui (self, parent):
 	"Create the Get/Set methods"
-	frame = Tkinter.Frame (master, relief='ridge', bd=2)
-	frame.pack (side='top', expand=1, fill='both')
+
+        panel = wxPanel(parent, id=-1)
+        grid_sizer = wxGridSizer(cols=2)
+        panel.SetAutoLayout(true)
+        panel.SetSizer(grid_sizer)
+        
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.get_set_meths[i]
-	    self.get_set_var[i].set (eval ("self.vtk_obj.%s ()"%m))
+	    self.get_set_var[i] = eval("self.vtk_obj.%s ()"%m)
 
 	    # if the method requires a color make a button so the user
 	    # can choose the color!
 	    if string.find (m[-5:], "Color") > -1:
-		but = Tkinter.Button (frame, text="Set"+m[3:],
-                                      textvariable=i,
-                                      command=lambda e: None, padx=1)
-		but.grid (row=i, column=0, sticky='w')
-		but.bind ("<1>", self.set_color)
+                cbut_id = wxNewId()
+                cbut = wxButton(parent=panel, id=cbut_id, label="Set"+m[3:])
+                EVT_BUTTON(panel, cbut_id,
+                           lambda e, s=self, i=i, p=parent:
+                           s.set_color(e, i, p))
+                grid_sizer.Add(cbut)
 	    else:
-		lab = Tkinter.Label (frame, text="Set"+m[3:])
-		lab.grid (row=i, column=0, sticky='w')
-	    entr = Tkinter.Entry (frame, width=20, relief='sunken', 
-                                  textvariable=self.get_set_var[i])
-	    entr.grid (row=i, column=1, sticky='ew')
+                st = wxStaticText(parent=panel, id=-1, label="Set"+m[3:])
+                grid_sizer.Add(st)
+
+            self.get_set_texts[i] = wxTextCtrl(parent=panel, id=-1,
+                                               value=str(self.get_set_var[i]))
+            grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
+
+        return panel
 
     def make_get_gui (self, master):
 	"Create the Get methods that have no Set equivalent."
@@ -383,26 +479,30 @@ class ConfigVtkObj:
         if self.vtk_warn > -1:
             self.vtk_obj.GlobalWarningDisplayOn ()
 	    
-    def set_color (self, event=None):
+    def set_color (self, event, i, parent):
 	"Choose and set a color from a GUI color chooser."
-	if event is None:
-	    return "break"
-	# index of the relevant method is stored in the textvariable.
-	index = int (event.widget['textvariable'])
 
-	m = "Get"+self.get_set_meths[index]
-	col = eval ("self.vtk_obj.%s ()"%m)
-	cur_col = "#%02x%02x%02x"% (col[0]*255, col[1]*255, col[2]*255)
-	new_color = tkColorChooser.askcolor (title="Set"+m[3:],
-					     initialcolor=cur_col)
-	if new_color[1] != None:
-	    col = tk_2_vtk_color (new_color[0])
-	    self.get_set_var[index].set (col)
-            m = "Set"+self.get_set_meths[index]
-            apply (eval ("self.vtk_obj.%s"%m), col)
-            self.update_gui ()
+        # setup current colour
+        cur_colour = wxColour(self.get_set_var[i][0] * 255.0,
+                              self.get_set_var[i][1] * 255.0,
+                              self.get_set_var[i][2] * 255.0)
+        ccd = wxColourData()
+        ccd.SetColour(cur_colour)
+        # we want the detailed dialog under windows        
+        ccd.SetChooseFull(true)
+        # do that thang
+        dlg = wxColourDialog(parent, ccd)
+        
+        if dlg.ShowModal() == wxID_OK:
+            # the user wants this, we get to update the variables
+            new_col = dlg.GetColourData().GetColour()
+            self.get_set_var[i] = (float(new_col.Red()) / 255.0 * 1.0,
+                                   float(new_col.Green()) / 255.0 * 1.0,
+                                   float(new_col.Blue()) / 255.0 * 1.0)
+            # now we need to update the frigging text input
+            self.get_set_texts[i].SetValue(str(self.get_set_var[i]))
 
-	return "break"
+        dlg.Destroy()
 
     def run_command (self, event=None):
 	"Run the command entered by the user."
@@ -513,9 +613,11 @@ class ConfigVtkObj:
 	print "Get methods\n", self.get_meths
 
 
+
 if __name__ == "__main__":  
     import vtkpython
-    import vtkRenderWidget
+    from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+
     cone = vtkpython.vtkConeSource()
     cone.SetResolution(8)
     coneMapper = vtkpython.vtkPolyDataMapper()
@@ -524,25 +626,24 @@ if __name__ == "__main__":
     coneActor.SetMapper(coneMapper)
     axes = vtkpython.vtkCubeAxesActor2D ()
 
-    def quit (event=None):
-	root.destroy ()
-
-    root = Tkinter.Tk ()
-    wid = vtkRenderWidget.vtkTkRenderWidget (root, width=500, height=500)
-    wid.pack (expand=1, fill='both')
-    wid.bind ("<KeyPress-q>", quit)
+    
+    app = wxPySimpleApp()
+    frame = wxFrame(None, -1, "wxRenderWindow", size=wxSize(400,400))
+    wid = wxVTKRenderWindow(frame, -1)
+    
     ren = vtkpython.vtkRenderer()
     renWin = wid.GetRenderWindow()
     renWin.AddRenderer(ren)
-    renWin.SetSize(500,500)
+
     ren.AddActor (coneActor)
     ren.AddActor (axes)
     axes.SetCamera (ren.GetActiveCamera ())
     renWin.Render ()
 
-    for obj in (renWin, ren, cone, coneMapper, coneActor, axes):
+    for obj in (renWin, ren, cone, coneMapper, coneActor,
+                coneActor.GetProperty(), axes):
 	print "Configuring", obj.GetClassName (), "..."
 	conf = ConfigVtkObj (renWin)
-	conf.configure (root, obj)
+	conf.configure (frame, obj)
 
-    root.mainloop ()
+    app.MainLoop ()
