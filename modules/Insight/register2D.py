@@ -1,3 +1,13 @@
+# $Id: register2D.py,v 1.10 2003/12/09 16:20:40 cpbotha Exp $
+
+# TODO:
+# * if the input imageStackRDR is reconfigured to read a different stack
+#   by the user, then things will break.  We probably have to add an observer
+#   and adapt to the new situation.
+# * ditto for the input transformStackRDR
+# * an observer which internally disconnects in the case of a screwup would
+#   be good enough; the user can be warned that he should reconnect
+
 import genUtils
 from typeModules.imageStackClass import imageStackClass
 from typeModules.transformStackClass import transformStackClass
@@ -518,4 +528,7 @@ class register2D(moduleBase):
             '%.8f' % (pda.GetElement(1),))
         self.controlFrame.yTranslationTextCtrl.SetValue(
             '%.8f' % (pda.GetElement(2),))
+
+        # default
+        self.controlFrame.maxIterationsTextCtrl.SetValue('50')
         
