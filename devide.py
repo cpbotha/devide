@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.44 2004/06/23 18:20:37 cpbotha Exp $
+# $Id: devide.py,v 1.45 2004/06/23 18:25:08 cpbotha Exp $
 
 DEVIDE_VERSION = '20040623b'
 
@@ -293,7 +293,7 @@ class devide_app_t(wx.App):
         # the testandset() method of mutex.mutex is atomic... this will grab
         # the lock and set it if it isn't locked alread and then return true.
         # returns false otherwise
-        #print "%s: %f" % (message, progress)
+
         if self._inProgress.testandset():
             if message != self._currentProgressMsg or \
                    progress != self._currentProgress:
@@ -302,7 +302,8 @@ class devide_app_t(wx.App):
                     self._previousProgressTime = time.time()
                     self._currentProgressMsg = message
                     self._currentProgress = progress
-                    self._mainFrame.progressGauge.SetValue(progress)
+                    self._mainFrame.progressGauge.SetValue(
+                        int(round(progress)))
                     self._mainFrame.progressText.SetLabel(message)
 
                     # activate the busy cursor
