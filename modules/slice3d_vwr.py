@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.23 2003/02/25 10:46:58 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.24 2003/02/27 18:00:43 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -49,7 +49,7 @@ class slice3d_vwr(moduleBase,
                          'vtkActor' : None}
                        for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
-        self._view_frame = None
+        self._viewFrame = None
         # the imageplanewidgets
         self._ipws = []
         self._overlay_ipws = []
@@ -61,7 +61,7 @@ class slice3d_vwr(moduleBase,
         self._ortho2Renderer = None
 
         # list of selected points (we can make this grow or be overwritten)
-        self._sel_points = []
+        self._selectedPoints = []
         # this will be passed on as input to the next component
         self._outputSelectedPoints = outputSelectedPoints()
         
@@ -142,20 +142,20 @@ class slice3d_vwr(moduleBase,
         # method 2 doesn't alway work, so we use WindowRemap
 
 	# hide it so long
-	#self._view_frame.Show(0)
+	#self._viewFrame.Show(0)
 
-        self._view_frame.threedRWI.GetRenderWindow().SetSize(10,10)
-        self._view_frame.threedRWI.GetRenderWindow().WindowRemap()        
-        self._view_frame.ortho1RWI.GetRenderWindow().SetSize(10,10)
-        self._view_frame.ortho1RWI.GetRenderWindow().WindowRemap()        
-        self._view_frame.ortho2RWI.GetRenderWindow().SetSize(10,10)
-        self._view_frame.ortho2RWI.GetRenderWindow().WindowRemap()        
+        self._viewFrame.threedRWI.GetRenderWindow().SetSize(10,10)
+        self._viewFrame.threedRWI.GetRenderWindow().WindowRemap()        
+        self._viewFrame.ortho1RWI.GetRenderWindow().SetSize(10,10)
+        self._viewFrame.ortho1RWI.GetRenderWindow().WindowRemap()        
+        self._viewFrame.ortho2RWI.GetRenderWindow().SetSize(10,10)
+        self._viewFrame.ortho2RWI.GetRenderWindow().WindowRemap()        
         
         # all the RenderWindow()s are now reparented, so we can destroy
         # the containing frame
-        self._view_frame.Destroy()
+        self._viewFrame.Destroy()
 	# unbind the _view_frame binding
-	del self._view_frame
+	del self._viewFrame
 	
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -237,7 +237,7 @@ class slice3d_vwr(moduleBase,
                 self._threedRenderer.AddActor(self._inputs[idx]['vtkActor'])
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
                 self._threedRenderer.ResetCamera()
-                self._view_frame.threedRWI.Render()
+                self._viewFrame.threedRWI.Render()
 
                 # connect an event handler to the data
                 oid = input_stream.AddObserver('ModifiedEvent',
@@ -285,7 +285,7 @@ class slice3d_vwr(moduleBase,
 
                             self._reset_overlays()
 
-                            self._view_frame.threedRWI.Render()
+                            self._viewFrame.threedRWI.Render()
                             self._inputs[idx]['Connected'] = 'Overlay'
 
                             return
@@ -321,7 +321,7 @@ class slice3d_vwr(moduleBase,
 
                 self._reset()
 
-                self._view_frame.threedRWI.Render()
+                self._viewFrame.threedRWI.Render()
                 self._inputs[idx]['Connected'] = 'vtkImageData'
 
             else:
@@ -342,8 +342,8 @@ class slice3d_vwr(moduleBase,
             return self._extractVOI.GetOutput()
 
     def view(self):
-        if not self._view_frame.Show(true):
-            self._view_frame.Raise()
+        if not self._viewFrame.Show(true):
+            self._viewFrame.Raise()
 
 #################################################################
 # utility methods
@@ -357,72 +357,70 @@ class slice3d_vwr(moduleBase,
         parent_window = self._moduleManager.get_module_view_parent_window()
         slice3d_vwr_frame = modules.resources.python.slice3d_vwr_frame.\
                             slice3d_vwr_frame
-        self._view_frame = slice3d_vwr_frame(parent_window, id=-1,
+        self._viewFrame = slice3d_vwr_frame(parent_window, id=-1,
                                              title='dummy')
 
         # fix for the grid
-        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        self._viewFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
 
         # add THREE the renderers
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
-        self._view_frame.threedRWI.GetRenderWindow().AddRenderer(self.
+        self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
         self._ortho1Renderer = vtk.vtkRenderer()
         self._ortho1Renderer.SetBackground(0.5, 0.5, 0.5)
-        self._view_frame.ortho1RWI.GetRenderWindow().AddRenderer(self.
+        self._viewFrame.ortho1RWI.GetRenderWindow().AddRenderer(self.
                                                                _ortho1Renderer)
         self._ortho2Renderer = vtk.vtkRenderer()
         self._ortho2Renderer.SetBackground(0.5, 0.5, 0.5)
-        self._view_frame.ortho2RWI.GetRenderWindow().AddRenderer(self.
+        self._viewFrame.ortho2RWI.GetRenderWindow().AddRenderer(self.
                                                                _ortho2Renderer)
 
         # event handlers for the global control buttons
-        EVT_BUTTON(self._view_frame, self._view_frame.pipelineButtonId,
-                   lambda e, pw=self._view_frame, s=self,
-                   rw=self._view_frame.threedRWI.GetRenderWindow():
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+                   lambda e, pw=self._viewFrame, s=self,
+                   rw=self._viewFrame.threedRWI.GetRenderWindow():
                    s.vtkPipelineConfigure(pw, rw))
 
         def confPickedHandler(event):
-            rwi = self._view_frame.threedRWI
+            rwi = self._viewFrame.threedRWI
             picker = rwi.GetPicker()
             path = picker.GetPath()
             if path:
                 prop = path.GetFirstNode().GetProp()
                 if prop:
-                    self.vtkPipelineConfigure(self._view_frame,
+                    self.vtkPipelineConfigure(self._viewFrame,
                                               rwi.GetRenderWindow(),
                                               (prop,))
 
-        EVT_BUTTON(self._view_frame, self._view_frame.confPickedButtonId,
-                   confPickedHandler)
+        #EVT_BUTTON(self._viewFrame, self._viewFrame.confPickedButtonId,
+        #           confPickedHandler)
 
-        EVT_BUTTON(self._view_frame, self._view_frame.resetButtonId,
+        EVT_BUTTON(self._viewFrame, self._viewFrame.resetButtonId,
                    lambda e, s=self: s._reset())
 
-        
-        # event logic for the selected points grid
 
         def pointsSelectAllCallback(event):
-            self._view_frame.spointsGrid.SelectAll()
+            self._viewFrame.spointsGrid.SelectAll()
 
         def pointsDeselectAllCallback(event):
-            self._view_frame.spointsGrid.ClearSelection()
+            self._viewFrame.spointsGrid.ClearSelection()
 
         def pointsRemoveCallback(event):
-            selRows = self._view_frame.spointsGrid.GetSelectedRows()
+            selRows = self._viewFrame.spointsGrid.GetSelectedRows()
             print "SELROWS " + str(selRows)
             print "This should begin working somewhere after wxPython 2.4.0.1"
             if len(selRows):
                 self._remove_cursors(selRows)
 
-        EVT_BUTTON(self._view_frame, self._view_frame.pointsSelectAllButtonId,
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pointsSelectAllButtonId,
                    pointsSelectAllCallback)
-        EVT_BUTTON(self._view_frame,
-                   self._view_frame.pointsDeselectAllButtonId,
+        EVT_BUTTON(self._viewFrame,
+                   self._viewFrame.pointsDeselectAllButtonId,
                    pointsDeselectAllCallback)
-        EVT_BUTTON(self._view_frame,
-                   self._view_frame.pointsRemoveButtonId,
+        EVT_BUTTON(self._viewFrame,
+                   self._viewFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
 
         # event logic for the voi panel
@@ -437,14 +435,14 @@ class slice3d_vwr(moduleBase,
                     self._voi_widget.Off()
             
             
-        EVT_CHECKBOX(self._view_frame,
-                     self._view_frame.voiPanel.widgetEnabledCboxId,
+        EVT_CHECKBOX(self._viewFrame,
+                     self._viewFrame.voiPanel.widgetEnabledCboxId,
                      widgetEnabledCBoxCallback)
 
         # now the three ortho view pages + all callbacks
-        orthoPanels = [self._view_frame.nbAxialPanel,
-                       self._view_frame.nbCoronalPanel,
-                       self._view_frame.nbSagittalPanel]
+        orthoPanels = [self._viewFrame.nbAxialPanel,
+                       self._viewFrame.nbCoronalPanel,
+                       self._viewFrame.nbSagittalPanel]
 
         for i in range(len(orthoPanels)):
 
@@ -454,15 +452,53 @@ class slice3d_vwr(moduleBase,
                 if ipw.GetInput():
                     if orthoPanels[i].enabledCbox.GetValue():
                         ipw.On()
+                        orthoPanels[i].interactionCbox.Enable(1)
+                        # ipw.On() reactivates interaction!
+                        ival = orthoPanels[i].interactionCbox.GetValue()
+                        ipw.SetInteraction(not ival)
+                        ipw.SetInteraction(ival)
+                        orthoPanels[i].interactionCbox.SetValue(bool(ival))
+                        orthoPanels[i].pushSliceLabel.Enable(1)
+                        orthoPanels[i].pushSliceSpinCtrl.Enable(1)
                     else:
                         ipw.Off()
+                        orthoPanels[i].interactionCbox.Enable(0)
+                        orthoPanels[i].pushSliceLabel.Enable(0)
+                        orthoPanels[i].pushSliceSpinCtrl.Enable(0)
+                        
         
-            EVT_CHECKBOX(self._view_frame, orthoPanels[i].enabledCboxId,
+            EVT_CHECKBOX(self._viewFrame, orthoPanels[i].enabledCboxId,
                          lambda e, i=i:_eb_cb(i))
 
+            def _ib_cb(i):
+                ipw = self._ipws[i]
+                if ipw.GetInput():
+                    if orthoPanels[i].interactionCbox.GetValue():
+                        ipw.SetInteraction(1)
+                    else:
+                        ipw.SetInteraction(0)
+                
+
+            EVT_CHECKBOX(self._viewFrame, orthoPanels[i].interactionCboxId,
+                         lambda e, i=i: _ib_cb(i))
+
+            def _ps_cb(i):
+                ipw = self._ipws[i]
+                if ipw.GetInput():
+                    val = orthoPanels[i].pushSliceSpinCtrl.GetValue()
+                    if val:
+                        ipw.GetPolyDataSource().Push(val)
+                        ipw.UpdatePlacement()
+                        orthoPanels[i].pushSliceSpinCtrl.SetValue(0)
+                        self._viewFrame.threedRWI.Render()
+                
+
+            EVT_SPINCTRL(self._viewFrame, orthoPanels[i].pushSliceSpinCtrlId,
+                         lambda e, i=i: _ps_cb(i))
+
             # the store button
-            EVT_BUTTON(self._view_frame, orthoPanels[i].storeId,
-                       lambda e, i=i: self._store_cursor_cb(i))
+            EVT_BUTTON(self._viewFrame, orthoPanels[i].storeId,
+                       lambda e, i=i: self._storeCursorCallback(i))
             
             
             # now make callback for the ipw
@@ -477,16 +513,20 @@ class slice3d_vwr(moduleBase,
                                       self._ipwEndInteractionCallback(i))
 
         
-        EVT_NOTEBOOK_PAGE_CHANGED(self._view_frame,
-                                  self._view_frame.acsNotebookId,
+        EVT_NOTEBOOK_PAGE_CHANGED(self._viewFrame,
+                                  self._viewFrame.acsNotebookId,
                                   self._acs_nb_page_changed_cb)
+
+        # clicks directly in the window for picking
+        self._viewFrame.threedRWI.AddObserver('LeftButtonPressEvent',
+                                               self._rwiLeftButtonCallback)
         
         # attach close handler
-        EVT_CLOSE(self._view_frame,
+        EVT_CLOSE(self._viewFrame,
                   lambda e, s=self: s._view_frame.Show(false))
 
         # display the window
-        self._view_frame.Show(true)
+        self._viewFrame.Show(true)
 
     def _remove_cursors(self, idxs):
 
@@ -496,25 +536,25 @@ class slice3d_vwr(moduleBase,
         
         for idx in idxs:
             # remove the sphere actor from the renderer
-            self._threedRenderer.RemoveActor(self._sel_points[idx]['sphere_actor'])
+            self._threedRenderer.RemoveActor(self._selectedPoints[idx]['sphere_actor'])
             # remove the text_actor (if any)
-            if self._sel_points[idx]['text_actor']:
-                self._threedRenderer.RemoveActor(self._sel_points[idx]['text_actor'])
+            if self._selectedPoints[idx]['text_actor']:
+                self._threedRenderer.RemoveActor(self._selectedPoints[idx]['text_actor'])
             
             # then deactivate and disconnect the point widget
-            pw = self._sel_points[idx]['point_widget']
+            pw = self._selectedPoints[idx]['point_widget']
             pw.SetInput(None)
             pw.Off()
             pw.SetInteractor(None)
 
             # remove the entries from the wxGrid
-            self._view_frame.spointsGrid.DeleteRows(idx)
+            self._viewFrame.spointsGrid.DeleteRows(idx)
 
             # then remove it from our internal list
-            del self._sel_points[idx]
+            del self._selectedPoints[idx]
 
             # rerender
-            self._view_frame.threedRWI.Render()
+            self._viewFrame.threedRWI.Render()
 
             # and sync up output points
             self._syncOutputSelectedPoints()
@@ -583,7 +623,7 @@ class slice3d_vwr(moduleBase,
         idx = 2
         for ipw in self._ipws:
             ipw.DisplayTextOn()
-            ipw.SetInteractor(self._view_frame.threedRWI)
+            ipw.SetInteractor(self._viewFrame.threedRWI)
             ipw.SetPlaneOrientation(idx)
             idx -= 1
             ipw.SetSliceIndex(0)
@@ -594,7 +634,7 @@ class slice3d_vwr(moduleBase,
             ipw.On()
 
         # reset the VOI widget
-        self._voi_widget.SetInteractor(self._view_frame.threedRWI)
+        self._voi_widget.SetInteractor(self._viewFrame.threedRWI)
         self._voi_widget.SetInput(input_data)
         self._voi_widget.PlaceWidget()
         self._voi_widget.SetPriority(0.6)
@@ -606,7 +646,7 @@ class slice3d_vwr(moduleBase,
         self._reset_overlays()
 
         # whee, thaaaar she goes.
-        self._view_frame.threedRWI.Render()
+        self._viewFrame.threedRWI.Render()
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
@@ -624,7 +664,7 @@ class slice3d_vwr(moduleBase,
 
             idx = 2
             for ipw in self._overlay_ipws:
-                ipw.SetInteractor(self._view_frame.threedRWI)
+                ipw.SetInteractor(self._viewFrame.threedRWI)
                 ipw.SetPlaneOrientation(idx)
                 idx -= 1
                 ipw.SetSliceIndex(0)
@@ -637,51 +677,61 @@ class slice3d_vwr(moduleBase,
 
             self._syncOverlays()
         
+    def _storePoint(self, pointId, actor):
+        pass
 
-    def _store_cursor(self, cursor):
+    def _storeCursor(self, cursor):
+        """Store the point represented by the cursor parameter.
 
+        cursor is a 4-tuple with the discrete (data-relative) xyz coords and
+        the value at that point.
+        """
+        
         # do we have data?
         if self._ipws[0].GetInput() is None:
             return
 
         # we first have to check that we don't have this pos already
-        cursors = [i['cursor'] for i in self._sel_points]
-        if cursor in cursors:
+        discretes = [i['discrete'] for i in self._selectedPoints]
+        if tuple(cursor[0:3]) in discretes:
             return
         
         input_data = self._ipws[0].GetInput()
         ispacing = input_data.GetSpacing()
         iorigin = input_data.GetOrigin()
         # calculate real coords
-        coords = map(operator.add, iorigin,
-                     map(operator.mul, ispacing, cursor[0:3]))
+        world = map(operator.add, iorigin,
+                    map(operator.mul, ispacing, cursor[0:3]))
+
+        self._storePoint(tuple(cursor[0:3]), world, cursor[3])
+
+    def _storePoint(self, discrete, world, value):
         
         # we use a pointwidget
-
         pw = vtk.vtkPointWidget()
-        pw.SetInput(input_data)
+        pw.SetInput(inputData)
         pw.PlaceWidget()
-        pw.SetPosition(coords)
+        pw.SetPosition(world)
         # make priority higher than the default of vtk3DWidget so
         # that imageplanes behind us don't get selected the whole time
         pw.SetPriority(0.6)
-        pw.SetInteractor(self._view_frame.threedRWI)
+        pw.SetInteractor(self._viewFrame.threedRWI)
         pw.AllOff()
         pw.On()
 
         ss = vtk.vtkSphereSource()
-        bounds = input_data.GetBounds()
+        bounds = inputData.GetBounds()
         ss.SetRadius((bounds[1] - bounds[0]) / 50.0)
         sm = vtk.vtkPolyDataMapper()
         sm.SetInput(ss.GetOutput())
         sa = vtk.vtkActor()
         sa.SetMapper(sm)
-        sa.SetPosition(coords)
+        sa.SetPosition(world)
         sa.GetProperty().SetColor(1.0,0.0,0.0)
         self._threedRenderer.AddActor(sa)
 
         # first get the name of the point that we are going to store
-        nb = self._view_frame.acsNotebook
+        nb = self._viewFrame.acsNotebook
         cur_panel = nb.GetPage(nb.GetSelection())
         cursor_name = cur_panel.cursorNameCombo.GetValue()
 
@@ -693,7 +743,7 @@ class slice3d_vwr(moduleBase,
             ta = vtk.vtkFollower()
             ta.SetMapper(name_mapper)
             ta.GetProperty().SetColor(1.0, 1.0, 0.0)
-            ta.SetPosition(coords)
+            ta.SetPosition(world)
             ta_bounds = ta.GetBounds()
             ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
                         (ta_bounds[1] - ta_bounds[0]))
@@ -708,38 +758,40 @@ class slice3d_vwr(moduleBase,
             self._syncOutputSelectedPoints()
 
         pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
-                       input_data=input_data, s=self:
-                       s.pointwidget_interaction_cb(pw, evt_name, input_data))
+                       inputData=inputData, s=self:
+                       s.pointwidget_interaction_cb(pw, evt_name, inputData))
         pw.AddObserver('InteractionEvent', lambda pw, evt_name,
-                       input_data=input_data, s=self:
-                       s.pointwidget_interaction_cb(pw, evt_name, input_data))
+                       inputData=inputData, s=self:
+                       s.pointwidget_interaction_cb(pw, evt_name, inputData))
         pw.AddObserver('EndInteractionEvent', pw_ei_cb)
         
         # store the cursor (discrete coords) the coords and the actor
-        self._sel_points.append({'cursor' : cursor, 'coords' : coords,
-                                 'name' : cursor_name,
-                                 'point_widget' : pw,
-                                 'sphere_actor' : sa,
-                                 'text_actor' : ta})
+        self._selectedPoints.append({'discrete' : discrete, 'world' : world,
+                                     'value' : value,
+                                     'name' : cursor_name,
+                                     'point_widget' : pw,
+                                     'sphere_actor' : sa,
+                                     'text_actor' : ta})
 
         
-        self._view_frame.spointsGrid.AppendRows()
-	self._view_frame.spointsGrid.AdjustScrollbars()        
-        row = self._view_frame.spointsGrid.GetNumberRows() - 1
+        self._viewFrame.spointsGrid.AppendRows()
+	self._viewFrame.spointsGrid.AdjustScrollbars()        
+        row = self._viewFrame.spointsGrid.GetNumberRows() - 1
         self._syncGridRowToSelPoints(row)
         
         # make sure self._outputSelectedPoints is up to date
         self._syncOutputSelectedPoints()
 
-        self._view_frame.threedRWI.Render()
+        self._viewFrame.threedRWI.Render()
 
     def _syncGridRowToSelPoints(self, row):
         # *sniff* *sob* It's unreadable, but why's it so pretty?
         # this just formats the real point
-        cursor = self._sel_points[row]['cursor']
-        pos_str = "%s, %s, %s" % tuple(cursor[0:3])
-        self._view_frame.spointsGrid.SetCellValue(row, 0, pos_str)
-        self._view_frame.spointsGrid.SetCellValue(row, 1, str(cursor[3]))
+        discrete = self._selectedPoints[row]['discrete']
+        value = self._selectedPoints[row]['value']
+        pos_str = "%s, %s, %s" % discrete
+        self._viewFrame.spointsGrid.SetCellValue(row, 0, pos_str)
+        self._viewFrame.spointsGrid.SetCellValue(row, 1, str(value))
 
     def _syncOverlay(self, i):
         if len(self._overlay_ipws) > i:
@@ -766,11 +818,11 @@ class slice3d_vwr(moduleBase,
         del self._outputSelectedPoints[:]
 
         # then transfer everything
-        for i in self._sel_points:
-            x,y,z,v = i['cursor']
+        for i in self._selectedPoints:
+            x,y,z,v = i['discrete']
             self._outputSelectedPoints.append({'name' : i['name'],
                                                'discrete' : (x,y,z),
-                                               'world' : i['coords'],
+                                               'world' : i['world'],
                                                'value' : v})
 
         # then make sure this structure knows that it has been modified
@@ -781,7 +833,7 @@ class slice3d_vwr(moduleBase,
 #################################################################
 
     def _acs_nb_page_changed_cb(self, event):
-        nb = self._view_frame.acsNotebook
+        nb = self._viewFrame.acsNotebook
         cur_panel = nb.GetPage(nb.GetSelection())
         if self._ipws[nb.GetSelection()].GetEnabled():
             cur_panel.enabledCbox.SetValue(true)
@@ -789,13 +841,13 @@ class slice3d_vwr(moduleBase,
             cur_panel.enabledCbox.SetValue(false)
 
     def _ipw_start_interaction_cb(self, i):
-        self._view_frame.acsNotebook.SetSelection(i)
+        self._viewFrame.acsNotebook.SetSelection(i)
         self._ipw_interaction_cb(i)
 
     def _ipw_interaction_cb(self, i):
         cd = 4 * [0.0]
         if self._ipws[i].GetCursorData(cd):
-            nb = self._view_frame.acsNotebook
+            nb = self._viewFrame.acsNotebook
             cur_panel = nb.GetPage(nb.GetSelection())
             self._current_cursors[i] = cd
             cstring = str(cd[0:3]) + " = " + str(cd[3])
@@ -804,35 +856,35 @@ class slice3d_vwr(moduleBase,
     def _ipwEndInteractionCallback(self, i):
         self._syncOverlay(i)
 
-    def pointwidget_interaction_cb(self, pw, evt_name, input_data):
+    def pointwidget_interaction_cb(self, pw, evt_name, inputData):
         # we have to find pw in our list
-        pwidgets = map(lambda i: i['point_widget'], self._sel_points)
+        pwidgets = map(lambda i: i['point_widget'], self._selectedPoints)
         if pw in pwidgets:
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list
-            self._view_frame.spointsGrid.SelectRow(idx)
+            self._viewFrame.spointsGrid.SelectRow(idx)
 
             # get its position and transfer it to the sphere actor that
             # we use
             pos = pw.GetPosition()
-            self._sel_points[idx]['sphere_actor'].SetPosition(pos)
+            self._selectedPoints[idx]['sphere_actor'].SetPosition(pos)
 
             # also update the text_actor (if appropriate)
-            ta = self._sel_points[idx]['text_actor']
+            ta = self._selectedPoints[idx]['text_actor']
             if ta:
                 ta.SetPosition(pos)
 
             # then we have to update our internal record of this point
-            ispacing = input_data.GetSpacing()
-            iorigin = input_data.GetOrigin()
+            ispacing = inputData.GetSpacing()
+            iorigin = inputData.GetOrigin()
             x,y,z = map(round,
                         map(operator.div,
                         map(operator.sub, pos, iorigin), ispacing))
-            val = input_data.GetScalarComponentAsFloat(x,y,z, 0)
+            val = inputData.GetScalarComponentAsFloat(x,y,z, 0)
             # the cursor is a tuple with discrete position and value
-            self._sel_points[idx]['cursor'] = (x,y,z,val)
-            # 'coords' is the world coordinates
-            self._sel_points[idx]['coords'] = pos
+            self._selectedPoints[idx]['discrete'] = (x,y,z,val)
+            # 'world' is the world coordinates
+            self._selectedPoints[idx]['world'] = pos
 
             self._syncGridRowToSelPoints(idx)
             
@@ -929,12 +981,12 @@ class slice3d_vwr(moduleBase,
         wxvtkrwi.GetRenderWindow().Render()
         self._rwis[0].GetRenderWindow().Render()
 
-    def _store_cursor_cb(self, i):
+    def _storeCursorCallback(self, i):
         """Call back for the store cursor button.
 
         Calls store cursor method on [x,y,z,v].
         """
-        self._store_cursor(self._current_cursors[i])
+        self._storeCursor(self._current_cursors[i])
         
     def voiWidgetInteractionCallback(self, o, e):
         planes = vtk.vtkPlanes()
@@ -942,7 +994,7 @@ class slice3d_vwr(moduleBase,
         bounds =  planes.GetPoints().GetBounds()
 
         # first set bounds
-        self._view_frame.voiPanel.boundsText.SetValue(
+        self._viewFrame.voiPanel.boundsText.SetValue(
             "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
             bounds)
 
@@ -959,7 +1011,7 @@ class slice3d_vwr(moduleBase,
         # store the VOI (this is a shallow copy)
         self._currentVOI = voi
         # display the discrete extent
-        self._view_frame.voiPanel.extentText.SetValue(
+        self._viewFrame.voiPanel.extentText.SetValue(
             "(%d %d %d %d %d %d)" % tuple(voi))
 
 
@@ -969,5 +1021,31 @@ class slice3d_vwr(moduleBase,
 
     def inputModifiedCallback(self, o, e):
         # the data has changed, so re-render what's on the screen
-        self._view_frame.threedRWI.Render()
+        self._viewFrame.threedRWI.Render()
+
+    def _rwiLeftButtonCallback(self, obj, event):
+
+        def findPickedProp(obj):
+            (x,y) = obj.GetEventPosition()
+            picker = vtk.vtkPointPicker()
+            picker.SetTolerance(0.005)
+            picker.Pick(x,y,0.0,self._threedRenderer)
+            return (picker.GetActor(), picker.GetPointId())
+            
+        pickAction = self._viewFrame.surfacePickActionRB.GetSelection()
+        if pickAction == 1:
+            # Place point on surface
+            print findPickedProp(obj)
+            pass
+        elif pickAction == 2:
+            # configure picked object
+            prop, pointId = findPickedProp(obj)
+            if prop:
+                self.vtkPipelineConfigure(self._viewFrame,
+                                          self._viewFrame.threedRWI, (prop,))
+
+
+        
+
+
         
