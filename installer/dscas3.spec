@@ -1,6 +1,5 @@
-FIXME FIXME FIXME:
-* don't let the installer copy system libraries from /usr/X11R6/lib !!!
-* think up solution for dicom.dic problem.
+#FIXME FIXME FIXME:
+#* think up solution for dicom.dic problem.
 
 D3_DIR = '/home/cpbotha/work/code/dscas3'
 
@@ -24,10 +23,16 @@ vpli = [(os.path.join('Icons', i),
 
 # under linux, libpython is shared -- McMillan installer doesn't know
 # about this...
+# also copy the hdf libs
 extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0','BINARY'),
     ('libmfhdf.so.4', '/usr/lib/libmfhdf.so.4','BINARY'),
     ('libdf.so.4', '/usr/lib/libdf.so.4','BINARY')]
-
+    
+# these libs will be removed from the package
+removeLibs = [('libGLU.so.1', '', ''), ('libICE.so.6','',''),
+              ('libSM.so.6', '', ''), ('libX11.so.6', '', ''), 
+              ('libXext.so.6', '', ''), ('libXi.so.6', '', ''), 
+              ('libXt.so.6', '', '')]
 
 ##########################################################################
 
@@ -47,5 +52,5 @@ exe = EXE(pyz,
           console=1)
 
 coll = COLLECT(exe,
-               a.binaries + umods + vpli + extraLibs,
+               a.binaries - removeLibs + umods + vpli + extraLibs,
                name='distdscas3')
