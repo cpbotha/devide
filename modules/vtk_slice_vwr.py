@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.5 2002/03/22 17:05:41 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.6 2002/03/23 00:52:53 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -16,6 +16,7 @@ class vtk_slice_vwr(module_base):
 	self.inputs = [{'Connected' : 0, 'vtkActor' : None} for i in range(self.num_inputs)]
 	self.rw_window = None
 	self.rws = []
+	self.rw_lastxys = []
 	self.renderers = []
 
         # list of lists of dictionaries
@@ -25,8 +26,7 @@ class vtk_slice_vwr(module_base):
 
         # axial, sagittal, coronal
         self.IntialResliceAxesDirectionCosines = [(1,0,0, 0,1,0, 0,0,1), (0,1,0, 0,0,1, 1,0,0), (1,0,0, 0,0,1, 0,-1,0)]
-
-
+	
 	self.create_window()
 	
     def __del__(self):
@@ -58,6 +58,7 @@ class vtk_slice_vwr(module_base):
 
 	# the 3d window
 	self.rws.append(vtkTkRenderWidget(rws_pane.pane('top3d'), width=600, height=200))
+	self.rw_lastxys.append({'x' : 0, 'y' : 0}) # we're never going to use this one...
 	self.renderers.append(vtkRenderer())
 	# add last appended renderer to last appended vtkTkRenderWidget
 	self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
@@ -72,17 +73,52 @@ class vtk_slice_vwr(module_base):
 	ortho_pane.add('ortho2', size=200)	
 	for i in range(self.num_orthos):
 	    self.rws.append(vtkTkRenderWidget(ortho_pane.pane('ortho%d' % (i)), width=200, height=150))
+	    self.rw_lastxys.append({'x' : 0, 'y' : 0})	    
 	    self.renderers.append(vtkRenderer())
 	    # add last appended renderer to last appended vtkTkRenderWidget
 	    self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
 	    self.rws[-1].pack(side=LEFT, fill=BOTH, expand=1)
 
 	rws_pane.pack(side=TOP, fill=BOTH, expand=1)
+	
+	# bind event handlers
+	for rw in self.rws[1:]:
+	    # we need to keep track of a last mouse activity
+	    rw.bind('<Any-ButtonPress>', lambda e,s=self,rw=rw: s.rw_starti_cb(e.x,e.y,rw))
+	    rw.bind('<Any-ButtonRelease>', lambda e,s=self,rw=rw: s.rw_endi_cb(e.x,e.y,rw))
+	    # we're going to use this to change current slice
+	    rw.bind('<B1-Motion>', lambda e,s=self,rw=rw: s.rw_slice_cb(e.x,e.y,rw))
 
 
     def get_input_descriptions(self):
 	# concatenate it num_inputs times (but these are shallow copies!)
 	return self.num_inputs * ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
+    
+    def setup_plane(self, cur_pipe):
+	# try and pull the data through
+	cur_pipe['vtkImageReslice'].Update()
+	# make the plane that the texture is mapped on
+	output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
+	cur_pipe['vtkPlaneSource'].SetOrigin(output_bounds[0], output_bounds[2], 0)
+	cur_pipe['vtkPlaneSource'].SetPoint1(output_bounds[1], output_bounds[2], 0)
+	cur_pipe['vtkPlaneSource'].SetPoint2(output_bounds[0], output_bounds[3], 0)
+	
+    def setup_camera(self, cur_pipe, renderer):
+	# now we're going to manipulate the camera in order to achieve some gluOrtho2D() goodness
+	icam = renderer.GetActiveCamera()
+	# set to orthographic projection
+	icam.SetParallelProjection(1);
+	# set camera 10 units away, right in the centre
+	icam.SetPosition(cur_pipe['vtkPlaneSource'].GetCenter()[0], cur_pipe['vtkPlaneSource'].GetCenter()[1], 10);
+	icam.SetFocalPoint(cur_pipe['vtkPlaneSource'].GetCenter());
+	# make sure it's the right way up
+	icam.SetViewUp(0,1,0);
+	icam.SetClippingRange(1, 11);
+	# we're assuming icam->WindowCenter is (0,0), then  we're effectively doing this:
+	# glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0, 11)
+	output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
+	icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
+	
     
     def set_input(self, idx, input_stream):
         if input_stream == None:
@@ -132,30 +168,10 @@ class vtk_slice_vwr(module_base):
                     cur_pipe['vtkActor'].SetMapper(mapper)
                     cur_pipe['vtkActor'].SetTexture(cur_pipe['vtkTexture'])
                     self.renderers[i + 1].AddActor(cur_pipe['vtkActor'])
-              
-                    # try and pull the data through
-                    cur_pipe['vtkImageReslice'].Update()
-                    # make the plane that the texture is mapped on
-                    output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
-                    cur_pipe['vtkPlaneSource'].SetOrigin(output_bounds[0], output_bounds[2], 0)
-                    cur_pipe['vtkPlaneSource'].SetPoint1(output_bounds[1], output_bounds[2], 0)
-                    cur_pipe['vtkPlaneSource'].SetPoint2(output_bounds[0], output_bounds[3], 0)
-                    
-                    # FIXME: only do the  camera setup for the first layer!!!
-                    
-                    # now we're going to manipulate the camera in order to achieve some gluOrtho2D() goodness
-                    icam = self.renderers[i+1].GetActiveCamera()
-                    # set to orthographic projection
-                    icam.SetParallelProjection(1);
-                    # set camera 10 units away, right in the centre
-                    icam.SetPosition(cur_pipe['vtkPlaneSource'].GetCenter()[0], cur_pipe['vtkPlaneSource'].GetCenter()[1], 10);
-                    icam.SetFocalPoint(cur_pipe['vtkPlaneSource'].GetCenter());
-                    # make sure it's the right way up
-                    icam.SetViewUp(0,1,0);
-                    icam.SetClippingRange(1, 11);
-                    # we're assuming icam->WindowCenter is (0,0), then  we're effectively doing this:
-                    # glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0, 11)
-                    icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
+		    
+		    self.setup_plane(cur_pipe)
+		    if len(self.ortho_pipes[i]) == 1:
+			self.setup_camera(cur_pipe, self.renderers[i+1])
 
 	    else:
 		raise TypeError, "Wrong input type!"
@@ -171,6 +187,53 @@ class vtk_slice_vwr(module_base):
     def view(self):
 	self.rw_window.deiconify()
     
+    def rw_starti_cb(self, x, y, rw):
+	rw.StartMotion(x,y)
+	self.rw_lastxys[self.rws.index(rw)] = {'x' : x, 'y' : y}
 	
+    def rw_endi_cb(self, x, y, rw):
+	rw.EndMotion(x,y)
+	self.rw_lastxys[self.rws.index(rw)] = {'x' : x, 'y' : y}
+	
+    def rw_slice_cb(self, x, y, rw):
+	r_idx = self.rws.index(rw)
+	
+	for layer_pl in self.ortho_pipes[r_idx - 1]:
+	    reslice = layer_pl['vtkImageReslice']
+	    o_extent = reslice.GetOutputExtent()
+	    o_origin = reslice.GetOutputOrigin()
+	    o_spacing = reslice.GetOutputSpacing()
+
+	    reslice.SetOutputExtentToDefault()
+	    reslice.SetOutputOriginToDefault()
+	    reslice.SetOutputSpacingToDefault()
+	    output = reslice.GetOutput()
+	    output.UpdateInformation()
+	    lo,hi = output.GetWholeExtent()[4:6]
+	    s = output.GetSpacing()[2]
+	    o = output.GetOrigin()[2]
+	    lo = o + lo*s
+	    hi = o + hi*s
+	    orig_lo = min((lo,hi))
+	    orig_hi = max((lo,hi))
+
+	    print o_origin
+	    delta = y - self.rw_lastxys[r_idx]['y']
+	    o_origin = list(o_origin)
+	    o_origin[2] = o_origin[2]+delta*o_spacing[2]
+	    if (o_origin[2] > orig_hi):
+		o_origin[2] = orig_hi
+	    elif (o_origin[2] < orig_lo):
+		o_origin[2] = orig_lo
+	    o_origin = tuple(o_origin)
+
+        reslice.SetOutputSpacing(o_spacing)
+        reslice.SetOutputOrigin(o_origin)
+        reslice.SetOutputExtent(o_extent)
+	    
+	    
+	# at the end
+	self.rw_lastxys[r_idx] = {'x' : x, 'y' : y}
+	rw.Render()
     
 	
