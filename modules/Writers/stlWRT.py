@@ -1,4 +1,4 @@
-# $Id: stlWRT.py,v 1.3 2003/09/29 13:13:51 cpbotha Exp $
+# $Id: stlWRT.py,v 1.4 2003/09/29 20:13:21 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -51,10 +51,10 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.close(self)
 
     def getInputDescriptions(self):
-	return ('vtkStructuredPoints',)
+	return ('vtkPolyData',)
     
     def setInput(self, idx, input_stream):
-        self._writer.SetInput(input_stream)
+        self._cleaner.SetInput(input_stream)
     
     def getOutputDescriptions(self):
 	return ()

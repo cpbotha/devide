@@ -1,11 +1,11 @@
-# $Id: ivWRT.py,v 1.1 2003/09/29 20:07:07 cpbotha Exp $
+# $Id: ivWRT.py,v 1.2 2003/09/29 20:13:21 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class stlWRT(moduleBase, filenameViewModuleMixin):
+class ivWRT(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -14,29 +14,22 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
-        # need to make sure that we're all happy triangles and stuff
-        self._cleaner = vtk.vtkCleanPolyData()
-        self._tf = vtk.vtkTriangleFilter()
-        self._tf.SetInput(self._cleaner.GetOutput())
-        self._writer = vtk.vtkSTLWriter()
-        self._writer.SetInput(self._tf.GetOutput())
+        self._writer = vtk.vtkIVWriter()
         # sorry about this, but the files get REALLY big if we write them
         # in ASCII - I'll make this a gui option later.
         #self._writer.SetFileTypeToBinary()
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
-        mm = self._moduleManager        
-        for textobj in (('Cleaning data', self._cleaner),
-                        ('Converting to triangles', self._tf),
-                        ('Writing STL data', self._writer)):
-            moduleUtils.setupVTKObjectProgress(self, textobj[1],
-                                               textobj[0])
+        mm = self._moduleManager
+        moduleUtils.setupVTKObjectProgress(
+            self, self._writer, 'Writing polydata to Inventor Viewer format')
         
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              'STL data (*.stl)|*.stl|All files (*)|*',
-                              {'vtkSTLWriter': self._writer})
+        self._createViewFrame(
+            'Select a filename',
+            'InventorViewer data (*.iv)|*.stl|All files (*)|*',
+            {'vtkIVWriter': self._writer})
 
         # set up some defaults
         self._config.filename = ''
@@ -51,7 +44,7 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         filenameViewModuleMixin.close(self)
 
     def getInputDescriptions(self):
-	return ('vtkStructuredPoints',)
+	return ('vtkPolyData',)
     
     def setInput(self, idx, input_stream):
         self._writer.SetInput(input_stream)
