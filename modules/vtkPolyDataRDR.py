@@ -1,4 +1,4 @@
-# $Id: vtk_plydta_rdr.py,v 1.9 2003/02/12 00:24:41 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.1 2003/02/13 12:54:00 cpbotha Exp $
 
 # TODO:
 # * rename this module to vtkPolyDataRDR

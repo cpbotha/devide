@@ -1,4 +1,4 @@
-# $Id: vtk_stl_rdr.py,v 1.3 2003/02/12 00:24:41 cpbotha Exp $
+# $Id: stlRDR.py,v 1.1 2003/02/13 12:54:00 cpbotha Exp $
 
 # TODO:
 # * rename this module to stlRDR
