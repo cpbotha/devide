@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.23 2004/05/24 21:39:29 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.24 2005/03/26 20:50:07 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -9,7 +9,7 @@
 # See LICENSE.txt for details.
 #
 # Copyright (C) 2000 Prabhu Ramachandran
-# Conversion to wxPython, other changes copyright (c) 2002,2003 Charl P. Botha
+# Conversion to wxPython, other changes copyright (c) 2002-2005 Charl P. Botha
 #
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
@@ -21,6 +21,7 @@
 #
 #   Charl P. Botha <cpbotha@ieee.org>
 #   http://cpbotha.net/
+
 
 """This program/module takes a VTK object and provides a GUI
 configuration for it.

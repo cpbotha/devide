@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.6 2004/07/08 12:46:03 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.7 2005/03/26 20:50:07 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -9,7 +9,7 @@
 # See LICENSE.txt for details.
 #
 # Copyright (C) 2000 Prabhu Ramachandran
-# Conversion to wxPython, other changes copyright (c) 2002,2003 Charl P. Botha
+# Conversion to wxPython, other changes copyright (c) 2002-2005 Charl P. Botha
 #
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR

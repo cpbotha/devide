@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.10 2004/05/24 21:24:01 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.11 2005/03/26 20:50:07 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -8,6 +8,7 @@
 # See LICENSE.txt for details.
 #
 # Copyright (c) 2000-2002, Prabhu Ramachandran.
+# Conversion to wxPython, other changes copyright (c) 2002-2005 Charl P. Botha
 #
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
@@ -17,8 +18,9 @@
 #   Prabhu Ramachandran <prabhu_r@users.sf.net>
 #   http://www.aero.iitm.ernet.in/~prabhu/
 #
-# Class robustified by Charl P. Botha as part of a wxPython port
-# Charl P. Botha <cpbotha@ieee.org> http://cpbotha.net/
+#   Charl P. Botha <cpbotha@ieee.org>
+#   http://cpbotha.net/
+
 
 """  
 This python program/module provides functionality to parse the methods
