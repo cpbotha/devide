@@ -1,4 +1,4 @@
-# $Id: nbhSeedConnect.py,v 1.1 2004/03/18 17:55:43 cpbotha Exp $
+# $Id: nbhSeedConnect.py,v 1.2 2004/03/18 17:57:42 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -14,9 +14,9 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
     user-supplied points.  Only pixels with intensities between the
     user-configurable thresholds and with complete neighbourhoods where all
     pixels have intensities between the thresholds are considered valid
-    candidates.  The size of the threshold can be set as well.
+    candidates.  The size of the neighbourhood can be set as well.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
