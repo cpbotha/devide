@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.5 2003/02/03 10:53:06 cpbotha Exp $
+# $Id: moduleBase.py,v 1.6 2003/02/06 16:22:58 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
@@ -13,8 +13,12 @@ class moduleBase:
     """
     
     def __init__(self, moduleManager):
-        """We need to know where the module manager is so we can query
-        it about the module path, e.g.
+        """Perform your module initialisation here.
+
+        Please also call this init method
+        (i.e. moduleBase.__init__(self)).  In your own __init__, you
+        should create your view and show it to the user.
+
         """
         self._moduleManager = moduleManager
 
