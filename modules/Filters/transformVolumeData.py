@@ -7,7 +7,7 @@ import vtk
 class transformVolumeData(noConfigModuleMixin, moduleBase):
     """Transform volume according to 4x4 homogeneous transform.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -20,8 +20,8 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
         self._imageReslice = vtk.vtkImageReslice()
         self._imageReslice.SetInterpolationModeToCubic()
 
-        self._matrixToHT = vtk.vtkMatrixToHomogeneousTransform()
-        self._matrixToHT.Inverse()
+        self._matrixToLT = vtk.vtkMatrixToLinearTransform()
+        self._matrixToLT.Inverse()
 
 
         moduleUtils.setupVTKObjectProgress(self, self._imageReslice,
@@ -54,14 +54,14 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
             self._imageReslice.SetInput(inputStream)
         else:
             try:
-                self._matrixToHT.SetInput(inputStream.GetMatrix())
+                self._matrixToLT.SetInput(inputStream.GetMatrix())
                 
             except AttributeError:
                 # this means the inputStream has no GetMatrix()
                 # i.e. it could be None or just the wrong type
                 # if it's none, we just have to disconnect
                 if inputStream == None:
-                    self._matrixToHT.SetInput(None)
+                    self._matrixToLT.SetInput(None)
                     self._imageReslice.SetResliceTransform(None)
 
                 # if not, we have to complain
@@ -70,7 +70,7 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
                           "transformVolume input 2 requires a transform."
             
             else:
-                self._imageReslice.SetResliceTransform(self._matrixToHT)
+                self._imageReslice.SetResliceTransform(self._matrixToLT)
                     
 
     def getOutputDescriptions(self):
