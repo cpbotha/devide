@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.8 2003/08/15 15:49:09 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.9 2003/08/15 16:57:28 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -13,6 +13,7 @@ from modules.slice3dVWRmodules.sliceDirection import sliceDirection
 
 import vtk
 import wx
+import wx.grid
 
 class sliceDirections(object):
 
@@ -113,6 +114,15 @@ class sliceDirections(object):
                 self._grid.SetCellValue(nrGridRows, self._gridNameCol,
                                         sliceName)
 
+                # set the relevant cells up for Boolean
+                for col in [self._gridEnabledCol, self._gridInteractionCol]:
+                    self._grid.SetCellRenderer(
+                        nrGridRows, col, wx.grid.GridCellBoolRenderer())
+                    self._grid.SetCellAlignment(
+                        nrGridRows, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+                
+
+                # set initial boolean values
                 self._setSliceEnabled(sliceName, True)
                 self._setSliceInteraction(sliceName, True)
 

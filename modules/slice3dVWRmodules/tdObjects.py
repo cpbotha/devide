@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.28 2003/08/15 12:46:38 cpbotha Exp $
+# $Id: tdObjects.py,v 1.29 2003/08/15 16:57:28 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -9,6 +9,7 @@ import operator
 import vtk
 import vtkdscas
 import wx
+import wx.grid
 from wx.lib import colourdb
 
 class tdObjects:
@@ -130,6 +131,14 @@ class tdObjects:
             nrGridRows = self._grid.GetNumberRows()
             self._grid.AppendRows()
             self._grid.SetCellValue(nrGridRows, self._gridNameCol, objectName)
+
+            # set the relevant cells up for Boolean
+            for col in [self._gridVisibleCol, self._gridContourCol,
+                        self._gridMotionCol]:
+                self._grid.SetCellRenderer(nrGridRows, col,
+                                           wx.grid.GridCellBoolRenderer())
+                self._grid.SetCellAlignment(nrGridRows, col,
+                                            wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
             
             # store the name
             self._tdObjectsDict[tdObject]['objectName'] = objectName

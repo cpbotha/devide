@@ -103,10 +103,10 @@ def planePlaneIntersection(
 def setGridCellYesNo(grid, row, col, yes=True):
     if yes:
         colour = wxColour(0,255,0)
-        text = 'Yes'
+        text = '1'
     else:
         colour = wxColour(255,0,0)
-        text = 'No'
+        text = '0'
         
     grid.SetCellValue(row, col, text)
     grid.SetCellBackgroundColour(row, col, colour)
