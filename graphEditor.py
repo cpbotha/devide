@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.45 2003/09/30 09:54:55 cpbotha Exp $
+# $Id: graphEditor.py,v 1.46 2003/09/30 10:06:59 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -301,7 +301,7 @@ class graphEditor:
 
         if not moduleInstance.__doc__:
             md = wxMessageDialog(
-                self._dscas3_app._mainFrame,
+                self._graphFrame,
                 "This module has no help documentation yet.",
                 "Information",
                 wxOK | wxICON_INFORMATION)
@@ -422,8 +422,14 @@ class graphEditor:
         if owm and hasattr(owm, 'moduleInstance'):
             self._helpModule(owm.moduleInstance)
 
-        # if there's no module under the cursor, we should popup "normal"
-        # context sensitive help
+        else:
+            md = wxMessageDialog(
+                self._graphFrame,
+                "Hold the mouse cursor over an already placed module, then "
+                "press F1 to see its help documentation.",
+                "Information",
+                wxOK | wxICON_INFORMATION)
+            md.ShowModal()
             
     def _handlerCopySelected(self, event):
         if self._glyphSelection.getSelectedGlyphs():
