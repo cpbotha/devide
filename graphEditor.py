@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.51 2004/01/15 11:05:09 cpbotha Exp $
+# $Id: graphEditor.py,v 1.52 2004/01/28 23:10:08 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -280,8 +280,7 @@ class graphEditor:
 
         # first have to draw the just-placed glyph so it has
         # time to update its (label-dependent) dimensions
-        dc = wxClientDC(self._graphFrame.canvas)
-        self._graphFrame.canvas.PrepareDC(dc)
+        dc = self._graphFrame.canvas.getDC()
         co.draw(dc)
 
         # the network loading needs this
@@ -495,8 +494,7 @@ class graphEditor:
     def _drawPreviewLine(self, beginp, endp0, endp1):
 
         # make a DC to draw on
-        dc = wxClientDC(self._graphFrame.canvas)
-        self._graphFrame.canvas.PrepareDC(dc)
+        dc = self._graphFrame.canvas.getDC()        
 
         dc.BeginDrawing()
         
@@ -518,8 +516,7 @@ class graphEditor:
         """
         
         # make a DC to draw on
-        dc = wxClientDC(self._graphFrame.canvas)
-        self._graphFrame.canvas.PrepareDC(dc)
+        dc = self._graphFrame.canvas.getDC()
 
         dc.BeginDrawing()
         
@@ -650,7 +647,7 @@ class graphEditor:
             self._connect(draggedObject, draggedPort[1],
                           droppedObject, droppedInputPort)
             
-            self._graphFrame.canvas.Refresh()
+            self._graphFrame.canvas.redaw()
 
         elif draggedObject.inputLines[draggedPort[1]]:
             # this means the user was dragging a connected input port and has
@@ -671,7 +668,7 @@ class graphEditor:
             self._connect(fromGlyph, fromOutputIdx,
                           droppedObject, droppedInputPort)
 
-            self._graphFrame.canvas.Refresh()
+            self._graphFrame.canvas.redraw()
 
     def clearAllGlyphsFromCanvas(self):
         allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
@@ -693,7 +690,7 @@ class graphEditor:
             self._deleteModule(glyph, False)
 
         # only here!
-        self._graphFrame.canvas.Refresh()
+        self._graphFrame.canvas.redraw()
 
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
         l1 = wxpc.coLine(fromObject, fromOutputIdx,
@@ -736,7 +733,7 @@ class graphEditor:
             self._deleteModule(glyph, False)
 
         # finally we can let the canvas redraw
-        self._graphFrame.canvas.Refresh()
+        self._graphFrame.canvas.redraw()
 
     def _realiseNetwork(self, pmsDict, connectionList, glyphPosDict,
                         origin=(0,0), reposition=False):
@@ -786,7 +783,7 @@ class graphEditor:
                              tGlyph, connection.inputIdx)
 
         # finally we can let the canvas redraw
-        self._graphFrame.canvas.Refresh()
+        self._graphFrame.canvas.redraw()
 
 
     def _loadAndRealiseNetwork(self, filename, position=(0,0),
@@ -1038,7 +1035,7 @@ class graphEditor:
             # switch off the draggedPort
             glyph.draggedPort = None
             # redraw everything
-            canvas.Refresh()
+            canvas.redraw()
 
     def _glyphMotion(self, glyph, eventName, event, module):
         port = glyph.findPortContainingMouse(event.realX, event.realY)
@@ -1221,7 +1218,7 @@ class graphEditor:
             self._routeLine(line)
             
         # redraw all
-        canvas.Refresh()
+        canvas.redraw()
         
 
     def _routeLine(self, line):
@@ -1376,7 +1373,7 @@ class graphEditor:
 
             # after all that work, we deserve a redraw
             if refreshCanvas:
-                canvas.Refresh()
+                canvas.redraw()
 
         except Exception, e:
             genUtils.logError('Could not delete module: %s' % (str(e)))

@@ -1,4 +1,4 @@
-from wxPython import wx
+import wx
 from canvasSubject import canvasSubject
 from canvasObject import *
 
@@ -25,6 +25,20 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         wx.EVT_MOUSE_EVENTS(self, self.OnMouseEvent)
         wx.EVT_PAINT(self, self.OnPaint)
 
+        self.virtualWidth = 2048
+        self.virtualHeight = 2048
+        
+        self._buffer = None
+        self._buffer = wx.wxEmptyBitmap(self.virtualWidth, self.virtualHeight)
+        # we're only going to draw into the buffer, so no real client DC
+        dc = wx.wxBufferedDC(None, self._buffer)
+        dc.SetBackground(wx.wxBrush(self.GetBackgroundColour()))
+        dc.Clear()
+        self.doDrawing(dc)
+
+        self.SetVirtualSize((self.virtualWidth, self.virtualHeight))
+        self.SetScrollRate(20,20)
+
     def eventToRealCoords(self, ex, ey):
         """Convert window event coordinates to canvas relative coordinates.
         """
@@ -38,7 +52,19 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         ry = ey + vsy * dy
 
         return (rx, ry)
-        
+
+    def getDC(self):
+        """Returns DC which can be used by the outside to draw to our buffer.
+
+        As soon as dc dies (and it will at the end of the calling function)
+        the contents of self._buffer will be blitted to the screen.
+        """
+
+        cdc = wx.wxClientDC(self)
+        # set device origin according to scroll position                
+        self.PrepareDC(cdc)
+        dc = wx.wxBufferedDC(cdc, self._buffer)
+        return dc
 
     def OnMouseEvent(self, event):
         # these coordinates are relative to the visible part of the canvas
@@ -151,11 +177,14 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
                     
 
     def OnPaint(self, event):
-        # make a dc
-        dc =  wx.wxPaintDC(self)
-        # set device origin according to scroll position
-        self.PrepareDC(dc)
-
+        # as soon as dc is unbound and destroyed, buffer is blit
+        dc = wx.wxBufferedPaintDC(self, self._buffer)
+        
+    def doDrawing(self, dc):
+        """This function actually draws the complete shebang to the passed
+        dc.
+        """
+        
         dc.BeginDrawing()
         # clear the whole shebang to background
         dc.SetBackground(wx.wxBrush(self.GetBackgroundColour(), wx.wxSOLID))
@@ -167,6 +196,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
 
         dc.EndDrawing()
 
+
     def addObject(self, cobj):
         if cobj and cobj not in self._cobjects:
             cobj.setCanvas(self)
@@ -176,9 +206,16 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
     def drawObject(self, cobj):
         """Use this if you want to redraw a single canvas object.
         """
-        dc = wx.wxClientDC(self)
-        self.PrepareDC(dc)
+
+        dc = self.getDC()
         cobj.draw(dc)
+
+    def redraw(self):
+        """Redraw the whole scene.
+        """
+
+        dc = self.getDC()
+        self.doDrawing(dc)
 
     def removeObject(self, cobj):
         if cobj and cobj in self._cobjects:
@@ -215,8 +252,8 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             cobj.setPosition(npos)
             
             # setup DC
-            dc = wx.wxClientDC(self)
-            self.PrepareDC(dc)
+            dc = self.getDC()
+
             dc.BeginDrawing()
 
             # we're only going to draw a dotted outline
@@ -225,7 +262,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             dc.SetLogicalFunction(wx.wxINVERT)
             bounds = cobj.getBounds()
 
-            # first delete the old triangle
+            # first delete the old rectangle
             dc.DrawRectangle(cpos[0], cpos[1], bounds[0], bounds[1])
             # then draw the new one
             dc.DrawRectangle(npos[0], npos[1], bounds[0], bounds[1])
