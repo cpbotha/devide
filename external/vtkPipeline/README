@@ -10,6 +10,9 @@ Rajlich's.  Also provided is a simple VTK object "pickler".  Using
 this one can save the state of a VTK object to a file and reload it
 later.  Not every method is dumped but most of the useful ones are.
 
+NOTE: This vtkPipeline has been converted to make use of wxPython (instead
+of TkInter) by Charl P. Botha <http://cpbotha.net/>.
+
 
 Requirements:
 ^^^^^^^^^^^^^
