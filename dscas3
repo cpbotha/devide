@@ -1,0 +1,31 @@
+import Tix
+
+from graph_editor import graph_editor
+
+class dscas3_main:
+    def __init__(self, root):
+	self.root = root
+	self.root.title("dscas 3")
+	# quit gets called if window gets closed
+	self.root.protocol ("WM_DELETE_WINDOW", self.quit)
+
+	# button box
+	box = Tix.ButtonBox(self.root, orientation=Tix.HORIZONTAL)
+	box.add('ok', text='Quit', underline=0, width=6,
+	command=self.quit)
+	box.pack(side=Tix.TOP, fill=Tix.X)
+	
+	self.graph_editor = graph_editor(self)
+	
+    def quit(self):
+	print "quit called!"
+	# take care of main window
+	self.root.destroy()
+	
+
+# create main window
+root = Tix.Tk()
+dscas3_main(root)
+# start event loop of main window
+root.mainloop()
+

@@ -1,0 +1,13 @@
+Building tix with TCL/TK already installed:
+-------------------------------------------
+
+* in tix unix dir:
+./configure  --prefix=/usr --with-tclconfig=/usr/lib/tcl8.3 \
+--with-tkconfig=/usr/lib/tk8.3 --with-tclinclude=/usr/include/tcl8.3 \
+--with-tkinclude=/usr/include/tcl8.3
+
+* in appropriate tix unix/tkx.y dir:
+./configure  --prefix=/usr --with-tclconfig=/usr/lib/tcl8.3 \
+--with-tkconfig=/usr/lib/tk8.3 --with-tclinclude=/usr/include/tcl8.3 \
+--with-tkinclude=/usr/include/tcl8.3 --enable-shared
+
