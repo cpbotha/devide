@@ -1,7 +1,7 @@
-# $Id: vtk_slice_vwr.py,v 1.40 2002/06/07 14:33:18 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.41 2002/06/07 15:52:45 cpbotha Exp $
 
 from gen_utils import log_error
-from module_base import module_base
+from module_base import module_base, module_mixin_vtk_pipeline_config
 import vtk
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -17,7 +17,9 @@ except NameError:
     else:
         WX_USE_X_CAPTURE = 0
 
-class vtk_slice_vwr(module_base):
+class vtk_slice_vwr(module_base,
+                    module_mixin_vtk_pipeline_config):
+    
     """Slicing, dicing slice viewing class.
 
     This class is used as a dscas3 module.  Given vtkImageData-like input data,
@@ -365,8 +367,19 @@ class vtk_slice_vwr(module_base):
         self._renderers.append(vtk.vtkRenderer())
         self._renderers[-1].SetBackground(0.5,0.5,0.5)
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+
+        pcid = wxNewId()
+        pcb = wxButton(td_panel, pcid, 'Pipeline')
+        EVT_BUTTON(td_panel, pcid, lambda e, pw=self._view_frame, s=self,
+                   rw=self._rwis[-1].GetRenderWindow():
+                   s.vtk_pipeline_configure(pw, rw))
+
+        button_sizer = wxBoxSizer(wxHORIZONTAL)
+        button_sizer.Add(pcb)
+
         td_panel_sizer = wxBoxSizer(wxVERTICAL)
         td_panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
+        td_panel_sizer.Add(button_sizer, flag=wxEXPAND)
         td_panel.SetAutoLayout(true)
         td_panel.SetSizer(td_panel_sizer)
         # ortho view
