@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.58 2003/07/07 16:17:56 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.59 2003/07/30 16:04:07 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -50,6 +50,19 @@ class outputSelectedPoints(list, subjectMixin):
 
     def close(self):
         subjectMixin.close(self)
+        
+# -------------------------------------------------------------------------
+class selectedPoints(object):
+    _gridCols = [('Point Name', 0), ('World', 0), ('Discrete', 0),
+                 ('Value', 0)]
+    _gridNameCol = 0
+    _gridWorldCol = 1
+    _gridDiscreteCol = 2
+    _gridValueCol = 3
+
+    def __init__(self, slice3dVWRThingy, pointsGrid):
+        self.slice3dVWR = slice3dVWRThingy
+        self._grid = pointsGrid
 
 # -------------------------------------------------------------------------
 
