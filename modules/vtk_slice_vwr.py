@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.70 2003/01/08 16:16:57 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.71 2003/01/16 15:59:22 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -61,6 +61,11 @@ class vtk_slice_vwr(module_base,
         self._outline_actor.SetMapper(om)
         self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
 
+        # use box widget for VOI selection
+        self._voi_widget = vtk.vtkBoxWidget()
+        # we want to keep it aligned with the cubic volume, thanks
+        self._voi_widget.SetRotationEnabled(0)
+
         self._left_mouse_button = 0
 
         # make the list of imageplanewidgets
@@ -81,6 +86,7 @@ class vtk_slice_vwr(module_base,
         del self._outline_source
         del self._outline_actor
         del self._cube_axes_actor2d
+        del self._voi_widget
         
         if hasattr(self, '_ipws'):
             del self._ipws
@@ -118,6 +124,10 @@ class vtk_slice_vwr(module_base,
 
                 self._renderer.RemoveActor(self._outline_actor)
                 self._renderer.RemoveActor(self._cube_axes_actor2d)
+
+                self._voi_widget.SetInput(None)
+                self._voi_widget.Off()
+                self._voi_widget.SetInteractor(None)
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
@@ -178,6 +188,7 @@ class vtk_slice_vwr(module_base,
                 for ipw in self._ipws:
                     ipw.SetInput(input_stream)
 
+                # add outline actor and cube axes actor to renderer
                 self._renderer.AddActor(self._outline_actor)
                 self._outline_actor.PickableOff()
                 self._renderer.AddActor(self._cube_axes_actor2d)
@@ -487,6 +498,26 @@ class vtk_slice_vwr(module_base,
         iwindow = (dmax - dmin) / 2
         ilevel = dmin + iwindow
 
+        input_data_source = input_data.GetSource()
+        if hasattr(input_data_source, 'GetWindowCenter') and \
+           callable(input_data_source.GetWindowCenter):
+            level = input_data_source.GetWindowCenter()
+            print "Retrieved level of %f" % level
+        else:
+            level = ilevel
+
+        if hasattr(input_data_source, 'GetWindowWidth') and \
+           callable(input_data_source.GetWindowWidth):
+            window = input_data_source.GetWindowWidth()
+            print "Retrieved window of %f" % window
+        else:
+            window = iwindow
+
+        lut = vtk.vtkWindowLevelLookupTable()
+        lut.SetWindow(window)
+        lut.SetLevel(level)
+        lut.Build()
+
         # colours of imageplanes; we will use these as keys
         ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
 
@@ -501,28 +532,18 @@ class vtk_slice_vwr(module_base,
 
             # see if the creator of the input_data can tell
             # us something about Window/Level
-            input_data_source = ipw.GetInput().GetSource()
+            #input_data_source = ipw.GetInput().GetSource()
 
-            if hasattr(input_data_source, 'GetWindowCenter') and \
-               callable(input_data_source.GetWindowCenter):
-                level = input_data_source.GetWindowCenter()
-                print "Retrieved level of %f" % level
-            else:
-                level = ilevel
-
-            if hasattr(input_data_source, 'GetWindowWidth') and \
-               callable(input_data_source.GetWindowWidth):
-                window = input_data_source.GetWindowWidth()
-                print "Retrieved window of %f" % window
-            else:
-                window = iwindow
-
-            lut = vtk.vtkWindowLevelLookupTable()
-            lut.SetWindow(window)
-            lut.SetLevel(level)
-            lut.Build()
             ipw.SetLookupTable(lut)
             ipw.On()
+
+        # how can I prevent the user from moving this with the
+        # middle button?
+        self._voi_widget.SetInteractor(self._rwi)
+        self._voi_widget.SetInput(input_data)
+        self._voi_widget.PlaceWidget()
+        self._voi_widget.SetPriority(0.6)
+        self._voi_widget.On()
 
         self._renderer.ResetCamera()
 
