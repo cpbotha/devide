@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.13 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.14 2003/05/20 22:50:03 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -303,10 +303,12 @@ def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
 
 
 def setupVTKObjectProgress(d3module, obj, progressText):
-    # following is the standard way of connecting up the dscas3 progress
-    # callback to a VTK object; you should do this for all objects in
-    # your module - you could do this in __init__ as well, it seems
-    # neater here though
-    obj.SetProgressText(progressText)
-    mm = d3module._moduleManager
-    obj.SetProgressMethod(lambda: mm.vtk_progress_cb(obj))
+    # we DON'T use SetProgressMethod, as the handler object then needs
+    # to store a binding to the vtkProcessObject, which means that
+    # the objects never die... this way, there are no refs
+    # in addition, the AddObserver is the standard way for doing this
+    # we should probably not use ProgressText though...
+    obj.SetProgressText(progressText)    
+    mm = d3module._moduleManager    
+    obj.AddObserver('ProgressEvent', lambda vtko, name:
+                    mm.vtk_progress_cb(vtko))
