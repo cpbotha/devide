@@ -1,7 +1,8 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.5 2003/06/29 20:26:53 cpbotha Exp $
+# $Id: tdObjects.py,v 1.6 2003/06/29 23:59:34 cpbotha Exp $
 # class that controls the 3-D objects list
 
+import operator
 import vtk
 import wx
 from wx.lib import colourdb
@@ -329,11 +330,50 @@ class tdObjects:
             itemsIdx += 1
 
         return foundObjects
-            
+
+    def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
+        
+        bwTransform = vtk.vtkTransform()
+        #tp = eventObject.GetProp3D()
+        #eventObject.SetProp3D(None)
+        eventObject.GetTransform(bwTransform)
+        #eventObject.SetProp3D(tp)
+
+        pd = vtk.vtkPolyData()
+        eventObject.GetPolyData(pd)
+        c = pd.GetPoints().GetData().GetTuple3(14)
+        mc = [-e for e in c]        
+        #c = eventObject.GetProp3D().GetCenter()
+        #p = eventObject.GetProp3D().GetPosition()
+        #o = map(operator.sub, p, c)
+
+        bwTransform.PostMultiply()
+        bwTransform.Translate(c)
+        #bwTransform.PostMultiply()
+        #bwTransform.Translate(mc)
+
+        # get the current matrix
+        cm = eventObject.GetProp3D().GetMatrix()
+        # the current prop matrix should be applied before the
+        # new boxwidget one
+        bwTransform.PreMultiply()
+
+        bwTransform.Concatenate(cm)
+
+        #eventObject.GetProp3D().SetOrigin(c)        
+
+        eventObject.GetProp3D().SetOrientation(bwTransform.GetOrientation())
+        eventObject.GetProp3D().SetPosition(bwTransform.GetPosition())
+        eventObject.GetProp3D().SetScale(bwTransform.GetScale())
+        
+        #eventObject.PlaceWidget()
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
             raise Exception, 'Attempt to remove non-existent tdObject'
+
+        # this will take care of motion boxes and the like
+        self._setObjectMotion(tdObject, False)
 
         oType = self._tdObjectsDict[tdObject]['type']
         if oType == 'vtkVolume':
@@ -466,23 +506,33 @@ class tdObjects:
             if objectDict['type'] == 'vtkPolyData':
                 self._slice3dVWR.setPropMotion(objectDict['vtkActor'])
 
-            #
+            # setup our frikking motionBoxWidget, mmmkay?
             if motion:
                 if 'motionBoxWidget' in objectDict and \
                    objectDict['motionBoxWidget']:
+                    # take care of the old one
                     objectDict['motionBoxWidget'].Off()
                     objectDict['motionBoxWidget'].SetInteractor(None)
-                else:
-                    objectDict['motionBoxWidget'] = vtk.vtkBoxWidget()
+                    objectDict['motionBoxWidget'] = None
 
+                # we like to do it anew
+                objectDict['motionBoxWidget'] = vtk.vtkBoxWidget()
                 bw = objectDict['motionBoxWidget']
                     
-                bw = vtk.vtkBoxWidget()
+                # we don't want the user to scale, only move and rotate
+                bw.ScalingEnabledOff()
                 bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
                 bw.SetProp3D(objectDict['vtkActor'])
+                # now add some observers that will actually move and rotate
+                # the actor
+                bw.AddObserver('EndInteractionEvent',
+                               self._observerMotionBoxWidgetEndInteraction)
+
+                
+                bw.SetPlaceFactor(1.0)
                 bw.PlaceWidget()
                 bw.On()
-                
+
             else:
                 if 'motionBoxWidget' in objectDict and \
                    objectDict['motionBoxWidget']:

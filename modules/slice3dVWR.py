@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.50 2003/06/29 20:26:53 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.51 2003/06/29 23:59:34 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -1049,7 +1049,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._threedRenderer.ResetCamera()
         self.render3D()
 
-    def _observerAIstyleEndInteraction(self, object, eventType):
+    def _observerAIstyleEndInteraction(self, eventObject, eventType):
         iProp = self._aInteractorStyle.GetInteractionProp()
         if iProp:
             for sd in self._sliceDirections:
