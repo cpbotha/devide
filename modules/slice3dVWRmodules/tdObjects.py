@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.23 2003/08/08 15:05:27 cpbotha Exp $
+# $Id: tdObjects.py,v 1.24 2003/08/09 18:42:48 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -612,7 +612,8 @@ class tdObjects:
         elif sObjects:
             md = wx.MessageDialog(
                 self._slice3dVWR.controlFrame,
-                "Are you sure you want to UNLOCK the selected objects?",
+                "Are you sure you want to UNLOCK the selected objects "
+                "from all slices?",
                 "Confirm Object Unlock",
                 wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
             
@@ -670,10 +671,18 @@ class tdObjects:
         newPlaneNormal = sliceDirection._ipws[0].GetNormal()
 
         try:
-            self._tdObjectsDict[tdObject]['lockPlanes'].append(newPlaneNormal)
+            self._tdObjectsDict[tdObject]['motionConstraintVectors'].append(
+                newPlaneNormal)
         except KeyError:
-            self._tdObjectsDict[tdObject]['lockPlanes'] = [newPlaneNormal]
+            self._tdObjectsDict[tdObject][
+                'motionConstraintVectors'] = [newPlaneNormal]
 
+        # if a motionBoxWidget already exists, make sure it knows about the
+        # new constraints
+        if 'motionBoxWidget' in self._tdObjectsDict[tdObject]:
+            self._setupMotionConstraints(
+                self._tdObjectsDict[tdObject]['motionBoxWidget'],
+                tdObject)
 
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
         # make sure the transform is up to date
@@ -868,6 +877,10 @@ class tdObjects:
                     
                 # we don't want the user to scale, only move and rotate
                 bw.ScalingEnabledOff()
+                # the balls only confuse us!
+                bw.HandlesOff()
+                # without the balls, the outlines aren't needed either
+                bw.OutlineCursorWiresOff()
                 bw.SetInteractor(self._slice3dVWR.threedFrame.threedRWI)
                 # also "flatten" the actor (i.e. integrate its UserTransform)
                 genUtils.flattenProp3D(objectDict['vtkActor'])
@@ -890,14 +903,16 @@ class tdObjects:
 
 
                 # FIXME: continue here!
-                try:
-                    ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
-                except:
-                    # no plane, so we don't do anything
-                    pass
-                else:
-                    bw.ConstrainToPlaneOn()
-                    bw.SetConstrainPlaneNormal(ipw.GetNormal())
+#                 try:
+#                     ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
+#                 except:
+#                     # no plane, so we don't do anything
+#                     pass
+#                 else:
+#                     bw.ConstrainToPlaneOn()
+#                     bw.SetConstrainPlaneNormal(ipw.GetNormal())
+
+                self._setupMotionConstraints(bw, tdObject)
                 
 
             else:
@@ -925,7 +940,42 @@ class tdObjects:
                 else:
                     self._grid.SetCellValue(gridRow, self._gridMotionCol,
                                             'N/A')
-                    
+
+    def _setupMotionConstraints(self, boxWidget, tdObject):
+        """Configure boxWidget (a vtkBoxWidgetConstrained) to constrain as
+        specified by the motionConstraintVectors member in the objectDict
+        corresponding to tdObject.
+
+        If there are more than two motionConstraintVectors, only the first
+        two will be used.
+        """
+
+        try:
+            mCV = self._tdObjectsDict[tdObject]['motionConstraintVectors']
+        except KeyError:
+            mCV = None
+
+        if not mCV:
+            # i.e. this is an empty vector (or we deliberately set it to None)
+            # either way, we have to disable all constraints
+            boxWidget.SetConstraintType(0)
+            
+        elif len(mCV) == 1:
+            # plane constraint (i.e. we have only a single plane normal)
+            boxWidget.SetConstraintType(2) # plane
+            boxWidget.SetConstraintVector(mCV[0])
+            
+        else:
+            # line constraint (intersection of two planes that have been
+            # stored as plane normals
+            boxWidget.SetConstraintType(1)
+            # now determine the constraint line by calculating the cross
+            # product of the two plane normals
+            lineVector = [0.0, 0.0, 0.0]
+            vtk.vtkMath.Cross(mCV[0], mCV[1], lineVector)
+            # and tell the boxWidget about this!
+            boxWidget.SetConstraintVector(lineVector)
+
     def _tdObjectModifiedCallback(self, o, e):
         self._slice3dVWR.render3D()
 
@@ -935,9 +985,13 @@ class tdObjects:
         """
 
         try:
-            del self._tdObjectsDict[tdObject]['lockPlanes'][:]
+            del self._tdObjectsDict[tdObject]['motionConstraintVectors'][:]
         except KeyError:
             pass
 
-        # FIXME:
-        # if the object is currently in motion, lift the constraints!
+        # if a motionBoxWidget already exists, make sure it knows about
+        # the changes
+        if 'motionBoxWidget' in self._tdObjectsDict[tdObject]:
+            self._setupMotionConstraints(
+                self._tdObjectsDict[tdObject]['motionBoxWidget'],
+                tdObject)
