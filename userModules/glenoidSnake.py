@@ -54,9 +54,9 @@ class glenoidSnake(moduleBase, noConfigModuleMixin):
         self._outputPolyDataARB = vtk.vtkPolyData()
         self._outputPolyDataHM = vtk.vtkPolyData()
 
-        self._createViewFrame('Test Module View',
-                              {'vtkTriangleFilter' : self._tf,
-                               'vtkCurvatures' : self._curvatures})
+        self._viewFrame = self._createViewFrame('Test Module View',
+                                                {'vtkTriangleFilter' : self._tf,
+                                                 'vtkCurvatures' : self._curvatures})
 
         self._viewFrame.Show(True)
 

@@ -31,9 +31,9 @@ class testModule(moduleBase, noConfigModuleMixin):
                                             mm.vtk_progress_cb(
             s._testObject1))
 
-        self._createViewFrame('Test Module View',
-                              {'testObject1' :
-                               self._testObject1})
+        self._viewFrame = self._createViewFrame('Test Module View',
+                                                {'testObject1' :
+                                                 self._testObject1})
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
