@@ -13,6 +13,7 @@ class vtkStructPtsRDR(module_base, filenameViewModuleMixin):
 
         self._reader = vtk.vtkStructuredPointsReader()
 
+        
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('VTK Structured Points Reader',
                               'Select a filename',
@@ -47,6 +48,15 @@ class vtkStructPtsRDR(module_base, filenameViewModuleMixin):
         self._reader.SetFileName(self._getViewFrameFilename())
 
     def execute_module(self):
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module - you could do this in __init__ as well, it seems
+        # neater here though
+        self._reader.SetProgressText('Reading vtk Structured Points data')
+        mm = self._module_manager
+        self._reader.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._reader))
+        
         # get the vtkPolyDataReader to try and execute
         if len(self._reader.GetFileName()):
             self._reader.Update()
@@ -56,6 +66,9 @@ class vtkStructPtsRDR(module_base, filenameViewModuleMixin):
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
         self._module_manager.vtk_poll_error()
+
+        # tell the user that we're done
+        mm.setProgress(100, 'DONE reading vtk Structured Points data')
 
     def view(self, parent_window=None):
 	# first make sure that our variables agree with the stuff that

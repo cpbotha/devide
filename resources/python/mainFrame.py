@@ -8,7 +8,7 @@ class mainFrame(wxFrame):
         # begin wxGlade: mainFrame.__init__
         kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)
-        self.progressText = wxStaticText(self, -1, "Some progress message")
+        self.progressText = wxStaticText(self, -1, "This is quite a long progress message so that eek.")
         self.progressGauge = wxGauge(self, -1, 100)
         
         # Menu Bar

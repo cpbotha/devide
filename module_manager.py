@@ -122,8 +122,7 @@ class module_manager:
         """
 
         vtk_progress = process_object.GetProgress() * 100.0
-        self._dscas3_app.set_progress(vtk_progress,
-                                      process_object.GetProgressText())
+        self.setProgress(vtk_progress, process_object.GetProgressText())
 
     def vtk_poll_error(self):
         """This method should be called whenever VTK processing might have
@@ -140,9 +139,8 @@ class module_manager:
 
     def get_current_module(self):
         return self._current_module
-    
 
-
-	
+    def setProgress(self, progress, message):
+        self._dscas3_app.setProgress(progress, message)
 
 	

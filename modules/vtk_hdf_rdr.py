@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.19 2003/01/08 16:16:57 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.20 2003/01/23 16:54:46 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -60,9 +60,20 @@ class vtk_hdf_rdr(module_base,
         self._reader.SetFileName(fn_text.GetValue())
         
     def execute_module(self):
+        # following is the standard way of connecting up the dscas3 progress
+        # callback to a VTK object; you should do this for all objects in
+        # your module - you could do this in __init__ as well, it seems
+        # neater here though
+        self._reader.SetProgressText('Reading HDF data')
+        mm = self._module_manager
+        self._reader.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._reader))
+        
         self._reader.Update()
         # important call to make sure the app catches VTK error in the GUI
         self._module_manager.vtk_poll_error()
+
+        mm.setProgress(100, 'DONE reading HDF data')
 
     def create_view_window(self, parent_window=None):
         """Create configuration/view window.

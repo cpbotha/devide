@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.11 2003/01/23 15:40:12 cpbotha Exp $
+# $Id: dscas3.py,v 1.12 2003/01/23 16:54:43 cpbotha Exp $
+
+DSCAS3_VERSION = 20030131
 
 import os
 import stat
@@ -169,6 +171,8 @@ class dscas3_app_t(wxApp):
                  self.graphEditorCallback)
         EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
                  self.pythonShellCallback)
+        EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
+                 self.aboutCallback)
 
         self._mainFrame.Show(1)
         self.SetTopWindow(self._mainFrame)
@@ -240,7 +244,37 @@ class dscas3_app_t(wxApp):
         self._mainFrame.progressGauge.SetValue(progress)
         self._mainFrame.progressText.SetLabel(message)
         # give wx some time to realise the changes
+        self._mainFrame.Raise()
         wxYield()
+
+    def aboutCallback(self, event):
+        from resources.python.aboutDialog import aboutDialog
+
+        aboutText = '''
+        <html>
+        <body bgcolor="#d6d6d6">
+        <center>
+        <h3>DSCAS3 v.%s</h3>
+        <p>DSCAS3 is copyright 2003 Charl P. Botha / DIPEX<br>
+        http://cpbotha.net/phd/
+        </p>
+        <p>
+        Running on: wxPython %s, Python %s, VTK %s
+        </p>
+        <center>
+        </body>
+        </html>
+        '''
+
+        about = aboutDialog(self._mainFrame, -1, 'dummy')
+        pyver = string.split(sys.version)[0]
+        about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION, wx.__version__,
+                                              pyver,
+                                              vtk.vtkVersion.GetVTKVersion()))
+
+        about.CentreOnParent(wxBOTH)
+        about.ShowModal()
+        about.Destroy()
 
     def exitCallback(self, event):
         self.quit()
