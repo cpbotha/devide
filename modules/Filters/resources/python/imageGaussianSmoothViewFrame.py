@@ -33,6 +33,7 @@ class imageGaussianSmoothViewFrame(wxFrame):
         grid_sizer_3.Add(self.stdTextCtrl, 0, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
         grid_sizer_3.Add(self.label_5, 0, wxALIGN_CENTER_VERTICAL, 0)
         grid_sizer_3.Add(self.radiusCutoffTextCtrl, 0, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        grid_sizer_3.AddGrowableCol(1)
         sizer_3.Add(grid_sizer_3, 1, wxEXPAND, 0)
         sizer_2.Add(sizer_3, 1, wxALL|wxEXPAND, 7)
         self.viewFramePanel.SetAutoLayout(1)

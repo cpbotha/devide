@@ -136,7 +136,46 @@ def textToInt(text, defaultInt):
 
     return returnInt
 
-def textToTuple(text, tuple):
+def textToTuple(text, defaultTuple):
+    """This will convert the text representation of a tuple into a real
+    tuple.  No checking for type or number of elements is done.  See
+    textToTypeTuple for that.
+    """
 
     # first make sure that the text starts and ends with brackets
     text = text.strip()
+    
+    if text[0] != '(':
+        text = '(%s' % (text,)
+
+    if text[-1] != ')':
+        text = '%s)' % (text,)
+
+    try:
+        returnTuple = eval('tuple(%s)' % (text,))
+    except Exception:
+        returnTuple = defaultTuple
+
+    return returnTuple
+
+def textToTypeTuple(text, defaultTuple, numberOfElements, aType):
+    """This will convert the text representation of a tuple into a real
+    tuple with numberOfElements elements, all of type aType.  If the required
+    number of elements isn't available, or they can't all be casted to the
+    correct type, the defaultTuple will be returned.
+    """
+    
+    aTuple = textToTuple(text, defaultTuple)
+
+    if len(aTuple) != numberOfElements:
+        returnTuple = defaultTuple
+
+    else:
+        try:
+            returnTuple = [aType(e) for e in aTuple]
+        except ValueError:
+            returnTuple = defaultTuple
+
+    return returnTuple
+
+
