@@ -1,8 +1,10 @@
-# $Id: moduleMixins.py,v 1.13 2003/05/13 13:14:15 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.14 2003/05/13 13:39:42 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import moduleUtils
+from wxPython.wx import *
+import resources.python.filenameViewModuleMixinFrame
 
 class vtkPipelineConfigModuleMixin:
     """Mixin to use for modules that want to make use of the vtkPipeline
@@ -128,8 +130,6 @@ class vtkPipelineConfigModuleMixin:
             
 # ----------------------------------------------------------------------------
 
-#from wxPython.wx import wxFileDialog, wxDirDialog, wxOPEN, wxID_OK
-from wxPython.wx import *
 
 class fileOpenDialogModuleMixin:
     """Module mixin to make use of file open dialog."""
@@ -185,7 +185,7 @@ class fileOpenDialogModuleMixin:
 
 # ----------------------------------------------------------------------------
 
-import resources.python.filenameViewModuleMixinFrame
+
 
 
 class filenameViewModuleMixin(fileOpenDialogModuleMixin,

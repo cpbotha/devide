@@ -1,5 +1,6 @@
 from wxPython import wx
 from canvasSubject import canvasSubject
+from canvasObject import *
 
 class canvas(wx.wxScrolledWindow, canvasSubject):
     def __init__(self, parent, id = -1, size = wx.wxDefaultSize):
@@ -171,64 +172,3 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
 
 
 #############################################################################
-def main():
-
-    from canvasObject import coRectangle, coLine, coGlyph
-
-    class App(wx.wxApp):
-        def OnInit(self):
-            frame = wx.wxFrame(None, -1, 'wxPyCanvasTest')
-            pc = canvas(frame, -1, (400, 300))
-            pc.SetVirtualSize((1024, 1024))
-            pc.SetScrollRate(20,20)
-
-            for i in range(7):
-                r1 = coRectangle((i * 60, 20), (50, 20))
-                r1.addObserver('enter', enterObserver)
-                r1.addObserver('drag', dragObserver)
-                pc.addObject(r1)
-
-            l1 = coLine(((60, 50), (70, 60), (100, 50)))
-            pc.addObject(l1)
-
-            g1 = coGlyph((60, 100), 7, 3,
-                         'shellSplatSimpleFLT')
-            g1.addObserver('drag', dragObserver)
-            g1.setPortConnected(1, True, True)
-            g1.setPortConnected(0, False, True)
-            pc.addObject(g1)
-                        
-
-            tlSizer = wx.wxBoxSizer(wx.wxVERTICAL)
-            tlSizer.Add(pc, 1, wx.wxEXPAND)
-            tlSizer.Add(wx.wxButton(frame, -1, "Quit"), 0, wx.wxEXPAND)
-
-            frame.SetSizer(tlSizer)
-            frame.SetAutoLayout(True)
-            tlSizer.Fit(frame)
-            tlSizer.SetSizeHints(frame)
-            frame.Layout()
-            
-            frame.Show(True)
-            self.SetTopWindow(frame)
-
-            return True
-
-    def enterObserver(cobject, eventName, event, userData):
-        print eventName
-
-    def dragObserver(cobject, eventName, event, userData):
-        cobject.getCanvas().dragObject(cobject,
-                                       cobject.getCanvas().getMouseDelta())
-        
-        if not cobject.getCanvas().getDraggedObject():
-            # this means only one thing: the drag has just stopped!
-            cobject.getCanvas().Refresh()
-            
-    # the 0 will make it use the existing stdout
-    app = App(0)
-    app.MainLoop()
-    
-if __name__ == '__main__':
-    main()
-
