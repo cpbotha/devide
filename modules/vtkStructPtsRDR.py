@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsRDR.py,v 1.4 2003/02/18 14:38:33 cpbotha Exp $
+# $Id: vtkStructPtsRDR.py,v 1.5 2003/03/09 23:34:26 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -84,6 +84,6 @@ class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes
         # it easier for the user to associate a frame with a glyph
-        if not self._viewFrame.Show(true):
+        if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
 

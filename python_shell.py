@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.3 2002/04/26 21:01:58 cpbotha Exp $
+# $Id: python_shell.py,v 1.4 2003/03/09 23:34:25 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -47,7 +47,7 @@ class python_shell:
         EVT_BUTTON(self._ps_frame, close_id, self.close_ps_frame_cb)
 
         # panel.Layout will be called automatically during resizes
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         # panel will now own the sizer; also, panel.Layout() will use the sizer
         panel.SetSizer(top_sizer)
         # resize the frame to fit around the sizer; the sizer automatically
@@ -71,7 +71,7 @@ class python_shell:
         del self._res
 
     def show(self):
-        self._ps_frame.Show(true)
+        self._ps_frame.Show(True)
 
     def hide(self):
         self._ps_frame.Show(false)

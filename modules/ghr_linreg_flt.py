@@ -1,5 +1,5 @@
 # ghr_linreg_flt.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: ghr_linreg_flt.py,v 1.3 2003/01/08 16:16:57 cpbotha Exp $
+# $Id: ghr_linreg_flt.py,v 1.4 2003/03/09 23:34:26 cpbotha Exp $
 # double-threshold seed connectivity segmentation filter
 
 from gen_utils import log_error
@@ -92,7 +92,7 @@ class ghr_linreg_flt(module_base,
 
     def view(self):
         self.sync_config()
-        self._view_frame.Show(true)
+        self._view_frame.Show(True)
 
     #################################################################
     # utility methods

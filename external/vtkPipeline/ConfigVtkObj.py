@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.6 2003/02/17 23:16:38 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.7 2003/03/09 23:34:25 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -115,7 +115,7 @@ class VtkShowDoc:
         top_sizer.Add(self._html_window, option=1, flag=wxEXPAND)
         top_sizer.Add(close_button, option=0, flag=wxALIGN_CENTER_HORIZONTAL)
 
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(top_sizer)
         top_sizer.Fit(self._frame)
         top_sizer.SetSizeHints(self._frame)
@@ -160,7 +160,7 @@ class VtkShowDoc:
 
     def show(self):
         "Make the show doc frame visible."
-        self._frame.Show(true)
+        self._frame.Show(True)
         self._frame.Raise()
 
     def hide(self):
@@ -251,7 +251,7 @@ class ConfigVtkObj:
         self._notebook.AddPage(self.make_get_set_gui(self._notebook),
                                'Get-Set')
 
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(top_sizer)
         top_sizer.Fit(self._frame)
         top_sizer.SetSizeHints(self._frame)
@@ -290,7 +290,7 @@ class ConfigVtkObj:
         return i
 
     def show(self):
-        self._frame.Show(true)
+        self._frame.Show(True)
         self._frame.Raise()
 
     def hide(self):
@@ -368,7 +368,7 @@ class ConfigVtkObj:
         """
         panel = wxPanel(parent, id=-1)
         vert_sizer = wxBoxSizer(wxVERTICAL)
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
         
 	n_meth = len (self.toggle_meths)
@@ -397,7 +397,7 @@ class ConfigVtkObj:
 	"Create the state methods.  (SetAToB methods)"
         panel = wxPanel(parent, id=-1)
         vert_sizer = wxBoxSizer(wxVERTICAL)
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
         
 	n_meth = len (self.state_meths)
@@ -431,7 +431,7 @@ class ConfigVtkObj:
         panel = wxPanel(parent, id=-1)
         grid_sizer = wxFlexGridSizer(cols=2)
         grid_sizer.AddGrowableCol(1)
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(grid_sizer)
         
 	n_meth = len (self.get_set_meths)
@@ -470,7 +470,7 @@ class ConfigVtkObj:
         panel = wxPanel(parent, id=-1)
         grid_sizer = wxFlexGridSizer(cols=2)
         grid_sizer.AddGrowableCol(1)
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(grid_sizer)
         
 	n_meth = len (self.get_meths)
@@ -530,7 +530,7 @@ class ConfigVtkObj:
         ccd = wxColourData()
         ccd.SetColour(cur_colour)
         # we want the detailed dialog under windows        
-        ccd.SetChooseFull(true)
+        ccd.SetChooseFull(True)
         # do that thang
         dlg = wxColourDialog(parent, ccd)
         

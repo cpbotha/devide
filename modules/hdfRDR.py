@@ -1,4 +1,4 @@
-# $Id: hdfRDR.py,v 1.5 2003/03/06 21:06:49 cpbotha Exp $
+# $Id: hdfRDR.py,v 1.6 2003/03/09 23:34:26 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -101,6 +101,6 @@ class hdfRDR(moduleBase,
             
     def view(self, parent_window=None):
         # if the window is already visible, raise it
-        if not self._viewFrame.Show(true):
+        if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
         

@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.9 2003/03/06 21:06:49 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.10 2003/03/09 23:34:26 cpbotha Exp $
 
 import genUtils
 import os
@@ -206,7 +206,7 @@ class dicomRDR(moduleBase,
 
 
     def view(self, parent_window=None):
-        if not self._viewFrame.Show(true):
+        if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
         
     def dn_browse_cb(self, event):

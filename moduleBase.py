@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.8 2003/02/13 17:00:07 cpbotha Exp $
+# $Id: moduleBase.py,v 1.9 2003/03/09 23:34:25 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
@@ -144,7 +144,7 @@ class moduleBase:
 
         If the dialog is already visible, do something to draw the user's
         attention to it.  For a wxFrame-based view, you can do something like:
-        if not frame.Show(true):
+        if not frame.Show(True):
             frame.Raise()
         If the frame is already visible, this will bring it to the front.
         """

@@ -94,7 +94,7 @@ class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(true):
+        if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
 
     def _createViewFrame(self):

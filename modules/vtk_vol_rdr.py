@@ -73,7 +73,7 @@ class vtk_vol_rdr(module_base,
         # 0 is big, 1 is little
         e_cb = XMLCTRL(self._view_frame, 'MV_ID_ENDIANNESS')
         if self._reader.GetDataByteOrder() == 0:
-            e_cb.SetValue(true)
+            e_cb.SetValue(True)
         else:
             e_cb.SetValue(false)
 
@@ -141,7 +141,7 @@ class vtk_vol_rdr(module_base,
         top_sizer.Add(panel, option=1, flag=wxEXPAND)
 
         # then make sure the frame will use the top_level sizer
-        self._view_frame.SetAutoLayout(true)
+        self._view_frame.SetAutoLayout(True)
         self._view_frame.SetSizer(top_sizer)
         # make the frame big enough to fit the sizer
         top_sizer.Fit(self._view_frame)
@@ -162,7 +162,7 @@ class vtk_vol_rdr(module_base,
 	# first make sure that our variables agree with the stuff that
         # we're configuring
 	self.sync_config()
-        self._view_frame.Show(true)
+        self._view_frame.Show(True)
         
     def fn_browse_cb(self, event):
         path = self.fn_browse(self._view_frame, "Choose a volume filename",

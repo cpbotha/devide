@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.19 2003/02/24 12:04:41 cpbotha Exp $
+# $Id: dscas3.py,v 1.20 2003/03/09 23:34:25 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
@@ -72,13 +72,13 @@ class dscas3_log_window:
         tl_sizer.Add(self._textctrl, option=1, flag=wxEXPAND)
         tl_sizer.Add(button_sizer, flag=wxALIGN_RIGHT)
 
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(tl_sizer)
         tl_sizer.Fit(self._view_frame)
         tl_sizer.SetSizeHints(self._view_frame)
 
     def show(self):
-        self._view_frame.Show(true)
+        self._view_frame.Show(True)
 
     def hide(self):
         self._view_frame.Show(false)
@@ -208,7 +208,7 @@ class dscas3_app_t(wxApp):
                                          self._mainFrame,
                                          vtk_logfn)
         
-        return true
+        return True
 
     def OnExit(self):
         sys.stderr = self._old_stderr

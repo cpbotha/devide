@@ -1,6 +1,6 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.40 2003/02/17 22:45:16 cpbotha Exp $
+# $Id: graph_editor.py,v 1.41 2003/03/09 23:34:25 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -101,14 +101,14 @@ class ge_glyph_shape(wxFRectangleShape):
         # add the label
         self.AddText(self._glyph.get_name())
         # we want to be a drag
-        self.SetDraggable(true)
+        self.SetDraggable(True)
         # position
         self.SetX(x)
         self.SetY(y)
         # add ourselves to the canvas
         canvas.AddShape(self)
         # then make ourselves display
-        self.Show(true)
+        self.Show(True)
         self.dont_move()
 
         # draw all the input shapes
@@ -121,7 +121,7 @@ class ge_glyph_shape(wxFRectangleShape):
             ishape.SetX(tl_x)
             ishape.SetY(tl_y + self._input_incr * len(self._input_shapes))
             canvas.AddShape(ishape)
-            ishape.Show(true)
+            ishape.Show(True)
             ishape.dont_move()
             self._input_shapes.append(ishape)
             
@@ -135,7 +135,7 @@ class ge_glyph_shape(wxFRectangleShape):
             oshape.SetX(tr_x)
             oshape.SetY(tr_y + self._input_incr * len(self._output_shapes))
             canvas.AddShape(oshape)
-            oshape.Show(true)
+            oshape.Show(True)
             oshape.dont_move()
             self._output_shapes.append(oshape)
 
@@ -319,7 +319,7 @@ class graph_editor:
         self.hide()
 
     def show(self):
-        self._graph_frame.Show(true)
+        self._graph_frame.Show(True)
 
     def hide(self):
         self._graph_frame.Show(false)
@@ -358,7 +358,7 @@ class graph_editor:
                 conn.AddArrow(ARROW_ARROW, ARROW_POSITION_END)
                 self._graph_frame.shapeCanvas.AddShape(conn)
                 from_io_shape.AddLine(conn, to_io_shape)
-                conn.Show(true)
+                conn.Show(True)
                 # fix the fuxors
                 from_io_shape.dont_move()
                 to_io_shape.dont_move()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.4 2003/02/17 22:45:16 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.5 2003/03/09 23:34:25 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -290,12 +290,12 @@ class vtkPipelineBrowser:
         top_sizer.Add(self._tree_ctrl, option=1, flag=wxEXPAND)
         top_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTER_HORIZONTAL)
 
-        panel.SetAutoLayout(true)
+        panel.SetAutoLayout(True)
         panel.SetSizer(top_sizer)
         top_sizer.Fit(self._frame)
         top_sizer.SetSizeHints(self._frame)
 
-        #self._frame.Show(true)
+        #self._frame.Show(True)
 
         ICONDIR = "Icons"
 
@@ -374,7 +374,7 @@ class vtkPipelineBrowser:
         can be made visible again by calling show().  These symantics have
         been chosen to facilitate persistent vtkPipelines.
         """
-        self._frame.Show(true)
+        self._frame.Show(True)
         # make sure the window comes to the top; this is usually not
         # needed right after creation, but show() often gets called because
         # the window was hidden and  needs to appear

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.40 2003/03/07 16:10:38 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.41 2003/03/09 23:34:26 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -562,7 +562,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             return self._extractVOI.GetOutput()
 
     def view(self):
-        if not self._viewFrame.Show(true):
+        if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
 
     #################################################################
@@ -804,7 +804,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                   lambda e, s=self: s._view_frame.Show(false))
 
         # display the window
-        self._viewFrame.Show(true)
+        self._viewFrame.Show(True)
 
     def _destroyOrthoView(self, orthoIdx):
         """Disconnect all inputs for the orthoIdx'th orthoView and then

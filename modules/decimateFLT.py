@@ -1,5 +1,5 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimateFLT.py,v 1.3 2003/02/19 00:58:36 cpbotha Exp $
+# $Id: decimateFLT.py,v 1.4 2003/03/09 23:34:25 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils
@@ -102,7 +102,7 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(true):
+        if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
 
     def _createViewFrame(self):
