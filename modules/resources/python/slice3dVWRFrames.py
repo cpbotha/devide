@@ -86,6 +86,8 @@ class MainFrame(wxFrame):
         self.button_3 = wxButton(self.notebook_1_copy_pane_7, self.objectShowHideButtonId , "Show/Hide")
         self.objectContourButtonId  =  wxNewId()
         self.button_4 = wxButton(self.notebook_1_copy_pane_7, self.objectContourButtonId , "Contour")
+        self.objectMotionButtonId  =  wxNewId()
+        self.button_11 = wxButton(self.notebook_1_copy_pane_7, self.objectMotionButtonId , "Motion")
 
         self.__set_properties()
         self.__do_layout()
@@ -114,7 +116,7 @@ class MainFrame(wxFrame):
         self.sliceInteractionCheckBox.SetValue(1)
         self.acsChoice.SetSelection(0)
         self.surfacePickActionChoice.SetSelection(0)
-        self.objectsListGrid.CreateGrid(2, 4)
+        self.objectsListGrid.CreateGrid(2, 5)
         self.objectsListGrid.EnableEditing(0)
         self.objectsListGrid.EnableDragRowSize(0)
         self.objectsListGrid.EnableDragGridSize(0)
@@ -123,6 +125,7 @@ class MainFrame(wxFrame):
         self.objectsListGrid.SetColLabelValue(1, "Colour")
         self.objectsListGrid.SetColLabelValue(2, "Visible")
         self.objectsListGrid.SetColLabelValue(3, "Contour")
+        self.objectsListGrid.SetColLabelValue(4, "Motion")
         # end wxGlade
 
     def __do_layout(self):
@@ -208,6 +211,7 @@ class MainFrame(wxFrame):
         sizer_11.Add(self.button_2, 0, wxRIGHT, 4)
         sizer_11.Add(self.button_3, 0, wxRIGHT, 4)
         sizer_11.Add(self.button_4, 0, wxRIGHT, 4)
+        sizer_11.Add(self.button_11, 0, wxRIGHT, 4)
         sizer_3.Add(sizer_11, 0, wxTOP|wxBOTTOM|wxEXPAND, 4)
         sizer_10.Add(sizer_3, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4)
         self.notebook_1_copy_pane_7.SetAutoLayout(1)

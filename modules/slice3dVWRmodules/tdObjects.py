@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.3 2003/06/29 14:38:31 cpbotha Exp $
+# $Id: tdObjects.py,v 1.4 2003/06/29 18:27:01 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import vtk
@@ -56,6 +56,9 @@ class tdObjects:
 
         wx.EVT_BUTTON(svViewFrame, svViewFrame.objectContourButtonId,
                       self._handlerObjectContour)
+
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectMotionButtonId,
+                      self._handlerObjectMotion)
 
     def _getSelectedObjects(self):
         objectNames = []        
@@ -127,6 +130,17 @@ class tdObjects:
 
         if objs:
             self._slice3dVWR.render3D()
+
+    def _handlerObjectMotion(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            motion = self._tdObjectsDict[obj]['motion']
+            self._setObjectMotion(obj, not motion)
+
+        if objs:
+            self._slice3dVWR.render3D()
+        
             
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
@@ -236,9 +250,10 @@ class tdObjects:
 
             nrGridRows = self._grid.GetNumberRows()
             self._grid.AppendRows()
-            self._grid.SetCellValue(nrGridRows, 0, objectName)
-            self._grid.SetCellValue(nrGridRows, 1, colourName)
-            self._grid.SetCellValue(nrGridRows, 2, 'Yes')
+            self._grid.SetCellValue(nrGridRows, self._gridNameCol, objectName)
+            #self._grid.SetCellValue(nrGridRows, self._gridColourCol,
+            #                        colourName)
+            #self._grid.SetCellValue(nrGridRows, self._gridVisibleCol, 'Yes')
             
             # store the name
             self._tdObjectsDict[tdObject]['objectName'] = objectName
@@ -248,6 +263,8 @@ class tdObjects:
             self._setObjectVisibility(tdObject, True)
             # and the contouring
             self._setObjectContouring(tdObject, False)
+            # and the motion
+            self._setObjectMotion(tdObject, False)
 
             self._slice3dVWR._threedRenderer.ResetCamera()
             self._slice3dVWR.render3D()
@@ -419,18 +436,48 @@ class tdObjects:
             # in our own dict
             objectDict['contour'] = bool(contour)
 
-            # in the scene
-            for sd in self._slice3dVWR._sliceDirections:
-                if contour:
-                    sd.addContourObject(tdObject)
-                else:
-                    sd.removeContourObject(tdObject)
+            if objectDict['type'] == 'vtkPolyData':
+                # in the scene
+                for sd in self._slice3dVWR._sliceDirections:
+                    if contour:
+                        sd.addContourObject(tdObject, objectDict['vtkActor'])
+                    else:
+                        sd.removeContourObject(tdObject)
 
             # in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
-                self._grid.SetCellValue(gridRow, self._gridContourCol,
-                                        ['No', 'Yes'][bool(contour)])
+                if objectDict['type'] == 'vtkPolyData':
+                    self._grid.SetCellValue(gridRow, self._gridContourCol,
+                                            ['No', 'Yes'][bool(contour)])
+                else:
+                    self._grid.SetCellValue(gridRow, self._gridContourCol,
+                                            'N/A')
+
+
+    def _setObjectMotion(self, tdObject, motion):
+        if tdObject in self._tdObjectsDict:
+            objectDict = self._tdObjectsDict[tdObject]
+
+            # in our own dict
+            objectDict['motion'] = bool(motion)
+
+            # tell the sliceViewer that this is movable
+            if objectDict['type'] == 'vtkPolyData':
+                if motion:
+                    self._slice3dVWR.addActiveProp(objectDict['vtkActor'])
+                else:
+                    self._slice3dVWR.removeActiveProp(objectDict['vtkActor'])
+            
+            # finally in the grid
+            gridRow = self.findGridRowByName(objectDict['objectName'])
+            if gridRow >= 0:
+                if objectDict['type'] == 'vtkPolyData':
+                    self._grid.SetCellValue(gridRow, self._gridMotionCol,
+                                            ['No', 'Yes'][bool(motion)])
+                else:
+                    self._grid.SetCellValue(gridRow, self._gridMotionCol,
+                                            'N/A')
                     
 
     def _tdObjectModifiedCallback(self, o, e):

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.48 2003/06/29 14:38:31 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.49 2003/06/29 18:27:01 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -16,15 +16,15 @@ from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin, colourDialogMixin
 import moduleUtils
 
-from modules.slice3dVWRmodules.sliceDirection import sliceDirection
-from modules.slice3dVWRmodules.tdObjects import tdObjects
-
 # the following four lines are only needed during prototyping of the modules
 # that they import
 import modules.slice3dVWRmodules.sliceDirection
 reload(modules.slice3dVWRmodules.sliceDirection)
 import modules.slice3dVWRmodules.tdObjects
 reload(modules.slice3dVWRmodules.tdObjects)
+
+from modules.slice3dVWRmodules.sliceDirection import sliceDirection
+from modules.slice3dVWRmodules.tdObjects import tdObjects
 
 import time
 import vtk
@@ -118,6 +118,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._cInteractorStyle = vtk.vtkInteractorStyleTrackballCamera()
         self._aInteractorStyle = vtkdscas.\
                                  vtkInteractorStyleTrackballActorConstrained()
+
+        # connect up an observer to the actor interactor style so that we
+        # get a hook to update things that need to be updated when an actor
+        # is moved around
+        self._aInteractorStyle.AddObserver(
+            'EndInteractionEvent',
+            self._observerAIstyleEndInteraction)
 
         # set the default
         self._viewFrame.threedRWI.SetInteractorStyle(self._cInteractorStyle)
@@ -366,6 +373,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     #################################################################
     # miscellaneous public methods
     #################################################################
+
+    def addActiveProp(self, prop):
+        self._aInteractorStyle.AddActiveProp(prop)
+
+    def removeActiveProp(self, prop):
+        self._aInteractorStyle.RemoveActiveProp(prop)
 
     def getIPWPicker(self):
         return self._ipwPicker
@@ -1035,6 +1048,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     def _handlerResetCameraButtonId(self, event):
         self._threedRenderer.ResetCamera()
         self.render3D()
+
+    def _observerAIstyleEndInteraction(self, object, eventType):
+        iProp = self._aInteractorStyle.GetInteractionProp()
+        if iProp:
+            for sd in self._sliceDirections:
+                sd.syncContourToObjectViaProp(iProp)
 
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list

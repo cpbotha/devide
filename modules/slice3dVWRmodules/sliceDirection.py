@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.2 2003/06/28 15:59:51 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.3 2003/06/29 18:27:01 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import moduleUtils
@@ -35,7 +35,7 @@ class sliceDirection:
         # list of objects that want to be contoured by this slice
         self._contourObjectsDict = {}
 
-    def addContourObject(self, contourObject):
+    def addContourObject(self, contourObject, prop3D):
         if self._contourObjectsDict.has_key(contourObject):
             # we already have this, thanks
             return
@@ -51,7 +51,12 @@ class sliceDirection:
             cutter = vtk.vtkCutter()
             plane = vtk.vtkPlane()
             cutter.SetCutFunction(plane)
-            cutter.SetInput(contourObject)
+            trfm = vtk.vtkTransform()
+            trfm.SetMatrix(prop3D.GetMatrix())
+            trfmFilter = vtk.vtkTransformPolyDataFilter()
+            trfmFilter.SetTransform(trfm)
+            trfmFilter.SetInput(contourObject)
+            cutter.SetInput(trfmFilter.GetOutput())
             stripper = vtk.vtkStripper()
             stripper.SetInput(cutter.GetOutput())
 
@@ -70,6 +75,8 @@ class sliceDirection:
             
             # add all necessary metadata to our dict
             contourDict = {'contourObject' : contourObject,
+                           'contourObjectProp' : prop3D,
+                           'trfmFilter' : trfmFilter,
                            'cutter' : cutter,
                            'tdActor' : actor}
                            
@@ -96,6 +103,14 @@ class sliceDirection:
             # and remove it from the dict
             del self._contourObjectsDict[contourObject]
 
+    def syncContourToObjectViaProp(self, prop):
+        for coi in self._contourObjectsDict.items():
+            if coi[1]['contourObjectProp'] == prop:
+                # there can be only one (and contourObject is the key)
+                self.syncContourToObject(coi[0])
+                # break out of the innermost loop
+                break
+        
     def syncContourToObject(self, contourObject):
         """Update the contour for the given contourObject.
         """
@@ -118,6 +133,10 @@ class sliceDirection:
         origin = self._ipws[0].GetOrigin()
         plane.SetNormal(normal)
         plane.SetOrigin(origin)
+
+        # also make sure the transform knows about the new object position
+        contourDict['trfmFilter'].GetTransform().SetMatrix(
+            contourDict['contourObjectProp'].GetMatrix())
 
         # calculate it
         cutter.Update()
