@@ -38,6 +38,8 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
+        # inputPoints observer ID
+        self._inputPointsOID = None
         # this will be our internal list of points
         self._seedPoints = []
 
@@ -80,17 +82,19 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
             # will work for None and not-None
             self._imageCast.SetInput(inputStream)
         else:
-            if inputStream is None:
+            if inputStream is not self._inputPoints:
                 if self._inputPoints:
-                    self._inputPoints.removeObserver(self._inputPointsObserver)
-                
-            else:
-                inputStream.addObserver(self._inputPointsObserver)
+                    self._inputPoints.removeObserver(self._inputPointsOID)
 
-            self._inputPoints = inputStream
+                if inputStream:
+                    self._inputPointsOID = inputStream.addObserver(
+                        self._inputPointsObserver)
 
-            # initial update
-            self._inputPointsObserver(self._inputPoints)
+                self._inputPoints = inputStream
+
+                # initial update
+                self._inputPointsObserver(None)
+            
     
     def getOutputDescriptions(self):
 	return (self._seedConnect.GetOutput().GetClassName(),)

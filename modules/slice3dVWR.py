@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.5 2003/03/13 16:28:01 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.6 2003/03/18 15:13:44 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -830,6 +830,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
         self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
+
+        # add possible point names
+        self._viewFrame.sliceCursorNameCombo.Append('GIA Proximal')
+        self._viewFrame.sliceCursorNameCombo.Append('GIA Distal')        
         
         # event handlers for the global control buttons
         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
@@ -972,7 +976,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         # the store button
         EVT_BUTTON(self._viewFrame, self._viewFrame.sliceStoreButtonId,
                    lambda e: self._storeCursorCallback())
-            
+
         # clicks directly in the window for picking
         self._viewFrame.threedRWI.AddObserver('LeftButtonPressEvent',
                                                self._rwiLeftButtonCallback)
