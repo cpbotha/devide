@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.10 2004/04/14 15:58:02 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.11 2004/04/20 10:15:34 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -26,7 +26,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
     Also see figure 9.18 in the ITK Software Guide.
 
-    $Revision: 1.10 $
+    $Revision: 1.11 $
     """
 
     def __init__(self, moduleManager):
@@ -34,14 +34,24 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
         
         # setup defaults
-        self._config.propagationScaling = 2.0
+        self._config.propagationScaling = 1.0
+        self._config.curvatureScaling = 1.0
+        self._config.advectionScaling = 1.0
+        self._config.numberOfIterations = 100
         
         configList = [
             ('Propagation scaling:', 'propagationScaling', 'base:float',
              'text', 'Propagation scaling parameter for the geodesic active '
              'contour, '
              'i.e. balloon force.  Positive for outwards, negative for '
-             'inwards.')]
+             'inwards.'),
+            ('Curvature scaling:', 'curvatureScaling', 'base:float',
+             'text', 'Curvature scaling term weighting.'),
+            ('Advection scaling:', 'advectionScaling', 'base:float',
+             'text', 'Advection scaling term weighting.'),
+            ('Number of iterations:', 'numberOfIterations', 'base:int',
+             'text',
+             'Number of iterations that the algorithm should be run for')]
         
         scriptedConfigModuleMixin.__init__(self, configList)
 
@@ -62,6 +72,8 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
     def executeModule(self):
         self.getOutput(0).Update()
+        self._moduleManager.setProgress(
+            100, "Geodesic active contour complete.")
 
     def getInputDescriptions(self):
         return ('Feature image (ITK)', 'Initial level set (ITK)' )
@@ -75,18 +87,36 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
             
 
     def getOutputDescriptions(self):
-        return ('Image Data (ITK)',)
+        return ('Final level set (ITK Float 3D)',)
 
     def getOutput(self, idx):
-        return self._thresholder.GetOutput()
+        return self._geodesicActiveContour.GetOutput()
 
     def configToLogic(self):
         self._geodesicActiveContour.SetPropagationScaling(
             self._config.propagationScaling)
 
+        self._geodesicActiveContour.SetCurvatureScaling(
+            self._config.curvatureScaling)
+
+        self._geodesicActiveContour.SetAdvectionScaling(
+            self._config.advectionScaling)
+
+        self._geodesicActiveContour.SetNumberOfIterations(
+            self._config.numberOfIterations)
+
     def logicToConfig(self):
         self._config.propagationScaling = self._geodesicActiveContour.\
                                           GetPropagationScaling()
+
+        self._config.curvatureScaling = self._geodesicActiveContour.\
+                                        GetCurvatureScaling()
+
+        self._config.advectionScaling = self._geodesicActiveContour.\
+                                        GetAdvectionScaling()
+
+        self._config.numberOfIterations = self._geodesicActiveContour.\
+                                          GetNumberOfIterations()
 
     # --------------------------------------------------------------------
     # END OF API CALLS
@@ -98,34 +128,16 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         
         gAC = itk.itkGeodesicActiveContourLevelSetImageFilterF3F3_New()
         geodesicActiveContour = gAC
-        geodesicActiveContour.SetCurvatureScaling( 1.0 );
-        geodesicActiveContour.SetAdvectionScaling( 5.0 );
-        geodesicActiveContour.SetMaximumRMSError( 0.1 );
-        geodesicActiveContour.SetNumberOfIterations( 1000 );
-        #geodesicActiveContour.SetInput(  fastMarching.GetOutput() );
-        #geodesicActiveContour.SetFeatureImage( sigmoid.GetOutput() );
+        #geodesicActiveContour.SetMaximumRMSError( 0.1 );
         self._geodesicActiveContour = geodesicActiveContour
         moduleUtilsITK.setupITKObjectProgress(
             self, geodesicActiveContour,
             'GeodesicActiveContourLevelSetImageFilter',
             'Growing active contour')
-
-        thresholder = itk.itkBinaryThresholdImageFilterF3US3_New()
-        thresholder.SetLowerThreshold( -65535.0 );
-        thresholder.SetUpperThreshold( 0.0 );
-        thresholder.SetOutsideValue( 0  );
-        thresholder.SetInsideValue( 65535 );
-        thresholder.SetInput( geodesicActiveContour.GetOutput() );
-        self._thresholder = thresholder
-        moduleUtilsITK.setupITKObjectProgress(
-            self, thresholder,
-            'itkBinaryThresholdImageFilter',
-            'Thresholding segmented areas')
         
     def _destroyITKPipeline(self):
         """Delete all bindings to components of the ITK pipeline.
         """
 
         del self._geodesicActiveContour
-        del self._thresholder
         
