@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.5 2002/05/02 15:27:51 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.6 2002/05/03 10:03:59 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -319,12 +319,16 @@ class vtkPipelineBrowser:
     def refresh (self, event=None):
         self.clear()
 
-        if self._objs == None:
-            rw_idx = icon_map.values().index(icon_map['RenderWindow'])
-            self._root = self._tree_ctrl.AddRoot(text="RenderWindow",
-                                                 image=rw_idx)
-            self._tree_ctrl.SetPyData(self._root, self.renwin)
-            recursively_add_children(self._tree_ctrl, self._root)
+        if self._objs == None or len(self._objs) == 0:
+            if self.renwin == None:
+                ConfigVtkObj.print_err('Undefined renderwindow AND objects. '
+                                       'Either or both must be defined.')
+            else:
+                rw_idx = icon_map.values().index(icon_map['RenderWindow'])
+                self._root = self._tree_ctrl.AddRoot(text="RenderWindow",
+                                                     image=rw_idx)
+                self._tree_ctrl.SetPyData(self._root, self.renwin)
+                recursively_add_children(self._tree_ctrl, self._root)
         else:
             im_idx = icon_map.values().index(icon_map['Python'])
             self._root = self._tree_ctrl.AddRoot(text="Root",
@@ -373,11 +377,9 @@ class vtkPipelineBrowser:
         obj = self._tree_ctrl.GetPyData(tree_event.GetItem())
         if hasattr(obj, 'GetClassName'):
             if not self._config_vtk_objs.has_key(obj):
-                temp_dict = {obj: ConfigVtkObj.ConfigVtkObj(self._frame,
-                                                            self.renwin, obj)}
-                # we know by definition that the key in temp_dict doesn't
-                # exist in self._config_vtk_objs, so we can add it
-                self._config_vtk_objs.update(temp_dict)
+                cvo = ConfigVtkObj.ConfigVtkObj(self._frame,
+                                                self.renwin, obj)
+                self._config_vtk_objs[obj] = cvo
 
             self._config_vtk_objs[obj].show()
 

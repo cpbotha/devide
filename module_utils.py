@@ -1,4 +1,4 @@
-# $Id: module_utils.py,v 1.3 2002/04/30 01:55:17 cpbotha Exp $
+# $Id: module_utils.py,v 1.4 2002/05/03 10:03:54 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -61,40 +61,6 @@ def CSAEO_box(module, parent_window):
                      balloonHelp='Apply, then close the window.')
     
     return box2
-    
-def browse_vtk_pipeline(vtk_objects,
-                        parent_window=None, render_window=None):
-    """Helper function for all derived classes.
-    
-    They can call this method from their configure methods to start a vtk
-    pipeline browsers on their internal VTK objects.
-    """
-    
-    pipeline_browser_window = Tkinter.Toplevel(parent_window)
-    # we don't have access to a renderer right now
-    pipeline_browser = vtkPipelineSegmentBrowser(pipeline_browser_window,
-                                                 vtk_objects)
-    # pack it
-    pipeline_browser.pack (side='top', expand = 1, fill = 'both' )
-    
-def configure_vtk_object(vtk_object,
-                         parent_window=None, render_window=None):
-    """Helper method for all derived classes.
-    
-    They can call this method from their view methods to start Prabhu's
-    vtk object configurator on an internal vtk object.
-    """
-    conf = ConfigVtkObj(render_window)
-    conf.set_update_method(vtk_object.Update)
-    conf.configure(parent_window, vtk_object)
-
-def fileopen_stringvar(filespec, stringvar):
-    """Utility function to offer file open dialog and modify stringvar.
-    """
-        
-    filename = tkFileDialog.askopenfilename(filetypes=filespec)
-    if len(filename) > 0:
-        stringvar.set(filename)
     
 def vtk_progress_callback(process_object):
     """Default callback that can be used for VTK ProcessObject callbacks.

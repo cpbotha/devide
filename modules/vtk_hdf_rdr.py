@@ -1,6 +1,6 @@
-# $Id: vtk_hdf_rdr.py,v 1.11 2002/05/02 15:38:32 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.12 2002/05/03 10:03:57 cpbotha Exp $
 
-from module_base import module_base
+from module_base import module_base, module_mixin_vtk_pipeline_config
 from wxPython.wx import *
 from wxPython.xrc import *
 import os
@@ -8,10 +8,10 @@ import vtkpython
 import vtkcpbothapython
 import module_utils
 
-from vtkPipeline.ConfigVtkObj import ConfigVtkObj
-from vtkPipeline.vtkPipeline import vtkPipelineBrowser
+#from vtkPipeline.ConfigVtkObj import ConfigVtkObj
+#from vtkPipeline.vtkPipeline import vtkPipelineBrowser
 
-class vtk_hdf_rdr(module_base):
+class vtk_hdf_rdr(module_base, module_mixin_vtk_pipeline_config):
     """dscas3 module for reading dscas HDF datasets.
 
     The platform makes use of HDF SDS with a custom spacing attribute.
@@ -123,22 +123,15 @@ class vtk_hdf_rdr(module_base):
                     fn_text.SetValue(self._fo_dlg.GetPath())
 
     def vtk_object_choice_cb(self, event):
-        # move this to module utils... it can take a list of INSTANCES,
-        # query them for classnames, compare to what has been passed
-        # and make persistent object thingies...
         choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
         if choice != None:
             if choice.GetStringSelection() == 'vtkHDFVolumeReader':
-                cvo = ConfigVtkObj()
-
-                cvo.configure(self._view_frame,
-                              self._reader)
+                self.vtk_object_configure(self._view_frame, None, self._reader)
 
     def vtk_pipeline_cb(self, event):
         # move this to module utils too, or to base...
-        self.pipe_browser = vtkPipelineBrowser(self._view_frame, None,
-                                               (self._reader,))
-        self.pipe_browser.show()
+        self.vtk_pipeline_configure(self._view_frame, None, (self._reader,))
+
         
         
 	
