@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.12 2004/11/19 17:08:05 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.13 2004/11/20 21:49:59 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -388,7 +388,13 @@ class selectedPoints(s3dcGridMixin):
             bounds = tdren.ComputeVisiblePropBounds()
         else:
             bounds = boundsForPoints
+
+        if bounds[1] - bounds[0] <= 0 or \
+           bounds[3] - bounds[2] <= 0 or \
+           bounds[5] - bounds[4] <= 0:
+            bounds = (-1,1,-1,1,-1,1)
         
+
         # we use a pointwidget
         pw = vtk.vtkPointWidget()
         #pw.SetInput(inputData)
