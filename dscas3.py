@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.48 2003/09/23 14:36:18 cpbotha Exp $
+# $Id: dscas3.py,v 1.49 2003/09/23 15:59:09 cpbotha Exp $
 
-DSCAS3_VERSION = '20030920'
+DSCAS3_VERSION = '20030923'
 
 import os
 import mutex
@@ -222,9 +222,29 @@ class dscas3_app_t(wxApp):
         temp.SetInstance(temp)
 
         def observerEOW(theObject, eventType):
-            print "HALO"
-            print theObject.GetText()
-            print "OLAH %d" % (len(theObject.GetText()),)
+            # theObject is of course a vtkEventOutputWindow
+            textType = theObject.GetTextType()
+            text = theObject.GetText()
+            
+            if textType == 0:
+                # Text
+                wxLogMessage(text)
+                
+            elif textType == 1:
+                # ErrorText
+                wxLogError(text)
+                
+            elif textType == 2:
+                # WarningText
+                wxLogWarning(text)
+                
+            elif textType == 3:
+                # GenericWarningText
+                wxLogWarning(text)
+                
+            else:
+                # DebugText
+                wxLogDebug(text)
 
         temp.AddObserver('ErrorEvent', observerEOW)
         temp.AddObserver('WarningEvent', observerEOW)        
