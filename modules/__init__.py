@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.88 2004/04/13 20:34:24 cpbotha Exp $
+# $Id: __init__.py,v 1.89 2004/04/15 12:51:10 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -57,6 +57,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Writers.vtkPolyDataWRT' : ('Writers',),
               'Writers.vtkStructPtsWRT' : ('Writers',),
 
+              'Misc.cptDistanceField' : ('Misc',),
               'Misc.superQuadric' : ('Sources',),
               'Misc.implicitToVolume' : ('Sources',),              
               
@@ -70,6 +71,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Insight.curvatureAnisotropicDiffusion' : ('Insight',),
               'Insight.gaussianConvolve' : ('Insight',),
               'Insight.geodesicActiveContour' : ('Insight',),
+              'Insight.nbCurvesLevelSet' : ('Insight',),
               'Insight.sigmoid' : ('Insight',),
               'Insight.watershed' : ('Insight', 'Morphology'),
               'Insight.imageStackRDR' : ('Insight',),
