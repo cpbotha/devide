@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.7 2003/03/19 19:07:05 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.8 2003/03/20 09:24:22 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -1221,7 +1221,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         ss = vtk.vtkSphereSource()
         #bounds = inputData.GetBounds()
 
-        ss.SetRadius((bounds[1] - bounds[0]) / 50.0)
+        ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
         sm = vtk.vtkPolyDataMapper()
         sm.SetInput(ss.GetOutput())
         sa = vtk.vtkActor()
@@ -1229,6 +1229,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         sa.SetPosition(world)
         sa.GetProperty().SetColor(1.0,0.0,0.0)
         self._threedRenderer.AddActor(sa)
+        sa.SetPickable(0)
 
         # first get the name of the point that we are going to store
         cursor_name = self._viewFrame.sliceCursorNameCombo.GetValue()
@@ -1246,6 +1247,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
                         (ta_bounds[1] - ta_bounds[0]))
             self._threedRenderer.AddActor(ta)
+            ta.SetPickable(0)
             ta.SetCamera(self._threedRenderer.GetActiveCamera())
         else:
             ta = None
