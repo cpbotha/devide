@@ -54,7 +54,8 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             if cobject.hitTest(rx, ry):
                 mouseOnObject = True
 
-                
+                cobject.notifyObservers('motion', event)
+
                 if not cobject.__hasMouse:
                     cobject.__hasMouse = True
                     cobject.notifyObservers('enter', event)

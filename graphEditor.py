@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.7 2003/05/07 23:45:04 cpbotha Exp $
+# $Id: graphEditor.py,v 1.8 2003/05/08 09:10:10 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -145,7 +145,8 @@ class graphEditor:
                     canvas.addObject(co)
 
 
-
+                    co.addObserver('motion', self._glyphMotion)
+                    
                     co.addObserver('buttonDown',
                                    self._glyphRightClick, temp_module)
                     co.addObserver('buttonUp',
@@ -233,32 +234,39 @@ class graphEditor:
             genUtils.logError('Could not connect modules: %s' % (str(e)))
                                          
 
-    def updatePortInfoStatusbar(self, from_io_shape, to_io_shape=None):
-
-        msgs = ['N/A', 'N/A']
-        i = 0
-        for i in range(2):
-            io_shape = (from_io_shape, to_io_shape)[i]
-            if not io_shape is None:
-                glyph = io_shape.get_parent_glyph()
-                if io_shape.get_inout():
-                    idx = glyph.get_main_shape().find_input_idx(io_shape)
-                    msgs[i] = glyph.get_module_instance().\
-                              getInputDescriptions()[idx]
-                else:
-                    idx = glyph.get_main_shape().find_output_idx(io_shape)
-                    msgs[i] = glyph.get_module_instance().\
-                              getOutputDescriptions()[idx]
-
-
-        if to_io_shape is None:
-            stxt = msgs[0]
-        else:
-            stxt = 'From %s to %s' % tuple(msgs)
-            
-        self._graphFrame.GetStatusBar().SetStatusText(stxt)
+    def updatePortInfoStatusBar(self, currentGlyph, currentPort):
+        """You can only call this during motion IN a port of a glyph.
+        """
         
+        msg = ''
+        canvas = currentGlyph.getCanvas()
 
+        draggedObject = canvas.getDraggedObject()
+        if draggedObject and draggedObject.draggedPort and \
+               draggedObject.draggedPort != (-1, -1):
+
+            if draggedObject.draggedPort[0] == 0:
+                pstr = draggedObject.moduleInstance.getInputDescriptions()[
+                    draggedObject.draggedPort[1]]
+            else:
+                pstr = draggedObject.moduleInstance.getOutputDescriptions()[
+                    draggedObject.draggedPort[1]]
+
+            msg = '%s port %s TO ' % (draggedObject.getLabel(), pstr)
+
+        if currentPort[0] == 0:
+            pstr = currentGlyph.moduleInstance.getInputDescriptions()[
+                currentPort[1]]
+        else:
+            pstr = currentGlyph.moduleInstance.getOutputDescriptions()[
+                currentPort[1]]
+             
+        msg += '%s port %s' % (currentGlyph.getLabel(), pstr)
+
+
+        self._graphFrame.GetStatusBar().SetStatusText(msg)            
+                                   
+            
     def _glyphDrag(self, glyph, eventName, event, module):
 
         canvas = glyph.getCanvas()        
@@ -320,6 +328,11 @@ class graphEditor:
             glyph.draggedPort = None
             # redraw everything
             canvas.Refresh()
+
+    def _glyphMotion(self, glyph, eventName, event, module):
+        port = glyph.findPortContainingMouse(event.realX, event.realY)
+        if port:
+            self.updatePortInfoStatusBar(glyph, port)
 
     def _glyphRightClick(self, glyph, eventName, event, module):
         if event.RightDown():

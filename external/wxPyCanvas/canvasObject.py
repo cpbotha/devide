@@ -14,7 +14,8 @@ class canvasObject(wx.wxObject, canvasSubject):
                            'exit' : [],
                            'drag' : [],
                            'buttonDown' : [],
-                           'buttonUp' : []}
+                           'buttonUp' : [],
+                           'motion' : []}
     def close(self):
         """Take care of any cleanup here.
         """
@@ -93,6 +94,8 @@ class coLine(canvasObject):
         del self.toGlyph
 
     def draw(self, dc):
+        # lines are 2 pixels thick
+        dc.SetPen(wx.wxPen('BLACK', 2, wx.wxSOLID))
         dc.DrawLines(self._linePoints)
 
     def getBounds(self):
@@ -136,6 +139,7 @@ class coGlyph(coRectangle):
         self._label = label
         self.moduleInstance = moduleInstance
         self.draggedPort = None
+        self.enteredPort = None
 
     def close(self):
         del self.moduleInstance
@@ -211,7 +215,8 @@ class coGlyph(coRectangle):
         self.drawPort(dc, brush, (px, py))
 
     def findPortContainingMouse(self, x, y):
-        """Find port that contains the mouse pointer.
+        """Find port that contains the mouse pointer.  Returns tuple
+        containing inOut and port index.
         """
 
         horizOffset = self._position[0] + coGlyph._horizBorder
