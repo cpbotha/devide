@@ -1,12 +1,11 @@
 # vtk_mc_flt.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_mc_flt.py,v 1.12 2002/10/01 13:15:56 cpbotha Exp $
+# $Id: vtk_mc_flt.py,v 1.13 2003/01/08 16:16:57 cpbotha Exp $
 # vtk marching cubes filter
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
 import module_utils
 import vtk
-import vtkcpbothapython
 from wxPython.wx import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 

@@ -1,12 +1,11 @@
 # dtsc_seg_flt.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: dtsc_seg_flt.py,v 1.5 2002/09/13 15:38:01 cpbotha Exp $
+# $Id: dtsc_seg_flt.py,v 1.6 2003/01/08 16:16:57 cpbotha Exp $
 # double-threshold seed connectivity segmentation filter
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
 import module_utils
 import vtk
-import vtkcpbothapython
 from wxPython.wx import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 

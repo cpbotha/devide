@@ -1,11 +1,10 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.69 2002/09/30 15:30:43 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.70 2003/01/08 16:16:57 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
 import vtk
-import vtkcpbothapython
 from wxPython.wx import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
