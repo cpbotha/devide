@@ -225,8 +225,16 @@ class coGlyph(coRectangle):
         dc.SetFont(wx.wxNORMAL_FONT)
         
         # calculate our size
+        # the width is the maximum(textWidth + twice the horizontal border,
+        # all ports, horizontal borders and inter-port borders added up)
+        maxPorts = max(self._numInputs, self._numOutputs)
+        portsWidth = coGlyph._horizBorder + \
+                     maxPorts * (coGlyph._pWidth + coGlyph._horizBorder)
+        
         tex, tey = dc.GetTextExtent(self._label)
-        self._size = (tex + 2 * coGlyph._horizBorder,
+        textWidth = tex + 2 * coGlyph._horizBorder
+        
+        self._size = (max(textWidth, portsWidth),
                       tey + 2 * coGlyph._vertBorder)
 
         # draw the main rectangle
