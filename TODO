@@ -1,5 +1,10 @@
-$Id: TODO,v 1.2 2002/05/19 15:15:00 cpbotha Exp $
+$Id: TODO,v 1.3 2002/06/09 00:12:25 cpbotha Exp $
 
-- use the three axes provided by plane widget geometry to set resliceaxes
-  directioncosines of the imagereslice.
+- ideas for TF editor:
+  * opacity curve overlaid on histogram of data
+  * areas are coloured according to the colour tf
+  * colour tf is edited by inserting colour samples (nothing else, so
+    straight line)
+  * gradient tf?
+
 
