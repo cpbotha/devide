@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.3 2004/01/29 11:00:07 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.4 2004/01/29 15:19:37 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -32,6 +32,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         self._distance.ConsiderAnisotropyOff()
 
         self._xEndPoints = []
+        self._noFlipXes = []
         self._pf1 = vtk.vtkProgrammableFilter() # yeah
         self._pf1.SetInput(self._distance.GetOutput())
         self._pf1.SetExecuteMethod(self.pf1Execute)
@@ -69,6 +70,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
 
         self._iObj = self._distance
         self._oObj = self._cpd
+        #self._oObj = self._pf2
         
         self._viewFrame = self._createViewFrame({'distance' :
                                                  self._distance,
@@ -96,6 +98,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         zdim = inputData.GetWholeExtent()[5]
         
         self._xEndPoints = [[] for dummy in range(zdim + 1)]
+        self._noFlipXes = [{} for dummy in range(zdim + 1)]
             
         for z in xrange(zdim + 1):
 
@@ -135,20 +138,21 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
                 print "ERROR: endPoint not found on slice %d." % (z,)
                 return
 
-            prevFlipY = -1
+            prevFlipy = -1
             for x in xrange(self._xEndPoints[z][0][0],
                             self._xEndPoints[z][1][0] + 1):
                 
                 signFlip = False
                 signFlipped = False
                 prevVal = -1
+
                 for y in xrange(ydim + 1):
                     val = inputData.GetScalarComponentAsDouble(x,y,z,0)
                     
                     if val == 0 and prevVal != 0:
                         signFlip = not signFlip
                         signFlipped = True
-                        prevFlipY = y
+                        prevFlipy = y
                         
                     if signFlip:
                         outputData.SetScalarComponentFromDouble(x,y,z,0,-val)
@@ -159,21 +163,23 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
                     prevVal = val
 
                 if not signFlipped:
-                    # this shouldn't happen, because we're by definition
-                    # between endpoints - we're going to use prevFlipY
-                    print "Fixing noFlip"                    
-                    if prevFlipY >= 0:
-
-                        for y in xrange(prevFlipY, ydim + 1):
-                            val = inputData.GetScalarComponentAsDouble(x,y,z,0)
-                            outputData.SetScalarComponentFromDouble(
-                                x,y,z,0,-val)
+                    # if we went right through without striking a voxel,
+                    # note the x position - we should not correct it in
+                    # our correction step!
+                    self._noFlipXes[z][x] = prevFlipy
+                    
+                elif x - 1 in self._noFlipXes[z]:
+                    # the sign has flipped again, the previous col was a
+                    # noflip,
+                    # so adjust the LAST flipped X's y coord (for the masking
+                    # in the implicitVolume)
+                    self._noFlipXes[z][x-1] = prevFlipy
 
             # now check the bottom row of the distance field!
             for x in xrange(self._xEndPoints[z][0][0],
                             self._xEndPoints[z][1][0] + 1):
                 val = outputData.GetScalarComponentAsDouble(x,ydim,z,0)
-                if val > 0:
+                if val > 0 and x not in self._noFlipXes[z]:
                     # this means it's screwed, we have to redo from bottom up
                     # first make all positive until we reach 0 again
                     y = ydim
@@ -213,7 +219,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         for z in xrange(zdim + 1):
             x0 = self._xEndPoints[z][0][0]
             y0 = self._xEndPoints[z][0][1]
-            for y in xrange(y0, ydim + 1):            
+            for y in xrange(y0, ydim + 1):
                 for x in xrange(0, x0):
                     val = inputData.GetScalarComponentAsDouble(x,y,z,0)
                     # make this negative as well, so that the surface will
@@ -231,7 +237,14 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
 
             self._pf2.UpdateProgress(z / float(zdim))
 
-        # outputData.GetPointData().GetScalars() still valid here
+            for xf,yf in self._noFlipXes[z].items():
+                for y in xrange(yf, ydim + 1):
+                    val = inputData.GetScalarComponentAsDouble(xf,y,z,0)
+                    # this was noflip data, so it used to be positive
+                    # we now make it negative, to get rid of all
+                    # surfaces that so originated
+                    outputData.SetScalarComponentFromDouble(xf,y,z,0,-val)
+
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
