@@ -11,3 +11,8 @@ Building tix with TCL/TK already installed:
 --with-tkconfig=/usr/lib/tk8.3 --with-tclinclude=/usr/include/tcl8.3 \
 --with-tkinclude=/usr/include/tcl8.3 --enable-shared
 
+
+Misc
+----
+
+http://www.graphviz.org/
