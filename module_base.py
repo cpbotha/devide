@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.22 2003/01/22 18:24:02 cpbotha Exp $
+# $Id: module_base.py,v 1.23 2003/01/26 02:26:54 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -296,8 +296,11 @@ class filenameViewModuleMixin(module_mixin_fo_dialog,
                    lambda e: self.browseButtonCallback(browseMsg,
                                                        fileWildcard))
 
-        for objectName in objectDict.keys():
+        self._viewFrame.objectChoice.Clear()
+	for objectName in objectDict.keys():
             self._viewFrame.objectChoice.Append(objectName)
+
+	self._viewFrame.objectChoice.SetSelection(0)
             
         EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
                    lambda e: self.objectChoiceCallback(objectDict))
