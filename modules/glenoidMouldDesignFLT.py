@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.6 2003/03/21 17:49:42 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.7 2003/03/21 19:04:36 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -205,8 +205,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                 # do line extrusion resulting in a list of 5-element tuples,
                 # each tuple representing the 5 3-d vertices of a "house"
-                houses = self._lineExtrudeHouse(edgeLine,
-                                                plane.GetNormal())
+                houses = self._lineExtrudeHouse(edgeLine, plane)
                 
                 # we will dump ALL the new points in here
                 newPoints = vtk.vtkPoints()
@@ -253,14 +252,15 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             self._viewFrame.Raise()
 
 
-    def _buildHouse(self, startPoint, startPointNormal, cutPlaneNormal):
+    def _buildHouse(self, startPoint, startPointNormal, cutPlane):
         """Calculate the vertices of a single house.
 
         Given a point on the cutPlane, the normal at that point and
         the cutPlane normal, this method will calculate and return the
         five points (including the start point) defining the
         upside-down house.  The house is of course oriented with the point
-        normal and the cutPlaneNormal.  Doh.
+        normal projected onto the cutPlane (then normalized again) and the
+        cutPlaneNormal.
 
         
         p3 +--+ p2
@@ -273,18 +273,30 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         Python tuples.
         """
 
-        startPointNormal3 = [3.0 * i for i in startPointNormal]
-        cutPlaneNormal1_5 = [1.5 * i for i in cutPlaneNormal]
-        mp = map(operator.add, startPoint, startPointNormal3)
+
+        # xo = x - o
+        # t = xo dot normal
+        # h = x - t * normal
+        houseNormal = [0, 0, 0]
+        # you can't just project the normal!  ProjectPoint is for POINTS
+        # THINK!
+        cutPlane.ProjectPoint(startPointNormal, cutPlane.GetOrigin(),
+                              cutPlane.GetNormal(), houseNormal)
+        vtk.vtkMath.Normalize(houseNormal)
+        houseNormal = startPointNormal
+        #print vtk.vtkMath.Dot(houseNormal, cutPlane.GetNormal())
+        
+        houseNormal3 = [3.0 * i for i in houseNormal]
+        cutPlaneNormal1_5 = [1.5 * i for i in cutPlane.GetNormal()]
+        mp = map(operator.add, startPoint, houseNormal3)
         p1 = tuple(map(operator.add, mp, cutPlaneNormal1_5))
-        p2 = tuple(map(operator.add, p1, startPointNormal3))
+        p2 = tuple(map(operator.add, p1, houseNormal3))
         p4 = tuple(map(operator.sub, mp, cutPlaneNormal1_5))
-        p3 = tuple(map(operator.add, p4, startPointNormal3))
+        p3 = tuple(map(operator.add, p4, houseNormal3))
 
         return (tuple(startPoint), p1, p2, p3, p4)
-        
-        
-    def _lineExtrudeHouse(self, edgeLine, cutPlaneNormal):
+
+    def _lineExtrudeHouse(self, edgeLine, cutPlane):
         """Extrude the house (square with triangle as roof) along edgeLine.
 
         edgeLine is a list of tuples where each tuple is:
@@ -302,7 +314,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         newEdgeLine = []
         
         for point in edgeLine:
-            housePoints = self._buildHouse(point[1], point[2], cutPlaneNormal)
+            housePoints = self._buildHouse(point[1], point[2], cutPlane)
             newEdgeLine.append(housePoints)
 
         return newEdgeLine
