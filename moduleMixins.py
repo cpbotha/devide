@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.42 2004/05/20 01:37:34 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.43 2004/05/20 18:18:15 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -438,20 +438,23 @@ class pickleVTKObjectsModuleMixin(object):
     Your module has to derive from moduleBase as well so that it has a
     self._config!
 
-    Remember to call the __init__ of this class (and to set _vtkObjectNames)
-    as well as close().  Also call logicToConfig() as the last call of your
-    __init__ to initialise the _config to the initial state of the logic.
+    Remember to call the __init__ of this class with the list of attribute
+    strings representing vtk objects that you want pickled.  All the objects
+    have to exist and be initially configured by then.
 
-    If you override logicToConfig and configToLogic,
-    don't forget to call these versions as well.
+    Remember to call close() when your child class close()s.
     """
 
-    def __init__(self):
+    def __init__(self, vtkObjectNames):
         # you have to add the NAMES of the objects that you want pickled
         # to this list.
-        self._vtkObjectNames = []
+        self._vtkObjectNames = vtkObjectNames
 
-        self.statePattern = re.compile ("To[A-Z0-9]")        
+        self.statePattern = re.compile ("To[A-Z0-9]")
+
+        # make sure that the state of the vtkObjectNames objects is
+        # encapsulated in the initial _config
+        self.logicToConfig()
 
     def close(self):
         # make sure we get rid of these bindings as well
@@ -547,7 +550,6 @@ class pickleVTKObjectsModuleMixin(object):
 # note that the pickle mixin comes first, as its configToLogic/logicToConfig
 # should be chosen over that of noConfig
 
-# FIXME: the outputFunctions/inputFunctions mechanism is not complete yet
 class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
                                noConfigModuleMixin,
                                moduleBase):
@@ -562,23 +564,31 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
     __doc__ string of the encapsulated VTK class (and will thus be
     shown if the user requests module help).  If you don't want this,
     call the ctor with replaceDoc=False.
+
+    inputFunctions is a list of the complete methods that have to be called
+    on the encapsulated VTK class, e.g. ['SetInput1(inputStream)',
+    'SetInput1(inputStream)'].  The same goes for outputFunctions, except that
+    there's no inputStream involved.  Use None in both cases if you want
+    the default to be used (SetInput(), GetOutput()).
     """
     
     def __init__(self, moduleManager, vtkObjectBinding, progressText,
                  inputDescriptions, outputDescriptions,
                  replaceDoc=True,
                  inputFunctions=None, outputFunctions=None):
+
+        # first these two mixins
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
-        pickleVTKObjectsModuleMixin.__init__(self)
+
 
         self._theFilter = vtkObjectBinding
         if replaceDoc:
             self.__doc__ = self._theFilter.__doc__
         
-        # adding it to this list means its state will be pickled when
-        # the network is written.
-        self._vtkObjectNames.append('_theFilter')
+        # now that we have the object, init the pickle mixin so
+        # that the state of this object will be saved
+        pickleVTKObjectsModuleMixin.__init__(self, ['_theFilter'])        
 
         moduleUtils.setupVTKObjectProgress(self, self._theFilter,
                                            progressText)        
@@ -592,9 +602,6 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         self._inputFunctions = inputFunctions
         self._outputFunctions = outputFunctions
 
-        # make sure that initial _config is in sync with the object
-        self.logicToConfig()
-        
     def close(self):
         pickleVTKObjectsModuleMixin.close(self)
         noConfigModuleMixin.close(self)
@@ -609,7 +616,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         # this will only every be invoked if your getOutputDescriptions has
         # 1 or more elements
         if self._outputFunctions:
-            return getattr(self._theFilter, self._outputFunctions[idx])()
+            return eval('self._theFilter.%s' % (self._outputFunctions[idx],))
         else:
             return self._theFilter.GetOutput()
 
@@ -621,7 +628,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         # many elements in your getInputDescriptions
 
         if self._inputFunctions:
-            exec('self._theFilter.%s(inputStream)' %
+            exec('self._theFilter.%s' %
                  (self._inputFunctions[idx]))
 
         else:
