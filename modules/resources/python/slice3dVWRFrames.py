@@ -90,6 +90,8 @@ class MainFrame(wxFrame):
         self.button_4 = wxButton(self.notebook_1_copy_pane_7, self.objectContourButtonId , "Contour")
         self.objectMotionButtonId  =  wxNewId()
         self.button_11 = wxButton(self.notebook_1_copy_pane_7, self.objectMotionButtonId , "Motion")
+        self.objectAxisToSliceButtonId  =  wxNewId()
+        self.button_13 = wxButton(self.notebook_1_copy_pane_7, self.objectAxisToSliceButtonId , "Axis to Slice")
 
         self.__set_properties()
         self.__do_layout()
@@ -215,6 +217,7 @@ class MainFrame(wxFrame):
         sizer_11.Add(self.button_3, 0, wxRIGHT, 4)
         sizer_11.Add(self.button_4, 0, wxRIGHT, 4)
         sizer_11.Add(self.button_11, 0, wxRIGHT, 4)
+        sizer_11.Add(self.button_13, 0, wxRIGHT, 4)
         sizer_3.Add(sizer_11, 0, wxTOP|wxBOTTOM|wxEXPAND, 4)
         sizer_10.Add(sizer_3, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4)
         self.notebook_1_copy_pane_7.SetAutoLayout(1)

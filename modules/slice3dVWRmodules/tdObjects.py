@@ -1,7 +1,8 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.8 2003/06/30 10:00:00 cpbotha Exp $
+# $Id: tdObjects.py,v 1.9 2003/06/30 12:07:47 cpbotha Exp $
 # class that controls the 3-D objects list
 
+import math
 import operator
 import vtk
 import vtkdscas
@@ -61,6 +62,9 @@ class tdObjects:
 
         wx.EVT_BUTTON(svViewFrame, svViewFrame.objectMotionButtonId,
                       self._handlerObjectMotion)
+
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectAxisToSliceButtonId,
+                      self._handlerObjectAxisToSlice)
 
     def _getSelectedObjects(self):
         objectNames = []        
@@ -142,7 +146,68 @@ class tdObjects:
 
         if objs:
             self._slice3dVWR.render3D()
+
+    def _handlerObjectAxisToSlice(self, event):
+        # first find two selected points from the selected points list
+        selPoints = self._slice3dVWR._viewFrame.spointsGrid.GetSelectedRows()
+        sliceDirection = self._slice3dVWR._getCurrentSliceDirection()
         
+        if len(selPoints) >= 2 and sliceDirection and sliceDirection._ipws:
+            tp = [self._slice3dVWR._selectedPoints[idx]['world']
+                  for idx in selPoints[:2]]
+            ipw = sliceDirection._ipws[0]
+
+            objs = self._getSelectedObjects()
+            for obj in objs:
+                objectDict = self._tdObjectsDict[obj]
+                if objectDict['type'] == 'vtkPolyData':
+                    newTransform = vtk.vtkTransform()
+                    newTransform.Identity()
+                    newTransform.PreMultiply()
+                    cm = objectDict['vtkActor'].GetMatrix()
+                    newTransform.Concatenate(cm)
+
+                    po = ipw.GetOrigin()
+                    tpo = map(operator.sub, tp[0], po)
+                    # "vertical" distance
+                    vdm = vtk.vtkMath.Dot(tpo, ipw.GetNormal())
+                    vd = [vdm * e for e in ipw.GetNormal()]
+                    # negate it
+                    vd = [-e for e in vd]
+                    # and abuse the transform
+                    newTransform.Translate(vd)
+
+                    # let's rotate
+                    # get axis as vector
+                    objectAxis = map(operator.sub, tp[1], tp[0])
+                    objectAxisM = vtk.vtkMath.Norm(objectAxis)
+                    rotAxis = [0.0, 0.0, 0.0]
+                    vtk.vtkMath.Cross(objectAxis, ipw.GetNormal(), rotAxis)
+                    # calculate the new tp[1] (i.e. after the translate)
+                    ntp1 = map(operator.sub, tp[1], vd)
+                    ntp1m = vtk.vtkMath.Norm(ntp1)
+                    # we now have y (ntp1m) and r (objectAxisM), so use asin
+                    # and convert everything to degrees
+                    rotAngle = math.asin(ntp1m / objectAxisM) / math.pi * 180
+
+                    #newTransform.RotateWXYZ(rotAngle,
+                    #                        rotAxis[0], rotAxis[1], rotAxis[2])
+
+                    
+                    ntp0 = map(operator.sub, tp[0], vd)
+                    objectDict['vtkActor'].SetOrigin(ntp0)
+                    objectDict['vtkActor'].SetOrientation(
+                        newTransform.GetOrientation())
+                    objectDict['vtkActor'].SetScale(
+                        newTransform.GetScale())
+                    objectDict['vtkActor'].SetPosition(
+                        newTransform.GetPosition())
+                    
+            # closes: for obj in objs:
+            self._slice3dVWR.render3D()
+
+        else:
+            wxLogMessage("You have to select two points and a slice.")
             
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
@@ -568,7 +633,7 @@ class tdObjects:
                 # we don't want the user to scale, only move and rotate
                 bw.ScalingEnabledOff()
                 # FIXME WORKAROUND: the vtkBoxWidget is BROKEN
-                bw.RotationEnabledOff()
+                #bw.RotationEnabledOff()
                 bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
                 bw.SetProp3D(objectDict['vtkActor'])
                 bw.SetPlaceFactor(1.0)

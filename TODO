@@ -1,13 +1,7 @@
-$Id: TODO,v 1.8 2003/05/22 18:33:10 cpbotha Exp $
-
-* object menu for sliceVWR
+$Id: TODO,v 1.9 2003/06/30 12:07:47 cpbotha Exp $
 
 * split out dscas3-specific version of vtkPipeline... change buttons,
   change frame icon to that of dscas3, other enhancements
-
-* saving of arbitrary collection of modules, leading to network and pattern
-  saving (network: complete, pattern: macro) - for this we also need
-  rubber-banding
 
 - ideas for TF editor:
   * opacity curve overlaid on histogram of data
@@ -17,6 +11,22 @@ $Id: TODO,v 1.8 2003/05/22 18:33:10 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+* Fix the vtkBoxWidgetConstrained mess: this should derive from vtkBoxWidget;
+  at the moment it's a copy with changes applied.  This is because some of
+  the most important calls are not virtual.
+
+* At the moment, an object with motion activated latches to the first active
+  plane; this should obviously be cleaned up.
+
+* When an IPW is moved, the ConstrainPlaneNormals on any BoxWidgets are not
+  updated.
+
+* Fix ::Rotate constraining in vtkBoxWidgetConstrained.
+
+* vtkBoxWidget GetTransform() seems to be really borked.  I've mailed the
+  vtk users list with a piece of python code with which this can be
+  reproduced.
 
 
 FIXED:
@@ -29,4 +39,11 @@ FIXED:
 
 DONE:
 
+* object menu for sliceVWR
+
 * compare our vtkPipelineWX with the latest vtkPipeline from Prabhu's CVS
+
+* saving of arbitrary collection of modules, leading to network and pattern
+  saving (network: complete, pattern: macro) - for this we also need
+  rubber-banding
+
