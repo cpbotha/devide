@@ -5,9 +5,9 @@ import moduleUtils
 import wx
 import vtk
 
-class imageGreyDilate3D(scriptedConfigModuleMixin, moduleBase):
+class imageGreyErode(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs a greyscale 3D dilation on the input.
+    """Performs a greyscale 3D erosion on the input.
     
     $Revision: 1.1 $
     """
@@ -17,10 +17,10 @@ class imageGreyDilate3D(scriptedConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
 
 
-        self._imageDilate = vtk.vtkImageContinuousDilate3D()
+        self._imageErode = vtk.vtkImageContinuousErode3D()
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
-                                           'Performing greyscale 3D dilation')
+        moduleUtils.setupVTKObjectProgress(self, self._imageErode,
+                                           'Performing greyscale 3D erosion')
                                            
         self._config.kernelSize = (3, 3, 3)
 
@@ -33,7 +33,7 @@ class imageGreyDilate3D(scriptedConfigModuleMixin, moduleBase):
 
         self._viewFrame = self._createWindow(
             {'Module (self)' : self,
-             'vtkImageContinuousDilate3D' : self._imageDilate})
+             'vtkImageContinuousErode3D' : self._imageErode})
 
         # pass the data down to the underlying logic
         self.configToLogic()
@@ -52,29 +52,29 @@ class imageGreyDilate3D(scriptedConfigModuleMixin, moduleBase):
         moduleBase.close(self)
         
         # get rid of our reference
-        del self._imageDilate
+        del self._imageErode
 
     def getInputDescriptions(self):
         return ('vtkImageData',)
 
     def setInput(self, idx, inputStream):
-        self._imageDilate.SetInput(inputStream)
+        self._imageErode.SetInput(inputStream)
 
     def getOutputDescriptions(self):
-        return (self._imageDilate.GetOutput().GetClassName(), )
+        return (self._imageErode.GetOutput().GetClassName(), )
 
     def getOutput(self, idx):
-        return self._imageDilate.GetOutput()
+        return self._imageErode.GetOutput()
 
     def logicToConfig(self):
-        self._config.kernelSize = self._imageDilate.GetKernelSize()
+        self._config.kernelSize = self._imageErode.GetKernelSize()
     
     def configToLogic(self):
         ks = self._config.kernelSize
-        self._imageDilate.SetKernelSize(ks[0], ks[1], ks[2])
+        self._imageErode.SetKernelSize(ks[0], ks[1], ks[2])
     
     def executeModule(self):
-        self._imageDilate.Update()
+        self._imageErode.Update()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
