@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.71 2003/12/18 16:07:26 cpbotha Exp $
+# $Id: dscas3.py,v 1.72 2004/01/09 12:46:37 cpbotha Exp $
 
-DSCAS3_VERSION = '20031218'
+DVIDE_VERSION = '20031218'
 
 # standard Python imports
 import getopt
@@ -278,8 +278,8 @@ class dscas3_app_t(wx.App):
         <html>
         <body>
         <center>
-        <h3>DSCAS3 v.%s</h3>
-        <p>DSCAS3 is copyright (c) 2003 Charl P. Botha<br>
+        <h3>dvide v.%s</h3>
+        <p>dvide is copyright (c) 2003 Charl P. Botha<br>
         http://cpbotha.net/phd/
         </p>
         <p>Unauthorised use or distribution strictly prohibited.
@@ -316,7 +316,7 @@ class dscas3_app_t(wx.App):
         else:
             ivs = 'N/A'
 
-        about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION,
+        about.htmlWindow.SetPage(aboutText % (DVIDE_VERSION,
                                               wx.VERSION_STRING,
                                               pyver,
                                               vvs, ivs))
