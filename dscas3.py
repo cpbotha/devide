@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.39 2003/06/05 15:59:41 cpbotha Exp $
+# $Id: dscas3.py,v 1.40 2003/06/09 22:57:04 cpbotha Exp $
 
-DSCAS3_VERSION = '20030522'
+DSCAS3_VERSION = '20030610'
 
 import os
 import mutex
