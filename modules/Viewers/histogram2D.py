@@ -1,6 +1,7 @@
-# $Id: histogram2D.py,v 1.3 2004/02/18 17:29:49 cpbotha Exp $
+# $Id: histogram2D.py,v 1.4 2004/02/19 14:36:08 cpbotha Exp $
 
 from moduleBase import moduleBase
+import moduleUtils
 import vtk
 import vtkdevide
 
@@ -14,12 +15,13 @@ class histogram2D(moduleBase):
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
-        self._histogramSource = vtk.vtkProgrammableSource()
-
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self._histogram = vtkdevide.vtkImageHistogram2D()
+        moduleUtils.setupVTKObjectProgress(self, self._histogram,
+                                           'Calculating 2D histogram')
         
-        pass
+
+        self._input0 = None
+        self._input1 = None
 
     def close(self):
         self.setInput(0, None)
@@ -31,7 +33,7 @@ class histogram2D(moduleBase):
         return ('Image Data 1', 'Imaga Data 2')
 
     def setInput(self, idx, inputStream):
-        
+
         def checkTypeAndReturnInput(inputStream):
             """Check type of input.  None gets returned.  The input is
             returned if it has a valid type.  An exception is thrown if
@@ -55,23 +57,28 @@ class histogram2D(moduleBase):
 
                 if not validType:
                     raise TypeError, 'Input has to be of type vtkImageData.'
+                else:
+                    return inputStream
             
             
         if idx == 0:
             self._input0 = checkTypeAndReturnInput(inputStream)
+            self._histogram.SetInput1(self._input0)
 
         elif idx == 1:
             self._input1 = checkTypeAndReturnInput(inputStream)
+            self._histogram.SetInput2(self._input1)
 
 
     def getOutputDescriptions(self):
-        return ()
+        return (self._histogram.GetOutput().GetClassName(),)
 
     def getOutput(self, idx):
-        raise NotImplementedError
+        #raise NotImplementedError
+        return self._histogram.GetOutput()
 
     def executeModule(self):
-        pass
+        self._histogram.Update()
 
     def view(self):
         pass
