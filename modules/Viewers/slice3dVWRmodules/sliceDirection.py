@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.17 2005/01/05 21:13:58 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.18 2005/01/12 23:03:01 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -740,9 +740,9 @@ class sliceDirection:
             
             for ipw in self._ipws[1:]:
                 try:
-                    pds2 = self._ipws[0].GetPolyDataAlgorithm()
+                    pds2 = ipw.GetPolyDataAlgorithm()
                 except AttributeError:
-                    pds2 = self._ipws[0].GetPolyDataSource()
+                    pds2 = ipw.GetPolyDataSource()
                 
                 pds2.SetOrigin(pds1.GetOrigin())
                 pds2.SetPoint1(pds1.GetPoint1())
