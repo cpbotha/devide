@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.11 2004/10/21 14:55:18 cpbotha Exp $
+# $Id: tdObjects.py,v 1.12 2004/11/01 12:58:39 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -24,14 +24,15 @@ class tdObjects(s3dcGridMixin):
                       'GOLD',  'MAGENTA', 'GREY80',
                       'PURPLE']
 
-    _gridCols = [('Object Name', 0), ('Colour', 120), ('Visible', 0),
-                 ('Contour', 0), ('Motion', 0)]
+    _gridCols = [('Object Name', 0), ('Colour', 110), ('Visible', 0),
+                 ('Contour', 0), ('Motion', 0), ('Scalars',0)]
     
     _gridNameCol = 0
     _gridColourCol = 1
     _gridVisibleCol = 2
     _gridContourCol = 3
     _gridMotionCol = 4
+    _gridScalarVisibilityCol = 5
 
     def __init__(self, slice3dVWRThingy, grid):
         self._tdObjectsDict = {}
@@ -118,6 +119,8 @@ class tdObjects(s3dcGridMixin):
 
                     if sname:
                         mapper.SetScalarRange(tdObject.GetScalarRange())
+
+                    mapper.ScalarVisibilityOff()
                 
 #                     if sname and sname.lower().find("curvature") >= 0:
 #                         # if the active scalars have "curvature" somewhere in
@@ -153,7 +156,7 @@ class tdObjects(s3dcGridMixin):
 
             # set the relevant cells up for Boolean
             for col in [self._gridVisibleCol, self._gridContourCol,
-                        self._gridMotionCol]:
+                        self._gridMotionCol, self._gridScalarVisibilityCol]:
                 self._grid.SetCellRenderer(nrGridRows, col,
                                            wx.grid.GridCellBoolRenderer())
                 self._grid.SetCellAlignment(nrGridRows, col,
@@ -169,6 +172,8 @@ class tdObjects(s3dcGridMixin):
             self._setObjectContouring(tdObject, False)
             # and the motion
             self._setObjectMotion(tdObject, False)
+            # scalar visibility
+            self._setObjectScalarVisibility(tdObject, False)
 
             self.slice3dVWR._threedRenderer.ResetCamera()
             self.slice3dVWR.render3D()
@@ -208,6 +213,12 @@ class tdObjects(s3dcGridMixin):
             ('Conto&uring Off',
              'Deactivate contouring for all selected objects',
              self._handlerObjectContourOff, True),
+            ('Scalar Visibility On +',
+             'Activate scalar visibility for all selected objects',
+             self._handlerObjectScalarVisibilityOn, True),
+            ('Scalar Visibility Off',
+             'Deactivate scalar visibility for all selected objects',
+             self._handlerObjectScalarVisibilityOff, True),            
             ('---',), # important!  one-element tuple...
             ('Attach A&xis',
              'Attach axis to all selected objects',
@@ -794,6 +805,26 @@ class tdObjects(s3dcGridMixin):
         if objs:
             self.slice3dVWR.render3D()
 
+    def _handlerObjectScalarVisibilityOn(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            self._setObjectScalarVisibility(obj, True)
+
+        if objs:
+            self.slice3dVWR.render3D()
+        
+
+    def _handlerObjectScalarVisibilityOff(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            self._setObjectScalarVisibility(obj, False)
+
+        if objs:
+            self.slice3dVWR.render3D()
+
+
     def _handlerObjectMotionOff(self, event):
         objs = self._getSelectedObjects()
 
@@ -1222,6 +1253,32 @@ class tdObjects(s3dcGridMixin):
             if gridRow >= 0:
                 genUtils.setGridCellYesNo(
                     self._grid,gridRow, self._gridVisibleCol, visible)
+
+    def _setObjectScalarVisibility(self, tdObject, scalarVisibility):
+        if self._tdObjectsDict.has_key(tdObject):
+            objectDict = self._tdObjectsDict[tdObject]
+
+            
+            # in the scene
+            if objectDict['type'] == 'vtkPolyData':
+                objectDict['vtkActor'].GetMapper().SetScalarVisibility(
+                    scalarVisibility)
+
+            else:
+                # in these cases, scalarVisibility is NA, so it remains off
+                scalarVisibility = False
+                pass
+
+            # in our own dict
+            objectDict['scalarVisibility'] = bool(scalarVisibility)
+            
+            # finally in the grid
+            gridRow = self.findGridRowByName(objectDict['objectName'])
+            if gridRow >= 0:
+                genUtils.setGridCellYesNo(
+                    self._grid,gridRow, self._gridScalarVisibilityCol,
+                    scalarVisibility)
+        
 
     def _setExclusiveObjectVisibility(self, objectNames, visible):
         """Sets the visibility of tdObject to visible and all the other
