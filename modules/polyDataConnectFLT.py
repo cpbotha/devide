@@ -1,6 +1,3 @@
-# TODO: vtkImageCast - cast whatever to unsigned char output
-
-
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
