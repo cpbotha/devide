@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.12 2003/03/24 18:37:38 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.13 2003/03/24 23:51:28 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -18,6 +18,9 @@ import vtk
 from wxPython.wx import *
 
 class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
+
+    drillGuideInnerDiameter = 3
+    drillGuideOuterDiameter = 5
 
     def __init__(self, moduleManager):
         
@@ -256,6 +259,31 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                 
                 stuff.append(rsf.GetOutput())
+
+                # also add two housies to cap all the ends
+                capHousePoints = vtk.vtkPoints()
+                capHouses = []
+                if houses:
+                    capHouses.append(houses[0])
+                if len(houses) > 1:
+                    capHouses.append(houses[-1])
+                    
+                capHouseIdLists = [vtk.vtkIdList() for dummy in capHouses]
+                for capHouseIdx in range(len(capHouseIdLists)):
+                    house = capHouses[capHouseIdx]
+                    for vertexIdx in range(5):
+                        ptId = capHousePoints.InsertNextPoint(house[vertexIdx])
+                        capHouseIdLists[capHouseIdx].InsertNextId(ptId)
+
+                newPolyArray = vtk.vtkCellArray()
+                for capHouseIdList in capHouseIdLists:
+                    newPolyArray.InsertNextCell(capHouseIdList)
+
+                capPolyData = vtk.vtkPolyData()
+                capPolyData.SetPoints(capHousePoints)
+                capPolyData.SetPolys(newPolyArray)
+                        
+                stuff.append(capPolyData)
                 #stuff.append(newPolyData)
                 #stuff.append(cut.GetOutput())
                 #stuff.append(ps.GetOutput())
@@ -288,7 +316,9 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
             cylinder = vtk.vtkCylinder()
             cylinder.SetCenter([0,0,0])
-            cylinder.SetRadius(3)
+            # we make the cut-cylinder slightly larger... it's only there
+            # to cut away the surface edges, so precision is not relevant
+            cylinder.SetRadius(self.drillGuideInnerDiameter / 2.0)
 
             # cylinder is oriented along y-axis (0,1,0) -
             # we need to calculate the angle between the y-axis and the gia
@@ -322,14 +352,19 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             cylinderClip.SetValue(0)
             cylinderClip.SetInput(fbzInfClip.GetOutput())
             cylinderClip.GenerateClipScalarsOn()
-                
+
             ap2 = vtk.vtkAppendPolyData()
             ap2.AddInput(cylinderClip.GetOutput())
+            # this will cap the just cut polydata
+            ap2.AddInput(self._capCutPolyData(fbzSupClip))
+            ap2.AddInput(self._capCutPolyData(fbzInfClip))
+            # thees one she dosint werk so gooood
+            #ap2.AddInput(self._capCutPolyData(cylinderClip))
 
             # now add outer guide cylinder, NOT capped
             cs1 = vtk.vtkCylinderSource()
             cs1.SetResolution(32)
-            cs1.SetRadius(4) # 4 mm diameter
+            cs1.SetRadius(self.drillGuideOuterDiameter / 2.0)
             cs1.CappingOff()
             cs1.SetHeight(15) # 15 mm height
             cs1.SetCenter(0,0,0)
@@ -338,7 +373,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             # inner cylinder
             cs2 = vtk.vtkCylinderSource()
             cs2.SetResolution(32)
-            cs2.SetRadius(3) # 3 mm diameter
+            cs2.SetRadius(self.drillGuideInnerDiameter / 2.0)
             cs2.CappingOff()
             cs2.SetHeight(15) # 15 mm height
             cs2.SetCenter(0,0,0)
@@ -346,8 +381,8 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
             # top cap
             tc = vtk.vtkDiskSource()
-            tc.SetInnerRadius(3)
-            tc.SetOuterRadius(4)
+            tc.SetInnerRadius(self.drillGuideInnerDiameter / 2.0)
+            tc.SetOuterRadius(self.drillGuideOuterDiameter / 2.0)
             tc.SetCircumferentialResolution(64)
 
             tcTrfm = vtk.vtkTransform()
@@ -436,6 +471,99 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         p5 = tuple(map(operator.add, mp, houseNormal3))
 
         return (tuple(startPoint), p1, p2, p3, p4, p5)
+
+    def _capCutPolyData(self, clipPolyData):
+        # set a vtkCutter up exactly like the vtkClipPolyData
+        cutter = vtk.vtkCutter()
+        cutter.SetCutFunction(clipPolyData.GetClipFunction())
+        cutter.SetInput(clipPolyData.GetInput())
+        cutter.SetValue(0, clipPolyData.GetValue())
+        cutter.SetGenerateCutScalars(clipPolyData.GetGenerateClipScalars())
+
+        connect = vtk.vtkPolyDataConnectivityFilter()
+        connect.SetExtractionModeToAllRegions()
+        connect.ColorRegionsOn()
+        connect.SetInput(cutter.GetOutput())
+        # this thingy will extract all regions (in our case all the cut
+        # contours) and colour the region data accordingly
+        connect.Update()
+        
+        numRegions = connect.GetNumberOfExtractedRegions()
+
+        # get all the points, make polygon on the grounds of assigned colour
+        connectOutput = connect.GetOutput()
+
+        # we need a single ptId in each region, mmmkay?
+        regionPointList = [-1 for i in range(numRegions)]
+        scalars = connectOutput.GetPointData().GetScalars()
+        allRegionsFound = 0
+        ptId = 0
+        while not allRegionsFound:
+            region = scalars.GetTuple1(ptId)
+            regionPointList[int(region)] = ptId
+
+            foundRegionList = [i for i in regionPointList if i != -1]
+            if len(foundRegionList) == numRegions:
+                allRegionsFound = 1
+            
+            # we can keep on doing this - by definition, we WILL find
+            # a point for each region BEFORE we run out of points
+            ptId += 1
+
+
+        lineIdList = vtk.vtkIdList()
+        pointIdList = vtk.vtkIdList()
+
+        idLists = [vtk.vtkIdList() for i in range(numRegions)]
+        newPoints = vtk.vtkPoints()
+
+        # for each region, walk around the contour by making use of the
+        # cell and point information
+        for region in range(numRegions):
+            firstPointId = regionPointList[region]
+            connectOutput.GetPointCells(firstPointId, lineIdList)
+            curLineId = lineIdList.GetId(0)
+            curPointId = firstPointId
+
+            regionDone = 0
+            while not regionDone:
+                # now we can start from firstPoint and firstLine
+                connectOutput.GetCellPoints(curLineId, pointIdList)
+                pointId0 = pointIdList.GetId(0)
+                pointId1 = pointIdList.GetId(1)
+                nextPointId = [pointId0, pointId1]\
+                              [bool(pointId0 == curPointId)]
+
+                connectOutput.GetPointCells(nextPointId, lineIdList)
+                lineId0 = lineIdList.GetId(0)
+                lineId1 = lineIdList.GetId(1)
+                nextLineId = [lineId0, lineId1]\
+                             [bool(lineId0 == curLineId)]
+
+                # store curPointId
+                pt = connectOutput.GetPoints().GetPoint(curPointId)
+                newPtId = newPoints.InsertNextPoint(pt)
+                idLists[region].InsertNextId(newPtId)
+
+                # set the loop up for the next iteration
+                curPointId = nextPointId
+                curLineId = nextLineId
+
+                regionDone = (curPointId == firstPointId)
+            
+        newPolys = vtk.vtkCellArray()
+        for idList in [idLists[0]]:
+            newPolys.InsertNextCell(idList)
+        
+        newPolyData = vtk.vtkPolyData()
+        newPolyData.SetPoints(newPoints)
+        newPolyData.SetPolys(newPolys)
+
+        tf = vtk.vtkTriangleFilter()
+        tf.SetInput(newPolyData)
+        tf.Update()
+            
+        return tf.GetOutput()
 
     def _fbzCutPlane(self, fbz, giaN, giaGlenoid):
         """Calculate cut-plane corresponding to fbz.
