@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.32 2003/03/05 11:14:31 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.33 2003/03/05 16:52:33 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -12,16 +12,18 @@ from wxPython.grid import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
-# wxGTK 2.3.2.1 bugs with mouse capture (BADLY), so we disable this
-try:
-    WX_USE_X_CAPTURE
-except NameError:
-    if wxPlatform == '__WXMSW__':
-        WX_USE_X_CAPTURE = 1
-    else:
-        WX_USE_X_CAPTURE = 0
+# -------------------------------------------------------------------------
+class directionPipeline:
+    """Class encapsulating 
 
+
+# -------------------------------------------------------------------------
 class outputSelectedPoints(list, subjectMixin):
+    """class for passing selected points to an output port.
+
+    Derived from list as base and the subject/observer mixin.
+    """
+    
     def __init__(self):
         list.__init__(self)
         subjectMixin.__init__(self)
@@ -29,6 +31,7 @@ class outputSelectedPoints(list, subjectMixin):
     def close(self):
         subjectMixin.close(self)
 
+# -------------------------------------------------------------------------
 class slice3d_vwr(moduleBase,
                   vtkPipelineConfigModuleMixin):
     
