@@ -1,7 +1,7 @@
 # genMixins copyright 2003 by Charl P. Botha <http://cpbotha.net/>
-# $Id: genMixins.py,v 1.1 2003/02/25 10:36:03 cpbotha Exp $
+# $Id: genMixins.py,v 1.2 2003/09/01 16:39:54 cpbotha Exp $
 
-class subjectMixin:
+class subjectMixin(object):
 
     def __init__(self):
         self._observers = []
@@ -29,5 +29,26 @@ class subjectMixin:
     def removeObserver(self, observer):
         if observer in self._observers:
             self._observers.remove(observer)
+
+class updateCallsExecuteModuleMixin(object):
+    """The DSCAS3 API requires that calling Update on outputData should
+    ensure that that data is current.  This mixin does that by calling
+    executeModule on the generating module when Update is invoked.
+    """
+
+    def __init__(self, d3Module):
+        self._d3Module = d3Module
+
+    def close(self):
+        # get rid of our reference
+        del self._d3Module
+
+    def Update(self):
+        """Part of our API.  If Update is called, we somehow have to make
+        sure that we are current.
+        """
+        if self._d3Module:
+            self._d3Module.executeModule()
+
 
 

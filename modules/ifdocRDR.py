@@ -1,5 +1,7 @@
-# $Id: ifdocRDR.py,v 1.4 2003/08/24 19:37:06 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.5 2003/09/01 16:39:54 cpbotha Exp $
 
+from genMixins import subjectMixin, updateCallsExecuteModuleMixin
+import md5
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import re
@@ -7,8 +9,25 @@ import time
 import vtk
 from wxPython.wx import *
 
+class mFileMatrices(dict, subjectMixin, updateCallsExecuteModuleMixin):
+    """Class for holding the matrices of the ifdoc m-file as output.
+    """
+    
+    def __init__(self, d3Module, *argv):
+        # base constructor (passing parameters along)
+        dict.__init__(self, *argv)
+        # mixin constructor
+        subjectMixin.__init__(self)
+        # mixin constructor
+        updateCallsExecuteModuleMixin.__init__(self, d3Module)
 
+    def close(self):
+        # this will get rid of all bindings to observers
+        subjectMixin.close(self)
+        # and this of bindings to the generating d3module
+        updateCallsExecuteModuleMixin.close(self)
 
+        
 class ifdocRDR(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
@@ -18,9 +37,8 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         # do the mixin
         filenameViewModuleMixin.__init__(self)
         
-        # setup our pipeline
-        self._appendPolyData = None
-        self._buildPipeline()
+        # setup our output
+        self._mFileMatrices = mFileMatrices()
 
         # now initialise some config stuff
         self._config.dspFilename = ''
@@ -28,14 +46,15 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
 
         self._createViewFrame('Select a filename',
                               'IFDOC m file (*.m)|*.m|All files (*)|*',
-                              {'vtkAppendPolyData': self._appendPolyData})
+                              None)
 
         self.configToLogic()
         self.syncViewWithLogic()
         
-
     def close(self):
         filenameViewModuleMixin.close(self)
+        self._mFileMatrices.close()
+        del self._mFileMatrices
 
     def getInputDescriptions(self):
         return ()
@@ -44,10 +63,10 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         raise Exception, 'This module does not accept any input.'
 
     def getOutputDescriptions(self):
-        return ('vtkPolyData',)
+        return ('ifdoc m-file matrices',)
 
     def getOutput(self, idx):
-        return self._appendPolyData.GetOutput()
+        return self._mFileMatrices
 
     def logicToConfig(self):
         """Synchronise internal configuration information (usually
@@ -151,107 +170,20 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         mFile = open(self._config.mFilename)
         mLines = mFile.readlines()
 
+
+        # now check with md5 if the file has changed!
         mDict = self.parseMFile(mLines, ['ppos'])
-        ppos =  mDict['ppos']
 
-        # timesteps are columns of ppos
-        timeSteps = len(ppos[0])
+        # we have to do it this way as we're using a special class
+        self._mFileMatrices.clear()
+        self._mFileMatrices.update(mDict)
 
-        for timeStep in range(timeSteps):
-            wxYield()
-            self.doTimeStep(ppos, timeStep)
-            time.sleep(0.2)
+        # now indicate that we've changed stuff
+        self._mFileMatrices.notify()
 
-        time.sleep(0.5)
-        self.doTimeStep(ppos, 0)
-        
-    def oldExecuteModule(self):
-        # read in the dsp file
-        dspFile = open(self._config.dspFilename)
-        dspLines = dspFile.readlines()
-
-        # build up patternObjects for the nodes that we want
-        nodeNumberDict = {44 : 'SC', 45 : 'AC', 47 : 'TS', 48 : 'AI'}
-
-        # build up global node pattern object (we'll check each line with
-        # this first!)
-        poX = re.compile(
-            'X\s+([0-9]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s*')
-        
-        # go through the whole list, checking for the various patterns
-        nodeCoords = {}
-        for dspLine in dspLines:
-            mo = poX.match(dspLine)
-            if mo:
-                try:
-                    nodeNumber = int(mo.groups()[0])
-                        
-                    if nodeNumber in nodeNumberDict:
-                        # convert the coords to floats
-                        coords = tuple([float(e) for e in mo.groups()[1:4]])
-                        nodeCoords[nodeNumber] = coords
-                        
-                except ValueError:
-                    # could not cast nodeNumber to int
-                    pass
-                
-        # now we have all the required node numbers in our thingy (tee hee)
-        
-                
-            
-        
-            
     def view(self, parent_window=None):
         # if the window is already visible, raise it
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
 
-
-    def _buildPipeline(self):
-        # this is temporary
-        self._appendPolyData = vtk.vtkAppendPolyData()
-
-        self._lineSourceDict = {}
-        for lineName in ['acts', 'acai', 'tsai', 'ghe', 'ew', 'tline']:
-            lineSource = vtk.vtkLineSource()
-            tubeFilter = vtk.vtkTubeFilter()
-            tubeFilter.SetInput(lineSource.GetOutput())
-            self._appendPolyData.AddInput(tubeFilter.GetOutput())
-            self._lineSourceDict[lineName] = lineSource
-
-        self._lineSourceDict['tline'].SetPoint1(0,0,0)
-        self._lineSourceDict['tline'].SetPoint2(0,10,0)
-        
-    def doTimeStep(self, ppos, timeStep):
-        """timeStep is 0-based.
-        """
-
-        # rather modify this to break out the WHOLE ppos matrix in one
-        # go... return a list of dicts, where first index is timeStep
-        # and each timeStep has a dictionary with the points
-        rowIdx = 0
-        coordDict = {}
-        for pointName in ['ac', 'ts', 'ai', 'gh', 'e', 'em', 'el', 'w']:
-            rows = ppos[rowIdx:rowIdx+3]
-            coordDict[pointName] = [row[timeStep] for row in rows]
-            rowIdx += 3
-
-        # now use the coordinates to set up the geometry
-        self._lineSourceDict['acts'].SetPoint1(coordDict['ac'])
-        self._lineSourceDict['acts'].SetPoint2(coordDict['ts'])
-
-        self._lineSourceDict['acai'].SetPoint1(coordDict['ac'])
-        self._lineSourceDict['acai'].SetPoint2(coordDict['ai'])
-
-        self._lineSourceDict['tsai'].SetPoint1(coordDict['ts'])
-        self._lineSourceDict['tsai'].SetPoint2(coordDict['ai'])
-
-        self._lineSourceDict['ghe'].SetPoint1(coordDict['gh'])
-        self._lineSourceDict['ghe'].SetPoint2(coordDict['e'])
-
-        self._lineSourceDict['ew'].SetPoint1(coordDict['e'])
-        self._lineSourceDict['ew'].SetPoint2(coordDict['w'])
-        
-        # make sure everything is up to date
-        self._appendPolyData.Update()
 
