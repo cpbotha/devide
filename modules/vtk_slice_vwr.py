@@ -1,5 +1,6 @@
-# $Id: vtk_slice_vwr.py,v 1.24 2002/05/13 22:19:20 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.25 2002/05/14 13:40:09 cpbotha Exp $
 
+from gen_utils import log_error
 from module_base import module_base
 import vtk
 from wxPython.wx import *
@@ -41,12 +42,14 @@ class vtk_slice_vwr(module_base):
                                    {'axes' : (1,0,0, 0,0,1, 0,1,0),
                                     'origin' : (0,0,0)}] # coronal (zx-plane)
 	
+        # set the whole UI up!
 	self._create_window()
 	
     def close(self):
         for idx in range(self._num_inputs):
-            pass
-            #self.set_input(idx, None)
+            self.set_input(idx, None)
+        if hasattr(self, '_pws'):
+            del self._pws
 	if hasattr(self, '_renderers'):
 	    del self._renderers
 	if hasattr(self, '_rws'):
@@ -274,39 +277,42 @@ class vtk_slice_vwr(module_base):
                 self._inputs[idx]['Connected'] = None
                 # check the three ortho pipelines (each consists of mult lyrs)
                 for ortidx in range(len(self._ortho_pipes)):
-                    # find all layers in THIS ortho pipeline with correct input_idx
-                    layer_pl_indices = []
-                    for layer_pl in self._ortho_pipes[ortidx]:
-                        if layer_pl['input_idx'] == idx:
-                            # remove corresponding actors from renderers
-                            self._renderers[0].RemoveActor(layer_pl['vtkActor3'])
-                            self._renderers[ortidx+1].RemoveActor(layer_pl['vtkActorO'])
-                            # disconnect the input (no refs hanging around)
-                            layer_pl['vtkImageReslice'].SetInput(None)
-                            if len(self._ortho_pipes[ortidx]) == 1:
-                                # this means this is the last pipeline, and
-                                # it's going to be removed;
-                                # switch off the 3DWidget, it will be
-                                # reactivated if something gets added again
-                                pw = self._pws[ortidx]
-                                pw.Off()
-                                pw.SetInteractor(None)
-                                # FIXME: at removal, the planewidget sometimes
-                                # leaves 3 plane actors behind (its code
-                                # seems to be fine)
+                    # each ortidx can (by definition) only contain ONE
+                    # layer with input_idx == idx; find that layer
+                    pls = filter(lambda pl, idx=idx: pl['input_idx'] == idx,
+                                 self._ortho_pipes[ortidx])
+                    # if we find more than one, something is awfully wrong,
+                    # complain...
+                    if len(pls) > 1:
+                        wxLogError('More than one pipeline for this ortho with'
+                                   ' the same input index!  Please report.')
+                        wxLog_FlushActive()
+                        
+                    if len(pls) > 0:
+                        pl = pls[0]
+                        # remove corresponding actors from renderers
+                        self._renderers[0].RemoveActor(pl['vtkActor3'])
+                        self._renderers[ortidx+1].RemoveActor(pl['vtkActorO'])
+                        # disconnect the input (no refs hanging around)
+                        pl['vtkImageReslice'].SetInput(None)
 
-                            pl_idx = self._ortho_pipes[ortidx].index(layer_pl)
-                            layer_pl_indices.append(pl_idx)
-                            
-                    if len(layer_pl_indices) > 0:
-                        # make sure the indices are in ascending order
-                        layer_pl_indices.sort()
-                        # swap
-                        layer_pl_indices.reverse()
-                        # then delete the elements at these indices
-                        for i in layer_pl_indices:
-                            # nuke the whole dictionary
-                            del self._ortho_pipes[ortidx][i]
+                        if len(self._ortho_pipes[ortidx]) == 1:
+                            # this means this is the last pipeline, and
+                            # it's going to be removed;
+                            # switch off the 3DWidget, it will be
+                            # reactivated if something gets added again
+                            pw = self._pws[ortidx]
+                            pw.Off()
+                            pw.SetInteractor(None)
+                            # FIXME: at removal, the planewidget sometimes
+                            # leaves 3 plane actors behind (its code
+                            # seems to be fine)
+
+                        pl_idx = self._ortho_pipes[ortidx].index(pl)
+                        del self._ortho_pipes[ortidx][pl_idx]
+
+                        print "%d layers left in ortho %d" % \
+                              (len(self._ortho_pipes[ortidx]), ortidx)
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):

@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.13 2002/05/03 11:44:50 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.14 2002/05/14 13:40:09 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -50,11 +50,13 @@ class vtk_hdf_rdr(module_base,
 
     def sync_config(self):
         fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-        fn_text.SetValue(self._reader.get_hdf_filename())
+        fn = self._reader.GetFileName()
+        if fn == None: fn = ""
+        fn_text.SetValue(fn)
 	
     def apply_config(self):
-        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')        
-        self._reader.set_hdf_filename(fn_text.GetValue())
+        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
+        self._reader.SetFileName(fn_text.GetValue())
 	
     def execute_module(self):
 	self._reader.Update()
