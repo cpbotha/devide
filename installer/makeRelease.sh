@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeRelease.sh,v 1.4 2004/06/05 21:21:00 cpbotha Exp $
+# $Id: makeRelease.sh,v 1.5 2004/06/23 18:38:05 cpbotha Exp $
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -21,9 +21,9 @@ cd `dirname $0`
 # make sure devide and vtkdevide sources are up to date
 echo "Updating devide and vtkdevide sources..."
 cd ..
-cvs update -dAP
+cvs -z3 update -dAP
 cd ../vtkdevide
-cvs update -dAP
+cvs -z3 update -dAP
 
 # make sure vtkdevide is up to date, conf and build
 echo "Building vtkdevide..."
