@@ -15,20 +15,26 @@ class testModule3(moduleBase, noConfigModuleMixin):
         # initialise any mixins we might have
         noConfigModuleMixin.__init__(self)
 
-        mm = self._moduleManager        
+        mm = self._moduleManager
 
+        self._cleaner = vtk.vtkCleanPolyData()
+
+        self._tf = vtk.vtkTriangleFilter()
+        self._tf.SetInput(self._cleaner.GetOutput())
+        
         self._wspdf = vtk.vtkWindowedSincPolyDataFilter()
+        #self._wspdf.SetNumberOfIterations(50)
+        self._wspdf.SetInput(self._tf.GetOutput())
         self._wspdf.SetProgressText('smoothing')
         self._wspdf.SetProgressMethod(lambda s=self, mm=mm:
                                       mm.vtk_progress_cb(s._wspdf))
 
-        self._stripper = vtk.vtkStripper()
+        self._cleaner2 = vtk.vtkCleanPolyData()
+        self._cleaner2.SetInput(self._wspdf.GetOutput())
 
-        self._tf = vtk.vtkTriangleFilter()
-        self._tf.SetInput(self._stripper.GetOutput())
         self._curvatures = vtk.vtkCurvatures()
         self._curvatures.SetCurvatureTypeToMean()        
-        self._curvatures.SetInput(self._tf.GetOutput())
+        self._curvatures.SetInput(self._cleaner2.GetOutput())
 
 
         self._tf.SetProgressText('triangulating')
@@ -58,6 +64,8 @@ class testModule3(moduleBase, noConfigModuleMixin):
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # get rid of our reference
+        del self._cleaner
+        del self._cleaner2
         del self._wspdf
         del self._curvatures
         del self._tf
@@ -67,7 +75,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            self._stripper.SetInput(inputStream)
+            self._cleaner.SetInput(inputStream)
         else:
             if inputStream is not self._inputPoints:
                 if self._inputPoints:
@@ -105,7 +113,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
     
 
     def executeModule(self):
-        if self._stripper.GetInput() and \
+        if self._cleaner.GetInput() and \
                self._outsidePoint and self._giaGlenoid:
             
             self._curvatures.Update()
