@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.4 2004/01/29 15:19:37 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.5 2004/01/29 22:11:24 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -268,6 +268,11 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
 
     def setInput(self, idx, inputStream):
         self._iObj.SetInput(inputStream)
+        if inputStream:
+            # we need the poor old doubleThreshold to give us
+            # everything that it has.  It's quite stingy with
+            # its UpdateExtent
+            inputStream.SetUpdateExtentToWholeExtent()
 
     def getOutputDescriptions(self):
         return (self._oObj.GetOutput().GetClassName(),)
