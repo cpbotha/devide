@@ -138,7 +138,12 @@ class module_manager:
         """
 
         vtk_progress = process_object.GetProgress() * 100.0
-        self.setProgress(vtk_progress, process_object.GetProgressText())
+        progressText = process_object.GetClassName() + ': ' + \
+                       process_object.GetProgressText()
+        if vtk_progress >= 100.0:
+            progressText += ' [DONE]'
+
+        self.setProgress(vtk_progress, progressText)
 
     def vtk_poll_error(self):
         """This method should be called whenever VTK processing might have
