@@ -36,6 +36,7 @@ class shellSplatSegmentedFLT(moduleBase, noConfigModuleMixin):
         self._volumeProperty.ShadeOn()
         self._volumeProperty.SetAmbient(0.1)
         self._volumeProperty.SetDiffuse(0.7)
+        self._volumeProperty.SetSpecular(0.2)
         self._volumeProperty.SetSpecularPower(10)
 
         self._volume = vtk.vtkVolume()
