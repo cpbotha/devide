@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.33 2003/06/09 21:08:42 cpbotha Exp $
+# $Id: graphEditor.py,v 1.34 2003/06/09 22:42:32 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -712,6 +712,7 @@ class graphEditor:
                 for line in allLines:
                     self._routeLine(line)
 
+
             # switch off the draggedPort
             glyph.draggedPort = None
             # redraw everything
@@ -766,7 +767,9 @@ class graphEditor:
             canvas = glyph.getCanvas()
 
             # when we receive the ButtonUp that ends the drag event, 
-            # canvas.getDraggedObject is still set!
+            # canvas.getDraggedObject is still set! - it will be unset
+            # right after (by the canvas) and then the final drag event
+            # will be triggered
             
             if canvas.getDraggedObject() and \
                    canvas.getDraggedObject().draggedPort and \

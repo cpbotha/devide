@@ -59,6 +59,12 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         # the mouse, do we enter the mean loop again.
 
         mouseOnObject = False
+
+        # the following three clauses, i.e. the hitTest, mouseOnObject and
+        # draggedObject should be kept in this order, unless you know
+        # EXACTLY what you're doing.  If you're going to change anything, test
+        # that connects, disconnects (of all kinds) and rubber-banding still
+        # work.
         
         # we need to do this expensive hit test every time, because the user
         # wants to know when he mouses over the input port of a destination
@@ -107,6 +113,16 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
                 if cobject.__hasMouse:
                     cobject.__hasMouse = False
                     cobject.notifyObservers('exit', event)
+
+        if not mouseOnObject:
+            # we only get here if the mouse is not inside any canvasObject
+            # (but it could be dragging a canvasObject!)
+            if event.Dragging():
+                self.notifyObservers('drag', event)
+            elif event.ButtonUp():
+                self.notifyObservers('buttonUp', event)
+            elif event.ButtonDown():
+                self.notifyObservers('buttonDown', event)
             
         if self._draggedObject:
             # dragging locks onto an object, even if the mouse pointer
@@ -121,16 +137,6 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             # none, it means the drag has ended; if not, the drag is
             # ongoing
             draggedObject.notifyObservers('drag', event)
-
-        if not mouseOnObject:
-            # we only get here if the mouse is not inside any canvasObject
-            # (but it could be dragging a canvasObject!)
-            if event.Dragging():
-                self.notifyObservers('drag', event)
-            elif event.ButtonUp():
-                self.notifyObservers('buttonUp', event)
-            elif event.ButtonDown():
-                self.notifyObservers('buttonDown', event)
 
         if event.ButtonUp():
             # each and every ButtonUp cancels the current potential drag object

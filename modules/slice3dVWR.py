@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.25 2003/06/09 20:10:37 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.26 2003/06/09 22:42:32 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -630,10 +630,28 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def getConfig(self):
         # implant some stuff into the _config object and return it
+
+        # all points from the self._selectedPoints list
+        savedPoints = []
+        for sp in self._selectedPoints:
+            savedPoints.append({'discrete' : sp['discrete'],
+                                'world' : sp['world'],
+                                'value' : sp['value'],
+                                'name' : sp['name'],
+                                'lockToSurface' : sp['lockToSurface']})
+
+        self._config.savedPoints = savedPoints
+        
         return self._config
 
     def setConfig(self, aConfig):
         self._config = aConfig
+
+        savedPoints = self._config.savedPoints
+
+        for sp in savedPoints:
+            self._storePoint(sp['discrete'], sp['world'], sp['value'],
+                             sp['name'], sp['lockToSurface'])
 
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -958,13 +976,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             val = self._viewFrame.pointInteractionCheckBox.GetValue()
             if val:
                 for selectedPoint in self._selectedPoints:
-                    if selectedPoint['point_widget']:
-                        selectedPoint['point_widget'].On()
+                    if selectedPoint['pointWidget']:
+                        selectedPoint['pointWidget'].On()
                         
             else:
                 for selectedPoint in self._selectedPoints:
-                    if selectedPoint['point_widget']:
-                        selectedPoint['point_widget'].Off()
+                    if selectedPoint['pointWidget']:
+                        selectedPoint['pointWidget'].Off()
 
         EVT_CHECKBOX(self._viewFrame,
                      self._viewFrame.pointInteractionCheckBoxId,
@@ -1147,13 +1165,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         
         for idx in idxs:
             # remove the sphere actor from the renderer
-            self._threedRenderer.RemoveActor(self._selectedPoints[idx]['sphere_actor'])
+            self._threedRenderer.RemoveActor(self._selectedPoints[idx]['sphereActor'])
             # remove the text_actor (if any)
-            if self._selectedPoints[idx]['text_actor']:
-                self._threedRenderer.RemoveActor(self._selectedPoints[idx]['text_actor'])
+            if self._selectedPoints[idx]['textActor']:
+                self._threedRenderer.RemoveActor(self._selectedPoints[idx]['textActor'])
             
             # then deactivate and disconnect the point widget
-            pw = self._selectedPoints[idx]['point_widget']
+            pw = self._selectedPoints[idx]['pointWidget']
             pw.SetInput(None)
             pw.Off()
             pw.SetInteractor(None)
@@ -1400,10 +1418,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                                      'world' : tuple(world),
                                      'value' : value,
                                      'name' : pointName,
-                                     'point_widget' : pw,
-                                     'lock_to_surface' : lockToSurface,
-                                     'sphere_actor' : sa,
-                                     'text_actor' : ta})
+                                     'pointWidget' : pw,
+                                     'lockToSurface' : lockToSurface,
+                                     'sphereActor' : sa,
+                                     'textActor' : ta})
 
         
         self._viewFrame.spointsGrid.AppendRows()
@@ -1466,14 +1484,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
-        pwidgets = map(lambda i: i['point_widget'], self._selectedPoints)
+        pwidgets = map(lambda i: i['pointWidget'], self._selectedPoints)
         if pw in pwidgets:
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list
             self._viewFrame.spointsGrid.SelectRow(idx)
 
             # if this is lockToSurface, lock it!
-            if self._selectedPoints[idx]['lock_to_surface']:
+            if self._selectedPoints[idx]['lockToSurface']:
                 # convert the actual pointwidget position back to display coord
                 self._threedRenderer.SetWorldPoint(pw.GetPosition() + (1,))
                 self._threedRenderer.WorldToDisplay()
@@ -1488,10 +1506,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             # get its position and transfer it to the sphere actor that
             # we use
             pos = pw.GetPosition()
-            self._selectedPoints[idx]['sphere_actor'].SetPosition(pos)
+            self._selectedPoints[idx]['sphereActor'].SetPosition(pos)
 
             # also update the text_actor (if appropriate)
-            ta = self._selectedPoints[idx]['text_actor']
+            ta = self._selectedPoints[idx]['textActor']
             if ta:
                 ta.SetPosition(pos)
 
