@@ -1,4 +1,4 @@
-$Id: TODO,v 1.22 2003/10/15 22:15:34 cpbotha Exp $
+$Id: TODO,v 1.23 2003/12/09 17:36:23 cpbotha Exp $
 
 * Nice one: when building the module and segment tree, also build a
   main menubar structure, so we can place modules and segments ORCAD
@@ -36,6 +36,9 @@ $Id: TODO,v 1.22 2003/10/15 22:15:34 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+- urgh, SliceThickness in CT can't be trusted.  You really have to look at
+  the SliceLocation...
 
 - If a point has no name to begin with, renaming won't create a text actor.
   Is this really a bug?
