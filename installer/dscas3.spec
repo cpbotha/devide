@@ -43,11 +43,8 @@ if sys.platform.startswith('win'):
 else:
     # under linux, libpython is shared -- McMillan installer doesn't know
     # about this...
-    # also copy the hdf libs
     extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
-                  'BINARY'),
-                 ('libmfhdf.so.4', '/usr/lib/libmfhdf.so.4','BINARY'),
-                 ('libdf.so.4', '/usr/lib/libdf.so.4','BINARY')]
+                  'BINARY')]
     
     # these libs will be removed from the package
     removeNames = ['libGLU.so.1', 'libICE.so.6',
@@ -69,7 +66,7 @@ pyz = PYZ(a.pure)
 
     
 exe = EXE(pyz,
-          a.scripts, #+ [('v', '', 'OPTION')],
+          a.scripts, #+ [('v', '', 'OPTION')], # Python is ran with -v
           exclude_binaries=1,
           name=exeName,
           icon=os.path.join(D3_DIR, 'resources/graphics/dscas3logo64x64.ico'),
