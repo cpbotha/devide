@@ -300,6 +300,81 @@ read more about interacting with this slice, see the \helpref{slices
 section}{secSlices} of the \helpref{slice3dVWR
 documentation}{secslice3dVWR}.
 
+\section{Smoothing data}
+There are a number of filters in DeVIDE that can be used for smoothing
+volume data.
+
+Filters.imageGaussianSmooth performs a straight-forward Gaussian
+smoothing (also known as ``blurring'' in some image processing
+packages).  The standard deviation (in pixels) can be set for all
+three dimensions.  A truncation, or cut-off, can also be set for all
+three dimensions.  Take into account the resolution of your image when
+selecting these paramaters.
+
+curvatureFlowDenoising, curvatureAnisotropicDiffusion and
+gradientAnisotropicDiffusion, all in the ``Insight'' module category,
+are more advanced smoothing algorithms that attempt to smooth
+homogeneous regions whilst retaining edge information.  These are all
+compute-intensive ITK-based filters.  Please read the tooltips
+available in the configuration windows: i.e. double click on the
+module and then let your mouse hover over any of the input boxes to
+get more information about the variable required for that input box.
+The defaults are naturally good values to start with.
+
+When you use these with VTK data, for example the output of a vtiRDR,
+you have to use a VTKtoITKF3 conversion module.  To visualisation the
+output, you need to convert back to VTK data by making use of an
+ITKF3toVTK module.  However, if you're planning to use the output in
+an ITK filter, for example the demonsRegistration, you don't need an
+ITKF3toVTK conversion module at the output.  Figure \ref{figCADvis}
+shows an example of this.
+
+\begin{figure}
+$$\image{5cm;0cm}{figures/curvatureAnisotropicDiffusionVis}$$
+\caption{Example network with curvatureAnisotropicDiffusion module
+showing the use of ITK/VTK conversion modules.}\label{figCADvis}
+\end{figure}
+
+\section{Probing and warping (interactive advection)}
+Figure \ref{figPAW} shows how to perform interactive probing and
+warping (advection) with DeVIDE.
+
+\begin{figure}
+$$\image{5cm;0cm}{figures/probingAndWarping}$$
+\caption{Probing and warping (advecting) with DeVIDE.}\label{figPAW}
+\end{figure}
+
+The volume data has been loaded with vtkRDR dvm11 and serves as
+context in the slice3dVWR.  In this case, we are using two vector
+fields, loaded with respectively metaImageRDR dvm7 and dvm11fyi11.
+Points that have been selected and stored with the slice3dVWR (these
+can be changed at any time, the network updates interactively) are
+changed into spherical shells of points by the pointsToSpheres module
+dvm6ldz6.  The output of this module can be connected to the
+slice3dVWR to view the initial sphere.
+
+The first probeFilter dvm7fxg7 maps and interpolates the vectors from
+the first vector field onto the points of the spherical cloud.
+Connect the output of the probeFilter to the warpPoints module.  After
+connecting the warpPoints input, make sure to ``Execute'' and
+``Apply'' the warpPoints module once.  The correct ``Vectors
+selection'' can then be made from its View/Config window.  (Thijs en
+Ronald, in jullie geval moet dit ``ImageFile'' zijn!).  After having
+made this selection, ``Apply'' or ``Execute'' the module again.  Now
+you can connect its output to the slice3dVWR.  The points are advected
+by the vectors that you have associated to them.
+
+This output is also used in the next advection step, using the next
+vector field.  Once again, make sure to select the correct vectors in
+the warpPoints module View/Config window.  You could also simply copy
+and paste the first probeFilter and warpPoints module (AFTER you've
+performed the vector selection step), in which case the selection will
+already be correct.
+
+Add as many of these steps as are necessary to complete the full
+advection with all your available vector fields.  At each step, check
+that your sphere is being correctly advected before you continue.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Creating new modules}
 TBD.
