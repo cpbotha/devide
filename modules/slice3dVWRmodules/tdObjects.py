@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.25 2003/08/11 15:20:01 cpbotha Exp $
+# $Id: tdObjects.py,v 1.26 2003/08/11 15:41:29 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -185,6 +185,10 @@ class tdObjects:
         self._tdObjectsDict[sObject]['axisLineActor'] = lineActor
 
     def _axisToLineTransform(self, axisPoints, lineOrigin, lineVector):
+        """Calculate the transform required to move and rotate an axis
+        so that it is collinear with the given line.
+        """
+        
         # 2. calculate vertical distance from first axis point to line
         tp0o = map(operator.sub, axisPoints[0], lineOrigin)
         bvm = vtk.vtkMath.Dot(tp0o, lineVector) # bad vector magnitude
@@ -725,11 +729,23 @@ class tdObjects:
                                           wx.OK | wx.ICON_INFORMATION)
                     md.ShowModal()
                     return
+
+                try:
+                    lineOrigin, lineVector = genUtils.planePlaneIntersection(
+                        pn0, po0, pn1, po1)
+                except ValueError, msg:
+                    md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                                          "The two slices you have selected "
+                                          "are parallel, no intersection "
+                                          "can be calculated.",
+                                          "Information",
+                                          wx.OK | wx.ICON_INFORMATION)
+                    md.ShowModal()
+                    return
                     
-                lineOrigin, lineVector = genUtils.planePlaneIntersection(
-                    pn0, po0, pn1, po1)
-                    
+                # finally send it to the line
                 self._axisToLine(sObject, lineOrigin, lineVector)
+                
             else:
                 md = wx.MessageDialog(self._slice3dVWR.controlFrame,
                                       "You have selected more than two "

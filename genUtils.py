@@ -70,6 +70,10 @@ def planePlaneIntersection(
     vtk.vtkMath.Cross(planeNormal0, planeNormal1, L)
     absL = [abs(e) for e in L]
     maxAbsL = max(absL)
+    
+    if maxAbsL == 0.0:
+        raise ValueError, "Planes are almost parallel."
+    
     w = absL.index(maxAbsL)
     Lw = L[w]
     # we're going to set the maxLidx'th component of our lineOrigin (i.e.
