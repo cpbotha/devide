@@ -1,4 +1,7 @@
-$Id: TODO,v 1.9 2003/06/30 12:07:47 cpbotha Exp $
+$Id: TODO,v 1.10 2003/08/08 15:05:17 cpbotha Exp $
+
+* Splash screen with progress bar showing vtk and itk import progress at
+  startup.
 
 * split out dscas3-specific version of vtkPipeline... change buttons,
   change frame icon to that of dscas3, other enhancements
@@ -11,10 +14,6 @@ $Id: TODO,v 1.9 2003/06/30 12:07:47 cpbotha Exp $
   * gradient tf?
 
 BUGS:
-
-* Fix the vtkBoxWidgetConstrained mess: this should derive from vtkBoxWidget;
-  at the moment it's a copy with changes applied.  This is because some of
-  the most important calls are not virtual.
 
 * At the moment, an object with motion activated latches to the first active
   plane; this should obviously be cleaned up.
@@ -35,6 +34,10 @@ FIXED:
   (i.e. no reader) and watch the application become unresponsive - FIXED and
   submitted patch to vtkImagePlaneWidget: 
   vtkImagePlaneWidget-planeSizeSanityCheck2.diff
+
+* Fix the vtkBoxWidgetConstrained mess: this should derive from vtkBoxWidget;
+  at the moment it's a copy with changes applied.  This is because some of
+  the most important calls are not virtual.
 
 
 DONE:
