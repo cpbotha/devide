@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.41 2004/05/20 01:28:48 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.42 2004/05/20 01:37:34 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -546,6 +546,8 @@ class pickleVTKObjectsModuleMixin(object):
 # ----------------------------------------------------------------------------
 # note that the pickle mixin comes first, as its configToLogic/logicToConfig
 # should be chosen over that of noConfig
+
+# FIXME: the outputFunctions/inputFunctions mechanism is not complete yet
 class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
                                noConfigModuleMixin,
                                moduleBase):
