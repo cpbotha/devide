@@ -17,7 +17,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     This module uses a DeVIDE-specific implementation of Luc Vincent's
     fast greyscale reconstruction algorithm, extended for 3D.
     
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):
@@ -30,8 +30,21 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         # we keep track of our observer ID so we can remove it
         self._inputPointsObserverID = None
 
+        # we can't connect the image input directly to the masksource,
+        # so we have to keep track of it separately.
+        self._inputImage = None
+
+        # we need to modify the mask (I) as well.  The problem with a
+        # ProgrammableFilter is that you can't request GetOutput() before
+        # the input has been set... 
+        self._maskSource = vtk.vtkProgrammableSource()
+        self._maskSource.SetExecuteMethod(self._maskSourceExecute)
+
         self._dualGreyReconstruct = vtkdevide.vtkImageGreyscaleReconstruct3D()
+        # first input is I (the modified mask)
         self._dualGreyReconstruct.SetDual(1)
+        self._dualGreyReconstruct.SetInput1(self._maskSource.GetStructuredPointsOutput())
+        
         # we'll use this to synthesise a volume according to the seed points
         self._markerSource = vtk.vtkProgrammableSource()
         self._markerSource.SetExecuteMethod(self._markerSourceExecute)
@@ -66,17 +79,20 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._dualGreyReconstruct
         del self._markerSource
+        del self._maskSource
 
     def getInputDescriptions(self):
         return ('VTK Image Data', 'Minima points')
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            if inputStream != self._dualGreyReconstruct.GetInput1():
-                self._dualGreyReconstruct.SetInput1(inputStream)
+            if inputStream != self._inputImage:
+                self._inputImage = inputStream
                 # if we have a different image input, the seeds will have to
                 # be rebuilt!
                 self._markerSource.Modified()
+                # and obviously the masksource has to know that it has to work
+                self._maskSource.Modified()
                 
         else:
             if inputStream != self._inputPoints:
@@ -107,6 +123,8 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
                 # the input points situation has changed, make sure
                 # the marker source knows this...
                 self._markerSource.Modified()
+                # as well as the mask source of course
+                self._maskSource.Modified()
 
 
     def getOutputDescriptions(self):
@@ -131,7 +149,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         self._dualGreyReconstruct.Update()
 
     def _markerSourceExecute(self):
-        imageI = self._dualGreyReconstruct.GetInput1()
+        imageI = self._inputImage
         if imageI:
             imageI.Update()
             
@@ -151,12 +169,32 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
 
             # now go through all seed points and set those positions in
             # the scalars to minI
-            for ip in self._inputPoints:
-                x,y,z = ip['discrete']
-                outputJ.SetScalarComponentFromDouble(x, y, z, 0, minI)
+            if len(self._inputPoints) > 0:
+                for ip in self._inputPoints:
+                    x,y,z = ip['discrete']
+                    outputJ.SetScalarComponentFromDouble(x, y, z, 0, minI)
+
+    def _maskSourceExecute(self):
+        inputI = self._inputImage
+
+        if inputI:
+            inputI.Update()
+            outputI = self._maskSource.GetStructuredPointsOutput()
+            outputI.DeepCopy(inputI)
+
+            # we need this to modify our outputI (at least minI)
+            minI, maxI = inputI.GetScalarRange()
+
+            # now go through all seed points and set those positions in
+            # the scalars to minI
+            if len(self._inputPoints) > 0:
+                for ip in self._inputPoints:
+                    x,y,z = ip['discrete']
+                    outputI.SetScalarComponentFromDouble(x, y, z, 0, minI)
             
 
     def _observerInputPoints(self, obj):
         # this will be called if anything happens to the points
         # simply make sure our markerSource knows that it's now invalid
+        self._maskSource.Modified()
         self._markerSource.Modified()
