@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.60 2003/07/30 23:00:57 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.61 2003/07/31 15:50:51 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -62,6 +62,15 @@ class selectedPoints(object):
 
         self._initialiseGrid()
 
+        # this will be passed on as input to the next component
+        self.outputSelectedPoints = outputSelectedPoints()
+
+    def _bindEvents(self):
+        # the store button
+        EVT_BUTTON(self.controlFrame, self.controlFrame.sliceStoreButtonId,
+                   lambda e: self._handlerStoreCursorAsPoint())
+        
+
     def enablePointsInteraction(self, enable):
         """Enable/disable points interaction in the 3d scene.
         """
@@ -90,6 +99,46 @@ class selectedPoints(object):
 
         return savedPoints
 
+    def _handlerStoreCursorAsPoint(self):
+        """Call back for the store cursor button.
+
+        Calls store cursor method on [x,y,z,v].
+        """
+        self._storeCursor(self.sliceDirections.currentCursor)
+
+    def removePoints(self, idxs):
+        """Remove all points at indexes in idxs list.
+        """
+        # we have to delete one by one from back to front
+        idxs.sort()
+        idxs.reverse()
+
+        ren = self.slice3dVWR._threedRenderer
+        for idx in idxs:
+            # remove the sphere actor from the renderer
+            ren.RemoveActor(self._pointsList[idx]['sphereActor'])
+            # remove the text_actor (if any)
+            if self._pointsList[idx]['textActor']:
+                ren.RemoveActor(self._pointsList[idx]['textActor'])
+            
+            # then deactivate and disconnect the point widget
+            pw = self._pointsList[idx]['pointWidget']
+            pw.SetInput(None)
+            pw.Off()
+            pw.SetInteractor(None)
+
+            # remove the entries from the wxGrid
+            self._grid.DeleteRows(idx)
+
+            # then remove it from our internal list
+            del self._pointsList[idx]
+
+            # rerender
+            self.slice3dVWR.render3D()
+
+            # and sync up output points
+            self._syncOutputSelectedPoints()
+
     def setSavePoints(self, savedPoints, boundsForPoints):
         """Re-install the saved points that were returned with getPoints.
         """
@@ -98,6 +147,134 @@ class selectedPoints(object):
             self._storePoint(sp['discrete'], sp['world'], sp['value'],
                              sp['name'], sp['lockToSurface'],
                              boundsForPoints)
+
+    def _storeCursor(self, cursor):
+        """Store the point represented by the cursor parameter.
+
+        cursor is a 4-tuple with the discrete (data-relative) xyz coords and
+        the value at that point.
+        """
+
+        inputs = [i for i in self.slice3dVWR._inputs if i['Connected'] ==
+                  'vtkImageDataPrimary']
+
+        if not inputs or not cursor:
+            return
+
+        # we first have to check that we don't have this pos already
+        discretes = [i['discrete'] for i in self._pointsList]
+        if tuple(cursor[0:3]) in discretes:
+            return
+        
+        input_data = inputs[0]['inputData']
+        ispacing = input_data.GetSpacing()
+        iorigin = input_data.GetOrigin()
+        # calculate real coords
+        world = map(operator.add, iorigin,
+                    map(operator.mul, ispacing, cursor[0:3]))
+
+        pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
+        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
+                         pointName)
+
+    def _storePoint(self, discrete, world, value, pointName,
+                    lockToSurface=False, boundsForPoints=None):
+
+        # FIXME: continue here
+
+        if not boundsForPoints:
+            bounds = self._threedRenderer.ComputeVisiblePropBounds()
+        else:
+            bounds = boundsForPoints
+        
+        # we use a pointwidget
+        pw = vtk.vtkPointWidget()
+        #pw.SetInput(inputData)
+        pw.PlaceWidget(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4],
+                       bounds[5])
+        pw.SetPosition(world)
+        # make priority higher than the default of vtk3DWidget so
+        # that imageplanes behind us don't get selected the whole time
+        pw.SetPriority(0.6)
+        pw.SetInteractor(self.threedFrame.threedRWI)
+        pw.AllOff()
+        pw.On()
+
+
+        ss = vtk.vtkSphereSource()
+        #bounds = inputData.GetBounds()
+
+        ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
+        sm = vtk.vtkPolyDataMapper()
+        sm.SetInput(ss.GetOutput())
+        sa = vtk.vtkActor()
+        sa.SetMapper(sm)
+        sa.SetPosition(world)
+        sa.GetProperty().SetColor(1.0,0.0,0.0)
+        self._threedRenderer.AddActor(sa)
+        sa.SetPickable(0)
+
+        if len(pointName) > 0:
+            name_text = vtk.vtkVectorText()
+            name_text.SetText(pointName)
+            name_mapper = vtk.vtkPolyDataMapper()
+            name_mapper.SetInput(name_text.GetOutput())
+            ta = vtk.vtkFollower()
+            ta.SetMapper(name_mapper)
+            ta.GetProperty().SetColor(1.0, 1.0, 0.0)
+            ta.SetPosition(world)
+            ta_bounds = ta.GetBounds()
+            ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
+                        (ta_bounds[1] - ta_bounds[0]))
+            self._threedRenderer.AddActor(ta)
+            ta.SetPickable(0)
+            ta.SetCamera(self._threedRenderer.GetActiveCamera())
+        else:
+            ta = None
+
+
+        def pw_ei_cb(pw, evt_name):
+            # make sure our output is good
+            self._syncOutputSelectedPoints()
+
+        pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
+                       s=self:
+                       s._pointWidgetInteractionCallback(pw, evt_name))
+        pw.AddObserver('InteractionEvent', lambda pw, evt_name,
+                       s=self:
+                       s._pointWidgetInteractionCallback(pw, evt_name))
+        pw.AddObserver('EndInteractionEvent', pw_ei_cb)
+
+
+        # after we've added observers, we get to switch the widget on or
+        # off; but it HAS to be on when the observers are added
+        if self.controlFrame.pointInteractionCheckBox.GetValue():
+            pw.On()
+        else:
+            pw.Off()
+
+        # store the cursor (discrete coords) the coords and the actor
+        self._selectedPoints.append({'discrete' : tuple(discrete),
+                                     'world' : tuple(world),
+                                     'value' : value,
+                                     'name' : pointName,
+                                     'pointWidget' : pw,
+                                     'lockToSurface' : lockToSurface,
+                                     'sphereActor' : sa,
+                                     'textActor' : ta})
+
+        
+        self.controlFrame.spointsGrid.AppendRows()
+        self.controlFrame.spointsGrid.AdjustScrollbars()        
+        row = self.controlFrame.spointsGrid.GetNumberRows() - 1
+        self._syncGridRowToSelPoints(row)
+        
+        # make sure self._outputSelectedPoints is up to date
+        self._syncOutputSelectedPoints()
+
+        self.threedFrame.threedRWI.Render()
+        
+            
 
     def _initialiseGrid(self):
         # delete all existing columns
@@ -154,11 +331,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # the renderers corresponding to the render windows
         self._threedRenderer = None
 
-        # list of selected points (we can make this grow or be overwritten)
-        #self._selectedPoints = []
-        # this will be passed on as input to the next component
-        self._outputSelectedPoints = outputSelectedPoints()
-        
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
         om.SetInput(self._outline_source.GetOutput())
@@ -227,6 +399,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # take care of the sliceDirections
         self.sliceDirections.close()
         del self.sliceDirections
+
+        # the points
+        self.selectedPoints.close()
+        del self.selectedPoints
+
+        # take care of the threeD objects
+        self._tdObjects.close()
+        del self._tdObjects
 
         # don't forget to call the mixin close() methods
         vtkPipelineConfigModuleMixin.close(self)
@@ -542,7 +722,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         def pointsRemoveCallback(event):
             selRows = self.controlFrame.spointsGrid.GetSelectedRows()
             if len(selRows):
-                self._remove_cursors(selRows)
+                self.selectedPoints.removePoints(selRows)
 
         EVT_BUTTON(self.controlFrame, self.controlFrame.pointsSelectAllButtonId,
                    pointsSelectAllCallback)
@@ -591,9 +771,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         EVT_SPINCTRL(self.controlFrame, self.controlFrame.pushSliceSpinCtrlId,
                      lambda e: _ps_cb())
 
-        # the store button
-        EVT_BUTTON(self.controlFrame, self.controlFrame.sliceStoreButtonId,
-                   lambda e: self._storeCursorCallback())
 
         # clicks directly in the window for picking
         self.threedFrame.threedRWI.AddObserver('LeftButtonPressEvent',
@@ -619,39 +796,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             inputData = None
 
         return inputData
-
-    def _remove_cursors(self, idxs):
-        # fixme: continue here
-
-        # we have to delete one by one from back to front
-        idxs.sort()
-        idxs.reverse()
-        
-        for idx in idxs:
-            # remove the sphere actor from the renderer
-            self._threedRenderer.RemoveActor(self._selectedPoints[idx]['sphereActor'])
-            # remove the text_actor (if any)
-            if self._selectedPoints[idx]['textActor']:
-                self._threedRenderer.RemoveActor(self._selectedPoints[idx]['textActor'])
-            
-            # then deactivate and disconnect the point widget
-            pw = self._selectedPoints[idx]['pointWidget']
-            pw.SetInput(None)
-            pw.Off()
-            pw.SetInteractor(None)
-
-            # remove the entries from the wxGrid
-            self.controlFrame.spointsGrid.DeleteRows(idx)
-
-            # then remove it from our internal list
-            del self._selectedPoints[idx]
-
-            # rerender
-            self.threedFrame.threedRWI.Render()
-
-            # and sync up output points
-            self._syncOutputSelectedPoints()
-        
 
     def _resetAll(self):
         """Arrange everything for a single overlay in a single ortho view.
@@ -775,129 +919,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
         self._storePoint(discrete, xyz, val, pointName, True) # lock to surface
 
-    def _storeCursor(self, cursor):
-        """Store the point represented by the cursor parameter.
 
-        cursor is a 4-tuple with the discrete (data-relative) xyz coords and
-        the value at that point.
-        """
-
-        inputs = [i for i in self._inputs if i['Connected'] ==
-                  'vtkImageDataPrimary']
-
-        if not inputs or not cursor:
-            return
-
-        # we first have to check that we don't have this pos already
-        discretes = [i['discrete'] for i in self._selectedPoints]
-        if tuple(cursor[0:3]) in discretes:
-            return
-        
-        input_data = inputs[0]['inputData']
-        ispacing = input_data.GetSpacing()
-        iorigin = input_data.GetOrigin()
-        # calculate real coords
-        world = map(operator.add, iorigin,
-                    map(operator.mul, ispacing, cursor[0:3]))
-
-        pointName = self.controlFrame.sliceCursorNameCombo.GetValue()
-        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
-                         pointName)
-
-    def _storePoint(self, discrete, world, value, pointName,
-                    lockToSurface=False, boundsForPoints=None):
-
-        if not boundsForPoints:
-            bounds = self._threedRenderer.ComputeVisiblePropBounds()
-        else:
-            bounds = boundsForPoints
-        
-        # we use a pointwidget
-        pw = vtk.vtkPointWidget()
-        #pw.SetInput(inputData)
-        pw.PlaceWidget(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4],
-                       bounds[5])
-        pw.SetPosition(world)
-        # make priority higher than the default of vtk3DWidget so
-        # that imageplanes behind us don't get selected the whole time
-        pw.SetPriority(0.6)
-        pw.SetInteractor(self.threedFrame.threedRWI)
-        pw.AllOff()
-        pw.On()
-
-
-        ss = vtk.vtkSphereSource()
-        #bounds = inputData.GetBounds()
-
-        ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
-        sm = vtk.vtkPolyDataMapper()
-        sm.SetInput(ss.GetOutput())
-        sa = vtk.vtkActor()
-        sa.SetMapper(sm)
-        sa.SetPosition(world)
-        sa.GetProperty().SetColor(1.0,0.0,0.0)
-        self._threedRenderer.AddActor(sa)
-        sa.SetPickable(0)
-
-        if len(pointName) > 0:
-            name_text = vtk.vtkVectorText()
-            name_text.SetText(pointName)
-            name_mapper = vtk.vtkPolyDataMapper()
-            name_mapper.SetInput(name_text.GetOutput())
-            ta = vtk.vtkFollower()
-            ta.SetMapper(name_mapper)
-            ta.GetProperty().SetColor(1.0, 1.0, 0.0)
-            ta.SetPosition(world)
-            ta_bounds = ta.GetBounds()
-            ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
-                        (ta_bounds[1] - ta_bounds[0]))
-            self._threedRenderer.AddActor(ta)
-            ta.SetPickable(0)
-            ta.SetCamera(self._threedRenderer.GetActiveCamera())
-        else:
-            ta = None
-
-
-        def pw_ei_cb(pw, evt_name):
-            # make sure our output is good
-            self._syncOutputSelectedPoints()
-
-        pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
-                       s=self:
-                       s._pointWidgetInteractionCallback(pw, evt_name))
-        pw.AddObserver('InteractionEvent', lambda pw, evt_name,
-                       s=self:
-                       s._pointWidgetInteractionCallback(pw, evt_name))
-        pw.AddObserver('EndInteractionEvent', pw_ei_cb)
-
-
-        # after we've added observers, we get to switch the widget on or
-        # off; but it HAS to be on when the observers are added
-        if self.controlFrame.pointInteractionCheckBox.GetValue():
-            pw.On()
-        else:
-            pw.Off()
-
-        # store the cursor (discrete coords) the coords and the actor
-        self._selectedPoints.append({'discrete' : tuple(discrete),
-                                     'world' : tuple(world),
-                                     'value' : value,
-                                     'name' : pointName,
-                                     'pointWidget' : pw,
-                                     'lockToSurface' : lockToSurface,
-                                     'sphereActor' : sa,
-                                     'textActor' : ta})
-
-        
-        self.controlFrame.spointsGrid.AppendRows()
-        self.controlFrame.spointsGrid.AdjustScrollbars()        
-        row = self.controlFrame.spointsGrid.GetNumberRows() - 1
-        self._syncGridRowToSelPoints(row)
-        
-        # make sure self._outputSelectedPoints is up to date
-        self._syncOutputSelectedPoints()
-
-        self.threedFrame.threedRWI.Render()
 
     def _syncGridRowToSelPoints(self, row):
         # *sniff* *sob* It's unreadable, but why's it so pretty?
@@ -1130,13 +1152,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         wxvtkrwi.GetRenderWindow().Render()
         self._rwis[0].GetRenderWindow().Render()
 
-    def _storeCursorCallback(self):
-        """Call back for the store cursor button.
-
-        Calls store cursor method on [x,y,z,v].
-        """
-        self._storeCursor(self.sliceDirections.currentCursor)
-        
 
     def voiWidgetInteractionCallback(self, o, e):
         planes = vtk.vtkPlanes()
