@@ -22,7 +22,9 @@ class vtk_vol16_rdr(module_base):
 	
     # disconnect all inputs and outputs
     def close(self):
-	if dir(self).count('reader'):
+	# first check if this is bound
+	if hasattr(self, 'reader'):
+	    # if it still is, remove the binding
 	    del self.reader
 
     def get_input_descriptions(self):
@@ -88,7 +90,7 @@ class vtk_vol16_rdr(module_base):
 	
 	# button box
 	box1 = Tix.ButtonBox(config_window, orientation=Tix.HORIZONTAL)
-	box1.add('vtkvol16', text='vtkVolume16Reader', underline=0, command=lambda self=self, pw=parent_window: self.configure_vtk_object(self.reader, pw))	
+	box1.add('vtkvol16', text='vtkVolume16Reader', underline=0, command=lambda self=self, pw=parent_window: self.configure_vtk_object(self.reader, pw))
 	box1.add('pipeline', text='Pipeline', underline=0, command=lambda self=self, pw=parent_window, vtk_objs=(self.reader): self.browse_vtk_pipeline(vtk_objs, pw))
 	box1.grid(row=5, column=0, columnspan=2, sticky=Tix.W + Tix.E)
 

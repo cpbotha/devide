@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.5 2002/03/08 16:31:39 cpbotha Exp $
+# $Id: module_base.py,v 1.6 2002/03/09 00:28:38 cpbotha Exp $
 import vtkpython
 import Tix
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
@@ -61,4 +61,5 @@ class module_base:
     def configure_vtk_object(self, vtk_object, parent_window=None):
 	# we don't have access to a renderwindow now
 	conf = ConfigVtkObj(None)
+	conf.set_update_method(vtk_object)
         conf.configure (parent_window, vtk_object)
