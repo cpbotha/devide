@@ -3,8 +3,8 @@ import fnmatch
 import sys
 
 if sys.platform.startswith('win'):
-    INSTALLER_DIR = 'c:\\build\\Installer'
-    D3_DIR = 'c:\\work\\code\\devide'
+    INSTALLER_DIR = 'g:\\build\\Installer'
+    D3_DIR = 'g:\\work\\code\\devide'
     exeName = 'builddevide/devide.exe'    
 else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
