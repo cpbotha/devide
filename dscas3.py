@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.61 2003/12/11 17:32:02 cpbotha Exp $
+# $Id: dscas3.py,v 1.62 2003/12/12 13:50:02 cpbotha Exp $
 
 DSCAS3_VERSION = '20031211 Four'
 
@@ -22,8 +22,10 @@ from python_shell import python_shell
 import resources.python.mainFrame
 import resources.graphics.images
 
-from wxPython.wx import *
-from wxPython.html import *
+#from wxPython.wx import *
+import wx
+#from wxPython.html import *
+import wx.html
 
 import vtk
 import vtkdscas
@@ -59,7 +61,7 @@ class configClass(object):
         
 
 # ---------------------------------------------------------------------------
-class dscas3_app_t(wxApp):
+class dscas3_app_t(wx.App):
     """Main dscas3 application class.
 
     Class that's used as communication hub for most other components of the
@@ -86,7 +88,7 @@ class dscas3_app_t(wxApp):
             else:
                 self._appdir = os.getcwd()
         
-        wxApp.__init__(self, 0)
+        wx.App.__init__(self, 0)
 
         self._assistants = assistants(self)
         self._graphEditor = None
@@ -97,17 +99,17 @@ class dscas3_app_t(wxApp):
         self._mainFrame = resources.python.mainFrame.mainFrame(None, -1,
                                                                "dummy")
 
-        wxInitAllImageHandlers()
+        wx.InitAllImageHandlers()
         self._mainFrame.SetIcon(self.getApplicationIcon())
 
-        EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
-                 self.exitCallback)
-        EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
-                 self.graphEditorCallback)
-        EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
-                 self.pythonShellCallback)
-        EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
-                 self.aboutCallback)
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
+                    self.exitCallback)
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
+                   self.graphEditorCallback)
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
+                    self.pythonShellCallback)
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
+                    self.aboutCallback)
 
         self._mainFrame.Show(1)
         self.SetTopWindow(self._mainFrame)
@@ -143,23 +145,23 @@ class dscas3_app_t(wxApp):
             
             if textType == 0:
                 # Text
-                wxLogMessage(text)
+                wx.LogMessage(text)
                 
             elif textType == 1:
                 # ErrorText
-                wxLogError(text)
+                wx.LogError(text)
                 
             elif textType == 2:
                 # WarningText
-                wxLogWarning(text)
+                wx.LogWarning(text)
                 
             elif textType == 3:
                 # GenericWarningText
-                wxLogWarning(text)
+                wx.LogWarning(text)
                 
             else:
                 # DebugText
-                wxLogDebug(text)
+                wx.LogDebug(text)
 
         temp.AddObserver('ErrorEvent', observerEOW)
         temp.AddObserver('WarningEvent', observerEOW)        
@@ -172,7 +174,7 @@ class dscas3_app_t(wxApp):
         pass
     
     def getApplicationIcon(self):
-        icon = wxEmptyIcon()
+        icon = wx.EmptyIcon()
         icon.CopyFromBitmap(
             resources.graphics.images.getdscas3logo32x32Bitmap())
         return icon
@@ -235,13 +237,13 @@ class dscas3_app_t(wxApp):
 
                     # activate the busy cursor
                     if progress < 100.0:
-                        if not wxIsBusy():
-                            wxBeginBusyCursor()
+                        if not wx.IsBusy():
+                            wx.BeginBusyCursor()
                             
                     # or switch it off
                     else:
-                        if wxIsBusy():
-                            wxEndBusyCursor()
+                        if wx.IsBusy():
+                            wx.EndBusyCursor()
                    
                     # bring this window to the top if the user wants it
                     if self._mainFrame.progressRaiseCheckBox.GetValue():
@@ -249,7 +251,7 @@ class dscas3_app_t(wxApp):
 
                     # we want wx to update its UI, but it shouldn't accept any
                     # user input, else things can get really crazy.
-                    wxSafeYield()
+                    wx.SafeYield()
 
             # unset the mutex thingy
             self._inProgress.unlock()
@@ -279,19 +281,20 @@ class dscas3_app_t(wxApp):
 
         about = aboutDialog(self._mainFrame, -1, 'dummy')
         pyver = string.split(sys.version)[0]
-        about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION, wx.__version__,
+        about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION,
+                                              wx.VERSION_STRING,
                                               pyver,
                                               vtk.vtkVersion.GetVTKVersion()))
 
         ir = about.htmlWindow.GetInternalRepresentation()
-        ir.SetIndent(0, wxHTML_INDENT_ALL)
+        ir.SetIndent(0, wx.html.HTML_INDENT_ALL)
         about.htmlWindow.SetSize((ir.GetWidth(), ir.GetHeight()))
 
         about.GetSizer().Fit(about)
         about.GetSizer().SetSizeHints(about)
         about.Layout()
 
-        about.CentreOnParent(wxBOTH)
+        about.CentreOnParent(wx.BOTH)
         about.ShowModal()
         about.Destroy()
 
