@@ -1,4 +1,4 @@
-# $Id: vtiWRT.py,v 1.1 2003/12/18 11:11:19 cpbotha Exp $
+# $Id: vtiWRT.py,v 1.2 2004/01/26 11:15:27 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -7,6 +7,11 @@ import wx
 import vtk
 
 class vtiWRT(moduleBase, filenameViewModuleMixin):
+    """Writes VTK image data or structured points in the VTK XML format.
+    The data attribute is compressed.
+
+    This is the preferred way of saving image data in DeVIDE.
+    """
 
     def __init__(self, moduleManager):
 
