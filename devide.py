@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.21 2004/03/19 09:46:35 cpbotha Exp $
+# $Id: devide.py,v 1.22 2004/03/19 11:21:14 cpbotha Exp $
 
 DEVIDE_VERSION = '20040319'
 
@@ -228,6 +228,7 @@ class devide_app_t(wx.App):
 
     def _handlerTestingAllTests(self, event):
         import testing
+        reload(testing)
         dt = testing.devideTesting(self)
         dt.runAllTests()
 

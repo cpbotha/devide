@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.69 2004/03/10 22:14:40 cpbotha Exp $
+# $Id: graphEditor.py,v 1.70 2004/03/19 11:21:14 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -266,11 +266,11 @@ class graphEditor:
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
             """
-            ret = self.createModuleAndGlyph(x, y, moduleName)
-            if ret:
-                cfg = ret.getConfig()
+            (mod, glyph) = self.createModuleAndGlyph(x, y, moduleName)
+            if mod:
+                cfg = mod.getConfig()
                 setattr(cfg, configVarName, filename)
-                ret.setConfig(cfg)
+                mod.setConfig(cfg)
             
         
         actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
@@ -340,11 +340,11 @@ class graphEditor:
         # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
-            ret = self.createModuleAndGlyph(x, y, 'modules.Readers.dicomRDR')
-            if ret:
-                cfg = ret.getConfig()
+            (mod,glyph) = self.createModuleAndGlyph(x, y, 'modules.Readers.dicomRDR')
+            if mod:
+                cfg = mod.getConfig()
                 cfg.dicomFilenames.extend(dcmFilenames)
-                ret.setConfig(cfg)
+                mod.setConfig(cfg)
 
         return dropFilenameErrors
 
@@ -414,7 +414,7 @@ class graphEditor:
 
     def createGlyph(self, rx, ry, moduleName, moduleInstance):
         """Create only a glyph on the canvas given an already created
-        moduleInstance.
+        moduleInstance.  The glyph instance is returned.
         """
         
 
@@ -459,14 +459,14 @@ class graphEditor:
             if temp_module:
                 # create and draw the actual glyph
                 rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
-                self.createGlyph(rx,ry,moduleName.split('.')[-1],temp_module)
+                glyph = self.createGlyph(rx,ry,moduleName.split('.')[-1],temp_module)
 
                 # route all lines
                 self._routeAllLines()
 
-                return temp_module
+                return (temp_module, glyph)
 
-        return None
+        return (None, None)
 
     def _executeModule(self, moduleInstance):
         """Ask the moduleManager to execute the devide module represented by
@@ -991,6 +991,7 @@ class graphEditor:
     def _connect(self, fromObject, fromOutputIdx,
                  toObject, toInputIdx):
 
+        success = True
         try:
             # connect the actual modules
             mm = self._devide_app.getModuleManager()
@@ -1001,7 +1002,10 @@ class graphEditor:
             self._createLine(fromObject, fromOutputIdx, toObject, toInputIdx)
 
         except Exception, e:
+            success = False
             genUtils.logError('Could not connect modules: %s' % (str(e)))
+
+        return success
 
     def _deleteSelectedGlyphs(self):
         """Delete all currently selected glyphs.
@@ -1628,6 +1632,7 @@ class graphEditor:
         mm.viewModule(module)
 
     def _deleteModule(self, glyph, refreshCanvas=True):
+        success = True
         try:
             # FIRST remove it from any selections; we have to do this
             # while everything is still more or less active
@@ -1654,6 +1659,7 @@ class graphEditor:
 
 
         except Exception, e:
+            success = False
             genUtils.logError('Could not delete module (removing from canvas '
                               'anyway): %s' % (str(e)))
 
@@ -1666,6 +1672,8 @@ class graphEditor:
         # after all that work, we deserve a redraw
         if refreshCanvas:
             canvas.redraw()
+
+        return success
             
         
     def _stopRubberBanding(self, event):
