@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.18 2003/09/21 16:37:19 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.19 2004/01/15 10:39:35 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -254,7 +254,7 @@ def createStandardObjectAndPipelineIntrospection(d3module,
 def getModuleIcon():
     icon = wxEmptyIcon()
     icon.CopyFromBitmap(
-        resources.graphics.images.getdscas3logom32x32Bitmap())
+        resources.graphics.images.getdevidelogom32x32Bitmap())
     return icon
 
 def createModuleViewFrameTitle(d3module):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.72 2004/01/09 12:46:37 cpbotha Exp $
+# $Id: dscas3.py,v 1.73 2004/01/15 10:39:35 cpbotha Exp $
 
-DVIDE_VERSION = '20031218'
+DEVIDE_VERSION = '20031218'
 
 # standard Python imports
 import getopt
@@ -191,7 +191,7 @@ class dscas3_app_t(wx.App):
     def getApplicationIcon(self):
         icon = wx.EmptyIcon()
         icon.CopyFromBitmap(
-            resources.graphics.images.getdscas3logo32x32Bitmap())
+            resources.graphics.images.getdevidelogo32x32Bitmap())
         return icon
 
     def get_main_window(self):
@@ -278,8 +278,8 @@ class dscas3_app_t(wx.App):
         <html>
         <body>
         <center>
-        <h3>dvide v.%s</h3>
-        <p>dvide is copyright (c) 2003 Charl P. Botha<br>
+        <h3>DeVIDE v.%s</h3>
+        <p>DeVIDE is copyright (c) 2003 Charl P. Botha<br>
         http://cpbotha.net/phd/
         </p>
         <p>Unauthorised use or distribution strictly prohibited.
@@ -316,7 +316,7 @@ class dscas3_app_t(wx.App):
         else:
             ivs = 'N/A'
 
-        about.htmlWindow.SetPage(aboutText % (DVIDE_VERSION,
+        about.htmlWindow.SetPage(aboutText % (DEVIDE_VERSION,
                                               wx.VERSION_STRING,
                                               pyver,
                                               vvs, ivs))
