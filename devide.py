@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.17 2004/03/17 12:55:15 cpbotha Exp $
+# $Id: devide.py,v 1.18 2004/03/17 20:56:59 cpbotha Exp $
 
 DEVIDE_VERSION = '20040317'
 
@@ -111,7 +111,7 @@ class devide_app_t(wx.App):
         wx.EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
                     self.exitCallback)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
-                   self.graphEditorCallback)
+                   self._handlerMenuGraphEditor)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
                     self.pythonShellCallback)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpContentsId,
@@ -370,7 +370,7 @@ class devide_app_t(wx.App):
     def exitCallback(self, event):
         self.quit()
 
-    def graphEditorCallback(self, event):
+    def _handlerMenuGraphEditor(self, event):
         self.start_graph_editor()
 
     def pythonShellCallback(self, event):
