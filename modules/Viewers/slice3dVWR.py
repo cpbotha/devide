@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.9 2003/12/17 16:34:28 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.10 2003/12/18 16:11:40 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -53,8 +53,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         moduleBase.__init__(self, moduleManager)
         colourDialogMixin.__init__(
             self, moduleManager.get_module_view_parent_window())
-        # FIXME: change this back to 5!
-        self._numDataInputs = 15
+        self._numDataInputs = 7
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'inputData' : None,
                          'observerID' : -1,
