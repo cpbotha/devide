@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.17 2003/02/19 16:49:14 cpbotha Exp $
+# $Id: dscas3.py,v 1.18 2003/02/23 23:35:41 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
@@ -258,7 +258,7 @@ class dscas3_app_t(wxApp):
                    progress != self._currentProgress:
                if progress >= 100 or \
                   time.time() - self._previousProgressTime >= 1:
-                   #print "IN " + message
+                   print "IN " + message
                    self._previousProgressTime = time.time()
                    self._inProgress = 1
                    self._currentProgressMsg = message
@@ -270,13 +270,13 @@ class dscas3_app_t(wxApp):
                    # we want wx to update its UI, but it shouldn't accept any
                    # user input, else things can get really crazy.
                    #print "calling yield"
-                   wxSafeYield()
+                   wxSafeYield(None, 1)
                    # the following two calls don't seem to do the trick
                    #self._mainFrame.Refresh()
                    #self._mainFrame.Update()
                    #print "done calling yield"
                    self._inProgress = 0
-                   #print "OUT " + message
+                   print "OUT " + message
 
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog
