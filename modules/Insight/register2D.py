@@ -1,4 +1,4 @@
-# $Id: register2D.py,v 1.14 2004/12/05 00:42:42 cpbotha Exp $
+# $Id: register2D.py,v 1.15 2005/01/05 21:13:56 cpbotha Exp $
 
 # TODO:
 # * if the input imageStackRDR is reconfigured to read a different stack
@@ -437,7 +437,13 @@ class register2D(moduleBase):
         will setup the camera to be nice and orthogonal to the IPW.
         """
         if self._ipw1:
-            planeSource = self._ipw1.GetPolyDataSource()
+
+            # VTK5 vs old-style VTK
+            try:
+                planeSource = self._ipw1.GetPolyDataAlgorithm()
+            except AttributeError:
+                planeSource = self._ipw1.GetPolyDataSource()
+                
             cam = self._threedRenderer.GetActiveCamera()
             cam.SetPosition(planeSource.GetCenter()[0],
                             planeSource.GetCenter()[1], 10)

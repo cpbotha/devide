@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.16 2004/11/20 20:43:11 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.17 2005/01/05 21:13:58 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -418,7 +418,11 @@ class sliceDirection:
         pnSize = vtk.vtkMath.Normalize(planeNormal)
 
         if pnSize > 0:
-            planeSource = self._ipws[0].GetPolyDataSource()
+            try:
+                planeSource = self._ipws[0].GetPolyDataAlgorithm()
+            except AttributeError:
+                planeSource = self._ipws[0].GetPolyDataSource()
+                
             planeSource.SetNormal(planeNormal)
             planeSource.SetCenter(p0)
             self._ipws[0].UpdatePlacement()
@@ -430,7 +434,12 @@ class sliceDirection:
 
     def pushSlice(self, val):
         if self._ipws:
-            self._ipws[0].GetPolyDataSource().Push(val)
+            try:
+                planeSource = self._ipws[0].GetPolyDataAlgorithm()
+            except AttributeError:
+                planeSource = self._ipws[0].GetPolyDataSource()
+
+            planeSource.Push(val)
             self._ipws[0].UpdatePlacement()
             self._syncAllToPrimary()
 
@@ -724,10 +733,17 @@ class sliceDirection:
         # check that we do have overlays for this direction
         if len(self._ipws) > 1:
             # we know this is a vtkPlaneSource
-            pds1 = self._ipws[0].GetPolyDataSource()
-
+            try:
+                pds1 = self._ipws[0].GetPolyDataAlgorithm()
+            except AttributeError:
+                pds1 = self._ipws[0].GetPolyDataSource()
+            
             for ipw in self._ipws[1:]:
-                pds2 = ipw.GetPolyDataSource()
+                try:
+                    pds2 = self._ipws[0].GetPolyDataAlgorithm()
+                except AttributeError:
+                    pds2 = self._ipws[0].GetPolyDataSource()
+                
                 pds2.SetOrigin(pds1.GetOrigin())
                 pds2.SetPoint1(pds1.GetPoint1())
                 pds2.SetPoint2(pds1.GetPoint2())

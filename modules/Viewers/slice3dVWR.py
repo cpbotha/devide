@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.32 2004/11/25 13:59:04 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.33 2005/01/05 21:13:57 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.32 $
+    $Revision: 1.33 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -1035,7 +1035,12 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             output_spacing = rai.MultiplyPoint(input_spacing + (0.0,))
 
             # modify the underlying polydatasource of the planewidget
-            ps = self._pws[r_idx - 1].GetPolyDataSource()
+            pw = self._pws[r_idx - 1]
+            try:
+                ps = pw.GetPolyDataAlgorithm()
+            except AttributeError:
+                ps = pw.GetPolyDataSource()
+                
             ps.Push(delta * output_spacing[2])
             self._pws[r_idx - 1].UpdatePlacement()
 
