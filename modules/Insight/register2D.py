@@ -1,6 +1,9 @@
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
+import genUtils
+from imageStackRDR import imageStackClass
 from moduleBase import moduleBase
 import moduleUtils
+import operator
 import InsightToolkit as itk
 import ConnectVTKITKPython as CVIPy
 import vtk
@@ -29,11 +32,7 @@ class register2D(moduleBase):
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
-        # input
-        self._imageStack = None
-        # output is a transform stack
-        self._transformStack = transformStackClass(self)
-
+        self._createLogic()
         self._createViewFrames()
         self._bindEvents()
 
@@ -42,14 +41,21 @@ class register2D(moduleBase):
     def close(self):
         moduleBase.close(self)
 
+        # take care of the IPWs
+        self._destroyIPWs()
+
         # take care of pipeline thingies
         del self._rescaler1
         del self._itkExporter1
         del self._vtkImporter1
 
+        del self._resampler2
         del self._rescaler2
         del self._itkExporter2
         del self._vtkImporter2
+
+        # also take care of our output!
+        del self._transformStack
 
         # nasty trick to take care of RenderWindow
         self._threedRenderer.RemoveAllProps()
@@ -66,10 +72,36 @@ class register2D(moduleBase):
         return ('ITK Image Stack',)
 
     def setInput(self, idx, inputStream):
-        # FIXME: also check for correct type!
         if inputStream != self._imageStack:
+            # if it's None, we have to take it
+            if inputStream == None:
+                # disconnect
+                del self._transformStack[:]
+                self._destroyIPWs()
+                self._imageStack = None
+                self._pairNumber = -1
+                return
+                
             # let's setup for a new stack!
+            try:
+                assert(isinstance(inputStream, imageStackClass))
+                inputStream.Update()
+                assert(len(inputStream) >= 2)
+            except Exception:
+                # if the Update call doesn't work or
+                # if the input list is not long enough (or unsizable),
+                # we don't do anything
+                raise TypeError, \
+                      "register2D requires an ITK Image Stack of minimum length 2 as input."
+
             self._imageStack = inputStream
+            # create a new transformStack
+            del self._transformStack[:]
+            # the first transform is always identity
+            for dummy in self._imageStack:
+                self._transformStack.append(itk.itkEuler2DTransform_New())
+                self._transformStack[-1].SetIdentity()
+                
             self._showImagePair(1)
         
     def getOutputDescriptions(self):
@@ -94,7 +126,56 @@ class register2D(moduleBase):
     # ----------------------------------------------------------------------
 
     def _bindEvents(self):
-        pass
+        wx.EVT_BUTTON(self.viewerFrame, self.viewerFrame.showControlsButtonId,
+                      self._handlerShowControls)
+        wx.EVT_BUTTON(self.viewerFrame, self.viewerFrame.resetCameraButtonId,
+                      lambda e: self._resetCamera())
+
+        wx.EVT_SPINCTRL(self.controlFrame,
+                        self.controlFrame.pairNumberSpinCtrlId,
+                        self._handlerPairNumberSpinCtrl)
+        wx.EVT_BUTTON(self.controlFrame, self.controlFrame.transformButtonId,
+                      self._handlerTransformButton)
+
+    def _createLogic(self):
+        # input
+        self._imageStack = None
+        # output is a transform stack
+        self._transformStack = transformStackClass(self)
+
+        self._ipw1 = None
+        self._ipw2 = None
+
+        # some control variables
+        self._pairNumber = -1
+        
+        # we need to have two converters from itk::Image to vtkImageData,
+        # hmmmm kay?
+        self._transform1 = itk.itkEuler2DTransform_New()
+        self._transform1.SetIdentity()
+        print self._transform1.GetParameters()
+
+
+        self._rescaler1 = itk.itkRescaleIntensityImageFilterF2UC2_New()
+        self._rescaler1.SetOutputMinimum(0)
+        self._rescaler1.SetOutputMaximum(255)
+        self._itkExporter1 = itk.itkVTKImageExportUC2_New()
+        self._itkExporter1.SetInput(self._rescaler1.GetOutput())
+        self._vtkImporter1 = vtk.vtkImageImport()
+        CVIPy.ConnectITKUC2ToVTK(self._itkExporter1.GetPointer(),
+                                self._vtkImporter1)
+
+        self._resampler2 = None
+
+        self._rescaler2 = itk.itkRescaleIntensityImageFilterF2UC2_New()
+        self._rescaler2.SetOutputMinimum(0)
+        self._rescaler2.SetOutputMaximum(255)
+        self._itkExporter2 = itk.itkVTKImageExportUC2_New()
+        self._itkExporter2.SetInput(self._rescaler2.GetOutput())
+        self._vtkImporter2 = vtk.vtkImageImport()
+        CVIPy.ConnectITKUC2ToVTK(self._itkExporter2.GetPointer(),
+                                self._vtkImporter2)
+        
     
     def _createViewFrames(self):
         import modules.Insight.resources.python.register2DViewFrames
@@ -109,28 +190,11 @@ class register2D(moduleBase):
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
         self.viewerFrame.threedRWI.GetRenderWindow().AddRenderer(
             self._threedRenderer)
+
+        istyle = vtk.vtkInteractorStyleImage()
+        self.viewerFrame.threedRWI.SetInteractorStyle(istyle)
         
 
-        # we need to have two converters from itk::Image to vtkImageData,
-        # hmmmm kay?
-
-        self._rescaler1 = itk.itkRescaleIntensityImageFilterF2UC2_New()
-        self._rescaler1.SetOutputMinimum(0)
-        self._rescaler1.SetOutputMaximum(255)
-        self._itkExporter1 = itk.itkVTKImageExportUC2_New()
-        self._itkExporter1.SetInput(self._rescaler1.GetOutput())
-        self._vtkImporter1 = vtk.vtkImageImport()
-        CVIPy.ConnectITKUC2ToVTK(self._itkExporter1.GetPointer(),
-                                self._vtkImporter1)
-        
-        self._rescaler2 = itk.itkRescaleIntensityImageFilterF2UC2_New()
-        self._rescaler2.SetOutputMinimum(0)
-        self._rescaler2.SetOutputMaximum(255)
-        self._itkExporter2 = itk.itkVTKImageExportUC2_New()
-        self._itkExporter2.SetInput(self._rescaler2.GetOutput())
-        self._vtkImporter2 = vtk.vtkImageImport()
-        CVIPy.ConnectITKUC2ToVTK(self._itkExporter2.GetPointer(),
-                                self._vtkImporter2)
         
 
         # controlFrame creation
@@ -142,6 +206,115 @@ class register2D(moduleBase):
         # display
         self.viewerFrame.Show(True)
         self.controlFrame.Show(True)
+
+    def _createIPWs(self):
+        self._ipw1 = vtk.vtkImagePlaneWidget()
+        self._ipw2 = vtk.vtkImagePlaneWidget()
+        
+        for ipw, vtkImporter in ((self._ipw1, self._vtkImporter1),
+                                 (self._ipw2, self._vtkImporter2)):
+            vtkImporter.Update()
+            ipw.SetInput(vtkImporter.GetOutput())
+            ipw.SetPlaneOrientation(2)        
+            ipw.SetInteractor(self.viewerFrame.threedRWI)
+            ipw.On()
+            ipw.InteractionOff()            
+
+        self._setModeRedGreen()
+            
+    def _destroyIPWs(self):
+        """If the two IPWs exist, remove them completely and remove all
+        bindings that we have.
+        """
+
+        for ipw in (self._ipw1, self._ipw2):
+            if ipw:
+                # switch off
+                ipw.Off()
+                # disconnect from interactor
+                ipw.SetInteractor(None)
+                # disconnect from its input
+                ipw.SetInput(None)
+
+        self._ipw1 = None
+        self._ipw2 = None
+
+    def _handlerPairNumberSpinCtrl(self, event):
+        self._showImagePair(self.controlFrame.pairNumberSpinCtrl.GetValue())
+
+    def _handlerShowControls(self, event):
+        if not self.controlFrame.Show(True):
+            self.controlFrame.Raise()
+
+    def _handlerTransformButton(self, event):
+        # take xtranslate, ytranslate, rotate and work it into the current
+        # transform (if that exists)
+        if self._pairNumber > 0:
+            pda = self._transformStack[self._pairNumber].GetParameters()
+            
+            rot = genUtils.textToFloat(
+                self.controlFrame.rotationTextCtrl.GetValue(),
+                pda.GetElement(0))
+            xt = genUtils.textToFloat(
+                self.controlFrame.xTranslationTextCtrl.GetValue(),
+                pda.GetElement(1))
+            yt = genUtils.textToFloat(
+                self.controlFrame.yTranslationTextCtrl.GetValue(),
+                pda.GetElement(2))
+
+            pda.SetElement(0, rot)
+            pda.SetElement(1, xt)
+            pda.SetElement(2, yt)
+
+            self._transformStack[self._pairNumber].SetParameters(pda)
+            # we have to do this manually
+            self._transformStack[self._pairNumber].Modified()
+
+            self._rescaler2.Update() # give ITK a chance to complain
+            self.viewerFrame.threedRWI.GetRenderWindow().Render()
+
+    def _resetCamera(self):
+        """If an IPW is available (i.e. there's some data), this method
+        will setup the camera to be nice and orthogonal to the IPW.
+        """
+        if self._ipw1:
+            planeSource = self._ipw1.GetPolyDataSource()
+            cam = self._threedRenderer.GetActiveCamera()
+            cam.SetPosition(planeSource.GetCenter()[0],
+                            planeSource.GetCenter()[1], 10)
+            cam.SetFocalPoint(planeSource.GetCenter())
+            cam.OrthogonalizeViewUp()
+            cam.SetViewUp(0,1,0)
+            cam.SetClippingRange(1, 11)
+            v2 = map(operator.sub, planeSource.GetPoint2(),
+                     planeSource.GetOrigin())
+            n2 = vtk.vtkMath.Normalize(v2)
+            cam.SetParallelScale(n2 / 2.0)
+            cam.ParallelProjectionOn()
+
+            self.viewerFrame.threedRWI.GetRenderWindow().Render()
+
+    def _setModeCheckerboard(self):
+        pass
+        
+    def _setModeRedGreen(self):
+        """Set visualisation mode to RedGreen.
+
+        The second image is always green.
+        """
+
+        for ipw, col in ((self._ipw1, 0.0), (self._ipw2, 0.3)):
+            inputData = ipw.GetInput()
+            inputData.Update() # make sure the metadata is up to date
+            minv, maxv = inputData.GetScalarRange()
+            lut = vtk.vtkLookupTable()
+            lut.SetTableRange((minv, maxv))
+            lut.SetHueRange((col, col)) # keep it green!
+            lut.SetSaturationRange((1.0, 1.0))
+            lut.SetValueRange((0.0, 1.0))
+            lut.SetAlphaRange((0.5, 0.5))
+            lut.Build()
+            ipw.SetLookupTable(lut)
         
     def _showImagePair(self, pairNumber):
         """Set everything up to have the user interact with image pair
@@ -151,35 +324,42 @@ class register2D(moduleBase):
         between image 1 and image 0.
         """
 
+        # FIXME: do sanity checking on pairNumber
+        self._pairNumber = pairNumber
 
-        try:
-            self._imageStack.Update()
-            assert(len(self._imageStack) >= 2)
-        except Exception:
-            # if the Update call doesn't work or
-            # if the input list is not long enough (or unsizable),
-            # we don't do anything
-            return
-        
-
-        self._rescaler1.SetInput(self._imageStack[0])
+        # connect up ITK pipelines with the correct images and transforms
+        fixedImage = self._imageStack[pairNumber - 1]
+        self._rescaler1.SetInput(fixedImage)
         self._rescaler1.Update() # give ITK a chance to complain...
-        self._rescaler2.SetInput(self._imageStack[1])
+
+        self._resampler2 = itk.itkResampleImageFilterF2F2_New()
+
+        self._resampler2.SetTransform(
+            self._transformStack[pairNumber].GetPointer())
+        self._resampler2.SetInput(self._imageStack[pairNumber])
+        region = fixedImage.GetLargestPossibleRegion()
+        self._resampler2.SetSize(region.GetSize())
+        self._resampler2.SetOutputSpacing(fixedImage.GetSpacing())
+        self._resampler2.SetOutputOrigin(fixedImage.GetOrigin())
+        self._resampler2.SetDefaultPixelValue(0)
+        
+        self._rescaler2.SetInput(self._resampler2.GetOutput())
         self._rescaler2.Update() # give ITK a chance to complain...
 
-#        checker = vtk.vtkImageCheckerboard()
-#        checker.SetNumberOfDivisions(10, 10, 1)
-#        checker.SetInput1(self._vtkImporter1.GetOutput())
-#        checker.SetInput2(self._vtkImporter2.GetOutput())
 
-        self._ipw1 = vtk.vtkImagePlaneWidget()
-        self._vtkImporter1.Update()
-        self._ipw1.SetInput(self._vtkImporter1.GetOutput())
-        self._ipw1.SetPlaneOrientation(2)        
-        self._ipw1.SetInteractor(self.viewerFrame.threedRWI)
-        self._ipw1.On()
+        # update GUI #####################################################
+        self.controlFrame.pairNumberSpinCtrl.SetRange(1,
+                                                      len(self._imageStack)-1)
+        self.controlFrame.pairNumberSpinCtrl.SetValue(pairNumber)
+
+        pda = self._transformStack[pairNumber].GetParameters()
+        self.controlFrame.rotationTextCtrl.SetValue(str(pda.GetElement(0)))
+        self.controlFrame.xTranslationTextCtrl.SetValue(str(pda.GetElement(1)))
+        self.controlFrame.yTranslationTextCtrl.SetValue(str(pda.GetElement(2)))
+
+        # we're going to create new ones, so take care of the old ones
+        self._destroyIPWs()
         
+        self._createIPWs()
 
-        #self._imageViewer.SetInput(self._vtkImporter1.GetOutput())
-
-        self.viewerFrame.threedRWI.GetRenderWindow().Render()
+        self._resetCamera()

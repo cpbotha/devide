@@ -118,6 +118,7 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
                 self._imageStack.append(reader.GetOutput())
                 # velly important; with ITK wrappings, ref count doesn't
                 # increase if there's a coincidental python binding
+                # it does if there was an explicit New()
                 self._imageStack[-1].Register()
 
             self._moduleManager.setProgress(100.0, "Done loading images.")
