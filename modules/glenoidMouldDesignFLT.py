@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.7 2003/03/21 19:04:36 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.8 2003/03/22 00:56:59 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -105,7 +105,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             stuff = []
             yN = [0,0,0]
             zN = [0,0,0]
-            angleIncr = 2.0 * vtk.vtkMath.Pi() / 8.056
+            angleIncr = 2.0 * vtk.vtkMath.Pi() / 8.0
             for i in range(4):
                 angle = float(i) * angleIncr
                 vtk.vtkMath.Perpendiculars(gia, yN, zN, angle)
@@ -134,7 +134,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 cut.SetInput(pdn.GetOutput())
                 cut.SetCutFunction(plane)
                 cut.GenerateCutScalarsOn()
-                cut.SetValue(0,1)
+                cut.SetValue(0,0)
                 cut.Update()
 
                 contour = cut.GetOutput()
@@ -163,8 +163,8 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                     curStartPtId = startPtId
                     curLineId = startLineId
                     
-
-                    for i in range(20):
+                    onGlenoid = True
+                    while onGlenoid:
                         contour.GetCellPoints(curLineId, ptIds)
                         ptId0 = ptIds.GetId(0)
                         ptId1 = ptIds.GetId(1)
@@ -178,21 +178,25 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                                      [bool(cId0 == curLineId)]
 
 
-                        # stop criterion here, if not, then store
-
                         # get the normal for the current point
                         n = contour.GetPointData().GetNormals().GetTuple3(
                             curStartPtId)
 
                         # get the current point
                         pt0 = contour.GetPoints().GetPoint(curStartPtId)
-                        # store the real ptid, point coords and normal
-                        lines[lineIdx].append((curStartPtId,
-                                               tuple(pt0), tuple(n)))
 
-                        # get ready for next iteration
-                        curStartPtId = nextPointId
-                        curLineId = nextLineId
+                        # stop criterion here
+                        if abs(vtk.vtkMath.Dot(giaN, n)) > 0.8:
+                            # store the real ptid, point coords and normal
+                            lines[lineIdx].append((curStartPtId,
+                                               tuple(pt0), tuple(n)))
+                            
+                            # get ready for next iteration
+                            curStartPtId = nextPointId
+                            curLineId = nextLineId
+                            
+                        else:
+                            onGlenoid = False
                 
                     # closes: for i in range(20)
                     lineIdx += 1
@@ -235,6 +239,8 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 rsf.Update()
 
                 stuff.append(rsf.GetOutput())
+                #stuff.append(cut.GetOutput())
+                stuff.append(ps.GetOutput())
 
             
             # closes: for i in range(4)
@@ -277,14 +283,11 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         # xo = x - o
         # t = xo dot normal
         # h = x - t * normal
-        houseNormal = [0, 0, 0]
-        # you can't just project the normal!  ProjectPoint is for POINTS
-        # THINK!
-        cutPlane.ProjectPoint(startPointNormal, cutPlane.GetOrigin(),
-                              cutPlane.GetNormal(), houseNormal)
+        t = vtk.vtkMath.Dot(startPointNormal, cutPlane.GetNormal())
+        houseNormal = map(operator.sub, startPointNormal,
+                          [t * i for i in cutPlane.GetNormal()])
+        
         vtk.vtkMath.Normalize(houseNormal)
-        houseNormal = startPointNormal
-        #print vtk.vtkMath.Dot(houseNormal, cutPlane.GetNormal())
         
         houseNormal3 = [3.0 * i for i in houseNormal]
         cutPlaneNormal1_5 = [1.5 * i for i in cutPlane.GetNormal()]
@@ -315,6 +318,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         
         for point in edgeLine:
             housePoints = self._buildHouse(point[1], point[2], cutPlane)
+            # check here to see if negative volume occurs
             newEdgeLine.append(housePoints)
 
         return newEdgeLine
