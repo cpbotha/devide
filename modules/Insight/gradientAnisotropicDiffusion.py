@@ -1,4 +1,4 @@
-# $Id: curvatureAnisotropicDiffusion.py,v 1.2 2004/03/03 12:20:16 cpbotha Exp $
+# $Id: gradientAnisotropicDiffusion.py,v 1.1 2004/03/03 12:20:16 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -7,7 +7,7 @@ import moduleUtils
 import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
-class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
+class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -28,17 +28,17 @@ class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
 
 
         # setup the pipeline
-        d = itk.itkCurvatureAnisotropicDiffusionImageFilterF3F3_New()
+        d = itk.itkGradientAnisotropicDiffusionImageFilterF3F3_New()
         d.SetTimeStep(0.0625) # standard for 3D
         
         moduleUtilsITK.setupITKObjectProgress(
-            self, d, 'itkCurvatureAnisotropicDiffusionImageFilter',
+            self, d, 'itkGradientAnisotropicDiffusionImageFilter',
             'Smoothing data')
         self._diffuse = d
 
         self._createWindow(
             {'Module (self)' : self,
-             'itkCurvatureAnisotropicDiffusion' : self._diffuse})
+             'itkGradientAnisotropicDiffusion' : self._diffuse})
 
         self.configToLogic()
         self.syncViewWithLogic()

@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.69 2004/03/03 11:25:55 cpbotha Exp $
+# $Id: __init__.py,v 1.70 2004/03/03 12:20:14 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -53,6 +53,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'ifdoc.ifdocRDR' : ('ifdoc',),
               'ifdoc.ifdocVWR' : ('ifdoc',),
 
+              'Insight.gradientAnisotropicDiffusion' : ('Insight',),
               'Insight.curvatureAnisotropicDiffusion' : ('Insight',),
               'Insight.geodesicActiveContour' : ('Insight',),
               'Insight.imageStackRDR' : ('Insight',),
