@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.19 2003/09/22 11:27:21 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.20 2003/12/01 14:52:12 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -147,6 +147,9 @@ class fileOpenDialogModuleMixin:
         retains its previous settings and also that there is less overhead for
         subsequent creations.  The dialog will be a child of 'parent', so when
         parent is destroyed, this dialog will be too.
+
+        If style has wx.MULTIPLE, this method  will return a list of
+        complete file paths.
         """
         if not hasattr(self, '_fo_dlgs'):
             self._fo_dlgs = {}
@@ -155,7 +158,10 @@ class fileOpenDialogModuleMixin:
                                                   message, "", "",
                                                   wildcard, style)
         if self._fo_dlgs[message].ShowModal() == wxID_OK:
-            return self._fo_dlgs[message].GetPath()
+            if style & wxMULTIPLE:
+                return self._fo_dlgs[message].GetPaths()
+            else:
+                return self._fo_dlgs[message].GetPath()
         else:
             return None
 

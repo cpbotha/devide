@@ -1,6 +1,7 @@
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import InsightToolkit as itk
 from moduleBase import moduleBase
+from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
 import wx
 
@@ -16,10 +17,8 @@ class imageStackClass(list,
     def close(self):
         subjectMixin.close(self)
         updateCallsExecuteModuleMixin.close(self)
-        
-    
 
-class imageStackRDR(moduleBase):
+class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
     """Loads a list of images as ITK Images.
 
     This list can e.g. be used as input to the 2D registration module.
@@ -88,19 +87,32 @@ class imageStackRDR(moduleBase):
         # clear wxListBox
         self._viewFrame.fileNamesListBox.Clear()
         for fileName in self._config._imageFileNames:
-            self._viewFrame.Append(fileName)
+            self._viewFrame.fileNamesListBox.Append(fileName)
 
     def executeModule(self):
         if self._imageFileNamesChanged:
             # only if things have changed do we do our thing
             # first take care of old refs
             del self._imageStack[:]
+
+            # setup for progress counter
+            currentProgress = 0.0
+            if len(self._config._imageFileNames) > 0:
+                progressStep = 100.0 / len(self._config._imageFileNames)
+            else:
+                progressStep = 100.0
+                
             for imageFileName in self._config._imageFileNames:
+                self._moduleManager.setProgress(
+                    currentProgress, "Loading %s" % (imageFileName,))
+                currentProgress += progressStep
+                
                 reader = itk.itkImageFileReaderF2_New()
                 reader.SetFileName(imageFileName)
                 reader.Update()
                 self._imageStack.append(reader.GetOutput())
 
+            self._moduleManager.setProgress(100.0, "Done loading images.")
             # make sure all observers know about the changes
             self._imageStack.notify()
             # indicate that we're in sync now
@@ -110,6 +122,10 @@ class imageStackRDR(moduleBase):
         # if the window was visible already. just raise it
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
+
+    def _bindEvents(self):
+        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.addButtonId,
+                      self._handlerAddButton)
 
     def _createViewFrame(self):
         self._moduleManager.importReload(
@@ -124,3 +140,14 @@ class imageStackRDR(moduleBase):
         moduleUtils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
+        self._bindEvents()
+
+    def _handlerAddButton(self, event):
+        fres = self.filenameBrowse(self._viewFrame,
+                                   "Select files to add to stack",
+                                   "*", wx.OPEN | wx.MULTIPLE)
+        if fres:
+            for fileName in fres:
+                self._viewFrame.fileNamesListBox.Append(fileName)
+                
+            
