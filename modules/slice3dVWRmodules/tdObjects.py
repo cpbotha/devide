@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.29 2003/08/15 16:57:28 cpbotha Exp $
+# $Id: tdObjects.py,v 1.30 2003/08/27 15:09:11 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -36,7 +36,7 @@ class tdObjects:
         self._tdObjectsDict = {}
         self._objectId = 0
         
-        self._slice3dVWR = slice3dVWRThingy
+        self.slice3dVWR = slice3dVWRThingy
         self._grid = grid
         self._initialiseGrid()
         self._bindEvents()
@@ -46,7 +46,7 @@ class tdObjects:
 
     def close(self):
         self._tdObjectsDict.clear()
-        self._slice3dVWR = None
+        self.slice3dVWR = None
         self._grid.ClearGrid()
         self._grid = None
 
@@ -75,7 +75,7 @@ class tdObjects:
                callable(tdObject.GetClassName):
 
                 if tdObject.GetClassName() == 'vtkVolume':
-                    self._slice3dVWR._threedRenderer.AddVolume(tdObject)
+                    self.slice3dVWR._threedRenderer.AddVolume(tdObject)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkVolume',
                                                      'observerId' : None}
@@ -85,7 +85,7 @@ class tdObjects:
                     mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
-                    self._slice3dVWR._threedRenderer.AddActor(actor)
+                    self.slice3dVWR._threedRenderer.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
                                                      'vtkActor' : actor,
@@ -151,8 +151,8 @@ class tdObjects:
             # and the motion
             self._setObjectMotion(tdObject, False)
 
-            self._slice3dVWR._threedRenderer.ResetCamera()
-            self._slice3dVWR.render3D()
+            self.slice3dVWR._threedRenderer.ResetCamera()
+            self.slice3dVWR.render3D()
             
         # ends 
         else:
@@ -188,7 +188,7 @@ class tdObjects:
         lineActor.GetProperty().SetColor(1.0, 0.0, 0.0)
         lineActor.SetMapper(lineMapper)
 
-        self._slice3dVWR._threedRenderer.AddActor(lineActor)
+        self.slice3dVWR._threedRenderer.AddActor(lineActor)
 
         self._tdObjectsDict[sObject]['axisPoints'] = twoPoints
         self._tdObjectsDict[sObject]['axisLineActor'] = lineActor
@@ -431,7 +431,7 @@ class tdObjects:
             self._setObjectMotion(tdObject, True)
 
     def _bindEvents(self):
-        controlFrame = self._slice3dVWR.controlFrame
+        controlFrame = self.slice3dVWR.controlFrame
 
         wx.EVT_BUTTON(controlFrame, controlFrame.objectSelectAllButtonId,
                       self._handlerObjectSelectAll)
@@ -467,7 +467,7 @@ class tdObjects:
 
         try:
             actor = self._tdObjectsDict[tdObject]['axisLineActor']
-            self._slice3dVWR._threedRenderer.RemoveActor(actor)
+            self.slice3dVWR._threedRenderer.RemoveActor(actor)
             del self._tdObjectsDict[tdObject]['axisPoints']
             del self._tdObjectsDict[tdObject]['axisLineActor']
         except KeyError:
@@ -620,22 +620,22 @@ class tdObjects:
             self._setObjectContouring(obj, not contour)
 
         if objs:
-            self._slice3dVWR.render3D()
+            self.slice3dVWR.render3D()
 
     def _handlerObjectSetColour(self, event):
         objs = self._getSelectedObjects()
         
         if objs:
-            self._slice3dVWR.setColourDialogColour(
+            self.slice3dVWR.setColourDialogColour(
                 self._tdObjectsDict[objs[0]]['colour'])
                 
-            dColour = self._slice3dVWR.getColourDialogColour()
+            dColour = self.slice3dVWR.getColourDialogColour()
             if dColour:
                 for obj in objs:
                     self._setObjectColour(obj, dColour)
 
         if objs:
-            self._slice3dVWR.render3D()
+            self.slice3dVWR.render3D()
                     
 
     def _handlerObjectShowHide(self, event):
@@ -646,7 +646,7 @@ class tdObjects:
             self._setObjectVisibility(obj, not visible)
 
         if objs:
-            self._slice3dVWR.render3D()
+            self.slice3dVWR.render3D()
 
     def _handlerObjectMotion(self, event):
         objs = self._getSelectedObjects()
@@ -656,7 +656,7 @@ class tdObjects:
             self._setObjectMotion(obj, not motion)
 
         if objs:
-            self._slice3dVWR.render3D()
+            self.slice3dVWR.render3D()
 
     def _handlerObjectAttachAxis(self, event):
         """The user should have selected at least two points and an object.
@@ -665,7 +665,7 @@ class tdObjects:
         we detach the axis.
         """
 
-        worldPoints = self._slice3dVWR.selectedPoints.getSelectedWorldPoints()
+        worldPoints = self.slice3dVWR.selectedPoints.getSelectedWorldPoints()
         sObjects = self._getSelectedObjects()
         if len(worldPoints) >= 2 and sObjects:
             for sObject in sObjects:
@@ -675,13 +675,13 @@ class tdObjects:
                 self._attachAxis(sObject, worldPoints[0:2])
 
             if sObjects:
-                self._slice3dVWR.render3D()
+                self.slice3dVWR.render3D()
                 
         elif not worldPoints and sObjects:
             # this means the user might want to remove all axes from
             # the sObjects
             md = wx.MessageDialog(
-                self._slice3dVWR.controlFrame,
+                self.slice3dVWR.controlFrame,
                 "Are you sure you want to REMOVE axes "
                 "from all selected objects?",
                 "Confirm axis removal",
@@ -691,11 +691,11 @@ class tdObjects:
                     self._detachAxis(sObject)
 
                 if sObjects:
-                    self._slice3dVWR.render3D()
+                    self.slice3dVWR.render3D()
 
         else:
             md = wx.MessageDialog(
-                self._slice3dVWR.controlFrame,
+                self.slice3dVWR.controlFrame,
                 "To attach an axis to an object, you need to select two "
                 "points and an object.",
                 "Information",
@@ -706,11 +706,11 @@ class tdObjects:
         #
         sObjects = self._getSelectedObjects()
         print len(sObjects)
-        sSliceDirections = self._slice3dVWR.sliceDirections.\
+        sSliceDirections = self.slice3dVWR.sliceDirections.\
                            getSelectedSliceDirections()
 
         if not sSliceDirections:
-            md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+            md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                   "Select at least one slice before "
                                   "using AxisToSlice.",
                                   "Information",
@@ -719,7 +719,7 @@ class tdObjects:
             return
 
         if not sObjects:
-            md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+            md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                   "Select at least one object before "
                                   "using AxisToSlice.",
                                   "Information",
@@ -739,7 +739,7 @@ class tdObjects:
                     pn1 = sSliceDirections[1]._ipws[0].GetNormal()
                     po1 = sSliceDirections[1]._ipws[0].GetOrigin()
                 except IndexError:
-                    md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                    md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                           "The slices you have selected "
                                           "contain no data.",
                                           "Information",
@@ -751,7 +751,7 @@ class tdObjects:
                     lineOrigin, lineVector = genUtils.planePlaneIntersection(
                         pn0, po0, pn1, po1)
                 except ValueError, msg:
-                    md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                    md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                           "The two slices you have selected "
                                           "are parallel, no intersection "
                                           "can be calculated.",
@@ -764,7 +764,7 @@ class tdObjects:
                 self._axisToLine(sObject, lineOrigin, lineVector)
                 
             else:
-                md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                       "You have selected more than two "
                                       "slices. "
                                       "I am not sure what I should think "
@@ -775,7 +775,7 @@ class tdObjects:
                 return
         
         if sObjects:
-            self._slice3dVWR.render3D()
+            self.slice3dVWR.render3D()
 
     def _handlerObjectPlaneLock(self, event):
         """Lock the selected objects to the selected planes.  This will
@@ -784,7 +784,7 @@ class tdObjects:
         """
 
         sObjects = self._getSelectedObjects()
-        sSliceDirections = self._slice3dVWR.sliceDirections.\
+        sSliceDirections = self.slice3dVWR.sliceDirections.\
                            getSelectedSliceDirections()
 
         if sObjects and sSliceDirections:
@@ -796,7 +796,7 @@ class tdObjects:
 
         elif sObjects:
             md = wx.MessageDialog(
-                self._slice3dVWR.controlFrame,
+                self.slice3dVWR.controlFrame,
                 "Are you sure you want to UNLOCK the selected objects "
                 "from all slices?",
                 "Confirm Object Unlock",
@@ -808,7 +808,7 @@ class tdObjects:
 
         else:
             md = wx.MessageDialog(
-                self._slice3dVWR.controlFrame,
+                self.slice3dVWR.controlFrame,
                 "To lock an object to plane, you have to select at least "
                 "one object and one slice.",
                 "Information",
@@ -819,6 +819,10 @@ class tdObjects:
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
         """
+
+        # setup default selection background
+        gsb = self.slice3dVWR.gridSelectionBackground
+        self._grid.SetSelectionBackground(gsb)
 
         # delete all existing columns
         self._grid.DeleteCols(0, self._grid.GetNumberCols())
@@ -900,7 +904,7 @@ class tdObjects:
         explicitly moved an object.
         """
         # and update the contours after we're done moving things around
-        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(prop)
+        self.slice3dVWR.sliceDirections.syncContoursToObjectViaProp(prop)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -911,20 +915,20 @@ class tdObjects:
 
         oType = self._tdObjectsDict[tdObject]['type']
         if oType == 'vtkVolume':
-            self._slice3dVWR._threedRenderer.RemoveVolume(tdObject)
-            self._slice3dVWR.render3D()
+            self.slice3dVWR._threedRenderer.RemoveVolume(tdObject)
+            self.slice3dVWR.render3D()
 
         elif oType == 'vtkPolyData':
             # remove all contours due to this object
             self._setObjectContouring(tdObject, False)
             
             actor = self._tdObjectsDict[tdObject]['vtkActor']
-            self._slice3dVWR._threedRenderer.RemoveActor(actor)
+            self.slice3dVWR._threedRenderer.RemoveActor(actor)
 
             try:
                 # if there was a axisLineActor, remove that as well
                 lineActor = self._tdObjectsDict[tdObject]['axisLineActor']
-                self._slice3dVWR._threedRenderer.RemoveActor(lineActor)
+                self.slice3dVWR._threedRenderer.RemoveActor(lineActor)
             except KeyError:
                 pass
             
@@ -937,7 +941,7 @@ class tdObjects:
                 # whether we had a source or not, zero this
                 self._tdObjectsDict[tdObject]['observerId'] = None
 
-            self._slice3dVWR.render3D()
+            self.slice3dVWR.render3D()
             
         else:
             raise Exception,\
@@ -1021,10 +1025,10 @@ class tdObjects:
             if objectDict['type'] == 'vtkPolyData':
                 # in the scene
                 if contour:
-                    self._slice3dVWR.sliceDirections.addContourObject(
+                    self.slice3dVWR.sliceDirections.addContourObject(
                         tdObject, objectDict['vtkActor'])
                 else:
-                    self._slice3dVWR.sliceDirections.removeContourObject(
+                    self.slice3dVWR.sliceDirections.removeContourObject(
                         tdObject)
 
             # in the grid
@@ -1051,7 +1055,7 @@ class tdObjects:
             # when motion is being deactivated... this is a quick workaround
             # for the superbly broken vtkBoxWidget.  Thanks guys.
             if objectDict['type'] == 'vtkPolyData':
-                self._slice3dVWR.setPropMotion(objectDict['vtkActor'], True)
+                self.slice3dVWR.setPropMotion(objectDict['vtkActor'], True)
 
             # setup our frikking motionBoxWidget, mmmkay?
             if motion:
@@ -1073,7 +1077,7 @@ class tdObjects:
                 bw.HandlesOff()
                 # without the balls, the outlines aren't needed either
                 bw.OutlineCursorWiresOff()
-                bw.SetInteractor(self._slice3dVWR.threedFrame.threedRWI)
+                bw.SetInteractor(self.slice3dVWR.threedFrame.threedRWI)
                 # also "flatten" the actor (i.e. integrate its UserTransform)
                 genUtils.flattenProp3D(objectDict['vtkActor'])
                 # and the axis, if any
@@ -1096,7 +1100,7 @@ class tdObjects:
 
                 # FIXME: continue here!
 #                 try:
-#                     ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
+#                     ipw = self.slice3dVWR._sliceDirections[0]._ipws[0]
 #                 except:
 #                     # no plane, so we don't do anything
 #                     pass
@@ -1169,7 +1173,7 @@ class tdObjects:
             boxWidget.SetConstraintVector(lineVector)
 
     def _tdObjectModifiedCallback(self, o, e):
-        self._slice3dVWR.render3D()
+        self.slice3dVWR.render3D()
 
     def _unlockObjectFromPlanes(self, tdObject):
         """Make sure that there are no plane constraints on the motion

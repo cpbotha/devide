@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.67 2003/08/07 16:48:10 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.68 2003/08/27 15:09:11 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -165,6 +165,10 @@ class selectedPoints(object):
         
 
     def _initialiseGrid(self):
+        # setup default selection background
+        gsb = self.slice3dVWR.gridSelectionBackground
+        self._grid.SetSelectionBackground(gsb)
+        
         # delete all existing columns
         self._grid.DeleteCols(0, self._grid.GetNumberCols())
 
@@ -478,6 +482,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     also be added.  One can interact with the 3d slices to change the slice
     orientation and position.
     """
+
+    gridSelectionBackground = (11, 137, 239)
 
     def __init__(self, moduleManager):
         # call base constructor

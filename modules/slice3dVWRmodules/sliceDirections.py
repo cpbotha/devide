@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.9 2003/08/15 16:57:28 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.10 2003/08/27 15:09:11 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -116,6 +116,8 @@ class sliceDirections(object):
 
                 # set the relevant cells up for Boolean
                 for col in [self._gridEnabledCol, self._gridInteractionCol]:
+                    # instead of SetCellRenderer, you could have used
+                    # wxGrid.SetColFormatBool()
                     self._grid.SetCellRenderer(
                         nrGridRows, col, wx.grid.GridCellBoolRenderer())
                     self._grid.SetCellAlignment(
@@ -251,6 +253,10 @@ class sliceDirections(object):
             self.slice3dVWR.render3D()
 
     def _initialiseGrid(self):
+        # setup default selection background
+        gsb = self.slice3dVWR.gridSelectionBackground
+        self._grid.SetSelectionBackground(gsb)
+        
         # delete all existing columns
         self._grid.DeleteCols(0, self._grid.GetNumberCols())
 
