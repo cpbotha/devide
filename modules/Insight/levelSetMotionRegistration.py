@@ -1,4 +1,4 @@
-# $Id: levelSetMotionRegistration.py,v 1.2 2004/12/05 20:13:34 cpbotha Exp $
+# $Id: levelSetMotionRegistration.py,v 1.3 2004/12/05 21:20:23 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -10,7 +10,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
     """Performs deformable registration between two input volumes using
     level set motion.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -19,6 +19,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
 
         self._config.numberOfIterations = 50
         self._config.gradSmoothStd = 1.0
+        self._config.alpha = 0.1
         self._config.idiffThresh = 0.001
 
         configList = [
@@ -27,8 +28,12 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
              'Number of iterations for the Demons registration to run.'),
             ('Gradient smoothing standard deviation:', 'gradSmoothStd',
              'base:float', 'text',
-             'The standard deviation of the Gaussian kernel that will be '
+             'The standard deviation of the Gaussian kernel in physical '
+             'units that will be '
              'used to smooth the images before calculating gradients.'),
+            ('Stability parameter alpha:', 'alpha', 'base:float', 'text',
+             'Used to stabilise small gradient magnitude values.  Set to '
+             'approximately 0.04% of intensity range of input images.'),
             ('Intensity difference threshold:', 'idiffThresh',
              'base:float', 'text',
              'Voxels differing with less than this threshold are considered '
@@ -106,6 +111,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
             self._config.numberOfIterations)
         self._levelSetMotion.SetGradientSmoothingStandardDeviations(
             self._config.gradSmoothStd)
+        self._levelSetMotion.SetAlpha(self._config.alpha)
         self._levelSetMotion.SetIntensityDifferenceThreshold(
             self._config.idiffThresh)
 
@@ -116,6 +122,9 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         self._config.gradSmoothStd = \
                                    self._levelSetMotion.\
                                    GetGradientSmoothingStandardDeviations()
+
+        self._config.alpha = \
+                           self._levelSetMotion.GetAlpha()
         
         self._config.idiffThresh = \
                                  self._levelSetMotion.\
