@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.16 2004/05/19 12:27:46 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.17 2004/05/24 10:00:52 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -52,6 +52,9 @@ except ImportError:
     # if not, fall back to old behaviour (but DO print a warning)
     print "ConfigVtkObj WARNING: could not import external.SwitchColourDialog"
     ColourDialog = wxColourDialog
+
+from external.filebrowsebutton import FileBrowseButton, \
+     FileBrowseButtonWithHistory,DirBrowseButton
 
 def print_err (msg):
     # create nice formatted string with tracebacks and all
@@ -395,6 +398,9 @@ class ConfigVtkObj:
         vert_sizer = wxBoxSizer(wxVERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
+
+        internalSizer = wxBoxSizer(wxVERTICAL)
+        vert_sizer.Add(internalSizer, 1, wxALL, 7)
         
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
@@ -405,7 +411,7 @@ class ConfigVtkObj:
             cb.SetValue(self.toggle_var[i])
             EVT_CHECKBOX(panel, cb_id,
                          lambda event, s=self, i=i: s.toggle_cb(event, i))
-            vert_sizer.Add(cb, option=0, flag=wxEXPAND)
+            internalSizer.Add(cb, option=0, flag=wxEXPAND)
             self.toggle_checkboxes[i] = cb
 
         return panel
@@ -424,6 +430,9 @@ class ConfigVtkObj:
         vert_sizer = wxBoxSizer(wxVERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
+
+        internalSizer = wxBoxSizer(wxVERTICAL)
+        vert_sizer.Add(internalSizer, 1, wxALL, 7)
 
         # self.state_meths is a list of lists
         # each of the contained lists is the collection of SetBlaToBlaat
@@ -449,7 +458,7 @@ class ConfigVtkObj:
 
                 EVT_RADIOBOX(panel, rb_id,
                              lambda event, s=self, i=i: s.radiobox_cb(event, i))
-                vert_sizer.Add(rb, flag=wxEXPAND)
+                internalSizer.Add(rb, 0, wxEXPAND|wxBOTTOM, 7)
                 self.state_radioboxes[i] = rb
 
         return panel
@@ -461,10 +470,14 @@ class ConfigVtkObj:
 	"Create the Get/Set methods"
 
         panel = wxPanel(parent, id=-1)
-        grid_sizer = wxFlexGridSizer(cols=2)
-        grid_sizer.AddGrowableCol(1)
+
+        vertSizer = wxBoxSizer(wxVERTICAL)
         panel.SetAutoLayout(True)
-        panel.SetSizer(grid_sizer)
+        panel.SetSizer(vertSizer)
+        
+        grid_sizer = wxFlexGridSizer(cols=2, vgap=7, hgap=3)
+        grid_sizer.AddGrowableCol(1)
+        vertSizer.Add(grid_sizer, 1, wxEXPAND|wxALL, 7)
         
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
@@ -480,16 +493,33 @@ class ConfigVtkObj:
                            lambda e, s=self, i=i, p=parent:
                            s.set_color(e, i, p))
                 grid_sizer.Add(cbut)
+
 	    else:
                 st = wxStaticText(parent=panel, id=-1, label="Set"+m[3:])
                 grid_sizer.Add(st)
 
-            gst_id = wxNewId()
-            self.get_set_texts[i] = wxTextCtrl(parent=panel, id=gst_id,
-                                               value=str(self.get_set_var[i]))
-            EVT_TEXT(parent, gst_id,
-                     lambda event, s=self, i=i: s.get_set_cb(event, i))
-            grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
+            if m.endswith('FileName'):
+                fbb = FileBrowseButton(
+                    panel, -1,
+                    labelText=None,
+                    changeCallback=lambda evt, i=i:
+                    self.handlerGetSetFileBrowseButton(evt, i))
+                
+                self.get_set_texts[i] = fbb
+                
+                #fbbId = fbb.GetId()
+                grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
+                
+                
+            else:
+                gst_id = wxNewId()
+                self.get_set_texts[i] = wxTextCtrl(
+                    parent=panel, id=gst_id,
+                    value=str(self.get_set_var[i]))
+                
+                EVT_TEXT(parent, gst_id,
+                         lambda event, s=self, i=i: s.get_set_cb(event, i))
+                grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
 
         return panel
 
@@ -497,13 +527,20 @@ class ConfigVtkObj:
         # let's be naughty...
         self.get_set_var[i] = event.GetEventObject().GetValue()
 
+    def handlerGetSetFileBrowseButton(self, evt, i):
+        self.get_set_var[i] = evt.GetString()
+
     def make_get_gui (self, parent):
 	"Create the Get methods that have no Set equivalent."
         panel = wxPanel(parent, id=-1)
+
+        vertSizer = wxBoxSizer(wxVERTICAL)
+        panel.SetAutoLayout(True)
+        panel.SetSizer(vertSizer)
+        
         grid_sizer = wxFlexGridSizer(cols=2)
         grid_sizer.AddGrowableCol(1)
-        panel.SetAutoLayout(True)
-        panel.SetSizer(grid_sizer)
+        vertSizer.Add(grid_sizer, 1, wxALL, 7)
         
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
@@ -613,10 +650,23 @@ class ConfigVtkObj:
 	    val = str(self.get_set_var[i])
 	    if string.find (val, "(") == 0:
 		val = val[1:-1]
-	    st = 0
+
 	    val_tst = eval ("self._vtk_obj.Get%s ()"% self.get_set_meths[i])
-	    if type (val_tst) is types.StringType:
+
+            if type (val_tst) is types.StringType: 
 		st = 1
+            elif self.get_set_meths[i] == 'FileName': 
+                # we make an exception with Get/SetFilename
+                if val == 'None' or val == '':
+                    val = None
+                    st = 0
+                else:
+                    st = 1
+
+            else:
+                st = 0
+                
+                
 	    m = "Set"+self.get_set_meths[i]
 	    if st is 0:
 		eval ("self._vtk_obj.%s (%s)"%(m, val))
