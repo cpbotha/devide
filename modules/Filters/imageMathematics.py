@@ -11,11 +11,13 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
     The underlying logic can do far more than the UI shows at this moment.
     Please let me know if you require more options.
     
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
+    # get these values from vtkImageMathematics.h
     _operations = {'Add' : 0,
-                   'Subtract' : 1}
+                   'Subtract' : 1,
+                   'Maximum' : 13}
     
     def __init__(self, moduleManager):
         # initialise our base class
@@ -35,7 +37,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
         configList = [
             ('Operation:', 'operation', 'base:str', 'choice',
              'The operation that should be performed.',
-             ('Add', 'Subtract'))]
+             ('Add', 'Subtract', 'Maximum'))]
 
         scriptedConfigModuleMixin.__init__(self, configList)        
         
