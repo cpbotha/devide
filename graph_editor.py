@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.25 2002/05/02 11:48:19 cpbotha Exp $
+# $Id: graph_editor.py,v 1.26 2002/05/03 16:16:16 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -509,7 +509,19 @@ class graph_editor:
         pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
         EVT_MENU(self._shape_canvas, del_id,
                  lambda e, s=self, glyph=glyph: s.del_shape_cb(glyph))
-        self._shape_canvas.PopupMenu(pmenu, wxPoint(x, y))
+
+        # where have we scrolled the canvas to
+        view_start = self._shape_canvas.GetViewStart()
+        # to go from canvas units to pixels
+        sppu = self._shape_canvas.GetScrollPixelsPerUnit()
+        # event coords to pixels
+        x1 = x * self._shape_canvas.GetScaleX()
+        y1 = y * self._shape_canvas.GetScaleY()
+        # subtract scrolled offset
+        mnx = x1 - view_start[0] * sppu[0]
+        mny = y1 - view_start[1] * sppu[1]
+        # popup that menu!
+        self._shape_canvas.PopupMenu(pmenu, wxPoint(mnx, mny))
 
     def vc_shape_cb(self, glyph):
         mm =self._dscas3_app.get_module_manager()
