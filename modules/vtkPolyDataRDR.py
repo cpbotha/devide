@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.9 2003/05/02 12:47:34 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.10 2003/05/02 16:46:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -107,3 +107,7 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
 
+        print "blaat"
+        print moduleBase
+        print "blaat 2"
+        

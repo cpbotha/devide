@@ -83,6 +83,7 @@ class module_manager:
 	    # (but we should probably check if name exists in our dictionary,
             # and only use reload then.)
 	    exec('reload(' + fullName + ')')
+            print "imported: " + str(id(sys.modules[fullName]))
 	    # then instantiate the requested class
 	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
 

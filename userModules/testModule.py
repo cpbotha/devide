@@ -79,6 +79,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         # if the window was visible already. just raise it
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
+
     
     
         
