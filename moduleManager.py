@@ -76,7 +76,7 @@ class moduleManager:
 
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE moduleManager instance)
-        self._inVTKProgressCallback = mutex.mutex()
+        self._inProgressCallback = mutex.mutex()
 
     def close(self):
         """Iterates through each module and closes it.
@@ -537,6 +537,21 @@ class moduleManager:
                         connectionList.append(connection)
 
         return (pmsDict, connectionList)
+
+    def genericProgressCallback(self,
+                                progressObjectName, progress, progressText):
+        """progress between 0.0 and 1.0.
+        """
+        
+        if self._inProgressCallback.testandset():
+            progressP = progress * 100.0
+            fullText = '%s: %s' % (progressObjectName, progressText)
+            if abs(progressP - 100.0) < 0.01:
+                # difference smaller than a hundredth
+                fullText += ' [DONE]'
+
+            self.setProgress(progressP, fullText)
+            self._inProgressCallback.unlock()
     
     def vtk_progress_cb(self, process_object):
         """Default callback that can be used for VTK ProcessObject callbacks.
@@ -549,7 +564,7 @@ class moduleManager:
 
         # if this is called while still in progress, we do nothing...
         # it means multi-threaded VTK objects are calling back into us (yuck)
-        if self._inVTKProgressCallback.testandset():
+        if self._inProgressCallback.testandset():
             vtk_progress = process_object.GetProgress() * 100.0
             progressText = process_object.GetClassName() + ': ' + \
                            process_object.GetProgressText()
@@ -558,7 +573,7 @@ class moduleManager:
                 progressText += ' [DONE]'
 
             self.setProgress(vtk_progress, progressText)
-            self._inVTKProgressCallback.unlock()
+            self._inProgressCallback.unlock()
             
     def vtk_poll_error(self):
         """This method should be called whenever VTK processing might have
