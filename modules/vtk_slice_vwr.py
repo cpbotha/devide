@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.11 2002/03/27 16:35:56 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.12 2002/03/27 17:47:44 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -178,25 +178,27 @@ class vtk_slice_vwr(module_base):
         if input_stream == None:
             # check the three ortho pipelines (each consister of multi layers)
             for ortidx in range(len(self.ortho_pipes)):
-                # now, make a list of all the layers in THIS ortho pipeline
-                # with the desired input_idx
+                # find all layers in THIS ortho pipeline with correct input_idx
+                layer_pl_indices = []
+                for layer_pl in self.ortho_pipes[ortidx]:
+                    if layer_pl['input_idx'] == idx:
+                        # remove corresponding actors from renderers
+                        self.renderers[0].RemoveActor(layer_pl['vtkActor3'])
+                        self.renderers[ortidx+1].RemoveActor(layer_pl['vtkActorO'])
+                        # disconnect the input (no refs hanging around)
+                        layer_pl['vtkImageReslice'].SetInput(None)
+                        layer_pl_indices.append(self.ortho_pipes[ortidx].index(layer_pl))
+                if len(layer_pl_indices) > 0:
+                    # make sure the indices are in ascending order
+                    layer_pl_indices.sort()
+                    # swap
+                    layer_pl_indices.reverse()
+                    # then delete the elements at these indices
+                    for i in layer_pl_indices:
+                        # nuke the whole dictionary
+                        del self.ortho_pipes[ortidx][i]
 
-                # FIXME: you have to remove the dictionary from the list
-                
-                found_layers = [layer_pl for layer_pl in \
-                                self.ortho_pipes[ortidx] if \
-                                layer_pl['input_idx'] == idx]
-                # now do cleanup on the found_layers
-                for layer_pl in found_layers:
-                    # remove corresponding actors from renderers
-                    self.renderers[0].RemoveActor(layer_pl['vtkActor3'])
-                    self.renderers[ortidx+1].RemoveActor(layer_pl['vtkActorO'])
-                    # disconnect the input (no refs hanging around)
-                    layer_pl['vtkImageReslice'].SetInput(None)
-                    # then nuke everything in this dict
-                    for key in layer_pl.keys():
-                        del layer_pl[key]
-                
+        # FIXME: removal of vtkPolyData and such
 
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
