@@ -11,12 +11,6 @@ class doubleThresholdFLT(module_base):
 
         self._imageThreshold = vtk.vtkImageThreshold()
 
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('VTK Structured Points Writer',
-                              'Select a filename',
-                              'VTK data (*.vtk)|*.vtk|All files (*)|*',
-                              {'vtkStructuredPointsWriter': self._writer})
-
         self._viewFrame = None
         self._createViewFrame()
         self._viewFrame.Show(1)
@@ -77,3 +71,11 @@ class doubleThresholdFLT(module_base):
         # we're configuring
 	self.sync_config()
         self._viewFrame.Show(true)
+
+    def _createViewFrame(self):
+        import modules.resources.python.doubleThresholdFLTFrame
+        reload(modules.resources.python.doubleThresholdFLTFrame)
+        pw = self._module_manager.get_module_view_parent_window()
+        self._viewFrame = modules.resources.python.doubleThresholdFLTFrame.\
+                          doubleThresholdFLTFrame(pw, -1, 'dummy')
+
