@@ -139,6 +139,7 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
                 print "ERROR: endPoint not found on slice %d." % (z,)
                 return
 
+            prevFlipY = -1
             for x in xrange(self._xEndPoints[z][0][0],
                             self._xEndPoints[z][1][0] + 1):
                 
@@ -151,6 +152,7 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
                     if val == 0 and prevVal != 0:
                         signFlip = not signFlip
                         signFlipped = True
+                        prevFlipY = y
                         
                     if signFlip:
                         outputData.SetScalarComponentFromDouble(x,y,z,0,-val)
@@ -160,7 +162,40 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
 
                     prevVal = val
 
+                if not signFlipped:
+                    # this shouldn't happen, because we're by definition
+                    # between endpoints - we're going to use prevFlipY
+                    print "Fixing noFlip"                    
+                    if prevFlipY >= 0:
+
+                        for y in xrange(prevFlipY, ydim + 1):
+                            val = inputData.GetScalarComponentAsDouble(x,y,z,0)
+                            outputData.SetScalarComponentFromDouble(
+                                x,y,z,0,-val)
+
+            # now check the bottom row of the distance field!
+            for x in xrange(self._xEndPoints[z][0][0],
+                            self._xEndPoints[z][1][0] + 1):
+                val = outputData.GetScalarComponentAsDouble(x,ydim,z,0)
+                if val > 0:
+                    # this means it's screwed, we have to redo from bottom up
+                    # first make all positive until we reach 0 again
+                    y = ydim
+                    while val != 0 and y != -1:
+                        val = outputData.GetScalarComponentAsDouble(x,y,z,0)
+                        if val > 0:
+                            outputData.SetScalarComponentFromDouble(
+                                x,y,z,0,-val)
+                        y -= 1
+
+                    # FIXME: continue here... past the first 0, we have to
+                    # check for each voxel whether it's inside or outside
+                        
+                    
+
             self._pf1.UpdateProgress(z / float(zdim))
+            
+        # end for z
                         
     def pf2Execute(self):
         """Mask unwanted surface out with negative numbers.  I'm evil.
@@ -177,30 +212,21 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
         for z in xrange(zdim + 1):
             x0 = self._xEndPoints[z][0][0]
             y0 = self._xEndPoints[z][0][1]
-            for i in range(4):
-                if x0 > 0:
-                    x0 -= 1
-                    for y in xrange(y0, ydim + 1):
-                        val = inputData.GetScalarComponentAsDouble(x0,y,z,0)
-                        # make this negative as well, so that the surface will
-                        # get nuked by this implicitvolume
-                        outputData.SetScalarComponentFromDouble(x0,y,z,0,-val)
-                else:
-                    break
-
+            for y in xrange(y0, ydim + 1):            
+                for x in xrange(0, x0):
+                    val = inputData.GetScalarComponentAsDouble(x,y,z,0)
+                    # make this negative as well, so that the surface will
+                    # get nuked by this implicitvolume
+                    outputData.SetScalarComponentFromDouble(x,y,z,0,-val)
 
             x1 = self._xEndPoints[z][1][0]
             y1 = self._xEndPoints[z][1][1]
-            for i in range(4):
-                if x1 < xdim:
-                    x1 += 1
-                    for y in xrange(y1, ydim + 1):
-                        val = inputData.GetScalarComponentAsDouble(x1,y,z,0)
-                        # make this negative as well, so that the surface will
-                        # get nuked by this implicitvolume
-                        outputData.SetScalarComponentFromDouble(x1,y,z,0,-val)
-                else:
-                    break
+            for y in xrange(y1, ydim + 1):
+                for x in xrange(x1 + 1, xdim + 1):
+                    val = inputData.GetScalarComponentAsDouble(x,y,z,0)
+                    # make this negative as well, so that the surface will
+                    # get nuked by this implicitvolume
+                    outputData.SetScalarComponentFromDouble(x,y,z,0,-val)
 
             self._pf2.UpdateProgress(z / float(zdim))
 
