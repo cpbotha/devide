@@ -1,5 +1,5 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.1 2003/09/22 15:56:08 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.2 2003/09/22 16:12:04 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
@@ -192,11 +192,11 @@ class ifdocVWR(moduleBase):
     def _createViewFrames(self):
 
         # create the viewerFrame
-        import modules.Viewers.resources.python.ifdocVWRFrames
-        reload(modules.Viewers.resources.python.ifdocVWRFrames)
+        import modules.ifdoc.resources.python.ifdocVWRFrames
+        reload(modules.ifdoc.resources.python.ifdocVWRFrames)
 
         viewerFrame = \
-                    modules.Viewers.resources.python.ifdocVWRFrames.viewerFrame
+                    modules.ifdoc.resources.python.ifdocVWRFrames.viewerFrame
 
         self.viewerFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, viewerFrame)
@@ -208,7 +208,7 @@ class ifdocVWR(moduleBase):
             self._threedRenderer)
         
         # controlFrame creation and basic setup -------------------
-        controlFrame = modules.Viewers.resources.python.ifdocVWRFrames.\
+        controlFrame = modules.ifdoc.resources.python.ifdocVWRFrames.\
                        controlFrame
 
         self.controlFrame = moduleUtils.instantiateModuleViewFrame(
