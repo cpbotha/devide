@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.54 2004/01/29 09:30:29 cpbotha Exp $
+# $Id: graphEditor.py,v 1.55 2004/02/12 20:02:17 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -822,7 +822,7 @@ class graphEditor:
                   (filename,str(e))
             
 
-        if magic != 'DVN' or (major,minor,patch) != (1,0,0):
+        if magic != 'DVN' and magic != 'D3N' or (major,minor,patch) != (1,0,0):
             raise RuntimeError, '%s is not a valid DeVIDE network file.' % \
                   (filename,)
 
