@@ -1,7 +1,8 @@
-# $Id: module_base.py,v 1.4 2002/02/19 13:47:00 cpbotha Exp $
+# $Id: module_base.py,v 1.5 2002/03/08 16:31:39 cpbotha Exp $
 import vtkpython
 import Tix
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
+from vtkPipeline.ConfigVtkObj import ConfigVtkObj
 
 class module_base:
     """Base class for all modules.  Any module wishing to take part in the dscas3
@@ -56,3 +57,8 @@ class module_base:
 	pipeline_browser = vtkPipelineSegmentBrowser(pipeline_browser_window, vtk_objects)
 	# pack it
 	pipeline_browser.pack (side='top', expand = 1, fill = 'both' )
+    
+    def configure_vtk_object(self, vtk_object, parent_window=None):
+	# we don't have access to a renderwindow now
+	conf = ConfigVtkObj(None)
+        conf.configure (parent_window, vtk_object)

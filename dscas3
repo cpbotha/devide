@@ -34,7 +34,7 @@ class dscas3_main:
 	
     def pyco_exec(self, py_command):
 	exec(py_command)
-	
+  	
     def quit(self):
 	print "quit called!"
 	# take care of main window
