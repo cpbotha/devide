@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.37 2004/05/18 23:18:55 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.38 2004/05/19 11:50:32 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -547,21 +547,35 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
                                noConfigModuleMixin,
                                moduleBase):
     """Use this base to make a DeVIDE module that wraps a single VTK
-    object.  The state of this module will be saved.
+    object.  The state of the VTK object will be saved when the network
+    is.
+    
+    You only have to override the __init__ method and call the __init__
+    of this class with the desired parameters.
 
-
+    The __doc__ string of your module class will be replaced with the
+    __doc__ string of the encapsulated VTK class (and will thus be
+    shown if the user requests module help).  If you don't want this,
+    call the ctor with replaceDoc=False.
     """
     
     def __init__(self, moduleManager, vtkObjectBinding, progressText,
-                 inputDescriptions, outputDescriptions):
+                 inputDescriptions, outputDescriptions,
+                 replaceDoc=True):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
         pickleVTKObjectsModuleMixin.__init__(self)
 
         self._theFilter = vtkObjectBinding
+        if replaceDoc:
+            self.__doc__ = self._theFilter.__doc__
+        
+        # adding it to this list means its state will be pickled when
+        # the network is written.
         self._vtkObjectNames.append('_theFilter')
 
-        moduleUtils.setupVTKObjectProgress(self, self._theFilter, progressText)        
+        moduleUtils.setupVTKObjectProgress(self, self._theFilter,
+                                           progressText)        
         self._createViewFrame(
             {'Module (self)' : self,
              '%s' % (self._theFilter.GetClassName(),) : self._theFilter})
