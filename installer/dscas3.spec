@@ -71,6 +71,6 @@ exe = EXE(pyz,
           console=1 )
 
 coll = COLLECT( exe,
-               a.binaries + umods + vpli,
+               a.binaries + umods + vpli + extraLibs - removeLibs,
                strip=0,
                name='distdscas3')
