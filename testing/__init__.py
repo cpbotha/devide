@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.1 2004/03/17 20:57:13 cpbotha Exp $
+# $Id: __init__.py,v 1.2 2004/03/17 21:13:56 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import unittest
@@ -13,7 +13,7 @@ class graphEditorBasic(unittest.TestCase):
         _devideApp._handlerMenuGraphEditor(None)
         # make sure we begin with a clean slate, so we can do
         # some module counting
-        _devideApp.clearAllGlyphsFromCanvas()
+        _devideApp._graphEditor.clearAllGlyphsFromCanvas()
         
     def testStartup(self):
         """graphEditor startup.
@@ -31,14 +31,15 @@ class devideTesting:
     def __init__(self, devideApp):
         global _devideApp
         _devideApp = devideApp
+
+        self.basicSuite = unittest.TestSuite()
+        self.basicSuite.addTest(graphEditorBasic('testStartup'))
+        self.basicSuite.addTest(graphEditorBasic('testModuleCreation'))
+
+        self.mainSuite = unittest.TestSuite((self.basicSuite,))
+        
         
     def runAllTests(self):
-        basicSuite = unittest.TestSuite()
-        basicSuite.addTest(graphEditorBasic('testStartup'))
-        basicSuite.addTest(graphEditorBasic('testModuleCreation'))        
-
-        mainTestSuite = unittest.TestSuite((basicSuite,))
-
         runner = unittest.TextTestRunner()
-        runner.run(mainTestSuite)
+        runner.run(self.mainSuite)
 
