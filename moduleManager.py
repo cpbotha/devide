@@ -5,6 +5,7 @@ import genUtils
 import modules
 import mutex
 from whrandom import choice
+from wxPython.wx import wxGetFreeMemory
 
 
 class metaModule:
@@ -241,6 +242,8 @@ class moduleManager:
         instance.view()
     
     def deleteModule(self, instance):
+        beginFreeMemory = wxGetFreeMemory()
+
         # first disconnect all outgoing connections
         inputs = self._moduleDict[instance].inputs
         outputs = self._moduleDict[instance].outputs
@@ -273,7 +276,13 @@ class moduleManager:
 	instance.close()
         # if that worked (i.e. no exception) let's remove it from the dict
         del self._moduleDict[instance]
-	
+
+        endFreeMemory = wxGetFreeMemory()
+        print "%d %d" % (beginFreeMemory, endFreeMemory)
+        print "Deleted %s, %.2fM freed." % \
+              (instance.__class__.__name__,
+               (endFreeMemory - beginFreeMemory) / 1024.0 / 1024.0)
+                                          
     def connectModules(self, output_module, output_idx,
                         input_module, input_idx):
         """Connect output_idx'th output of provider output_module to
