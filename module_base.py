@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.11 2002/03/28 16:02:16 cpbotha Exp $
+# $Id: module_base.py,v 1.12 2002/04/26 21:01:58 cpbotha Exp $
 
 class module_base:
     """Base class for all modules.
@@ -10,16 +10,15 @@ class module_base:
     def __init__(self):
 	raise NotImplementedError
 	
-    def __del__(self):
-	self.close()
-	
     def close(self):
 	"""Idempotent method for de-initialising module as far as possible.
 
         We can't guarantee the calling of __del__, as Python does garbage
         collection and the object might destruct a while after we've removed
-        all references to it.  We call close() AGAIN from __del__ for obvious
-        reasons, so make sure that your override is idempotent.
+        all references to it.
+
+        In addition, with python garbage collection, __del__ can cause
+        uncollectable objects, so try to avoid it as far as possible.
         """
 	raise NotImplementedError
 	

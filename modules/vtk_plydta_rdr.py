@@ -1,4 +1,4 @@
-# $Id: vtk_plydta_rdr.py,v 1.3 2002/03/28 17:16:28 cpbotha Exp $
+# $Id: vtk_plydta_rdr.py,v 1.4 2002/04/26 21:01:58 cpbotha Exp $
 
 from module_base import module_base
 from vtkpython import *
@@ -16,9 +16,6 @@ class vtk_plydta_rdr(module_base):
 	self.sync_config()
         self.config_window = None
         self.create_view_window()
-	
-    def __del__(self):
-	self.close()
 	
     def close(self):
         self.config_window.destroy()

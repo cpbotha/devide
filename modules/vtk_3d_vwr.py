@@ -19,9 +19,6 @@ class vtk_3d_vwr(module_base):
 	# start up that gui
 	self.create_window()
 	
-    def __del__(self):
-	self.close()
-	
     def close(self):
 	# remove all our references; close is used by __del__ or when
 	# somebody wishes to destroy us

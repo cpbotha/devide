@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.2 2002/04/23 16:53:15 cpbotha Exp $
+# $Id: python_shell.py,v 1.3 2002/04/26 21:01:58 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -62,7 +62,7 @@ class python_shell:
         # we can display ourselves
         self.show()
 
-    def __del__(self):
+    def close(self):
         # take care of the frame
         if self._ps_frame:
             self._ps_frame.Destroy()

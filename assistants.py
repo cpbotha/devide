@@ -1,5 +1,5 @@
 # assistants.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: assistants.py,v 1.1 2002/04/22 21:08:41 cpbotha Exp $
+# $Id: assistants.py,v 1.2 2002/04/26 21:01:58 cpbotha Exp $
 # code for keeping track of the big buttoned simple interface
 
 import os
@@ -12,7 +12,7 @@ class load_data_assistant:
         self._assistants = assistants
         self._dlg1 = None
 
-    def __del__(self):
+    def close(self):
         if self._dlg1 != None:
             self._dlg1.Destroy()
         del self._dlg1
@@ -55,11 +55,13 @@ class assistants:
         self._res = wxXmlResource(res_path)
         self._load_data_assistant = None
 
-    def __del__(self):
-        """Deletes bindings to all assistants and xml resource.
+    def close(self):
+        """We use explicit calls to close().
+
+        As Guido says, try to avoid using finalizers, i.e. *_del__.  This makes
+        it difficult for the garbage collector.
         """
-        del self._load_data_assistant
-        del self._res
+        self._load_data_assistant.close()
 
     def load_data(self):
         """Activates the load data assistant.

@@ -20,10 +20,6 @@ class vtk_vol16_rdr(module_base):
         self.config_window = None
         self.create_view_window()
 	
-    def __del__(self):
-	# do some cleanup
-	self.close()
-	
     # disconnect all inputs and outputs
     def close(self):
         self.config_window.destroy()

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.21 2002/04/26 16:00:30 cpbotha Exp $
+# $Id: graph_editor.py,v 1.22 2002/04/26 21:01:58 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -19,7 +19,7 @@ class wxFRectangleShape(wxRectangleShape):
     glyph is an instance of this.
     """
     def dont_move(self):
-        """This fixes the stupid bug where Show()d have to be moved to
+        """This fixes the stupid bug where Show()d shapes have to be moved to
         their own position to appear on the canvas.
         """
         if self.GetCanvas():
@@ -175,6 +175,7 @@ class ge_glyph_shape(wxFRectangleShape):
     def OnRightClick(self, x, y, keys, attachment):
         # see studio/shapes.cpp: csEvtHandler::OnRightClick
         print "here we would make a popup menu with delete and props"
+        
         
         
 # ----------------------------------------------------------------------------

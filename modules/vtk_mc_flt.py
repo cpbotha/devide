@@ -17,11 +17,6 @@ class vtk_mc_flt(module_base):
         self.config_window = None
         #self.create_view_window()
 
-    def __del__(self):
-	# do some cleanup
-	print "vtk_mc_flt.__del__()"
-	self.close()
-	
     def close(self):
         # take care of that view_window
         self.config_window.destroy()

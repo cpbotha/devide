@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.15 2002/04/13 13:30:25 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.16 2002/04/26 21:01:58 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -39,9 +39,6 @@ class vtk_slice_vwr(module_base):
                                     'origin' : (0,0,0)}] # coronal (zx-plane)
 	
 	self.create_window()
-	
-    def __del__(self):
-	self.close()
 	
     def close(self):
         for idx in range(self.num_inputs):

@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.6 2002/04/25 14:32:25 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.7 2002/04/26 21:01:58 cpbotha Exp $
 
 from module_base import module_base
 import vtkpython
@@ -19,9 +19,6 @@ class vtk_hdf_rdr(module_base):
         # go on, create that view window
         #self.create_view_window()
     
-    def __del__(self):
-	self.close()
-	
     def close(self):
         #self.config_window.destroy()
 	if hasattr(self, 'reader'):
