@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.6 2004/02/27 17:00:26 cpbotha Exp $
+# $Id: pythonShell.py,v 1.7 2004/03/22 21:57:38 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -11,14 +11,14 @@ class pythonShell:
     def __init__(self, parentWindow, icon):
         self._parentWindow = parentWindow
 
-        self._ps_frame = self._createFrame()
+        self._psFrame = self._createFrame()
 
         # set icon
-        self._ps_frame.SetIcon(icon)
+        self._psFrame.SetIcon(icon)
         # make sure that when the window is closed, we just hide it (teehee)
-        EVT_CLOSE(self._ps_frame, self.close_ps_frame_cb)
+        EVT_CLOSE(self._psFrame, self.close_ps_frame_cb)
 
-        EVT_BUTTON(self._ps_frame, self._ps_frame.closeButton.GetId(),
+        EVT_BUTTON(self._psFrame, self._psFrame.closeButton.GetId(),
                    self.close_ps_frame_cb)
 
         # we can display ourselves
@@ -26,16 +26,16 @@ class pythonShell:
 
     def close(self):
         # take care of the frame
-        if self._ps_frame:
-            self._ps_frame.Destroy()
-            del self._ps_frame
+        if self._psFrame:
+            self._psFrame.Destroy()
+            del self._psFrame
 
     def show(self):
-        self._ps_frame.Show(True)
-        self._ps_frame.Raise()
+        self._psFrame.Show(True)
+        self._psFrame.Raise()
 
     def hide(self):
-        self._ps_frame.Show(false)
+        self._psFrame.Show(false)
 
     def close_ps_frame_cb(self, event):
         self.hide()
@@ -50,9 +50,9 @@ class pythonShell:
         return frame
 
     def injectLocals(self, localsDict):
-        self._ps_frame.pyShell.interp.locals.update(localsDict)
+        self._psFrame.pyShell.interp.locals.update(localsDict)
 
     def setStatusBarMessage(self, message):
-        self._ps_frame.statusBar.SetStatusText(message)
+        self._psFrame.statusBar.SetStatusText(message)
 
 

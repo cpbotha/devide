@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.23 2004/03/21 21:05:44 cpbotha Exp $
+# $Id: devide.py,v 1.24 2004/03/22 21:57:38 cpbotha Exp $
 
 DEVIDE_VERSION = '20040321'
 
@@ -113,11 +113,11 @@ class devide_app_t(wx.App):
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
                    self._handlerMenuGraphEditor)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
-                    self.pythonShellCallback)
+                    self._handlerMenuPythonShell)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.testingAllTestsId,
                     self._handlerTestingAllTests)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpContentsId,
-                    self._handlerContents)
+                    self._handlerHelpContents)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
                     self.aboutCallback)
 
@@ -223,7 +223,7 @@ class devide_app_t(wx.App):
     def get_appdir(self):
         return self.getAppDir()
 
-    def _handlerContents(self, event):
+    def _handlerHelpContents(self, event):
         self.showHelp()
 
     def _handlerTestingAllTests(self, event):
@@ -382,7 +382,7 @@ class devide_app_t(wx.App):
     def _handlerMenuGraphEditor(self, event):
         self.start_graph_editor()
 
-    def pythonShellCallback(self, event):
+    def _handlerMenuPythonShell(self, event):
         self.startPythonShell()
 
 	

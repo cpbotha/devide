@@ -1,11 +1,29 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.4 2004/03/21 21:02:28 cpbotha Exp $
+# $Id: __init__.py,v 1.5 2004/03/22 21:57:38 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
 import unittest
 
 _devideApp = None
+
+# ----------------------------------------------------------------------------
+class pythonShellTest(unittest.TestCase):
+    def testPythonShell(self):
+        """Test if PythonShell can be opened successfully.
+        """
+        _devideApp._handlerMenuPythonShell(None)
+        self.failUnless(_devideApp._pythonShell._psFrame.IsShown())
+
+# ----------------------------------------------------------------------------
+class helpContentsTest(unittest.TestCase):
+    def testHelpContents(self):
+        """Test if Help Contents can be opened successfully.
+        """
+        _devideApp._handlerHelpContents(None)
+        self.failUnless(
+            _devideApp._helpClass._htmlHelpController.GetFrame().IsShown())
+
 
 # ----------------------------------------------------------------------------
 class graphEditorTestBase(unittest.TestCase):
@@ -168,6 +186,8 @@ class devideTesting:
         _devideApp = devideApp
 
         self.basicSuite = unittest.TestSuite()
+        self.basicSuite.addTest(pythonShellTest('testPythonShell'))
+        self.basicSuite.addTest(helpContentsTest('testHelpContents'))
         self.basicSuite.addTest(graphEditorBasic('testStartup'))
         self.basicSuite.addTest(graphEditorBasic('testModuleCreationDeletion'))
         self.basicSuite.addTest(graphEditorBasic('testSimpleNetwork'))
