@@ -68,7 +68,7 @@ class coRectangle(canvasObject):
 
 class coLine(canvasObject):
 
-    def __init__(self, fromGlyph, fromPort, toGlyph, toPort):
+    def __init__(self, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
         """A line object for the canvas.
 
         linePoints is just a list of python tuples, each representing a
@@ -78,15 +78,15 @@ class coLine(canvasObject):
         
 
 
-        self._linePoints = (fromGlyph.getCenterOfPort((1 ,fromPort)),
-                            toGlyph.getCenterOfPort((0, toPort)))
+        self._linePoints = (fromGlyph.getCenterOfPort(1 ,fromOutputIdx),
+                            toGlyph.getCenterOfPort(0, toInputIdx))
 
         canvasObject.__init__(self, self._linePoints[0])        
 
         self.fromGlyph = fromGlyph
-        self.fromPort = fromPort
+        self.fromOutputIdx = fromOutputIdx
         self.toGlyph = toGlyph
-        self.toPort = toPort
+        self.toInputIdx = toInputIdx
 
     def close(self):
         # delete things that shouldn't be left hanging around
@@ -234,16 +234,16 @@ class coGlyph(coRectangle):
             
         return None
 
-    def getCenterOfPort(self, port):
-        # port is a tuple: (inOrOut, idx)
+    def getCenterOfPort(self, inOrOut, idx):
+
         horizOffset = self._position[0] + coGlyph._horizBorder
         horizStep = coGlyph._pWidth + coGlyph._horizBorder
         cy = self._position[1] + coGlyph._pHeight / 2
 
-        if port[0]:
+        if inOrOut:
             cy += self._size[1] - coGlyph._pHeight 
 
-        cx = horizOffset + port[1] * horizStep + coGlyph._pWidth / 2
+        cx = horizOffset + idx * horizStep + coGlyph._pWidth / 2
 
         return (cx, cy)
 

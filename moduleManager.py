@@ -21,9 +21,8 @@ class metaModule:
         numOuts = len(self.instance.getOutputDescriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
         self.inputs = [None for i in range(numIns)]
-        # numOuts list of dicts of tuples of (consumerModule, consumerInputIdx)
-        # where each dict is keyed on consumerModule
-        self.outputs = [{} for i in range(numOuts)]
+        # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
+        self.outputs = [[] for i in range(numOuts)]
         
 
 class moduleManager:
@@ -204,14 +203,12 @@ class moduleManager:
         for output in outputs:
             if output:
                 # we just want to walk through the dictionary tuples
-                for consumer in output.items():
+                for consumer in output:
                     # disconnect all consumers
                     consumer[0].setInput(consumer[1], None)
                     # the setInput could fail, which would throw an exception,
                     # but that's really just too deep: just in case
                     # we set it to None
-                    # we COULD just delete the entry from the dict, it should
-                    # work, as the output.items() above is "static"
                     consumer[0] = None
                     consumer[1] = -1
 
@@ -243,8 +240,8 @@ class moduleManager:
                                                             output_idx)
 
         #
-        outDict = self._moduleDict[output_module].outputs[output_idx]
-        outDict['input_module'] = (input_module, input_idx)
+        self._moduleDict[output_module].outputs[output_idx].append(
+            (input_module, input_idx))
 	
     def disconnectModules(self, input_module, input_idx):
         """Disconnect a consumer module from its provider.
@@ -260,9 +257,9 @@ class moduleManager:
         # less consumer
         supp = self._moduleDict[input_module].inputs[input_idx][0]
         suppOutIdx = self._moduleDict[input_module].inputs[input_idx][1]
-        cDict = self._moduleDict[supp].outputs[suppOutIdx]
-        # this is so NAAAAACE
-        del cDict[input_module]
+        
+        oList = self._moduleDict[supp].outputs[suppOutIdx]
+        del oList[oList.index((input_module, input_idx))]
 
         # indicate to the meta data that this module doesn't have an input
         # anymore
