@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.11 2003/09/04 22:35:20 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.12 2003/09/12 16:51:56 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -63,6 +63,37 @@ class sliceDirections(object):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection.addContourObject(tdObject, prop3D)
 
+    def _appendGridCommandsToMenu(self, menu, eventWidget):
+        """Appends the slice grid commands to a menu.  This can be used
+        to build up the context menu or the drop-down one.
+        """
+
+        interactionOnId = wx.NewId()
+        menu.AppendItem(wx.MenuItem(
+            menu, interactionOnId, 'Interaction ON',
+            'Activate Interaction for all selected s lices'))
+        wx.EVT_MENU(
+            eventWidget, interactionOnId, self._handlerSliceInteractionOn)
+
+        interactionOffId = wx.NewId()
+        menu.AppendItem(wx.MenuItem(
+            menu, interactionOffId, 'Interaction OFF',
+            'Deactivate Interaction for all selected s lices'))
+        wx.EVT_MENU(
+            eventWidget, interactionOffId, self._handlerSliceInteractionOff)
+        
+        selectAllId = wx.NewId()
+        menu.AppendItem(wx.MenuItem(menu, selectAllId, 'Select All',
+                                     'Select all slices'))
+        wx.EVT_MENU(eventWidget, selectAllId, self._handlerSliceSelectAll)
+
+        deselectAllId = wx.NewId()
+        menu.AppendItem(wx.MenuItem(menu, deselectAllId, 'DEselect All',
+                                     'Deselect all slices'))
+        wx.EVT_MENU(eventWidget, deselectAllId, self._handlerSliceDeselectAll)
+        
+        
+
     def _bindEvents(self):
         controlFrame = self.slice3dVWR.controlFrame
 
@@ -87,6 +118,11 @@ class sliceDirections(object):
                       self._handlerSliceACS)
 
         # for ortho view use sliceDirection.createOrthoView()
+
+        wx.grid.EVT_GRID_CELL_RIGHT_CLICK(
+            self._grid, self._handlerGridRightClick)
+        wx.grid.EVT_GRID_LABEL_RIGHT_CLICK(
+            self._grid, self._handlerGridRightClick)
 
     def close(self):
         for sliceName, sd in self._sliceDirectionsDict.items():
@@ -197,6 +233,19 @@ class sliceDirections(object):
             # a new slice was added, re-render!
             self.slice3dVWR.render3D()
 
+    def _handlerGridRightClick(self, gridEvent):
+        """This will popup a context menu when the user right-clicks on the
+        grid.
+        """
+
+        pmenu = wx.Menu('Slices Context Menu')
+
+        self._appendGridCommandsToMenu(pmenu, self._grid)
+        self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
+        
+        
+        
+
     def _handlerSliceSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
             self._grid.SelectRow(row, True)        
@@ -233,6 +282,20 @@ class sliceDirections(object):
             self._setSliceInteraction(
                 name,
                 not self._sliceDirectionsDict[name].getInteractionEnabled())
+
+    def _handlerSliceInteractionOn(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._setSliceInteraction(
+                name,
+                True)
+
+    def _handlerSliceInteractionOff(self, event):
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._setSliceInteraction(
+                name,
+                False)
 
     def _handlerSliceDelete(self, event):
         names = self._getSelectedSliceNames()
