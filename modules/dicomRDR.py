@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.1 2003/02/07 17:22:06 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.2 2003/02/08 01:02:34 cpbotha Exp $
 
 import gen_utils
 import os
@@ -24,38 +24,40 @@ class dicomRDR(moduleBase,
         # setup necessary VTK objects
 	self._reader = vtkdscas.vtkDICOMVolumeReader()
 
-        # this part of the config is stored in this module, and not in
+        # this part of the config is stored only in the config, and not in
         # the reader.
-        self._dicom_dirname = None
-        self._dicom_filenames = []
+        self._config.dicom_dirname = None
+        self._config.dicom_filenames = []
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module
-        self._reader.SetProgressText('Reading DICOM data')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
-	
         self._viewFrame = None
         self._createViewFrame()
-	self.sync_config()
+
+        # do the normal thang (down to logic, up again)
+        self.configToLogic()
+        self.syncViewWithLogic()
+
+	# display it
+        self.view()
 	
     def close(self):
         self._viewFrame.Destroy()
         del self._reader
 
-    def get_input_descriptions(self):
+    def getInputDescriptions(self):
 	return ()
     
-    def set_input(self, idx, input_stream):
+    def setInput(self, idx, input_stream):
 	raise Exception
     
-    def get_output_descriptions(self):
+    def getOutputDescriptions(self):
 	return (self._reader.GetOutput().GetClassName(),)
     
-    def get_output(self, idx):
+    def getOutput(self, idx):
 	return self._reader.GetOutput()
+
+
+    def logicToConfig(self):
+        pass # FIXME: continue here
     
     def sync_config(self):
         # get our internal dirname (what use is this; it'll never change...
@@ -153,6 +155,11 @@ class dicomRDR(moduleBase,
         self.sync_config()
 
     def execute_module(self):
+        self._reader.SetProgressText('Reading DICOM data')
+        mm = self._moduleManager
+        self._reader.SetProgressMethod(lambda s=self, mm=mm:
+                                       mm.vtk_progress_cb(s._reader))
+        
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
         # tell the vtk log file window to poll the file; if the file has
