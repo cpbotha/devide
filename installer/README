@@ -1,4 +1,4 @@
-$Id: README,v 1.1 2003/05/02 23:36:33 cpbotha Exp $
+$Id: README,v 1.2 2003/05/13 20:45:37 cpbotha Exp $
 
 * At the time of this writing, your Installer (currently 5b4) has to have my
   patch iu.reload-fix-v2.diff applied, else things will go very wrong with the
@@ -6,3 +6,7 @@ $Id: README,v 1.1 2003/05/02 23:36:33 cpbotha Exp $
   
   See this: http://trixie.triqs.com/pipermail/installer/2003-May/000303.html
   for somewhat more detail.
+
+* The 5b5 that Gordon released to the mailing list on 20030513 is still broken.
+  I've sent a test-case to demonstrate the problem but my hopes are not all
+  that high.  We'll just stick to 5b4 until this gets resolved.
