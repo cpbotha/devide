@@ -50,9 +50,6 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # and all the way up from logic -> config -> view to make sure
         self.syncViewWithLogic()
 
-        # display the module view
-        self.view()
-
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
@@ -285,17 +282,15 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         EVT_CLOSE(self._viewFrame,
                   lambda e, s=self: s._viewFrame.Show(False))
 
+        # setup introspection with default everythings
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            self._objectDict, None)
+
         # create and configure the standard ECAS buttons
         moduleUtils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
-        # setup introspection with default everythings
-        self._setupObjectAndPipelineIntrospection(
-            self._viewFrame, self._objectDict,
-            None,
-            self._viewFrame.objectChoice,
-            self._viewFrame.objectChoiceId,
-            self._viewFrame.pipelineButtonId)
         
         # now we can finally do our own stuff to
         EVT_BUTTON(self._viewFrame, self._viewFrame.colourButtonId,
