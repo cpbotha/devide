@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.3 2003/09/23 14:53:48 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.4 2003/10/07 16:46:34 cpbotha Exp $
 
 import genUtils
 import os
@@ -158,8 +158,8 @@ class dicomRDR(moduleBase,
             
         dd = self._reader.GetDataDimensions()
         ds = self._reader.GetDataSpacing()
-        self._viewFrame.dimensions_text.SetValue('%s at %s mm' %
-                                                  (str(dd), str(ds)))
+        self._viewFrame.dimensions_text.SetValue(
+            '%d x %d x %d at %.2f x %.2f x %.2f mm / voxel' % tuple(dd + ds))
     
     def executeModule(self):
         # get the vtkDICOMVolumeReader to try and execute
