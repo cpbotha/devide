@@ -1,6 +1,7 @@
 from wxPython.wx import *
 import string
 import traceback
+import vtk
 
 def logError(msg):
     # create nice formatted string with tracebacks and all
@@ -18,6 +19,31 @@ def logError(msg):
     # message, what we did before will add to it to become the
     # detail message
     wxLog_FlushActive()
+
+def flattenProp3D(prop3D):
+    """Get rid of the UserTransform() of an actor by integrating it with
+    the 'main' matrix.
+    """
+
+    # get the current "complete" matrix (combining internal and user)
+    currentMatrix = vtk.vtkMatrix4x4()
+    prop3D.GetMatrix(currentMatrix)
+    # apply it to a transform
+    currentTransform = vtk.vtkTransform()
+    currentTransform.Identity()
+    currentTransform.SetMatrix(currentMatrix)
+
+    # zero the prop3D UserTransform
+    prop3D.SetUserTransform(None)
+
+    # and set the internal matrix of the prop3D
+    prop3D.SetPosition(currentTransform.GetPosition())
+    prop3D.SetOrientation(currentTransform.GetOrientation())
+    prop3D.SetScale(currentTransform.GetScale())
+    # we should now also be able to zero the origin
+    #prop3D.SetOrigin(0.0, 0.0, 0.0)
+    
+    
 
 def textToFloat(text, defaultFloat):
     """Converts text to a float by using an eval and returns the float.

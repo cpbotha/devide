@@ -1,7 +1,8 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.11 2003/06/30 22:21:40 cpbotha Exp $
+# $Id: tdObjects.py,v 1.12 2003/07/01 16:55:21 cpbotha Exp $
 # class that controls the 3-D objects list
 
+import genUtils
 import math
 import operator
 import vtk
@@ -417,36 +418,9 @@ class tdObjects:
         return foundObjects
 
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
-        
         bwTransform = vtk.vtkTransform()
-        #tp = eventObject.GetProp3D()
-        #eventObject.SetProp3D(None)
         eventObject.GetTransform(bwTransform)
-        #eventObject.SetProp3D(tp)
-
-        pd = vtk.vtkPolyData()
-        eventObject.GetPolyData(pd)
-        c = pd.GetPoints().GetData().GetTuple3(14)
-        mc = [-e for e in c]        
-        #c = eventObject.GetProp3D().GetCenter()
-        #p = eventObject.GetProp3D().GetPosition()
-        #o = map(operator.sub, p, c)
-
-        # get the current matrix
-        cm = eventObject.GetProp3D().GetMatrix()
-        # the current prop matrix should be applied before the
-        # new boxwidget one
-        bwTransform.PreMultiply()
-
-        bwTransform.Concatenate(cm)
-
-        #eventObject.GetProp3D().SetOrigin(c)        
-
-        eventObject.GetProp3D().SetOrientation(bwTransform.GetOrientation())
-        eventObject.GetProp3D().SetPosition(bwTransform.GetPosition())
-        eventObject.GetProp3D().SetScale(bwTransform.GetScale())
-        
-        eventObject.PlaceWidget()
+        eventObject.GetProp3D().SetUserTransform(bwTransform)
 
         # and update the contours after we've moved things around
         for sd in self._slice3dVWR._sliceDirections:
@@ -645,10 +619,12 @@ class tdObjects:
                     
                 # we don't want the user to scale, only move and rotate
                 bw.ScalingEnabledOff()
-                # FIXME WORKAROUND: the vtkBoxWidget is BROKEN
-                #bw.RotationEnabledOff()
                 bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
+                # also "flatten" the actor (i.e. integrate its UserTransform)
+                genUtils.flattenProp3D(objectDict['vtkActor'])
                 bw.SetProp3D(objectDict['vtkActor'])
+
+                
                 bw.SetPlaceFactor(1.0)
                 bw.PlaceWidget()
                 bw.On()
@@ -669,6 +645,10 @@ class tdObjects:
             else:
                 if 'motionBoxWidget' in objectDict and \
                    objectDict['motionBoxWidget']:
+                    # let's flatten the prop again (if there is one)
+                    if objectDict['vtkActor']:
+                        genUtils.flattenProp3D(objectDict['vtkActor'])
+                        
                     objectDict['motionBoxWidget'].Off()
                     objectDict['motionBoxWidget'].SetInteractor(None)
                     objectDict['motionBoxWidget'] = None
