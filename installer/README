@@ -1,4 +1,4 @@
-$Id: README,v 1.2 2003/05/13 20:45:37 cpbotha Exp $
+$Id: README,v 1.3 2003/05/14 12:28:17 cpbotha Exp $
 
 * At the time of this writing, your Installer (currently 5b4) has to have my
   patch iu.reload-fix-v2.diff applied, else things will go very wrong with the
@@ -10,3 +10,6 @@ $Id: README,v 1.2 2003/05/13 20:45:37 cpbotha Exp $
 * The 5b5 that Gordon released to the mailing list on 20030513 is still broken.
   I've sent a test-case to demonstrate the problem but my hopes are not all
   that high.  We'll just stick to 5b4 until this gets resolved.
+
+* Gordon has released an updated 5b5: This fixes the reloading problem the
+  Right Way (tm)!
