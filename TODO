@@ -1,4 +1,9 @@
-$Id: TODO,v 1.11 2003/08/12 13:09:59 cpbotha Exp $
+$Id: TODO,v 1.12 2003/08/13 20:19:20 cpbotha Exp $
+
+* It should be possible to switch on and off interaction for any selection
+  of points, not always ALL on or ALL off.
+
+* There should be some feedback w.r.t. a plane-locked motion.
 
 * Saving/restoring: call setConfig twice on all loaded modules, once before
   and once after connection.  Make sure the widgets know with which they are
@@ -20,10 +25,17 @@ $Id: TODO,v 1.11 2003/08/12 13:09:59 cpbotha Exp $
 
 BUGS:
 
-* When an IPW is moved, the ConstrainPlaneNormals on any BoxWidgets are not
-  updated.
+* When a slice in hidden, its contours still show.
+
+* When an object is moved with axis to slice, its contour isn't updated
+  correctly immediately.
+
+* When an object is hidden, its axis still hangs around.
 
 FIXED:
+
+* When an IPW is moved, the ConstrainPlaneNormals on any BoxWidgets are not
+  updated.
 
 * vtkBoxWidget GetTransform() seems to be really borked.  I've mailed the
   vtk users list with a piece of python code with which this can be
