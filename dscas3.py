@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.44 2003/08/24 20:58:17 cpbotha Exp $
+# $Id: dscas3.py,v 1.45 2003/08/29 16:45:56 cpbotha Exp $
 
 DSCAS3_VERSION = '20030825'
 
@@ -250,7 +250,7 @@ class dscas3_app_t(wxApp):
 
     def get_appdir(self):
         return self._appdir
-	
+
     def quit(self):
         # take care of the graphEditor if it exists
         if self._graphEditor:
