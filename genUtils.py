@@ -48,6 +48,54 @@ def flattenProp3D(prop3D):
     # we should now also be able to zero the origin
     #prop3D.SetOrigin(0,0,0)
 
+def planePlaneIntersection(
+    planeNormal0, planeOrigin0, planeNormal1, planeOrigin1):
+    """Given two plane definitions, determine the intersection line using
+    the method on page 233 of Graphics Gems III: 'Plane-to-Plane Intersection'
+
+    Returns tuple with lineOrigin and lineVector.
+    
+    """
+
+    # convert planes to Hessian form first:
+    # http://mathworld.wolfram.com/HessianNormalForm.html
+
+    # calculate p, orthogonal distance from the plane to the origin
+    p0 = - vtk.vtkMath.Dot(planeOrigin0, planeNormal0)
+    p1 = - vtk.vtkMath.Dot(planeOrigin1, planeNormal1)
+    # we already have n, the planeNormal
+
+    # calculate cross product
+    L = [0.0, 0.0, 0.0]
+    vtk.vtkMath.Cross(planeNormal0, planeNormal1, L)
+    absL = [abs(e) for e in L]
+    maxAbsL = max(absL)
+    w = absL.index(maxAbsL)
+    Lw = L[w]
+    # we're going to set the maxLidx'th component of our lineOrigin (i.e.
+    # any point on the line) to 0
+
+    P = [0.0, 0.0, 0.0]
+
+    # we want either [0, 1], [1, 2] or [2, 0]
+    if w == 0:
+        u = 1
+        v = 2
+    elif w == 1:
+        u = 2
+        v = 0
+    else:
+        u = 0
+        v = 1
+    
+    P[u] = (planeNormal0[v] * p1 - planeNormal1[v] * p0) / float(Lw)
+    P[v] = (planeNormal1[u] * p0 - planeNormal0[u] * p1) / float(Lw)
+    P[w] = 0 # just for completeness
+
+    vtk.vtkMath.Normalize(L)
+
+    return (P, L)
+
 def setGridCellYesNo(grid, row, col, yes=True):
     if yes:
         colour = wxColour(0,255,0)

@@ -1,8 +1,9 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.24 2003/08/09 18:42:48 cpbotha Exp $
+# $Id: tdObjects.py,v 1.25 2003/08/11 15:20:01 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
+reload(genUtils)
 import math
 import operator
 import vtk
@@ -183,6 +184,171 @@ class tdObjects:
         self._tdObjectsDict[sObject]['axisPoints'] = twoPoints
         self._tdObjectsDict[sObject]['axisLineActor'] = lineActor
 
+    def _axisToLineTransform(self, axisPoints, lineOrigin, lineVector):
+        # 2. calculate vertical distance from first axis point to line
+        tp0o = map(operator.sub, axisPoints[0], lineOrigin)
+        bvm = vtk.vtkMath.Dot(tp0o, lineVector) # bad vector magnitude
+        bv = [bvm * e for e in lineVector] # bad vector
+        # by subtracting the bad (lineVector-parallel) vector from tp0o,
+        # we get only the orthogonal distance!
+        od = map(operator.sub, tp0o, bv)
+        # negate it
+        od = [-e for e in od]
+
+        # 3. calculate rotation around axis parallel with plane going
+        #    through the first axis point
+
+        # let's rotate
+        # get axis as vector
+        objectAxis = map(operator.sub, axisPoints[1], axisPoints[0])
+        objectAxisM = vtk.vtkMath.Norm(objectAxis)
+        rotAxis = [0.0, 0.0, 0.0]
+        vtk.vtkMath.Cross(objectAxis, lineVector, rotAxis)
+                    
+        # calculate the new tp[1] (i.e. after the translate)
+        ntp1 = map(operator.add, axisPoints[1], od)
+        # relative to line origin
+        ntp1o = map(operator.sub, ntp1, lineOrigin)
+        # project down onto line
+        bvm = vtk.vtkMath.Dot(ntp1o, lineVector)
+        bv = [bvm * e for e in lineVector]
+        gv = map(operator.sub, ntp1o, bv)
+        
+        spdM = vtk.vtkMath.Norm(gv)
+                    
+        # we now have y (spdM) and r (objectAxisM), so use asin
+        # and convert everything to degrees
+        rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
+
+        # 4. create a homogenous transform with this translation and
+        #    rotation
+        
+        newTransform = vtk.vtkTransform()
+        newTransform.Identity()
+        newTransform.PreMultiply()
+        newTransform.Translate(od) # vd was the vertical translation
+        tp0n = [-e for e in axisPoints[0]]
+        newTransform.Translate(axisPoints[0])
+        newTransform.RotateWXYZ(
+            -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
+        newTransform.Translate(tp0n)
+
+        return newTransform
+        
+
+    def _axisToLine(self, tdObject, lineOrigin, lineVector):
+        objectDict = self._tdObjectsDict[tdObject]
+        if 'axisPoints' not in objectDict:
+            # and we do need an axis
+            return
+
+        # switch off motion as we're going to be moving things around
+        # ourselves and don't want to muck about with the boxwidget
+        # transform... (although we technically could)
+        motionSwitched = False
+        if self.getObjectMotion(tdObject):
+            self._setObjectMotion(tdObject, False)
+            motionSwitched = True
+
+        # make sure lineVector is normalised
+        vtk.vtkMath.Normalize(lineVector)
+
+        # set up some convenient bindings
+        axisLineActor = objectDict['axisLineActor']
+        axisPoints = objectDict['axisPoints']
+
+        # 1. okay, first determine the current world coordinates of the
+        #    axis end points by transforming the stored axisPoints with
+        #    the Matrix of the axisLineActor
+
+        axisMatrix = vtk.vtkMatrix4x4()
+        axisLineActor.GetMatrix(axisMatrix)
+
+        twoPoints = []
+        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[0] + (1,))[0:3])
+        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[1] + (1,))[0:3])
+
+        newTransform = self._axisToLineTransform(
+            twoPoints, lineOrigin, lineVector)
+
+        # build in theProp's existing transform
+        theProp = self.findPropByObject(tdObject)
+        newTransform.Concatenate(
+            theProp.GetMatrix())
+
+        # do the transform!
+        for prop in (theProp, objectDict['axisLineActor']):
+            prop.SetOrientation(
+                newTransform.GetOrientation())
+            prop.SetScale(
+                newTransform.GetScale())
+            prop.SetPosition(
+                newTransform.GetPosition())
+
+        if motionSwitched:
+            self._setObjectMotion(tdObject, True)
+            
+
+    def _axisToPlaneTransform(self, axisPoints, planeNormal, planeOrigin):
+        """Calculate transform required to rotate and move the axis defined
+        by axisPoints to be coplanar with the plane defined by planeNormal
+        and planeOrigin.
+        """
+
+        # 2. calculate vertical translation between the first axis point
+        #    and the plane that we are going to lock to
+        
+        tpo = map(operator.sub, axisPoints[0], planeOrigin)
+        # "vertical" distance
+        vdm = vtk.vtkMath.Dot(tpo, planeNormal)
+        # vector perpendicular to plane, between plane and tp[0]
+        vd = [vdm * e for e in planeNormal]
+        # negate it
+        vd = [-e for e in vd]
+        # translation == vd
+
+        # 3. calculate rotation around axis parallel with plane going
+        #    through the first axis point
+
+        # let's rotate
+        # get axis as vector
+        objectAxis = map(operator.sub, axisPoints[1], axisPoints[0])
+        objectAxisM = vtk.vtkMath.Norm(objectAxis)
+        rotAxis = [0.0, 0.0, 0.0]
+        vtk.vtkMath.Cross(objectAxis, planeNormal, rotAxis)
+                    
+        # calculate the new tp[1] (i.e. after the translate)
+        ntp1 = map(operator.add, axisPoints[1], vd)
+        # relative to plane origin
+        ntp1o = map(operator.sub, ntp1, planeOrigin)
+        # project down onto plane by
+        # first calculating the orthogonal distance to the plane
+        spdM = vtk.vtkMath.Dot(ntp1o, planeNormal)
+        # multiply by planeNormal
+        #spd = [spdM * e for e in ipw.GetNormal()]
+        # spd is the plane-normal vector from the new axisPoints[1] to the
+        # plane
+                    
+        # we now have y (spd) and r (objectAxisM), so use asin
+        # and convert everything to degrees
+        rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
+
+
+        # 4. create a homogenous transform with this translation and
+        #    rotation
+        
+        newTransform = vtk.vtkTransform()
+        newTransform.Identity()
+        newTransform.PreMultiply()
+        newTransform.Translate(vd) # vd was the vertical translation
+        tp0n = [-e for e in axisPoints[0]]
+        newTransform.Translate(axisPoints[0])
+        newTransform.RotateWXYZ(
+            -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
+        newTransform.Translate(tp0n)
+
+        return newTransform
+
     def _axisToSlice(self, tdObject, sliceDirection):
         """If tdObject has an axis, make the axis lie in the plane
         defined by sliceDirection.
@@ -221,62 +387,17 @@ class tdObjects:
         twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[0] + (1,))[0:3])
         twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[1] + (1,))[0:3])
         
-        # 2. calculate vertical translation between the first axis point
-        #    and the plane that we are going to lock to
+        # calculate the transform needed to move and rotate the axis so that
+        # it will be coplanar with the plane
+        newTransform = self._axisToPlaneTransform(
+            twoPoints, ipw.GetNormal(), ipw.GetOrigin())
 
-        po = ipw.GetOrigin()
-        tpo = map(operator.sub, twoPoints[0], po)
-        # "vertical" distance
-        vdm = vtk.vtkMath.Dot(tpo, ipw.GetNormal())
-        # vector perpendicular to plane, between plane and tp[0]
-        vd = [vdm * e for e in ipw.GetNormal()]
-        # negate it
-        vd = [-e for e in vd]
-        # translation == vd
-
-        # 3. calculate rotation around axis parallel with plane going
-        #    through the first axis point
-
-        # let's rotate
-        # get axis as vector
-        objectAxis = map(operator.sub, twoPoints[1], twoPoints[0])
-        objectAxisM = vtk.vtkMath.Norm(objectAxis)
-        rotAxis = [0.0, 0.0, 0.0]
-        vtk.vtkMath.Cross(objectAxis, ipw.GetNormal(), rotAxis)
-                    
-        # calculate the new tp[1] (i.e. after the translate)
-        ntp1 = map(operator.add, twoPoints[1], vd)
-        # relative to plane origin
-        ntp1o = map(operator.sub, ntp1, po)
-        # project down onto plane by
-        # first calculating the orthogonal distance to the plane
-        spdM = vtk.vtkMath.Dot(ntp1o, ipw.GetNormal())
-        # multiply by planeNormal
-        #spd = [spdM * e for e in ipw.GetNormal()]
-        # spd is the plane-normal vector from the new twoPoints[1] to the plane
-                    
-        # we now have y (spd) and r (objectAxisM), so use asin
-        # and convert everything to degrees
-        rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
-
-
-        # 4. create a homogenous transform with this translation and
-        #    rotation
-        
-        newTransform = vtk.vtkTransform()
-        newTransform.Identity()
-        newTransform.PreMultiply()
-        newTransform.Translate(vd) # vd was the vertical translation
-        tp0n = [-e for e in twoPoints[0]]
-        newTransform.Translate(twoPoints[0])
-        newTransform.RotateWXYZ(
-            -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
-        newTransform.Translate(tp0n)
-
+        # build in theProp's existing transform
         theProp = self.findPropByObject(tdObject)
         newTransform.Concatenate(
             theProp.GetMatrix())
 
+        # do the transform!
         for prop in (theProp, objectDict['axisLineActor']):
             prop.SetOrientation(
                 newTransform.GetOrientation())
@@ -585,9 +706,40 @@ class tdObjects:
             md.ShowModal()
             return
 
-        for sliceDirection in sSliceDirections:
-            for sObject in sObjects:
-                self._axisToSlice(sObject, sliceDirection)
+        for sObject in sObjects:
+            if len(sSliceDirections) == 1:
+                # align axis with plane
+                self._axisToSlice(sObject, sSliceDirections[0])
+            elif len(sSliceDirections) == 2:
+                # align axis with intersection of two planes (ouch)
+                try:
+                    pn0 = sSliceDirections[0]._ipws[0].GetNormal()
+                    po0 = sSliceDirections[0]._ipws[0].GetOrigin()
+                    pn1 = sSliceDirections[1]._ipws[0].GetNormal()
+                    po1 = sSliceDirections[1]._ipws[0].GetOrigin()
+                except IndexError:
+                    md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                                          "The slices you have selected "
+                                          "contain no data.",
+                                          "Information",
+                                          wx.OK | wx.ICON_INFORMATION)
+                    md.ShowModal()
+                    return
+                    
+                lineOrigin, lineVector = genUtils.planePlaneIntersection(
+                    pn0, po0, pn1, po1)
+                    
+                self._axisToLine(sObject, lineOrigin, lineVector)
+            else:
+                md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                                      "You have selected more than two "
+                                      "slices. "
+                                      "I am not sure what I should think "
+                                      "about this.",
+                                      "Information",
+                                      wx.OK | wx.ICON_INFORMATION)
+                md.ShowModal()
+                return
         
         if sObjects:
             self._slice3dVWR.render3D()
