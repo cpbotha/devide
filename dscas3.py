@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.21 2003/04/15 17:35:49 cpbotha Exp $
+# $Id: dscas3.py,v 1.22 2003/04/30 23:09:13 cpbotha Exp $
 
-DSCAS3_VERSION = 20030131
+DSCAS3_VERSION = 20030501
 
 import os
 import stat
@@ -15,6 +15,7 @@ from module_manager import module_manager
 from python_shell import python_shell
 
 from wxPython.wx import *
+from wxPython.html import *
 
 import vtk
 
@@ -285,16 +286,16 @@ class dscas3_app_t(wxApp):
 
         aboutText = '''
         <html>
-        <body bgcolor="#d6d6d6">
+        <body>
         <center>
         <h3>DSCAS3 v.%s</h3>
         <p>DSCAS3 is copyright 2003 Charl P. Botha / DIPEX<br>
         http://cpbotha.net/phd/
         </p>
         <p>
-        Running on: wxPython %s, Python %s, VTK %s
+        wxPython %s, Python %s, VTK %s
         </p>
-        <center>
+        </center>
         </body>
         </html>
         '''
@@ -304,6 +305,14 @@ class dscas3_app_t(wxApp):
         about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION, wx.__version__,
                                               pyver,
                                               vtk.vtkVersion.GetVTKVersion()))
+
+        ir = about.htmlWindow.GetInternalRepresentation()
+        ir.SetIndent(0, wxHTML_INDENT_ALL)
+        about.htmlWindow.SetSize((ir.GetWidth(), ir.GetHeight()))
+
+        about.GetSizer().Fit(about)
+        about.GetSizer().SetSizeHints(about)
+        about.Layout()
 
         about.CentreOnParent(wxBOTH)
         about.ShowModal()
