@@ -1,4 +1,4 @@
-# $Id: transform2D.py,v 1.5 2004/03/30 13:56:03 cpbotha Exp $
+# $Id: transform2D.py,v 1.6 2004/03/30 14:03:23 cpbotha Exp $
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should
@@ -22,6 +22,9 @@ class transform2D(noConfigModuleMixin, moduleBase):
     The result of this filter is a
     vtkImageData, ready for using in your friendly neighbourhood
     visualisation pipeline.
+
+    NOTE: this module is currently kludged to transform 1:N images (and not
+    0:N).
     """
 
     def __init__(self, moduleManager):
@@ -223,8 +226,7 @@ class transform2D(noConfigModuleMixin, moduleBase):
                                      vtkImporter)
 
             # FIXME KLUDGE: we ignore image 0 (this is for joris)
-            #if i > 0:
-            if True:
+            if i > 0:
                 self._imageAppend.AddInput(vtkImporter.GetOutput())
 
             # setup the previous Image for the next loop
