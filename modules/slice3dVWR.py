@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.33 2003/06/16 16:24:36 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.34 2003/06/17 15:34:19 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -840,6 +840,9 @@ class tdObjects:
             if gridRow >= 0:
                 self._grid.SetCellValue(gridRow, self._gridVisibleCol,
                                         ['No', 'Yes'][bool(visible)])
+
+    def _setObjectContouring(self, tdObject, contour):
+        pass
                     
 
     def _tdObjectModifiedCallback(self, o, e):
