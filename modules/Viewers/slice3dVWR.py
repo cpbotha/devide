@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.30 2004/11/21 22:03:34 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.31 2004/11/22 18:16:58 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.30 $
+    $Revision: 1.31 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -278,13 +278,17 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
             # now do all the cached inputs, checking for exceptions!
             for idx in range(len(self._cachedInputs)):
-                if self._cachedInputs[idx] != None:
-                    try:
-                        # first disconnect in case there's something now
-                        self.setInput(idx, None)
+                try:
+                    # first disconnect (if the cached input is None,
+                    # this is all that's needed)
+                    self.setInput(idx, None)
+
+                    if self.setInput(idx, self._cachedInputs[idx]):
                         # then connect the cached input
                         self.setInput(idx, self._cachedInputs[idx])
-                    except Exception, e:
+                        
+                except Exception, e:
+                    if self.setInput(idx, self._cachedInputs[idx]):
                         # when this happens, the moduleManager (and
                         # graphEditor) still think this input port is
                         # connected, but this module obviously doesn't
@@ -293,9 +297,16 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                             'Consider disconnecting it.' % \
                             (idx, self._moduleManager.getInstanceName(self),
                              str(e)))
+
+                    else:
+                        genUtils.logError(
+                            'Error disconnecting input %d of slice3dVWR ' \
+                            '%s:%s. ' % \
+                            (idx, self._moduleManager.getInstanceName(self),
+                             str(e)))
                         
-                    # clear the cached input
-                    self._cachedInputs[idx] = None
+                # clear the cached input
+                self._cachedInputs[idx] = None
             
     def getConfig(self):
         # implant some stuff into the _config object and return it
