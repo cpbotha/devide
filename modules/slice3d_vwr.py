@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.8 2003/01/22 18:24:16 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.9 2003/01/23 17:45:48 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -275,8 +275,10 @@ class slice3d_vwr(module_base,
     def get_output(self, idx):
         if idx == 0:
             return self._vtk_points
-        else:
+        elif idx == 1:
             return self._vtk_points_names
+        else:
+            return self._extractVOI.GetOutput()
 
     def view(self):
         self._view_frame.Show(true)
