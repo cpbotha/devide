@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.79 2004/05/07 13:09:55 cpbotha Exp $
+# $Id: graphEditor.py,v 1.80 2004/05/07 14:20:36 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1650,7 +1650,7 @@ class graphEditor:
         # the DrawLines -> DrawSplines in coLine as well as
         # coLine.updateEndPoints() (at the moment they use port height
         # to get that bit out of the glyph)
-        overshoot = 5
+        overshoot = wxpc.coLine.routingOvershoot
         # sometimes, for instance for spline routing, we need something
         # extra... for straight line drawing, this should be = overshoot
         #moreOvershoot = 2 * overshoot

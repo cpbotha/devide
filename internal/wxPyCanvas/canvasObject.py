@@ -38,7 +38,6 @@ class canvasObject(canvasSubject):
 
     def hitTest(self, x, y):
         return False
-
     def isInsideRect(self, x, y, width, height):
         return False
 
@@ -88,6 +87,11 @@ class coRectangle(canvasObject):
 
 class coLine(canvasObject):
 
+    # this is used by the routing algorithm to route lines around glyphs
+    # with a certain border; this is also used by updateEndPoints to bring
+    # the connection out of the connection port initially
+    routingOvershoot = 10
+
     def __init__(self, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
         """A line object for the canvas.
 
@@ -101,7 +105,8 @@ class coLine(canvasObject):
         self.toGlyph = toGlyph
         self.toInputIdx = toInputIdx
 
-        colourNames = ['BLACK', 'BLUE', 'BROWN', 'MEDIUM FOREST GREEN',
+        # 'BLACK' removed
+        colourNames = ['BLUE', 'BROWN', 'MEDIUM FOREST GREEN',
                        'DARKORANGE1']
         self.lineColourName = colourNames[self.toInputIdx % (len(colourNames))]
         
@@ -121,9 +126,27 @@ class coLine(canvasObject):
     def draw(self, dc):
         # lines are 2 pixels thick
         dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
-        dc.DrawLines(self._linePoints)
-        #dc.DrawSpline(self._linePoints)
 
+        # simple mode: just the lines thanks.
+        #dc.DrawLines(self._linePoints)
+
+        # spline mode for N points:
+        # 1. Only 4 points: drawlines.  DONE
+        # 2. Draw line from 0 to 1
+        # 3. Draw line from N-2 to N-1 (second last to last)
+        # 4. Draw spline from 1 to N-2 (second to second last)
+#         if len(self._linePoints) > 4:
+#             dc.DrawLines(self._linePoints[0:2]) # 0 - 1
+#             dc.DrawLines(self._linePoints[-2:]) # second last to last
+#             dc.DrawSpline(self._linePoints[1:-1])
+#         else:
+#             dc.DrawLines(self._linePoints)
+
+        dc.SetPen(wx.wxPen('BLACK', 4, wx.wxSOLID))
+        dc.DrawSpline(self._linePoints)
+        dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
+        dc.DrawSpline(self._linePoints)
+                          
     def getBounds(self):
         # totally hokey: for now we just return the bounding box surrounding
         # the first two points - ideally we should iterate through the lines,
@@ -167,18 +190,22 @@ class coLine(canvasObject):
             return False
 
     def updateEndPoints(self):
+        # first get us just out of the port, then create margin between
+        # us and glyph
+        boostFromPort = coGlyph._pHeight / 2 + coLine.routingOvershoot
+        
         self._linePoints = [(), (), (), ()]
         
         self._linePoints[0] = self.fromGlyph.getCenterOfPort(
             1, self.fromOutputIdx)
         self._linePoints[1] = (self._linePoints[0][0],
-                               self._linePoints[0][1] + coGlyph._pHeight)
+                               self._linePoints[0][1] + boostFromPort)
+
         
         self._linePoints[-1] = self.toGlyph.getCenterOfPort(
             0, self.toInputIdx)
         self._linePoints[-2] = (self._linePoints[-1][0],
-                                self._linePoints[-1][1] - coGlyph._pHeight)
-        
+                                self._linePoints[-1][1] - boostFromPort)
 
 #############################################################################
 class coGlyph(coRectangle):
