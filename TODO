@@ -1,4 +1,7 @@
-$Id: TODO,v 1.12 2003/08/13 20:19:20 cpbotha Exp $
+$Id: TODO,v 1.13 2003/08/13 22:21:53 cpbotha Exp $
+
+* planes (after locking to points, or maybe explicit function) should grow
+  to encompass all data in their current orientation.
 
 * It should be possible to switch on and off interaction for any selection
   of points, not always ALL on or ALL off.
