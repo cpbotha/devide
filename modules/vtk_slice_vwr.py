@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.56 2002/08/29 13:19:28 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.57 2002/08/30 15:32:46 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -43,6 +43,8 @@ class vtk_slice_vwr(module_base,
         # we have a single RenderWindowInteractor
         self._rwi = None
         self._ipws = []
+        # list of current cursors, one cursor for each ipw
+        self._current_cursors = []
         # the renderers corresponding to the render windows
         self._renderer = None
 
@@ -60,6 +62,7 @@ class vtk_slice_vwr(module_base,
 
         # make the list of imageplanewidgets
         self._ipws = [vtk.vtkImagePlaneWidget() for i in range(3)]
+        self._current_cursors = [[0,0,0,0] for i in self._ipws]
         
         # set the whole UI up!
         self._create_window()
@@ -174,37 +177,10 @@ class vtk_slice_vwr(module_base,
 # utility methods
 #################################################################
 
-    def _add_sel_point(self, point, ortho_idx):
-        # *sniff* *sob* It's unreadable, but why's it so pretty?
-        # this just formats the real point
-        pos_str = "%s, %s, %s" % tuple([str(round(i,1)) for i in point])
-        idx = self._spoint_listctrl.InsertStringItem(0, pos_str)
+    def _create_ipw_panel(self, parent, i):
 
-        # some handy variables
-        cur_pipe = self._ortho_pipes[ortho_idx]
-        reslice = cur_pipe[0]['vtkImageReslice']
-        input_data = reslice.GetInput()
-
-        # calculate discrete position
-        ispacing = input_data.GetSpacing()
-        dpoint = tuple([int(round(i))
-                        for i in map(operator.div, point, ispacing)])
-
-        dpos_str = "%s, %s, %s" % dpoint
-        self._spoint_listctrl.SetStringItem(idx, 1, dpos_str)
+        ipw = self._ipws[i]
         
-
-        # now find the value(s) at this point
-        dtype = input_data.GetScalarType()
-        dvalue = input_data.GetScalarComponentAsFloat(dpoint[0], dpoint[1],
-                                                      dpoint[2], 0)
-        self._spoint_listctrl.SetStringItem(idx, 2, str(dvalue))
-
-        # add all this information to self._sel_points
-        self._sel_points.append((point, dpoint, dvalue))
-
-
-    def _create_ipw_panel(self, parent, ipw):
         panel = wxPanel(parent, -1)
 
         eid = wxNewId()
@@ -222,7 +198,27 @@ class vtk_slice_vwr(module_base,
         
         EVT_CHECKBOX(panel, eid, _eb_cb)
 
-        # FIXME: continue here
+        # now we have to make a space for the latest coord
+        st = wxStaticText(panel, -1, "Cursor at")
+        panel.cursor_text = wxTextCtrl(panel, -1)
+        sid = wxNewId()
+        sb = wxButton(panel, sid, "Store")
+
+        EVT_BUTTON(panel, sid, lambda e, i=i: self._store_cursor_cb(i))
+        
+        hz = wxBoxSizer(wxHORIZONTAL)
+        hz.Add(st, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
+        hz.Add(panel.cursor_text, option=1,
+               flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
+        hz.Add(sb)
+
+        tls = wxBoxSizer(wxVERTICAL)
+        tls.Add(panel.enabled_cbox, flag=wxALL, border=5)
+        tls.Add(hz, option=0, flag=wxEXPAND|wxALL, border=5)
+
+        #tls.Fit(panel)
+        panel.SetAutoLayout(true)
+        panel.SetSizer(tls)
         
         return panel
 
@@ -247,15 +243,13 @@ class vtk_slice_vwr(module_base,
 
         # then the selected point list control
         # -----------------------------------------------------------------
-        self._spoint_listctrl = wxListCtrl(panel, -1, size=(320,100),
+        self._spoint_listctrl = wxListCtrl(panel, -1, size=(280,100),
                                            style=wxLC_REPORT|wxSUNKEN_BORDER|
                                            wxLC_HRULES|wxLC_VRULES)
         self._spoint_listctrl.InsertColumn(0, 'Position')
-        self._spoint_listctrl.SetColumnWidth(0, 120)
-        self._spoint_listctrl.InsertColumn(1, 'Discrete')
-        self._spoint_listctrl.SetColumnWidth(1, 120)        
+        self._spoint_listctrl.SetColumnWidth(0, 180)
         self._spoint_listctrl.InsertColumn(2, 'Value')
-        self._spoint_listctrl.SetColumnWidth(2, 80)                
+        self._spoint_listctrl.SetColumnWidth(2, 100)                
         #self._spoint_listctrl.InsertStringItem(0, 'yaa')
         #self._spoint_listctrl.InsertStringItem(1, 'yaa2')        
 
@@ -272,9 +266,6 @@ class vtk_slice_vwr(module_base,
         rb = wxButton(panel, rid, 'Reset')
         EVT_BUTTON(panel, rid, lambda e, s=self: s._reset())
 
-        button_sizer = wxBoxSizer(wxHORIZONTAL)
-        button_sizer.Add(pcb)
-        button_sizer.Add(rb)
 
         # slices notebook
         # -----------------------------------------------------------------
@@ -285,24 +276,41 @@ class vtk_slice_vwr(module_base,
         pnames = ["Axial", "Coronal", "Sagittal"]
         for i in range(len(self._ipws)):
             # create and populate panel
-            spanel = self._create_ipw_panel(self._acs_nb, self._ipws[i])
+            spanel = self._create_ipw_panel(self._acs_nb, i)
             self._acs_nb.AddPage(spanel, pnames[i])
             # now make callback for the ipw
             self._ipws[i].AddObserver('StartInteractionEvent',
-                                      lambda e, o, nb=self._acs_nb, i=i:
-                                      nb.SetSelection(i))
+                                      lambda e, o, i=i:
+                                      self._ipw_start_interaction_cb(i))
+            self._ipws[i].AddObserver('InteractionEvent',
+                                      lambda e, o, i=i:
+                                      self._ipw_interaction_cb(i))
 
         EVT_NOTEBOOK_PAGE_CHANGED(panel, nb_id, self._acs_nb_page_changed_cb)
+
+
+        # all the sizers
+        # -----------------------------------------------------------------
+        
+        button_sizer = wxBoxSizer(wxHORIZONTAL)
+        button_sizer.Add(pcb)
+        button_sizer.Add(rb)
+
+        # we need a special sizer that determines the largest sizer
+        # on all of the notebook's pages
+        nbs = wxNotebookSizer(self._acs_nb)
 
         # this sizer will contain the button_sizer and the notebook
         button_nb_sizer = wxBoxSizer(wxVERTICAL)
         button_nb_sizer.Add(button_sizer)
-        button_nb_sizer.Add(self._acs_nb, option=1, flag=wxEXPAND)
+        button_nb_sizer.Add(nbs, option=1, flag=wxEXPAND)
 
+        # this sizer contains the selected points list, buttons and notebook
         bottom_sizer = wxBoxSizer(wxHORIZONTAL)
-        bottom_sizer.Add(self._spoint_listctrl, flag=wxEXPAND)
-        bottom_sizer.Add(button_nb_sizer, flag=wxEXPAND)
+        bottom_sizer.Add(self._spoint_listctrl, option=1, flag=wxEXPAND)
+        bottom_sizer.Add(button_nb_sizer, option=1, flag=wxEXPAND)
 
+        # top level sizer
         tl_sizer = wxBoxSizer(wxVERTICAL)
         tl_sizer.Add(self._rwi, option=1, flag=wxEXPAND)
         tl_sizer.Add(bottom_sizer, flag=wxEXPAND)
@@ -400,6 +408,15 @@ class vtk_slice_vwr(module_base,
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
 
+    def _store_cursor(self, cursor):
+        self._sel_points.append({'cursor' : cursor, 'actor' : None})
+        
+        # *sniff* *sob* It's unreadable, but why's it so pretty?
+        # this just formats the real point
+        pos_str = "%s, %s, %s" % tuple(cursor[0:3])
+        idx = self._spoint_listctrl.InsertStringItem(0, pos_str)
+
+        self._spoint_listctrl.SetStringItem(idx, 1, str(cursor[3]))
         
 #################################################################
 # callbacks
@@ -412,17 +429,17 @@ class vtk_slice_vwr(module_base,
         else:
             cur_panel.enabled_cbox.SetValue(false)
 
+    def _ipw_start_interaction_cb(self, i):
+        self._acs_nb.SetSelection(i)
+        self._ipw_interaction_cb(i)
 
-    def _ipw_cb(self, ortho_idx):
-
-        cur_pipe = self._ortho_pipes[ortho_idx][0]
-        
-        # also update the pertinent ortho view
-        self._sync_ortho_plane_with_ipw(cur_pipe,
-                                        self._ipws[ortho_idx])
-
-        # we have updated all layers, so we can now call this
-        self._rwis[ortho_idx + 1].Render()
+    def _ipw_interaction_cb(self, i):
+        cd = 4 * [0.0]
+        if self._ipws[i].GetCursorData(cd):
+            cur_panel = self._acs_nb.GetPage(self._acs_nb.GetSelection())
+            self._current_cursors[i] = cd
+            cstring = str(cd[0:3]) + " = " + str(cd[3])
+            cur_panel.cursor_text.SetValue(cstring)
 
     def _rw_ortho_pick_cb(self, wxvtkrwi):
         (cx,cy) = wxvtkrwi.GetEventPosition()
@@ -512,3 +529,7 @@ class vtk_slice_vwr(module_base,
 
         wxvtkrwi.GetRenderWindow().Render()
         self._rwis[0].GetRenderWindow().Render()
+
+    def _store_cursor_cb(self, i):
+        self._store_cursor(self._current_cursors[i])
+        
