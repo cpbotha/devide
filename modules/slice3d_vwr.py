@@ -1,10 +1,6 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.16 2003/02/17 23:07:17 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.17 2003/02/18 18:07:59 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
-
-# TODO:
-# * add 2 orthogonal views again
-# * 
 
 from genUtils import logError
 from moduleBase import moduleBase
@@ -90,7 +86,7 @@ class slice3d_vwr(moduleBase,
         picker = vtk.vtkCellPicker()
         for ipw in self._ipws:
             ipw.SetPicker(picker)
-        
+
         self._current_cursors = [[0,0,0,0] for i in self._ipws]
         
         # set the whole UI up!
@@ -205,6 +201,24 @@ class slice3d_vwr(moduleBase,
                 # live on...
                 self._extractVOI.SetInput(None)
 
+            elif self._inputs[idx]['Connected'] == 'Overlay':
+                self._inputs[idx]['Connected'] = None
+
+                # remove our observer
+                if self._inputs[idx]['observerID'] >= 0:
+                    self._overlay_ipws[0].GetInput().RemoveObserver(
+                        self._inputs[idx]['observerID'])
+                    self._inputs[idx]['observerID'] = -1
+
+                # disconnect the mothers
+                for overlayIPW in self._overlay_ipws:
+                    overlayIPW.Off()
+                    overlayIPW.SetInput(None)
+                    overlayIPW.SetInteractor(None)
+
+                # and empty the array
+                del self._overlay_ipws[:]
+
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
 
@@ -243,17 +257,32 @@ class slice3d_vwr(moduleBase,
 
                         main_input = self._ipws[0].GetInput()
 
-                        if input_stream.GetExtent() == \
-                               main_input.GetExtent() and \
+                        if input_stream.GetWholeExtent() == \
+                               main_input.GetWholeExtent() and \
                                input_stream.GetSpacing() == \
                                main_input.GetSpacing():
                             
+                            input_stream.Update()
+
                             # add a set of overlays
                             self._overlay_ipws = [vtk.vtkImagePlaneWidget()
                                                   for i in range(3)]
                             
-                                
-                            
+                            for overlay_ipw in self._overlay_ipws:
+                                overlay_ipw.SetInput(input_stream)
+                                overlay_ipw.UserControlledLookupTableOn()
+
+                            oid = input_stream.AddObserver(
+                                'ModifiedEvent',
+                                self.inputModifiedCallback)
+                            self._inputs[idx]['observerID'] = oid
+
+                            self._reset_overlays()
+
+                            self._view_frame.threedRWI.Render()
+                            self._inputs[idx]['Connected'] = 'Overlay'
+
+                            return
                             
                         else:
                             raise TypeError, \
@@ -439,6 +468,9 @@ class slice3d_vwr(moduleBase,
             self._ipws[i].AddObserver('InteractionEvent',
                                       lambda e, o, i=i:
                                       self._ipw_interaction_cb(i))
+            self._ipws[i].AddObserver('EndInteractionEvent',
+                                      lambda e, o, i=i:
+                                      self._ipwEndInteractionCallback(i))
 
         
         EVT_NOTEBOOK_PAGE_CHANGED(self._view_frame,
@@ -558,8 +590,7 @@ class slice3d_vwr(moduleBase,
             ipw.SetLookupTable(lut)
             ipw.On()
 
-        # how can I prevent the user from moving this with the
-        # middle button?
+        # reset the VOI widget
         self._voi_widget.SetInteractor(self._view_frame.threedRWI)
         self._voi_widget.SetInput(input_data)
         self._voi_widget.PlaceWidget()
@@ -568,11 +599,41 @@ class slice3d_vwr(moduleBase,
 
         self._threedRenderer.ResetCamera()
 
+        # make sure the overlays follow  suit
+        self._reset_overlays()
+
         # whee, thaaaar she goes.
         self._view_frame.threedRWI.Render()
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
+
+    def _reset_overlays(self):
+        if self._overlay_ipws:
+            lut = vtk.vtkLookupTable()            
+            inputStream = self._overlay_ipws[0].GetInput()
+            minv, maxv = inputStream.GetScalarRange()
+            lut.SetTableRange((minv,maxv))
+            lut.SetAlphaRange((0.0, 1.0))
+            lut.SetValueRange((1.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+            lut.Build()
+
+            idx = 2
+            for ipw in self._overlay_ipws:
+                ipw.SetInteractor(self._view_frame.threedRWI)
+                ipw.SetPlaneOrientation(idx)
+                idx -= 1
+                ipw.SetSliceIndex(0)
+                #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
+                # this is not working yet, because the IPWs handling of
+                # luts is somewhat broken at the moment
+                ipw.SetLookupTable(lut)
+                ipw.On()
+                ipw.InteractionOff()
+
+            self._syncOverlays()
+        
 
     def _store_cursor(self, cursor):
 
@@ -677,6 +738,21 @@ class slice3d_vwr(moduleBase,
         self._view_frame.spointsGrid.SetCellValue(row, 0, pos_str)
         self._view_frame.spointsGrid.SetCellValue(row, 1, str(cursor[3]))
 
+    def _syncOverlay(self, i):
+        if len(self._overlay_ipws) > i:
+            # we know this is a vtkPlaneSource
+            pds1 = self._ipws[i].GetPolyDataSource()
+            pds2 = self._overlay_ipws[i].GetPolyDataSource()
+            pds2.SetOrigin(pds1.GetOrigin())
+            pds2.SetPoint1(pds1.GetPoint1())
+            pds2.SetPoint2(pds1.GetPoint2())
+            
+            self._overlay_ipws[i].UpdatePlacement()
+        
+    def _syncOverlays(self):
+        for i in range(len(self._overlay_ipws)):
+            self._syncOverlay(i)
+
     def _sync_vtk_points(self):
         """Sync up the output vtkPoints and names to _sel_points.
         
@@ -722,6 +798,9 @@ class slice3d_vwr(moduleBase,
             self._current_cursors[i] = cd
             cstring = str(cd[0:3]) + " = " + str(cd[3])
             cur_panel.cursorText.SetValue(cstring)
+
+    def _ipwEndInteractionCallback(self, i):
+        self._syncOverlay(i)
 
     def pointwidget_interaction_cb(self, pw, evt_name, input_data):
         # we have to find pw in our list
@@ -888,11 +967,6 @@ class slice3d_vwr(moduleBase,
 
 
     def inputModifiedCallback(self, o, e):
-        print "DATA MODIFIED"
+        # the data has changed, so re-render what's on the screen
         self._view_frame.threedRWI.Render()
         
-
-    
-    
-        
-
