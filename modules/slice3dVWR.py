@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.66 2003/08/06 16:19:04 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.67 2003/08/07 16:48:10 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -893,7 +893,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         def _ps_cb():
             # FIXME: update to new factoring
-            sliceDirection  = self._getCurrentSliceDirection()
+            sliceDirection  = self.getCurrentSliceDirection()
             if sliceDirection:
                 val = self.threedFrame.pushSliceSpinCtrl.GetValue()
                 if val:

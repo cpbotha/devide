@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.20 2003/08/07 13:17:57 cpbotha Exp $
+# $Id: tdObjects.py,v 1.21 2003/08/07 16:48:11 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -82,6 +82,103 @@ class tdObjects:
 
         self._tdObjectsDict[sObject]['axisPoints'] = twoPoints
         self._tdObjectsDict[sObject]['axisLineActor'] = lineActor
+
+    def _axisToSlice(self, tdObject, sliceDirection):
+        """If tdObject has an axis, make the axis lie in the plane
+        defined by sliceDirection.
+        """
+
+        if not sliceDirection._ipws:
+            # we need a plane definition to latch to!
+            return
+        
+        if 'axisPoints' not in self._tdObjectsDict[tdObject]:
+            # and we do need an axis
+            return
+
+        # FIXME: if motion is active, switch it off here and on
+        # at the end of this method
+
+        # set up some convenient bindings
+        ipw = sliceDirection._ipws[0]
+        axisLineActor = self._tdObjectsDict[tdObject]['axisLineActor']
+        axisPoints = self._tdObjectsDict[tdObject]['axisPoints']
+
+        # 1. okay, first determine the current world coordinates of the
+        #    axis end points by transforming the stored axisPoints with
+        #    the Matrix of the axisLineActor
+
+        axisMatrix = vtk.vtkMatrix4x4()
+        axisLineActor.GetMatrix(axisMatrix)
+
+        twoPoints = []
+        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[0] + (1,)))
+        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[1] + (1,)))
+        
+        # 2. calculate vertical translation between the first axis point
+        #    and the plane that we are going to lock to
+        
+        po = ipw.GetOrigin()
+        tpo = map(operator.sub, twoPoints[0], po)
+        # "vertical" distance
+        vdm = vtk.vtkMath.Dot(tpo, ipw.GetNormal())
+        # vector perpendicular to plane, between plane and tp[0]
+        vd = [vdm * e for e in ipw.GetNormal()]
+        # negate it
+        vd = [-e for e in vd]
+        # translation == vd
+
+        # 3. calculate rotation around axis parallel with plane going
+        #    through the first axis point
+
+        # let's rotate
+        # get axis as vector
+        objectAxis = map(operator.sub, twoPoints[1], twoPoints[0])
+        objectAxisM = vtk.vtkMath.Norm(objectAxis)
+        rotAxis = [0.0, 0.0, 0.0]
+        vtk.vtkMath.Cross(objectAxis, ipw.GetNormal(), rotAxis)
+                    
+        # calculate the new tp[1] (i.e. after the translate)
+        ntp1 = map(operator.add, twoPoints[1], vd)
+        # relative to plane origin
+        ntp1o = map(operator.sub, ntp1, po)
+        # project down onto plane by
+        # first calculating the orthogonal distance to the plane
+        spdM = vtk.vtkMath.Dot(ntp1o, ipw.GetNormal())
+        # multiply by planeNormal
+        #spd = [spdM * e for e in ipw.GetNormal()]
+        # spd is the plane-normal vector from the new twoPoints[1] to the plane
+                    
+        # we now have y (spd) and r (objectAxisM), so use asin
+        # and convert everything to degrees
+        rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
+
+
+        # 4. create a homogenous transform with this translation and
+        #    rotation
+        
+        newTransform = vtk.vtkTransform()
+        newTransform.Identity()
+        newTransform.PreMultiply()
+        newTransform.Translate(vd) # vd was the vertical translation
+        tp0n = [-e for e in twoPoints[0]]
+        newTransform.Translate(twoPoints[0])
+        newTransform.RotateWXYZ(
+            -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
+        newTransform.Translate(tp0n)
+
+        # FIXME: continue here 
+        newTransform.Concatenate(
+            objectDict['vtkActor'].GetMatrix())
+
+        for prop in (objectDict['vtkActor'], objectDict['axisActor']):
+            prop.SetOrientation(
+                newTransform.GetOrientation())
+            prop.SetScale(
+                newTransform.GetScale())
+            prop.SetPosition(
+                newTransform.GetPosition())
+        
 
     def _bindEvents(self):
         controlFrame = self._slice3dVWR.controlFrame
@@ -258,80 +355,36 @@ class tdObjects:
             md.ShowModal()
 
     def _handlerObjectAxisToSlice(self, event):
-        # first find two selected points from the selected points list
-        selPoints = self._slice3dVWR.controlFrame.spointsGrid.GetSelectedRows()
-        sliceDirection = self._slice3dVWR._getCurrentSliceDirection()
+        #
+        sObjects = self._getSelectedObjects()
+        sSliceDirections = self._slice3dVWR.sliceDirections.\
+                           getSelectedSliceDirections()
+
+        if not sSliceDirections:
+            md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                                  "Select at least one slice before "
+                                  "using AxisToSlice.",
+                                  "Information",
+                                  wx.OK | wx.ICON_INFORMATION)
+            md.ShowModal()
+            return
+
+        if not sObjects:
+            md = wx.MessageDialog(self._slice3dVWR.controlFrame,
+                                  "Select at least on object before "
+                                  "using AxisToSlice.",
+                                  "Information",
+                                  wx.OK | wx.ICON_INFORMATION)
+            md.ShowModal()
+            return
+
+        for sliceDirection in sSliceDirections:
+            for sObject in sObjects:
+                self._axisToSlice(sObject, sliceDirection)
         
-        if len(selPoints) >= 2 and sliceDirection and sliceDirection._ipws:
-            tp = [self._slice3dVWR._selectedPoints[idx]['world']
-                  for idx in selPoints[:2]]
-            ipw = sliceDirection._ipws[0]
-
-            objs = self._getSelectedObjects()
-            for obj in objs:
-                objectDict = self._tdObjectsDict[obj]
-                if objectDict['type'] == 'vtkPolyData':
-
-                    po = ipw.GetOrigin()
-                    tpo = map(operator.sub, tp[0], po)
-                    # "vertical" distance
-                    vdm = vtk.vtkMath.Dot(tpo, ipw.GetNormal())
-                    # vector perpendicular to plane, between plane and tp[0]
-                    vd = [vdm * e for e in ipw.GetNormal()]
-                    # negate it
-                    vd = [-e for e in vd]
-                    # translation == vd
-
-                    # let's rotate
-                    # get axis as vector
-                    objectAxis = map(operator.sub, tp[1], tp[0])
-                    objectAxisM = vtk.vtkMath.Norm(objectAxis)
-                    rotAxis = [0.0, 0.0, 0.0]
-                    vtk.vtkMath.Cross(objectAxis, ipw.GetNormal(), rotAxis)
-                    
-                    # calculate the new tp[1] (i.e. after the translate)
-                    ntp1 = map(operator.add, tp[1], vd)
-                    # relative to plane origin
-                    ntp1o = map(operator.sub, ntp1, po)
-                    # project down onto plane by
-                    # first calculating the orthogonal distance to the plane
-                    spdM = vtk.vtkMath.Dot(ntp1o, ipw.GetNormal())
-                    # multiply by planeNormal
-                    spd = [spdM * e for e in ipw.GetNormal()]
-                    
-                    # we now have y (spd) and r (objectAxisM), so use asin
-                    # and convert everything to degrees
-                    rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
-
-
-                    newTransform = vtk.vtkTransform()
-                    newTransform.Identity()
-                    newTransform.PreMultiply()
-                    newTransform.Translate(vd)                    
-                    tp0n = [-e for e in tp[0]]
-                    newTransform.Translate(tp[0])
-                    newTransform.RotateWXYZ(
-                        -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
-                    newTransform.Translate(tp0n)
-
-                    newTransform.Concatenate(
-                        objectDict['vtkActor'].GetMatrix())
-
-                    objectDict['vtkActor'].SetOrientation(
-                        newTransform.GetOrientation())
-                    objectDict['vtkActor'].SetScale(
-                        newTransform.GetScale())
-                    objectDict['vtkActor'].SetPosition(
-                        newTransform.GetPosition())
-                        
-                    
-                    
-            # closes: for obj in objs:
+        if sObjects:
             self._slice3dVWR.render3D()
 
-        else:
-            wxLogMessage("You have to select two points and a slice.")
-            
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
         """
