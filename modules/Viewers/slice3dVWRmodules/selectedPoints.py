@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.10 2004/08/20 23:14:06 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.11 2004/11/19 15:19:07 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -271,12 +271,7 @@ class selectedPoints(s3dcGridMixin):
             # get its position and transfer it to the sphere actor that
             # we use
             pos = pw.GetPosition()
-            self._pointsList[idx]['sphereActor'].SetPosition(pos)
-
-            # also update the text_actor (if appropriate)
-            ta = self._pointsList[idx]['textActor']
-            if ta:
-                ta.SetPosition(pos)
+            self._pointsList[idx]['sphereActor'].SetAttachmentPoint(pos)
 
             val, discrete = self.slice3dVWR.getValueAtPositionInInputData(pos)
             if val == None:
@@ -304,9 +299,6 @@ class selectedPoints(s3dcGridMixin):
         for idx in idxs:
             # remove the sphere actor from the renderer
             ren.RemoveActor(self._pointsList[idx]['sphereActor'])
-            # remove the text_actor (if any)
-            if self._pointsList[idx]['textActor']:
-                ren.RemoveActor(self._pointsList[idx]['textActor'])
             
             # then deactivate and disconnect the point widget
             pw = self._pointsList[idx]['pointWidget']
@@ -338,12 +330,8 @@ class selectedPoints(s3dcGridMixin):
             # is not blank
 
             # first make sure the 3d renderer knows about this
-            ta =  self._pointsList[pointIdx]['textActor']
-            if ta:
-                nameText = ta.GetMapper().GetInput().GetSource()
-                # nameText should be a vtkVectorText
-                nameText.SetText(newName)
-
+            ca =  self._pointsList[pointIdx]['sphereActor']
+            ca.SetCaption(newName)
 
             # now record the change in our internal list
             self._pointsList[pointIdx]['name'] = newName
@@ -414,36 +402,31 @@ class selectedPoints(s3dcGridMixin):
         pw.AllOff()
         pw.On()
 
-        ss = vtk.vtkSphereSource()
-        #bounds = inputData.GetBounds()
+        #ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
+        
+        ca = vtk.vtkCaptionActor2D()
+        ca.GetProperty().SetColor(1,0,0)
+        ca.GetCaptionTextProperty().SetColor(1,0,0)
+        ca.SetPickable(0)
+        ca.SetAttachmentPoint(world)
+        ca.SetPosition(25,10)
+        ca.BorderOff()
+        ca.SetWidth(0.15)
+        ca.SetHeight(0.02)
+        #ca.ThreeDimensionalLeaderOff()
 
-        ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
-        sm = vtk.vtkPolyDataMapper()
-        sm.SetInput(ss.GetOutput())
-        sa = vtk.vtkActor()
-        sa.SetMapper(sm)
-        sa.SetPosition(world)
-        sa.GetProperty().SetColor(1.0,0.0,0.0)
-        tdren.AddActor(sa)
-        sa.SetPickable(0)
+        coneSource = vtk.vtkConeSource()
+        coneSource.SetResolution(6)
+
+        ca.SetLeaderGlyph(coneSource.GetOutput())
 
         if len(pointName) > 0:
-            name_text = vtk.vtkVectorText()
-            name_text.SetText(pointName)
-            name_mapper = vtk.vtkPolyDataMapper()
-            name_mapper.SetInput(name_text.GetOutput())
-            ta = vtk.vtkFollower()
-            ta.SetMapper(name_mapper)
-            ta.GetProperty().SetColor(1.0, 1.0, 0.0)
-            ta.SetPosition(world)
-            ta_bounds = ta.GetBounds()
-            ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
-                        (ta_bounds[1] - ta_bounds[0]))
-            tdren.AddActor(ta)
-            ta.SetPickable(0)
-            ta.SetCamera(tdren.GetActiveCamera())
+            ca.SetCaption(pointName)
+            
         else:
-            ta = None
+            ca.SetCaption("n/a")
+
+        tdren.AddActor(ca)
 
 
         def pw_ei_cb(pw, evt_name):
@@ -468,9 +451,7 @@ class selectedPoints(s3dcGridMixin):
                                  'name' : pointName,
                                  'pointWidget' : pw,
                                  'lockToSurface' : lockToSurface,
-                                 'sphereActor' : sa,
-                                 'textActor' : ta})
-
+                                 'sphereActor' : ca})
 
         self._grid.AppendRows()
         #self._grid.AdjustScrollBars()
