@@ -71,9 +71,12 @@ class testModule3(moduleBase, noConfigModuleMixin):
     def configToView(self):
         pass
     
+
     def executeModule(self):
         if self._tf.GetInput():
             self._curvatures.Update()
+
+            #
 
 
     def view(self, parent_window=None):
