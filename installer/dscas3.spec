@@ -24,7 +24,7 @@ vpli = [(os.path.join('Icons', i),
 a = Analysis(['/home/cpbotha/build/Installer/support/_mountzlib.py',
     	      '/home/cpbotha/build/Installer/support/useUnicode.py',
               '/home/cpbotha/work/code/dscas3/dscas3.py'],
-             pathex=['/home/cpbotha/work/code/dscas3/modules'],
+             pathex=[],
              hookspath=['/home/cpbotha/work/code/dscas3/installer/hooks'])
 
 pyz = PYZ(a.pure)
