@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.73 2003/01/19 19:22:02 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.74 2003/01/19 23:13:37 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -105,7 +105,7 @@ class vtk_slice_vwr(module_base,
 	self._rwi.GetRenderWindow().AddObserver('DeleteEvent', 
 	                                        rwDestroyEventHandler)
 	# kill our binding
-	del self._rwi						
+	del self._rwi
 	# now destroy all the containing frame's children
 	self._view_frame.DestroyChildren()
 	# unbind the _view_frame binding

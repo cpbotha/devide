@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.9 2002/06/10 15:00:55 cpbotha Exp $
+# $Id: dscas3.py,v 1.10 2003/01/19 23:13:37 cpbotha Exp $
 
 import os
 import stat
@@ -286,6 +286,8 @@ class dscas3_app_t(wxApp):
         return self._appdir
 	
     def quit(self):
+        # shutdown all modules gracefully
+        self.module_manager.close()
 	# take care of main window
 	self.main_window.Close()
 

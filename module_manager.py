@@ -25,6 +25,14 @@ class module_manager:
 
         self._current_module = None
 
+    def close(self):
+        """Iterates through each module and closes it.
+
+        This is only called during dscas3 application shutdown.
+        """
+        for module in self.modules:
+            self.delete_module(module)
+
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files."""
@@ -133,6 +141,7 @@ class module_manager:
     def get_current_module(self):
         return self._current_module
     
+
 
 	
 

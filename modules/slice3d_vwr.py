@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.4 2003/01/19 19:22:02 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.5 2003/01/19 23:13:37 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -53,6 +53,8 @@ class slice3d_vwr(module_base,
         self._ortho1Renderer = None
         self._ortho2Renderer = None
 
+        self.deathCounter = 3
+
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
         # this will be passed on as input to the next component
@@ -76,6 +78,11 @@ class slice3d_vwr(module_base,
 
         # make the list of imageplanewidgets
         self._ipws = [vtk.vtkImagePlaneWidget() for i in range(3)]
+        # set the same picker for each vtkIPW
+        picker = vtk.vtkCellPicker()
+        for ipw in self._ipws:
+            ipw.SetPicker(picker)
+        
         self._current_cursors = [[0,0,0,0] for i in self._ipws]
         
         # set the whole UI up!
@@ -86,6 +93,11 @@ class slice3d_vwr(module_base,
 #################################################################
         
     def close(self):
+
+        self._view_frame.threedRWI.GetRenderWindow().DebugOn()
+        
+        # this is standard behaviour in the close method:
+        # call set_input(idx, None) for all inputs
         for idx in range(self._num_inputs):
             self.set_input(idx, None)
         
@@ -96,27 +108,58 @@ class slice3d_vwr(module_base,
         
 	del self._ipws
 
-        del self._threedRenderer
-        del self._ortho1Renderer
-        del self._ortho2Renderer
-	
-	
+        # the remaining bit of logic is quite crucial:
+        # we can't explicitly Destroy() the frame, as the RWI that it contains
+        # will only disappear when it's reference count reaches 0, and we
+        # can't really force that to happen either.  If you DO Destroy() the
+        # frame before the RW destructs, it will cause the application to
+        # crash because the RW assumes a valid WindowId in its dtor
+        #
+        # So, what we do is to add an event handler to the RenderWindow that
+        # gets triggered when the RW finally dies. This event handler will then
+        # Destroy() the frame.  We must just make sure to del all our bindings
+        # to the frame and the everything else that might be connected.
+
+        vf = self._view_frame
 	# hide it so long
-	self._view_frame.Show(0)
+	vf.Show(0)
+
 	# this event handler will finally Destroy the containing frame
-	vf = self._view_frame
+        vfDestroy = self._view_frame.Destroy
 	def rwDestroyEventHandler(o, e):
-	    vf.Destroy()
+            self.deathCounter = self.deathCounter - 1
+            print "VF DESTROY %d" % (self.deathCounter)
+            if self.deathCounter == 0:
+                vfDestroy()
+                del vf
+
 	# set it to be called on destruction
-	rwi = self._view_frame.threedRWI
-	rwi.GetRenderWindow().AddObserver('DeleteEvent', 
-	                                  rwDestroyEventHandler)
-	# kill our binding
-	del rwi						
+	vf.threedRWI.GetRenderWindow().AddObserver('DeleteEvent', 
+                                                   rwDestroyEventHandler)
+	vf.ortho1RWI.GetRenderWindow().AddObserver('DeleteEvent', 
+                                                   rwDestroyEventHandler)
+	vf.ortho2RWI.GetRenderWindow().AddObserver('DeleteEvent', 
+                                                   rwDestroyEventHandler)
+
+        # now we have to disentangle all references
+        vf.threedRWI.GetRenderWindow().RemoveRenderer(self._threedRenderer)
+        vf.threedRWI.SetRenderWindow(None)
+        vf.ortho1RWI.GetRenderWindow().RemoveRenderer(self._ortho1Renderer)
+        vf.ortho1RWI.SetRenderWindow(None)
+        vf.ortho2RWI.GetRenderWindow().RemoveRenderer(self._ortho2Renderer)
+        vf.ortho2RWI.SetRenderWindow(None)
+
+        # take care of all our bindings to renderers
+        #del self._threedRenderer
+        #del self._ortho1Renderer
+        #del self._ortho2Renderer
+
 	# now destroy all the containing frame's children
-	self._view_frame.DestroyChildren()
+	vf.DestroyChildren()
+
 	# unbind the _view_frame binding
-	del self._view_frame	    
+        del vf
+	del self._view_frame
 	
     def get_input_descriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -129,7 +172,8 @@ class slice3d_vwr(module_base,
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
                 self._inputs[idx]['Connected'] = None
                 if self._inputs[idx]['vtkActor'] != None:
-                    self._threedRenderer.RemoveActor(self._inputs[idx]['vtkActor'])
+                    self._threedRenderer.RemoveActor(self._inputs[idx][
+                        'vtkActor'])
                     self._inputs[idx]['vtkActor'] = None
 
             elif self._inputs[idx]['Connected'] == 'vtkImageData':
@@ -253,6 +297,9 @@ class slice3d_vwr(module_base,
         self._view_frame = slice3d_vwr_frame(parent_window, id=-1,
                                              title='dummy')
 
+        # fix for the grid
+        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+
         # add THREE the renderers
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
@@ -267,9 +314,30 @@ class slice3d_vwr(module_base,
         self._view_frame.ortho2RWI.GetRenderWindow().AddRenderer(self.
                                                                _ortho2Renderer)
 
-        # fix for the grid
-        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        # event handlers for the global control buttons
+        EVT_BUTTON(self._view_frame, self._view_frame.pipelineButtonId,
+                   lambda e, pw=self._view_frame, s=self,
+                   rw=self._view_frame.threedRWI.GetRenderWindow():
+                   s.vtk_pipeline_configure(pw, rw))
 
+        def confPickedHandler(event):
+            rwi = self._view_frame.threedRWI
+            picker = rwi.GetPicker()
+            path = picker.GetPath()
+            if path:
+                prop = path.GetFirstNode().GetProp()
+                if prop:
+                    self.vtk_pipeline_configure(self._view_frame,
+                                                rwi.GetRenderWindow(),
+                                                (prop,))
+
+        EVT_BUTTON(self._view_frame, self._view_frame.confPickedButtonId,
+                   confPickedHandler)
+
+        EVT_BUTTON(self._view_frame, self._view_frame.resetButtonId,
+                   lambda e, s=self: s._reset())
+
+        
         # event logic for the selected points grid
 
         def pointsSelectAllCallback(event):
@@ -437,11 +505,8 @@ class slice3d_vwr(module_base,
             idx -= 1
             ipw.SetSliceIndex(0)
             ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
-
-            # see if the creator of the input_data can tell
-            # us something about Window/Level
-            #input_data_source = ipw.GetInput().GetSource()
-
+            # this is not working yet, because the IPWs handling of
+            # luts is somewhat broken at the moment
             ipw.SetLookupTable(lut)
             ipw.On()
 
@@ -460,6 +525,8 @@ class slice3d_vwr(module_base,
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
+
+        print "end of reset()"
 
     def _store_cursor(self, cursor):
 
