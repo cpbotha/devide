@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.12 2004/06/23 11:48:32 cpbotha Exp $
+# $Id: pythonShell.py,v 1.13 2004/06/23 11:51:32 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -81,7 +81,7 @@ class pythonShell:
             self._psFrame.pyShell.redirectStdout()
             self._psFrame.pyShell.redirectStderr()
             self._psFrame.pyShell.redirectStdin()
-            
+
             # runfile also generates an IOError if it can't load the file
             execfile(path, globals(), self._psFrame.pyShell.interp.locals)
 
