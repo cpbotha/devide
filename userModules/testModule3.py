@@ -30,7 +30,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
                                       mm.vtk_progress_cb(s._wspdf))
 
         self._cleaner2 = vtk.vtkCleanPolyData()
-        self._cleaner2.SetInput(self._wspdf.GetOutput())
+        self._cleaner2.SetInput(self._tf.GetOutput())
 
         self._curvatures = vtk.vtkCurvatures()
         self._curvatures.SetCurvatureTypeToMean()        
@@ -47,6 +47,8 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
         self._inputPoints = None
         self._inputPointsOID = None
+        self._giaGlenoid = None
+        self._outsidePoints = None
         self._outputPolyDataARB = vtk.vtkPolyData()
         self._outputPolyDataHM = vtk.vtkPolyData()
 
@@ -114,7 +116,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
     def executeModule(self):
         if self._cleaner.GetInput() and \
-               self._outsidePoint and self._giaGlenoid:
+               self._outsidePoints and self._giaGlenoid:
             
             self._curvatures.Update()
             # vtkCurvatures has added a mean curvature array to the
@@ -188,12 +190,11 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
             # now find the minima and set them too
             gPtId = seedPd.FindPoint(self._giaGlenoid)
-            oPtId = seedPd.FindPoint(self._outsidePoint)
-
-            # the pointdata is of course dependent on the points - we know
-            # that Mean_Curvature is a 1-tuple
             seedPd.GetPointData().GetScalars().SetTuple1(gPtId, cMin)
-            seedPd.GetPointData().GetScalars().SetTuple1(oPtId, cMin)
+            for outsidePoint in self._outsidePoints:
+                oPtId = seedPd.FindPoint(outsidePoint)
+                seedPd.GetPointData().GetScalars().SetTuple1(oPtId, cMin)
+
             # remember vtkDataArray: array of tuples, each tuple made up
             # of n components
 
@@ -206,8 +207,9 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
             gPtId = tempPd1.FindPoint(self._giaGlenoid)
             tempPd1.GetPointData().GetScalars().SetTuple1(gPtId, cMin)
-            oPtId = tempPd1.FindPoint(self._outsidePoint)
-            tempPd1.GetPointData().GetScalars().SetTuple1(oPtId, cMin)
+            for outsidePoint in self._outsidePoints:
+                oPtId = tempPd1.FindPoint(outsidePoint)
+                tempPd1.GetPointData().GetScalars().SetTuple1(oPtId, cMin)
             
             # DONE MODIFYING MASK IMAGE ##################################
 
@@ -281,16 +283,16 @@ class testModule3(moduleBase, noConfigModuleMixin):
             giaGlenoid = [i['world'] for i in self._inputPoints
                           if i['name'] == 'GIA Glenoid']
 
-            outside = [i['world'] for i in self._inputPoints
-                       if i['name'] == 'Outside']
+            outsidePoints = [i['world'] for i in self._inputPoints \
+                            if i['name'] == 'Outside']
 
 
-            if giaGlenoid and outside:
+            if giaGlenoid and outsidePoints:
                 
                 # we only apply these points to our internal parameters
                 # if they're valid and if they're new
                 self._giaGlenoid = giaGlenoid[0]
-                self._outsidePoint = outside[0]
+                self._outsidePoints = outsidePoints
     
         
         
