@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.31 2003/03/05 00:15:21 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.32 2003/03/05 11:14:31 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -851,19 +851,24 @@ class slice3d_vwr(moduleBase,
         if xyz in worlds:
             return
 
-        inputData = self._ipws[0].GetInput()
+        if self._ipws[0]:
+            inputData = self._ipws[0][0].GetInput()
+        else:
+            inputData = None
+            
         if inputData:
             # get the discrete coords of this point
             ispacing = inputData.GetSpacing()
             iorigin = inputData.GetOrigin()
             discrete = map(round,
                            map(operator.div,
-                               map(operator.sub, pos, iorigin), ispacing))
-            val = inputData.GetScalarComponentAsFloat(x,y,z, 0)
+                               map(operator.sub, xyz, iorigin), ispacing))
+            val = inputData.GetScalarComponentAsFloat(discrete[0],discrete[1],
+                                                      discrete[2], 0)
         else:
             discrete = (0, 0, 0)
             val = 0
-            
+
         self._storePoint(discrete, xyz, val)
 
     def _storeCursor(self, cursor):
@@ -956,7 +961,8 @@ class slice3d_vwr(moduleBase,
         pw.AddObserver('EndInteractionEvent', pw_ei_cb)
         
         # store the cursor (discrete coords) the coords and the actor
-        self._selectedPoints.append({'discrete' : discrete, 'world' : world,
+        self._selectedPoints.append({'discrete' : tuple(discrete),
+                                     'world' : tuple(world),
                                      'value' : value,
                                      'name' : cursor_name,
                                      'point_widget' : pw,
@@ -1034,8 +1040,8 @@ class slice3d_vwr(moduleBase,
 
             tm2p = orthoView['textureMapToPlanes'][layer]
             tm2p.SetOrigin(0,0,0)
-            tm2p.SetPoint1(roBounds[1], 0, 0)
-            tm2p.SetPoint2(0, roBounds[3], 0)
+            tm2p.SetPoint1(roBounds[1] - roBounds[0], 0, 0)
+            tm2p.SetPoint2(0, roBounds[3] - roBounds[2], 0)
 
 
     def _syncOutputSelectedPoints(self):
@@ -1114,7 +1120,12 @@ class slice3d_vwr(moduleBase,
             if ta:
                 ta.SetPosition(pos)
 
-            inputData = self._ipws[0].GetInput()
+
+            if self._ipws[0]:
+                inputData = self._ipws[0][0].GetInput()
+            else:
+                inputData = None
+
             if inputData:
                 # then we have to update our internal record of this point
                 ispacing = inputData.GetSpacing()
@@ -1130,9 +1141,9 @@ class slice3d_vwr(moduleBase,
                 val = 0
                 
             # the cursor is a tuple with discrete position and value
-            self._selectedPoints[idx]['discrete'] = discrete
+            self._selectedPoints[idx]['discrete'] = tuple(discrete)
             # 'world' is the world coordinates
-            self._selectedPoints[idx]['world'] = pos
+            self._selectedPoints[idx]['world'] = tuple(pos)
             # and the value
             self._selectedPoints[idx]['value'] = val
 
