@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.26 2004/03/04 22:42:38 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.27 2004/03/04 22:46:30 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -505,7 +505,6 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             else:
                 raise ValueError, 'Invalid typeDescription.'
 
-            print "setting self._config.%s to %s" % (configTuple[1], val)
             setattr(self._config, configTuple[1], val)
 
     def configToView(self):
