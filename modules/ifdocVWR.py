@@ -1,5 +1,5 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.7 2003/09/07 14:38:36 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.8 2003/09/07 19:48:29 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
@@ -10,6 +10,7 @@
 from genMixins import subjectMixin
 from moduleBase import moduleBase
 import moduleUtils
+import os
 import time
 import vtk
 from wxPython.wx import *
@@ -81,6 +82,7 @@ class ifdocVWR(moduleBase):
 
         if self._mData != None:
             self._mData.Update()
+            
             self.doTimeStep(0)
             self.updateRender()
             self._threedRenderer.ResetCamera()
@@ -248,6 +250,8 @@ class ifdocVWR(moduleBase):
         self._threedRenderer.AddActor(actor)
 
         actor.GetProperty().SetColor(0,1.0,0)
+
+
         
     def doTimeStep(self, timeStep):
         """timeStep is 0-based.

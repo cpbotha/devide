@@ -1,5 +1,5 @@
 # ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocRDR.py,v 1.9 2003/09/07 14:38:36 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.10 2003/09/07 19:48:29 cpbotha Exp $
 # module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
@@ -25,10 +25,14 @@ class mData(subjectMixin, updateCallsExecuteModuleMixin):
         
         # important variables
 
-        # ppos: is a list of objects, each object containing attributes
-        # that are the tuples with the position at that time, e.g.
-        # self.ppos[10].ac is the position of ac at timestep 10
+        # ppos is a list of dictionaries, each dictionary encapsulating
+        # one complete timestep... the keys are the various point names
+        # and their values are the tuples containing the point positions
         self.ppos = []
+        # phin is a list of dictionaries, each dictionary encapsulating
+        # one complete timestep.  The dictionary has the names of the
+        # rotating bones as keys and tuples of euler angles as values
+        self.phin = []
 
     def close(self):
         # this will get rid of all bindings to observers
@@ -115,6 +119,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         and inserted into mData.
         """
 
+        # PPOS ---------------------------------------------------------
         # column is time, rows are coordinates of various points
         # matrix is row, column ordered
         pposMatrix = mDict['ppos']
@@ -133,6 +138,19 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
                                                    rows[2][timeStep])
             
             rowIdx += 3
+
+        # PPOS ---------------------------------------------------------
+        phinMatrix = mDict['phin']
+        mData.phin = [{} for i in xrange(len(phinMatrix[0]))]
+
+        rowIdx = 0
+        for jointName in ['thorax', 'clavicula', 'scapula', 'humerus',
+                          'ulna', 'radius', 'hand']:
+            rows = phinMatrix[rowIdx:rowIdx+3]
+            for timeStep in xrange(len(mData.phin)):
+                mData.phin[timeStep][jointName] = (rows[0][timeStep],
+                                                   rows[1][timeStep],
+                                                   rows[2][timeStep])
 
     def parseMFile(self, fileBuffer, variableNameList):
         """This will parse fileBuffer for any variable = [ lines and
@@ -289,7 +307,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         if newHexDigest != self._md5HexDigest:
             # this will throw an exception if it can't parse the file
             # this exception will trigger the handler in moduleManager
-            mDict = self.parseMFile(mBuffer, ['ppos'])
+            mDict = self.parseMFile(mBuffer, ['ppos', 'phin'])
 
             # this will clear necessary structures in self._mData and
             # re-init them with new data
