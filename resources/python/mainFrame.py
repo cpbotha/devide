@@ -45,9 +45,8 @@ class mainFrame(wxFrame):
         frame_1_statusbar_fields = ["Welcome to DSCAS3"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
-        self.progressText.SetFont(wxFont(14, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
+        self.progressText.SetFont(wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
         self.progressGauge.SetBackgroundColour(wxColour(50, 153, 204))
-        self.progressRaiseCheckBox.SetFont(wxFont(10, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))
         self.progressRaiseCheckBox.SetValue(1)
         # end wxGlade
 
@@ -56,8 +55,8 @@ class mainFrame(wxFrame):
         sizer_1 = wxBoxSizer(wxVERTICAL)
         sizer_3 = wxBoxSizer(wxVERTICAL)
         sizer_3.Add(self.progressText, 0, wxLEFT|wxRIGHT|wxTOP, 5)
-        sizer_3.Add(self.progressGauge, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 5)
-        sizer_3.Add(self.progressRaiseCheckBox, 0, wxALL|wxEXPAND, 5)
+        sizer_3.Add(self.progressGauge, 0, wxLEFT|wxRIGHT|wxEXPAND, 5)
+        sizer_3.Add(self.progressRaiseCheckBox, 0, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5)
         self.panel_1.SetAutoLayout(1)
         self.panel_1.SetSizer(sizer_3)
         sizer_3.Fit(self.panel_1)
