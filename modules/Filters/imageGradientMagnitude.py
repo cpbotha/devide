@@ -7,7 +7,10 @@ import vtk
 
 class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
 
-    """Calculates the gradient magnitude of the input volume.
+    """Calculates the gradient magnitude of the input volume using central
+    differences.
+
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):
