@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.9 2004/04/13 20:34:24 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.10 2004/04/14 15:58:02 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -26,7 +26,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
     Also see figure 9.18 in the ITK Software Guide.
 
-    $Revision: 1.9 $
+    $Revision: 1.10 $
     """
 
     def __init__(self, moduleManager):
@@ -99,9 +99,9 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         gAC = itk.itkGeodesicActiveContourLevelSetImageFilterF3F3_New()
         geodesicActiveContour = gAC
         geodesicActiveContour.SetCurvatureScaling( 1.0 );
-        geodesicActiveContour.SetAdvectionScaling( 1.0 );
-        geodesicActiveContour.SetMaximumRMSError( 0.02 );
-        geodesicActiveContour.SetNumberOfIterations( 800 );
+        geodesicActiveContour.SetAdvectionScaling( 5.0 );
+        geodesicActiveContour.SetMaximumRMSError( 0.1 );
+        geodesicActiveContour.SetNumberOfIterations( 1000 );
         #geodesicActiveContour.SetInput(  fastMarching.GetOutput() );
         #geodesicActiveContour.SetFeatureImage( sigmoid.GetOutput() );
         self._geodesicActiveContour = geodesicActiveContour

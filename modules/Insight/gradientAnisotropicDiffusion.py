@@ -1,4 +1,4 @@
-# $Id: gradientAnisotropicDiffusion.py,v 1.2 2004/03/10 22:15:46 cpbotha Exp $
+# $Id: gradientAnisotropicDiffusion.py,v 1.3 2004/04/14 15:58:02 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -13,7 +13,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
     This will smooth homogeneous areas whilst preserving features
     (e.g. edges).
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -37,11 +37,11 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
         # setup the pipeline
         d = itk.itkGradientAnisotropicDiffusionImageFilterF3F3_New()
         d.SetTimeStep(0.0625) # standard for 3D
+        self._diffuse = d
         
         moduleUtilsITK.setupITKObjectProgress(
-            self, d, 'itkGradientAnisotropicDiffusionImageFilter',
+            self, self._diffuse, 'itkGradientAnisotropicDiffusionImageFilter',
             'Smoothing data')
-        self._diffuse = d
 
         self._createWindow(
             {'Module (self)' : self,

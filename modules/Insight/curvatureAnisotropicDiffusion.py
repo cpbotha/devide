@@ -1,4 +1,4 @@
-# $Id: curvatureAnisotropicDiffusion.py,v 1.2 2004/03/03 12:20:16 cpbotha Exp $
+# $Id: curvatureAnisotropicDiffusion.py,v 1.3 2004/04/14 15:58:02 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -30,11 +30,12 @@ class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
         # setup the pipeline
         d = itk.itkCurvatureAnisotropicDiffusionImageFilterF3F3_New()
         d.SetTimeStep(0.0625) # standard for 3D
+        self._diffuse = d
         
         moduleUtilsITK.setupITKObjectProgress(
-            self, d, 'itkCurvatureAnisotropicDiffusionImageFilter',
+            self, self._diffuse,
+            'itkCurvatureAnisotropicDiffusionImageFilter',
             'Smoothing data')
-        self._diffuse = d
 
         self._createWindow(
             {'Module (self)' : self,
