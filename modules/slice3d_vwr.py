@@ -1,5 +1,5 @@
-# vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.72 2003/01/17 19:01:52 cpbotha Exp $
+# slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
+# $Id: slice3d_vwr.py,v 1.1 2003/01/17 19:01:52 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -22,8 +22,8 @@ except NameError:
     else:
         WX_USE_X_CAPTURE = 0
 
-class vtk_slice_vwr(module_base,
-                    module_mixin_vtk_pipeline_config):
+class slice3d_vwr(module_base,
+                  module_mixin_vtk_pipeline_config):
     
     """Slicing, dicing slice viewing class.
 
@@ -94,10 +94,11 @@ class vtk_slice_vwr(module_base,
         
         if hasattr(self, '_ipws'):
             del self._ipws
-        if hasattr(self, '_renderer'):
-            del self._renderer
-        if hasattr(self, '_rwi'):
-            del self._rwi
+
+        del self._threedRenderer
+        del self._ortho1Renderer
+        del self._ortho2Renderer
+
         if hasattr(self,'_view_frame'):
             self._view_frame.Destroy()
             del self._view_frame
@@ -284,158 +285,32 @@ class vtk_slice_vwr(module_base,
         return panel
 
     def _create_window(self):
+        import resources.python.slice3d_vwr_frame
+        reload(resources.python.slice3d_vwr_frame)
+
         # create main frame, make sure that when it's closed, it merely hides
         parent_window = self._module_manager.get_module_view_parent_window()
-        self._view_frame = wxFrame(parent=parent_window, id=-1,
-                                   title='slice viewer')
+        slice3d_vwr_frame = \
+                          resources.python.slice3d_vwr_frame.slice3d_vwr_frame
+        self._view_frame = slice3d_vwr_frame(parent_window, id=-1,
+                                             title='dummy')
+
+        # add THREE the renderers
+        self._threedRenderer = vtk.vtkRenderer()
+        self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
+        self._view_frame.threedRWI.GetRenderWindow().AddRenderer(self.
+                                                               _threedRenderer)
+        self._ortho1Renderer = vtk.vtkRenderer()
+        self._ortho1Renderer.SetBackground(0.5, 0.5, 0.5)
+        self._view_frame.ortho1RWI.GetRenderWindow().AddRenderer(self.
+                                                               _ortho1Renderer)
+        self._ortho2Renderer = vtk.vtkRenderer()
+        self._ortho2Renderer.SetBackground(0.5, 0.5, 0.5)
+        self._view_frame.ortho2RWI.GetRenderWindow().AddRenderer(self.
+                                                               _ortho2Renderer)
+        
         EVT_CLOSE(self._view_frame,
                   lambda e, s=self: s._view_frame.Show(false))
-
-        # panel inside the frame
-        panel = wxPanel(self._view_frame, id=-1)
-
-        # then setup the renderwindow
-        # -----------------------------------------------------------------
-        self._rwi = wxVTKRenderWindowInteractor(panel, -1, size=(640,480))
-        self._renderer = vtk.vtkRenderer()
-        self._renderer.SetBackground(0.5,0.5,0.5)
-        self._rwi.GetRenderWindow().AddRenderer(self._renderer)
-        
-
-        # then the selected point list control
-        # -----------------------------------------------------------------
-        self._spoint_listctrl = wxListCtrl(panel, -1, size=(280,100),
-                                           style=wxLC_REPORT|wxSUNKEN_BORDER|
-                                           wxLC_HRULES|wxLC_VRULES)
-        self._spoint_listctrl.InsertColumn(0, 'Position')
-        self._spoint_listctrl.SetColumnWidth(0, 180)
-        self._spoint_listctrl.InsertColumn(2, 'Value')
-        self._spoint_listctrl.SetColumnWidth(2, 100)
-
-        # buttons for managing the selected point list control
-
-        def select_all_cb(event):
-            for i in range(self._spoint_listctrl.GetItemCount()):
-                self._spoint_listctrl.SetItemState(i, wxLIST_STATE_SELECTED,
-                                                   wxLIST_STATE_SELECTED)
-        
-        sa_id = wxNewId()
-        sab = wxButton(panel, sa_id, 'Select all')
-        EVT_BUTTON(panel, sa_id, select_all_cb)
-
-        def deselect_all_cb(event):
-            for i in range(self._spoint_listctrl.GetItemCount()):
-                self._spoint_listctrl.SetItemState(i, 0,
-                                                   wxLIST_STATE_SELECTED)
-        
-        da_id = wxNewId()
-        dab = wxButton(panel, da_id, 'Deselect all')
-        EVT_BUTTON(panel, da_id, deselect_all_cb)
-
-        def remove_cb(event):
-            idx = self._spoint_listctrl.GetItemCount() - 1
-            while idx >= 0:
-                if self._spoint_listctrl.GetItemState(idx,
-                                                      wxLIST_STATE_SELECTED):
-                    self._remove_cursor(idx)
-                    
-                idx -= 1
-            
-        rm_id = wxNewId()
-        rmb = wxButton(panel, rm_id, 'Remove')
-        EVT_BUTTON(panel, rm_id, remove_cb)
-        
-        # the button control panel
-        # -----------------------------------------------------------------
-        pcid = wxNewId()
-        pcb = wxButton(panel, pcid, 'Pipeline')
-        EVT_BUTTON(panel, pcid, lambda e, pw=self._view_frame, s=self,
-                   rw=self._rwi.GetRenderWindow():
-                   s.vtk_pipeline_configure(pw, rw))
-
-
-        def poc_cb(event):
-            picker = self._rwi.GetPicker()
-            path = picker.GetPath()
-            if path:
-                prop = path.GetFirstNode().GetProp()
-                if prop:
-                    self.vtk_pipeline_configure(self._view_frame,
-                                                self._rwi.GetRenderWindow(),
-                                                (prop,))
-
-        pocid = wxNewId()
-        pocb = wxButton(panel, pocid, 'Conf Picked')
-        EVT_BUTTON(panel, pocid, poc_cb)
-
-        rid = wxNewId()
-        rb = wxButton(panel, rid, 'Reset')
-        EVT_BUTTON(panel, rid, lambda e, s=self: s._reset())
-
-
-        # slices notebook
-        # -----------------------------------------------------------------
-
-        nb_id = wxNewId()
-        self._acs_nb = wxNotebook(panel, nb_id)
-        # by this time the _ipws must exist!
-        pnames = ["Axial", "Coronal", "Sagittal"]
-        for i in range(len(self._ipws)):
-            # create and populate panel
-            spanel = self._create_ipw_panel(self._acs_nb, i)
-            self._acs_nb.AddPage(spanel, pnames[i])
-            # now make callback for the ipw
-            self._ipws[i].AddObserver('StartInteractionEvent',
-                                      lambda e, o, i=i:
-                                      self._ipw_start_interaction_cb(i))
-            self._ipws[i].AddObserver('InteractionEvent',
-                                      lambda e, o, i=i:
-                                      self._ipw_interaction_cb(i))
-
-        EVT_NOTEBOOK_PAGE_CHANGED(panel, nb_id, self._acs_nb_page_changed_cb)
-
-
-        # all the sizers
-        # -----------------------------------------------------------------
-        
-        # these buttons are global controls, we want them right at the top
-        button_sizer = wxBoxSizer(wxHORIZONTAL)
-        button_sizer.Add(pcb)
-        button_sizer.Add(pocb)
-        button_sizer.Add(rb)
-
-        # we need a special sizer that determines the largest sizer
-        # on all of the notebook's pages
-        nbs = wxNotebookSizer(self._acs_nb)
-
-        # this sizer will contain the button_sizer and the notebook
-        button_nb_sizer = wxBoxSizer(wxVERTICAL)
-        button_nb_sizer.Add(button_sizer)
-        button_nb_sizer.Add(nbs, option=1, flag=wxEXPAND)
-
-        # sizers for _spoint_listctrl and _spoint_listctrl buttons
-        slc_buttons_sizer = wxBoxSizer(wxHORIZONTAL)
-        slc_buttons_sizer.Add(sab)
-        slc_buttons_sizer.Add(dab)
-        slc_buttons_sizer.Add(rmb)
-        slc_sizer = wxBoxSizer(wxVERTICAL)
-        slc_sizer.Add(self._spoint_listctrl, option=1, flag=wxEXPAND)
-        slc_sizer.Add(slc_buttons_sizer)
-
-        # this sizer contains the selected points list, buttons and notebook
-        bottom_sizer = wxBoxSizer(wxHORIZONTAL)
-        bottom_sizer.Add(slc_sizer, option=1, flag=wxEXPAND)
-        bottom_sizer.Add(button_nb_sizer, option=1, flag=wxEXPAND)
-
-        # top level sizer
-        tl_sizer = wxBoxSizer(wxVERTICAL)
-        tl_sizer.Add(self._rwi, option=1, flag=wxEXPAND)
-        tl_sizer.Add(bottom_sizer, flag=wxEXPAND)
-
-        panel.SetAutoLayout(true)
-        panel.SetSizer(tl_sizer)
-        tl_sizer.Fit(self._view_frame)
-        #tl_sizer.SetSizeHints(self._view_frame)
 
         self._view_frame.Show(true)
 
