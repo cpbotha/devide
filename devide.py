@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.50 2004/08/06 12:42:15 cpbotha Exp $
+# $Id: devide.py,v 1.51 2004/08/31 13:03:26 cpbotha Exp $
 
 DEVIDE_VERSION = '20040714'
 
@@ -110,10 +110,17 @@ class devide_app_t(wx.App):
 
         wx.EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
                     self.exitCallback)
+        
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
                    self._handlerMenuGraphEditor)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
                     self._handlerMenuPythonShell)
+
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowMinimiseChildrenId,
+                    lambda e: self._windowIconizeAllChildren())
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowRestoreChildrenId,
+                    lambda e: self._windowRestoreAllChildren())
+        
         wx.EVT_MENU(self._mainFrame, self._mainFrame.testingAllTestsId,
                     self._handlerTestingAllTests)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpContentsId,
@@ -406,6 +413,46 @@ class devide_app_t(wx.App):
 
     def _handlerMenuPythonShell(self, event):
         self.startPythonShell()
+
+    def _windowIconizeAllChildren(self):
+        children = self._mainFrame.GetChildren()
+
+        for w in children:
+            try:
+                w.Iconize()
+                
+            except AttributeError:
+                # it's a panel for instance
+                pass
+            
+            except wx.PyAssertionError:
+                # we get this if it's not created yet
+                pass
+
+    def _windowRestoreAllChildren(self):
+        children = self._mainFrame.GetChildren()
+
+        for w in children:
+            try:
+                # we don't want to attempt to restore things that are
+                # hidden... only iconized
+                if w.IsShown():
+                    w.Restore()
+                
+            except AttributeError:
+                # panels and stuff
+                pass
+            
+            except wx.PyAssertionError:
+                # this is usually "not implemented" on gtk, so we
+                # do an ugly work-around: store the window position,
+                # hide it, show it, reposition it - this even works
+                # under KDE
+                if w.IsShown():
+                    p = w.GetPosition() 
+                    w.Hide()
+                    w.Show()
+                    w.SetPosition(p)
 
 	
 # ---------------------------------------------------------------------------
