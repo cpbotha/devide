@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
+# $Id: tdObjects.py,v 1.3 2003/12/16 15:52:48 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -46,6 +46,17 @@ class tdObjects(object, s3dcGridMixin):
         self._disableMenuItems = self._appendGridCommandsToMenu(
             self.slice3dVWR.controlFrame.objectsMenu,
             self.slice3dVWR.controlFrame, disable=True)
+
+
+        # some GUI events that have to do with the objects list
+        wx.EVT_BUTTON(self.slice3dVWR.objectAnimationFrame,
+                      self.slice3dVWR.objectAnimationFrame.resetButtonId,
+                      self._handlerObjectAnimationReset)
+
+        wx.EVT_SLIDER(self.slice3dVWR.objectAnimationFrame,
+                      self.slice3dVWR.objectAnimationFrame.frameSliderId,
+                      self._handlerObjectAnimationSlider)
+        
 
         # this will fix up wxTheColourDatabase
         colourdb.updateColourDB()
@@ -201,7 +212,11 @@ class tdObjects(object, s3dcGridMixin):
              self._handlerObjectAxisToSlice, True),
             ('Const&rain Motion',
              'Constrain the motion of selected objects to the selected slices',
-             self._handlerObjectPlaneLock, True)]
+             self._handlerObjectPlaneLock, True),
+            ('---',), # important!  one-element tuple...
+            ('Animate Objects',
+             'Animate all present objects by controlling exclusive visibility',
+             self._handlerObjectAnimation, False)]
 
         disableList = self._appendGridCommandsTupleToMenu(
             menu, eventWidget, commandsTuple, disable)
@@ -540,7 +555,7 @@ class tdObjects(object, s3dcGridMixin):
         return None
         
 
-    def findObjectsByNames(self, objectNames):
+    def findObjectByName(self, objectName):
         """Given an objectName, return a tdObject binding.
         """
         
@@ -643,6 +658,23 @@ class tdObjects(object, s3dcGridMixin):
 
         self._appendGridCommandsToMenu(pmenu, self._grid)
         self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
+
+    def _handlerObjectAnimation(self, event):
+        self.slice3dVWR.objectAnimationFrame.Show()
+        self.slice3dVWR.objectAnimationFrame.Raise()
+        self._objectAnimationReset()
+
+    def _handlerObjectAnimationReset(self, event):
+        self._objectAnimationReset()
+        
+    def _handlerObjectAnimationSlider(self, event):
+        numObjects = len(self._tdObjectsDict)
+        frameSlider = self.slice3dVWR.objectAnimationFrame.frameSlider
+        if frameSlider.GetValue() < numObjects:
+            objectName = self._grid.GetCellValue(
+                frameSlider.GetValue(), self._gridNameCol)
+            self._setExclusiveObjectVisibility(objectName, True)
+            self.slice3dVWR.render3D()
 
     def _handlerObjectSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
@@ -949,6 +981,17 @@ class tdObjects(object, s3dcGridMixin):
                 self._tdObjectsDict[tdObject]['motionBoxWidget'],
                 tdObject)
 
+    def _objectAnimationReset(self):
+        numObjects = len(self._tdObjectsDict)        
+        if numObjects > 0:
+            frameSlider = self.slice3dVWR.objectAnimationFrame.frameSlider
+            # first tell slider what it can do
+            frameSlider.SetRange(0, numObjects - 1)
+            frameSlider.SetValue(0)
+            name0 = self._grid.GetCellValue(0, self._gridNameCol)
+            self._setExclusiveObjectVisibility(name0, True)
+            self.slice3dVWR.render3D()
+
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
         # make sure the transform is up to date
         self._observerMotionBoxWidgetInteraction(eventObject, eventType)
@@ -1091,6 +1134,17 @@ class tdObjects(object, s3dcGridMixin):
             if gridRow >= 0:
                 genUtils.setGridCellYesNo(
                     self._grid,gridRow, self._gridVisibleCol, visible)
+
+    def _setExclusiveObjectVisibility(self, objectName, visible):
+        """Sets the visibility of tdObject to visible and all the other
+        objects to the opposite.  Used by animation.
+        """
+
+        for obj, objDict in self._tdObjectsDict.items():
+            if objDict['objectName'] == objectName:
+                self._setObjectVisibility(obj, visible)
+            else:
+                self._setObjectVisibility(obj, not visible)
 
     def _setObjectContouring(self, tdObject, contour):
         if self._tdObjectsDict.has_key(tdObject):

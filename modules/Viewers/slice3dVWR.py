@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.7 2003/12/11 15:20:09 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.8 2003/12/16 15:52:48 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -179,9 +179,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # unbind the _view_frame binding
         del self.threedFrame
 
+        # take care of the objectAnimationFrame
+        self.objectAnimationFrame.Destroy()
+        del self.objectAnimationFrame
+
         # take care of the controlFrame too
         self.controlFrame.Destroy()
         del self.controlFrame
+
 
     def getConfig(self):
         # implant some stuff into the _config object and return it
@@ -455,9 +460,16 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # clicks directly in the window for picking
         self.threedFrame.threedRWI.AddObserver('LeftButtonPressEvent',
                                                self._rwiLeftButtonCallback)
-        
 
-        # display the window
+
+        # objectAnimationFrame creation and basic setup -------------------
+        oaf = modules.Viewers.resources.python.slice3dVWRFrames.\
+              objectAnimationFrame
+        self.objectAnimationFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, oaf)
+
+
+        # display the windows (but we don't show the oaf yet)
         self.threedFrame.Show(True)
         self.controlFrame.Show(True)
 
