@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.38 2003/08/12 12:58:37 cpbotha Exp $
+# $Id: graphEditor.py,v 1.39 2003/08/12 13:18:22 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -646,6 +646,10 @@ class graphEditor:
             tGlyph = newGlyphDict[connection.targetInstanceName]
             self._createLine(sGlyph, connection.outputIdx,
                              tGlyph, connection.inputIdx)
+
+        # finally we can let the canvas redraw
+        self._graphFrame.canvas.Refresh()
+
 
     def _loadAndRealiseNetwork(self, filename):
         """Attempt to load (i.e. unpickle) a D3N network file and recreate
