@@ -165,6 +165,7 @@ class controlFrame(wxFrame):
         self.pointsGrid.SetColLabelValue(1, "Discrete")
         self.pointsGrid.SetColLabelValue(2, "Value")
         self.pointsGrid.SetSize((500, 100))
+        self.surfacePickActionChoice.SetSize((200, 34))
         self.surfacePickActionChoice.SetSelection(0)
         self.objectsListGrid.CreateGrid(2, 5)
         self.objectsListGrid.EnableEditing(0)
