@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.10 2002/05/02 11:48:23 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.11 2002/05/02 15:38:32 cpbotha Exp $
 
 from module_base import module_base
 from wxPython.wx import *
@@ -123,6 +123,9 @@ class vtk_hdf_rdr(module_base):
                     fn_text.SetValue(self._fo_dlg.GetPath())
 
     def vtk_object_choice_cb(self, event):
+        # move this to module utils... it can take a list of INSTANCES,
+        # query them for classnames, compare to what has been passed
+        # and make persistent object thingies...
         choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
         if choice != None:
             if choice.GetStringSelection() == 'vtkHDFVolumeReader':
@@ -132,9 +135,10 @@ class vtk_hdf_rdr(module_base):
                               self._reader)
 
     def vtk_pipeline_cb(self, event):
-        self.pipe_segment = vtkPipelineBrowser(self._view_frame, None,
+        # move this to module utils too, or to base...
+        self.pipe_browser = vtkPipelineBrowser(self._view_frame, None,
                                                (self._reader,))
-        self.pipe_segment.browse()
+        self.pipe_browser.show()
         
         
 	
