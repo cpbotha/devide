@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.1 2002/04/23 14:09:29 cpbotha Exp $
+# $Id: python_shell.py,v 1.2 2002/04/23 16:53:15 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -16,9 +16,11 @@ class python_shell:
                                  title="Python Interpreter (PyCrust)")
         # make sure that when the window is closed, we just hide it (teehee)
         EVT_CLOSE(self._ps_frame, self.close_ps_frame_cb)
+        
+        panel = wxPanel(parent=self._ps_frame, id=-1)
 
         # create splitter window for the shell and filling to go in
-        split_win = wxSplitterWindow(parent=self._ps_frame, id=-1,
+        split_win = wxSplitterWindow(parent=panel, id=-1,
                                      size=(640,480))
         # initialise shell window (derived from wxStyledTextCtrl)
         # create locals dictionary with only the application instance in it
@@ -39,16 +41,23 @@ class python_shell:
         top_sizer = wxBoxSizer(wxVERTICAL)
         top_sizer.Add(split_win, option=1, flag=wxEXPAND)
         close_id = wxNewId()
-        top_sizer.Add(wxButton(parent=self._ps_frame, id=close_id,
+        top_sizer.Add(wxButton(parent=panel, id=close_id,
                                label="Close"),
                       option=0, flag=wxALIGN_RIGHT)
         EVT_BUTTON(self._ps_frame, close_id, self.close_ps_frame_cb)
-        # make sure the frame uses the sizer
-        self._ps_frame.SetAutoLayout(true)
-        self._ps_frame.SetSizer(top_sizer)
-        # fit the frame around the sizer
+
+        # panel.Layout will be called automatically during resizes
+        panel.SetAutoLayout(true)
+        # panel will now own the sizer; also, panel.Layout() will use the sizer
+        panel.SetSizer(top_sizer)
+        # resize the frame to fit around the sizer; the sizer automatically
+        # fits around the controls that have been added to it
         top_sizer.Fit(self._ps_frame)
+        # set minimal size of the frame to be minimal size of the sizer
         top_sizer.SetSizeHints(self._ps_frame)
+        # hmmm, it seems the wxPanel is linked to the wxFrame; if the wxFrame
+        # gets resized, the wxPanel does too
+        
 
         # we can display ourselves
         self.show()
