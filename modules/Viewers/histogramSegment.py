@@ -1,10 +1,15 @@
 from moduleBase import moduleBase
+from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 import wx
 
-class histogramSegment(moduleBase):
+class histogramSegment(introspectModuleMixin, moduleBase):
+    """Mooooo!  I'm a cow.
+
+    $Revision: 1.3 $
+    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -12,9 +17,15 @@ class histogramSegment(moduleBase):
         self._createViewFrame()
         self._grid = self._viewFrame.selectorGrid
 
-        self._bindEvents()
-
         self._buildPipeline()
+
+        self._selectors = []
+
+        self._bindEvents()     
+
+        # display the window
+        self._viewFrame.Show(True)
+        
 
     def close(self):
         for i in range(len(self.getInputDescriptions())):
@@ -74,6 +85,9 @@ class histogramSegment(moduleBase):
 
         if self._histogram.GetInput(0) and self._histogram.GetInput(1):
             if self._ipw == None:
+                # we have to do this to get the correct log range
+                self._histogram.GetOutput().Update()
+                
                 # this means we have newly valid input and should setup an ipw
                 self._ipw = vtk.vtkImagePlaneWidget()
                 self._histogram.GetOutput().Update()
@@ -82,7 +96,28 @@ class histogramSegment(moduleBase):
                 # normal to the Z-axis
                 self._ipw.SetPlaneOrientation(2)
                 self._ipw.SetSliceIndex(0)
+
+                # setup specific lut
+                srange = self._histogram.GetOutput().GetScalarRange()
+                lut = vtk.vtkLookupTable()
+                lut.SetScaleToLog10()                
+                lut.SetTableRange(srange)
+                lut.SetSaturationRange(1.0,1.0)
+                lut.SetValueRange(1.0, 1.0)
+                lut.SetHueRange(0.1, 1.0)
+                lut.Build()
+                self._ipw.SetUserControlledLookupTable(1)
+                self._ipw.SetLookupTable(lut)
+                self._ipw.SetDisplayText(1)
+                self._ipw.SetUseContinuousCursor(1)
+                # make sure the user can't twist the plane out of sight
+                self._ipw.SetMiddleButtonAction(0)
+                self._ipw.SetRightButtonAction(0)
+                
                 self._ipw.On()
+
+                self._resetCamera()
+                self._render()
 
         else:
             # this means at least one input is not valid
@@ -116,6 +151,7 @@ class histogramSegment(moduleBase):
 
     def view(self):
         self._viewFrame.Show(True)
+        self._viewFrame.Raise()
         
 
     # -------------------------------------------------------
@@ -123,10 +159,24 @@ class histogramSegment(moduleBase):
     # -------------------------------------------------------
 
     def _bindEvents(self):
+        # fix the broken grid
         wx.grid.EVT_GRID_RANGE_SELECT(
             self._grid, self._handlerGridRangeSelect)
 
+        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.addButton.GetId(),
+                      self._handlerAddSelector)
+
     def _buildPipeline(self):
+        """Build underlying pipeline and configure rest of pipeline-dependent
+        UI. 
+        """
+        
+        # add the renderer
+        self._renderer = vtk.vtkRenderer()
+        self._renderer.SetBackground(0.5, 0.5, 0.5)
+        self._viewFrame.rwi.GetRenderWindow().AddRenderer(
+            self._renderer)
+ 
         self._histogram = vtkdevide.vtkImageHistogram2D()
 
         # make sure the user can't do anything entirely stupid
@@ -136,6 +186,16 @@ class histogramSegment(moduleBase):
         # we'll use this to keep track of our ImagePlaneWidget
         self._ipw = None
 
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            {'Module (self)' : self,
+             'vtkHistogram2D' : self._histogram,
+             'vtkRenderer' : self._renderer},
+            self._renderer.GetRenderWindow())
+
+        # add the ECASH buttons
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
         
 
     def _createViewFrame(self):
@@ -149,18 +209,22 @@ class histogramSegment(moduleBase):
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, viewFrame)
         
-        # add the renderer
-        self._renderer = vtk.vtkRenderer()
-        self._renderer.SetBackground(0.5, 0.5, 0.5)
-        self._viewFrame.rwi.GetRenderWindow().AddRenderer(
-            self._renderer)
 
-        # add the ECASH buttons
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
-        
-        # display the window
-        self._viewFrame.Show(True)
+    def _handlerAddSelector(self, event):
+        sw = vtk.vtkSplineWidget()
+        sw.SetCurrentRenderer(self._renderer)
+        sw.SetDefaultRenderer(self._renderer)
+        sw.SetInput(self._histogram.GetOutput())
+        sw.SetInteractor(self._viewFrame.rwi)
+        sw.PlaceWidget()
+        sw.ProjectToPlaneOn()
+        sw.SetProjectionNormalToZAxes()
+        sw.SetProjectionPosition(0.01)
+        sw.SetPriority(0.6)
+        sw.SetNumberOfHandles(4)
+        sw.SetClosed(1)
+        sw.On()
+        self._selectors.append(sw)
         
     def _handlerGridRangeSelect(self, event):
         """This event handler is a fix for the fact that the row
@@ -195,10 +259,18 @@ class histogramSegment(moduleBase):
             for row in range(tlrow,brrow + 1):
                 self._grid.SelectRow(row, True)
 
-        if self._grid.GetSelectedRows():
-            for mi in self._disableMenuItems:
-                mi.Enable(True)
-        else:
-            for mi in self._disableMenuItems:
-                mi.Enable(False)
 
+    def _resetCamera(self):
+        # make sure camera is cool
+        cam = self._renderer.GetActiveCamera()
+        cam.ParallelProjectionOn()
+        self._renderer.ResetCamera()                
+        ps = cam.GetParallelScale()
+        # get the camera a tad closer than VTK default
+        cam.SetParallelScale(ps / 2.9)
+
+    def _render(self):
+        self._renderer.GetRenderWindow().Render()
+
+                
+        
