@@ -1,4 +1,9 @@
-$Id: TODO,v 1.21 2003/10/15 21:02:55 cpbotha Exp $
+$Id: TODO,v 1.22 2003/10/15 22:15:34 cpbotha Exp $
+
+* Nice one: when building the module and segment tree, also build a
+  main menubar structure, so we can place modules and segments ORCAD
+  style yeah!  Hover mouse over correct position, then Alt M|C|F|3
+  would for e.g. place a modules|core modules|filters|blaatFilter.
 
 * We REALLY should get some kind of unit-testing suite going, so that even
   an Installed binary can be set through its paces with dscas3 --testSuite
