@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.66 2004/03/07 14:11:08 cpbotha Exp $
+# $Id: graphEditor.py,v 1.67 2004/03/07 17:27:35 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -183,9 +183,11 @@ class graphEditor:
                             self._graphFrame.modulesListCtrlId,
                             self.modulesListCtrlBeginDragHandler)
 
+        # (shortName, longName) tuples
+        self._selectedModulesList = []
+        
         # and also setup the module quick search
         self._quickSearchString = ''
-        self._currentModuleListShort = []        
         EVT_CHAR(self._graphFrame.canvas, self._handlerCanvasChar)
 
         # setup the canvas...
@@ -219,8 +221,9 @@ class graphEditor:
         self.show()
 
     def modulesListCtrlBeginDragHandler(self, event):
-        mlc = self._graphFrame.modulesListCtrl        
-        moduleName = self._currentModuleList[mlc.GetItemData(event.GetIndex())]
+        mlc = self._graphFrame.modulesListCtrl
+        shortName, moduleName = \
+                   self._selectedModulesList[mlc.GetItemData(event.GetIndex())]
 
         if type(moduleName) != str:
             return
@@ -557,34 +560,35 @@ class graphEditor:
                 selectedModuleNames[mn] = cat
 
         # now populate the module list
-        self._currentModuleList = []
 
         # the currentModuleListShort is a list of the names as they are
         # displayed!  the order should be exactly the same as the list
         # that is currently being displayed
-        self._currentModuleListShort = []
+        del self._selectedModulesList[:]
         idx = 0
-        mlc = self._graphFrame.modulesListCtrl
 
         smnItems = selectedModuleNames.items()
-        smnItems.sort()
         
         for mn,cat in smnItems:
             if cat == 'Segments':
                 basename = os.path.splitext(os.path.basename(mn))[0]
-                mlc.InsertStringItem(idx, basename)
-                self._currentModuleListShort.append(basename)
-                self._currentModuleList.append('segment:%s' % (mn,))
-                # we store this just in case (but it's the same as idx!)
-                mlc.SetItemData(idx, len(self._currentModuleList) - 1)
+                self._selectedModulesList.append(
+                    (basename, 'segment:%s' % (mn,)))
                 
             else:
                 mParts = mn.split('.')
-                mlc.InsertStringItem(idx, mParts[-1])
-                self._currentModuleListShort.append(mParts[-1])
-                self._currentModuleList.append('module:%s' % (mn,))
-                mlc.SetItemData(idx, len(self._currentModuleList) - 1)
+                self._selectedModulesList.append(
+                    (mParts[-1], 'module:%s' % (mn,)))
 
+        # now populate the mlc
+        mlc = self._graphFrame.modulesListCtrl        
+        # important: sort by shortnames
+        self._selectedModulesList.sort()
+
+        idx = 0
+        for shortname,longname in self._selectedModulesList:
+            mlc.InsertStringItem(idx, shortname)
+            mlc.SetItemData(idx, idx)
             idx += 1
 
         mlc.SetColumnWidth(0, wxLIST_AUTOSIZE)
@@ -592,9 +596,8 @@ class graphEditor:
     def _handlerModulesListCtrlSelected(self, event):
         mlc = self._graphFrame.modulesListCtrl
         idx = mlc.GetItemData(event.m_itemIndex)
-        self._currentModuleList[idx]
         self._graphFrame.GetStatusBar().SetStatusText(
-            self._currentModuleList[idx])
+            self._selectedModulesList[idx][1])
 
     def _handlerPaste(self, event, position):
         if self._copyBuffer:
@@ -609,7 +612,7 @@ class graphEditor:
             # let's search for a module in the module list with this prefix
             mFound = False
             idx = 0
-            for m in self._currentModuleListShort:
+            for m,longname in self._selectedModulesList:
                 if m.lower().startswith(prefix.lower()):
                     mFound = True
                     break
@@ -659,10 +662,11 @@ class graphEditor:
             mlc = self._graphFrame.modulesListCtrl
             if mlc.GetSelectedItemCount():
                 for idx in range(mlc.GetItemCount()):
-                    if mlc.GetItemState(idx, wxLIST_STATE_SELECTED):
+                    if mlc.GetItemState(
+                        idx, wxLIST_STATE_SELECTED) == wxLIST_STATE_SELECTED:
                         # place just this one
                         self.canvasDropText(event.GetX(), event.GetY(),
-                                            self._currentModuleList[idx])
+                                            self._selectedModulesList[idx][1])
                         # break out of the for loop
                         break
 
@@ -683,7 +687,7 @@ class graphEditor:
 
         if updateSelectionAndStatusBar:
             if idx >= 0:
-                # use idx to select that thing
+                # then select what we want
                 self._graphFrame.modulesListCtrl.SetItemState(
                     idx, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
                 self._graphFrame.modulesListCtrl.EnsureVisible(idx)
