@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.56 2003/10/07 21:32:39 cpbotha Exp $
+# $Id: dscas3.py,v 1.57 2003/10/12 13:09:54 cpbotha Exp $
 
 DSCAS3_VERSION = '20031008'
 
@@ -27,109 +27,6 @@ import vtk
 import vtkdscas
 
 # ---------------------------------------------------------------------------
-class dscas3_log_window:
-    """Log window that can display file or can be used as destination file
-    object.
-
-    If instantiated with a filename as parameter, one can regularly call
-    update() for this class to check whether the filesize has changed since
-    the last poll.  If the filesize has changed, it will display the contents
-    in the text control.
-
-    If instantiated without filename, this can be used as an output pipe,
-    for instance to replace stdout and stderr with.  Neato.
-    """
-    
-    def __init__(self, title, parent_frame=None, filename=None):
-        self._filename = filename
-        # get initial filesize so our update() polling thing works
-        if self._filename:
-            try:
-                self._previous_fsize = os.stat(self._filename)[stat.ST_SIZE]
-            except:
-                # if we couldn't get it, just set it to -1
-                # this means ANY new valid filesize will be different,
-                # thus guaranteeing correct behaviour of update()
-                self._previous_fsize = -1
-            
-        self._create_window(title, parent_frame)
-        #
-
-    def _create_window(self, title, parent_frame):
-        self._view_frame = wxFrame(parent_frame, -1, title)
-        EVT_CLOSE(self._view_frame, lambda e, s=self: s.hide())
-        
-        panel = wxPanel(self._view_frame, -1)
-        self._textctrl = wxTextCtrl(panel, id=-1,
-                                    size=wxSize(320,200),
-                                    style=wxTE_MULTILINE | wxTE_READONLY)
-
-        cid = wxNewId()
-        cb = wxButton(panel, cid, 'Close')
-        EVT_BUTTON(self._view_frame, cid, lambda e, s=self: s.hide())
-
-        uid = wxNewId()
-        ub = wxButton(panel, uid, 'Update')
-        EVT_BUTTON(self._view_frame, uid, lambda e, s=self: s.update())
-        
-        button_sizer = wxBoxSizer(wxHORIZONTAL)
-        button_sizer.Add(ub)
-        button_sizer.Add(cb)
-
-        tl_sizer = wxBoxSizer(wxVERTICAL)
-        tl_sizer.Add(self._textctrl, option=1, flag=wxEXPAND)
-        tl_sizer.Add(button_sizer, flag=wxALIGN_RIGHT)
-
-        panel.SetAutoLayout(True)
-        panel.SetSizer(tl_sizer)
-        tl_sizer.Fit(self._view_frame)
-        tl_sizer.SetSizeHints(self._view_frame)
-
-    def show(self):
-        self._view_frame.Show(True)
-
-    def hide(self):
-        self._view_frame.Show(false)
-
-    def write(self, data):
-        """Method so that we can be used as output pipe."""
-        self._textctrl.write(data)
-        self.show()
-
-    def update(self):
-        """Update textctrl contents according to self._filename, if this
-        has been set.
-
-        This should be called regularly, or whenever you know that the
-        file it's watching could have changed.  If the file exists and the
-        filesize has changed since the previous update, the textctrl will
-        be cleared and the file will be read from scratch and contents will
-        be put into the textctrl.
-        """
-
-        if self._filename:
-            try:
-                # if we can't get fsize, the file is borked, and we
-                # should just leave it alone in anycase
-                fsize = os.stat(self._filename)[stat.ST_SIZE]
-                # first see if filesize has changed
-                if not fsize == self._previous_fsize:
-                    # try to open the log file
-                    f = open(self._filename)
-                    # put the contents in the text control
-                    self._textctrl.SetValue(f.read())
-                    # move the user to the last line
-                    lp = self._textctrl.GetLastPosition()
-                    self._textctrl.SetInsertionPoint(lp)
-                    # now make sure this frame is visible
-                    self.show()
-                    # and update the previous size
-                    self._previous_fsize = fsize
-            except:
-                # we let this go, silently
-                pass
-    
-# ---------------------------------------------------------------------------
 class dscas3_app_t(wxApp):
     """Main dscas3 application class.
 
@@ -145,14 +42,7 @@ class dscas3_app_t(wxApp):
         self._currentProgress = -1
         self._currentProgressMsg = ''
         
-        self._old_stderr = None
-        self._old_stdout = None
-        
         self._mainFrame = None
-
-        self._stdo_lw = None
-        self._stde_lw = None
-        self._vtk_lw = None
 
         #self._appdir, exe = os.path.split(sys.executable)
         if hasattr(sys, 'frozen') and sys.frozen:
@@ -194,16 +84,6 @@ class dscas3_app_t(wxApp):
         self.SetTopWindow(self._mainFrame)
         self.setProgress(100, 'Started up')
         
-        # after we get the gui going, we can redirect
-        self._stde_lw = dscas3_log_window('Standard Error Log',
-                                          self._mainFrame)
-        self._old_stderr = sys.stderr
-        #sys.stderr = self._stde_lw
-
-        self._stdo_lw = dscas3_log_window('Standard Output Log',
-                                          self._mainFrame)
-        self._old_stdout = sys.stdout
-        #sys.stdout = self._stdo_lw
 
         # CRITICAL VTK CUSTOMISATION BIT:
         # multi-threaded vtk objects will call back into python causing
@@ -256,9 +136,8 @@ class dscas3_app_t(wxApp):
         return True
 
     def OnExit(self):
-        sys.stderr = self._old_stderr
-        sys.stdout = self._old_stdout
-
+        pass
+    
     def getApplicationIcon(self):
         icon = wxEmptyIcon()
         icon.CopyFromBitmap(
@@ -299,9 +178,6 @@ class dscas3_app_t(wxApp):
             self._graphEditor = graphEditor(self)
         else:
             self._graphEditor.show()
-
-    def update_vtk_log_window(self):
-        self._vtk_lw.update()
 
     def setProgress(self, progress, message):
         # 1. we shouldn't call setProgress whilst busy with setProgress
