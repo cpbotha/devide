@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.26 2003/06/09 22:42:32 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.27 2003/06/09 22:56:33 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -640,7 +640,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                                 'name' : sp['name'],
                                 'lockToSurface' : sp['lockToSurface']})
 
-        self._config.savedPoints = savedPoints
+        self._config.savedPoints = savedPoints            
+
+        # also save the visible bounds (this will be used during unpickling
+        # to calculate pointwidget and text sizes and the like)
+        self._config.boundsForPoints = self._threedRenderer.\
+                                       ComputeVisiblePropBounds()        
+
         
         return self._config
 
@@ -651,7 +657,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         for sp in savedPoints:
             self._storePoint(sp['discrete'], sp['world'], sp['value'],
-                             sp['name'], sp['lockToSurface'])
+                             sp['name'], sp['lockToSurface'],
+                             self._config.boundsForPoints)
 
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -1343,9 +1350,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                          pointName)
 
     def _storePoint(self, discrete, world, value, pointName,
-                    lockToSurface=False):
+                    lockToSurface=False, boundsForPoints=None):
 
-        bounds = self._threedRenderer.ComputeVisiblePropBounds()        
+        if not boundsForPoints:
+            bounds = self._threedRenderer.ComputeVisiblePropBounds()
+        else:
+            bounds = boundsForPoints
         
         # we use a pointwidget
         pw = vtk.vtkPointWidget()
