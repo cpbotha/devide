@@ -46,9 +46,8 @@ class vtk_3d_vwr(module_base):
 	self.renderer = vtkRenderer()
 	self.rw.GetRenderWindow().AddRenderer(self.renderer)
 	
-	self.rw.pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
-	
-	
+       	self.rw.pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
+
     def get_input_descriptions(self):
 	return self.num_inputs * ('vtkPolyData|vtkActor',)
 	

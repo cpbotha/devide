@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.3 2002/03/20 23:01:49 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.4 2002/03/21 12:18:00 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -10,7 +10,9 @@ from vtkTkRenderWidget import vtkTkRenderWidget
 
 class vtk_slice_vwr(module_base):
     def __init__(self):
-	self.num_inputs = 5
+        self.num_inputs = 5
+        # use list comprehension to create list keeping track of inputs
+	self.inputs = [{'Connected' : 0, 'vtkActor' : None} for i in range(self.num_inputs)]
 	self.rw_window = None
 	self.rws = []
 	self.renderers = []
@@ -70,7 +72,21 @@ class vtk_slice_vwr(module_base):
 	return self.num_inputs * ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
     
     def set_input(self, idx, input_stream):
-	print "set_input"
+        if input_stream == None:
+            print "implement disconnect"
+        elif hasattr(input_stream, 'GetClassName') and callable(input_stream.GetClassName):
+            if input_stream.GetClassName() == 'vtkPolyData':
+		mapper = vtkPolyDataMapper()
+		mapper.SetInput(input_stream)
+		self.inputs[idx]['vtkActor'] = vtkActor()
+		self.inputs[idx]['vtkActor'].SetMapper(mapper)
+		self.renderers[0].AddActor(self.inputs[idx]['vtkActor'])
+		self.inputs[idx]['Connected'] = 1
+            if input_stream.GetClassName() == 'vtkStructuredPoints':
+                
+	    else:
+		raise TypeError, "Wrong input type!"
+
 	
     def get_output_descriptions(self):
 	# return empty tuple
