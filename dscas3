@@ -4,9 +4,27 @@ import Tkinter
 import tkMessageBox
 from Tkconstants import *
 import Pmw
+import vtkpython # for the embedded interpreter
+
 
 from graph_editor import graph_editor
 from module_manager import module_manager
+
+class pyco_t:
+    """
+    This is a class containing some of the functions needed for the Python 
+    interaction.  Initially the idea was to run the python commands in this
+    namespace, but that didn't pan out.
+    """
+    
+    def __init__(self, dscas3_main_instance):
+	self.dscas3mi = dscas3_main_instance    
+ 
+    def ol_exec(self, py_command):
+	exec(py_command, globals())
+	
+    def text_exec(self, py_text):
+	eval(compile("%s\n\n" % (py_text), '<string>', 'exec'), globals())
 
 class dscas3_main:
     def __init__(self, root):
@@ -15,12 +33,20 @@ class dscas3_main:
 	# quit gets called if window gets closed
 	self.root.protocol ("WM_DELETE_WINDOW", self.quit)
 	
+	self.pyco = pyco_t(self)
+	
 	# interpreter input line
-	self.pyco = Pmw.ComboBox(self.root, label_text = 'Python', labelpos = 'nw', selectioncommand=self.pyco_exec)
-	self.pyco.pack(side=TOP, fill=X)
-
+	self.pyco_ol = Pmw.ComboBox(self.root, label_text = 'python one-liner', labelpos = 'nw', selectioncommand=self.pyco.ol_exec)
+	self.pyco_ol.pack(side=TOP, fill=X)
+	
+	self.pyco_text = Pmw.ScrolledText(self.root, borderframe = 1, labelpos = 'n', label_text='python code segments', usehullsize = 1,
+		                                            hull_width = 400, hull_height = 300, text_padx = 10, text_pady = 10, text_wrap='none')
+	self.pyco_text.pack(side=TOP, fill=BOTH)
+	
 	# button box
 	box = Pmw.ButtonBox(self.root)
+	box.add('Execute OL', underline=0, command=lambda self=self: self.pyco.ol_exec(self.pyco.get()))
+	box.add('Execute TXT', underline=0, command=lambda self=self: self.pyco.text_exec(self.pyco_text.get(1.0, END)))
 	box.add('Quit', underline=0, command=self.quit)
 	box.pack(side=TOP, fill=X, expand=1)
 	
@@ -29,14 +55,9 @@ class dscas3_main:
 	# then start up a default graph_editor
 	self.graph_editor = graph_editor(self)
 	
-	
     def get_module_manager(self):
 	return self.module_manager
 	
-    def pyco_exec(self, py_command):
-	modules = self.module_manager.get_modules()
-	exec(py_command)
-  	
     def quit(self):
 	print "quit called!"
 	# take care of main window
@@ -46,7 +67,7 @@ class dscas3_main:
 # create main window
 root = Tkinter.Tk()
 Pmw.initialise(root, fontScheme = 'pmw1')
-dscas3_main(root)
+d3m = dscas3_main(root)
 # start event loop of main window
 root.mainloop()
 

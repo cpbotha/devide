@@ -1,6 +1,8 @@
 import sys, os, fnmatch
 import Tix
 import tkMessageBox
+import traceback
+import string
 
 class module_manager:
     """This class in responsible for picking up new modules in the modules 
@@ -61,7 +63,9 @@ class module_manager:
 	    return None
 	except Exception, e:
 	    tkMessageBox.showerror("Instantiation error", "Unable to instantiate module %s: %s" % (name, str(e)))
-	    print sys.exc_info()
+            # add this traceback to some log window later
+            # string.join( traceback.format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback), "\n" )            
+            traceback.print_exc()
 	    return None
 	# return the instance
 	return self.modules[-1]

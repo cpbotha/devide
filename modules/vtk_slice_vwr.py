@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.4 2002/03/21 12:18:00 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.5 2002/03/22 17:05:41 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -11,12 +11,22 @@ from vtkTkRenderWidget import vtkTkRenderWidget
 class vtk_slice_vwr(module_base):
     def __init__(self):
         self.num_inputs = 5
+        self.num_orthos = 3
         # use list comprehension to create list keeping track of inputs
 	self.inputs = [{'Connected' : 0, 'vtkActor' : None} for i in range(self.num_inputs)]
 	self.rw_window = None
 	self.rws = []
 	self.renderers = []
-	
+
+        # list of lists of dictionaries
+        # 3 element list (one per direction) of n-element lists of ortho_pipelines, where n is the number of overlays,
+        # where n can vary per direction
+        self.ortho_pipes = [[] for i in range(self.num_orthos)]
+
+        # axial, sagittal, coronal
+        self.IntialResliceAxesDirectionCosines = [(1,0,0, 0,1,0, 0,0,1), (0,1,0, 0,0,1, 1,0,0), (1,0,0, 0,0,1, 0,-1,0)]
+
+
 	self.create_window()
 	
     def __del__(self):
@@ -30,6 +40,8 @@ class vtk_slice_vwr(module_base):
 	if hasattr(self,'rw_window'):
 	    self.rw_window.destroy()
 	    del self.rw_window
+        if hasattr(self,'ortho_pipes'):
+            del self.ortho_pipes
 	
     def create_window(self):
 	self.rw_window = Tkinter.Toplevel(None)
@@ -58,7 +70,7 @@ class vtk_slice_vwr(module_base):
 	ortho_pane.add('ortho0', size=200)
 	ortho_pane.add('ortho1', size=200)
 	ortho_pane.add('ortho2', size=200)	
-	for i in range(3):
+	for i in range(self.num_orthos):
 	    self.rws.append(vtkTkRenderWidget(ortho_pane.pane('ortho%d' % (i)), width=200, height=150))
 	    self.renderers.append(vtkRenderer())
 	    # add last appended renderer to last appended vtkTkRenderWidget
@@ -66,6 +78,7 @@ class vtk_slice_vwr(module_base):
 	    self.rws[-1].pack(side=LEFT, fill=BOTH, expand=1)
 
 	rws_pane.pack(side=TOP, fill=BOTH, expand=1)
+
 
     def get_input_descriptions(self):
 	# concatenate it num_inputs times (but these are shallow copies!)
@@ -75,6 +88,7 @@ class vtk_slice_vwr(module_base):
         if input_stream == None:
             print "implement disconnect"
         elif hasattr(input_stream, 'GetClassName') and callable(input_stream.GetClassName):
+            print input_stream.GetClassName()
             if input_stream.GetClassName() == 'vtkPolyData':
 		mapper = vtkPolyDataMapper()
 		mapper.SetInput(input_stream)
@@ -82,8 +96,67 @@ class vtk_slice_vwr(module_base):
 		self.inputs[idx]['vtkActor'].SetMapper(mapper)
 		self.renderers[0].AddActor(self.inputs[idx]['vtkActor'])
 		self.inputs[idx]['Connected'] = 1
-            if input_stream.GetClassName() == 'vtkStructuredPoints':
-                
+            elif input_stream.GetClassName() == 'vtkStructuredPoints':
+                # find the maximum number of layers
+                #max([len(i) for i in self.ortho_pipes])
+                for i in range(self.num_orthos):
+                    self.ortho_pipes[i].append({'vtkImageReslice' : vtkImageReslice(), 'vtkPlaneSource' : vtkPlaneSource(), 
+                                                             'vtkTexture' : vtkTexture(), 'vtkLookupTable' : vtkWindowLevelLookupTable(),
+                                                             'vtkActor' : vtkActor()})
+                    # get just added pipeline
+                    cur_pipe = self.ortho_pipes[i][-1]
+                    # if this is the first layer in this channel/ortho, then we have to do some initial setup stuff
+                    if len(self.ortho_pipes[i]) == 1:
+                        cur_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(self.IntialResliceAxesDirectionCosines[i])
+                    # more setup
+                    cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
+                    # connect up input
+                    cur_pipe['vtkImageReslice'].SetInput(input_stream)
+                    # switch on texture interpolation
+                    cur_pipe['vtkTexture'].SetInterpolate(1)
+                    # connect LUT with texture
+                    cur_pipe['vtkLookupTable'].SetWindow(1000)
+                    cur_pipe['vtkLookupTable'].SetLevel(1000)
+                    cur_pipe['vtkLookupTable'].Build()
+                    cur_pipe['vtkTexture'].SetLookupTable(cur_pipe['vtkLookupTable'])
+                    # connect output of reslicer to texture
+                    cur_pipe['vtkTexture'].SetInput(cur_pipe['vtkImageReslice'].GetOutput())
+                    # make sure the LUT is  going to be used
+                    cur_pipe['vtkTexture'].MapColorScalarsThroughLookupTableOn()
+                    # set up a plane source
+                    cur_pipe['vtkPlaneSource'].SetXResolution(1)
+                    cur_pipe['vtkPlaneSource'].SetYResolution(1)
+                    # and connect it to a polydatamapper
+                    mapper = vtkPolyDataMapper()
+                    mapper.SetInput(cur_pipe['vtkPlaneSource'].GetOutput())
+                    cur_pipe['vtkActor'].SetMapper(mapper)
+                    cur_pipe['vtkActor'].SetTexture(cur_pipe['vtkTexture'])
+                    self.renderers[i + 1].AddActor(cur_pipe['vtkActor'])
+              
+                    # try and pull the data through
+                    cur_pipe['vtkImageReslice'].Update()
+                    # make the plane that the texture is mapped on
+                    output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
+                    cur_pipe['vtkPlaneSource'].SetOrigin(output_bounds[0], output_bounds[2], 0)
+                    cur_pipe['vtkPlaneSource'].SetPoint1(output_bounds[1], output_bounds[2], 0)
+                    cur_pipe['vtkPlaneSource'].SetPoint2(output_bounds[0], output_bounds[3], 0)
+                    
+                    # FIXME: only do the  camera setup for the first layer!!!
+                    
+                    # now we're going to manipulate the camera in order to achieve some gluOrtho2D() goodness
+                    icam = self.renderers[i+1].GetActiveCamera()
+                    # set to orthographic projection
+                    icam.SetParallelProjection(1);
+                    # set camera 10 units away, right in the centre
+                    icam.SetPosition(cur_pipe['vtkPlaneSource'].GetCenter()[0], cur_pipe['vtkPlaneSource'].GetCenter()[1], 10);
+                    icam.SetFocalPoint(cur_pipe['vtkPlaneSource'].GetCenter());
+                    # make sure it's the right way up
+                    icam.SetViewUp(0,1,0);
+                    icam.SetClippingRange(1, 11);
+                    # we're assuming icam->WindowCenter is (0,0), then  we're effectively doing this:
+                    # glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0, 11)
+                    icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
+
 	    else:
 		raise TypeError, "Wrong input type!"
 

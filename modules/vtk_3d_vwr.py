@@ -56,8 +56,6 @@ class vtk_3d_vwr(module_base):
 	    # now we should try to disconnect the input at idx
 	    # (remove from renderer, del any bindings)
 	    self.inputs[idx]['Connected'] = 0
-	    if hasattr(self.inputs[idx]['vtkActor'], 'GetClassName'):
-		print self.inputs[idx]['vtkActor'].GetClassName()
 	    if self.inputs[idx]['vtkActor'] != None:
 		# take this actor out of the renderer
 		self.renderer.RemoveActor(self.inputs[idx]['vtkActor'])
