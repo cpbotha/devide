@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.41 2003/06/27 13:08:52 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.42 2003/06/27 13:37:07 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -1407,6 +1407,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._viewFrame.sliceCursorNameCombo.Append('FBZ Inferior')
         
         # event handlers for the global control buttons
+        EVT_BUTTON(self._viewFrame, self._viewFrame.resetCameraButtonId,
+                   self._handlerResetCameraButtonId)
+
+        EVT_BUTTON(self._viewFrame, self._viewFrame.resetAllButtonId,
+                   lambda e, s=self: s._resetAll())
+        
         EVT_CHOICE(self._viewFrame,
                    self._viewFrame.projectionChoiceId,
                    self._handlerProjectionChoice)
@@ -1724,6 +1730,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         for sliceDirection in self._sliceDirections:
             sliceDirection._resetPrimary()
             sliceDirection._resetOverlays()
+            sliceDirection._syncContours()
 
         # whee, thaaaar she goes.
         self._viewFrame.threedRWI.Render()
@@ -1998,6 +2005,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             self._viewFrame.threedRWI.SetInteractorStyle(
                 self._aInteractorStyle)
 
+    def _handlerResetCameraButtonId(self, event):
+        self._threedRenderer.ResetCamera()
+        self.render3D()
+
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
         pwidgets = map(lambda i: i['pointWidget'], self._selectedPoints)
@@ -2209,7 +2220,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             picker.Pick(x,y,0.0,self._threedRenderer)
             return (picker.GetActor(), picker.GetPointId())
             
-        pickAction = self._viewFrame.surfacePickActionRB.GetSelection()
+        pickAction = self._viewFrame.surfacePickActionChoice.GetSelection()
         if pickAction == 1:
             # Place point on surface
             actor, pointId = findPickedProp(obj)
