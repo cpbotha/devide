@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.32 2003/01/22 18:24:02 cpbotha Exp $
+# $Id: graph_editor.py,v 1.33 2003/01/26 02:00:55 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -235,17 +235,17 @@ class ge_glyph:
         return self._module_instance
 
 # ----------------------------------------------------------------------------
-class ge_shape_canvas(wxShapeCanvas):
+class geShapeCanvas(wxShapeCanvas):
     """Graph editor canvas.
 
     We have overridden the canvas to catch mouse events on the canvas itself.
     In addition, this is a sneaky way for shapes to pass their events to the
     main graph_editor class via their canvas.
     """
-    def __init__(self, parent, graph_editor):
+    def __init__(self, parent):
         wxShapeCanvas.__init__(self, parent)
         self.SetScrollbars(20, 20, 100, 100)
-        self._graph_editor = graph_editor
+        self._graph_editor = None
 
     def OnLeftClick(self, x, y, keys):
         self._graph_editor.canvas_left_click_cb(x,y,keys)
@@ -253,60 +253,30 @@ class ge_shape_canvas(wxShapeCanvas):
     def get_graph_editor(self):
         return self._graph_editor
 
+    def setGraphEditor(self, graphEditor):
+        self._graph_editor = graphEditor
+
 # ----------------------------------------------------------------------------
 class graph_editor:
     def __init__(self, dscas3_app):
         # initialise vars
         self._dscas3_app = dscas3_app
 
-        # get a main frame going
-        self._graph_frame = wxFrame(parent=self._dscas3_app.get_main_window(),
-                                    id=-1, title="DSCAS3 Graph Editor")
-        EVT_CLOSE(self._graph_frame, self.close_graph_frame_cb)
+        import resources.python.graphEditorFrame
+        self._graph_frame = resources.python.graphEditorFrame.graphEditorFrame(
+            self._dscas3_app.get_main_window(),
+            -1, title='dummy', geShapeCanvas=geShapeCanvas)
+        self._graph_frame.shapeCanvas.setGraphEditor(self)
 
-        # get the panel going
-        panel = wxPanel(parent=self._graph_frame, id=-1)
-
-        # put a splitter window in it
-        split_win = wxSplitterWindow(parent=panel, id=-1,
-                                     size=(640,480))
-
-        # make a panel on the left, so we can populate with tree and other
-        # controls
-        left_panel = wxPanel(split_win, -1)
-        # tree thingy on the one size
-        self._tree_ctrl = wxTreeCtrl(parent=left_panel,
-                                     style=wxTR_HAS_BUTTONS|wxTR_HIDE_ROOT)
-        # then make a button
-        rsid = wxNewId()
-        rsb = wxButton(left_panel, rsid, 'Rescan')
-        EVT_BUTTON(self._graph_frame, rsid, lambda e, s=self: s.fill_module_tree())
-
-        # stuff the button and tree into a sizer
-        left_sizer = wxBoxSizer(wxVERTICAL)
-        left_sizer.Add(self._tree_ctrl, option=1, flag=wxEXPAND)
-        left_sizer.Add(rsb)
-
-        # tell the left panel that it should use the sizer
-        left_panel.SetAutoLayout(true)
-        left_panel.SetSizer(left_sizer)
-
-        # the shape canvas on the right side
-        self._shape_canvas = ge_shape_canvas(split_win, self)
         self._diagram = wxDiagram()
-        self._shape_canvas.SetDiagram(self._diagram)
-        self._diagram.SetCanvas(self._shape_canvas)
+        self._graph_frame.shapeCanvas.SetDiagram(self._diagram)
+        self._diagram.SetCanvas(self._graph_frame.shapeCanvas)
         
-        # then split the window, giving the tree thingy 120 pixels
-        split_win.SplitVertically(left_panel, self._shape_canvas, 120)
 
-        # add a top level sizer and give it the splitter window to play with
-        top_sizer = wxBoxSizer(wxVERTICAL)
-        top_sizer.Add(split_win, option=1, flag=wxEXPAND)
-        panel.SetAutoLayout(true)
-        panel.SetSizer(top_sizer)
-        top_sizer.Fit(self._graph_frame)
-        top_sizer.SetSizeHints(self._graph_frame)
+        EVT_CLOSE(self._graph_frame, self.close_graph_frame_cb)        
+
+        EVT_BUTTON(self._graph_frame, self._graph_frame.rescanButtonId,
+                   lambda e, s=self: s.fill_module_tree())
 
         self.fill_module_tree()
         
@@ -314,28 +284,28 @@ class graph_editor:
         self.show()
 
     def fill_module_tree(self):
-        self._tree_ctrl.DeleteAllItems()
+        self._graph_frame.treeCtrl.DeleteAllItems()
 
-        tree_root = self._tree_ctrl.AddRoot('Modules')
-        rdrn = self._tree_ctrl.AppendItem(tree_root, 'Readers')
-        wrtn = self._tree_ctrl.AppendItem(tree_root, 'Writers')
-        vwrn = self._tree_ctrl.AppendItem(tree_root, 'Viewers')
-        fltn = self._tree_ctrl.AppendItem(tree_root, 'Filters')
-        miscn = self._tree_ctrl.AppendItem(tree_root, 'Misc')
+        tree_root = self._graph_frame.treeCtrl.AddRoot('Modules')
+        rdrn = self._graph_frame.treeCtrl.AppendItem(tree_root, 'Readers')
+        wrtn = self._graph_frame.treeCtrl.AppendItem(tree_root, 'Writers')
+        vwrn = self._graph_frame.treeCtrl.AppendItem(tree_root, 'Viewers')
+        fltn = self._graph_frame.treeCtrl.AppendItem(tree_root, 'Filters')
+        miscn = self._graph_frame.treeCtrl.AppendItem(tree_root, 'Misc')
 
         self._dscas3_app.get_module_manager().scan_modules()
         for cur_mod in self._dscas3_app.get_module_manager().get_module_list():
             mtype = cur_mod[-3:].lower()
             if mtype == 'rdr':
-                self._tree_ctrl.AppendItem(rdrn, cur_mod)
+                self._graph_frame.treeCtrl.AppendItem(rdrn, cur_mod)
             elif mtype == 'wrt':
-                self._tree_ctrl.AppendItem(wrtn, cur_mod)
+                self._graph_frame.treeCtrl.AppendItem(wrtn, cur_mod)
             elif mtype == 'vwr':
-                self._tree_ctrl.AppendItem(vwrn, cur_mod)
+                self._graph_frame.treeCtrl.AppendItem(vwrn, cur_mod)
             elif mtype == 'flt':
-                self._tree_ctrl.AppendItem(fltn, cur_mod)
+                self._graph_frame.treeCtrl.AppendItem(fltn, cur_mod)
             else:
-                self._tree_ctrl.AppendItem(miscn, cur_mod)
+                self._graph_frame.treeCtrl.AppendItem(miscn, cur_mod)
 
         # only do stuff if !ItemHasChildren()
 
@@ -352,8 +322,8 @@ class graph_editor:
         # dotted line
         dotted_pen = wxPen('#000000', 1, wxDOT)
         # make a DC to draw on
-        dc = wxClientDC(self._shape_canvas)
-        self._shape_canvas.PrepareDC(dc)
+        dc = wxClientDC(self._graph_frame.shapeCanvas)
+        self._graph_frame.shapeCanvas.PrepareDC(dc)
         dc.SetLogicalFunction(wxINVERT) # NOT dst
         dc.SetPen(dotted_pen)
         # draw the line (I honestly don't know what happens to the previous
@@ -380,7 +350,7 @@ class graph_editor:
                 conn = wxLineShape()
                 conn.MakeLineControlPoints(2)
                 conn.AddArrow(ARROW_ARROW, ARROW_POSITION_END)
-                self._shape_canvas.AddShape(conn)
+                self._graph_frame.shapeCanvas.AddShape(conn)
                 from_io_shape.AddLine(conn, to_io_shape)
                 conn.Show(true)
                 # fix the fuxors
@@ -409,11 +379,11 @@ class graph_editor:
                 # disconnect the line
                 the_line.Unlink()
                 # erase it
-                dc =  wxClientDC(self._shape_canvas)
-                self._shape_canvas.PrepareDC(dc)
+                dc =  wxClientDC(self._graph_frame.shapeCanvas)
+                self._graph_frame.shapeCanvas.PrepareDC(dc)
                 the_line.Erase(dc)
                 # remove it from the canvas (actually the diagram)
-                self._shape_canvas.RemoveShape(the_line)
+                self._graph_frame.shapeCanvas.RemoveShape(the_line)
             except Exception, e:
                 gen_utils.log_error('Could not disconnect modules: %s' \
                                     % (str(e)))
@@ -424,9 +394,9 @@ class graph_editor:
             self.disconnect_glyphs_by_ishape(line.GetTo())
 
     def redraw_canvas(self):
-        dc = wxClientDC(self._shape_canvas)
-        self._shape_canvas.PrepareDC(dc)
-        self._shape_canvas.Redraw(dc)
+        dc = wxClientDC(self._graph_frame.shapeCanvas)
+        self._graph_frame.shapeCanvas.PrepareDC(dc)
+        self._graph_frame.shapeCanvas.Redraw(dc)
 
     def canvas_left_click_cb(self, x, y, keys):
         # first see what mode we are in
@@ -434,18 +404,18 @@ class graph_editor:
 
         # we are in "create/edit" mode, so let's create some glyph
         # first get the currently selected tree node
-        sel_item = self._tree_ctrl.GetSelection()
+        sel_item = self._graph_frame.treeCtrl.GetSelection()
         # then the root node
-        root_item = self._tree_ctrl.GetRootItem()
+        root_item = self._graph_frame.treeCtrl.GetRootItem()
         if root_item != sel_item and \
-           self._tree_ctrl.GetItemParent(sel_item) != root_item:
+           self._graph_frame.treeCtrl.GetItemParent(sel_item) != root_item:
             # we have a valid module, we should try and instantiate
-            mod_name = self._tree_ctrl.GetItemText(sel_item)
+            mod_name = self._graph_frame.treeCtrl.GetItemText(sel_item)
             mm = self._dscas3_app.get_module_manager()
             temp_module = mm.create_module(mod_name)
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
-                ge_glyph(self._shape_canvas, mod_name, temp_module, x, y)
+                ge_glyph(self._graph_frame.shapeCanvas, mod_name, temp_module, x, y)
                 
     def inout_begindragleft_cb(self, parent_glyph, io_shape,
                                x, y, keys, attachment):
@@ -463,16 +433,16 @@ class graph_editor:
         # after doing our setup, we capture the mouse so things don't
         # get confused when the user waves his wand outside the canvas
         if WX_USE_X_CAPTURE:
-            self._shape_canvas.CaptureMouse()        
+            self._graph_frame.shapeCanvas.CaptureMouse()        
 
     def inout_enddragleft_cb(self, parent_glyph, io_shape,
                              x, y, keys, attachment):
         # give the mouse back ASAP, else people get angry, he he
         if WX_USE_X_CAPTURE:
-            self._shape_canvas.ReleaseMouse()
+            self._graph_frame.shapeCanvas.ReleaseMouse()
 
         # find shape that we're close to (we will need this in both cases)
-        f_ret = self._shape_canvas.FindShape(x, y, None)
+        f_ret = self._graph_frame.shapeCanvas.FindShape(x, y, None)
 
         if io_shape.get_inout() == 0:
             # if it's not the originating io_shape but it is another io_shape,
@@ -531,34 +501,34 @@ class graph_editor:
 
         vc_id = wxNewId()
         pmenu.AppendItem(wxMenuItem(pmenu, vc_id, "View-Configure"))
-        EVT_MENU(self._shape_canvas, vc_id,
+        EVT_MENU(self._graph_frame.shapeCanvas, vc_id,
                  lambda e, s=self, glyph=glyph: s.vc_shape_cb(glyph))
         
         del_id = wxNewId()
         pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
-        EVT_MENU(self._shape_canvas, del_id,
+        EVT_MENU(self._graph_frame.shapeCanvas, del_id,
                  lambda e, s=self, glyph=glyph: s.del_shape_cb(glyph))
 
         mcs_id = wxNewId()
         pmenu.AppendItem(wxMenuItem(pmenu, mcs_id,
                                     'Make current'))
-        EVT_MENU(self._shape_canvas, mcs_id,
+        EVT_MENU(self._graph_frame.shapeCanvas, mcs_id,
                  lambda e, s=self, glyph=glyph:
                  s._dscas3_app.get_module_manager().set_current_module(
             glyph.get_module_instance()))
 
         # where have we scrolled the canvas to
-        view_start = self._shape_canvas.GetViewStart()
+        view_start = self._graph_frame.shapeCanvas.GetViewStart()
         # to go from canvas units to pixels
-        sppu = self._shape_canvas.GetScrollPixelsPerUnit()
+        sppu = self._graph_frame.shapeCanvas.GetScrollPixelsPerUnit()
         # event coords to pixels
-        x1 = x * self._shape_canvas.GetScaleX()
-        y1 = y * self._shape_canvas.GetScaleY()
+        x1 = x * self._graph_frame.shapeCanvas.GetScaleX()
+        y1 = y * self._graph_frame.shapeCanvas.GetScaleY()
         # subtract scrolled offset
         mnx = x1 - view_start[0] * sppu[0]
         mny = y1 - view_start[1] * sppu[1]
         # popup that menu!
-        self._shape_canvas.PopupMenu(pmenu, wxPoint(mnx, mny))
+        self._graph_frame.shapeCanvas.PopupMenu(pmenu, wxPoint(mnx, mny))
 
     def vc_shape_cb(self, glyph):
         mm =self._dscas3_app.get_module_manager()
