@@ -113,27 +113,35 @@ class canvas(wx.wxScrolledWindow):
 
     def dragObject(self, cobj, delta):
         if abs(delta[0]) > 0 or abs(delta[1]) > 0:
+            # calculate new position
             cpos = cobj.getPosition()
             npos = (cpos[0] + delta[0], cpos[1] + delta[1])
             cobj.setPosition(npos)
             
+            # setup DC
             dc = wx.wxClientDC(self)
             self.PrepareDC(dc)
             dc.BeginDrawing()
 
+            # we're only going to draw a dotted outline
             dc.SetBrush(wx.wxBrush('WHITE', wx.wxTRANSPARENT))
             dc.SetPen(wx.wxPen('BLACK', 1, wx.wxDOT))
             dc.SetLogicalFunction(wx.wxINVERT)
             bounds = cobj.getBounds()
-            print bounds
+
+            # first delete the old triangle
             dc.DrawRectangle(cpos[0], cpos[1], bounds[0], bounds[1])
+            # then draw the new one
             dc.DrawRectangle(npos[0], npos[1], bounds[0], bounds[1])
 
+            # thar she goes
             dc.EndDrawing()
 
+
+#############################################################################
 def main():
 
-    from canvasObject import coRectangle
+    from canvasObject import coRectangle, coLine
 
     class App(wx.wxApp):
         def OnInit(self):
@@ -147,6 +155,10 @@ def main():
                 r1.addObserver('enter', enterObserver)
                 r1.addObserver('drag', dragObserver)
                 pc.addObject(r1)
+
+            l1 = coLine(((60, 50), (70, 60), (100, 50)))
+            pc.addObject(l1)
+                        
 
             tlSizer = wx.wxBoxSizer(wx.wxVERTICAL)
             tlSizer.Add(pc, 1, wx.wxEXPAND)
