@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.53 2004/01/28 23:18:05 cpbotha Exp $
+# $Id: graphEditor.py,v 1.54 2004/01/29 09:30:29 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -624,7 +624,7 @@ class graphEditor:
             self._connect(draggedObject, draggedPort[1],
                           droppedObject, droppedInputPort)
             
-            self._graphFrame.canvas.redaw()
+            self._graphFrame.canvas.redraw()
 
         elif draggedObject.inputLines[draggedPort[1]]:
             # this means the user was dragging a connected input port and has
