@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.3 2003/01/28 22:38:34 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.4 2003/01/28 23:23:02 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -185,6 +185,11 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                                                        'dummy')
 
         self._viewFrame.SetTitle(frameTitle)
+
+        # make sure that a close of that window does the right thing
+        EVT_CLOSE(self._viewFrame,
+                  lambda e, s=self: s._viewFrame.Show(false))
+
 
         EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
                    lambda e: self.browseButtonCallback(browseMsg,
