@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.10 2004/01/29 22:11:24 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.11 2004/02/23 17:31:43 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -13,7 +13,14 @@ IMPORTANT NOTES:
 
 3. If you know that your module requires the complete input extent
    (i.e. not just an UpdateExtent), remember to call 
-   SetUpdateExtentToWholeExtent() on the input in your setInput() method.
+   SetUpdateExtentToWholeExtent() on the input in your setInput()
+method.
+
+4. Instantiating a vtkInteractorObserver (e.g. vtkPlaneWidget) and
+   associating it with an interactor is NOT enough to keep it around.
+   Nobody takes out references, so your observer will die as soon as
+   you leave its scope.  KEEP YOUR OWN BINDING until you don't need
+   the observer anymore.
 
 LAYOUT OF DIALOGUES
 -------------------

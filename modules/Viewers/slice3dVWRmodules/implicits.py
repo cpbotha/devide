@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.3 2004/02/23 10:00:47 cpbotha Exp $
+# $Id: implicits.py,v 1.4 2004/02/23 17:31:43 cpbotha Exp $
 #
 
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -7,6 +7,9 @@ import vtk
 import wx
 
 # -------------------------------------------------------------------------
+class implicitInfo:
+    def __init__(self):
+        self.implicitWidget = None
 
 class implicits(object, s3dcGridMixin):
     _gridCols = [('Name', 0), ('Type', 0), ('Enabled', 100),
@@ -16,15 +19,28 @@ class implicits(object, s3dcGridMixin):
     _gridEnabledCol = 2
     _gridInteractionCol = 3
 
+    _implicitTypes = ['Plane']
+
     def __init__(self, slice3dVWRThingy, implicitsGrid):
         self.slice3dVWR = slice3dVWRThingy
         self._grid = implicitsGrid
 
-        self._implicitsList = []
+        # dict with name as key, values are implicitInfo classes
+        self._implicitsDict = {}
 
         self._initialiseGrid()
 
         self._bindEvents()
+
+        # setup choice component
+        # first clear
+        cf = self.slice3dVWR.controlFrame
+        cf.implicitTypeChoice.Clear()
+        for implicitType in self._implicitTypes:
+            cf.implicitTypeChoice.Append(implicitType)
+            
+        cf.implicitTypeChoice.SetSelection(0)
+        cf.implicitNameText.SetValue("implicit 0")
 
         # fill out our drop-down menu
         self._disableMenuItems = self._appendGridCommandsToMenu(
@@ -33,6 +49,85 @@ class implicits(object, s3dcGridMixin):
 
     def close(self):
         self.removePoints(range(len(self._pointsList)))
+
+    def _createImplicit(self, implicitName, implicitType):
+        if implicitType in self._implicitTypes:
+            if implicitName in self._implicitsDict:
+                md = wx.MessageDialog(
+                    self.slice3dVWR.controlFrame,
+                    "You have to enter a unique name for the new implicit. "
+                    "Please try again.",
+                    "Information",
+                    wx.OK | wx.ICON_INFORMATION)
+                md.ShowModal()
+
+                return
+                
+            
+            implicitWidget = None
+            rwi = self.slice3dVWR.threedFrame.threedRWI
+            ren = self.slice3dVWR._threedRenderer
+
+            # we're going to try to calculate some bounds
+            # first see if we have some props
+            bounds = self.slice3dVWR._threedRenderer.\
+                     ComputeVisiblePropBounds()
+            b0 = bounds[1] - bounds[0]
+            b1 = bounds[3] - bounds[2]
+            b2 = bounds[5] - bounds[4]
+
+            if b0 <= 0 or b1 <= 0 or b2 <= 0:
+                # not good enough...                    
+                bounds = None
+
+            pi = None
+            if bounds != None:
+                pi = self.slice3dVWR.getPrimaryInput()
+
+            if implicitType == "Plane":
+                implicitWidget = vtk.vtkImplicitPlaneWidget()
+
+                #implicitWidget.SetIn
+                if bounds != None:
+                    implicitWidget.PlaceWidget(bounds)
+                elif pi != None:
+                    implicitWidget.SetInput(pi)
+                    implicitWidget.PlaceWidget()
+                else:
+                    implicitWidget.PlaceWidget(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)
+
+                implicitWidget.SetInteractor(rwi)
+                implicitWidget.On()
+
+            if implicitWidget:
+                # first add to our internal thingy
+                ii = implicitInfo()
+                ii.implicitName = implicitName
+                ii.implicitType = implicitType                
+                ii.implicitWidget = implicitWidget
+
+                self._implicitsDict[implicitName] = ii
+
+                # now add to the grid
+                nrGridRows = self._grid.GetNumberRows()
+                self._grid.AppendRows()
+                self._grid.SetCellValue(nrGridRows, self._gridNameCol,
+                                        implicitName)
+                self._grid.SetCellValue(nrGridRows, self._gridTypeCol,
+                                       implicitType)
+
+                # set the relevant cells up for Boolean
+                for col in [self._gridEnabledCol, self._gridInteractionCol]:
+
+                    self._grid.SetCellRenderer(nrGridRows, col,
+                                               wx.grid.GridCellBoolRenderer())
+                    self._grid.SetCellAlignment(nrGridRows, col,
+                                                wx.ALIGN_CENTRE,
+                                                wx.ALIGN_CENTRE)
+                
+
+                
+                
 
     def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
         """Appends the points grid commands to a menu.  This can be used
@@ -175,7 +270,13 @@ class implicits(object, s3dcGridMixin):
             self._pointsList[idx]['pointWidget'].Off()
         
     def _handlerCreateImplicit(self, event):
-        pass
+        """Create 3d widget and the actual implicit function.
+        """
+
+        cf = self.slice3dVWR.controlFrame
+        implicitType = cf.implicitTypeChoice.GetStringSelection()
+        implicitName = cf.implicitNameText.GetValue()
+        self._createImplicit(implicitName, implicitType)
 
     def hasWorldPoint(self, worldPoint):
         worldPoints = [i['world'] for i in self._pointsList]
