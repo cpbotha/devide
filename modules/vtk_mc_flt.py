@@ -9,12 +9,14 @@ from vtkPipeline.vtkPipeline import \
 class vtk_mc_flt(module_base):
     def __init__(self):
 	self.mc = vtkpython.vtkMarchingCubes()
+        self.mc.SetProgressMethod(lambda s=self, po=self.mc:
+                                  s.vtk_progress_callback(po))
 
         self.isovalue = Tkinter.StringVar()
 
         self.config_window = None
         self.create_view_window()
-	
+
     def __del__(self):
 	# do some cleanup
 	print "vtk_mc_flt.__del__()"
@@ -36,7 +38,6 @@ class vtk_mc_flt(module_base):
         This method sets up the config window and immediately hides it.  When
         the user wants to view/config, the window is simply de-iconised.
         """
-        
 	self.config_window = Tkinter.Toplevel(parent_window)
 	self.config_window.title("vtk_mc_flt.py configuration")
 	self.config_window.protocol ("WM_DELETE_WINDOW",
@@ -67,6 +68,9 @@ class vtk_mc_flt(module_base):
         self.add_CSAEO_box(self.config_window, 2, 1)
         
         self.config_window.withdraw()
+
+    def execute_module(self):
+        self.mc.Update()
 	
     def get_input_descriptions(self):
 	return ('vtkStructuredPoints',)

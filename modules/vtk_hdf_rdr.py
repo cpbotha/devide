@@ -1,13 +1,12 @@
-# $Id: vtk_hdf_rdr.py,v 1.4 2002/03/28 11:55:48 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.5 2002/03/28 16:02:18 cpbotha Exp $
 
 from module_base import module_base
 import vtkpython
 import vtkcpbothapython
-from vtkPipeline.vtkPipeline import vtkPipelineBrowser, \
-     vtkPipelineSegmentBrowser
 import Tkinter
-import tkFileDialog
+from Tkconstants import *
 import Pmw
+import module_utils
 
 class vtk_hdf_rdr(module_base):
     """dscas3 module for reading dscas HDF datasets.
@@ -66,27 +65,39 @@ class vtk_hdf_rdr(module_base):
 	self.config_window.protocol ("WM_DELETE_WINDOW",
                                 self.config_window.withdraw)
         self.config_window.withdraw()
-	
+
+	efb_frame = Tkinter.Frame(self.config_window)
+        efb_frame.pack(side=TOP, fill=X, expand=1, padx=5, pady=5)
+        
 	# the file prefix entry box
-	Tkinter.Label(self.config_window, text="Filename").grid(row=0)
-	Tkinter.Entry(self.config_window, textvariable=self.filename).\
-                                          grid(row=0, column=1)
+        Pmw.EntryField(efb_frame,
+                       labelpos = 'w',
+                       label_text = 'Filename:',
+                       validate = None,
+                       entry_textvariable = self.filename).pack(side=LEFT,
+                                                                fill=X,
+                                                                expand=1)
+
+        browse_button = Tkinter.Button(efb_frame, text="Browse",
+                                       command=lambda mu=module_utils, s=self:
+                                       mu.fileopen_stringvar([("HDF files", "*.hdf"),("All files", "*.*")], s.filename))
+        browse_button.pack(side=LEFT)
 
 	# button box
 	box1 = Pmw.ButtonBox(self.config_window)
 	box1.add('vtkHDFVolumeReader', command=lambda self=self,
-                 pw=parent_window: self.configure_vtk_object(self.reader, pw))
+                 mu=module_utils,
+                 pw=parent_window: mu.configure_vtk_object(self.reader, pw))
 	box1.add('Pipeline',
                  command=lambda self=self, pw=parent_window,
-                 vtk_objs=(self.reader):
-                 self.browse_vtk_pipeline(vtk_objs, pw))
-	box1.grid(row=1, column=0, columnspan=2, sticky=Tkinter.W + Tkinter.E)
+                 mu=module_utils, vtk_objs=(self.reader):
+                 mu.browse_vtk_pipeline(vtk_objs, pw))
+	box1.pack(side=TOP, fill=X, expand=1)
 	box1.alignbuttons()
 
-	self.add_CSAEO_box(self.config_window, 2, 2)
+	module_utils.CSAEO_box(self, self.config_window).pack(side=TOP, fill=X,
+                                                              expand=1)
         
-        
-
     def view(self, parent_window=None):
 	# first make sure that our variables agree with the stuff that
         # we're configuring
