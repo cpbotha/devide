@@ -1,5 +1,5 @@
 ; dscas3.nsi - based on example2.nsi
-; $Id: dscas3.nsi,v 1.1 2003/04/30 22:57:35 cpbotha Exp $
+; $Id: dscas3.nsi,v 1.2 2003/05/01 22:47:29 cpbotha Exp $
 
 ;--------------------------------
 
@@ -54,6 +54,10 @@ Section "Start Menu Shortcuts"
   
 SectionEnd
 
+Section "Desktop Shortcut"
+   CreateShortCut "$DESKTOP\dscas3.lnk" "$INSTDIR\dscas3.exe"
+SectionEnd
+
 ;--------------------------------
 
 ; Uninstaller
@@ -73,6 +77,9 @@ Section "Uninstall"
 
   ; remove shortcuts, if any
   Delete "$SMPROGRAMS\dscas3\*.*"
+
+  ; remove desktop shortcut
+  Delete "$DESKTOP\dscas3.lnk"
 
   ; remove directories used
   RMDir "$SMPROGRAMS\dscas3"
