@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.33 2004/03/22 13:54:57 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.34 2004/04/15 12:50:49 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -261,12 +261,18 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                          browseMsg="Select a filename",
                          fileWildcard=
                          "VTK data (*.vtk)|*.vtk|All files (*)|*",
-                         objectDict=None):
+                         objectDict=None, fileOpen=True):
+
+        """By default, this will be a File Open dialog.  If fileOpen is
+        False, it will be a File Save dialog.
+        """
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             resources.python.filenameViewModuleMixinFrame.\
             filenameViewModuleMixinFrame)
+
+        self._fileOpen = fileOpen
                                                
         wx.EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
                    lambda e: self.browseButtonCallback(browseMsg,
@@ -292,7 +298,12 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                              fileWildcard=
                              "VTK data (*.vtk)|*.vtk|All files (*)|*"):
 
-        path = self.filenameBrowse(self._viewFrame, browseMsg, fileWildcard)
+        if self._fileOpen == 1:
+            path = self.filenameBrowse(
+                self._viewFrame, browseMsg, fileWildcard)
+        else:
+            path = self.filenameBrowse(
+                self._viewFrame, browseMsg, fileWildcard, style=wx.SAVE)
 
         if path != None:
             self._viewFrame.filenameText.SetValue(path)
