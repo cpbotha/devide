@@ -1,12 +1,6 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.59 2003/07/30 16:04:07 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.60 2003/07/30 23:00:57 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
-
-# some notes w.r.t. the layout of the main window of this module:
-# The strategy to keep things more or less sane (with custom widgets and all)
-# is to manually set the size of the containing frame and of the selected
-# points grid only... along with all the sizer logic, this tends to keep
-# things under control
 
 import cPickle
 from external.SwitchColourDialog import ColourDialog
@@ -64,6 +58,73 @@ class selectedPoints(object):
         self.slice3dVWR = slice3dVWRThingy
         self._grid = pointsGrid
 
+        self._pointsList = []
+
+        self._initialiseGrid()
+
+    def enablePointsInteraction(self, enable):
+        """Enable/disable points interaction in the 3d scene.
+        """
+
+        if enable:
+            for selectedPoint in self._pointsList:
+                if selectedPoint['pointWidget']:
+                    selectedPoint['pointWidget'].On()
+                        
+        else:
+            for selectedPoint in self._pointsList:
+                if selectedPoint['pointWidget']:
+                    selectedPoint['pointWidget'].Off()
+        
+
+    def getSavePoints(self):
+        """Get special list of points that can be easily pickled.
+        """
+        savedPoints = []
+        for sp in self._pointsList:
+            savedPoints.append({'discrete' : sp['discrete'],
+                                'world' : sp['world'],
+                                'value' : sp['value'],
+                                'name' : sp['name'],
+                                'lockToSurface' : sp['lockToSurface']})
+
+        return savedPoints
+
+    def setSavePoints(self, savedPoints, boundsForPoints):
+        """Re-install the saved points that were returned with getPoints.
+        """
+
+        for sp in savedPoints:
+            self._storePoint(sp['discrete'], sp['world'], sp['value'],
+                             sp['name'], sp['lockToSurface'],
+                             boundsForPoints)
+
+    def _initialiseGrid(self):
+        # delete all existing columns
+        self._grid.DeleteCols(0, self._grid.GetNumberCols())
+
+        # we need at least one row, else adding columns doesn't work (doh)
+        self._grid.AppendRows()
+        
+        # setup columns
+        self._grid.AppendCols(len(self._gridCols))
+        for colIdx in range(len(self._gridCols)):
+            # add labels
+            self._grid.SetColLabelValue(colIdx, self._gridCols[colIdx][0])
+
+        # set size according to labels
+        self._grid.AutoSizeColumns()
+
+        for colIdx in range(len(self._gridCols)):
+            # now set size overrides
+            size = self._gridCols[colIdx][1]
+            if size > 0:
+                self._grid.SetColSize(colIdx, size)
+
+        # make sure we have no rows again...
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())
+        
+
 # -------------------------------------------------------------------------
 
 class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
@@ -94,7 +155,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._threedRenderer = None
 
         # list of selected points (we can make this grow or be overwritten)
-        self._selectedPoints = []
+        #self._selectedPoints = []
         # this will be passed on as input to the next component
         self._outputSelectedPoints = outputSelectedPoints()
         
@@ -140,6 +201,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # bind all slice UI events
         self.sliceDirections = sliceDirections(
             self, self.controlFrame.sliceGrid)
+
+        self.selectedPoints = selectedPoints(
+            self, self.controlFrame.pointsGrid)
 
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
@@ -215,16 +279,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     def getConfig(self):
         # implant some stuff into the _config object and return it
 
-        # all points from the self._selectedPoints list
-        savedPoints = []
-        for sp in self._selectedPoints:
-            savedPoints.append({'discrete' : sp['discrete'],
-                                'world' : sp['world'],
-                                'value' : sp['value'],
-                                'name' : sp['name'],
-                                'lockToSurface' : sp['lockToSurface']})
-
-        self._config.savedPoints = savedPoints            
+        self._config.savedPoints = self.selectedPoints.getSavePoints()
 
         # also save the visible bounds (this will be used during unpickling
         # to calculate pointwidget and text sizes and the like)
@@ -239,11 +294,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         savedPoints = self._config.savedPoints
 
-        for sp in savedPoints:
-            self._storePoint(sp['discrete'], sp['world'], sp['value'],
-                             sp['name'], sp['lockToSurface'],
-                             self._config.boundsForPoints)
-
+        self.selectedPoints.setSavePoints(
+            savedPoints, self._config.boundsForPoints)
+        
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
         return self._numDataInputs * \
@@ -503,16 +556,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         def pointInteractionCheckBoxCallback(event):
             val = self.controlFrame.pointInteractionCheckBox.GetValue()
-            if val:
-                for selectedPoint in self._selectedPoints:
-                    if selectedPoint['pointWidget']:
-                        selectedPoint['pointWidget'].On()
-                        
-            else:
-                for selectedPoint in self._selectedPoints:
-                    if selectedPoint['pointWidget']:
-                        selectedPoint['pointWidget'].Off()
-
+            self.selectedPoints.enablePointsInteraction(val)
+            
         EVT_CHECKBOX(self.controlFrame,
                      self.controlFrame.pointInteractionCheckBoxId,
                      pointInteractionCheckBoxCallback)
@@ -576,6 +621,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         return inputData
 
     def _remove_cursors(self, idxs):
+        # fixme: continue here
 
         # we have to delete one by one from back to front
         idxs.sort()
