@@ -1,7 +1,8 @@
-$Id: TODO,v 1.27 2004/07/20 15:06:11 cpbotha Exp $
+$Id: TODO,v 1.28 2004/07/22 15:36:38 cpbotha Exp $
 
 HIGH-PRIORITY
 
+* make module names configurable
 * ship VTK and ITK build environments with devide so that mortals can build
   extension modules easily.
 * think of scheme to pass active module parameters to consumer modules
