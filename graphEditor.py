@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.96 2004/11/27 22:42:31 cpbotha Exp $
+# $Id: graphEditor.py,v 1.97 2004/11/28 15:01:20 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -145,6 +145,12 @@ class graphEditor:
                                    modulePaletteFrame(
             self._devideApp.get_main_window(),
             -1, title='dummy', name='DeVIDE')
+
+        # we have to make this call, else the user can unsplit the window
+        # and lose one of the panes (really irritating)
+        self._modulePaletteFrame.modCatsListSplitterWindow.SetMinimumPaneSize(
+            20)
+                                                             
 
         self._modulePaletteFrame.SetIcon(self._devideApp.getApplicationIcon())
         EVT_CLOSE(self._canvasFrame, self._handlerGraphFrameClose)
