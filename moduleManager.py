@@ -172,6 +172,23 @@ class moduleManager:
     def getAvailableModuleList(self):
 	return self._availableModuleList
 
+    def getInstance(self, instanceName):
+        """Given the unique instance name, return the instance itself.
+        If the module doesn't exist, return None.
+        """
+
+        found = False
+        for instance, mModule in self._moduleDict.items():
+            if mModule.instanceName == instanceName:
+                found = True
+                break
+
+        if found:
+            return mModule.instance
+
+        else:
+            return None
+
     def getInstanceName(self, instance):
         """Given the actual instance, return its unique instance.  If the
         instance doesn't exist in self._moduleDict, return the currently
