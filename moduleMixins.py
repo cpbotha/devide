@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.54 2004/11/01 10:22:09 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.55 2004/11/01 13:17:09 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -336,6 +336,8 @@ class colourDialogMixin(object):
         del self._colourDialog
 
     def getColourDialogColour(self):
+        self._colourDialog.Show(True)
+        self._colourDialog.Raise()
         if self._colourDialog.ShowModal() == wx.ID_OK:
             colour = self._colourDialog.GetColourData().GetColour()
             return tuple([c / 255.0 for c in
