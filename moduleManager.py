@@ -97,7 +97,7 @@ class moduleManager:
 	the list self.module_files."""
         self._availableModuleList = []
 
-        if True:
+        if False:
             user_files = os.listdir(self._userModules_dir)
             
             for i in user_files:
@@ -108,24 +108,45 @@ class moduleManager:
 
         else:
 
-            # iterate recursively through all module directories storing full
-            # module specs (e.g. modules.Readers.hdfRDR) for each .py found
-
-            curModulePath = ''
-            appDir = self._dscas3_app.get_appdir()
-
             def recursiveDirectoryModuleSearch(adir, curModulePath,
                                                moduleList):
+                """Iterate recursively starting at adir and make a list of
+                all available modules.  We do not traverse into dirs that
+                are named 'resources'.
+                """
+                
                 fileNames = os.listdir(adir)
                 for fileName in fileNames:
-                    if os.path.isdir(fileName):
+                    completeName = os.path.join(adir, fileName)
+                    if os.path.isdir(completeName) and \
+                       fileName.strip('/') != 'resources':
+                        # fileName is just a directory name then
+                        # make sure it has no /'s at the end and append
+                        # it to the curModulePath when recursing
                         recursiveDirectoryModuleSearch(
-                            adir, curModulePath, moduleList)
+                            completeName,
+                            curModulePath + '.' + fileName.strip('/'),
+                            moduleList)
 
-                    elif os.path.isfile(fileName) and \
-                             fnmatch.fnmatch(i, "*.py") and \
-                             not fnmatch.fnmatch(i, "_*"):
-                        pass
+                    elif os.path.isfile(completeName) and \
+                             fnmatch.fnmatch(fileName, "*.py") and \
+                             not fnmatch.fnmatch(fileName, "_*"):
+                        moduleList.append(
+                            "%s.%s" % (curModulePath,
+                                       os.path.splitext(fileName)[0]))
+
+            appDir = self._dscas3_app.get_appdir()
+            userModuleList = []
+            recursiveDirectoryModuleSearch(os.path.join(appDir,
+                                                        'userModules'),
+                                           'userModules', userModuleList)
+
+            # first add the core modules to our central list
+            for mn in modules.moduleList:
+                self._availableModuleList.append('modules.%s' % (mn,))
+
+            # then all the user modules
+            self._availableModuleList += userModuleList
 
     def get_app_dir(self):
         return self._dscas3_app.get_appdir()
@@ -151,7 +172,7 @@ class moduleManager:
         # this could change
         return self._dscas3_app.get_main_window()
     
-    def createModule(self, name, instanceName=None):
+    def createModule(self, fullName, instanceName=None):
 	try:
             # think up name for this module (we have to think this up now
             # as the module might want to know about it whilst it's being
@@ -159,11 +180,6 @@ class moduleManager:
             instanceName = self._makeUniqueInstanceName(instanceName)
             self._halfBornInstanceName = instanceName
             
-            # find out whether it's built-in or user
-            mtypePrefix = ['userModules', 'modules']\
-                          [bool(name in modules.module_list)]
-            fullName = mtypePrefix + '.' + name
-
             # perform the conditional import/reload
             self.importReload(fullName)
             # importReload requires this afterwards for safety reasons
@@ -174,7 +190,8 @@ class moduleManager:
 
 	    # then instantiate the requested class
             moduleInstance = None
-            exec('moduleInstance = %s.%s(self)' % (fullName, name))
+            exec('moduleInstance = %s.%s(self)' % (fullName,
+                                                   fullName.split('.')[-1]))
 
             # and store it in our internal structures
             self._moduleDict[moduleInstance] = metaModule(moduleInstance,
@@ -185,11 +202,11 @@ class moduleManager:
 
 
 	except ImportError:
-	    genUtils.logError("Unable to import module %s!" % name)
+	    genUtils.logError("Unable to import module %s!" % fullName)
 	    return None
 	except Exception, e:
 	    genUtils.logError("Unable to instantiate module %s: %s" \
-                                % (name, str(e)))
+                                % (fullName, str(e)))
 	    return None
                                     
 	# return the instance

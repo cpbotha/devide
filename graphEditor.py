@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.42 2003/09/10 21:52:04 cpbotha Exp $
+# $Id: graphEditor.py,v 1.43 2003/09/19 23:54:16 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -152,17 +152,19 @@ class graphEditor:
         self.show()
 
     def treeCtrlBeginDragHandler(self, event):
-        itemText = self._graphFrame.treeCtrl.GetItemText(event.GetItem())
-        dataObject = wxTextDataObject(itemText)
+        moduleName = self._graphFrame.treeCtrl.GetPyData(event.GetItem())
+        dataObject = wxTextDataObject(moduleName)
         
         dropSource = wxDropSource(self._graphFrame)
         dropSource.SetData(dataObject)
         # we don't need the result of the DoDragDrop call (phew)
         dropSource.DoDragDrop(TRUE)
 
-    def canvasDropText(self, x, y, text):
-        self.createModuleAndGlyph(x, y, text)
-        # check if the text is in our module list (then we should create it)
+    def canvasDropText(self, x, y, itemText):
+        """itemText is usually the complete module spec.
+        """
+        self.createModuleAndGlyph(x, y, itemText)
+
 
     def close(self):
         """This gracefull takes care of all graphEditor shutdown and is mostly
@@ -266,7 +268,7 @@ class graphEditor:
             if temp_module:
                 # create and draw the actual glyph
                 rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
-                self.createGlyph(rx,ry,moduleName,temp_module)
+                self.createGlyph(rx,ry,moduleName.split('.')[-1],temp_module)
 
                 # route all lines
                 self._routeAllLines()
@@ -280,34 +282,46 @@ class graphEditor:
         mm.executeModule(moduleInstance)
 
     def fill_module_tree(self):
+        """Build up the module tree from the list of available modules
+        supplied by the moduleManager.  At the moment, things will look
+        a bit strange if the module tree goes deeper than one level, but
+        everything will still work.
+        """
         self._graphFrame.treeCtrl.DeleteAllItems()
 
-        tree_root = self._graphFrame.treeCtrl.AddRoot('Modules')
-        rdrn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Readers')
-        wrtn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Writers')
-        vwrn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Viewers')
-        fltn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Filters')
-        miscn = self._graphFrame.treeCtrl.AppendItem(tree_root, 'Misc')
+        rootNode = self._graphFrame.treeCtrl.AddRoot('Modules')
+        coreNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
+                                                        'Core Modules')
+        userNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
+                                                        'User Modules')
+        rootDict = {'modules' : coreNode,
+                    'userModules' : userNode}
 
         mm = self._dscas3_app.getModuleManager()
         mm.scanModules()
         self._availableModuleList = mm.getAvailableModuleList()
-        for cur_mod in self._availableModuleList:
-            mtype = cur_mod[-3:].lower()
-            if mtype == 'rdr':
-                self._graphFrame.treeCtrl.AppendItem(rdrn, cur_mod)
-            elif mtype == 'wrt':
-                self._graphFrame.treeCtrl.AppendItem(wrtn, cur_mod)
-            elif mtype == 'vwr':
-                self._graphFrame.treeCtrl.AppendItem(vwrn, cur_mod)
-            elif mtype == 'flt':
-                self._graphFrame.treeCtrl.AppendItem(fltn, cur_mod)
+        catDict = {}
+        for moduleName in self._availableModuleList:
+            # we're getting the complete module spec relative to dscas3
+            # itself, e.g. modules.Filters.doubleThreshold
+            mParts = moduleName.split('.')
+            if len(mParts) == 2:
+                lastName = mParts[1]
+                catNode = rootDict[mParts[0]]
             else:
-                self._graphFrame.treeCtrl.AppendItem(miscn, cur_mod)
+                lastName = mParts[2]
+                try:
+                    catNode = catDict[mParts[1]]
+                except KeyError:
+                    catNode = self._graphFrame.treeCtrl.AppendItem(
+                        rootDict[mParts[0]], mParts[1])
+                    catDict[mParts[1]] = catNode
 
-        # only do stuff if !ItemHasChildren()
+            nn = self._graphFrame.treeCtrl.AppendItem(catNode, lastName)
+            self._graphFrame.treeCtrl.SetPyData(nn, moduleName)
 
-        self._graphFrame.treeCtrl.Expand(tree_root)
+        for node in rootDict.values() + [rootNode]:
+            self._graphFrame.treeCtrl.Expand(node)
 
     def close_graph_frame_cb(self, event):
         self.hide()
