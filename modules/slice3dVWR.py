@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.54 2003/07/04 07:32:14 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.55 2003/07/04 14:03:30 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -49,10 +49,7 @@ class sliceDirectionsClass(object):
         self.slice3dVWR = slice3dVWRThingy
         self._grid = sliceGrid
         self._sliceDirectionsDict = {}
-        self._currentSliceDirection = None
 
-        self._sliceDirections = []
-        self.currentSliceDirection = None
         # this same picker is used on all new IPWS of all sliceDirections
         self.ipwPicker = vtk.vtkCellPicker()
 
@@ -79,6 +76,10 @@ class sliceDirectionsClass(object):
                 sliceDirection.removeData(theData)
                 
             raise Exception, msg
+
+    def addContourObject(self, tdObject, prop3D):
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection.addContourObject(tdObject, prop3D)
 
     def _bindEvents(self):
         svViewFrame = self.slice3dVWR._viewFrame
@@ -246,6 +247,11 @@ class sliceDirectionsClass(object):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection.removeData(theData)
 
+    def removeContourObject(self, tdObject):
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection.removeContourObject(tdObject)
+            
+
     def resetAll(self):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection._resetPrimary()
@@ -314,6 +320,10 @@ class sliceDirectionsClass(object):
                         row, self._gridInteractionCol, 'No')
                     self._grid.SetCellBackgroundColour(
                         row, self._gridInteractionCol, wxColour(255,0,0))
+
+    def syncContoursToObjectViaProp(self, prop):
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection.syncContourToObjectViaProp(prop)
                 
 
 # -------------------------------------------------------------------------

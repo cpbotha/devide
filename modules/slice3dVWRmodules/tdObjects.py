@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.12 2003/07/01 16:55:21 cpbotha Exp $
+# $Id: tdObjects.py,v 1.13 2003/07/04 14:03:31 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -332,9 +332,6 @@ class tdObjects:
             nrGridRows = self._grid.GetNumberRows()
             self._grid.AppendRows()
             self._grid.SetCellValue(nrGridRows, self._gridNameCol, objectName)
-            #self._grid.SetCellValue(nrGridRows, self._gridColourCol,
-            #                        colourName)
-            #self._grid.SetCellValue(nrGridRows, self._gridVisibleCol, 'Yes')
             
             # store the name
             self._tdObjectsDict[tdObject]['objectName'] = objectName
@@ -423,44 +420,9 @@ class tdObjects:
         eventObject.GetProp3D().SetUserTransform(bwTransform)
 
         # and update the contours after we've moved things around
-        for sd in self._slice3dVWR._sliceDirections:
-            sd.syncContourToObjectViaProp(eventObject.GetProp3D())
+        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(
+            eventObject.GetProp3D())
 
-    def _observerMotionBoxWidgetInteraction(
-        self, eventObject, eventType, objectDict):
-        # if the object has been constrained, we do our thing here
-
-        # for now, we just use the first frikking plane, mmmkay?
-        try:
-            ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
-        except:
-            # no plane, so we don't do anything
-            return
-
-        planeNormal = ipw.GetNormal()
-        prevCentre = objectDict['motionBoxWidgetPrevCentre']
-
-        pd = vtk.vtkPolyData()
-        eventObject.GetPolyData(pd)
-        curCentre = pd.GetPoints().GetData().GetTuple3(14)
-
-        # now calculate motion vector
-        mv = map(operator.sub, curCentre, prevCentre)
-        # calculate "bad" component
-        bc = vtk.vtkMath.Dot(planeNormal, mv)
-        bc = [bc * e for e in planeNormal]
-        # because this is a hack and a kludge, we're just going to translate
-        # the boxwidget with the negative "bad" component
-        nbc = [-e for e in bc]
-
-        print mv
-        print nbc
-
-        trfm = vtk.vtkTransform()
-        eventObject.GetTransform(trfm)
-        #trfm.PostMultiply()
-        #trfm.Translate(nbc)
-        eventObject.SetTransform(trfm)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -560,8 +522,8 @@ class tdObjects:
             # finally in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
-                self._grid.SetCellValue(gridRow, self._gridVisibleCol,
-                                        ['No', 'Yes'][bool(visible)])
+                genUtils.setGridCellYesNo(
+                    self._grid,gridRow, self._gridVisibleCol, visible)
 
     def _setObjectContouring(self, tdObject, contour):
         if self._tdObjectsDict.has_key(tdObject):
@@ -572,18 +534,20 @@ class tdObjects:
 
             if objectDict['type'] == 'vtkPolyData':
                 # in the scene
-                for sd in self._slice3dVWR._sliceDirections:
-                    if contour:
-                        sd.addContourObject(tdObject, objectDict['vtkActor'])
-                    else:
-                        sd.removeContourObject(tdObject)
+                if contour:
+                    self._slice3dVWR.sliceDirections.addContourObject(
+                        tdObject, objectDict['vtkActor'])
+                else:
+                    self._slice3dVWR.sliceDirections.removeContourObject(
+                        tdObject)
 
             # in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
                 if objectDict['type'] == 'vtkPolyData':
-                    self._grid.SetCellValue(gridRow, self._gridContourCol,
-                                            ['No', 'Yes'][bool(contour)])
+                    genUtils.setGridCellYesNo(
+                        self._grid, gridRow, self._gridContourCol, contour)
+
                 else:
                     self._grid.SetCellValue(gridRow, self._gridContourCol,
                                             'N/A')
@@ -657,8 +621,9 @@ class tdObjects:
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
                 if objectDict['type'] == 'vtkPolyData':
-                    self._grid.SetCellValue(gridRow, self._gridMotionCol,
-                                            ['No', 'Yes'][bool(motion)])
+                    genUtils.setGridCellYesNo(
+                        self._grid, gridRow, self._gridMotionCol, motion)
+
                 else:
                     self._grid.SetCellValue(gridRow, self._gridMotionCol,
                                             'N/A')

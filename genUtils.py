@@ -47,7 +47,17 @@ def flattenProp3D(prop3D):
 
     # we should now also be able to zero the origin
     #prop3D.SetOrigin(0,0,0)
-    
+
+def setGridCellYesNo(grid, row, col, yes=True):
+    if yes:
+        colour = wxColour(0,255,0)
+        text = 'Yes'
+    else:
+        colour = wxColour(255,0,0)
+        text = 'No'
+        
+    grid.SetCellValue(row, col, text)
+    grid.SetCellBackgroundColour(row, col, colour)
 
 def textToFloat(text, defaultFloat):
     """Converts text to a float by using an eval and returns the float.
