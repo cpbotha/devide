@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.12 2003/05/13 11:44:49 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.13 2003/05/13 13:14:15 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -261,8 +261,6 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
 
 
 # ----------------------------------------------------------------------------
-
-import resources.python.noConfigModuleMixinViewFrame
 
 class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
     """Mixin class for those modules that don't make use of any user-config
