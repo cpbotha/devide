@@ -53,19 +53,4 @@ class wsMeshSmoothFLTViewFrame(wxFrame):
 # end of class wsMeshSmoothFLTViewFrame
 
 
-class MyFrame(wxFrame):
-    def __init__(self, *args, **kwds):
-        # content of this block not found: did you rename this class?
-        pass
-
-    def __set_properties(self):
-        # content of this block not found: did you rename this class?
-        pass
-
-    def __do_layout(self):
-        # content of this block not found: did you rename this class?
-        pass
-
-# end of class MyFrame
-
 

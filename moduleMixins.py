@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.14 2003/05/13 13:39:42 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.15 2003/05/19 20:09:25 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -111,6 +111,9 @@ class vtkPipelineConfigModuleMixin:
 
     def _defaultObjectChoiceCallback(self, viewFrame, renderWin,
                                     objectChoice, objectDict):
+        """This callack is required for the
+        createStandardObjectAndPipelineIntrospection method in moduleUtils.
+        """
         objectName = objectChoice.GetStringSelection()
         if objectDict.has_key(objectName):
             if hasattr(objectDict[objectName], "GetClassName"):
@@ -118,15 +121,16 @@ class vtkPipelineConfigModuleMixin:
                                         objectDict[objectName])
         
     def _defaultPipelineCallback(self, viewFrame, renderWin, objectDict):
+        """This callack is required for the
+        createStandardObjectAndPipelineIntrospection method in moduleUtils.
+        """
+        
         # check that all objects are VTK objects (probably not necessary)
         objects1 = objectDict.values()
         objects = tuple([object for object in objects1
                          if hasattr(object, 'GetClassName')])
 
         self.vtkPipelineConfigure(viewFrame, renderWin, objects)
-
-
-        
             
 # ----------------------------------------------------------------------------
 
@@ -321,19 +325,4 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
 
         return viewFrame
         
-    def objectChoiceCallback(self, objectDict):
-        objectName = self._viewFrame.objectChoice.GetStringSelection()
-        if objectDict.has_key(objectName):
-            if hasattr(objectDict[objectName], "GetClassName"):
-                self.vtkObjectConfigure(self._viewFrame, None,
-                                          objectDict[objectName])
-        
-    def pipelineCallback(self, objectDict):
-        # check that all objects are VTK objects (probably not necessary)
-        objects1 = objectDict.values()
-        objects = tuple([object for object in objects1
-                         if hasattr(object, 'GetClassName')])
-
-        self.vtkPipelineConfigure(self._viewFrame, None, objects)
-
 # ----------------------------------------------------------------------------
