@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.6 2002/05/19 14:22:32 cpbotha Exp $
+# $Id: dscas3.py,v 1.7 2002/05/20 01:17:38 cpbotha Exp $
 
 import os
 import stat
@@ -265,7 +265,6 @@ class dscas3_app_t(wxApp):
         self._vtk_lw = dscas3_log_window('VTK error log',
                                          self.main_window,
                                          vtk_logfn)
-        self._vtk_lw.show()
         
         return true
 

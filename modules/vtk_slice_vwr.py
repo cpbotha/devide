@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.31 2002/05/19 15:14:08 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.32 2002/05/20 01:17:38 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -137,10 +137,36 @@ class vtk_slice_vwr(module_base):
         else:
             raise TypeError
 
-    def _pw_cb(self, vtk_obj, event_name):
+    def _pw_cb(self, pw, ortho_idx):
         # this is a test; you'll have to send along the index too so we
         # know WHICH pipeline we have to work with
-        print event_name
+        origin = 3 * [0]
+        point1 = 3 * [0]
+        point2 = 3 * [0]
+        normal = 3 * [0]
+        pw.GetOrigin(origin)
+        pw.GetPoint1(point1)
+        pw.GetPoint2(point2)
+        pw.GetNormal(normal)
+
+        # python is so beautiful it makes me want to cry
+        # first calculate x vector
+        xa = map(lambda o, p1: p1 - o, origin, point1)
+        # calculate its magnitude
+        xam = reduce(lambda e1, e2: e1 + e2, map(lambda e: e**2, xa)) ** .5
+        # then normalise the x vector
+        xan = map(lambda e, m=xam: 1.0 * e / m, xa)
+        
+        ya = map(lambda o, p2: p2 - o, origin, point2)
+        yam = reduce(lambda e1, e2: e1 + e2, map(lambda e: e**2, ya)) ** .5
+        yan = map(lambda e, m=yam: 1.0 * e / m, ya)        
+
+        # do this for ALL layers! (we have it only on 0 for testing)
+        ir = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
+        ir.SetResliceAxesDirectionCosines(xan + yan + normal)
+        ir.SetResliceAxesOrigin(origin)
+
+        ir.Update()
 
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
@@ -148,7 +174,10 @@ class vtk_slice_vwr(module_base):
         # first create RenderWindowInteractor and pertinent elements
         self._rwis.append(wxVTKRenderWindowInteractor(panel, -1))
         self._pws.append(vtk.vtkPlaneWidget())
-        self._pws[-1].AddObserver('StartInteractionEvent', self._pw_cb)
+        o_idx = len(self._pws) - 1
+        self._pws[-1].AddObserver('InteractionEvent',
+                                  lambda vtk_obj, evtname, oi=o_idx, s=self:
+                                  s._pw_cb(vtk_obj, oi))
         self._renderers.append(vtk.vtkRenderer())
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         istyle = vtk.vtkInteractorStyleImage()
