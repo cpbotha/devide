@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.18 2003/04/28 11:26:21 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.19 2003/05/13 11:44:59 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -39,9 +39,9 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         self._outputPolyData = vtk.vtkPolyData()
 
         # create the frame and display it proudly!
-        self._createViewFrame('Glenoid Mould Designer View',
-                              {'Output Polydata': self._outputPolyData})
-        self._viewFrame.Show(True)
+        self._viewFrame = self._createViewFrame(
+            'Glenoid Mould Designer View',
+            {'Output Polydata': self._outputPolyData})
 
     def close(self):
         # disconnect all inputs

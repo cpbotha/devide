@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsRDR.py,v 1.5 2003/03/09 23:34:26 cpbotha Exp $
+# $Id: vtkStructPtsRDR.py,v 1.6 2003/05/13 11:44:59 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -34,9 +34,6 @@ class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
         self.configToLogic()
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
-
-        # finally we can display the GUI
-        self._viewFrame.Show(1)
         
     def close(self):
         del self._reader

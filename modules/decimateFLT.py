@@ -1,5 +1,5 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimateFLT.py,v 1.5 2003/04/28 13:15:38 cpbotha Exp $
+# $Id: decimateFLT.py,v 1.6 2003/05/13 11:44:59 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils
@@ -47,9 +47,6 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
         # then make sure they come all the way back up via self._config
         self.syncViewWithLogic()
-
-        # off we go!
-        self.view()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

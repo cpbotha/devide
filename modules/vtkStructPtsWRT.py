@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsWRT.py,v 1.7 2003/03/09 23:34:26 cpbotha Exp $
+# $Id: vtkStructPtsWRT.py,v 1.8 2003/05/13 11:44:59 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -39,9 +39,6 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
 
-        # finally we can display the GUI
-        self._viewFrame.Show(1)
-        
     def close(self):
         # we should disconnect all inputs
         self.setInput(0, None)

@@ -20,32 +20,24 @@ class polyDataConnectFLT(moduleBase, noConfigModuleMixin):
         #
         self._polyDataConnect.SetExtractionModeToPointSeededRegions()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module
-        self._polyDataConnect.SetProgressText('finding connected surfaces')
-        mm = self._moduleManager
-        self._polyDataConnect.SetProgressMethod(lambda s=self, mm=mm:
-                                               mm.vtk_progress_cb(
-            s._polyDataConnect))
+        moduleUtils.setupVTKObjectProgress(self, self._polyDataConnect,
+                                           'Finding connected surfaces')
 
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
         # this will be our internal list of points
         self._seedIds = []
 
-        self._createViewFrame('Polydata Connectivity Filter',
-                              {'vtkPolyDataConnectivityFilter' :
-                               self._polyDataConnect})
+        self._viewFrame = self._createViewFrame(
+            'Polydata Connectivity Filter',
+            {'vtkPolyDataConnectivityFilter' :
+             self._polyDataConnect})
 
         # transfer these defaults to the logic
         self.configToLogic()
 
         # then make sure they come all the way back up via self._config
         self.syncViewWithLogic()
-
-        # off we go!
-        self.view()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

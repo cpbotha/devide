@@ -1,4 +1,4 @@
-# $Id: stlWRT.py,v 1.2 2003/04/28 13:15:38 cpbotha Exp $
+# $Id: stlWRT.py,v 1.3 2003/05/13 11:44:59 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -46,9 +46,6 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         self.configToLogic()
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
-
-        # finally we can display the GUI
-        self._viewFrame.Show(1)
         
     def close(self):
         # we should disconnect all inputs

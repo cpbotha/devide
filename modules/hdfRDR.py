@@ -1,4 +1,4 @@
-# $Id: hdfRDR.py,v 1.6 2003/03/09 23:34:26 cpbotha Exp $
+# $Id: hdfRDR.py,v 1.7 2003/05/13 11:44:59 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -44,9 +44,6 @@ class hdfRDR(moduleBase,
         self.configToLogic()
         # and then bring the data all the way to the top
         self.syncViewWithLogic()
-
-        # and display the view
-        self.view()
 
     def close(self):
         # call close of this specific mixin

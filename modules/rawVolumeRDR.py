@@ -58,10 +58,6 @@ class rawVolumeRDR(moduleBase,
         # then make sure they come all the way back up via self._config
         self.syncViewWithLogic()
 
-        # off we go!
-        self._viewFrame.Show(1)
-        
-
     def close(self):
         # close down the vtkPipeline stuff
         vtkPipelineConfigModuleMixin.close(self)
@@ -211,20 +207,20 @@ class rawVolumeRDR(moduleBase,
                    self._viewFrame.browseButtonId,
                    self._browseButtonCallback)
                    
+        # setup object introspection
+        objectDict = {'vtkImageReader' : self._reader}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            objectDict, None)
 
-        # default binding for the buttons at the bottom
-        moduleUtils.bindCSAEO(self, self._viewFrame)        
+        # standard module buttons + events
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
 
         # finish setting up the output datatype choice
         self._viewFrame.dataTypeChoice.Clear()
         for aType in self._dataTypes.keys():
             self._viewFrame.dataTypeChoice.Append(aType)
-
-        # and now the standard examine object/pipeline stuff
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   self._vtkObjectChoiceCallback)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   self._vtkPipelineCallback)
 
 
     def _browseButtonCallback(self, event): 
@@ -235,11 +231,3 @@ class rawVolumeRDR(moduleBase,
         if path != None:
             self._viewFrame.filenameText.SetValue(path)
 
-    def _vtkObjectChoiceCallback(self, event):
-        self.vtkObjectConfigure(self._viewFrame, None,
-                                self._reader)
-
-    def _vtkPipelineCallback(self, event):
-        # move this to module utils too, or to base...
-        self.vtkPipelineConfigure(self._viewFrame, None,
-                                  (self._reader,))
