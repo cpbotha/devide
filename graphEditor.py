@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.60 2004/02/20 23:38:51 cpbotha Exp $
+# $Id: graphEditor.py,v 1.61 2004/02/20 23:43:18 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -601,10 +601,10 @@ class graphEditor:
                         # break out of the for loop
                         break
 
-            # this is independent from the other things... the fact that the
-            # user is pressing enter doesn't necessarily mean that she was
-            # busy quick-typing.  so after we've handled, we can bail
-            return
+                # we've placed a module, so we'd probably like to place
+                # another one... let's clear qss but keep the selection
+                qss = ''
+                updateSelectionAndStatusBar = True
 
         elif key == WXK_ESCAPE:
             idx = -1
