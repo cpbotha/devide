@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.16 2003/04/23 16:42:53 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.17 2003/04/25 16:49:42 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -35,8 +35,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         self._inputPointsOID = None
         self._giaGlenoid = None
         self._giaHumerus = None
-        self._fbzSup = None
-        self._fbzInf = None
+        self._glenoidEdge = None
         self._outputPolyData = vtk.vtkPolyData()
 
         # create the frame and display it proudly!
@@ -95,8 +94,10 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
     def executeModule(self):
         if self._giaHumerus and self._giaGlenoid and \
-               len(self._fbzSup) >= 2 and len(self._fbzInf) >= 2 and \
-               self._inputPolyData:
+           len(self._glenoidEdge) >= 6 and self._inputPolyData:
+
+            BUSY WITH glenoidEdgeImplicitFunction
+            
             # construct eight planes with the insertion axis as mid-line
             # the planes should go somewhat further proximally than the
             # proximal insertion axis point
@@ -545,6 +546,8 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
         return fbzPlane
 
+    def _glenoidEdgeImplicitFunction(self, giaGlenoid, edgePoints):
+        FIXME CONTINUE HERE
 
     def _lineExtrudeHouse(self, edgeLine, cutPlane):
         """Extrude the house (square with triangle as roof) along edgeLine.
@@ -597,21 +600,17 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             
             giaGlenoid = [i['world'] for i in self._inputPoints
                           if i['name'] == 'GIA Glenoid']
-
+            
             giaHumerus = [i['world'] for i in self._inputPoints
                           if i['name'] == 'GIA Humerus']
 
-            fbzSup = [i['world'] for i in self._inputPoints
-                          if i['name'] == 'FBZ Superior']
-
-            fbzInf = [i['world'] for i in self._inputPoints
-                          if i['name'] == 'FBZ Inferior']
+            glenoidEdge = [i['world'] for i in self._inputPoints
+                           if i['name'] == 'Glenoid Edge Point']
 
             if giaGlenoid and giaHumerus and \
-                   len(fbzSup) >= 2 and len(fbzInf) >= 2:
+               len(glenoidEdge) >= 6:
                 # we only apply these points to our internal parameters
                 # if they're valid and if they're new
                 self._giaGlenoid = giaGlenoid[0]
                 self._giaHumerus = giaHumerus[0]
-                self._fbzSup = fbzSup[:2]
-                self._fbzInf = fbzInf[:2]
+                self._glenoidEdge = glenoidEdge[:6]
