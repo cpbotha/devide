@@ -6,6 +6,14 @@ from wxPython.wx import *
 import vtk
 
 class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
+    """3D region growing.
+
+    Finds all points connected to the seed points that also have values
+    equal to the 'Input Connected Value'.  This module casts all input to
+    unsigned char.  The output is also unsigned char.
+
+    $Revision: 1.4 $
+    """
 
     def __init__(self, moduleManager):
 
