@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.12 2003/02/01 02:17:47 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.13 2003/02/04 16:51:55 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -38,11 +38,11 @@ class slice3d_vwr(moduleBase,
     def __init__(self, moduleManager):
         # call base constructor
         moduleBase.__init__(self, moduleManager)
-        self._num_inputs = 5
+        self._numDataInputs = 5
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'observerID' : -1,
                          'vtkActor' : None}
-                       for i in range(self._num_inputs)]
+                       for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
         self._view_frame = None
         # the imageplanewidgets
@@ -103,7 +103,7 @@ class slice3d_vwr(moduleBase,
     def close(self):
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
-        for idx in range(self._num_inputs):
+        for idx in range(self._numDataInputs):
             self.setInput(idx, None)
         
         # unbind everything that we bound in our __init__
@@ -153,7 +153,7 @@ class slice3d_vwr(moduleBase,
 	
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
-        return self._num_inputs * \
+        return self._numDataInputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
     def setInput(self, idx, input_stream):
