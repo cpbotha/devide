@@ -8,7 +8,7 @@ import wx
 class histogramSegment(introspectModuleMixin, moduleBase):
     """Mooooo!  I'm a cow.
 
-    $Revision: 1.7 $
+    $Revision: 1.8 $
     """
 
     _gridCols = [('Type', 0), ('Number of Handles',0)]
@@ -136,6 +136,17 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                 self._ipw.SetInteractor(None)
                 self._ipw.SetInput(None)
                 self._ipw = None
+
+                self._renderer.RemoveActor(self._axes)
+                self._axes = None
+
+                if 0:
+                    # also disable scalarBarWidget
+                    self._scalarBarWidget.Off()
+                    self._scalarBarWidget.SetInteractor(None)
+                    self._scalarBarWidget.GetScalarBarActor().SetLookupTable(
+                        None)
+                    self._scalarBarWidget = None
 
     def getOutputDescriptions(self):
         return ('Segmented vtkImageData', 'Histogram Stencil')
@@ -295,6 +306,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         # we'll use this to keep track of our ImagePlaneWidget
         self._ipw = None
         self._overlayipw = None
+        self._scalarBarWidget = None
 
         #
         self._appendPD = vtk.vtkAppendPolyData()
@@ -384,6 +396,27 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                               self._observerIPWInteraction)
         
         self._ipw.On()
+
+        self._axes = vtk.vtkCubeAxesActor2D()
+        self._axes.SetFlyModeToOuterEdges()
+        # NOBODY will ever know why we have to switch off the Y axis when
+        # we actually want the Z-axis to go away.
+        self._axes.YAxisVisibilityOff()
+        self._axes.SetBounds(self._ipw.GetResliceOutput().GetBounds())
+        
+        self._renderer.AddActor(self._axes)
+        self._axes.SetCamera(self._renderer.GetActiveCamera())
+        self._axes.PickableOff()
+
+        if 0:
+            # now add a scalarbar
+            self._scalarBarWidget = vtk.vtkScalarBarWidget()
+            self._scalarBarWidget.SetInteractor(self._viewFrame.rwi)
+            self._scalarBarWidget.GetScalarBarActor().SetTitle('Frequency')
+            self._scalarBarWidget.GetScalarBarActor().SetLookupTable(
+                lut)
+            # and activate
+            self._scalarBarWidget.On()
         
         self._resetCamera()
         self._render()

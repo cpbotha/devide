@@ -64,7 +64,7 @@ class viewFrame(wx.Frame):
         sizer_7.Add(self.removeButton, 0, wx.BOTTOM, 7)
         sizer_7.Add(self.changeHandlesButton, 0, 0, 0)
         sizer_6.Add(sizer_7, 0, wx.LEFT|wx.EXPAND, 7)
-        sizer_6.Add((0, 160), 0, 0, 0)
+        sizer_6.Add((0, 100), 0, 0, 0)
         sizer_3.Add(sizer_6, 0, wx.TOP|wx.EXPAND, 7)
         sizer_3.Add(self.static_line_1, 0, wx.TOP|wx.EXPAND, 7)
         sizer_2.Add(sizer_3, 1, wx.ALL|wx.EXPAND, 7)
