@@ -7,7 +7,7 @@
 # Author:      Gordon Williams
 #
 # Created:     2003/11/03
-# RCS-ID:      $Id: wxPyPlot.py,v 1.1 2004/08/03 16:15:35 cpbotha Exp $
+# RCS-ID:      $Id: wxPyPlot.py,v 1.2 2004/08/23 15:30:57 cpbotha Exp $
 # Copyright:   (c) 2002
 # Licence:     Use as you wish.
 #-----------------------------------------------------------------------------
@@ -763,7 +763,7 @@ class PlotCanvas(wx.wxWindow):
         dc.DrawText(graphics.getXLabel(),xLabelPos[0],xLabelPos[1])
         yLabelPos= (self.plotbox_origin[0],
                  self.plotbox_origin[1]- bottomH- (self.plotbox_size[1]-bottomH-topH)/2.+ yLabelWH[0]/2.)
-        if graphics.getYLabel():  #bug fix for Linux
+        if graphics.getYLabel():  #bug fix for Linux
             dc.DrawRotatedText(graphics.getYLabel(),yLabelPos[0],yLabelPos[1],90)
 
         #drawing legend makers and text
