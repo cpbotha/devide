@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.65 2004/03/04 17:35:44 cpbotha Exp $
+# $Id: graphEditor.py,v 1.66 2004/03/07 14:11:08 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -155,8 +155,8 @@ class graphEditor:
         EVT_MENU(self._graphFrame, self._graphFrame.fileSaveSelectedId,
                  self._handlerFileSaveSelected)
 
-        EVT_MENU(self._graphFrame, self._graphFrame.helpContextHelpId,
-                 self._handlerHelpContextHelp)
+        EVT_MENU(self._graphFrame, self._graphFrame.helpShowHelpId,
+                 self._handlerHelpShowHelp)
 
 
         # finish with moduleLists config
@@ -705,19 +705,8 @@ class graphEditor:
                 self._quickSearchString)
 
             
-    def _handlerHelpContextHelp(self, event):
-        owm = self._graphFrame.canvas.getObjectWithMouse()
-        if owm and hasattr(owm, 'moduleInstance'):
-            self._helpModule(owm.moduleInstance)
-
-        else:
-            md = wxMessageDialog(
-                self._graphFrame,
-                "Hold the mouse cursor over an already placed module, then "
-                "press F1 to see its help documentation.",
-                "Information",
-                wxOK | wxICON_INFORMATION)
-            md.ShowModal()
+    def _handlerHelpShowHelp(self, event):
+        self._devide_app.showHelp()
             
     def _handlerCopySelected(self, event):
         if self._glyphSelection.getSelectedGlyphs():

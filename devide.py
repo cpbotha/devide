@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.14 2004/03/06 15:03:24 cpbotha Exp $
+# $Id: devide.py,v 1.15 2004/03/07 14:11:08 cpbotha Exp $
 
 DEVIDE_VERSION = '20040306'
 
@@ -98,6 +98,7 @@ class devide_app_t(wx.App):
         self._assistants = assistants(self)
         self._graphEditor = None
         self._pythonShell = None
+        self._helpClass = None
 	
 
     def OnInit(self):
@@ -113,6 +114,8 @@ class devide_app_t(wx.App):
                    self.graphEditorCallback)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
                     self.pythonShellCallback)
+        wx.EVT_MENU(self._mainFrame, self._mainFrame.helpContentsId,
+                    self._handlerContents)
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
                     self.aboutCallback)
 
@@ -212,8 +215,14 @@ class devide_app_t(wx.App):
     def get_assistants(self):
         return self._assistants
 
-    def get_appdir(self):
+    def getAppDir(self):
         return self._appdir
+
+    def get_appdir(self):
+        return self.getAppDir()
+
+    def _handlerContents(self, event):
+        self.showHelp()
 
     def quit(self):
         # take care of the graphEditor if it exists
@@ -222,9 +231,17 @@ class devide_app_t(wx.App):
             
         # shutdown all modules gracefully
         self.moduleManager.close()
+
+        # take down the help
+        if self._helpClass:
+            self._helpClass.close()
         
 	# take care of main window
 	self._mainFrame.Close()
+
+    def showHelp(self):
+        self._startHelpClass()
+        self._helpClass.show()
 
     def startPythonShell(self):
         if self._pythonShell == None:
@@ -235,6 +252,10 @@ class devide_app_t(wx.App):
                 "'devide_app' is bound to the main app class.")
         else:
             self._pythonShell.show()
+
+    def _startHelpClass(self):
+        if self._helpClass == None:
+            self._helpClass = helpClass(self)
 
     def start_graph_editor(self):
         if self._graphEditor == None:
@@ -365,13 +386,14 @@ def postWxInitImports():
     their thing.
     """
     
-    global assistants, graphEditor, moduleManager, pythonShell
+    global assistants, graphEditor, moduleManager, pythonShell, helpClass
     global vtk, vtkdevide
     
     from assistants import assistants
     from graphEditor import graphEditor
     from moduleManager import moduleManager
     from pythonShell import pythonShell
+    from helpClass import helpClass
 
     import vtk
     import vtkdevide

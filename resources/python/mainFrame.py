@@ -9,7 +9,6 @@ class mainFrame(wxFrame):
         kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)
         self.panel_1 = wxPanel(self, -1)
-        self.frame_1_statusbar = self.CreateStatusBar(1)
         
         # Menu Bar
         self.frame_1_menubar = wxMenuBar()
@@ -27,10 +26,11 @@ class mainFrame(wxFrame):
         wxglade_tmp_menu.Append(self.windowPythonShellId , "&Python Shell", "Show the Python Shell interface", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Window")
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(self.helpContentsId , "&Contents", "Show the main help contents", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.helpContentsId , "&Contents\tF1", "Show the main help contents", wxITEM_NORMAL)
         wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DeVIDE", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
+        self.frame_1_statusbar = self.CreateStatusBar(1)
         self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that even the longest of messages eek.")
         self.progressGauge = wxGauge(self.panel_1, -1, 100)
         self.progressRaiseCheckBox = wxCheckBox(self.panel_1, -1, "Raise this window when the progress is updated.")

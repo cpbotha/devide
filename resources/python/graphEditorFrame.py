@@ -24,7 +24,7 @@ class graphEditorFrame(wxFrame):
         self.fileSaveId  =  wxNewId()
         self.fileSaveSelectedId  =  wxNewId()
         self.fileExitId  =  wxNewId()
-        self.helpContextHelpId  =  wxNewId()
+        self.helpShowHelpId  =  wxNewId()
         wxglade_tmp_menu = wxMenu()
         wxglade_tmp_menu.Append(self.fileNewId , "&New\tCtrl-N", "Create new network.", wxITEM_NORMAL)
         wxglade_tmp_menu.Append(self.fileOpenId , "&Open\tCtrl-O", "Open and load existing network.", wxITEM_NORMAL)
@@ -37,7 +37,7 @@ class graphEditorFrame(wxFrame):
         self.editMenu = wxMenu()
         self.frame_1_menubar.Append(self.editMenu, "&Edit")
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(self.helpContextHelpId , "&Context-sensitive Help\tF1", "", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.helpShowHelpId , "Show &Help\tF1", "", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.frame_1_statusbar = self.CreateStatusBar(1)
