@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.72 2004/03/22 21:21:04 cpbotha Exp $
+# $Id: graphEditor.py,v 1.73 2004/03/26 17:25:12 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -597,6 +597,8 @@ class graphEditor:
 
     def show(self):
         self._graphFrame.Show(True)
+        self._graphFrame.Iconize(False)        
+        self._graphFrame.Raise()
 
     def _handlerFileOpenSegment(self, event):
         filename = wxFileSelector(
