@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.51 2003/09/24 12:03:06 cpbotha Exp $
+# $Id: dscas3.py,v 1.52 2003/10/05 00:08:17 cpbotha Exp $
 
-DSCAS3_VERSION = '20030923'
+DSCAS3_VERSION = '20031006'
 
 import os
 import mutex
@@ -353,8 +353,12 @@ class dscas3_app_t(wxApp):
         <body>
         <center>
         <h3>DSCAS3 v.%s</h3>
-        <p>DSCAS3 is copyright 2003 Charl P. Botha / DIPEX<br>
+        <p>DSCAS3 is copyright (c) 2003 Charl P. Botha<br>
         http://cpbotha.net/phd/
+        </p>
+        <p>Unauthorised use or distribution strictly prohibited.
+        See LICENSE.txt in the installation directory for detailed terms of
+        use.
         </p>
         <p>
         wxPython %s, Python %s, VTK %s

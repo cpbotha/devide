@@ -19,7 +19,7 @@ class aboutDialog(wxDialog):
     def __set_properties(self):
         # begin wxGlade: aboutDialog.__set_properties
         self.SetTitle("About DSCAS3")
-        self.htmlWindow.SetSize((389, 188))
+        self.htmlWindow.SetSize((389, 245))
         self.okButton.SetDefault()
         # end wxGlade
 
