@@ -172,7 +172,7 @@ def textToTypeTuple(text, defaultTuple, numberOfElements, aType):
 
     else:
         try:
-            returnTuple = [aType(e) for e in aTuple]
+            returnTuple = tuple([aType(e) for e in aTuple])
         except ValueError:
             returnTuple = defaultTuple
 
