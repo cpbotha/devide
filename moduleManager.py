@@ -112,14 +112,15 @@ class moduleManager:
                                                moduleList):
                 """Iterate recursively starting at adir and make a list of
                 all available modules.  We do not traverse into dirs that
-                are named 'resources'.
+                are named 'resources' or that end with 'modules'.
                 """
                 
                 fileNames = os.listdir(adir)
                 for fileName in fileNames:
                     completeName = os.path.join(adir, fileName)
                     if os.path.isdir(completeName) and \
-                       fileName.strip('/') != 'resources':
+                       fileName.strip('/') != 'resources' and \
+                       not fileName.strip('/').lower().endswith('modules'):
                         # fileName is just a directory name then
                         # make sure it has no /'s at the end and append
                         # it to the curModulePath when recursing
