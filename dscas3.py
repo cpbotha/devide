@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.41 2003/06/28 18:54:52 cpbotha Exp $
+# $Id: dscas3.py,v 1.42 2003/08/11 16:49:42 cpbotha Exp $
 
 DSCAS3_VERSION = '20030630'
 
@@ -9,6 +9,9 @@ import stat
 import string
 import sys
 import time
+
+import startupImports
+startupImports.doImports()
 
 from assistants import assistants
 from graphEditor import graphEditor
