@@ -1,8 +1,9 @@
-# $Id: moduleMixins.py,v 1.25 2004/03/04 13:50:57 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.26 2004/03/04 22:42:38 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
+import genUtils
 import moduleUtils
 #from wxPython.wx import *
 import wx
@@ -494,7 +495,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                 # e.g. tuple:float,3
                 wv = widget.GetValue()
 
-                castString, numString = typeD.split(':')[1:].split(',')
+                castString, numString = typeD.split(':')[1].split(',')
                 val = genUtils.textToTypeTuple(
                     wv, eval('self._config.%s' % (configTuple[1],)),
                     int(numString), eval(castString))
@@ -504,6 +505,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             else:
                 raise ValueError, 'Invalid typeDescription.'
 
+            print "setting self._config.%s to %s" % (configTuple[1], val)
             setattr(self._config, configTuple[1], val)
 
     def configToView(self):
