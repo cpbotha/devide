@@ -577,37 +577,37 @@ class moduleManager:
             self.setProgress(progressP, fullText)
             self._inProgressCallback.unlock()
     
-    def vtk_progress_cb(self, process_object):
-        """Default callback that can be used for VTK ProcessObject callbacks.
+#     def vtk_progress_cb(self, process_object):
+#         """Default callback that can be used for VTK ProcessObject callbacks.
 
-        In all VTK-using child classes, this method can be used if such a
-        class wants to show its process graphically.  You'll have to use
-        a lambda callback in order to pass the process_object along.  See
-        vtk_plydta_rdr.py for a simple example.
-        """
+#         In all VTK-using child classes, this method can be used if such a
+#         class wants to show its process graphically.  You'll have to use
+#         a lambda callback in order to pass the process_object along.  See
+#         vtk_plydta_rdr.py for a simple example.
+#         """
 
-        # if this is called while still in progress, we do nothing...
-        # it means multi-threaded VTK objects are calling back into us (yuck)
-        if self._inProgressCallback.testandset():
-            vtk_progress = process_object.GetProgress() * 100.0
-            progressText = process_object.GetClassName() + ': ' + \
-                           process_object.GetProgressText()
-            if abs(vtk_progress - 100.0) < 0.01:
-                # difference smaller than a hundredth
-                progressText += ' [DONE]'
+#         # if this is called while still in progress, we do nothing...
+#         # it means multi-threaded VTK objects are calling back into us (yuck)
+#         if self._inProgressCallback.testandset():
+#             vtk_progress = process_object.GetProgress() * 100.0
+#             progressText = process_object.GetClassName() + ': ' + \
+#                            process_object.GetProgressText()
+#             if abs(vtk_progress - 100.0) < 0.01:
+#                 # difference smaller than a hundredth
+#                 progressText += ' [DONE]'
 
-            self.setProgress(vtk_progress, progressText)
-            self._inProgressCallback.unlock()
+#             self.setProgress(vtk_progress, progressText)
+#             self._inProgressCallback.unlock()
             
-    def vtk_poll_error(self):
-        """This method should be called whenever VTK processing might have
-        taken place, e.g. in the execute() method of a devide module.
+#     def vtk_poll_error(self):
+#         """This method should be called whenever VTK processing might have
+#         taken place, e.g. in the execute() method of a devide module.
 
-        update() will be called on the central vtk_log_window.  This will
-        only show if the filesize of the vtk log file has changed since the
-        last call.
-        """
-        print "vtk_poll_error is DEPRECATED"
+#         update() will be called on the central vtk_log_window.  This will
+#         only show if the filesize of the vtk log file has changed since the
+#         last call.
+#         """
+#         print "vtk_poll_error is DEPRECATED"
 
     def setProgress(self, progress, message):
         """Progress is in percent.
