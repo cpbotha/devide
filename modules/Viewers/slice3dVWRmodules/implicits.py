@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.9 2004/02/25 16:02:16 cpbotha Exp $
+# $Id: implicits.py,v 1.10 2004/02/25 20:24:10 cpbotha Exp $
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -166,8 +166,11 @@ class implicits(object, s3dcGridMixin):
                 if pi != None:
                     implicitWidget.SetInput(pi)
                     implicitWidget.PlaceWidget()
+                    b = pi.GetBounds()
+                    implicitWidget.SetOrigin(b[0], b[2], b[4])
                 elif bounds != None:
                     implicitWidget.PlaceWidget(bounds)
+                    implicitWidget.SetOrigin(bounds[0], bounds[2], bounds[4])
                 else:
                     # this can never happen
                     pass
@@ -371,6 +374,10 @@ class implicits(object, s3dcGridMixin):
                 fn = [-1.0 * e for e in n]
                 ii.function.SetNormal(fn)
                 ii.widget.SetNormal(fn)
+
+        if sNames:
+            # if we don't re-render, we don't see the flipped thingies
+            self.slice3dVWR.render3D()
                                      
 
     def _handlerGridRightClick(self, gridEvent):
