@@ -75,6 +75,16 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
                     cobject.__hasMouse = False
                     cobject.notifyObservers('exit', event)
 
+        if not mouseOnObject:
+            # we only get here if the mouse is not inside any canvasObject
+            # (but it could be dragging a canvasObject!)
+            if event.Dragging():
+                self.notifyObservers('drag', event)
+            elif event.ButtonUp():
+                self.notifyObservers('buttonUp', event)
+            elif event.ButtonDown():
+                self.notifyObservers('buttonDown', event)
+                    
         if self._draggedObject:
             # dragging locks onto an object, even if the mouse pointer
             # is not inside that object - it will keep receiving drag
@@ -89,18 +99,6 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             # ongoing
             draggedObject.notifyObservers('drag', event)
 
-            # this also means that the mouse is involved with an object
-            mouseOnObject = True
-
-        if not mouseOnObject:
-            # these get canvas relative coords - we'll see if that's
-            # really what we want
-            if event.Dragging():
-                self.notifyObservers('drag', event)
-            elif event.ButtonUp():
-                self.notifyObservers('buttonUp', event)
-            elif event.ButtonDown():
-                self.notifyObservers('buttonDown', event)
             
 
         # store the previous real coordinates for mouse deltas

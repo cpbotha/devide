@@ -75,18 +75,17 @@ class coLine(canvasObject):
         coordinate of a node in the line.  The position is assumed to be
         the first point.
         """
-        
-
-
-        self._linePoints = (fromGlyph.getCenterOfPort(1 ,fromOutputIdx),
-                            toGlyph.getCenterOfPort(0, toInputIdx))
-
-        canvasObject.__init__(self, self._linePoints[0])        
 
         self.fromGlyph = fromGlyph
         self.fromOutputIdx = fromOutputIdx
         self.toGlyph = toGlyph
         self.toInputIdx = toInputIdx
+
+        self._linePoints = [(), ()] # ascii porn, hehe
+        self.updateEndPoints()
+
+        canvasObject.__init__(self, self._linePoints[0])        
+
 
     def close(self):
         # delete things that shouldn't be left hanging around
@@ -107,6 +106,14 @@ class coLine(canvasObject):
         # maybe one day we will make the hitTest work, not tonight
         # I don't need it
         return False
+
+    def updateEndPoints(self):
+        
+        self._linePoints[0] = self.fromGlyph.getCenterOfPort(
+            1, self.fromOutputIdx)
+        self._linePoints[-1] = self.toGlyph.getCenterOfPort(
+            0, self.toInputIdx)
+        
 
 #############################################################################
 class coGlyph(coRectangle):

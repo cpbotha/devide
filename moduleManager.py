@@ -254,12 +254,14 @@ class moduleManager:
 	input_module.setInput(input_idx, None)
 
         # trace it back to our supplier, and tell it that it has one
-        # less consumer
-        supp = self._moduleDict[input_module].inputs[input_idx][0]
-        suppOutIdx = self._moduleDict[input_module].inputs[input_idx][1]
+        # less consumer (if we even HAVE a supplier on this port)
+        s = self._moduleDict[input_module].inputs[input_idx]
+        if s:
+            supp = s[0]
+            suppOutIdx = s[1]
         
-        oList = self._moduleDict[supp].outputs[suppOutIdx]
-        del oList[oList.index((input_module, input_idx))]
+            oList = self._moduleDict[supp].outputs[suppOutIdx]
+            del oList[oList.index((input_module, input_idx))]
 
         # indicate to the meta data that this module doesn't have an input
         # anymore

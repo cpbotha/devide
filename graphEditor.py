@@ -1,23 +1,12 @@
-
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.5 2003/05/07 22:43:26 cpbotha Exp $
+# $Id: graphEditor.py,v 1.6 2003/05/07 23:34:13 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
-#from wxPython.ogl import *
 from external.wxPyCanvas import wxpc
 import genUtils
 import string
 import traceback
-
-# wxGTK 2.3.2.1 bugs with mouse capture (BADLY), so we disable this
-try:
-    WX_USE_X_CAPTURE
-except NameError:
-    if wxPlatform == '__WXMSW__':
-        WX_USE_X_CAPTURE = 1
-    else:
-        WX_USE_X_CAPTURE = 0
 
 
 # ----------------------------------------------------------------------------
@@ -30,7 +19,6 @@ class graphEditor:
         self._graphFrame = resources.python.graphEditorFrame.graphEditorFrame(
             self._dscas3_app.get_main_window(),
             -1, title='dummy', wxpcCanvas=wxpc.canvas)
-        #self._graphFrame.canvas.setGraphEditor(self)
 
         EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)        
 
@@ -46,6 +34,8 @@ class graphEditor:
         self._graphFrame.canvas.addObserver('buttonDown',
                                             self._canvasLeftClick)
 
+        self._graphFrame.canvas.addObserver('buttonUp',
+                                            self._canvasButtonUp)
         
         # now display the shebang
         self.show()
@@ -116,57 +106,68 @@ class graphEditor:
             mm.disconnectModules(glyph.moduleInstance, inputIdx)
 
             deadLine = glyph.inputLines[inputIdx]
-            # remove the line from the destination module input lines
-            glyph.inputLines[inputIdx] = None
-            # and for the source module output lines
-            outlines = deadLine.fromGlyph.outputLines[deadLine.fromOutputIdx]
-            del outlines[outlines.index(deadLine)]
+            if deadLine:
+                # remove the line from the destination module input lines
+                glyph.inputLines[inputIdx] = None
+                # and for the source module output lines
+                outlines = deadLine.fromGlyph.outputLines[
+                    deadLine.fromOutputIdx]
+                del outlines[outlines.index(deadLine)]
 
-            # and from the canvas
-            self._graphFrame.canvas.removeObject(deadLine)
-            deadLine.close()
+                # and from the canvas
+                self._graphFrame.canvas.removeObject(deadLine)
+                deadLine.close()
             
         except Exception, e:
             genUtils.logError('Could not disconnect modules: %s' \
                               % (str(e)))
                 
-    def redraw_canvas(self):
-        dc = wxClientDC(self._graphFrame.canvas)
-        self._graphFrame.canvas.PrepareDC(dc)
-        self._graphFrame.canvas.Redraw(dc)
-
     def _canvasLeftClick(self, canvas, eventName, event, userData):
-        # first see what mode we are in
-        # blah blah
+        if event.LeftDown():
+            # we are in "create/edit" mode, so let's create some glyph
+            # first get the currently selected tree node
+            sel_item = self._graphFrame.treeCtrl.GetSelection()
+            # then the root node
+            root_item = self._graphFrame.treeCtrl.GetRootItem()
+            if root_item != sel_item and \
+                   self._graphFrame.treeCtrl.GetItemText(sel_item) and \
+                   self._graphFrame.treeCtrl.GetItemParent(sel_item) != root_item:
+                # we have a valid module, we should try and instantiate
+                mod_name = self._graphFrame.treeCtrl.GetItemText(sel_item)
+                mm = self._dscas3_app.getModuleManager()
+                temp_module = mm.createModule(mod_name)
+                # if the module_manager did its trick, we can make a glyph
+                if temp_module:
+                    co = wxpc.coGlyph((event.realX, event.realY),
+                                      len(temp_module.getInputDescriptions()),
+                                      len(temp_module.getOutputDescriptions()),
+                                      mod_name, temp_module)
+                    canvas.addObject(co)
 
-        # we are in "create/edit" mode, so let's create some glyph
-        # first get the currently selected tree node
-        sel_item = self._graphFrame.treeCtrl.GetSelection()
-        # then the root node
-        root_item = self._graphFrame.treeCtrl.GetRootItem()
-        if root_item != sel_item and \
-           self._graphFrame.treeCtrl.GetItemParent(sel_item) != root_item:
-            # we have a valid module, we should try and instantiate
-            mod_name = self._graphFrame.treeCtrl.GetItemText(sel_item)
-            mm = self._dscas3_app.getModuleManager()
-            temp_module = mm.createModule(mod_name)
-            # if the module_manager did its trick, we can make a glyph
-            if temp_module:
-                co = wxpc.coGlyph((event.realX, event.realY),
-                                  len(temp_module.getInputDescriptions()),
-                                  len(temp_module.getOutputDescriptions()),
-                                  mod_name, temp_module)
-                canvas.addObject(co)
 
-                co.addObserver('buttonDown',
-                               self._glyphRightClick, temp_module)
-                co.addObserver('buttonUp',
-                               self._glyphButtonUp, temp_module)
-                co.addObserver('drag',
-                               self._glyphDrag, temp_module)
-                
-                canvas.Refresh()
-                #ge_glyph(self._graphFrame.canvas, mod_name, temp_module, x, y)
+
+                    co.addObserver('buttonDown',
+                                   self._glyphRightClick, temp_module)
+                    co.addObserver('buttonUp',
+                                   self._glyphButtonUp, temp_module)
+                    co.addObserver('drag',
+                                   self._glyphDrag, temp_module)
+
+                    canvas.Refresh()
+
+    def _canvasButtonUp(self, canvas, eventName, event, userData):
+        if event.LeftUp():
+            if canvas.getDraggedObject() and \
+                   canvas.getDraggedObject().draggedPort and \
+                   canvas.getDraggedObject().draggedPort != (-1,-1):
+
+                if canvas.getDraggedObject().draggedPort[0] == 0:
+                    # the user was dragging an input port and dropped it
+                    # on the canvas, so she probably wants us to disconnect
+                    inputIdx = canvas.getDraggedObject().draggedPort[1]
+                    self._disconnect(canvas.getDraggedObject(),
+                                     inputIdx)
+            
 
     def _checkAndConnect(self, draggedObject, draggedPort,
                          droppedObject, droppedInputPort):
@@ -298,6 +299,17 @@ class graphEditor:
         
         if not canvas.getDraggedObject():
             # this means that this drag has JUST been cancelled
+            if glyph.draggedPort == (-1, -1):
+                # and we were busy dragging a glyph around, so we probably
+                # want to reroute all lines!
+                for lines in glyph.outputLines:
+                    for line in lines:
+                        line.updateEndPoints()
+
+                for line in glyph.inputLines:
+                    if line:
+                        line.updateEndPoints()
+
             # switch off the draggedPort
             glyph.draggedPort = None
             # redraw everything
@@ -348,8 +360,9 @@ class graphEditor:
                     # if the user was dragging an input port, we have to
                     # manually disconnect
                     if canvas.getDraggedObject().draggedPort[0] == 0:
+                        inputIdx = canvas.getDraggedObject().draggedPort[1]
                         self._disconnect(canvas.getDraggedObject(),
-                                         canvas.getDraggedObject().draggedPort)
+                                         inputIdx)
 
                     else:
                         # the user was dragging a port and dropped us
