@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.13 2003/05/09 17:11:25 cpbotha Exp $
+# $Id: graphEditor.py,v 1.14 2003/05/09 22:12:58 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -555,6 +555,105 @@ class graphEditor:
                 # first check whether we should work according to angle
                 # or distance
                 if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
+                    midPointX = xmin + (xmax - xmin) / 2.0
+                    if x1 < midPointX:
+                        newX = xmin - overshoot
+                    else:
+                        newX = xmax + overshoot
+                    
+                    newY = nearestClipPoint[1]
+                    if newY == ymin:
+                        newY -= overshoot
+                        # try the insert
+                        #line.insertRoutingPoint(nearestClipPoint[0], newY)
+                        successfulInsert = line.insertRoutingPoint(newX, newY)
+#                         if not successfulInsert:
+#                             # if it failed, it's because we added a duplicate
+#                             # point, which means we're oscillating...
+#                             # move the schmuxor down and try again
+#                             newY += overshoot
+#                             si = line.insertRoutingPoint(newX, newY)
+#                             successfulInsert = si
+                    else:
+                        newY += overshoot
+                        #line.insertRoutingPoint(nearestClipPoint[0], newY)
+                        successfulInsert = line.insertRoutingPoint(newX, newY)
+#                         if not successfulInsert:
+#                             newY -= overshoot
+#                             si = line.insertRoutingPoint(newX, newY)
+#                             successfulInsert = si
+                    
+                elif nearestClipPoint[0] == xmin or \
+                         nearestClipPoint[0] == xmax:
+                    midPointY = ymin + (ymax - ymin) / 2.0
+                    if y1 < midPointY:
+                        newY = ymin - overshoot
+                    else:
+                        newY = ymax + overshoot
+
+                    newX = nearestClipPoint[0]
+                    if newX == xmin:
+                        newX -= overshoot
+                    else:
+                        newX += overshoot
+                        
+                    # duplicates should never happen here!
+                    #line.insertRoutingPoint(newX, nearestClipPoint[1])
+                    successfulInsert = line.insertRoutingPoint(newX, newY)
+
+                else:
+                    print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
+                    raise Exception
+
+    def _routeLineBACKUP2(self, line):
+        
+        # we have to get a list of all coGlyphs
+        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+
+        # make sure the line is back to 4 points
+        line.updateEndPoints()
+
+        #
+        overshoot = 7
+
+        successfulInsert = True
+        while successfulInsert:
+            
+            (x0, y0), (x1, y1) = line.getThirdLastSecondLast()
+
+            clips = {}
+            for glyph in allGlyphs:
+                (xmin, ymin), (xmax, ymax) = glyph.getTopLeftBottomRight()
+                
+                clipPoints = self._cohenSutherLandClip(x0, y0, x1, y1,
+                                                       xmin, ymin, xmax, ymax)
+                if clipPoints:
+                    clips[glyph] = clipPoints
+
+            # now look for the clip point closest to the start of the current
+            # line segment!
+            currentSd = 65535
+            nearestGlyph = None
+            nearestClipPoint = None
+            for clip in clips.items():
+                for clipPoint in clip[1]:
+                    xdif = clipPoint[0] - x0
+                    ydif = clipPoint[1] - y0
+                    sd = xdif * xdif + ydif * ydif
+                    if sd < currentSd:
+                        currentSd = sd
+                        nearestGlyph = clip[0]
+                        nearestClipPoint = clipPoint
+
+            successfulInsert = False
+            # we have the nearest clip point
+            if nearestGlyph:
+                (xmin, ymin), (xmax, ymax) = \
+                       nearestGlyph.getTopLeftBottomRight()
+
+                # first check whether we should work according to angle
+                # or distance
+                if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
                     if x1 < xmin:
                         newX = xmin - overshoot
                     elif x1 > xmax:
@@ -612,6 +711,7 @@ class graphEditor:
                 else:
                     print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
                     raise Exception
+                
 
     def _routeLineBACKUP(self, line):
         

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.4 2002/08/28 14:59:35 cpbotha Exp $
+$Id: TODO,v 1.5 2003/05/09 22:12:58 cpbotha Exp $
 
 - ideas for TF editor:
   * opacity curve overlaid on histogram of data
@@ -9,3 +9,9 @@ $Id: TODO,v 1.4 2002/08/28 14:59:35 cpbotha Exp $
 
 - compare our vtkPipelineWX with the latest vtkPipeline from Prabhu's CVS
 
+BUGS:
+
+* connect doubleThreshold and seedConnect to slice3dVWR without any input file
+  (i.e. no reader) and watch the application become unresponsive
+
+FIXED:
