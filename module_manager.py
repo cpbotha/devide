@@ -17,9 +17,6 @@ class module_manager:
         self._modules_dir = os.path.join(appdir, 'modules')
         self._user_modules_dir = os.path.join(appdir, 'user_modules')
         
-	# add it to the python path so imports work
-        sys.path.insert(0, self._user_modules_dir)        
-	sys.path.insert(0, self._modules_dir)
 	# make first scan of available modules
 	self.scan_modules()
 
@@ -67,16 +64,19 @@ class module_manager:
     
     def create_module(self, name):
 	try:
+            # find out whether it's built-in or user
+            mtypePrefix = ['user_modules', 'modules']\
+                          [bool(name in modules.module_list)]
+            fullName = mtypePrefix + '.' + name
 	    # import the correct module
-	    #exec('from ' + name + ' import ' + name)
-	    exec('import ' + name)
+	    exec('import ' + fullName)
 	    # and do this reload call as well (it's only double work on the
             # very first import)
 	    # (but we should probably check if name exists in our dictionary,
             # and only use reload then.)
-	    exec('reload(' + name + ')')
+	    exec('reload(' + fullName + ')')
 	    # then instantiate the requested class
-	    exec('self.modules.append(' + name + '.' + name + '(self))')
+	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
 	except ImportError:
 	    gen_utils.log_error("Unable to import module %s!" % name)
 	    return None

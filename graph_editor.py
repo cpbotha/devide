@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.31 2002/07/04 15:56:46 cpbotha Exp $
+# $Id: graph_editor.py,v 1.32 2003/01/22 18:24:02 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -325,7 +325,7 @@ class graph_editor:
 
         self._dscas3_app.get_module_manager().scan_modules()
         for cur_mod in self._dscas3_app.get_module_manager().get_module_list():
-            mtype = cur_mod[-3:]
+            mtype = cur_mod[-3:].lower()
             if mtype == 'rdr':
                 self._tree_ctrl.AppendItem(rdrn, cur_mod)
             elif mtype == 'wrt':

@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.21 2002/09/30 15:30:30 cpbotha Exp $
+# $Id: module_base.py,v 1.22 2003/01/22 18:24:02 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -98,6 +98,9 @@ class module_base:
     def view(self):
 	"""Pop up a dialog with all config possibilities, including optional
         use of the pipeline browser.
+
+        If the dialog is already visible, do something to draw the user's
+        attention to it.
         """
 	raise NotImplementedError
     
@@ -200,7 +203,8 @@ class module_mixin_vtk_pipeline_config:
             
 # ----------------------------------------------------------------------------
 
-from wxPython.wx import wxFileDialog, wxDirDialog, wxOPEN, wxID_OK
+#from wxPython.wx import wxFileDialog, wxDirDialog, wxOPEN, wxID_OK
+from wxPython.wx import *
 
 class module_mixin_fo_dialog:
     """Module mixin to make use of file open dialog."""
@@ -254,4 +258,83 @@ class module_mixin_fo_dialog:
         else:
             return None
 
+# ----------------------------------------------------------------------------
+
+import resources.python.filenameViewModuleMixinFrame
+import module_utils
+
+class filenameViewModuleMixin(module_mixin_fo_dialog,
+                              module_mixin_vtk_pipeline_config):
+    """Mixin class for those modules that only need a filename to operate.
+
+    Please call __init__() and close() at the appropriate times from your
+    module class.  Call _createViewFrame() at the end of your __init__ and
+    Show(1) the resulting frame.
+    """
+
+    def __init__(self):
+        self._viewFrame = None
+
+    def close(self):
+        self._viewFrame.Destroy()
+        del self._viewFrame
+
+    def _createViewFrame(self, frameTitle,
+                         browseMsg="Select a filename",
+                         fileWildcard=
+                         "VTK data (*.vtk)|*.vtk|All files (*)|*",
+                         objectDict={}):
+
+        parent_window = self._module_manager.get_module_view_parent_window()
+        self._viewFrame = resources.python.filenameViewModuleMixinFrame.\
+                          filenameViewModuleMixinFrame(parent_window, -1,
+                                                       'dummy')
+
+        self._viewFrame.SetTitle(frameTitle)
+
+        EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
+                   lambda e: self.browseButtonCallback(browseMsg,
+                                                       fileWildcard))
+
+        for objectName in objectDict.keys():
+            self._viewFrame.objectChoice.Append(objectName)
+            
+        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
+                   lambda e: self.objectChoiceCallback(objectDict))
         
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+                   lambda e: self.pipelineCallback(objectDict))
+
+        # bind events to the standard cancel, sync, apply, execute, ok buttons
+        module_utils.bind_CSAEO2(self, self._viewFrame)
+
+    def _getViewFrameFilename(self):
+        return self._viewFrame.filenameText.GetValue()
+
+    def _setViewFrameFilename(self, filename):
+        self._viewFrame.filenameText.SetValue(filename)
+
+    def browseButtonCallback(self, browseMsg="Select a filename",
+                             fileWildcard=
+                             "VTK data (*.vtk)|*.vtk|All files (*)|*"):
+
+        path = self.fn_browse(self._viewFrame, browseMsg, fileWildcard)
+
+        if path != None:
+            self._viewFrame.filenameText.SetValue(path)
+        
+
+    def objectChoiceCallback(self, objectDict):
+        objectName = self._viewFrame.objectChoice.GetStringSelection()
+        if objectDict.has_key(objectName):
+            if hasattr(objectDict[objectName], "GetClassName"):
+                self.vtk_object_configure(self._viewFrame, None,
+                                          objectDict[objectName])
+        
+    def pipelineCallback(self, objectDict):
+        # check that all objects are VTK objects (probably not necessary)
+        objects1 = objectDict.values()
+        objects = tuple([object for object in objects1
+                         if hasattr(object, 'GetClassName')])
+
+        self.vtk_pipeline_configure(self._viewFrame, None, objects)
