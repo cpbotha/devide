@@ -1,4 +1,4 @@
-# $Id: confidenceSeedConnect.py,v 1.1 2004/03/18 18:23:28 cpbotha Exp $
+# $Id: confidenceSeedConnect.py,v 1.2 2004/03/21 20:22:18 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -16,36 +16,35 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
     to have intensities on the range [mean - f*stdDev, mean + f*stdDev] to be
     included.  f is user-definable.
 
-    At each iteration, the seed-region is enlarged with the newly selected
-    pixels, and the mean and standard deviation are recalculated.  The process
-    continues for the user-definable number of iterations, or until no more
-    pixels are added.
+    After this initial growing iteration, if the user has specified a larger
+    than 0 number of iterations, the mean and standard deviation are
+    recalculated over all the currently selected points and the process is
+    restarted.  This process is repeated for the user-defined number of
+    iterations, or until now new pixels are added.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
-        # floats
-        self._config.lower = 128.0
-        self._config.upper = 255.0
+        # setup config thingy
+        self._config.multiplier = 2.5
+        self._config.numberOfIterations = 4
         # segmented pixels will be replaced with this value
         self._config.replaceValue = 1.0
         # size of neighbourhood around candidate pixel
-        self._config.radius = (1, 1, 1)
+        self._config.initialRadius = 1
         
         configList = [
-            ('Lower threshold:', 'lower', 'base:float', 'text',
-             'Pixels have to have an intensity equal to or higher than '
-             'this.'),
-            ('Higher threshold:', 'upper', 'base:float', 'text',
-             'Pixels have to have an intensity equal to or lower than this.'),
+            ('Multiplier (f):', 'multiplier', 'base:float', 'text',
+             'Multiplier for the standard deviation term.'),
+            ('Initial neighbourhood:', 'initialRadius', 'base:int', 'text',
+             'The radius (in pixels) of the initial region.'),
+            ('Number of Iterations:', 'numberOfIterations', 'base:int', 'text',
+             'The region will be expanded so many times.'),
             ('Replace value:', 'replaceValue', 'base:float', 'text',
-             'Segmented pixels will be assigned this value.'),
-            ('Neighbourhood size:', 'radius', 'tuple:int,3', 'text',
-             '3D integer radii of neighbourhood around candidate pixel.')]
-            
+             'Segmented pixels will be assigned this value.')]
         
         scriptedConfigModuleMixin.__init__(self, configList)
 
@@ -53,15 +52,15 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         self._inputPoints = None
         
         # setup the pipeline
-        self._nbhCIF = itk.itkNeighborhoodConnectedImageFilterF3F3_New()
+        self._cCIF = itk.itkConfidenceConnectedImageFilterF3F3_New()
         
         moduleUtilsITK.setupITKObjectProgress(
-            self, self._nbhCIF, 'itkNeighborhoodConnectedImageFilter',
+            self, self._cCIF, 'itkConfidenceConnectedImageFilter',
             'Region growing...')
 
         self._createWindow(
             {'Module (self)' : self,
-             'itkNeighborhoodConnectedImageFilter' : self._nbhCIF})
+             'itkConfidenceConnectedImageFilter' : self._cCIF})
 
         self.configToLogic()
         self.syncViewWithLogic()
@@ -78,17 +77,17 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         moduleBase.close(self)
             
         # remove all bindings
-        del self._nbhCIF
+        del self._cCIF
 
     def executeModule(self):
-        self._nbhCIF.Update()
+        self._cCIF.Update()
 
     def getInputDescriptions(self):
         return ('ITK Image (3D, float)', 'Seed points')
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            self._nbhCIF.SetInput(inputStream)
+            self._cCIF.SetInput(inputStream)
 
         else:
             if inputStream != self._inputPoints:
@@ -119,29 +118,19 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         return ('Segmented ITK Image (3D, float)',)
 
     def getOutput(self, idx):
-        return self._nbhCIF.GetOutput()
+        return self._cCIF.GetOutput()
 
     def configToLogic(self):
-        self._nbhCIF.SetLower(self._config.lower)
-        self._nbhCIF.SetUpper(self._config.upper)
-        self._nbhCIF.SetReplaceValue(self._config.replaceValue)
-
-        # now setup the radius
-        sz = self._nbhCIF.GetRadius()
-        sz.SetElement(0, self._config.radius[0])
-        sz.SetElement(1, self._config.radius[1])
-        sz.SetElement(2, self._config.radius[2])
-        self._nbhCIF.SetRadius(sz)
+        self._cCIF.SetMultiplier(self._config.multiplier)
+        self._cCIF.SetInitialNeighborhoodRadius(self._config.initialRadius)
+        self._cCIF.SetNumberOfIterations(self._config.numberOfIterations)
+        self._cCIF.SetReplaceValue(self._config.replaceValue)
 
     def logicToConfig(self):
-        self._config.lower = self._nbhCIF.GetLower()
-        self._config.upper = self._nbhCIF.GetUpper()
-        self._config.replaceValue = self._nbhCIF.GetReplaceValue()
-
-        sz = self._nbhCIF.GetRadius()
-        self._config.radius = tuple(
-            (sz.GetElement(0), sz.GetElement(1), sz.GetElement(2)))
-
+        self._config.multiplier = self._cCIF.GetMultiplier()
+        self._config.initialRadius = self._cCIF.GetInitialNeighborhoodRadius()
+        self._config.numberOfIterations = self._cCIF.GetNumberOfIterations()
+        self._config.replaceValue = self._cCIF.GetReplaceValue()
                                           
     def _observerInputPoints(self, obj):
         # this will be called if anything happens to the points
@@ -152,9 +141,8 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         instance.
         """
 
-        # SetSeed calls ClearSeeds and then AddSeed
-        self._nbhCIF.ClearSeeds()
         if len(self._inputPoints) > 0:
+            firstSeed = True
             for ip in self._inputPoints:
                 # bugger, it could be that our input dataset has an extent
                 # that doesn't start at 0,0,0... ITK doesn't understand this
@@ -163,7 +151,12 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
                 idx.SetElement(0, x)
                 idx.SetElement(1, y)
                 idx.SetElement(2, z)
-                self._nbhCIF.AddSeed(idx)
+                if firstSeed:
+                    # this will do a clear as well
+                    self._cCIF.SetSeed(idx)
+                else:
+                    self._cCIF.AddSeed(idx)
+                    
                 print "Added %d,%d,%d" % (x,y,z)
 
                 
