@@ -59,6 +59,11 @@ class coRectangle(canvasObject):
     def getBounds(self):
         return (self._size)
 
+    def getTopLeftBottomRight(self):
+        return ((self._position[0], self._position[1]),
+                (self._position[0] + self._size[0] - 1,
+                 self._position[1] + self._size[1] - 1))
+
     def hitTest(self, x, y):
         return x >= self._position[0] and \
                x <= self._position[0] + self._size[0] and \
@@ -83,7 +88,7 @@ class coLine(canvasObject):
         self.toInputIdx = toInputIdx
 
         # any line begins with 4 (four) points
-        self._linePoints = [() for i in range(4)]
+
         self.updateEndPoints()
 
         canvasObject.__init__(self, self._linePoints[0])        
@@ -106,12 +111,43 @@ class coLine(canvasObject):
         return (self._linePoints[-1][0] - self._linePoints[0][0],
                 self._linePoints[-1][1] - self._linePoints[0][1])
 
+    def getUpperLeftWidthHeight(self):
+        """This returns the upperLeft coordinate and the width and height of
+        the bounding box enclosing the third-last and second-last points.
+        This is used for fast intersection checking with rectangles.
+        """
+
+        p3 = self._linePoints[-3]
+        p2 = self._linePoints[-2]
+
+        upperLeftX = [p3[0], p2[0]][bool(p2[0] < p3[0])]
+        upperLeftY = [p3[1], p2[1]][bool(p2[1] < p3[1])]
+        width = abs(p2[0] - p3[0])
+        height = abs(p2[1] - p3[1])
+                                    
+        return ((upperLeftX, upperLeftY), (width,  height))
+
+    def getThirdLastSecondLast(self):
+        return (self._linePoints[-3], self._linePoints[-2])
+            
+
     def hitTest(self, x, y):
         # maybe one day we will make the hitTest work, not tonight
         # I don't need it
         return False
 
+    def insertRoutingPoint(self, x, y):
+        """Insert new point x,y before second-last point, i.e. the new point
+        becomes the third-last point.
+        """
+        if (x,y) not in self._linePoints:
+            self._linePoints.insert(len(self._linePoints) - 2, (x, y))
+            return True
+        else:
+            return False
+
     def updateEndPoints(self):
+        self._linePoints = [() for i in range(4)]
         
         self._linePoints[0] = self.fromGlyph.getCenterOfPort(
             1, self.fromOutputIdx)

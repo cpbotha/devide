@@ -140,6 +140,9 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
     def getDraggedObject(self):
         return self._draggedObject
 
+    def getObjectsOfClass(self, classt):
+        return [i for i in self._cobjects if isinstance(i, classt)]
+
     def dragObject(self, cobj, delta):
         if abs(delta[0]) > 0 or abs(delta[1]) > 0:
             # calculate new position

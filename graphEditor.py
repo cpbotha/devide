@@ -1,9 +1,9 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.9 2003/05/08 09:21:52 cpbotha Exp $
+# $Id: graphEditor.py,v 1.10 2003/05/08 16:56:43 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
-from external.wxPyCanvas import wxpc
+from internal.wxPyCanvas import wxpc
 import genUtils
 import string
 import traceback
@@ -122,6 +122,7 @@ class graphEditor:
             genUtils.logError('Could not disconnect modules: %s' \
                               % (str(e)))
                 
+
     def _canvasLeftClick(self, canvas, eventName, event, userData):
         if event.LeftDown():
             # we are in "create/edit" mode, so let's create some glyph
@@ -154,7 +155,13 @@ class graphEditor:
                     co.addObserver('drag',
                                    self._glyphDrag, temp_module)
 
-                    # REROUTE ALL LINES THAT CROSS THIS GLYPH
+                    # we've just placed a glyph, reroute all lines
+                    allLines = self._graphFrame.canvas.getObjectsOfClass(
+                        wxpc.coLine)
+                    print "Rerouting %d" % (len(allLines))
+                    
+                    for line in allLines:
+                        self._routeLine(line)
 
                     canvas.Refresh()
 
@@ -186,13 +193,11 @@ class graphEditor:
             
             self._graphFrame.canvas.Refresh()
 
-        else:
-            # this means the user was dragging an input port and has now
-            # dropped it on another input port... (we've already eliminated
+        elif draggedObject.inputLines[draggedPort[1]]:
+            # this means the user was dragging a connected input port and has
+            # now dropped it on another input port... (we've already eliminated
             # the case of a drop on an occupied input port, and thus also
             # a drop on the dragged port)
-            # what's left: the user drops us on an unoccupied port, this means
-            # we have to delete the old connection and create a new one
 
             oldLine = draggedObject.inputLines[draggedPort[1]]
             fromGlyph = oldLine.fromGlyph
@@ -224,17 +229,19 @@ class graphEditor:
                              toObject, toInputIdx)
             self._graphFrame.canvas.addObject(l1)
 
-            # ROUTE THIS LINE
-
             # also record the line in the glyphs
             toObject.inputLines[toInputIdx] = l1
             fromObject.outputLines[fromOutputIdx].append(l1)
+
+            # REROUTE THIS LINE
+            self._routeLine(l1)
 
         except Exception, e:
             genUtils.logError('Could not connect modules: %s' % (str(e)))
                                          
 
     def updatePortInfoStatusBar(self, currentGlyph, currentPort):
+        
         """You can only call this during motion IN a port of a glyph.
         """
         
@@ -266,6 +273,7 @@ class graphEditor:
         self._graphFrame.GetStatusBar().SetStatusText(msg)            
                                    
             
+
     def _glyphDrag(self, glyph, eventName, event, module):
 
         canvas = glyph.getCanvas()        
@@ -313,15 +321,23 @@ class graphEditor:
             if glyph.draggedPort == (-1, -1):
                 # and we were busy dragging a glyph around, so we probably
                 # want to reroute all lines!
-                for lines in glyph.outputLines:
-                    for line in lines:
-                        line.updateEndPoints()
-                        # REROUTE LINE
 
-                for line in glyph.inputLines:
-                    if line:
-                        line.updateEndPoints()
-                        # REROUTE LINE
+#                 for lines in glyph.outputLines:
+#                     for line in lines:
+#                         line.updateEndPoints()
+#                         # REROUTE LINE
+
+#                 for line in glyph.inputLines:
+#                     if line:
+#                         line.updateEndPoints()
+#                         # REROUTE LINE
+
+                # reroute all lines
+                allLines = self._graphFrame.canvas.getObjectsOfClass(
+                    wxpc.coLine)
+                print "Rerouting %d" % (len(allLines))                
+                for line in allLines:
+                    self._routeLine(line)
 
             # switch off the draggedPort
             glyph.draggedPort = None
@@ -400,6 +416,187 @@ class graphEditor:
                         # ended above an output port... we can't do anything
                         # (I think)
                         pass
+
+    def _cohenSutherLandClip(self,
+                             x0, y0, x1, y1,
+                             xmin, ymin, xmax, ymax):
+
+        def outCode(x, y, xmin, ymin, xmax, ymax):
+
+
+            a,b,c,d = (0,0,0,0)
+
+            if y > ymax:
+                a = 1
+            if y < ymin:
+                b = 1
+                
+            if x > xmax:
+                c = 1
+            elif x < xmin:
+                d = 1
+
+            return (a << 3) | (b << 2) | (c << 1) | d
+
+
+        oc0 = outCode(x0, y0, xmin, ymin, xmax, ymax)
+        oc1 = outCode(x1, y1, xmin, ymin, xmax, ymax)
+
+        clipped = False
+        accepted = False
+        
+        while not clipped:
+
+            if oc0 == 0 and oc1 == 0:
+                clipped = True
+                accepted = True
+                
+            elif oc0 & oc1 != 0:
+                # trivial reject, the line is nowhere near
+                clipped = True
+                
+            else:
+                m = float(y1 - y0 + 0.00000001) / float(x1 - x0 + 0.00000001)
+                mi = 1 / m
+                # this means there COULD be a clip
+
+                # pick "outside" point
+                oc = [oc1, oc0][bool(oc0)]
+
+                if oc & 8: # y is above (numerically)
+                    x = x0 + mi * (ymax - y0)
+                    y = ymax
+                elif oc & 4: # y is below (numerically)
+                    x = x0 + mi * (ymin - y0)
+                    y = ymin
+                elif oc & 2: # x is right
+                    x = xmax
+                    y = y0 + m * (xmax - x0)
+                else:
+                    x = xmin
+                    y = y0 + m * (xmin - x0)
+
+                if oc == oc0:
+                    # we're clipping off the line start
+                    x0 = x
+                    y0 = y
+                    oc0 = outCode(x0, y0, xmin, ymin, xmax, ymax)
+                else:
+                    # we're clipping off the line end
+                    x1 = x
+                    y1 = y
+                    oc1 = outCode(x1, y1, xmin, ymin, xmax, ymax)
+
+        clipPoints = []
+        if accepted:
+            if x0 == xmin or x0 == xmax or y0 == ymin or y0 == ymax:
+                clipPoints.append((x0, y0))
+            if x1 == xmin or x1 == xmax or y1 == ymin or y1 == ymax:
+                clipPoints.append((x1, y1))
+
+        return clipPoints
+                
+
+    def _routeLine(self, line):
+        
+        # we have to get a list of all coGlyphs
+        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+
+        # make sure the line is back to 4 points
+        line.updateEndPoints()
+
+        #
+        overshoot = 4
+
+        successfulInsert = True
+        while successfulInsert:
+            
+            (x0, y0), (x1, y1) = line.getThirdLastSecondLast()
+
+            clips = {}
+            for glyph in allGlyphs:
+                (xmin, ymin), (xmax, ymax) = glyph.getTopLeftBottomRight()
+                
+                clipPoints = self._cohenSutherLandClip(x0, y0, x1, y1,
+                                                       xmin, ymin, xmax, ymax)
+                if clipPoints:
+                    clips[glyph] = clipPoints
+
+            # now look for the clip point closest to the start of the current
+            # line segment!
+            currentSd = 65535
+            nearestGlyph = None
+            nearestClipPoint = None
+            for clip in clips.items():
+                for clipPoint in clip[1]:
+                    xdif = clipPoint[0] - x0
+                    ydif = clipPoint[1] - y0
+                    sd = xdif * xdif + ydif * ydif
+                    if sd < currentSd:
+                        currentSd = sd
+                        nearestGlyph = clip[0]
+                        nearestClipPoint = clipPoint
+
+            successfulInsert = False
+            # we have the nearest clip point
+            if nearestGlyph:
+                # determine whether we're clipping horizontally or vertically
+                (xmin, ymin), (xmax, ymax) = \
+                       nearestGlyph.getTopLeftBottomRight()
+
+                if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
+                    # create new node on the short side!
+                    if abs(nearestClipPoint[0] - xmin) < \
+                           abs(nearestClipPoint[0] - xmax):
+                        print "LEFT"
+                        newX = xmin - overshoot
+                    else:
+                        print "RIGHT"
+                        newX = xmax + overshoot
+                    
+                    newY = nearestClipPoint[1]
+                    if newY == ymin:
+                        newY -= overshoot
+                        # try the insert
+                        successfulInsert = line.insertRoutingPoint(newX, newY)
+                        if not successfulInsert:
+                            # if it failed, it's because we added a duplicate
+                            # point, which means we're oscillating...
+                            # move the schmuxor down and try again
+                            newY += overshoot
+                            si = line.insertRoutingPoint(newX, newY)
+                            successfulInsert = si
+                    else:
+                        newY += overshoot
+                        successfulInsert = line.insertRoutingPoint(newX, newY)
+                        if not successfulInsert:
+                            newY -= overshoot
+                            si = line.insertRoutingPoint(newX, newY)
+                            successfulInsert = si
+                    
+                elif nearestClipPoint[0] == xmin or \
+                         nearestClipPoint[0] == xmax:
+                    # create new node on the obtuse angle side
+                    if y0 > nearestClipPoint[1]:
+                        print "UP"
+                        newY = ymin - overshoot
+                    else:
+                        print "DOWN"
+                        newY = ymax + overshoot
+
+                    newX = nearestClipPoint[0]
+                    if newX == xmin:
+                        newX -= overshoot
+                    else:
+                        newX += overshoot
+                        
+                    # duplicates should never happen here!
+                    successfulInsert = line.insertRoutingPoint(newX, newY)
+
+                else:
+                    print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
+                    raise Exception
+
 
     def _viewConfModule(self, module):
         mm =self._dscas3_app.getModuleManager()
