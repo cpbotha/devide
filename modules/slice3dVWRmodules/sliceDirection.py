@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.7 2003/07/22 14:45:53 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.8 2003/07/22 16:26:51 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -535,11 +535,6 @@ class sliceDirection:
             else:
                 window = iwindow
 
-            lut = vtk.vtkWindowLevelLookupTable()
-            lut.SetWindow(window)
-            lut.SetLevel(level)
-            lut.Build()
-
             # colours of imageplanes; we will use these as keys
             ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
 
@@ -551,9 +546,8 @@ class sliceDirection:
             ipw.SetSliceIndex(0)
             ipw.GetPlaneProperty().SetColor(
                 ipw_cols[ipw.GetPlaneOrientation()])
-            # this is not working yet, because the IPWs handling of
-            # luts is somewhat broken at the moment
-            ipw.SetLookupTable(lut)
+            # set the window and level
+            ipw.SetWindowLevel(window, level)
             ipw.On()
 
     def _syncAllToPrimary(self):
