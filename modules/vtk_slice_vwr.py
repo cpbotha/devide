@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.14 2002/03/28 17:16:28 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.15 2002/04/13 13:30:25 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -76,6 +76,7 @@ class vtk_slice_vwr(module_base):
                                           width=600, height=200))
 	self.rw_lastxys.append({'x' : 0, 'y' : 0})
 	self.renderers.append(vtkRenderer())
+        
 	# add last appended renderer to last appended vtkTkRenderWidget
 	self.rws[-1].GetRenderWindow().AddRenderer(self.renderers[-1])
 	self.rws[-1].pack(side=TOP, fill=BOTH, expand=1) # 3d window
