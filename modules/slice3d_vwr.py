@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.1 2003/01/17 19:01:52 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.2 2003/01/18 01:19:06 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -10,6 +10,7 @@ from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
 import vtk
 from wxPython.wx import *
+from wxPython.grid import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
@@ -42,14 +43,15 @@ class slice3d_vwr(module_base,
                        for i in range(self._num_inputs)]
         # then the window containing the renderwindows
         self._view_frame = None
-        # we have a single RenderWindowInteractor
-        self._rwi = None
+        # the imageplanewidgets
         self._ipws = []
         self._overlay_ipws = []
         # list of current cursors, one cursor for each ipw
         self._current_cursors = []
         # the renderers corresponding to the render windows
-        self._renderer = None
+        self._threedRenderer = None
+        self._ortho1Renderer = None
+        self._ortho2Renderer = None
 
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
@@ -95,13 +97,13 @@ class slice3d_vwr(module_base,
         if hasattr(self, '_ipws'):
             del self._ipws
 
-        del self._threedRenderer
-        del self._ortho1Renderer
-        del self._ortho2Renderer
-
         if hasattr(self,'_view_frame'):
             self._view_frame.Destroy()
             del self._view_frame
+
+        del self._threedRenderer
+        del self._ortho1Renderer
+        del self._ortho2Renderer
 
     def get_input_descriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -114,7 +116,7 @@ class slice3d_vwr(module_base,
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
                 self._inputs[idx]['Connected'] = None
                 if self._inputs[idx]['vtkActor'] != None:
-                    self._renderer.RemoveActor(self._inputs[idx]['vtkActor'])
+                    self._threedRenderer.RemoveActor(self._inputs[idx]['vtkActor'])
                     self._inputs[idx]['vtkActor'] = None
 
             elif self._inputs[idx]['Connected'] == 'vtkImageData':
@@ -127,8 +129,8 @@ class slice3d_vwr(module_base,
                     ipw.Off()
                     ipw.SetInteractor(None)
 
-                self._renderer.RemoveActor(self._outline_actor)
-                self._renderer.RemoveActor(self._cube_axes_actor2d)
+                self._threedRenderer.RemoveActor(self._outline_actor)
+                self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
 
                 self._voi_widget.SetInput(None)
                 self._voi_widget.Off()
@@ -143,10 +145,10 @@ class slice3d_vwr(module_base,
                 mapper.SetInput(input_stream)
                 self._inputs[idx]['vtkActor'] = vtk.vtkActor()
                 self._inputs[idx]['vtkActor'].SetMapper(mapper)
-                self._renderer.AddActor(self._inputs[idx]['vtkActor'])
+                self._threedRenderer.AddActor(self._inputs[idx]['vtkActor'])
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
-                self._renderer.ResetCamera()                
-                self._rwi.Render()
+                self._threedRenderer.ResetCamera()
+                self._view_frame.threedRWI.Render()
                 
             elif input_stream.IsA('vtkImageData'):
 
@@ -194,14 +196,14 @@ class slice3d_vwr(module_base,
                     ipw.SetInput(input_stream)
 
                 # add outline actor and cube axes actor to renderer
-                self._renderer.AddActor(self._outline_actor)
+                self._threedRenderer.AddActor(self._outline_actor)
                 self._outline_actor.PickableOff()
-                self._renderer.AddActor(self._cube_axes_actor2d)
+                self._threedRenderer.AddActor(self._cube_axes_actor2d)
                 self._cube_axes_actor2d.PickableOff()
 
                 self._reset()
 
-                self._rwi.Render()
+                self._view_frame.threedRWI.Render()
                 self._inputs[idx]['Connected'] = 'vtkImageData'
 
             else:
@@ -227,63 +229,6 @@ class slice3d_vwr(module_base,
 # utility methods
 #################################################################
 
-    def _create_ipw_panel(self, parent, i):
-
-        ipw = self._ipws[i]
-        
-        panel = wxPanel(parent, -1)
-
-        eid = wxNewId()
-        # this is just too useful, embedding variables in existing
-        # instances.
-        panel.enabled_cbox = wxCheckBox(panel, eid, 'Enabled')
-        panel.enabled_cbox.SetValue(true)
-
-        def _eb_cb(event):
-            if ipw.GetInput():
-                if panel.enabled_cbox.GetValue():
-                    ipw.On()
-                else:
-                    ipw.Off()
-        
-        EVT_CHECKBOX(panel, eid, _eb_cb)
-
-        # now we have to make a space for the latest coord
-        st = wxStaticText(panel, -1, "Cursor at")
-        panel.cursor_text = wxTextCtrl(panel, -1)
-
-        nt = wxStaticText(panel, -1, "Name")
-        panel.cursor_name_combo = wxComboBox(panel, -1, "",
-                                             choices=["AC", "TS", "AI",
-                                                      "AA", "PC"])
-
-        gz = wxFlexGridSizer(2, 2)
-        gz.AddGrowableCol(1)
-        gz.Add(st, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-        gz.Add(panel.cursor_text, option=1,
-                flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
-        gz.Add(nt, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)        
-        gz.Add(panel.cursor_name_combo, option=1,
-               flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
-        
-        sid = wxNewId()
-        sb = wxButton(panel, sid, "Store")
-        EVT_BUTTON(panel, sid, lambda e, i=i: self._store_cursor_cb(i))
-
-        hz = wxBoxSizer(wxHORIZONTAL)
-        hz.Add(gz, option=1, flag=wxEXPAND)
-        hz.Add(sb, flag=wxEXPAND)
-
-        tls = wxBoxSizer(wxVERTICAL)
-        tls.Add(panel.enabled_cbox, flag=wxALL, border=5)
-        tls.Add(hz, option=0, flag=wxEXPAND|wxALL, border=5)
-
-        #tls.Fit(panel)
-        panel.SetAutoLayout(true)
-        panel.SetSizer(tls)
-        
-        return panel
-
     def _create_window(self):
         import resources.python.slice3d_vwr_frame
         reload(resources.python.slice3d_vwr_frame)
@@ -308,38 +253,108 @@ class slice3d_vwr(module_base,
         self._ortho2Renderer.SetBackground(0.5, 0.5, 0.5)
         self._view_frame.ortho2RWI.GetRenderWindow().AddRenderer(self.
                                                                _ortho2Renderer)
+
+        # fix for the grid
+        self._view_frame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+
+        # event logic for the selected points grid
+
+        def pointsSelectAllCallback(event):
+            self._view_frame.spointsGrid.SelectAll()
+
+        def pointsDeselectAllCallback(event):
+            self._view_frame.spointsGrid.ClearSelection()
+
+        def pointsRemoveCallback(event):
+            selRows = self._view_frame.spointsGrid.GetSelectedRows()
+            if len(selRows):
+                self._remove_cursors(selRows)
+
+        EVT_BUTTON(self._view_frame, self._view_frame.pointsSelectAllButtonId,
+                   pointsSelectAllCallback)
+        EVT_BUTTON(self._view_frame,
+                   self._view_frame.pointsDeselectAllButtonId,
+                   pointsDeselectAllCallback)
+        EVT_BUTTON(self._view_frame,
+                   self._view_frame.pointsRemoveButtonId,
+                   pointsRemoveCallback)
+
+        # now the three ortho view pages + all callbacks
+        orthoPanels = [self._view_frame.nbAxialPanel,
+                       self._view_frame.nbCoronalPanel,
+                       self._view_frame.nbSagittalPanel]
+
+        for i in range(len(orthoPanels)):
+
+            # first a callback for turning an IPW on or off
+            def _eb_cb(i):
+                ipw = self._ipws[i]
+                if ipw.GetInput():
+                    if orthoPanels[i].enabledCbox.GetValue():
+                        ipw.On()
+                    else:
+                        ipw.Off()
         
+            EVT_CHECKBOX(self._view_frame, orthoPanels[i].enabledCboxId,
+                         lambda e, i=i:_eb_cb(i))
+
+            # the store button
+            EVT_BUTTON(self._view_frame, orthoPanels[i].storeId,
+                       lambda e, i=i: self._store_cursor_cb(i))
+            
+            
+            # now make callback for the ipw
+            self._ipws[i].AddObserver('StartInteractionEvent',
+                                      lambda e, o, i=i:
+                                      self._ipw_start_interaction_cb(i))
+            self._ipws[i].AddObserver('InteractionEvent',
+                                      lambda e, o, i=i:
+                                      self._ipw_interaction_cb(i))
+
+        
+        EVT_NOTEBOOK_PAGE_CHANGED(self._view_frame,
+                                  self._view_frame.acsNotebookId,
+                                  self._acs_nb_page_changed_cb)
+        
+        # attach close handler
         EVT_CLOSE(self._view_frame,
                   lambda e, s=self: s._view_frame.Show(false))
 
+        # display the window
         self._view_frame.Show(true)
 
-    def _remove_cursor(self, idx):
+    def _remove_cursors(self, idxs):
 
-        # remove the sphere actor from the renderer
-        self._renderer.RemoveActor(self._sel_points[idx]['sphere_actor'])
-        # remove the text_actor (if any)
-        if self._sel_points[idx]['text_actor']:
-            self._renderer.RemoveActor(self._sel_points[idx]['text_actor'])
+        # we have to delete one by one from back to front
+        idxs.sort()
+        idxs.reverse()
+        
+        for idx in idxs:
+            # remove the sphere actor from the renderer
+            self._threedRenderer.RemoveActor(self._sel_points[idx]['sphere_actor'])
+            # remove the text_actor (if any)
+            if self._sel_points[idx]['text_actor']:
+                self._threedRenderer.RemoveActor(self._sel_points[idx]['text_actor'])
             
-        # then deactivate and disconnect the point widget
-        pw = self._sel_points[idx]['point_widget']
-        pw.SetInput(None)
-        pw.Off()
-        pw.SetInteractor(None)
+            # then deactivate and disconnect the point widget
+            pw = self._sel_points[idx]['point_widget']
+            pw.SetInput(None)
+            pw.Off()
+            pw.SetInteractor(None)
+
+            # remove the entries from the wxGrid
+            self._view_frame.spointsGrid.DeleteRows(idx)
+
+            # then remove it from our internal list
+            del self._sel_points[idx]
+
         # rerender
-        self._rwi.Render()
+        self._view_frame.threedRWI.Render()
 
-        # remove the entry from the wxListCtrl
-        self._spoint_listctrl.DeleteItem(idx)
-
-        # then remove it from our internal list
-        del self._sel_points[idx]
 
         # and sync up vtk_points
         self._sync_vtk_points()
-
-
+        
     def _reset(self):
         """Arrange everything for a single overlay in a single ortho view.
 
@@ -371,7 +386,7 @@ class slice3d_vwr(module_base,
         # set up helper actors
         self._outline_source.SetBounds(input_data.GetBounds())
         self._cube_axes_actor2d.SetBounds(input_data.GetBounds())
-        self._cube_axes_actor2d.SetCamera(self._renderer.GetActiveCamera())
+        self._cube_axes_actor2d.SetCamera(self._threedRenderer.GetActiveCamera())
 
         # calculate default window/level once
         (dmin,dmax) = input_data.GetScalarRange()
@@ -404,7 +419,7 @@ class slice3d_vwr(module_base,
         idx = 2
         for ipw in self._ipws:
             ipw.DisplayTextOn()
-            ipw.SetInteractor(self._rwi)
+            ipw.SetInteractor(self._view_frame.threedRWI)
             ipw.SetPlaneOrientation(idx)
             idx -= 1
             ipw.SetSliceIndex(0)
@@ -419,16 +434,16 @@ class slice3d_vwr(module_base,
 
         # how can I prevent the user from moving this with the
         # middle button?
-        self._voi_widget.SetInteractor(self._rwi)
+        self._voi_widget.SetInteractor(self._view_frame.threedRWI)
         self._voi_widget.SetInput(input_data)
         self._voi_widget.PlaceWidget()
         self._voi_widget.SetPriority(0.6)
         self._voi_widget.On()
 
-        self._renderer.ResetCamera()
+        self._threedRenderer.ResetCamera()
 
         # whee, thaaaar she goes.
-        self._rwi.Render()
+        self._view_frame.threedRWI.Render()
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
@@ -460,7 +475,7 @@ class slice3d_vwr(module_base,
         # make priority higher than the default of vtk3DWidget so
         # that imageplanes behind us don't get selected the whole time
         pw.SetPriority(0.6)
-        pw.SetInteractor(self._rwi)
+        pw.SetInteractor(self._view_frame.threedRWI)
         pw.AllOff()
         pw.On()
 
@@ -473,11 +488,12 @@ class slice3d_vwr(module_base,
         sa.SetMapper(sm)
         sa.SetPosition(coords)
         sa.GetProperty().SetColor(1.0,0.0,0.0)
-        self._renderer.AddActor(sa)
+        self._threedRenderer.AddActor(sa)
 
         # first get the name of the point that we are going to store
-        cur_panel = self._acs_nb.GetPage(self._acs_nb.GetSelection())
-        cursor_name = cur_panel.cursor_name_combo.GetValue()
+        nb = self._view_frame.acsNotebook
+        cur_panel = nb.GetPage(nb.GetSelection())
+        cursor_name = cur_panel.cursorNameCombo.GetValue()
 
         if len(cursor_name) > 0:
             name_text = vtk.vtkVectorText()
@@ -491,8 +507,8 @@ class slice3d_vwr(module_base,
             ta_bounds = ta.GetBounds()
             ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
                         (ta_bounds[1] - ta_bounds[0]))
-            self._renderer.AddActor(ta)
-            ta.SetCamera(self._renderer.GetActiveCamera())
+            self._threedRenderer.AddActor(ta)
+            ta.SetCamera(self._threedRenderer.GetActiveCamera())
         else:
             ta = None
 
@@ -520,14 +536,16 @@ class slice3d_vwr(module_base,
         # *sniff* *sob* It's unreadable, but why's it so pretty?
         # this just formats the real point
         pos_str = "%s, %s, %s" % tuple(cursor[0:3])
-        idx = self._spoint_listctrl.InsertStringItem(0, pos_str)
-        # this adds a line to our list of points (for later manip)
-        self._spoint_listctrl.SetStringItem(idx, 1, str(cursor[3]))
 
+        self._view_frame.spointsGrid.AppendRows()
+        row = self._view_frame.spointsGrid.GetNumberRows() - 1
+        self._view_frame.spointsGrid.SetCellValue(row, 0, pos_str)
+        self._view_frame.spointsGrid.SetCellValue(row, 1, str(cursor[3]))
+        
         # make sure self._vtk_points is up to date
         self._sync_vtk_points()
 
-        self._rwi.Render()
+        self._view_frame.threedRWI.Render()
 
     def _sync_vtk_points(self):
         """Sync up the output vtkPoints and names to _sel_points.
@@ -555,23 +573,25 @@ class slice3d_vwr(module_base,
 #################################################################
 
     def _acs_nb_page_changed_cb(self, event):
-        cur_panel = self._acs_nb.GetPage(self._acs_nb.GetSelection())
-        if self._ipws[self._acs_nb.GetSelection()].GetEnabled():
-            cur_panel.enabled_cbox.SetValue(true)
+        nb = self._view_frame.acsNotebook
+        cur_panel = nb.GetPage(nb.GetSelection())
+        if self._ipws[nb.GetSelection()].GetEnabled():
+            cur_panel.enabledCbox.SetValue(true)
         else:
-            cur_panel.enabled_cbox.SetValue(false)
+            cur_panel.enabledCbox.SetValue(false)
 
     def _ipw_start_interaction_cb(self, i):
-        self._acs_nb.SetSelection(i)
+        self._view_frame.acsNotebook.SetSelection(i)
         self._ipw_interaction_cb(i)
 
     def _ipw_interaction_cb(self, i):
         cd = 4 * [0.0]
         if self._ipws[i].GetCursorData(cd):
-            cur_panel = self._acs_nb.GetPage(self._acs_nb.GetSelection())
+            nb = self._view_frame.acsNotebook
+            cur_panel = nb.GetPage(nb.GetSelection())
             self._current_cursors[i] = cd
             cstring = str(cd[0:3]) + " = " + str(cd[3])
-            cur_panel.cursor_text.SetValue(cstring)
+            cur_panel.cursorText.SetValue(cstring)
 
     def pointwidget_interaction_cb(self, pw, evt_name, input_data):
         # we have to find pw in our list
@@ -609,6 +629,7 @@ class slice3d_vwr(module_base,
             self._spoint_listctrl.SetStringItem(idx, 1, str(val))
             
 
+    # DEPRECATED CODE
     def _rw_ortho_pick_cb(self, wxvtkrwi):
         (cx,cy) = wxvtkrwi.GetEventPosition()
         r_idx = self._rwis.index(wxvtkrwi)
@@ -619,7 +640,7 @@ class slice3d_vwr(module_base,
             # instantiate WorldPointPicker and use it to get the World Point
             # that we've selected
             wpp = vtk.vtkWorldPointPicker()
-            wpp.Pick(cx,cy,0,self._renderers[r_idx])
+            wpp.Pick(cx,cy,0,self._threedRenderers[r_idx])
             (ppx,ppy,ppz) = wpp.GetPickPosition()
             # ppz will be zero too
 
@@ -653,6 +674,7 @@ class slice3d_vwr(module_base,
 
                     self._rwis[r_idx].Render()
     
+    # DEPRECATED CODE
     def _rw_slice_cb(self, wxvtkrwi):
         delta = wxvtkrwi.GetEventPosition()[1] - \
                 wxvtkrwi.GetLastEventPosition()[1]
@@ -680,6 +702,7 @@ class slice3d_vwr(module_base,
             # render the 3d viewer
             self._rwis[0].Render()
 
+    # DEPRECATED CODE
     def _rw_windowlevel_cb(self, wxvtkrwi):
         deltax = wxvtkrwi.GetEventPosition()[0] - \
                  wxvtkrwi.GetLastEventPosition()[0]     
