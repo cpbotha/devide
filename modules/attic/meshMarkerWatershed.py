@@ -1,3 +1,10 @@
+# this is (possibly broken) code to perform a marker-based watershed
+# segmentation on a mesh by making use of a pre-segmentation
+# modification of curvature homotopy
+
+# test this on some synthetic data (cube with markers on all six faces)
+# before you use it for anything serious.
+
 # IDEA:
 # use vtkPolyDataConnectivityFilter with minima as seed points
 
@@ -33,7 +40,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
                                       mm.vtk_progress_cb(s._wspdf))
 
         self._cleaner2 = vtk.vtkCleanPolyData()
-        self._cleaner2.SetInput(self._tf.GetOutput())
+        self._cleaner2.SetInput(self._wspdf.GetOutput())
 
         self._curvatures = vtk.vtkCurvatures()
         self._curvatures.SetCurvatureTypeToMean()        
@@ -47,6 +54,9 @@ class testModule3(moduleBase, noConfigModuleMixin):
         self._curvatures.SetProgressText('calculating curvatures')
         self._curvatures.SetProgressMethod(lambda s=self, mm=mm:
                                            mm.vtk_progress_cb(s._curvatures))
+
+        self._inputFilter = self._tf
+        
 
         self._inputPoints = None
         self._inputPointsOID = None
@@ -84,7 +94,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            self._cleaner.SetInput(inputStream)
+            self._inputFilter.SetInput(inputStream)
         else:
             if inputStream is not self._inputPoints:
                 if self._inputPoints:
@@ -122,7 +132,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
     
 
     def executeModule(self):
-        if self._cleaner.GetInput() and \
+        if self._inputFilter.GetInput() and \
                self._outsidePoints and self._giaGlenoid:
             
             self._curvatures.Update()
