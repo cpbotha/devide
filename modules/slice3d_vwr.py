@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.34 2003/03/05 17:04:15 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.35 2003/03/05 23:04:25 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -13,7 +13,7 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
 # -------------------------------------------------------------------------
-class directionPipeline:
+class sliceDirection:
     """Class encapsulating all logic behind a single direction.
 
     This class contains the IPWs and related paraphernalia for all layers
@@ -21,10 +21,115 @@ class directionPipeline:
     has its own window with an orthogonal view.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, slice3dViewer, defaultPlaneOrientation=-2):
+        self._slice3dViewer = slice3dViewer
+        self._defaultPlaneOrientation = -2
 
+        # list of vtkImagePlaneWidgets (first is "primary", rest are overlays)
+        self._ipws = []
 
+    def addData(self, inputData):
+        """Add inputData as a new layer.
+        """
+        
+        if inputData is None:
+            raise Exception, "Hallo, the inputData is none.  Doing nothing."
+
+        # make sure it's vtkImageData
+        if hasattr(inputData, 'IsA') and inputData.IsA('vtkImageData'):
+        
+            # if we already have this data as input, we can't take it
+            for ipw in self._ipws:
+                if inputData is ipw.GetInput():
+                    raise Exception,\
+                          "This inputData already exists in this slice."
+
+            # make sure it's all up to date
+            inputData.Update()
+
+            if self._ipws:
+                # this means we already have data and what's added now can
+                # only be allowed as overlay
+
+                # now check if the new data classifies as overlay
+                mainInput = self._ipws[0].GetInput()
+
+                if inputData.GetWholeExtent() == \
+                   mainInput.GetWholeExtent() and \
+                   inputData.GetSpacing() == mainInput.GetSpacing():
+
+                    self._ipws.append(vtk.vtkImagePlaneWidget())
+                    self._ipws[-1].SetInput(inputData)
+                    self._ipws[-1].UserControlledLookupTableOn()
+
+                # now make sure they have the right lut and are synched
+                # with the main IPW
+                self._resetOverlays()
+                
+            # if self._ipws ...
+            else:
+                # this means primary data!
+                self._ipws.append(vtk.vtkImagePlaneWidget())
+                self._ipws[-1].SetInput(inputData)
+                self._ipws[-1].SetInput(self._slice3dViewer.getIPWPicker())
+
+                # now make callback for the ipw
+                self._ipws[-1].AddObserver('StartInteractionEvent',
+                                lambda e, o:
+                                self._ipwStartInteractionCallback())
+                self._ipws[-1].AddObserver('InteractionEvent',
+                                lambda e, o:
+                                self._ipwInteractionCallback())
+                self._ipws[-1].AddObserver('EndInteractionEvent',
+                                lambda e, o:
+                                self._ipwEndInteractionCallback())
+
+                
+
+        def _resetOverlays(self):
+            """Rest all overlays with default LUT, plane orientation and
+            start position."""
+            
+            if len(self._ipws > 1):
+                # iterate through overlay layers
+                for ipw in self._ipws[1:]:
+                    lut = vtk.vtkLookupTable()            
+                    inputStream = ipw.GetInput()
+                    minv, maxv = inputStream.GetScalarRange()
+                    lut.SetTableRange((minv,maxv))
+                    lut.SetAlphaRange((0.0, 1.0))
+                    lut.SetValueRange((1.0, 1.0))
+                    lut.SetSaturationRange((1.0, 1.0))
+                    lut.Build()
+
+                    ipw.SetInteractor(self._viewFrame.threedRWI)
+                    # default axial orientation
+                    ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
+                    ipw.SetSliceIndex(0)
+                    #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
+                    ipw.SetLookupTable(lut)
+                    ipw.On()
+                    ipw.InteractionOff()
+
+            self._syncOverlays()
+
+    def _syncOverlays(self):
+        """Synchronise overlays to current main IPW.
+        """
+        
+        # check that we do have overlays for this direction
+        if len(self._ipws) > 1:
+            # we know this is a vtkPlaneSource
+            pds1 = self._ipws[0].GetPolyDataSource()
+
+            for ipw in self._ipws[1:]:
+                pds2 = ipw.GetPolyDataSource()
+                pds2.SetOrigin(pds1.GetOrigin())
+                pds2.SetPoint1(pds1.GetPoint1())
+                pds2.SetPoint2(pds1.GetPoint2())
+            
+                ipw.UpdatePlacement()
+        
 # -------------------------------------------------------------------------
 class outputSelectedPoints(list, subjectMixin):
     """class for passing selected points to an output port.
@@ -56,7 +161,8 @@ class slice3d_vwr(moduleBase,
         moduleBase.__init__(self, moduleManager)
         self._numDataInputs = 5
         # use list comprehension to create list keeping track of inputs
-        self._inputs = [{'Connected' : None, 'observerID' : -1,
+        self._inputs = [{'Connected' : None, 'inputData' : None,
+                         'observerID' : -1,
                          'vtkActor' : None, 'ipw' : None}
                        for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
@@ -278,90 +384,29 @@ class slice3d_vwr(moduleBase,
                 
             elif input_stream.IsA('vtkImageData'):
 
-                # if we already have an ImageData input, we can't take anymore
-                for input in self._inputs:
-                    if input['Connected'] == 'vtkImageData':
+                try:
+                    # add this input to all available sliceDirections
+                    for sliceDirection in self._sliceDirections:
+                        sliceDirection.addInput(input_stream)
 
-                        # check the overlay for size and spacing
-                        input_stream.Update()
+                    # if that goes well, we can record what happened
+                    self._inputs[idx]['inputData'] = input_stream
+                    self._inputs[idx]['Connected'] = 'vtkImageData'
 
-                        # get primary IPW in axial direction
-                        main_input = self._ipws[0][0].GetInput()
-
-                        if input_stream.GetWholeExtent() == \
-                               main_input.GetWholeExtent() and \
-                               input_stream.GetSpacing() == \
-                               main_input.GetSpacing():
-                            
-                            input_stream.Update()
-
-                            
-                            for direction in range(3):
-                                ipw = vtk.vtkImagePlaneWidget()
-                                self._ipws[direction].append(ipw)
-                                ipw.SetInput(input_stream)
-                                ipw.UserControlledLookupTableOn()
-
-                            # we store the first ipw
-                            self._inputs[idx]['ipw'] = self._ipws[0][-1]
-
-                            oid = input_stream.AddObserver(
-                                'ModifiedEvent',
-                                self.inputModifiedCallback)
-                            self._inputs[idx]['observerID'] = oid
-
-                            self._resetOverlays()
-
-                            self._viewFrame.threedRWI.Render()
-
-                            # now make sure the orthos are happy (we've
-                            # added an overlay)
-                            self._connectOrthoViewToDirection(0)
-                            self._connectOrthoViewToDirection(1)
-                            self._viewFrame.ortho1RWI.Render()
-                            self._viewFrame.ortho2RWI.Render()
-                            
-                            self._inputs[idx]['Connected'] = 'Overlay'
-
-                            return
-                            
-                        else:
-                            raise TypeError, \
-                                  "You have tried to add volume data to " \
-                                  "the slice viewer that already has a " \
-                                  "connected volume data set.  Disconnect " \
-                                  "the old dataset first or make sure that "\
-                                  "the new dataset has the same dimensions "\
-                                  "so that it can be used as overlay."
-
-                # make sure it's current
-                input_stream.Update()
-
-                # set the same picker for each vtkIPW
-                picker = vtk.vtkCellPicker()
-
-                # by definition, our self._ipws will be a 3-element list
-                # of empty lists
-                for direction in range(3):
-                    if self._ipws[direction]:
-                        raise Exception, "Yikes, self._ipws has non-0 lists!"
+                    # add an observer to this data
+                    oid = input_stream.AddObserver(
+                        'ModifiedEvent',
+                        self.inputModifiedCallback)
+                    self._inputs[idx]['observerID'] = oid
                     
-                    ipw = vtk.vtkImagePlaneWidget()
-                    self._ipws[direction].append(ipw)
-                    ipw.SetInput(input_stream)
-                    ipw.SetPicker(picker)
-
-                    # now make callback for the ipw
-                    ipw.AddObserver('StartInteractionEvent',
-                                    lambda e, o, d=direction:
-                                    self._ipwStartInteractionCallback(d))
-                    ipw.AddObserver('InteractionEvent',
-                                    lambda e, o, d=direction:
-                                    self._ipwInteractionCallback(d))
-                    ipw.AddObserver('EndInteractionEvent',
-                                    lambda e, o, d=direction:
-                                    self._ipwEndInteractionCallback(d))
+                    # update our 3d renderer
+                    self._viewFrame.threedRWI.Render()
                     
+                except Error, msg:
+                    print msg
+
+
+                # FIXME: continue here
 
                 self._extractVOI.SetInput(input_stream)
 
@@ -375,11 +420,6 @@ class slice3d_vwr(moduleBase,
                 oid = input_stream.AddObserver('ModifiedEvent',
                                                self.inputModifiedCallback)
                 self._inputs[idx]['observerID'] = oid
-
-                # we have a new primary data set, so we can say where the
-                # orthos go
-                self._connectOrthoViewToDirection(0, 0)
-                self._connectOrthoViewToDirection(1, 1)
 
                 # reset everything, including ortho camera
                 self._reset()
@@ -820,35 +860,6 @@ class slice3d_vwr(moduleBase,
         icam.SetParallelScale(n2 / 2.0)
         icam.ParallelProjectionOn()
         
-    def _resetOverlays(self):
-        # first check if we have overlays
-        if len(self._ipws[0]) > 1:
-            # iterate through overlay layers
-            for layer in range(len(self._ipws[0]))[1:]:
-                lut = vtk.vtkLookupTable()            
-                inputStream = self._ipws[0][layer].GetInput()
-                minv, maxv = inputStream.GetScalarRange()
-                lut.SetTableRange((minv,maxv))
-                lut.SetAlphaRange((0.0, 1.0))
-                lut.SetValueRange((1.0, 1.0))
-                lut.SetSaturationRange((1.0, 1.0))
-                lut.Build()
-
-                idx = 2
-                for direction in range(3):
-                    ipw = self._ipws[direction][layer]
-                    
-                    ipw.SetInteractor(self._viewFrame.threedRWI)
-                    ipw.SetPlaneOrientation(idx)
-                    idx -= 1
-                    ipw.SetSliceIndex(0)
-                    #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
-                    
-                    ipw.SetLookupTable(lut)
-                    ipw.On()
-                    ipw.InteractionOff()
-
-        self._syncOverlays()
         
     def _storeSurfacePoint(self, pointId, actor):
         polyData = actor.GetMapper().GetInput()
@@ -1004,24 +1015,6 @@ class slice3d_vwr(moduleBase,
 
         self._viewFrame.spointsGrid.SetCellValue(row, 2, str(value))
 
-    def _syncOverlay(self, direction):
-
-        # check that we do have overlays for this direction
-        if len(self._ipws[direction]) > 1:
-            # we know this is a vtkPlaneSource
-            pds1 = self._ipws[direction][0].GetPolyDataSource()
-
-            for ipw in self._ipws[direction][1:]:
-                pds2 = ipw.GetPolyDataSource()
-                pds2.SetOrigin(pds1.GetOrigin())
-                pds2.SetPoint1(pds1.GetPoint1())
-                pds2.SetPoint2(pds1.GetPoint2())
-            
-                ipw.UpdatePlacement()
-        
-    def _syncOverlays(self):
-        for direction in range(3):
-            self._syncOverlay(direction)
 
     def _syncOrthoViewWithIPW(self, orthoIdx):
         orthoView = self._orthoViews[orthoIdx]
