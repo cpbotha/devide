@@ -1,4 +1,5 @@
 import sys, os, fnmatch
+import copy
 import genUtils
 import modules
 import mutex
@@ -336,7 +337,17 @@ class moduleManager:
             if newModule:
                 # set its config!
                 try:
-                    newModule.setConfig(pmsTuple[1].moduleConfig)
+                    # we need to DEEP COPY the config, else it could easily
+                    # happen that objects have bindings to the same configs!
+                    # to see this go wrong, switch off the deepcopy, create
+                    # a network by copying/pasting a vtkPolyData, load
+                    # two datasets into a slice viewer... now save the whole
+                    # thing and load it: note that the two readers are now
+                    # reading the same file!
+                    configCopy = copy.deepcopy(pmsTuple[1].moduleConfig)
+                    print "DESERIALISE: %s" % \
+                          (str(configCopy),)
+                    newModule.setConfig(configCopy)
                 except:
                     # it could be a module with no defined config logic
                     pass
@@ -394,6 +405,9 @@ class moduleManager:
                 pms = pickledModuleState()
                 
                 try:
+                    print "SERIALISE: %s - %s" % \
+                          (str(moduleInstance),
+                           str(moduleInstance.getConfig()))
                     pms.moduleConfig = moduleInstance.getConfig()
                 except:
                     pms.moduleConfig = None
