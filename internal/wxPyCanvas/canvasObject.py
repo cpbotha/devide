@@ -15,6 +15,7 @@ class canvasObject(canvasSubject):
                            'drag' : [],
                            'buttonDown' : [],
                            'buttonUp' : [],
+                           'buttonDClick' : [],
                            'motion' : []}
     def close(self):
         """Take care of any cleanup here.

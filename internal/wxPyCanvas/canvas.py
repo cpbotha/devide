@@ -137,6 +137,9 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
                             
                     cobject.notifyObservers('buttonDown', event)
 
+                elif event.ButtonDClick():
+                    cobject.notifyObservers('buttonDClick', event)
+
             # ends if cobject.hitTest(ex, ey)
             else:
                 if cobject.__hasMouse:

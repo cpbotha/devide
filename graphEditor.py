@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.81 2004/05/09 21:34:19 cpbotha Exp $
+# $Id: graphEditor.py,v 1.82 2004/05/17 16:45:21 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -455,6 +455,8 @@ class graphEditor:
                        self._glyphButtonUp, moduleInstance)
         co.addObserver('drag',
                        self._glyphDrag, moduleInstance)
+        co.addObserver('buttonDClick',
+                       self._glyphButtonDClick, moduleInstance)
 
         # first have to draw the just-placed glyph so it has
         # time to update its (label-dependent) dimensions
@@ -1545,6 +1547,10 @@ class graphEditor:
                         # ended above an output port... we can't do anything
                         # (I think)
                         pass
+
+    def _glyphButtonDClick(self, glyph, eventName, event, module):
+        # double clicking on a module opens the View/Config.
+        self._viewConfModule(module)
 
     def _cohenSutherLandClip(self,
                              x0, y0, x1, y1,
