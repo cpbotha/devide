@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeHtmlHelp.sh,v 1.4 2004/03/07 20:16:58 cpbotha Exp $
+# $Id: makeHtmlHelp.sh,v 1.5 2004/03/08 10:42:23 cpbotha Exp $
 
 # go to dir containing script
 cd `dirname $0`
@@ -14,7 +14,7 @@ else
 TEX2RTF='f:/apps/Tex2RTF/tex2rtf.exe'
 fi
 
-$TEX2RTF devideHelp.tex build/devideHelp -macros devideHelp.ini
+$TEX2RTF devideHelp.tex build/devidehelp -macros devideHelp.ini
 # now copy figures
 cp figures/* build
 
