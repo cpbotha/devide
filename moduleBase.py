@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.2 2003/01/28 18:13:31 cpbotha Exp $
+# $Id: moduleBase.py,v 1.3 2003/01/28 22:38:34 cpbotha Exp $
 
 
 """Module containing base class for dscas3 modules.
@@ -18,7 +18,11 @@ class moduleBase:
         it about the module path, e.g.
         """
         self._moduleManager = moduleManager
-        self._config = None
+
+        class defaultConfigClass:
+            pass
+        
+        self._config = defaultConfigClass()
 	
     def close(self):
 	"""Idempotent method for de-initialising module as far as possible.
@@ -62,19 +66,19 @@ class moduleBase:
         """
 	raise NotImplementedError
 
-    def syncConfigWithLogic(self):
+    def logicToConfig(self):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
         """
         raise NotImplementedError
 
-    def applyConfigToLogic(self):
+    def configToLogic(self):
         """Apply internal configuration information (usually self._config) to
         the underlying logic.
         """
         raise NotImplementedError
 
-    def syncConfigWithView(self):
+    def viewToConfig(self):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
 
@@ -82,12 +86,24 @@ class moduleBase:
         raise NotImplementedError
         
     
-    def applyConfigToView(self):
+    def configToView(self):
         """Make the view reflect the internal configuration information.
 
         """
 	raise NotImplementedError
-    
+
+    def applyViewToLogic(self):
+        """Utility method that is used by the default CSAEO buttons.
+        """
+        self.viewToConfig()
+        self.configToLogic()
+
+    def syncViewWithLogic(self):
+        """Utility method that is used by the default CSAEO buttons.
+        """
+        self.logicToConfig()
+        self.configToView()
+        
     def executeModule(self):
         """This should make the model do whatever processing it was designed
         to do.
@@ -138,3 +154,4 @@ class moduleBase:
         self._config = aConfig
         self.applyConfigToLogic()
 
+        

@@ -110,11 +110,11 @@ class module_manager:
     def connect_modules(self, output_module, output_idx,
                         input_module, input_idx):
 
-	input_module.set_input(input_idx, output_module.get_output(output_idx))
+	input_module.setInput(input_idx, output_module.getOutput(output_idx))
 	
     def disconnect_modules(self, input_module, input_idx):
 	print "disconnecting input %d of module %s" % (input_idx, input_module)
-	input_module.set_input(input_idx, None)
+	input_module.setInput(input_idx, None)
     
     def vtk_progress_cb(self, process_object):
         """Default callback that can be used for VTK ProcessObject callbacks.

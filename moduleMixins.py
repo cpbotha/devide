@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.2 2003/01/28 18:13:31 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.3 2003/01/28 22:38:34 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -155,7 +155,7 @@ class fileOpenDialogModuleMixin:
 # ----------------------------------------------------------------------------
 
 import resources.python.filenameViewModuleMixinFrame
-import module_utils
+import moduleUtils
 
 class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                               vtkPipelineConfigModuleMixin):
@@ -179,7 +179,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                          "VTK data (*.vtk)|*.vtk|All files (*)|*",
                          objectDict={}):
 
-        parent_window = self._module_manager.get_module_view_parent_window()
+        parent_window = self._moduleManager.get_module_view_parent_window()
         self._viewFrame = resources.python.filenameViewModuleMixinFrame.\
                           filenameViewModuleMixinFrame(parent_window, -1,
                                                        'dummy')
@@ -203,7 +203,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                    lambda e: self.pipelineCallback(objectDict))
 
         # bind events to the standard cancel, sync, apply, execute, ok buttons
-        module_utils.bind_CSAEO2(self, self._viewFrame)
+        moduleUtils.bindCSAEO(self, self._viewFrame)
 
     def _getViewFrameFilename(self):
         return self._viewFrame.filenameText.GetValue()
@@ -215,7 +215,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                              fileWildcard=
                              "VTK data (*.vtk)|*.vtk|All files (*)|*"):
 
-        path = self.fn_browse(self._viewFrame, browseMsg, fileWildcard)
+        path = self.filenameBrowse(self._viewFrame, browseMsg, fileWildcard)
 
         if path != None:
             self._viewFrame.filenameText.SetValue(path)

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.33 2003/01/26 02:00:55 cpbotha Exp $
+# $Id: graph_editor.py,v 1.34 2003/01/28 22:38:34 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -209,8 +209,8 @@ class ge_glyph:
         # some instance variables
         self._name = name
         self._module_instance = module_instance
-        input_descrs = self._module_instance.get_input_descriptions()
-        output_descrs = self._module_instance.get_output_descriptions()
+        input_descrs = self._module_instance.getInputDescriptions()
+        output_descrs = self._module_instance.getOutputDescriptions()
         self._shape = ge_glyph_shape(shape_canvas, self, x, y,
                                      len(input_descrs), len(output_descrs))
 
@@ -550,7 +550,7 @@ class graph_editor:
             mm.delete_module(module_instance)
 
         except Exception, e:
-            gen_utils.log_error('Could delete module: %s' % (str(e)))
+            gen_utils.log_error('Could not delete module: %s' % (str(e)))
         
                          
             

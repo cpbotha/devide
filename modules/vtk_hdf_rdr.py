@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.21 2003/01/28 18:13:31 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.22 2003/01/28 22:38:34 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -23,7 +23,7 @@ class vtk_hdf_rdr(moduleBase,
         moduleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
-        
+
         self._reader = vtkdscas.vtkHDFVolumeReader()
 
         # we now have a viewFrame in self._viewFrame
@@ -34,8 +34,6 @@ class vtk_hdf_rdr(moduleBase,
         
 
     def close(self):
-        # make sure
-        self.setInput(0, None)
         # call close of this specific mixin
         filenameViewModuleMixin.close(self)
         # take care of our binding to the reader
@@ -53,20 +51,21 @@ class vtk_hdf_rdr(moduleBase,
     def getOutput(self, idx):
         return self._reader.GetOutput()
 
-
-    def syncConfigWithLogic(self):
+    def logicToConfig(self):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
         """
         self._config.filename = self._reader.GetFileName()
+        if self._config.filename is None:
+            self._config.filename = ''
 
-    def applyConfigToLogic(self):
+    def configToLogic(self):
         """Apply internal configuration information (usually self._config) to
         the underlying logic.
         """
         self._reader.SetFileName(self._config.filename)
 
-    def syncConfigWithView(self):
+    def viewToConfig(self):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
 
@@ -74,7 +73,7 @@ class vtk_hdf_rdr(moduleBase,
         self._config.filename = self._getViewFrameFilename()
         
     
-    def applyConfigToView(self):
+    def configToView(self):
         """Make the view reflect the internal configuration information.
 
         """
@@ -86,20 +85,19 @@ class vtk_hdf_rdr(moduleBase,
         # your module - you could do this in __init__ as well, it seems
         # neater here though
         self._reader.SetProgressText('Reading HDF data')
-        mm = self._module_manager
+        mm = self._moduleManager
         self._reader.SetProgressMethod(lambda s=self, mm=mm:
                                        mm.vtk_progress_cb(s._reader))
         
         self._reader.Update()
         # important call to make sure the app catches VTK error in the GUI
-        self._module_manager.vtk_poll_error()
+        self._moduleManager.vtk_poll_error()
 
         mm.setProgress(100, 'DONE reading HDF data')
             
     def view(self, parent_window=None):
         # first make sure that our variables agree with the stuff that
         # we're configuring
-        self.syncConfigWithLogic()
-        self.applyConfigToView()
+        self.syncViewWithLogic()
         self._viewFrame.Show(true)
         

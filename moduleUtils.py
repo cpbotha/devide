@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.1 2003/01/28 21:24:48 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.2 2003/01/28 22:38:34 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -23,7 +23,7 @@ def bind_CSAEO(module, view_frame):
                                     m.execute_module()))
     
 
-def bind_CSAEO2(module, view_frame):
+def bindCSAEO(module, view_frame):
     """Bind events to buttons in standard view/config module dialogue.
 
     This function is used when the dialogue code has been created with
@@ -38,27 +38,26 @@ def bind_CSAEO2(module, view_frame):
     view_frame.ok_button.SetToolTip(
         wxToolTip('Apply changes, then close this dialogue.'))
     EVT_BUTTON(view_frame, wxID_OK,
-               lambda e, m=module, vf=view_frame: (m.syncConfigWithView(),
-                                                   m.applyConfigToLogic(),
+               lambda e, m=module, vf=view_frame: (m.applyViewToLogic(),
                                                    vf.Show(false)))
 
     view_frame.sync_button.SetToolTip(
         wxToolTip('Synchronise dialogue with configuration of underlying '
                   'system.'))
     EVT_BUTTON(view_frame, view_frame.SYNC_ID,
-               lambda e, m=module: (m.sync_config())
+               lambda e, m=module: m.syncViewWithLogic())
 
     view_frame.apply_button.SetToolTip(
         wxToolTip('Modify configuration of underlying system as specified by '
                   'this dialogue.'))
     EVT_BUTTON(view_frame, view_frame.APPLY_ID,
-               lambda e, m=module: m.apply_config())
+               lambda e, m=module: m.applyViewToLogic())
 
     view_frame.execute_button.SetToolTip(
         wxToolTip('Apply changes, then execute the module.'))
     EVT_BUTTON(view_frame, view_frame.EXECUTE_ID,
-               lambda e, m=module: (m.apply_config(),
-                                    m.execute_module()))
+               lambda e, m=module: (m.applyViewToLogic(),
+                                    m.executeModule()))
 
     # setup some hotkeys as well
     accel_table = wxAcceleratorTable(
