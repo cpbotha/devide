@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.9 2002/06/07 15:52:51 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.10 2002/06/07 16:05:59 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -261,7 +261,7 @@ class vtkPipelineBrowser:
 
         self._frame = wxFrame(parent=parent, id=-1,
                               title="VTK Pipeline Browser")
-        EVT_CLOSE(self._frame, self.close)
+        EVT_CLOSE(self._frame, lambda e: self.hide())
 
         panel = wxPanel(parent=self._frame, id=-1)
 
@@ -415,8 +415,15 @@ class vtkPipelineBrowser:
             if not self._config_vtk_objs.has_key(obj):
                 cvo = ConfigVtkObj.ConfigVtkObj(self._frame,
                                                 self.renwin, obj)
+                                                
+                if hasattr(self.renwin, 'Render'):
+                    # well, if we have a renwin, we might as well
+                    # use its update method
+                    cvo.set_update_method(self.renwin.Render())
+                    
                 self._config_vtk_objs[obj] = cvo
 
+            # FIXME: we might want to update the renwin
             self._config_vtk_objs[obj].show()
 
 def main ():
