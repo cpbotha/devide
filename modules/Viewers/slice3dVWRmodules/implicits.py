@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.8 2004/02/24 14:44:20 cpbotha Exp $
+# $Id: implicits.py,v 1.9 2004/02/25 16:02:16 cpbotha Exp $
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -13,14 +13,12 @@ class implicitInfo:
         self.type = None
         self.widget = None
         self.function = None
-        self.insideOut = False
 
 class implicits(object, s3dcGridMixin):
-    _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0), ('Inside Out', 0)]
+    _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0)]
     _gridNameCol = 0
     _gridTypeCol = 1
     _gridEnabledCol = 2
-    _gridInsideOutCol = 3
 
     _implicitTypes = ['Plane']
 
@@ -207,7 +205,6 @@ class implicits(object, s3dcGridMixin):
                 ii.widget = implicitWidget
                 ii.oId = oId
                 ii.function = implicitFunction
-                ii.insideOut = False
                 
                 self._implicitsDict[implicitName] = ii
 
@@ -220,7 +217,7 @@ class implicits(object, s3dcGridMixin):
                                        implicitType)
 
                 # set the relevant cells up for Boolean
-                for col in [self._gridEnabledCol, self._gridInsideOutCol]:
+                for col in [self._gridEnabledCol]:
 
                     self._grid.SetCellRenderer(nrGridRows, col,
                                                wx.grid.GridCellBoolRenderer())
@@ -273,6 +270,9 @@ class implicits(object, s3dcGridMixin):
             ('&Rename',
              'Rename selected implicits',
              self._handlerRenameImplicits, True),
+            ('&Flip',
+             'Flip selected implicits if possible.',
+             self._handlerFlipImplicits, True),
             ('---',), # important!  one-element tuple...
             ('&Delete', 'Delete selected implicits',
              self._handlerDeleteImplicits, True)]
@@ -345,13 +345,33 @@ class implicits(object, s3dcGridMixin):
 
         return savedPoints
 
-    def getSelectedWorldPoints(self):
-        """Return list of world coordinates that correspond to selected
-        points.
+    def _getSelectedImplicitNames(self):
+        """Return a list of names representing the currently selected
+        implicits.
         """
+        selRows = self._grid.GetSelectedRows()
+        sNames = []
+        for sRow in selRows:
+            sNames.append(self._grid.GetCellValue(sRow, self._gridNameCol))
 
-        return [self._pointsList[i]['world']
-                for i in self._grid.GetSelectedRows()]
+        return sNames
+        
+    def _handlerFlipImplicits(self, event):
+        """If any of the selected implicits are of 'Plane' type, flip it, i.e.
+        change the direction of the normal.
+        """
+        
+        sNames = self._getSelectedImplicitNames()
+
+        for sName in sNames:
+            ii = self._implicitsDict[sName]
+            if ii.type == 'Plane':
+                # flip both the function and the widget
+                n = ii.function.GetNormal()
+                fn = [-1.0 * e for e in n]
+                ii.function.SetNormal(fn)
+                ii.widget.SetNormal(fn)
+                                     
 
     def _handlerGridRightClick(self, gridEvent):
         """This will popup a context menu when the user right-clicks on the
