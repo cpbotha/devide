@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.91 2004/04/24 17:45:36 cpbotha Exp $
+# $Id: __init__.py,v 1.92 2004/04/24 17:59:27 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -40,6 +40,8 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Filters.marchingCubes' : ('Filters',),
               'Filters.modifyHomotopy' : ('Filters', 'Morphology'),
               'Filters.morphGradient' : ('Filters', 'Morphology'),
+              'Filters.opening' : ('Filters', 'Morphology'),
+              'Filters.closing' : ('Filters', 'Morphology'),
               'Filters.polyDataConnect' : ('Filters',),
               'Filters.polyDataNormals' : ('Filters',),
               'Filters.resampleImage' : ('Filters',),
