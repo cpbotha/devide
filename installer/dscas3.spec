@@ -1,6 +1,3 @@
-#FIXME FIXME FIXME:
-#* think up solution for dicom.dic problem.
-
 D3_DIR = '/home/cpbotha/work/code/dscas3'
 
 import os
