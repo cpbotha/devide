@@ -24,7 +24,7 @@ class rawVolumeRDRViewFrame(wxFrame):
         self.spacingText = wxTextCtrl(self.panel_1, -1, "")
         self.label_1_copy_1 = wxStaticText(self.panel_1, -1, "Examine the")
         self.objectChoiceId  =  wxNewId()
-        self.objectChoice = wxChoice(self.panel_1, self.objectChoiceId , choices=["vtkImageThreshold"])
+        self.objectChoice = wxChoice(self.panel_1, self.objectChoiceId , choices=["vtkImageReader"])
         self.label_2_copy_1 = wxStaticText(self.panel_1, -1, "or")
         self.pipelineButtonId  =  wxNewId()
         self.pipelineButton = wxButton(self.panel_1, self.pipelineButtonId , "Pipeline")
