@@ -76,13 +76,28 @@ class module_manager:
             mtypePrefix = ['userModules', 'modules']\
                           [bool(name in modules.module_list)]
             fullName = mtypePrefix + '.' + name
-	    # import the correct module
-	    exec('import ' + fullName)
-	    # and do this reload call as well (it's only double work on the
-            # very first import)
-	    # (but we should probably check if name exists in our dictionary,
-            # and only use reload then.)
-	    exec('reload(' + fullName + ')')
+
+            # determine whether this is a new import
+            if not sys.modules.has_key(fullName):
+                newModule = True
+            else:
+                newModule = False
+                
+	    # import the correct module - we have to do this in anycase to
+            # get the thing into our local namespace
+            exec('import ' + fullName)
+            
+            # there can only be a reload if this is not a newModule
+            if not newModule:
+                if not hasattr(modules, '__importsub__') or \
+                   mtypePrefix == 'userModules':
+                    # we only reload if we're not running from an Installer
+                    # package (the __importsub__ check) OR if we are running
+                    # from Installer, but it's a userModule; there's no sense
+                    # in reloading a module from an Installer package as these
+                    # can never change in anycase
+                    exec('reload(' + fullName + ')')
+                
             print "imported: " + str(id(sys.modules[fullName]))
 	    # then instantiate the requested class
 	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
