@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.3 2003/03/11 17:53:13 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.4 2003/03/12 22:30:05 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -679,6 +679,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
             if input_stream.GetClassName() == 'vtkPolyData':
                 mapper = vtk.vtkPolyDataMapper()
+                # the user can switch this back on if she really wants it
+                # we switch it off as we mostly work with isosurfaces
+                mapper.ScalarVisibilityOff()
                 mapper.SetInput(input_stream)
                 self._inputs[idx]['vtkActor'] = vtk.vtkActor()
                 self._inputs[idx]['vtkActor'].SetMapper(mapper)
