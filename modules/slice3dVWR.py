@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.37 2003/06/20 14:50:21 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.38 2003/06/22 00:53:39 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -69,6 +69,7 @@ class sliceDirection:
             # and create the overlay at least for the 3d renderer
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInput(stripper.GetOutput())
+            mapper.ScalarVisibilityOff()
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
             actor.GetProperty().SetColor(0.0, 1.0, 0.0)
@@ -86,6 +87,16 @@ class sliceDirection:
 
             # now sync the bugger
             self.syncContourToObject(contourObject)
+
+    def addAllContourObjects(self):
+        cos = self._slice3dViewer._tdObjects.getContourObjects()
+        for co in cos:
+            self.addContourObject(co)
+
+    def removeAllContourObjects(self):
+        contourObjects = self._contourObjectsDict.keys()
+        for co in contourObjects:
+            self.removeContourObject(co)
 
     def removeContourObject(self, contourObject):
         if contourObject in self._contourObjectsDict:
@@ -195,19 +206,15 @@ class sliceDirection:
                     self._resetOrthoView()
                     self._orthoViewFrame.Render()
 
-                # also check for contourObjects
-                cos = self._slice3dViewer._tdObjects.getContourObjects()
-                for co in cos:
-                    self.addContourObject(co)
+                # also check for contourObjects (primary data is being added)
+                self.addAllContourObjects()
 
     def close(self):
         """Shut down everything."""
 
         # take out all the contours
-        contourObjects = self._contourObjectsDict.keys()
-        for co in contourObjects:
-            self.removeContourObject(co)
-
+        self.removeAllContourObjects()
+        
         # take out the orthoView
         self.destroyOrthoView()
 
@@ -352,6 +359,10 @@ class sliceDirection:
             # finally delete our reference
             idx = self._ipws.index(ipw)
             del self._ipws[idx]
+
+        # if there is no data left, we also have to remove all contours
+        if not self._ipws:
+            self.removeAllContourObjects()
 
     def resetToACS(self, acs):
         """Reset the current sliceDirection to Axial, Coronal or Sagittal.
@@ -874,6 +885,9 @@ class tdObjects:
             self._slice3dVWR.render3D()
 
         elif oType == 'vtkPolyData':
+            # remove all contours due to this object
+            self._setObjectContouring(tdObject, False)
+            
             actor = self._tdObjectsDict[tdObject]['vtkActor']
             self._slice3dVWR._threedRenderer.RemoveActor(actor)
             if self._tdObjectsDict[tdObject]['observerId']:
