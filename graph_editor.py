@@ -1,11 +1,10 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.37 2003/02/01 02:17:47 cpbotha Exp $
+# $Id: graph_editor.py,v 1.38 2003/02/17 17:20:44 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
 from wxPython.ogl import *
-import gen_utils
 import string
 import traceback
 

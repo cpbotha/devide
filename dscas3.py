@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.13 2003/01/24 10:45:51 cpbotha Exp $
+# $Id: dscas3.py,v 1.14 2003/02/17 17:20:44 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
@@ -12,7 +12,6 @@ from assistants import assistants
 from graph_editor import graph_editor
 from module_manager import module_manager
 from python_shell import python_shell
-import gen_utils
 
 from wxPython.wx import *
 

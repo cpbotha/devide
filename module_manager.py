@@ -3,7 +3,7 @@
 
 import sys, os, fnmatch
 import string
-import gen_utils
+import genUtils
 import modules
 
 class module_manager:
@@ -85,10 +85,10 @@ class module_manager:
 	    # then instantiate the requested class
 	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
 	except ImportError:
-	    gen_utils.log_error("Unable to import module %s!" % name)
+	    genUtils.log_error("Unable to import module %s!" % name)
 	    return None
 	except Exception, e:
-	    gen_utils.log_error("Unable to instantiate module %s: %s" \
+	    genUtils.log_error("Unable to instantiate module %s: %s" \
                                 % (name, str(e)))
 	    return None
 	# return the instance
