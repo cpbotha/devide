@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.14 2004/01/15 10:46:25 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.15 2004/03/22 13:55:20 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -409,28 +409,33 @@ class ConfigVtkObj:
         vert_sizer = wxBoxSizer(wxVERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
-        
+
+        # self.state_meths is a list of lists
+        # each of the contained lists is the collection of SetBlaToBlaat
+        # methods, where Bla is constant for each contained list
 	n_meth = len (self.state_meths)
 	rw = 0
 
 	for i in range (0, n_meth):
 	    meths = self.state_meths[i]
-            self.state_var[i] = self.get_state (meths)
+            # a subgroup must have more than 1 member, else it's not a state method
+            if len(meths) > 1:
+                self.state_var[i] = self.get_state (meths)
 
-            # these 2 lines ripped from get_state
-            end = self.state_patn.search (meths[0]).start ()
-            get_m = 'G'+meths[0][1:end]
+                # these 2 lines ripped from get_state
+                end = self.state_patn.search (meths[0]).start ()
+                get_m = 'G'+meths[0][1:end]
             
-            rb_id = wxNewId()
-            rb = wxRadioBox(parent=panel, id=rb_id, label=get_m,
-                            choices=meths,
-                            majorDimension=2, style=wxRA_SPECIFY_COLS)
-            rb.SetSelection(self.state_var[i])
+                rb_id = wxNewId()
+                rb = wxRadioBox(parent=panel, id=rb_id, label=get_m,
+                                choices=meths,
+                                majorDimension=2, style=wxRA_SPECIFY_COLS)
+                rb.SetSelection(self.state_var[i])
 
-            EVT_RADIOBOX(panel, rb_id,
-                         lambda event, s=self, i=i: s.radiobox_cb(event, i))
-            vert_sizer.Add(rb, flag=wxEXPAND)
-            self.state_radioboxes[i] = rb
+                EVT_RADIOBOX(panel, rb_id,
+                             lambda event, s=self, i=i: s.radiobox_cb(event, i))
+                vert_sizer.Add(rb, flag=wxEXPAND)
+                self.state_radioboxes[i] = rb
 
         return panel
 
