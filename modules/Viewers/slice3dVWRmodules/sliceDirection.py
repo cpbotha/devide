@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.12 2004/03/29 15:02:16 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.13 2004/05/17 16:15:06 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -193,19 +193,54 @@ class sliceDirection:
                 # now check if the new data classifies as overlay
                 mainInput = self._ipws[0].GetInput()
 
-                if inputData.GetWholeExtent() == \
-                   mainInput.GetWholeExtent() and \
-                   inputData.GetSpacing() == mainInput.GetSpacing():
-
-                    self._ipws.append(vtk.vtkImagePlaneWidget())
-                    self._ipws[-1].SetInput(inputData)
-                    self._ipws[-1].UserControlledLookupTableOn()
-                    self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
-
-                else:
+                if inputData.GetWholeExtent() != mainInput.GetWholeExtent():
                     raise Exception, \
-                          "This inputData can't be used as an " \
-                          "overlay.  It doesn't match the primary."
+                          "The extent of this inputData" \
+                          "does not match the extent of the existing input" \
+                          ", so it can't be used as overlay.\n"\
+                          "[%s != %s]" % \
+                          (inputData.GetWholeExtent(),
+                           mainInput.GetWholeExtent())
+
+
+                # differences in spacing between new input and existing input
+                spacingDiff = [abs(i - j) for (i,j) in
+                               zip(inputData.GetSpacing(),
+                                   mainInput.GetSpacing())]
+                # maximal allowable difference
+                spacingEpsilon = 0.0001                
+
+                if spacingDiff[0] > spacingEpsilon or \
+                   spacingDiff[1] > spacingEpsilon or \
+                   spacingDiff[2] > spacingEpsilon:
+                    raise Exception, \
+                          "The spacing of this inputData " \
+                          "does not match the spacing of the existing input" \
+                          ", so it can't be used as overlay.\n"\
+                          "[%s != %s]" % \
+                          (inputData.GetSpacing(),
+                           mainInput.GetSpacing())
+                
+                self._ipws.append(vtk.vtkImagePlaneWidget())
+                self._ipws[-1].SetInput(inputData)
+                self._ipws[-1].UserControlledLookupTableOn()
+                self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
+                
+                    
+                    
+#                 if inputData.GetWholeExtent() == \
+#                    mainInput.GetWholeExtent() and \
+#                    inputData.GetSpacing() == mainInput.GetSpacing():
+
+#                     self._ipws.append(vtk.vtkImagePlaneWidget())
+#                     self._ipws[-1].SetInput(inputData)
+#                     self._ipws[-1].UserControlledLookupTableOn()
+#                     self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
+
+#                 else:
+#                     raise Exception, \
+#                           "This inputData can't be used as an " \
+#                           "overlay.  It doesn't match the primary."
 
                 # now make sure they have the right lut and are synched
                 # with the main IPW
