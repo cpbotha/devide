@@ -11,7 +11,7 @@ class manualTransform(scriptedConfigModuleMixin, moduleBase):
     to chain manualTransform modules than performing all transformations at
     once.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -64,10 +64,10 @@ class manualTransform(scriptedConfigModuleMixin, moduleBase):
         self._transform.Update()
 
     def getInputDescriptions(self):
-        return ('VTK Transform',)
+        return ()
 
     def setInput(self, idx, inputStream):
-        self._transform.SetInput(inputStream)
+        raise Exception
 
     def getOutputDescriptions(self):
         return ('VTK Transform',)
