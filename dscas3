@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3,v 1.19 2002/04/23 16:26:08 cpbotha Exp $
+# $Id: dscas3,v 1.20 2002/04/24 12:38:55 cpbotha Exp $
 
 import os
 import sys
@@ -11,6 +11,7 @@ from python_shell import python_shell
 
 from wxPython.wx import *
 from wxPython.xrc import *
+
 
 class main_window(wxFrame):
     """Main dscas3 application window.
@@ -27,17 +28,40 @@ class main_window(wxFrame):
         
         wxFrame.__init__(self, None, -1, "dscas3")
 
-
+        # attempt to open the resource file
         res_path = os.path.join(sys.path[0], 'resources/xml/dscas3_main.xrc')
-        self._res = wxXmlResource(res_path)
+        # res is local, will go out of scope (and make wxXmlResource destruct)
+        res = wxXmlResource(res_path)
 
-        menubar = self._res.LoadMenuBar('MBAR_MAIN_WINDOW')
+        # get menubar from it
+        menubar = res.LoadMenuBar('MBAR_MAIN_WINDOW')
         EVT_MENU(self, XMLID('ID_EXIT_MI'), self.exit_cb)
         EVT_MENU(self, XMLID('ID_PYTHON_SHELL_MI'), self.python_shell_cb)
+        # add the menubar to this frame
         self.SetMenuBar(menubar)
         
-        panel = self._res.LoadPanel(self, 'PNL_MAIN_WINDOW')
-        del self._res # we have what we need
+        
+        # then get the panel out
+        panel = res.LoadPanel(self, 'PNL_MAIN_WINDOW')
+
+        # now make a status bar
+        self.CreateStatusBar()
+        self.GetStatusBar().SetStatusText('Welcome to DSCAS3.')
+        self.GetStatusBar().SetMinHeight(10)
+
+        # we do NOT add the status bar to the slicer, since it is mysteriously
+        # added to the frame already, almost like the menubar
+        top_sizer = wxBoxSizer(wxVERTICAL)
+        top_sizer.Add(panel, option=1, flag=wxEXPAND)
+
+        # make sure our frame makes use of the top level sizer
+        self.SetAutoLayout(true)
+        self.SetSizer(top_sizer)
+        # resize our frame so it fits around the top level sizer (which
+        # fits around the frame, which fits around its contained sizers, etc)
+        top_sizer.Fit(self)
+        # make sure the frame will have this as minimum size
+        top_sizer.SetSizeHints(self)
 
         # get out status statictext and progress gauge so we can use these
         self._status_stxt = XMLCTRL(self, 'ID_STATUS_STXT')

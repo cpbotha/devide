@@ -60,18 +60,17 @@
             <object class="sizeritem">
               <object class="wxGauge" name="ID_PROGRESS_GAUGE">
                 <range>100</range>
+                <size>320,10</size>
                 <value>25</value>
                 <fg>#FFFFFF</fg>
                 <bg>#007FFF</bg>
               </object>
-              <option>1</option>
               <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
               <border>4</border>
             </object>
           </object>
           <style>wxRAISED_BORDER</style>
         </object>
-        <option>1</option>
         <flag>wxALL|wxEXPAND</flag>
         <border>2</border>
       </object>
@@ -84,6 +83,7 @@
       <object class="wxMenuItem" name="ID_EXIT_MI">
         <label>E&amp;xit</label>
         <accel>ALT-X</accel>
+        <help>Exit DSCAS3</help>
       </object>
     </object>
     <object class="wxMenu">
@@ -93,6 +93,7 @@
       </object>
       <object class="wxMenuItem" name="ID_PYTHON_SHELL_MI">
         <label>&amp;Python Shell</label>
+        <help>Start the interactive Python Shell</help>
       </object>
     </object>
     <object class="wxMenu">
