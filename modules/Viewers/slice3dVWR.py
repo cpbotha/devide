@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -12,17 +12,17 @@ import moduleUtils
 
 # the following four lines are only needed during prototyping of the modules
 # that they import
-import modules.slice3dVWRmodules.sliceDirections
-reload(modules.slice3dVWRmodules.sliceDirections)
-import modules.slice3dVWRmodules.selectedPoints
-reload(modules.slice3dVWRmodules.selectedPoints)
-import modules.slice3dVWRmodules.tdObjects
-reload(modules.slice3dVWRmodules.tdObjects)
+import modules.Viewers.slice3dVWRmodules.sliceDirections
+reload(modules.Viewers.slice3dVWRmodules.sliceDirections)
+import modules.Viewers.slice3dVWRmodules.selectedPoints
+reload(modules.Viewers.slice3dVWRmodules.selectedPoints)
+import modules.Viewers.slice3dVWRmodules.tdObjects
+reload(modules.Viewers.slice3dVWRmodules.tdObjects)
 
 
-from modules.slice3dVWRmodules.sliceDirections import sliceDirections
-from modules.slice3dVWRmodules.selectedPoints import selectedPoints
-from modules.slice3dVWRmodules.tdObjects import tdObjects
+from modules.Viewers.slice3dVWRmodules.sliceDirections import sliceDirections
+from modules.Viewers.slice3dVWRmodules.selectedPoints import selectedPoints
+from modules.Viewers.slice3dVWRmodules.tdObjects import tdObjects
 
 import time
 import vtk
@@ -367,22 +367,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
 
     def _create_window(self):
-        import modules.resources.python.slice3dVWRFrames
-        reload(modules.resources.python.slice3dVWRFrames)
-
-        parent_window = self._moduleManager.get_module_view_parent_window()
+        import modules.Viewers.resources.python.slice3dVWRFrames
+        reload(modules.Viewers.resources.python.slice3dVWRFrames)
 
         # threedFrame creation and basic setup -------------------
-        threedFrame = modules.resources.python.slice3dVWRFrames.\
+        threedFrame = modules.Viewers.resources.python.slice3dVWRFrames.\
                       threedFrame
-        self.threedFrame = threedFrame(parent_window, id=-1,
-                                      title='dummy')
-
-        # attach close handler
-        EVT_CLOSE(self.threedFrame,
-                  lambda e, s=self: s.threedFrame.Show(false))
-
-        self.threedFrame.SetIcon(moduleUtils.getModuleIcon())
+        self.threedFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, threedFrame)
 
         # add the renderer
         self._threedRenderer = vtk.vtkRenderer()
@@ -391,14 +383,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                                                                _threedRenderer)
         
         # controlFrame creation and basic setup -------------------
-        controlFrame = modules.resources.python.slice3dVWRFrames.\
+        controlFrame = modules.Viewers.resources.python.slice3dVWRFrames.\
                        controlFrame
-        self.controlFrame = controlFrame(parent_window, id=-1,
-                                         title='dummy')
-        EVT_CLOSE(self.controlFrame,
-                  lambda e: self.controlFrame.Show(false))
-        self.controlFrame.SetIcon(moduleUtils.getModuleIcon())
-
+        self.controlFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, controlFrame)
 
         # fix for the grid
         #self.controlFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)

@@ -5,7 +5,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class wsMeshSmoothFLT(moduleBase, vtkPipelineConfigModuleMixin):
+class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
     """Module that runs vtkWindowedSincPolyDataFilter on its input data for
     mesh smoothing.
     """
@@ -116,16 +116,16 @@ class wsMeshSmoothFLT(moduleBase, vtkPipelineConfigModuleMixin):
         mm = self._moduleManager
         # import/reload the viewFrame (created with wxGlade)
         mm.importReload(
-            'modules.resources.python.wsMeshSmoothFLTViewFrame')
+            'modules.Filters.resources.python.wsMeshSmoothFLTViewFrame')
         # this line is harmless due to Python's import caching, but we NEED
         # to do it so that the Installer knows that this dscas3 module
         # requires it and so that it's available in this namespace.
-        import modules.resources.python.wsMeshSmoothFLTViewFrame
+        import modules.Filters.resources.python.wsMeshSmoothFLTViewFrame
 
         # instantiate the view frame, add close handler, set default icon
         viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, mm,
-            modules.resources.python.wsMeshSmoothFLTViewFrame.\
+            modules.Filters.resources.python.wsMeshSmoothFLTViewFrame.\
             wsMeshSmoothFLTViewFrame)
 
         # setup introspection with default everythings

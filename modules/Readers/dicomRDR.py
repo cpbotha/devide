@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 
 import genUtils
 import os
@@ -173,12 +173,12 @@ class dicomRDR(moduleBase,
         self._moduleManager.vtk_poll_error()
 
     def _createViewFrame(self):
-        import modules.resources.python.dicomRDRViewFrame
-        reload(modules.resources.python.dicomRDRViewFrame)
+        import modules.Readers.resources.python.dicomRDRViewFrame
+        reload(modules.Readers.resources.python.dicomRDRViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.resources.python.dicomRDRViewFrame.\
+            modules.Readers.resources.python.dicomRDRViewFrame.\
             dicomRDRViewFrame)
 
         objectDict = {'dicom reader' : self._reader}

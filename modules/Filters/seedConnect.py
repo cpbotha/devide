@@ -5,7 +5,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
+class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -146,12 +146,12 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.resources.python.seedConnectFLTViewFrame
-        reload(modules.resources.python.seedConnectFLTViewFrame)
+        import modules.Filters.resources.python.seedConnectFLTViewFrame
+        reload(modules.Filters.resources.python.seedConnectFLTViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.resources.python.seedConnectFLTViewFrame.\
+            modules.Filters.resources.python.seedConnectFLTViewFrame.\
             seedConnectFLTViewFrame)
 
         objectDict = {'imageCast' : self._imageCast,

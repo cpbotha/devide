@@ -183,12 +183,12 @@ class rawVolumeRDR(moduleBase,
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.resources.python.rawVolumeRDRViewFrame
-        reload(modules.resources.python.rawVolumeRDRViewFrame)
+        import modules.Readers.resources.python.rawVolumeRDRViewFrame
+        reload(modules.Readers.resources.python.rawVolumeRDRViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.resources.python.rawVolumeRDRViewFrame.\
+            modules.Readers.resources.python.rawVolumeRDRViewFrame.\
             rawVolumeRDRViewFrame)
 
         # bind the file browse button

@@ -7,7 +7,7 @@ from wxPython.wx import *
 import vtk
 import vtkdscas
 
-class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
+class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -266,14 +266,15 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         mm = self._moduleManager
         # import/reload the viewFrame (created with wxGlade)
         mm.importReload(
-            'modules.resources.python.shellSplatSimpleFLTViewFrame')
+            'modules.Filters.resources.python.shellSplatSimpleFLTViewFrame')
         # this line is harmless due to Python's import caching, but we NEED
         # to do it so that the Installer knows that this dscas3 module
         # requires it and so that it's available in this namespace.
-        import modules.resources.python.shellSplatSimpleFLTViewFrame
+        import modules.Filters.resources.python.shellSplatSimpleFLTViewFrame
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, mm, modules.resources.python.shellSplatSimpleFLTViewFrame.\
+            self, mm,
+            modules.Filters.resources.python.shellSplatSimpleFLTViewFrame.\
             shellSplatSimpleFLTViewFrame)
 
         # setup introspection with default everythings

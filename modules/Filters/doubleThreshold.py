@@ -5,7 +5,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class doubleThresholdFLT(moduleBase,
+class doubleThreshold(moduleBase,
                          vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
@@ -183,12 +183,12 @@ class doubleThresholdFLT(moduleBase,
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.resources.python.doubleThresholdFLTFrame
-        reload(modules.resources.python.doubleThresholdFLTFrame)
+        import modules.Filters.resources.python.doubleThresholdFLTFrame
+        reload(modules.Filters.resources.python.doubleThresholdFLTFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.resources.python.doubleThresholdFLTFrame.\
+            modules.Filters.resources.python.doubleThresholdFLTFrame.\
             doubleThresholdFLTFrame)
 
         objectDict = {'imageThreshold' : self._imageThreshold}

@@ -91,12 +91,12 @@ class contourFLTBase(moduleBase, vtkPipelineConfigModuleMixin):
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.resources.python.contourFLTBaseViewFrame
-        reload(modules.resources.python.contourFLTBaseViewFrame)
+        import modules.Filters.resources.python.contourFLTBaseViewFrame
+        reload(modules.Filters.resources.python.contourFLTBaseViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.resources.python.contourFLTBaseViewFrame.\
+            modules.Filters.resources.python.contourFLTBaseViewFrame.\
             contourFLTBaseViewFrame)
 
         objectDict = {'contourFilter' : self._contourFilter}

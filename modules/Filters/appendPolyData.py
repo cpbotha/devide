@@ -5,7 +5,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class appendPolyDataFLT(moduleBase, noConfigModuleMixin):
+class appendPolyData(moduleBase, noConfigModuleMixin):
     """DSCAS3 encapsulation of the vtkAppendPolyDataFilter that enables us
     to combine multiple PolyData structures into one.
     """

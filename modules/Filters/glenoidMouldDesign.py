@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesign.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: glenoidMouldDesign.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -17,7 +17,7 @@ import operator
 import vtk
 from wxPython.wx import *
 
-class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
+class glenoidMouldDesign(moduleBase, noConfigModuleMixin):
 
     drillGuideInnerDiameter = 3
     drillGuideOuterDiameter = 5

@@ -5,7 +5,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class polyDataNormalsFLT(moduleBase, noConfigModuleMixin):
+class polyDataNormals(moduleBase, noConfigModuleMixin):
     """Module that runs vtkWindowedSincPolyDataFilter on its input data for
     mesh smoothing.
     """

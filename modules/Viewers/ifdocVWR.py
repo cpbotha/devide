@@ -1,5 +1,5 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
@@ -191,20 +191,16 @@ class ifdocVWR(moduleBase):
     
     def _createViewFrames(self):
 
-        parentWindow = self._moduleManager.get_module_view_parent_window()        
         # create the viewerFrame
-        import modules.resources.python.ifdocVWRFrames
-        reload(modules.resources.python.ifdocVWRFrames)
+        import modules.Viewers.resources.python.ifdocVWRFrames
+        reload(modules.Viewers.resources.python.ifdocVWRFrames)
 
-        viewerFrame = modules.resources.python.ifdocVWRFrames.viewerFrame
-        self.viewerFrame = viewerFrame(parentWindow, id=-1, title='dummy')
+        viewerFrame = \
+                    modules.Viewers.resources.python.ifdocVWRFrames.viewerFrame
 
-        # attach close handler
-        EVT_CLOSE(self.viewerFrame,
-                  lambda e, s=self: s.viewerFrame.Show(false))
-
-        self.viewerFrame.SetIcon(moduleUtils.getModuleIcon())
-
+        self.viewerFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, viewerFrame)
+        
         # add the renderer
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
@@ -212,14 +208,12 @@ class ifdocVWR(moduleBase):
             self._threedRenderer)
         
         # controlFrame creation and basic setup -------------------
-        controlFrame = modules.resources.python.ifdocVWRFrames.\
+        controlFrame = modules.Viewers.resources.python.ifdocVWRFrames.\
                        controlFrame
-        self.controlFrame = controlFrame(parentWindow, id=-1,
-                                         title='dummy')
-        EVT_CLOSE(self.controlFrame,
-                  lambda e: self.controlFrame.Show(false))
-        self.controlFrame.SetIcon(moduleUtils.getModuleIcon())
 
+        self.controlFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, controlFrame)
+                
         # display the window
         self.viewerFrame.Show(True)
         self.controlFrame.Show(True)

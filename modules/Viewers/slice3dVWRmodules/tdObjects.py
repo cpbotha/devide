@@ -1,11 +1,11 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: tdObjects.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
 reload(genUtils)
 import math
-from modules.slice3dVWRmodules.shared import s3dcGridMixin
+from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
 import vtkdscas

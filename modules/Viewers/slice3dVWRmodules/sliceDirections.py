@@ -1,16 +1,16 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
 
 # the following two lines are only needed during prototyping of the modules
 # that they import
-import modules.slice3dVWRmodules.sliceDirection
-reload(modules.slice3dVWRmodules.sliceDirection)
+import modules.Viewers.slice3dVWRmodules.sliceDirection
+reload(modules.Viewers.slice3dVWRmodules.sliceDirection)
 
-from modules.slice3dVWRmodules.sliceDirection import sliceDirection
-from modules.slice3dVWRmodules.shared import s3dcGridMixin
+from modules.Viewers.slice3dVWRmodules.sliceDirection import sliceDirection
+from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
 
 import vtk
 import wx

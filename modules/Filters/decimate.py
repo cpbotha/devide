@@ -1,5 +1,5 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimate.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: decimate.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils
@@ -9,7 +9,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
+class decimate(moduleBase, vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -91,12 +91,12 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.resources.python.decimateFLTViewFrame
-        reload(modules.resources.python.decimateFLTViewFrame)
+        import modules.Filters.resources.python.decimateFLTViewFrame
+        reload(modules.Filters.resources.python.decimateFLTViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.resources.python.decimateFLTViewFrame.\
+            modules.Filters.resources.python.decimateFLTViewFrame.\
             decimateFLTViewFrame)
 
         objectDict = {'triangle filter' : self._triFilter,

@@ -5,7 +5,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class polyDataConnectFLT(moduleBase, noConfigModuleMixin):
+class polyDataConnect(moduleBase, noConfigModuleMixin):
 
     def __init__(self, moduleManager):
 
