@@ -1,4 +1,4 @@
-# $Id: transform2D.py,v 1.3 2003/12/18 14:27:46 cpbotha Exp $
+# $Id: transform2D.py,v 1.4 2004/03/30 11:07:29 cpbotha Exp $
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should
@@ -155,8 +155,9 @@ class transform2D(moduleBase):
         totalTrfm.SetIdentity()
         
         prevImage = self._imageStack[0]
-        for trfm, img, i in zip(self._transformStack, self._imageStack,
-                                range(len(self._imageStack))):
+        for trfm, img, i in zip(self._transformStack[1:],
+                                self._imageStack[1:],
+                                range(len(self._imageStack) - 1)):
             # accumulate with our totalTransform
             totalTrfm.Compose(trfm.GetPointer(), 0)
             # make a copy of the totalTransform that we can use on
