@@ -1,4 +1,4 @@
-# $Id: vtk_dicom_rdr.py,v 1.4 2002/08/19 15:30:59 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.5 2002/08/19 15:38:42 cpbotha Exp $
 
 import gen_utils
 import os
@@ -185,6 +185,22 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.VTK_OBJECT_CHOICE_ID  =  wxNewId()
         self.object_choice = wxChoice(self, self.VTK_OBJECT_CHOICE_ID , choices=['vtkDICOMVolumeReader'], size=(-1, -1), style=0)
         self.label_2 = wxStaticText(self, -1, "Examine the", size=(-1, -1), style=0)
+        self.grid_sizer_1 = wxGridSizer(1, 2, 0, 0)
+        self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_6_copy = wxStaticText(self, -1, "Dimensions", size=(-1, -1), style=0)
+        self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_6_copy = wxStaticText(self, -1, "Modality", size=(-1, -1), style=0)
+        self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_6_copy = wxStaticText(self, -1, "Patient Name", size=(-1, -1), style=0)
+        self.text_ctrl_3 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_7 = wxStaticText(self, -1, "Referring Physician", size=(-1, -1), style=0)
+        self.text_ctrl_2 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_6 = wxStaticText(self, -1, "Study Description", size=(-1, -1), style=0)
+        self.sizer_5 = wxBoxSizer(wxHORIZONTAL)
+        self.text_ctrl_1 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_5 = wxStaticText(self, -1, "UID", size=(-1, -1), style=0)
+        self.spin_ctrl_1 = wxSpinCtrl(self, -1, min=0, max=100, initial=0, size=(-1, -1), style=0)
+        self.label_4 = wxStaticText(self, -1, "Series Instance Index", size=(-1, -1), style=0)
         self.sizer_3 = wxBoxSizer(wxHORIZONTAL)
         self.BROWSE_BUTTON_ID  =  wxNewId()
         self.browse_button = wxButton(self, self.BROWSE_BUTTON_ID , "Browse...", size=(-1, -1))
@@ -199,6 +215,12 @@ class vtk_dicom_rdr_view_frame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: __set_properties
         self.SetTitle("vtk_dicom_rdr configuration")
+        self.text_ctrl_1.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_2.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_3.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
         self.object_choice.SetSelection(0)
         # end wxGlade
 
@@ -208,6 +230,22 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.sizer_3.Add(self.dirname_text, 1, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_3.Add(self.browse_button, 0, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_1.Add(self.sizer_3, 1, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
+        self.sizer_5.Add(self.label_4, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
+        self.sizer_5.Add(self.spin_ctrl_1, 0, wxALIGN_CENTER_VERTICAL, 0)
+        self.sizer_5.Add(self.label_5, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.sizer_5.Add(self.text_ctrl_1, 1, wxALIGN_CENTER_VERTICAL, 0)
+        self.sizer_1.Add(self.sizer_5, 1, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
+        self.grid_sizer_1.Add(self.label_6, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_2, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        self.grid_sizer_1.Add(self.label_7, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_3, 1, wxEXPAND, 0)
+        self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        self.sizer_1.Add(self.grid_sizer_1, 0, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
         self.sizer_4.Add(self.label_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         self.sizer_4.Add(self.object_choice, 0, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_4.Add(self.label_3, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
