@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.26 2003/03/03 23:58:48 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.27 2003/03/04 12:40:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -452,16 +452,19 @@ class slice3d_vwr(moduleBase,
                 if ipw.GetInput():
                     if orthoPanels[i].enabledCbox.GetValue():
                         ipw.On()
+                        # and if there are overlays, switch them back on
+                        if self._overlay_ipws:
+                            self._overlay_ipws[i].On()
+                                
                         orthoPanels[i].interactionCbox.Enable(1)
-                        # ipw.On() reactivates interaction!
-                        ival = orthoPanels[i].interactionCbox.GetValue()
-                        ipw.SetInteraction(not ival)
-                        ipw.SetInteraction(ival)
-                        orthoPanels[i].interactionCbox.SetValue(bool(ival))
                         orthoPanels[i].pushSliceLabel.Enable(1)
                         orthoPanels[i].pushSliceSpinCtrl.Enable(1)
                     else:
                         ipw.Off()
+                        # also switch off the overlays...
+                        if self._overlay_ipws:
+                            self._overlay_ipws[i].Off()
+                            
                         orthoPanels[i].interactionCbox.Enable(0)
                         orthoPanels[i].pushSliceLabel.Enable(0)
                         orthoPanels[i].pushSliceSpinCtrl.Enable(0)
