@@ -12,7 +12,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
     equal to the 'Input Connected Value'.  This module casts all input to
     unsigned char.  The output is also unsigned char.
 
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
 
     def __init__(self, moduleManager):
@@ -88,7 +88,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
             
     
     def getOutputDescriptions(self):
-        return (self._seedConnect.GetOutput().GetClassName(),)
+        return ('Region growing result (vtkImageData)',)
     
     def getOutput(self, idx):
         return self._seedConnect.GetOutput()

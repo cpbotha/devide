@@ -92,7 +92,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
             self._splatMapper.SetGradientImageData(inputStream)
 
     def getOutputDescriptions(self):
-        return (self._volume.GetClassName(),)
+        return ('Shell splat volume (vtkVolume)',)
 
     def getOutput(self, idx):
         return self._volume

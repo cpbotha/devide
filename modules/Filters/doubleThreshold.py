@@ -71,7 +71,7 @@ class doubleThreshold(moduleBase,
             minv, maxv = inputStream.GetScalarRange()
 
     def getOutputDescriptions(self):
-	return ('vtkImageData',)
+	return ('Thresholded data (vtkImageData)',)
     
 
     def getOutput(self, idx):

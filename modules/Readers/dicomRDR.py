@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.10 2004/03/05 10:20:43 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.11 2004/05/08 22:18:27 cpbotha Exp $
 
 import genUtils
 import os
@@ -23,7 +23,7 @@ class dicomRDR(moduleBase,
     button on the view/config window.  You can select multiple files in
     the File dialog by holding shift or control whilst clicking.
 
-    $Revision: 1.10 $
+    $Revision: 1.11 $
     """
     
     def __init__(self, moduleManager):
@@ -66,7 +66,7 @@ class dicomRDR(moduleBase,
 	raise Exception
     
     def getOutputDescriptions(self):
-	return (self._reader.GetOutput().GetClassName(),)
+	return ('DICOM data (vtkStructuredPoints)',)
     
     def getOutput(self, idx):
 	return self._reader.GetOutput()
