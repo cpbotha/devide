@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.3 2003/03/19 19:07:05 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.4 2003/03/20 16:48:03 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -134,16 +134,70 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 cut.SetValue(0,1)
                 cut.Update()
 
-                #tf = vtk.vtkTubeFilter()
-                #tf.SetInput(cut.GetOutput())
-                #tf.Update()
+                contour = cut.GetOutput()
+
+                # now find line segment closest to self._giaProximal
+                pl = vtk.vtkPointLocator()
+                pl.SetDataSet(contour)
+                pl.BuildLocator()
+                startPtId = pl.FindClosestPoint(self._giaProximal)
+
+                # we need to find out which cells belong to which points
+                contour.BuildLinks()
                 
-                stuff.append(cut.GetOutput())
+                cellIds = vtk.vtkIdList()
+                contour.GetPointCells(startPtId, cellIds)
+
+
+                twoLineIds = cellIds.GetId(0), cellIds.GetId(1)
+
+                ptIds = vtk.vtkIdList()
+                cellIds = vtk.vtkIdList()
+                newCellArray = vtk.vtkCellArray()
+                
+                for startLineId in twoLineIds:
+
+                    # we have a startLineId, a startPtId and polyData
+                    curStartPtId = startPtId
+                    curLineId = startLineId
+                    
+
+                    for i in range(50):
+                        contour.GetCellPoints(curLineId, ptIds)
+                        ptId0 = ptIds.GetId(0)
+                        ptId1 = ptIds.GetId(1)
+                        nextPointId = [ptId0, ptId1]\
+                                      [bool(ptId0 == curStartPtId)]
+
+                        contour.GetPointCells(nextPointId, cellIds)
+                        cId0 = cellIds.GetId(0)
+                        cId1 = cellIds.GetId(1)
+                        nextLineId = [cId0, cId1]\
+                                     [bool(cId0 == curLineId)]
+
+                        # stop criterion here, if not, then store
+                        print "inserting %d\n" % (curLineId,)
+                        newCellArray.InsertNextCell(contour.GetCell(curLineId))
+
+
+                        # get ready for next iteration
+                        curStartPtId = nextPointId
+                        curLineId = nextLineId
+                
+
+                newPolyData = vtk.vtkPolyData()
+                newPolyData.SetLines(newCellArray)
+                newPolyData.SetPoints(contour.GetPoints())
+                #tf = vtk.vtkRibbonFilter()
+                #tf.SetInput(contour)
+                #tf.Update()
+
+                stuff.append(newPolyData)
 
 
             ap = vtk.vtkAppendPolyData()
             # copy everything to output (for testing)
-            for thing in stuff:
+            for thing in stuff[:1]:
                 ap.AddInput(thing)
 
             ap.Update()
