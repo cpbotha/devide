@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.2 2003/11/24 17:40:06 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.3 2003/12/15 12:24:07 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -205,7 +205,9 @@ class sliceDirection:
                 self._ipws.append(vtk.vtkImagePlaneWidget())
                 self._ipws[-1].SetInput(inputData)
                 self._ipws[-1].SetPicker(self.sliceDirections.ipwPicker)
+                # GetColorMap() -- new VTK CVS
                 self._ipws[-1].GetColorMap().SetOutputFormatToRGB()
+                #self._ipws[-1].GetImageMapToColors().SetOutputFormatToRGB()
 
                 # now make callback for the ipw
                 self._ipws[-1].AddObserver('StartInteractionEvent',
