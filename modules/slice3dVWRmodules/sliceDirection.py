@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.11 2003/08/15 12:46:38 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.12 2003/08/15 15:49:09 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -324,6 +324,10 @@ class sliceDirection:
         for ipw in self._ipws:
             ipw.On()
 
+        # alse re-enable all contours for this slice
+        for (contourObject, contourDict) in self._contourObjectsDict.items():
+            contourDict['tdActor'].VisibilityOn()
+
     def enableInteraction(self):
         self._interactionEnabled = True
         if self._ipws:
@@ -334,6 +338,10 @@ class sliceDirection:
         self._enabled = False
         for ipw in self._ipws:
             ipw.Off()
+
+        # alse disable all contours for this slice
+        for (contourObject, contourDict) in self._contourObjectsDict.items():
+            contourDict['tdActor'].VisibilityOff()
 
     def disableInteraction(self):
         self._interactionEnabled = False
@@ -369,7 +377,6 @@ class sliceDirection:
 
         if pnSize > 0:
             planeSource = self._ipws[0].GetPolyDataSource()
-            print planeNormal
             planeSource.SetNormal(planeNormal)
             planeSource.SetCenter(p0)
             self._ipws[0].UpdatePlacement()

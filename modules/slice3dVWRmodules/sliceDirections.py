@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.7 2003/08/11 15:59:26 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.8 2003/08/15 15:49:09 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -212,6 +212,8 @@ class sliceDirections(object):
         for name in names:
             self._setSliceEnabled(
                 name, not self._sliceDirectionsDict[name].getEnabled())
+
+        self.slice3dVWR.render3D()
 
     def _handlerSliceInteraction(self, event):
         names = self._getSelectedSliceNames()

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.13 2003/08/13 22:21:53 cpbotha Exp $
+$Id: TODO,v 1.14 2003/08/15 15:49:09 cpbotha Exp $
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -28,14 +28,9 @@ $Id: TODO,v 1.13 2003/08/13 22:21:53 cpbotha Exp $
 
 BUGS:
 
-* When a slice in hidden, its contours still show.
-
-* When an object is moved with axis to slice, its contour isn't updated
-  correctly immediately.
-
-* When an object is hidden, its axis still hangs around.
-
 FIXED:
+
+* When a slice in hidden, its contours still show.
 
 * When an IPW is moved, the ConstrainPlaneNormals on any BoxWidgets are not
   updated.
@@ -57,6 +52,11 @@ FIXED:
 * Fix the vtkBoxWidgetConstrained mess: this should derive from vtkBoxWidget;
   at the moment it's a copy with changes applied.  This is because some of
   the most important calls are not virtual.
+
+* When an object is moved with axis to slice, its contour isn't updated
+  correctly immediately.
+
+
 
 
 DONE:
