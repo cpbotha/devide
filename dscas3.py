@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.8 2002/05/21 22:23:02 cpbotha Exp $
+# $Id: dscas3.py,v 1.9 2002/06/10 15:00:55 cpbotha Exp $
 
 import os
 import stat
@@ -222,13 +222,14 @@ class dscas3_app_t(wxApp):
         self._vtk_lw = None
 
         #self._appdir, exe = os.path.split(sys.executable)
-        dirname = os.path.dirname(sys.argv[0])
-        if dirname and dirname != os.curdir:
-            self._appdir = dirname
+        if hasattr(sys, 'frozen') and sys.frozen:
+            self._appdir, exe = os.path.split(sys.executable)
         else:
-            self._appdir = os.getcwd()
-
-        print self._appdir
+            dirname = os.path.dirname(sys.argv[0])
+            if dirname and dirname != os.curdir:
+                self._appdir = dirname
+            else:
+                self._appdir = os.getcwd()
         
         wxApp.__init__(self, 0)
 

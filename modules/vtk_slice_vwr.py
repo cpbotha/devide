@@ -1,8 +1,9 @@
-# $Id: vtk_slice_vwr.py,v 1.42 2002/06/07 20:29:40 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.43 2002/06/10 15:00:57 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
 import vtk
+import vtkcpbothapython
 from wxPython.wx import *
 from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
@@ -34,15 +35,15 @@ class vtk_slice_vwr(module_base,
         self._num_inputs = 5
         self._num_orthos = 3
         # use list comprehension to create list keeping track of inputs
-	self._inputs = [{'Connected' : None, 'vtkActor' : None}
+        self._inputs = [{'Connected' : None, 'vtkActor' : None}
                        for i in range(self._num_inputs)]
         # then the window containing the renderwindows
-	self._view_frame = None
+        self._view_frame = None
         # the render windows themselves (4, 1 x 3d and 3 x ortho)
-	self._rwis = []
+        self._rwis = []
         self._pws = []
         # the renderers corresponding to the render windows
-	self._renderers = []
+        self._renderers = []
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -66,10 +67,10 @@ class vtk_slice_vwr(module_base,
                                     'origin' : (0,0,0)}] # coronal (zx-plane)
 
         self._left_mouse_button = 0
-	
+        
         # set the whole UI up!
-	self._create_window()
-	
+        self._create_window()
+        
     def close(self):
         for idx in range(self._num_inputs):
             self.set_input(idx, None)
@@ -80,13 +81,13 @@ class vtk_slice_vwr(module_base,
         
         if hasattr(self, '_pws'):
             del self._pws
-	if hasattr(self, '_renderers'):
-	    del self._renderers
-	if hasattr(self, '_rws'):
-	    del self._rwis
-	if hasattr(self,'_view_frame'):
-	    self._view_frame.Destroy()
-	    del self._view_frame
+        if hasattr(self, '_renderers'):
+            del self._renderers
+        if hasattr(self, '_rws'):
+            del self._rwis
+        if hasattr(self,'_view_frame'):
+            self._view_frame.Destroy()
+            del self._view_frame
         if hasattr(self,'_ortho_pipes'):
             del self._ortho_pipes
 
@@ -96,11 +97,12 @@ class vtk_slice_vwr(module_base,
 #################################################################
 
     def get_input_descriptions(self):
-	# concatenate it num_inputs times (but these are shallow copies!)
-	return self._num_inputs * \
+        # concatenate it num_inputs times (but these are shallow copies!)
+        return self._num_inputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
     def set_input(self, idx, input_stream):
+        print "starting set_input"
         if input_stream == None:
 
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
@@ -159,15 +161,16 @@ class vtk_slice_vwr(module_base,
              callable(input_stream.GetClassName):
             if input_stream.GetClassName() == 'vtkPolyData':
                
-		mapper = vtk.vtkPolyDataMapper()
-		mapper.SetInput(input_stream)
-		self._inputs[idx]['vtkActor'] = vtk.vtkActor()
-		self._inputs[idx]['vtkActor'].SetMapper(mapper)
-		self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
-		self._inputs[idx]['Connected'] = 'vtkPolyData'
+                mapper = vtk.vtkPolyDataMapper()
+                mapper.SetInput(input_stream)
+                self._inputs[idx]['vtkActor'] = vtk.vtkActor()
+                self._inputs[idx]['vtkActor'].SetMapper(mapper)
+                self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
+                self._inputs[idx]['Connected'] = 'vtkPolyData'
                 self._renderers[0].ResetCamera()                
                 self._rwis[0].Render()
             elif input_stream.IsA('vtkImageData'):
+                print "vtkImageData clause..."
                 # if we already have a vtkStructuredPoints (or similar,
                 # we might want to use the IsA() method later) we must check
                 # the new dataset for certain requirements
@@ -219,7 +222,9 @@ class vtk_slice_vwr(module_base,
                     cur_pipe['vtkLookupTable'].SetWindow(1000)
                     cur_pipe['vtkLookupTable'].SetLevel(1000)
                     cur_pipe['vtkLookupTable'].Build()
+                    print "about to call slut"
                     cur_pipe['vtkTexture'].SetLookupTable(cur_pipe['vtkLookupTable'])
+                    print "about to call si"
                     # connect output of reslicer to texture
                     cur_pipe['vtkTexture'].SetInput(cur_pipe['vtkImageReslice'].GetOutput())
                     # make sure the LUT is  going to be used
@@ -243,7 +248,7 @@ class vtk_slice_vwr(module_base,
                     cur_pipe['vtkActor3'].SetMapper(mapper)
                     cur_pipe['vtkActor3'].SetTexture(cur_pipe['vtkTexture'])
                     self._renderers[0].AddActor(cur_pipe['vtkActor3'])
-		    
+                    
                     # we've connected the pipeline, now we get to do all
                     # the bells and whistles
                     self._reset_ortho_overlay(i, cur_pipe)
@@ -269,22 +274,22 @@ class vtk_slice_vwr(module_base,
                 self._rwis[0].Render()
                 self._inputs[idx]['Connected'] = 'vtkImageData'
 
-	    else:
-		raise TypeError, "Wrong input type!"
+            else:
+                raise TypeError, "Wrong input type!"
 
         # make sure we catch any errors!
         self._module_manager.vtk_poll_error()
 
-	
+        
     def get_output_descriptions(self):
-	# return empty tuple
-	return ()
-	
+        # return empty tuple
+        return ()
+        
     def get_output(self, idx):
-	raise Exception
+        raise Exception
 
     def view(self):
-	self._view_frame.Show(true)
+        self._view_frame.Show(true)
 
 #################################################################
 # utility methods
@@ -342,7 +347,7 @@ class vtk_slice_vwr(module_base,
         panel.SetAutoLayout(true)
         panel.SetSizer(panel_sizer)
         return panel
-	
+        
     def _create_window(self):
         # create main frame, make sure that when it's closed, it merely hides
         parent_window = self._module_manager.get_module_view_parent_window()
@@ -515,28 +520,28 @@ class vtk_slice_vwr(module_base,
         self._rwis[ortho_idx+1].Render()
 
     def _setup_ortho_cam(self, cur_pipe, renderer):
-	# now we're going to manipulate the camera in order to achieve some
+        # now we're going to manipulate the camera in order to achieve some
         # gluOrtho2D() goodness
-	icam = renderer.GetActiveCamera()
-	# set to orthographic projection
-	#icam.SetParallelProjection(1);
-	# set camera 10 units away, right in the centre
-	icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0],
+        icam = renderer.GetActiveCamera()
+        # set to orthographic projection
+        #icam.SetParallelProjection(1);
+        # set camera 10 units away, right in the centre
+        icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0],
                          cur_pipe['vtkPlaneSourceO'].GetCenter()[1], 10);
-	icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
+        icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
         #icam.OrthogonalizeViewUp()
-	# make sure it's the right way up
-	icam.SetViewUp(0,1,0);
-	#icam.SetClippingRange(1, 11);
-	# we're assuming icam->WindowCenter is (0,0), then  we're effectively
+        # make sure it's the right way up
+        icam.SetViewUp(0,1,0);
+        #icam.SetClippingRange(1, 11);
+        # we're assuming icam->WindowCenter is (0,0), then  we're effectively
         # doing this:
-	# glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
-	#output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
+        # glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
+        #output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
         we = cur_pipe['vtkImageReslice'].GetOutput().GetWholeExtent()
         icam.SetParallelScale((we[1] - we[0]) / 2.0)
         icam.ParallelProjectionOn()
 
-	#icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
+        #icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
 
     def _sync_3d_plane_with_reslice(self, plane_source, reslice):
         """Modify 3d slice plane source to agree with reslice output.
@@ -547,7 +552,7 @@ class vtk_slice_vwr(module_base,
         
         reslice.Update()
 
-	output_bounds = reslice.GetOutput().GetBounds()
+        output_bounds = reslice.GetOutput().GetBounds()
         origin = reslice.GetResliceAxesOrigin()
 
         p1mag = output_bounds[1] - output_bounds[0]
@@ -558,25 +563,25 @@ class vtk_slice_vwr(module_base,
         p2vn = radc[3:6]
         p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
 
-	plane_source.SetOrigin(origin)
-	plane_source.SetPoint1(p1v)
-	plane_source.SetPoint2(p2v)
+        plane_source.SetOrigin(origin)
+        plane_source.SetPoint1(p1v)
+        plane_source.SetPoint2(p2v)
 
         # end test code
 
 
     def _sync_ortho_plane_with_reslice(self, plane_source, reslice):
-	# try and pull the data through
-	reslice.Update()
-	# make the plane that the texture is mapped on
-	output_bounds = reslice.GetOutput().GetBounds()
-	plane_source.SetOrigin(output_bounds[0],
+        # try and pull the data through
+        reslice.Update()
+        # make the plane that the texture is mapped on
+        output_bounds = reslice.GetOutput().GetBounds()
+        plane_source.SetOrigin(output_bounds[0],
                                output_bounds[2],
                                0)
-	plane_source.SetPoint1(output_bounds[1],
+        plane_source.SetPoint1(output_bounds[1],
                                output_bounds[2],
                                0)
-	plane_source.SetPoint2(output_bounds[0],
+        plane_source.SetPoint2(output_bounds[0],
                                output_bounds[3],
                                0)
 
@@ -610,7 +615,7 @@ class vtk_slice_vwr(module_base,
             pw.UpdatePlacement()
 
         
-	
+        
 #################################################################
 # callbacks
 #################################################################
@@ -751,7 +756,7 @@ class vtk_slice_vwr(module_base,
 
     def _rw_windowlevel_cb(self, wxvtkrwi):
         deltax = wxvtkrwi.GetEventPosition()[0] - \
-                 wxvtkrwi.GetLastEventPosition()[0]	
+                 wxvtkrwi.GetLastEventPosition()[0]     
         
         deltay = wxvtkrwi.GetEventPosition()[1] - \
                  wxvtkrwi.GetLastEventPosition()[1]

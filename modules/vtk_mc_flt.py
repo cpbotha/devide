@@ -1,8 +1,6 @@
 from module_base import module_base
+import vtk
 import vtkpython
-import Tkinter
-import Pmw
-from Tkconstants import *
 from vtkPipeline.vtkPipeline import \
      vtkPipelineBrowser, vtkPipelineSegmentBrowser
 

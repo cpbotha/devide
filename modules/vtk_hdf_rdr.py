@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.17 2002/05/19 13:35:59 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.18 2002/06/10 15:00:57 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -23,44 +23,44 @@ class vtk_hdf_rdr(module_base,
     def __init__(self, module_manager):
         # call the base class __init__ (atm it just stores module_manager)
         module_base.__init__(self, module_manager)
-	self._reader = vtkcpbothapython.vtkHDFVolumeReader()
+        self._reader = vtkcpbothapython.vtkHDFVolumeReader()
 
         # declare this var here out of good habit
         self._view_frame = None
         # go on, create that view window
         self.create_view_window(module_manager.get_module_view_parent_window())
         # make sure it's reflecting what it should
-	self.sync_config()
+        self.sync_config()
 
     def close(self):
         self._view_frame.Destroy()
-	if hasattr(self, 'reader'):
-	    del self._reader
-	    
+        if hasattr(self, 'reader'):
+            del self._reader
+            
     def get_input_descriptions(self):
-	return ()
+        return ()
     
     def set_input(self, idx, input_stream):
-	raise Exception
+        raise Exception
     
     def get_output_descriptions(self):
-	return (self._reader.GetOutput().GetClassName(),)
+        return (self._reader.GetOutput().GetClassName(),)
 
     def get_output(self, idx):
-	return self._reader.GetOutput()
+        return self._reader.GetOutput()
 
     def sync_config(self):
         fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
         fn = self._reader.GetFileName()
         if fn == None: fn = ""
         fn_text.SetValue(fn)
-	
+        
     def apply_config(self):
         fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
         self._reader.SetFileName(fn_text.GetValue())
-	
+        
     def execute_module(self):
-	self._reader.Update()
+        self._reader.Update()
         # important call to make sure the app catches VTK error in the GUI
         self._module_manager.vtk_poll_error()
 
@@ -107,9 +107,9 @@ class vtk_hdf_rdr(module_base,
         module_utils.bind_CSAEO(self, self._view_frame)
             
     def view(self, parent_window=None):
-	# first make sure that our variables agree with the stuff that
+        # first make sure that our variables agree with the stuff that
         # we're configuring
-	self.sync_config()
+        self.sync_config()
         self._view_frame.Show(true)
         
     def fn_browse_cb(self, event):
@@ -132,5 +132,5 @@ class vtk_hdf_rdr(module_base,
 
         
         
-	
+        
     

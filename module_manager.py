@@ -1,6 +1,7 @@
 import sys, os, fnmatch
 import string
 import gen_utils
+import modules
 
 class module_manager:
     """This class in responsible for picking up new modules in the modules 
@@ -14,8 +15,10 @@ class module_manager:
 
         appdir = self._dscas3_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
+        self._user_modules_dir = os.path.join(appdir, 'user_modules')
         
 	# add it to the python path so imports work
+        sys.path.insert(0, self._user_modules_dir)        
 	sys.path.insert(0, self._modules_dir)
 	# make first scan of available modules
 	self.scan_modules()
@@ -23,11 +26,15 @@ class module_manager:
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files."""
-	files = os.listdir(self._modules_dir)
-	self.module_list = []
-	for i in files:
+        self.module_list = []
+
+	user_files = os.listdir(self._user_modules_dir)
+
+	for i in user_files:
 	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
 		self.module_list.append(os.path.splitext(i)[0])
+
+        self.module_list += modules.module_list
 	
     def get_module_list(self):
 	return self.module_list
@@ -80,7 +87,10 @@ class module_manager:
 	# take away the reference AND remove (neat huh?)
 	del self.modules[self.modules.index(instance)]
 	
-    def connect_modules(self, output_module, output_idx, input_module, input_idx):
+    def connect_modules(self, output_module, output_idx,
+                        input_module, input_idx):
+
+        print "connect_modules"
 	input_module.set_input(input_idx, output_module.get_output(output_idx))
 	
     def disconnect_modules(self, input_module, input_idx):

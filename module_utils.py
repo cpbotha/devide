@@ -1,10 +1,7 @@
-# $Id: module_utils.py,v 1.5 2002/05/19 13:35:59 cpbotha Exp $
+# $Id: module_utils.py,v 1.6 2002/06/10 15:00:55 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
-import Pmw
-import Tkinter
-import tkFileDialog
 from vtkPipeline.vtkPipeline import \
      vtkPipelineBrowser
 from vtkPipeline.ConfigVtkObj import ConfigVtkObj
