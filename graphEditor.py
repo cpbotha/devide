@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.76 2004/04/19 22:17:44 cpbotha Exp $
+# $Id: graphEditor.py,v 1.77 2004/05/06 12:26:03 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1645,8 +1645,12 @@ class graphEditor:
         # make sure the line is back to 4 points
         line.updateEndPoints()
 
-        #
-        overshoot = 5
+        # this should be 5 for straight line drawing
+        # at least 10 for spline drawing
+        overshoot = 10
+        # sometimes, for instance for spline routing, we need something
+        # extra... for straight line drawing, this should be = overshoot
+        moreOvershoot = 2 * overshoot
 
         successfulInsert = True
         while successfulInsert:
@@ -1688,9 +1692,9 @@ class graphEditor:
                 if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
                     midPointX = xmin + (xmax - xmin) / 2.0
                     if x1 < midPointX:
-                        newX = xmin - overshoot
+                        newX = xmin - moreOvershoot
                     else:
-                        newX = xmax + overshoot
+                        newX = xmax + moreOvershoot
                     
                     newY = nearestClipPoint[1]
                     if newY == ymin:
@@ -1720,9 +1724,9 @@ class graphEditor:
                          nearestClipPoint[0] == xmax:
                     midPointY = ymin + (ymax - ymin) / 2.0
                     if y1 < midPointY:
-                        newY = ymin - overshoot
+                        newY = ymin - moreOvershoot
                     else:
-                        newY = ymax + overshoot
+                        newY = ymax + moreOvershoot
 
                     newX = nearestClipPoint[0]
                     if newX == xmin:
@@ -1743,7 +1747,7 @@ class graphEditor:
                      
                     if cp2:
                         line.insertRoutingPoint(newX, nearestClipPoint[1])
-                        
+
                     successfulInsert = line.insertRoutingPoint(newX, newY)
 
                 else:

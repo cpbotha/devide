@@ -121,7 +121,8 @@ class coLine(canvasObject):
     def draw(self, dc):
         # lines are 2 pixels thick
         dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
-        dc.DrawLines(self._linePoints)
+        #dc.DrawLines(self._linePoints)
+        dc.DrawSpline(self._linePoints)
 
     def getBounds(self):
         # totally hokey: for now we just return the bounding box surrounding
@@ -182,7 +183,11 @@ class coLine(canvasObject):
 #############################################################################
 class coGlyph(coRectangle):
 
+    # at start and end of glyph
     _horizBorder = 5
+    # between ports
+    _horizSpacing = 5
+    # at top and bottom of glyph
     _vertBorder = 15
     _pWidth = 10
     _pHeight = 10
@@ -228,8 +233,9 @@ class coGlyph(coRectangle):
         # the width is the maximum(textWidth + twice the horizontal border,
         # all ports, horizontal borders and inter-port borders added up)
         maxPorts = max(self._numInputs, self._numOutputs)
-        portsWidth = coGlyph._horizBorder + \
-                     maxPorts * (coGlyph._pWidth + coGlyph._horizBorder)
+        portsWidth = 2 * coGlyph._horizBorder + \
+                     maxPorts * coGlyph._pWidth + \
+                     (maxPorts - 1 ) * coGlyph._horizSpacing
         
         tex, tey = dc.GetTextExtent(self._label)
         textWidth = tex + 2 * coGlyph._horizBorder
@@ -240,14 +246,18 @@ class coGlyph(coRectangle):
         # draw the main rectangle
         dc.DrawRectangle(self._position[0], self._position[1],
                          self._size[0], self._size[1])
+
+        #dc.DrawRoundedRectangle(self._position[0], self._position[1],
+        #                        self._size[0], self._size[1], radius=5)
+        
         
         dc.DrawText(self._label,
-                    self._position[0] + coGlyph._horizBorder,
+                    self._position[0] + coGlyph._horizSpacing,
                     self._position[1] + coGlyph._vertBorder)
 
         # then the inputs
         horizOffset = self._position[0] + coGlyph._horizBorder
-        horizStep = coGlyph._pWidth + coGlyph._horizBorder
+        horizStep = coGlyph._pWidth + coGlyph._horizSpacing
         connBrush = wx.wxBrush("GREEN")
         disconnBrush = wx.wxBrush("RED")
         
@@ -267,6 +277,7 @@ class coGlyph(coRectangle):
     def drawPort(self, dc, brush, pos):
         dc.SetBrush(brush)
         dc.DrawRectangle(pos[0], pos[1], coGlyph._pWidth, coGlyph._pHeight)
+        #dc.DrawEllipse(pos[0], pos[1], coGlyph._pWidth, coGlyph._pHeight)
 
     def findPortContainingMouse(self, x, y):
         """Find port that contains the mouse pointer.  Returns tuple
@@ -274,7 +285,7 @@ class coGlyph(coRectangle):
         """
 
         horizOffset = self._position[0] + coGlyph._horizBorder
-        horizStep = coGlyph._pWidth + coGlyph._horizBorder
+        horizStep = coGlyph._pWidth + coGlyph._horizSpacing
         
         bx = horizOffset
         by = self._position[1]
@@ -303,7 +314,7 @@ class coGlyph(coRectangle):
     def getCenterOfPort(self, inOrOut, idx):
 
         horizOffset = self._position[0] + coGlyph._horizBorder
-        horizStep = coGlyph._pWidth + coGlyph._horizBorder
+        horizStep = coGlyph._pWidth + coGlyph._horizSpacing
         cy = self._position[1] + coGlyph._pHeight / 2
 
         if inOrOut:
