@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.25 2003/02/27 23:31:50 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.26 2003/03/03 23:58:48 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -1087,8 +1087,3 @@ class slice3d_vwr(moduleBase,
                 self.vtkPipelineConfigure(self._viewFrame,
                                           self._viewFrame.threedRWI, (prop,))
 
-
-        
-
-
-        
