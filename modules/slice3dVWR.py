@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.52 2003/06/30 07:44:26 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.53 2003/07/02 22:24:16 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -34,6 +34,107 @@ from wxPython.grid import *
 from wxPython.lib import colourdb
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
+
+# -------------------------------------------------------------------------
+
+class sliceDirectionsClass(object):
+
+    _gridCols = [('Slice Name', 0), ('Enabled', 0), ('Interaction', 0)]
+
+    _gridNameCol = 0
+    _gridEnabledCol = 1
+    _gridInteractionCol = 2
+
+    def __init__(self, slice3dVWRThingy, sliceGrid):
+        self._slice3dVWR = slice3dVWRThingy
+        self._grid = sliceGrid
+        self._sliceDirectionsDict = {}
+        self._currentSliceDirection = None
+
+        self._sliceDirections = []
+        self.currentSliceDirection = None
+        # this same picker is used on all new IPWS of all sliceDirections
+        self._ipwPicker = vtk.vtkCellPicker()
+
+        self._currentCursor = None
+
+        # configure the grid from scratch
+        self._initialiseGrid()
+
+        # bind all events
+        self._bindEvents()
+
+    def _bindEvents(self):
+        svViewFrame = self._slice3dVWR._viewFrame
+
+        EVT_BUTTON(svViewFrame, svViewFrame.createSliceButtonId,
+                   self._handlerCreateSlice)
+        
+        EVT_BUTTON(svViewFrame, svViewFrame.sliceSelectAllButtonId,
+                   self._handlerSliceSelectAll)
+        EVT_BUTTON(svViewFrame, svViewFrame.sliceDeselectAllButtonId,
+                   self._handlerSliceDeselectAll)
+        EVT_BUTTON(svViewFrame, svViewFrame.sliceShowHideButtonId,
+                   self._handlerSliceShowHide)
+        EVT_BUTTON(svViewFrame, svViewFrame.sliceInteractionButtonId,
+                   self._handlerSliceInteraction)
+        EVT_BUTTON(svViewFrame, svViewFrame.sliceDeleteButtonId,
+                   self._handlerSliceDelete)
+
+        EVT_CHOICE(self._viewFrame, self._viewFrame.acsChoiceId,
+                   self._handlerSliceACS)
+
+        # for ortho view use sliceDirection.createOrthoView()
+
+    def _handlerCreateSlice(self, event):
+        pass
+
+    def _handlerSliceSelectAll(self, event):
+        pass
+
+    def _handlerSliceDeselectAll(self, event):
+        pass
+
+    def _handlerSliceShowHide(self, event):
+        # use sliceDirection.enable() or disable()
+        pass
+
+    def _handlerSliceInteraction(self, event):
+        pass
+
+    def _handlerSliceDelete(self, event):
+        pass
+
+    def _handlerSliceACS(self, event):
+        pass
+
+    def _initialiseGrid(self):
+        # delete all existing columns
+        self._grid.DeleteCols(0, self._grid.GetNumberCols())
+
+        # we need at least one row, else adding columns doesn't work (doh)
+        self._grid.AppendRows()
+        
+        # setup columns
+        self._grid.AppendCols(len(self._gridCols))
+        for colIdx in range(len(self._gridCols)):
+            # add labels
+            self._grid.SetColLabelValue(colIdx, self._gridCols[colIdx][0])
+
+        # set size according to labels
+        self._grid.AutoSizeColumns()
+
+        for colIdx in range(len(self._gridCols)):
+            # now set size overrides
+            size = self._gridCols[colIdx][1]
+            if size > 0:
+                self._grid.SetColSize(colIdx, size)
+
+        # make sure we have no rows again...
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())            
+        
+        
+    
 
 # -------------------------------------------------------------------------
 
@@ -75,17 +176,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                        for i in range(self._numDataInputs)]
         # then the window containing the renderwindows
         self._viewFrame = None
-        # the imageplanewidgets: a 3-element (axial, coronal, sagittal) list
-        # of lists of IPWs (each direction list contains the primary IPW
-        # as well as all overlays)
-        self._sliceDirections = []
-        self._currentSliceDirection = None
-        # this same picker is used on all new IPWS of all sliceDirections
-        self._ipwPicker = vtk.vtkCellPicker()
+
         # the renderers corresponding to the render windows
         self._threedRenderer = None
 
-        self._currentCursor = None
         # list of selected points (we can make this grow or be overwritten)
         self._selectedPoints = []
         # this will be passed on as input to the next component
@@ -128,6 +222,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         # set the default
         self._viewFrame.threedRWI.SetInteractorStyle(self._cInteractorStyle)
+
+        # initialise our sliceDirections, this will also setup the grid and
+        # bind all slice UI events
+        self.sliceDirections = sliceDirectionsClass(self._viewFrame.sliceGrid)
 
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
@@ -441,8 +539,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._viewFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
         self._viewFrame.spointsGrid.DeleteRows(
             0, self._viewFrame.spointsGrid.GetNumberRows())
-        # fix for the choice *sigh*
-        self._viewFrame.sliceNameChoice.Clear()
 
         # add the renderer
         self._threedRenderer = vtk.vtkRenderer()
@@ -541,68 +637,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         EVT_CHECKBOX(self._viewFrame,
                      self._viewFrame.voiPanel.widgetEnabledCboxId,
                      widgetEnabledCBoxCallback)
-
-        EVT_CHOICE(self._viewFrame, self._viewFrame.sliceNameChoiceId,
-                   self._sliceNameChoiceCallback)
-
-        # first a callback for turning an IPW on or off
-
-        def _eb_cb():
-            sliceDirection = self._getCurrentSliceDirection()
-            if sliceDirection:
-                if self._viewFrame.sliceEnabledCheckBox.GetValue():
-                    sliceDirection.enable()
-                                
-                    self._viewFrame.sliceInteractionCheckBox.Enable(1)
-                    self._viewFrame.pushSliceLabel.Enable(1)
-                    self._viewFrame.pushSliceSpinCtrl.Enable(1)
-                        
-                else:
-                    sliceDirection.disable()
-
-                    self._viewFrame.sliceInteractionCheckBox.Enable(0)
-                    self._viewFrame.pushSliceLabel.Enable(0)
-                    self._viewFrame.pushSliceSpinCtrl.Enable(0)
-                    
-    
-
-        EVT_BUTTON(self._viewFrame, self._viewFrame.createSliceButtonId,
-                   lambda e, s=self: s._createSlice(
-            s._viewFrame.createSliceText.GetValue()))
-
-        EVT_BUTTON(self._viewFrame, self._viewFrame.destroySliceButtonId,
-                   lambda e, s=self: s._destroySlice())
-                        
-        
-        EVT_CHECKBOX(self._viewFrame, self._viewFrame.sliceEnabledCheckBoxId,
-                     lambda e: _eb_cb())
-
-        EVT_CHOICE(self._viewFrame, self._viewFrame.acsChoiceId,
-                   lambda e, s=self: s._acsChoiceCallback())
-
-        def _ib_cb():
-            sliceDirection = self._getCurrentSliceDirection()
-            if sliceDirection:
-                if self._viewFrame.sliceInteractionCheckBox.GetValue():
-                    sliceDirection.enableInteraction()
-                else:
-                    sliceDirection.disableInteraction()
-                
-        EVT_CHECKBOX(self._viewFrame,
-                     self._viewFrame.sliceInteractionCheckBoxId,
-                     lambda e: _ib_cb())
-
-        def _ov_cb():
-            sliceDirection = self._getCurrentSliceDirection()
-            if sliceDirection:
-                if self._viewFrame.orthoViewCheckBox.GetValue():
-                    sliceDirection.createOrthoView()
-                else:
-                    sliceDirection.destroyOrthoView()
-
-        EVT_CHECKBOX(self._viewFrame,
-                     self._viewFrame.orthoViewCheckBoxId,
-                     lambda e: _ov_cb())
 
         def _ps_cb():
             sliceDirection  = self._getCurrentSliceDirection()
