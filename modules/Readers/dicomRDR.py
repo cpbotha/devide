@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.5 2003/10/07 16:59:58 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.6 2003/10/07 17:07:52 cpbotha Exp $
 
 import genUtils
 import os
@@ -144,7 +144,9 @@ class dicomRDR(moduleBase,
         self._viewFrame.si_uid_text.SetValue(si_uid)
 
         msii = self._reader.GetMaximumSeriesInstanceIdx()
-        self._viewFrame.seriesInstancesText.SetValue(msii)
+        self._viewFrame.seriesInstancesText.SetValue(str(msii))
+        # also limit the spin-control
+        self._viewFrame.si_idx_spin.SetRange(0, msii)
 
         sd = self._reader.GetStudyDescription()
         if sd == None:
