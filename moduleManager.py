@@ -174,6 +174,10 @@ class moduleManager:
         return self._dscas3_app.get_main_window()
     
     def createModule(self, fullName, instanceName=None):
+        """Try and create module fullName.  fullName is the complete module
+        spec below application directory, e.g. modules.Readers.hdfRDR.
+        """
+        
 	try:
             # think up name for this module (we have to think this up now
             # as the module might want to know about it whilst it's being
@@ -462,7 +466,10 @@ class moduleManager:
                 except:
                     pms.moduleConfig = None
                     
-                pms.moduleName = moduleInstance.__class__.__name__
+                #pms.moduleName = moduleInstance.__class__.__name__
+                # we need to store the complete module name
+                pms.moduleName = moduleInstance.__class__.__module__
+
                 # this will only be used for uniqueness purposes
                 pms.instanceName = mModule.instanceName
 
