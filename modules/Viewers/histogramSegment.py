@@ -8,7 +8,7 @@ import wx
 class histogramSegment(introspectModuleMixin, moduleBase):
     """Mooooo!  I'm a cow.
 
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
 
     _gridCols = [('Type', 0), ('Number of Handles',0)]
@@ -25,9 +25,10 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         self._buildPipeline()
 
         self._selectors = []
+        self._config.selectorList = []
         self._initialiseGrid()
 
-        self._bindEvents()     
+        self._bindEvents()
 
         # display the window
         self._viewFrame.Show(True)
@@ -48,6 +49,25 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         self._viewFrame.rwi.GetRenderWindow().WindowRemap()
         self._viewFrame.Destroy()
         del self._viewFrame
+
+    def getConfig(self):
+        return self._config
+
+    def setConfig(self, config):
+
+        # first nuke all current selectors (but prevent updates to config
+        # and the stencil)
+        indices = range(len(self._selectors))
+        self._removeSelector(indices, preventSync=True)
+
+        for d in config.selectorList:
+            self._addSelector(d['type'], len(d['handlePositions']))
+            for hidx in range(len(d['handlePositions'])):
+                self._selectors[-1]['widget'].SetHandlePosition(
+                    hidx, d['handlePositions'][hidx])
+            
+        # we've now added all selectors, sync up everything!
+        self._postSelectorChange()
 
     def getInputDescriptions(self):
         return ('Image Data 1', 'Imaga Data 2')
@@ -198,9 +218,12 @@ class histogramSegment(introspectModuleMixin, moduleBase):
             
             
 
-    def _addSelector(self, type, numPoints):
-        #sw = vtk.vtkSplineWidget()
-        sw = vtkdevide.vtkPolyLineWidget()
+    def _addSelector(self, selectorType, numPoints):
+        if selectorType == 'Spline':
+            sw = vtk.vtkSplineWidget()
+        else:
+            sw = vtkdevide.vtkPolyLineWidget()
+            
         sw.SetCurrentRenderer(self._renderer)
         sw.SetDefaultRenderer(self._renderer)
         sw.SetInput(self._histogram.GetOutput())
@@ -215,16 +238,19 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         sw.On()
 
         swPolyData = vtk.vtkPolyData()
-        self._selectors.append([sw, swPolyData])
+        self._selectors.append({'type' : selectorType,
+                                'widget' : sw,
+                                'polyData' : swPolyData})
         # add it to the appendPd
         self._appendPD.AddInput(swPolyData)
         nrGridRows = self._grid.GetNumberRows()
         self._grid.AppendRows()
-        self._grid.SetCellValue(nrGridRows, self._gridTypeCol, type)
+        self._grid.SetCellValue(nrGridRows, self._gridTypeCol, selectorType)
         self._grid.SetCellValue(nrGridRows, self._gridNOHCol,
                                 str(sw.GetNumberOfHandles()))
 
-        self._syncStencilMask()
+        self._postSelectorChange()
+
         sw.AddObserver('EndInteractionEvent',
                        self._observerSelectorEndInteraction)
 
@@ -241,6 +267,10 @@ class histogramSegment(introspectModuleMixin, moduleBase):
 
         wx.EVT_BUTTON(self._viewFrame, self._viewFrame.removeButton.GetId(),
                       self._handlerRemoveSelector)
+
+        wx.EVT_BUTTON(self._viewFrame,
+                      self._viewFrame.changeHandlesButton.GetId(),
+                      self._handlerChangeNumberOfHandles)
 
     def _buildPipeline(self):
         """Build underlying pipeline and configure rest of pipeline-dependent
@@ -335,10 +365,20 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         
         self._ipw.SetDisplayText(1)
         # if we use ContinousCursor, we get OffImage when zoomed
-        #self._ipw.SetUseContinuousCursor(1)
+        # on Linux (really irritating) but not on Windows.  A VTK
+        # recompile might help, we'll see.
+        self._ipw.SetUseContinuousCursor(1)
         # make sure the user can't twist the plane out of sight
         self._ipw.SetMiddleButtonAction(0)
         self._ipw.SetRightButtonAction(0)
+
+        # add an observer
+        self._ipw.AddObserver('StartInteractionEvent',
+                              self._observerIPWInteraction)
+        self._ipw.AddObserver('InteractionEvent',
+                              self._observerIPWInteraction)
+        self._ipw.AddObserver('EndInteractionEvent',
+                              self._observerIPWInteraction)
         
         self._ipw.On()
         
@@ -349,6 +389,8 @@ class histogramSegment(introspectModuleMixin, moduleBase):
     def _createViewFrame(self):
         # create the viewerFrame
         import modules.Viewers.resources.python.histogramSegmentFrames
+        # this reload is temporary during development
+        reload(modules.Viewers.resources.python.histogramSegmentFrames)
 
         viewFrame = modules.Viewers.resources.python.histogramSegmentFrames.\
                     viewFrame
@@ -359,11 +401,65 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         
 
     def _handlerAddSelector(self, event):
-        self._addSelector('Spline', 5)
+        typeString = self._viewFrame.selectorTypeChoice.GetStringSelection()
+        self._addSelector(typeString, 5)
+
+    def _handlerChangeNumberOfHandles(self, event):
+        # first check that the user has actually selected something we
+        # can work with...
+        selectedRows = self._grid.GetSelectedRows()
+        if len(selectedRows) == 0:
+            return
+        
+        nohText = wx.GetTextFromUser(
+            'Enter a new number of handles > 2 for all selected selectors.')
+
+        if nohText:
+            try:
+                nohInt = int(nohText)
+            except ValueError:
+                pass
+            else:
+                if nohInt < 2:
+                    nohInt = 2
+
+                for row in selectedRows:
+                    self._selectors[row]['widget'].SetNumberOfHandles(nohInt)
+                    self._grid.SetCellValue(row, self._gridNOHCol,
+                                            str(nohInt))
+
+                # we've made changes to the selectors, so we have to
+                # notify the stencil.... (and other stuff)
+                self._postSelectorChange()
+                
+    def _observerIPWInteraction(self, e, o):
+        if not self._ipw:
+            return
+        
+        cd = 4 * [0.0]
+        if self._ipw.GetCursorData(cd):
+            if 0:
+                # get world position (at least for first two coords)
+                inp = self._ipw.GetInput()
+                spacing = inp.GetSpacing()
+                origin = inp.GetOrigin()
+                # calculate origin + spacing * discrete (only if we're getting
+                # discrete values from the IPW, which we aren't)
+                temp = [s * d for s,d in zip(spacing, cd[0:3])]
+                w = [o + t for o,t in zip(origin,temp)]
+                #
+                
+            self._viewFrame.cursorValuesText.SetValue(
+                '%.2f, %.2f == %d' % (cd[0], cd[1], int(cd[3])))
+            
 
     def _handlerRemoveSelector(self, event):
         selectedRows = self._grid.GetSelectedRows()
-        self._removeSelector(selectedRows)
+        if len(selectedRows) > 0:
+            self._removeSelector(selectedRows)
+            # after that, we have to sync
+            self._postSelectorChange()
+            self._render()
         
     def _handlerGridRangeSelect(self, event):
         """This event handler is a fix for the fact that the row
@@ -425,16 +521,21 @@ class histogramSegment(introspectModuleMixin, moduleBase):
 
     def _observerSelectorEndInteraction(self, obj, evt):
         # we don't HAVE to do this immediately, but it's fun
-        self._syncStencilMask()
+        self._postSelectorChange()
 
-    def _removeSelector(self, indices):
+    def _postSelectorChange(self):
+        self._syncStencilMask()
+        self._syncConfigWithSelectors()
+
+    def _removeSelector(self, indices, preventSync=False):
         if indices:
             # we have to delete these things from behind (he he he)
             indices.sort()
             indices.reverse()
             for idx in indices:
                 # take care of the selector
-                w,wpd = self._selectors[idx]
+                w = self._selectors[idx]['widget']
+                wpd = self._selectors[idx]['polyData']
                 w.Off()
                 w.SetInteractor(None)
                 w.SetInput(None)
@@ -446,8 +547,11 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         if len(self._selectors) == 0:
             self._deactivateOverlayIPW()
 
-        self._syncStencilMask()    
-    
+        if not preventSync:
+            # sometimes, we don't want this to be called, as it will cause
+            # unnecessary updates, for example when we nuke ALL selectors
+            # during a setConfig
+            self._postSelectorChange()
         
     def _render(self):
         self._renderer.GetRenderWindow().Render()
@@ -463,7 +567,9 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         cam.SetParallelScale(ps / 2.9)
 
     def _syncStencilMask(self):
-        for (sw,spd) in self._selectors:
+        for d in self._selectors:
+            sw = d['widget']
+            spd = d['polyData']
             # transfer polydata
             sw.GetPolyData(spd)
 
@@ -471,6 +577,29 @@ class histogramSegment(introspectModuleMixin, moduleBase):
             # the stencil is a bitch - we have to be very careful about when
             # we talk to it...
             self._stencil.Update()
+
+    def _syncConfigWithSelectors(self):
+        # we could get the data from the selector polydata, but we'll rather
+        # get it from the handles, because that's ultimately how we'll
+        # restore it again
+
+        del self._config.selectorList[:]
+
+        
+        for d in self._selectors:
+            handlePositions = []
+            widget = d['widget']
+            for hidx in range(widget.GetNumberOfHandles()):
+                # it's important that we create a new var everytime
+                thp = [0.0, 0.0, 0.0]                
+                widget.GetHandlePosition(hidx, thp)
+                handlePositions.append(thp)
+
+            self._config.selectorList.append(
+                {'type' : d['type'],
+                 'handlePositions' : handlePositions})
+        
+
         
                 
         

@@ -77,7 +77,7 @@ class moduleManager:
         # executing all by themselves and usually do... when we break down
         # a network, we should take these out first.  when we build a network
         # we should put them down last
-        self.dangerousConsumerModules = ['slice3dVWR']
+        self.dangerousConsumerModules = ['slice3dVWR', 'histogramSegment']
 
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE moduleManager instance)
