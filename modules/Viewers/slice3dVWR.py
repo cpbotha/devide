@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.17 2004/03/10 22:15:46 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.18 2004/03/12 12:28:27 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.17 $
+    $Revision: 1.18 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -541,9 +541,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
             if validPos:
                 # we rearch this else if the for loop completed normally
-                val = inputData.GetScalarComponentAsFloat(discrete[0],
-                                                          discrete[1],
-                                                          discrete[2], 0)
+                val = inputData.GetScalarComponentAsDouble(discrete[0],
+                                                           discrete[1],
+                                                           discrete[2], 0)
             else:
                 val = None
 
