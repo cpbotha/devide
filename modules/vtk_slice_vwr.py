@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.41 2002/06/07 15:52:45 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.42 2002/06/07 20:29:40 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -562,9 +562,6 @@ class vtk_slice_vwr(module_base,
 	plane_source.SetPoint1(p1v)
 	plane_source.SetPoint2(p2v)
 
-        print origin
-        print reslice.GetResliceAxes().MultiplyPoint(origin + (1.0,))
-
         # end test code
 
 
@@ -638,8 +635,11 @@ class vtk_slice_vwr(module_base,
             
         elif command_name == 'MouseMoveEvent':
             if self._left_mouse_button:
-                rwi = self._find_wxvtkrwi_by_istyle(istyle)                
-                self._rw_slice_cb(rwi)
+                rwi = self._find_wxvtkrwi_by_istyle(istyle)
+                if rwi.GetShiftKey():
+                    self._rw_windowlevel_cb(rwi)
+                else:
+                    self._rw_slice_cb(rwi)
             else:
                 istyle.OnMouseMove()
 
@@ -749,4 +749,20 @@ class vtk_slice_vwr(module_base,
             # render the 3d viewer
             self._rwis[0].Render()
 
-	
+    def _rw_windowlevel_cb(self, wxvtkrwi):
+        deltax = wxvtkrwi.GetEventPosition()[0] - \
+                 wxvtkrwi.GetLastEventPosition()[0]	
+        
+        deltay = wxvtkrwi.GetEventPosition()[1] - \
+                 wxvtkrwi.GetLastEventPosition()[1]
+
+        ortho_idx = self._rwis.index(wxvtkrwi) - 1
+
+        for layer_pl in self._ortho_pipes[ortho_idx]:
+            lut = layer_pl['vtkLookupTable']
+            lut.SetLevel(lut.GetLevel() + deltay * 5.0)
+            lut.SetWindow(lut.GetWindow() + deltax * 5.0)
+            lut.Build()
+
+        wxvtkrwi.GetRenderWindow().Render()
+        self._rwis[0].GetRenderWindow().Render()
