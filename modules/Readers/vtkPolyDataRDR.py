@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.2 2003/09/23 14:53:48 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.3 2003/09/24 21:10:39 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -93,8 +93,4 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
         # it easier for the user to associate a frame with a glyph
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
-
-        print "blaat"
-        print moduleBase
-        print "blaat 2"
         
