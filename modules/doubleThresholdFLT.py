@@ -12,7 +12,6 @@ class doubleThresholdFLT(moduleBase):
         moduleBase.__init__(self, moduleManager)
 
         self._imageThreshold = vtk.vtkImageThreshold()
-        self._imageThreshold.ThresholdBetween(1250, 2500)
 
         self._outputTypes = {'Double': 'VTK_DOUBLE',
                              'Float' : 'VTK_FLOAT',
@@ -28,7 +27,24 @@ class doubleThresholdFLT(moduleBase):
 
         self._viewFrame = None
         self._createViewFrame()
+
+        # now setup some defaults before our sync
+        self._config.lt = 1250
+        self._config.ut = 2500
+        self._config.rtu = 1
+        self._config.ri = 1
+        self._config.iv = 1
+        self._config.ro = 1
+        self._config.ov = 0
+        self._config.os = self._imageThreshold.GetOutputScalarType()
+
+        # transfer these defaults to the logic
+        self.configToLogic()
+
+        # then make sure they come all the way back up via self._config
         self.syncViewWithLogic()
+
+        # off we go!
         self._viewFrame.Show(1)
         
     def close(self):
@@ -82,6 +98,7 @@ class doubleThresholdFLT(moduleBase):
     def viewToConfig(self):
         self._config.lt = self._viewFrame.lowerThresholdSlider.GetValue()
         self._config.ut = self._viewFrame.upperThresholdSlider.GetValue()
+        self._config.rtu = self._viewFrame.realtimeUpdateCheckbox.GetValue()
         self._config.ri = self._viewFrame.replaceInCheckBox.GetValue()
         self._config.iv = float(self._viewFrame.replaceInText.GetValue())
         self._config.ro = self._viewFrame.replaceOutCheckBox.GetValue()
@@ -116,7 +133,7 @@ class doubleThresholdFLT(moduleBase):
     def configToView(self):
         self._viewFrame.lowerThresholdSlider.SetValue(self._config.lt)
         self._viewFrame.upperThresholdSlider.SetValue(self._config.ut)
-        print "calling SetValue(%d)" % (self._config.ri)
+        self._viewFrame.realtimeUpdateCheckbox.SetValue(self._config.rtu)
         self._viewFrame.replaceInCheckBox.SetValue(self._config.ri)
         self._viewFrame.replaceInText.SetValue(str(self._config.iv))
         self._viewFrame.replaceOutCheckBox.SetValue(self._config.ro)
@@ -194,6 +211,15 @@ class doubleThresholdFLT(moduleBase):
                        self._viewFrame.lowerThresholdTextId,
                        lambda e, s=self: s._threshTextCallback(0))
 
+        EVT_TEXT_ENTER(self._viewFrame,
+                       self._viewFrame.upperThresholdTextId,
+                       lambda e, s=self: s._threshTextCallback(1))
+
+        EVT_CHECKBOX(self._viewFrame,
+                     self._viewFrame.realtimeUpdateCheckboxId,
+                     self._realtimeUpdateCheckboxCallback)
+        
+
     def _setThresholdControls(self, whichControl, newValue):
         if whichControl == 0:
             self._viewFrame.lowerThresholdSlider.SetValue(newValue)
@@ -204,14 +230,37 @@ class doubleThresholdFLT(moduleBase):
 
     
     def _threshTextCallback(self, whichText):
-        print "BLAAT"
-        return 0
         if whichText == 0:
-            self._viewFrame.lowerThresholdSlider.SetValue(float(
-                self._viewFrame.lowerThresholdText.GetValue()))
+            try:
+                lower = float(self._viewFrame.lowerThresholdText.GetValue())
+            except ValueError:
+                # this means that the user did something stupid, so we
+                # restore the slider value to his textbox
+                self._viewFrame.lowerThresholdText.SetValue(str(
+                    self._viewFrame.lowerThresholdSlider.GetValue()))
+                return
+                
+            # if the user has entered a valid float, set the slider
+            self._viewFrame.lowerThresholdSlider.SetValue(lower)
+            # once we've done this, trigger the slider callback so that
+            # corrections can be made
+            self._sliderCallback(0)
+
         else:
-            self._viewFrame.lowerThresholdSlider.SetValue(float(
-                self._viewFrame.lowerThresholdText.GetValue()))
+            try:
+                upper = float(self._viewFrame.upperThresholdText.GetValue())
+            except ValueError:
+                # this means that the user did something stupid, so we
+                # restore the slider value to his textbox
+                self._viewFrame.upperThresholdText.SetValue(str(
+                    self._viewFrame.upperThresholdSlider.GetValue()))
+                return
+                
+            # if the user has entered a valid float, set the slider
+            self._viewFrame.lowerThresholdSlider.SetValue(upper)
+            # once we've done this, trigger the slider callback so that
+            # corrections can be made
+            self._sliderCallback(1)
 
     def _sliderCallback(self, slider):
         lvalue = self._viewFrame.lowerThresholdSlider.GetValue()
@@ -231,3 +280,10 @@ class doubleThresholdFLT(moduleBase):
                 # set lower threshold controls to uvalue
                 self._setThresholdControls(0, uvalue)
 
+        if self._config.rtu:
+            self.applyViewToLogic()
+            self.executeModule()
+
+    def _realtimeUpdateCheckboxCallback(self, event):
+        self._config.rtu = self._viewFrame.realtimeUpdateCheckbox.GetValue()
+        
