@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.9 2003/06/30 12:07:47 cpbotha Exp $
+# $Id: tdObjects.py,v 1.10 2003/06/30 19:34:35 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import math
@@ -161,21 +161,16 @@ class tdObjects:
             for obj in objs:
                 objectDict = self._tdObjectsDict[obj]
                 if objectDict['type'] == 'vtkPolyData':
-                    newTransform = vtk.vtkTransform()
-                    newTransform.Identity()
-                    newTransform.PreMultiply()
-                    cm = objectDict['vtkActor'].GetMatrix()
-                    newTransform.Concatenate(cm)
 
                     po = ipw.GetOrigin()
                     tpo = map(operator.sub, tp[0], po)
                     # "vertical" distance
                     vdm = vtk.vtkMath.Dot(tpo, ipw.GetNormal())
+                    # vector perpendicular to plane, between plane and tp[0]
                     vd = [vdm * e for e in ipw.GetNormal()]
                     # negate it
                     vd = [-e for e in vd]
-                    # and abuse the transform
-                    newTransform.Translate(vd)
+                    # translation == vd
 
                     # let's rotate
                     # get axis as vector
@@ -183,25 +178,42 @@ class tdObjects:
                     objectAxisM = vtk.vtkMath.Norm(objectAxis)
                     rotAxis = [0.0, 0.0, 0.0]
                     vtk.vtkMath.Cross(objectAxis, ipw.GetNormal(), rotAxis)
-                    # calculate the new tp[1] (i.e. after the translate)
-                    ntp1 = map(operator.sub, tp[1], vd)
-                    ntp1m = vtk.vtkMath.Norm(ntp1)
-                    # we now have y (ntp1m) and r (objectAxisM), so use asin
-                    # and convert everything to degrees
-                    rotAngle = math.asin(ntp1m / objectAxisM) / math.pi * 180
-
-                    #newTransform.RotateWXYZ(rotAngle,
-                    #                        rotAxis[0], rotAxis[1], rotAxis[2])
-
                     
-                    ntp0 = map(operator.sub, tp[0], vd)
-                    objectDict['vtkActor'].SetOrigin(ntp0)
+                    # calculate the new tp[1] (i.e. after the translate)
+                    ntp1 = map(operator.add, tp[1], vd)
+                    # relative to plane origin
+                    ntp1o = map(operator.sub, ntp1, po)
+                    # project down onto plane by
+                    # first calculating the orthogonal distance to the plane
+                    spdM = vtk.vtkMath.Dot(ntp1o, ipw.GetNormal())
+                    # multiply by planeNormal
+                    spd = [spdM * e for e in ipw.GetNormal()]
+                    
+                    # we now have y (spd) and r (objectAxisM), so use asin
+                    # and convert everything to degrees
+                    rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
+
+
+                    newTransform = vtk.vtkTransform()
+                    newTransform.Identity()
+                    newTransform.PreMultiply()
+                    tp0n = [-e for e in tp[0]]
+                    newTransform.Translate(tp0n)
+                    newTransform.RotateWXYZ(
+                        -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
+                    newTransform.Translate(tp[0])
+                    newTransform.Translate(vd)
+                    newTransform.Concatenate(
+                        objectDict['vtkActor'].GetMatrix())
+
                     objectDict['vtkActor'].SetOrientation(
                         newTransform.GetOrientation())
                     objectDict['vtkActor'].SetScale(
                         newTransform.GetScale())
                     objectDict['vtkActor'].SetPosition(
                         newTransform.GetPosition())
+                        
+                    
                     
             # closes: for obj in objs:
             self._slice3dVWR.render3D()
