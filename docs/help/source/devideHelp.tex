@@ -358,11 +358,13 @@ the first vector field onto the points of the spherical cloud.
 Connect the output of the probeFilter to the warpPoints module.  After
 connecting the warpPoints input, make sure to ``Execute'' and
 ``Apply'' the warpPoints module once.  The correct ``Vectors
-selection'' can then be made from its View/Config window.  (Thijs en
-Ronald, in jullie geval moet dit ``ImageFile'' zijn!).  After having
-made this selection, ``Apply'' or ``Execute'' the module again.  Now
-you can connect its output to the slice3dVWR.  The points are advected
-by the vectors that you have associated to them.
+selection'' can then be made from its View/Config window.  ``Default
+Active Vectors'' is very often NOT what you want.  Experiment with
+this.  (Thijs en Ronald, in jullie geval moet dit ``ImageFile''
+zijn!).  After having made this selection, ``Apply'' or ``Execute''
+the module again.  Now you can connect its output to the slice3dVWR.
+The points are advected by the vectors that you have associated to
+them.
 
 This output is also used in the next advection step, using the next
 vector field.  Once again, make sure to select the correct vectors in
