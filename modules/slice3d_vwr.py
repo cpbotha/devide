@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.33 2003/03/05 16:52:33 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.34 2003/03/05 17:04:15 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -14,7 +14,15 @@ import operator
 
 # -------------------------------------------------------------------------
 class directionPipeline:
-    """Class encapsulating 
+    """Class encapsulating all logic behind a single direction.
+
+    This class contains the IPWs and related paraphernalia for all layers
+    (primary + overlays) representing a single view direction.  It optionally
+    has its own window with an orthogonal view.
+    """
+
+    def __init__(self):
+        pass
 
 
 # -------------------------------------------------------------------------
