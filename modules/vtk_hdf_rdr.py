@@ -1,9 +1,7 @@
-# $Id: vtk_hdf_rdr.py,v 1.20 2003/01/23 16:54:46 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.21 2003/01/28 18:13:31 cpbotha Exp $
 
-from module_base import \
-     module_base, \
-     module_mixin_vtk_pipeline_config, \
-     module_mixin_fo_dialog
+from moduleBase import moduleBase
+from moduleMixins import filenameViewModuleMixin
 from wxPython.wx import *
 from wxPython.xrc import *
 import os
@@ -12,54 +10,77 @@ import vtkdscas
 import module_utils
 import sys
 
-class vtk_hdf_rdr(module_base,
-                  module_mixin_vtk_pipeline_config,
-                  module_mixin_fo_dialog):
+class vtk_hdf_rdr(moduleBase,
+                  filenameViewModuleMixin):
+
     """dscas3 module for reading dscas HDF datasets.
 
     The platform makes use of HDF SDS with a custom spacing attribute.
     """
     
-    def __init__(self, module_manager):
+    def __init__(self, moduleManager):
         # call the base class __init__ (atm it just stores module_manager)
-        module_base.__init__(self, module_manager)
+        moduleBase.__init__(self, moduleManager)
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(self)
+        
         self._reader = vtkdscas.vtkHDFVolumeReader()
 
-        # declare this var here out of good habit
-        self._view_frame = None
-        # go on, create that view window
-        self.create_view_window(module_manager.get_module_view_parent_window())
-        # make sure it's reflecting what it should
-        self.sync_config()
+        # we now have a viewFrame in self._viewFrame
+        self._createViewFrame('HDF Reader',
+                              'Select a filename',
+                              'HDF data (*.hdf)|*.hdf|All files (*)|*',
+                              {'vtkHDFVolumeReader': self._reader})
+        
 
     def close(self):
-        self._view_frame.Destroy()
-        if hasattr(self, 'reader'):
-            del self._reader
+        # make sure
+        self.setInput(0, None)
+        # call close of this specific mixin
+        filenameViewModuleMixin.close(self)
+        # take care of our binding to the reader
+        del self._reader
             
-    def get_input_descriptions(self):
+    def getInputDescriptions(self):
         return ()
     
-    def set_input(self, idx, input_stream):
+    def setInput(self, idx, input_stream):
         raise Exception
     
-    def get_output_descriptions(self):
+    def getOutputDescriptions(self):
         return (self._reader.GetOutput().GetClassName(),)
 
-    def get_output(self, idx):
+    def getOutput(self, idx):
         return self._reader.GetOutput()
 
-    def sync_config(self):
-        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-        fn = self._reader.GetFileName()
-        if fn == None: fn = ""
-        fn_text.SetValue(fn)
+
+    def syncConfigWithLogic(self):
+        """Synchronise internal configuration information (usually
+        self._config)with underlying system.
+        """
+        self._config.filename = self._reader.GetFileName()
+
+    def applyConfigToLogic(self):
+        """Apply internal configuration information (usually self._config) to
+        the underlying logic.
+        """
+        self._reader.SetFileName(self._config.filename)
+
+    def syncConfigWithView(self):
+        """Synchronise internal configuration information with the view (GUI)
+        of this module.
+
+        """
+        self._config.filename = self._getViewFrameFilename()
         
-    def apply_config(self):
-        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-        self._reader.SetFileName(fn_text.GetValue())
-        
-    def execute_module(self):
+    
+    def applyConfigToView(self):
+        """Make the view reflect the internal configuration information.
+
+        """
+        self._setViewFrameFilename(self._config.filename)
+    
+    def executeModule(self):
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
         # your module - you could do this in __init__ as well, it seems
@@ -74,74 +95,11 @@ class vtk_hdf_rdr(module_base,
         self._module_manager.vtk_poll_error()
 
         mm.setProgress(100, 'DONE reading HDF data')
-
-    def create_view_window(self, parent_window=None):
-        """Create configuration/view window.
-
-        This method sets up the config window and immediately hides it.  When
-        the user wants to view/config, the window is simply de-iconised.
-        """
-
-        # first create the fram and make sure that when the user closes it
-        # it only hides itself, tee hee
-        self._view_frame = wxFrame(parent=parent_window, id=-1,
-                                   title='vtk_hdf_rdr configuration')
-        EVT_CLOSE(self._view_frame,
-                  lambda e, s=self: s._view_frame.Show(false))
-
-        # get out the panel resource that is constitutes this view
-        res_path = os.path.join(self._module_manager.get_modules_xml_res_dir(),
-                                'vtk_hdf_rdr.xrc')
-        res = wxXmlResource(res_path)
-        panel = res.LoadPanel(self._view_frame, 'PNL_VTK_HDF_RDR_VIEW')
-
-        # as per usual make one more top level sizer and add only the panel
-        top_sizer = wxBoxSizer(wxVERTICAL)
-        top_sizer.Add(panel, option=1, flag=wxEXPAND)
-
-        # then make sure the frame will use the top_level sizer
-        self._view_frame.SetAutoLayout(true)
-        self._view_frame.SetSizer(top_sizer)
-        # make the frame big enough to fit the sizer
-        top_sizer.Fit(self._view_frame)
-        # make sure the frame can't get smaller than the minimum sizer size
-        top_sizer.SetSizeHints(self._view_frame)
-
-        # bind events specific to this bitch
-        EVT_BUTTON(self._view_frame, XMLID('MV_ID_BROWSE'), self.fn_browse_cb)
-        EVT_CHOICE(self._view_frame, XMLID('MV_ID_VTK_OBJECT_CHOICE'),
-                   self.vtk_object_choice_cb)
-        EVT_BUTTON(self._view_frame, XMLID('MV_ID_VTK_PIPELINE'),
-                   self.vtk_pipeline_cb)
-
-        # bind events to the standard cancel, sync, apply, execute, ok buttons
-        module_utils.bind_CSAEO(self, self._view_frame)
             
     def view(self, parent_window=None):
         # first make sure that our variables agree with the stuff that
         # we're configuring
-        self.sync_config()
-        self._view_frame.Show(true)
+        self.syncConfigWithLogic()
+        self.applyConfigToView()
+        self._viewFrame.Show(true)
         
-    def fn_browse_cb(self, event):
-        path = self.fn_browse(self._view_frame, "Choose an HDF filename",
-                              "HDF files (*.hdf)|*.hdf|All files (*)|*")
-
-        if path != None:
-            fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-            fn_text.SetValue(path)
-
-    def vtk_object_choice_cb(self, event):
-        choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
-        if choice != None:
-            if choice.GetStringSelection() == 'vtkHDFVolumeReader':
-                self.vtk_object_configure(self._view_frame, None, self._reader)
-
-    def vtk_pipeline_cb(self, event):
-        # move this to module utils too, or to base...
-        self.vtk_pipeline_configure(self._view_frame, None, (self._reader,))
-
-        
-        
-        
-    

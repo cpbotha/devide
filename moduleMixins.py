@@ -1,9 +1,9 @@
-# $Id: moduleMixins.py,v 1.1 2003/01/28 17:51:21 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.2 2003/01/28 18:13:31 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 
-class module_mixin_vtk_pipeline_config:
+class vtkPipelineConfigModuleMixin:
     """Mixin to use for modules that want to make use of the vtkPipeline
     functionality.
 
@@ -13,7 +13,7 @@ class module_mixin_vtk_pipeline_config:
     use only one instance of a browser/config class per object.
     """
 
-    def vtk_object_configure(self, parent, renwin, vtk_obj):
+    def vtkObjectConfigure(self, parent, renwin, vtk_obj):
         """This will instantiate and show only one object config frame per
         unique vtk_obj (per module instance).
 
@@ -33,7 +33,7 @@ class module_mixin_vtk_pipeline_config:
             self._vtk_obj_cfs[vtk_obj] = ConfigVtkObj(parent, renwin, vtk_obj)
         self._vtk_obj_cfs[vtk_obj].show()
 
-    def close_vtk_object_configure(self):
+    def closeVtkObjectConfigure(self):
         """Explicitly close() all ConfigVtkObj's that vtk_objct_configure has
         created.
 
@@ -46,7 +46,7 @@ class module_mixin_vtk_pipeline_config:
                 self._vtk_obj_cfs[key].close()
             self._vtk_obj_cfs.clear()
 
-    def vtk_pipeline_configure(self, parent, renwin, objects=None):
+    def vtkPipelineConfigure(self, parent, renwin, objects=None):
         """This will instantiate and show only one pipeline config per
         specified renwin and objects.
 
@@ -79,7 +79,7 @@ class module_mixin_vtk_pipeline_config:
         # yay display
         self._vtk_pipeline_cfs[this_key].show()
 
-    def close_pipeline_configure(self):
+    def closePipelineConfigure(self):
         """Explicitly close() the pipeline browser of this module.
 
         This should happen automatically if a valid 'parent' was passed to
@@ -100,10 +100,10 @@ class module_mixin_vtk_pipeline_config:
 #from wxPython.wx import wxFileDialog, wxDirDialog, wxOPEN, wxID_OK
 from wxPython.wx import *
 
-class module_mixin_fo_dialog:
+class fileOpenDialogModuleMixin:
     """Module mixin to make use of file open dialog."""
     
-    def fn_browse(self, parent, message, wildcard, style=wxOPEN):
+    def filenameBrowse(self, parent, message, wildcard, style=wxOPEN):
         """Utility method to make use of wxFileDialog.
 
         This function will open up exactly one dialog per 'message' and this
@@ -123,7 +123,7 @@ class module_mixin_fo_dialog:
         else:
             return None
 
-    def close_fn_browse(self):
+    def closeFilenameBrowse(self):
         """Use this method to close all created dialogs explicitly.
 
         This should be taken care of automatically if you've passed in a valid
@@ -134,7 +134,7 @@ class module_mixin_fo_dialog:
                 self._fo_dlgs[key].Destroy()
             self._fo_dlgs.clear()
 
-    def dn_browse(self, parent, message, default_path=""):
+    def dirnameBrowse(self, parent, message, default_path=""):
         """Utility method to make use of wxDirDialog.
 
         This function will open up exactly one dialog per 'message' and this
@@ -157,8 +157,8 @@ class module_mixin_fo_dialog:
 import resources.python.filenameViewModuleMixinFrame
 import module_utils
 
-class filenameViewModuleMixin(module_mixin_fo_dialog,
-                              module_mixin_vtk_pipeline_config):
+class filenameViewModuleMixin(fileOpenDialogModuleMixin,
+                              vtkPipelineConfigModuleMixin):
     """Mixin class for those modules that only need a filename to operate.
 
     Please call __init__() and close() at the appropriate times from your
@@ -225,7 +225,7 @@ class filenameViewModuleMixin(module_mixin_fo_dialog,
         objectName = self._viewFrame.objectChoice.GetStringSelection()
         if objectDict.has_key(objectName):
             if hasattr(objectDict[objectName], "GetClassName"):
-                self.vtk_object_configure(self._viewFrame, None,
+                self.vtkObjectConfigure(self._viewFrame, None,
                                           objectDict[objectName])
         
     def pipelineCallback(self, objectDict):
@@ -234,4 +234,4 @@ class filenameViewModuleMixin(module_mixin_fo_dialog,
         objects = tuple([object for object in objects1
                          if hasattr(object, 'GetClassName')])
 
-        self.vtk_pipeline_configure(self._viewFrame, None, objects)
+        self.vtkPipelineConfigure(self._viewFrame, None, objects)

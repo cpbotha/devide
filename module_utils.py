@@ -1,4 +1,4 @@
-# $Id: module_utils.py,v 1.8 2002/08/16 13:05:41 cpbotha Exp $
+# $Id: module_utils.py,v 1.9 2003/01/28 18:13:31 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -38,14 +38,15 @@ def bind_CSAEO2(module, view_frame):
     view_frame.ok_button.SetToolTip(
         wxToolTip('Apply changes, then close this dialogue.'))
     EVT_BUTTON(view_frame, wxID_OK,
-               lambda e, m=module, vf=view_frame: (m.apply_config(),
+               lambda e, m=module, vf=view_frame: (m.syncConfigWithView(),
+                                                   m.applyConfigToLogic(),
                                                    vf.Show(false)))
 
     view_frame.sync_button.SetToolTip(
         wxToolTip('Synchronise dialogue with configuration of underlying '
                   'system.'))
     EVT_BUTTON(view_frame, view_frame.SYNC_ID,
-               lambda e, m=module: m.sync_config())
+               lambda e, m=module: (m.sync_config())
 
     view_frame.apply_button.SetToolTip(
         wxToolTip('Modify configuration of underlying system as specified by '

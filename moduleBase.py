@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.1 2003/01/28 17:51:21 cpbotha Exp $
+# $Id: moduleBase.py,v 1.2 2003/01/28 18:13:31 cpbotha Exp $
 
 
 """Module containing base class for dscas3 modules.
@@ -6,18 +6,18 @@
 author: Charl P. Botha <cpbotha@ieee.org>
 """
 
-class module_base:
+class moduleBase:
     """Base class for all modules.
 
     Any module wishing to take part in the dscas3 party will have to offer all
     of these methods.
     """
     
-    def __init__(self, module_manager):
+    def __init__(self, moduleManager):
         """We need to know where the module manager is so we can query
         it about the module path, e.g.
         """
-        self._module_manager = module_manager
+        self._moduleManager = moduleManager
         self._config = None
 	
     def close(self):
