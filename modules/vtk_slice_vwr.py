@@ -1,111 +1,13 @@
-# $Id: vtk_slice_vwr.py,v 1.22 2002/05/13 16:55:23 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.23 2002/05/13 18:56:01 cpbotha Exp $
 
 from module_base import module_base
 import vtk
 from wxPython.wx import *
 from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 # ---------------------------------------------------------------------------
-class wxVTKRenderWindow3D(wxVTKRenderWindow):
-    def __init__(self, parent, ID, *args, **kw):
-        wxVTKRenderWindow.__init__(self, parent, ID, args, kw)
-        self._RenderWindowInteractor = vtk.vtkGenericRenderWindowInteractor()
-        self._RenderWindowInteractor.AddObserver('CreateTimerEvent',
-                                                 self._rwi_timer_cb)
-        self._RenderWindowInteractor.AddObserver('DestroyTimerEvent',
-                                                 self._rwi_timer_cb)
-        self._RenderWindowInteractor.SetRenderWindow(self.GetRenderWindow())
-        self._RenderWindowInteractor.GetInteractorStyle().SetCurrentStyleToTrackballCamera()
-
-        tid = wxNewId()
-        self._timer = wxTimer(self, tid)
-        EVT_TIMER(self, tid, self._wx_timer_cb)
-
-    def GetInteractor(self):
-        return self._RenderWindowInteractor
-
-    def _set_mouse_event_information(self, event):
-        rwi = self._RenderWindowInteractor
-        (rx, ry) = self._RenderWindow.GetSize()
-        rwi.SetEventInformation(event.GetX(), ry - event.GetY(),
-                                event.ControlDown(), event.ShiftDown(),
-                                chr(0), 0, '')
-
-    def _set_kb_event_information(self, event):
-        rwi = self._RenderWindowInteractor
-        (rx, ry) = self._RenderWindow.GetSize()
-        if event.GetKeyCode() < 256:
-            keysym = chr(event.GetKeyCode())
-            repeat = 1
-        else:
-            keysym = chr(0)
-            repeat = 0
-            
-        rwi.SetEventInformation(event.GetX(), ry - event.GetY(),
-                                event.ControlDown(), event.ShiftDown(),
-                                keysym, repeat, '')
-        
-
-    def _OnButtonDown(self, event):
-        self._set_mouse_event_information(event)
-        if event.LeftDown():
-            self._RenderWindowInteractor.LeftButtonPressEvent()
-        elif event.RightDown():
-            self._RenderWindowInteractor.RightButtonPressEvent()
-        elif event.MiddleDown():
-            self._RenderWindowInteractor.MiddleButtonPressEvent()
-
-    def _OnButtonUp(self, event):
-        self._set_mouse_event_information(event)
-        if event.LeftUp():
-            self._RenderWindowInteractor.LeftButtonReleaseEvent()
-        elif event.RightUp():
-            self._RenderWindowInteractor.RightButtonReleaseEvent()
-        elif event.MiddleUp():
-            self._RenderWindowInteractor.MiddleButtonReleaseEvent()
-
-    def _OnEnterWindow(self, event):
-        self.OnEnterWindow(event)
-        self._set_mouse_event_information(event)
-        self._RenderWindowInteractor.EnterEvent()
-
-    def _OnLeaveWindow(self, event):
-        self.OnLeaveWindow(event)
-        self._set_mouse_event_information(event)
-        self._RenderWindowInteractor.LeaveEvent()
-        
-
-    def OnMotion(self, event):
-        self._set_mouse_event_information(event)
-        self._RenderWindowInteractor.MouseMoveEvent()
-
-    def OnKeyDown(self, event):
-        self._set_kb_event_information(event)
-        #self._RenderWindowInteractor.KeyPressEvent()
-        self._RenderWindowInteractor.CharEvent()
-
-    def OnKeyUp(self, event):
-        pass
-        #self._set_kb_event_information(event)
-        #self._RenderWindowInteractor.KeyReleaseEvent()
-        
-    def OnLeftDown(self, event):
-        self._set_mouse_event_information(event)
-        self._RenderWindowInteractor.LeftButtonPressEvent()
-
-    def OnLeftUp(self, event):
-        self._set_mouse_event_information(event)
-        self._RenderWindowInteractor.LeftButtonReleaseEvent()
-
-    def _rwi_timer_cb(self, vtk_object, event_name):
-        if event_name == 'CreateTimerEvent':
-            self._timer.Start(10, true)
-        elif event_name == 'DestroyTimerEvent':
-            pass
-
-    def _wx_timer_cb(self, event):
-        self._RenderWindowInteractor.TimerEvent()
 
 class wxVTKRenderWindowSlice(wxVTKRenderWindow):
     def Rotate(self, event):
@@ -231,7 +133,7 @@ class vtk_slice_vwr(module_base):
         top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
         # 3d view
         td_panel = wxPanel(top_splitwin, id=-1)
-        self._rws.append(wxVTKRenderWindow3D(td_panel, -1))
+        self._rws.append(wxVTKRenderWindowInteractor(td_panel, -1))
         self._renderers.append(vtk.vtkRenderer())
         self._rws[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         td_panel_sizer = wxBoxSizer(wxVERTICAL)
@@ -477,7 +379,7 @@ class vtk_slice_vwr(module_base):
                         self._pws[i].SetRepresentationToOutline()
                         self._pws[i].SetPlaceFactor(1)
                         self._pws[i].PlaceWidget()
-                        rwi = self._rws[0].GetInteractor()
+                        rwi = self._rws[0]
                         self._pws[i].SetInteractor(rwi)
                         self._pws[i].On()
                                  
