@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.49 2004/07/16 12:15:54 cpbotha Exp $
+# $Id: devide.py,v 1.50 2004/08/06 12:42:15 cpbotha Exp $
 
 DEVIDE_VERSION = '20040714'
 
@@ -102,8 +102,8 @@ class devide_app_t(wx.App):
 	
 
     def OnInit(self):
-        self._mainFrame = resources.python.mainFrame.mainFrame(None, -1,
-                                                               "dummy")
+        self._mainFrame = resources.python.mainFrame.mainFrame(
+            None, -1, "dummy", name="DeVIDE")
 
         wx.InitAllImageHandlers()
         self._mainFrame.SetIcon(self.getApplicationIcon())

@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.16 2004/06/23 15:15:30 cpbotha Exp $
+# $Id: pythonShell.py,v 1.17 2004/08/06 12:42:15 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -50,7 +50,7 @@ class pythonShell:
         reload(resources.python.pythonShellFrame)
         
         frame = resources.python.pythonShellFrame.pythonShellFrame(
-            self._parentWindow, id=-1, title="Dummy")
+            self._parentWindow, id=-1, title="Dummy", name='DeVIDE')
 
         return frame
 

@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.26 2004/07/06 16:21:25 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.27 2004/08/06 12:42:15 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -298,7 +298,8 @@ def createModuleViewFrameTitle(d3module):
 def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
     # instantiate the frame
     pw = moduleManager.get_module_view_parent_window()
-    viewFrame = frameClass(pw, -1, 'dummy')
+    # name becomes the WM_CLASS under X
+    viewFrame = frameClass(pw, -1, 'dummy', name='DeVIDE')
 
     # make sure that it's only hidden when it's closed
     EVT_CLOSE(viewFrame,

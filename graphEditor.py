@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.86 2004/07/26 14:39:54 cpbotha Exp $
+# $Id: graphEditor.py,v 1.87 2004/08/06 12:42:15 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -129,7 +129,7 @@ class graphEditor:
         import resources.python.graphEditorFrame
         self._graphFrame = resources.python.graphEditorFrame.graphEditorFrame(
             self._devide_app.get_main_window(),
-            -1, title='dummy', wxpcCanvas=wxpc.canvas)
+            -1, title='dummy', name='DeVIDE', wxpcCanvas=wxpc.canvas)
 
         self._graphFrame.SetIcon(self._devide_app.getApplicationIcon())
 
