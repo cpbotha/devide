@@ -3,7 +3,12 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
-import Numeric
+
+try:
+    import Numeric
+except:
+    import numarray as Numeric
+    
 import vtk
 import wx
 
@@ -12,7 +17,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
     """Calculates and shows 1D histogram (occurrences over value) of its
     input data.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
