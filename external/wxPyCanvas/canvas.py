@@ -1,6 +1,7 @@
 from wxPython import wx
+from canvasSubject import canvasSubject
 
-class canvas(wx.wxScrolledWindow):
+class canvas(wx.wxScrolledWindow, canvasSubject):
     def __init__(self, parent, id = -1, size = wx.wxDefaultSize):
         wx.wxScrolledWindow.__init__(self, parent, id, wx.wxPoint(0, 0), size,
                                      wx.wxSUNKEN_BORDER)
@@ -9,6 +10,10 @@ class canvas(wx.wxScrolledWindow):
         self._previousRealCoords = None
         self._mouseDelta = (0,0)
         self._draggedObject = None
+
+        self._observers = {'drag' : [],
+                           'buttonDown' : [],
+                           'buttonUp' : []}
 
         self.SetBackgroundColour("WHITE")
 
@@ -76,6 +81,18 @@ class canvas(wx.wxScrolledWindow):
             # none, it means the drag has ended; if not, the drag is
             # ongoing
             draggedObject.notifyObservers('drag', event)
+
+            # this also means that the mouse is involved with an object
+            mouseOnObject = True
+
+        if not mouseOnObject:
+            if event.Dragging():
+                self.notifyObservers('drag', event)
+            elif event.ButtonUp():
+                self.notifyObservers('buttonUp', event)
+            elif event.ButtonDown():
+                self.notifyObservers('buttonDown', event)
+            
 
         # store the previous real coordinates for mouse deltas
         self._previousRealCoords = (rx, ry)
