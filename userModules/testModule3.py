@@ -270,11 +270,89 @@ class testModule3(moduleBase, noConfigModuleMixin):
                     # for the next iteration
                     seedPdScalars.SetTuple1(i, c)
 
+                self._moduleManager.setProgress(i / 500.0 * 100.0,
+                                                "Homotopic modification")
                 print "iteration %d done" % (iteration)
                 iteration += 1
 
-                self._outputPolyDataHM.DeepCopy(seedPd)
+            # seedPd is the output of the homotopic modification
+            # END of erosion + supremum
+
+            # BEGIN watershed            
+
+            pointLabels = [-1 for i in xrange(seedPd.GetNumberOfPoints())]
+
+            # mark all minima as separate regions
+            gPtId = seedPd.FindPoint(self._giaGlenoid)
+            pointLabels[gPtId] = 1
+
+            i = 0
+            for outsidePoint in self._outsidePoints:
+                oPtId = seedPd.FindPoint(outsidePoint)
+                pointLabels[oPtId] = i * 200
+                i += 1
+
+            # now, iterate through all non-marked points
+            seedPdScalars = seedPd.GetPointData().GetScalars()
+            
+            for ptId in xrange(seedPd.GetNumberOfPoints()):
+                if pointLabels[ptId] == -1:
+
+                    print "starting ws with ptId %d" % (ptId)
+                    pathDone = False
+                    # this will contain all the pointIds we walk along,
+                    # starting with ptId (new path!)
+                    thePath = [ptId]
                     
+                    while not pathDone:
+
+                        # now search for a neighbour with the lowest curvature
+                        # but also lower than ptId itself
+                        nbh = neighbourMap[thePath[-1]]
+                        nbhC = [seedPdScalars.GetTuple1(pi)
+                                for pi in nbh]
+
+                        cmi = 0 # contour minimum index cmi
+                        # remember that in the neighbourhood map
+                        # the "centre" point is always first
+                        c0 = nbhC[cmi]
+
+                        for ci in range(len(nbhC)): # contour index ci
+                            if nbhC[ci] < c0:
+                                cmi = ci
+
+                        if cmi != 0:
+                            # this means we found a point we can move on to
+                            if pointLabels[nbh[cmi]] != -1:
+                                # if this is a labeled point, we know which
+                                # basin thePath belongs to
+                                theLabel = pointLabels[nbh[cmi]]
+                                for newLabelPtId in thePath:
+                                    pointLabels[newLabelPtId] = theLabel
+
+                                print "found new path: %d" % (theLabel)
+                                # and our loop is done
+                                pathDone = True
+
+                            else:
+                                # this is not a labeled point, which means
+                                # we just add it to our path
+                                thePath.append(nbh[cmi])
+
+                        else:
+                            # this means no points around us have lower value!
+                            pathDone = True
+                            print "eeeeke!  I'm stuck! %s" % (nbhC)
+
+            # we're done with our little path walking... now we have to assign
+            # our watershedded thingy to the output data
+            
+            self._outputPolyDataHM.DeepCopy(seedPd)
+
+            for ptId in xrange(len(pointLabels)):
+                self._outputPolyDataHM.GetPointData().GetScalars().SetTuple1(
+                    ptId,
+                    pointLabels[ptId])
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
