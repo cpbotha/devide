@@ -56,12 +56,12 @@ class graphEditorFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: graphEditorFrame.__set_properties
         self.SetTitle("DeVIDE Graph Editor")
-        self.SetSize((756, 617))
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
         frame_1_statusbar_fields = ["Welcome to the DeVIDE Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
+        self.canvas.SetSize((648, 480))
         # end wxGlade
 
     def __do_layout(self):
@@ -75,7 +75,7 @@ class graphEditorFrame(wxFrame):
         sizer_7.Add(self.moduleCatsListCtrl, 2, wxBOTTOM|wxEXPAND, 7)
         sizer_7.Add(self.modulesListCtrl, 3, wxEXPAND, 0)
         sizer_7.Add(self.rescanButton, 0, wxTOP|wxBOTTOM|wxALIGN_CENTER_HORIZONTAL, 7)
-        sizer_2.Add(sizer_7, 2, wxEXPAND, 0)
+        sizer_2.Add(sizer_7, 2, wxRIGHT|wxEXPAND, 7)
         sizer_8.Add(self.canvas, 1, wxEXPAND, 0)
         sizer_2.Add(sizer_8, 9, wxEXPAND, 0)
         sizer_6.Add(sizer_2, 1, wxEXPAND, 0)
@@ -87,6 +87,8 @@ class graphEditorFrame(wxFrame):
         sizer_1.Add(self.mainPanel, 1, wxEXPAND, 0)
         self.SetAutoLayout(1)
         self.SetSizer(sizer_1)
+        sizer_1.Fit(self)
+        sizer_1.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 

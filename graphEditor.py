@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.58 2004/02/20 16:12:20 cpbotha Exp $
+# $Id: graphEditor.py,v 1.59 2004/02/20 23:19:55 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -424,7 +424,8 @@ class graphEditor:
 
 
         # list of DVN filenames
-        self._moduleCats['Segments'] = mm.availableSegmentsList
+        if len(mm.availableSegmentsList) > 0:
+            self._moduleCats['Segments'] = mm.availableSegmentsList
                     
         
         # setup all categories
