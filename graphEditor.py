@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.26 2003/06/06 16:10:24 cpbotha Exp $
+# $Id: graphEditor.py,v 1.27 2003/06/06 16:16:30 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -464,7 +464,7 @@ class graphEditor:
                 
             # change the serialised moduleInstances to a pickled stream
             stream = cPickle.dumps(\
-                     (pmsDict, connectionList, glyphPosDict), True)
+                     (pmsDict, connectionList, glyphPosDict), False)
 
             # FIXME: check for file errors, check for overwriting!
             f = open(filename, 'w')
