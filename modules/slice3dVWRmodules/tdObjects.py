@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.17 2003/08/06 16:19:07 cpbotha Exp $
+# $Id: tdObjects.py,v 1.18 2003/08/06 21:47:18 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -53,15 +53,19 @@ class tdObjects:
         lineSource.SetPoint2(twoPoints[1])
 
         tubeFilter = vtk.vtkTubeFilter()
+        tubeFilter.SetNumberOfSides(8)
         tubeFilter.SetInput(lineSource.GetOutput())
 
-        lineActor = vtk.vtkActor()
         lineMapper = vtk.vtkPolyDataMapper()
+        lineMapper.SetInput(tubeFilter.GetOutput())
 
-        # FIXME: continue here
-        
+        lineActor = vtk.vtkActor()
+        lineActor.SetMapper(lineMapper)
+
+        self._slice3dVWR._threedRenderer.AddActor(lineActor)
+
         self._tdObjectsDict[sObject]['axisPoints'] = twoPoints
-        self._tdObjectsDict[sObject]['axisLineSource']
+        self._tdObjectsDict[sObject]['axisLineActor'] = lineActor
 
     def _bindEvents(self):
         controlFrame = self._slice3dVWR.controlFrame
@@ -89,6 +93,20 @@ class tdObjects:
 
         wx.EVT_BUTTON(controlFrame, controlFrame.objectAxisToSliceButtonId,
                       self._handlerObjectAxisToSlice)
+
+    def _detachAxis(self, tdObject):
+        """Remove any object axis-related metadata and actors if tdObject
+        has them.
+        """
+
+        try:
+            actor = self._tdObjectsDict[tdObject]['axisLineActor']
+            self._slice3dVWR._threedRenderer.RemoveActor(actor)
+            del self._tdObjectsDict[tdObject]['axisPoints']
+            del self._tdObjectsDict[tdObject]['axisLineActor']
+        except KeyError:
+            # this means the tdObject had no axis - EAFP! :)
+            pass
 
     def getPickableProps(self):
         return [o['vtkActor'] for o in self._tdObjectsDict.values()
@@ -183,7 +201,7 @@ class tdObjects:
         """The user should have selected at least two points and an object.
         This will record the axis formed by the two selected points as the
         object axis.  If no points are selected, and an axis already exists,
-        we could detach the axis.
+        we detach the axis.
         """
 
         worldPoints = self._slice3dVWR.selectedPoints.getSelectedWorldPoints()
@@ -192,7 +210,34 @@ class tdObjects:
             for sObject in sObjects:
                 # the user asked for it, so we're doing all of 'em
                 self._attachAxis(sObject, worldPoints[0:2])
-            
+
+            if sObjects:
+                self._slice3dVWR.render3D()
+                
+        elif not worldPoints and sObjects:
+            # this means the user might want to remove all axes from
+            # the sObjects
+            md = wx.MessageDialog(
+                self._slice3dVWR.controlFrame,
+                "Are you sure you want to REMOVE axes "
+                "from all selected objects?",
+                "Confirm axis removal",
+                wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION)
+            if md.ShowModal() == wx.ID_YES:
+                for sObject in sObjects:
+                    self._detachAxis(sObject)
+
+                if sObjects:
+                    self._slice3dVWR.render3D()
+
+        else:
+            md = wx.MessageDialog(
+                self._slice3dVWR.controlFrame,
+                "To attach an axis to an object, you need to select two "
+                "points and an object.",
+                "Information",
+                wx.OK | wx.ICON_INFORMATION)
+            md.ShowModal()
 
     def _handlerObjectAxisToSlice(self, event):
         # first find two selected points from the selected points list
@@ -488,6 +533,14 @@ class tdObjects:
             
             actor = self._tdObjectsDict[tdObject]['vtkActor']
             self._slice3dVWR._threedRenderer.RemoveActor(actor)
+
+            try:
+                # if there was a lineAxisActor, remove that as well
+                lineActor = self._tdObjectsDict[tdObject]['axisLineActor']
+                self._slice3dVWR._threedRenderer.RemoveActor(lineActor)
+            except KeyError:
+                pass
+            
             if self._tdObjectsDict[tdObject]['observerId']:
                 source = actor.GetMapper().GetInput().GetSource()
                 if source:
