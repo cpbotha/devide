@@ -1,4 +1,4 @@
-$Id: TODO,v 1.20 2003/10/15 20:24:39 cpbotha Exp $
+$Id: TODO,v 1.21 2003/10/15 21:02:55 cpbotha Exp $
 
 * We REALLY should get some kind of unit-testing suite going, so that even
   an Installed binary can be set through its paces with dscas3 --testSuite
@@ -31,6 +31,9 @@ $Id: TODO,v 1.20 2003/10/15 20:24:39 cpbotha Exp $
   * gradient tf?
 
 BUGS:
+
+- If a point has no name to begin with, renaming won't create a text actor.
+  Is this really a bug?
 
 - nobody but the moduleManager is allowed to call executeModule; actually,
   probably no-one is allowed to call any of the other methods either
