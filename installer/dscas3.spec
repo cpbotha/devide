@@ -18,6 +18,10 @@ vpli = [(os.path.join('Icons', i),
          os.path.join(vpli_dir, i), 'DATA')
         for i in os.listdir(vpli_dir) if fnmatch.fnmatch(i, '*.xpm')]
 
+# under linux, libpython is shared -- McMillan installer doesn't know
+# about this...
+extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0', 'BINARY')]
+
 
 ##########################################################################
 
@@ -37,5 +41,5 @@ exe = EXE(pyz,
           console=1)
 
 coll = COLLECT(exe,
-               a.binaries + umods + vpli,
+               a.binaries + umods + vpli + extraLibs,
                name='distdscas3')
