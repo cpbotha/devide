@@ -191,7 +191,8 @@ class coGlyph(coRectangle):
         self._numInputs = numInputs
         self.inputLines = [None] * self._numInputs
         self._numOutputs = numOutputs
-        self.outputLines = [[]] * self._numOutputs
+        # be careful with list concatenation!
+        self.outputLines = [[] for i in range(self._numOutputs)]
         self._label = label
         self.moduleInstance = moduleInstance
         self.draggedPort = None

@@ -28,7 +28,9 @@ class metaModule:
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
         self.inputs = [None] * numIns
         # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
-        self.outputs = [[]] * numOuts
+        # be careful with list concatenation, it makes copies, which are mostly
+        # shallow!!!
+        self.outputs = [[] for _ in range(numOuts)]
 
 class pickledModuleState:
     def __init__(self):

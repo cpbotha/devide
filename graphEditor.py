@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.41 2003/08/27 13:48:44 cpbotha Exp $
+# $Id: graphEditor.py,v 1.42 2003/09/10 21:52:04 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1218,7 +1218,6 @@ class graphEditor:
             # then far simpler all suppliers
             for inputIdx in range(len(glyph.inputLines)):
                 self._disconnect(glyph, inputIdx)
-            
             
             # then get the module manager to NUKE the module itself
             mm = self._dscas3_app.getModuleManager()
