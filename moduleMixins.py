@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.40 2004/05/20 01:24:27 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.41 2004/05/20 01:28:48 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -564,7 +564,8 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
     
     def __init__(self, moduleManager, vtkObjectBinding, progressText,
                  inputDescriptions, outputDescriptions,
-                 replaceDoc=True, inputFunctions=None):
+                 replaceDoc=True,
+                 inputFunctions=None, outputFunctions=None):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
         pickleVTKObjectsModuleMixin.__init__(self)
@@ -587,6 +588,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         self._outputDescriptions = outputDescriptions
 
         self._inputFunctions = inputFunctions
+        self._outputFunctions = outputFunctions
 
         # make sure that initial _config is in sync with the object
         self.logicToConfig()
@@ -604,7 +606,10 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
     def getOutput(self, idx):
         # this will only every be invoked if your getOutputDescriptions has
         # 1 or more elements
-        return self._theFilter.GetOutput()
+        if self._outputFunctions:
+            return getattr(self._theFilter, self._outputFunctions[idx])()
+        else:
+            return self._theFilter.GetOutput()
 
     def getInputDescriptions(self):
         return self._inputDescriptions
@@ -614,7 +619,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         # many elements in your getInputDescriptions
 
         if self._inputFunctions:
-            eval('self._theFilter.%s(inputStream)' %
+            exec('self._theFilter.%s(inputStream)' %
                  (self._inputFunctions[idx]))
 
         else:
@@ -623,7 +628,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
             if idx == 0:
                 self._theFilter.SetInput(inputStream)
             else:
-                eval('self._theFilter.SetInput%d(inputStream)' % (idx+1,))
+                exec('self._theFilter.SetInput%d(inputStream)' % (idx+1,))
 
     def executeModule(self):
         for i in range(len(self.getOutputDescriptions())):
