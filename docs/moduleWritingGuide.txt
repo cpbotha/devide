@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.8 2003/09/07 14:38:36 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.9 2003/09/21 18:05:32 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -34,10 +34,13 @@ You'll see why. :)
 
 IMPORTANT TIP:
 
-Always start with a frame, top-level sizer, panel, sizer in panel and
-then a single sizer in that sizer.  This last sizer will contain
-everything and make it possible for us to make a 7 pixel border around
-the edge.  Trust me on this.
+Always start with a frame, top-level sizer, panel, vertical sizer in
+panel and then a single vertical sizer in that sizer.  This last sizer
+will contain everything and make it possible for us to make a 7 pixel
+border around the edge.  Trust me on this.
+
+Many of the utility functions adding buttons or standard controls to
+viewFrames expect this kind of layout.
 
 NAMING CONVENTION
 -----------------

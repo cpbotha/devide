@@ -31,7 +31,7 @@ class filenameViewModuleMixinFrame(wxFrame):
         sizer_3.Add(self.label_8_copy_1, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         sizer_3.Add(self.filenameText, 1, wxALIGN_CENTER_VERTICAL, 0)
         sizer_3.Add(self.browseButton, 0, wxALIGN_CENTER_VERTICAL, 0)
-        sizer_5.Add(sizer_3, 1, wxALL|wxEXPAND, 5)
+        sizer_5.Add(sizer_3, 1, wxALL|wxEXPAND, 7)
         self.viewFramePanel.SetAutoLayout(1)
         self.viewFramePanel.SetSizer(sizer_5)
         sizer_5.Fit(self.viewFramePanel)
