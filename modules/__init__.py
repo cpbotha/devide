@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.15 2003/02/13 12:56:35 cpbotha Exp $
+# $Id: __init__.py,v 1.16 2003/02/17 10:45:04 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -8,11 +8,11 @@ module_list = ['dicomRDR',
                'doubleThresholdFLT',
                'ghr_linreg_flt',
                'hdfRDR',
+               'marchingCubesFLT',
 	       'slice3d_vwr',
                'stlRDR',
                'vtkPolyDataRDR',
                'vtkStructPtsRDR',               
                'vtkStructPtsWRT',
-               'vtk_mc_flt',
                'vtk_vol_rdr']
 
