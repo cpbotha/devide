@@ -1,6 +1,7 @@
 from module_base import module_base
 import vtkpython
-import Tix
+import Pmw
+from Tkconstants import *
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
 
 class vtk_mc_flt(module_base):
@@ -37,7 +38,7 @@ class vtk_mc_flt(module_base):
 	config_window.protocol ("WM_DELETE_WINDOW", config_window.destroy)
 	
 	# button box
-	box = Tix.ButtonBox(config_window, orientation=Tix.HORIZONTAL)
+	box = Pmw.ButtonBox(config_window)
 	box.add('pipeline', text='Pipeline', underline=0, width=6,
 	command=lambda self=self, pw=parent_window, vtk_objs=(self.mc): self.browse_vtk_pipeline(vtk_objs, pw))
 	box.pack(side=Tix.TOP, fill=Tix.X, expand=1)

@@ -1,17 +1,18 @@
 #!/usr/bin/env python
+# $Id: dscas3,v 1.15 2002/03/27 16:35:54 cpbotha Exp $
+
 import sys
 import Tkinter
 import tkMessageBox
 from Tkconstants import *
 import Pmw
-import vtkpython # for the embedded interpreter
-
 
 from graph_editor import graph_editor
 from module_manager import module_manager
 
 class pyco_t:
-    """
+    """Run-time Python interpreter class thingy.
+    
     This is a class containing some of the functions needed for the Python 
     interaction.  Initially the idea was to run the python commands in this
     namespace, but that didn't pan out.
@@ -27,6 +28,11 @@ class pyco_t:
 	eval(compile("%s\n\n" % (py_text), '<string>', 'exec'), globals())
 
 class dscas3_main:
+    """Main dscas3 class.
+
+    Class that's used as communication hub for most other components of the
+    platform.
+    """
     def __init__(self, root):
 	self.root = root
 	self.root.title("dscas 3")
@@ -36,17 +42,26 @@ class dscas3_main:
 	self.pyco = pyco_t(self)
 	
 	# interpreter input line
-	self.pyco_ol = Pmw.ComboBox(self.root, label_text = 'python one-liner', labelpos = 'nw', selectioncommand=self.pyco.ol_exec)
+	self.pyco_ol = Pmw.ComboBox(self.root, label_text = 'python one-liner',
+                                    labelpos = 'nw',
+                                    selectioncommand=self.pyco.ol_exec)
 	self.pyco_ol.pack(side=TOP, fill=X)
 	
-	self.pyco_text = Pmw.ScrolledText(self.root, borderframe = 1, labelpos = 'n', label_text='python code segments', usehullsize = 1,
-		                                            hull_width = 400, hull_height = 300, text_padx = 10, text_pady = 10, text_wrap='none')
+	self.pyco_text = Pmw.ScrolledText(self.root, borderframe = 1,
+                                          labelpos = 'n',
+                                          label_text='python code segments',
+                                          usehullsize = 1,
+                                          hull_width = 400, hull_height = 300,
+                                          text_padx = 10, text_pady = 10,
+                                          text_wrap='none')
 	self.pyco_text.pack(side=TOP, fill=BOTH)
 	
 	# button box
 	box = Pmw.ButtonBox(self.root)
-	box.add('Execute OL', underline=0, command=lambda self=self: self.pyco.ol_exec(self.pyco.get()))
-	box.add('Execute TXT', underline=0, command=lambda self=self: self.pyco.text_exec(self.pyco_text.get(1.0, END)))
+	box.add('Execute OL', underline=0, command=lambda self=self:
+                self.pyco.ol_exec(self.pyco.get()))
+	box.add('Execute TXT', underline=0, command=lambda self=self:
+                self.pyco.text_exec(self.pyco_text.get(1.0, END)))
 	box.add('Quit', underline=0, command=self.quit)
 	box.pack(side=TOP, fill=X, expand=1)
 	
