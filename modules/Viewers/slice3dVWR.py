@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.3 2003/09/22 11:21:35 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -71,6 +71,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._outline_actor = vtk.vtkActor()
         self._outline_actor.SetMapper(om)
         self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
+        self._cube_axes_actor2d.SetFlyModeToOuterEdges()
+        #self._cube_axes_actor2d.SetFlyModeToClosestTriad()
 
         # use box widget for VOI selection
         self._voi_widget = vtk.vtkBoxWidget()
@@ -300,7 +302,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                     self._threedRenderer.AddActor(self._cube_axes_actor2d)
                     self._cube_axes_actor2d.PickableOff()
                     # FIXME: make this toggle-able
-                    self._cube_axes_actor2d.VisibilityOff()
+                    self._cube_axes_actor2d.VisibilityOn()
 
                     # reset everything, including ortho camera
                     self._resetAll()
