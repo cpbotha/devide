@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.23 2004/03/19 12:46:06 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.24 2004/05/27 12:47:32 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.23 $
+    $Revision: 1.24 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -75,6 +75,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
         self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
         self._cube_axes_actor2d.SetFlyModeToOuterEdges()
         #self._cube_axes_actor2d.SetFlyModeToClosestTriad()
+
 
         # use box widget for VOI selection
         self._voi_widget = vtk.vtkBoxWidget()
@@ -114,11 +115,30 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
         self._implicits = implicits(self,
                                     self.controlFrame.implicitsGrid)
 
+
+        # setup orientation widget stuff
+        self._orientationWidget = vtk.vtkOrientationMarkerWidget()
+        self._annotatedCubeActor = vtk.vtkAxesActor() #vtk.vtkAnnotatedCubeActor()
+
+        self._orientationWidget.SetInteractor(
+            self.threedFrame.threedRWI)
+        self._orientationWidget.SetOrientationMarker(
+            self._annotatedCubeActor)
+        self._orientationWidget.On()
+        
+
     #################################################################
     # module API methods
     #################################################################
 
     def close(self):
+        # shut down the orientationWidget/Actor stuff
+        self._orientationWidget.Off()
+        self._orientationWidget.SetInteractor(None)
+        self._orientationWidget.SetOrientationMarker(None)
+        del self._orientationWidget
+        del self._annotatedCubeActor
+        
         # take care of scalarbar
         self._showScalarBarForProp(None)
         
@@ -151,6 +171,8 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
         del self._outline_source
         del self._outline_actor
         del self._cube_axes_actor2d
+
+
         del self._voi_widget
         del self._extractVOI
 
@@ -243,6 +265,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
                     self._threedRenderer.RemoveActor(self._outline_actor)
                     self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
 
+
                     # deactivate VOI widget as far as possible
                     self._voi_widget.SetInput(None)
                     self._voi_widget.Off()
@@ -312,6 +335,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
                     self._cube_axes_actor2d.PickableOff()
                     # FIXME: make this toggle-able
                     self._cube_axes_actor2d.VisibilityOn()
+
 
                     # reset everything, including ortho camera
                     self._resetAll()
