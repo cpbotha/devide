@@ -11,7 +11,15 @@ def coords_to_rtriangle(x, y):
 # ----------------------------------------------------------------------------
 
 class glyph:
-    def __init__(self, graph_editor, canvas, coords, name, inputs, outputs):
+    def __init__(self, graph_editor, canvas, coords, module_instance):
+
+	# extract the module name from the __class__ attribute of the passed instance
+	sres = re.search(".*\.(.*)", str(module_instance.__class__))
+	if sres.group(1):
+	    self.module_name = sres.group(1)
+	else:
+	    self.module_name = "UNKNOWN"
+	
 	self.graph_editor = graph_editor
 	self.coords = coords
 	self.canvas = canvas
@@ -20,7 +28,7 @@ class glyph:
 	self.output_lines = []
 
 	self.inputs = [] # list consisting of tuples (triangle_item, connecting line, connecting glyph)
-	for cur_input in inputs:
+	for cur_input_type in module_instance.get_input_types():
 	    self.inputs.append({'item': canvas.create_polygon(coords_to_ltriangle(self.rcoords[0], self.rcoords[1] + len(self.inputs)*7)),
 	    'line': None, 'glyph': None})
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Enter>", self.input_enter_cb)
@@ -28,13 +36,13 @@ class glyph:
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Double-Button-1>", self.input_dclick_cb)
 	    
 	self.outputs = []
-	for cur_output in outputs:
+	for cur_output_type in module_instance.get_output_types():
 	    self.outputs.append(canvas.create_polygon(coords_to_rtriangle(self.rcoords[2], self.rcoords[1])))
 	    canvas.tag_bind(self.outputs[-1], "<Enter>", self.output_enter_cb)
 	    canvas.tag_bind(self.outputs[-1], "<Button-1>", self.output_click_cb)
 	    
 	self.rectangle = canvas.create_rectangle(self.rcoords, fill="gray80")
-	self.text = canvas.create_text(self.coords[0], self.coords[1], text=name, width=115)
+	self.text = canvas.create_text(self.coords[0], self.coords[1], text=self.module_name, width=115)
 	# bind move handler to text and rectangle (the glyph can move itself)
 	canvas.tag_bind(self.rectangle, "<B1-Motion>", self.move_cb)
 	canvas.tag_bind(self.text, "<B1-Motion>", self.move_cb)
@@ -225,9 +233,10 @@ class graph_editor:
 	if (len(sel_tuple) == 1):
 	    module_search = re.search(".*\.(.*)", sel_tuple[0])
 	    if (module_search and module_search.group(1)):
-		if self.dscas3_main.create_module(module_search.group(1)):
+		temp_module = self.dscas3_main.create_module(module_search.group(1))
+		if temp_module:
 		    self.glyphs.append(glyph(self, self.canvas, (x,y),
-		    module_search.group(1), ('blah',), ('bish',)))
+		    temp_module))
 	
 	
     def canvas_b1click_cb(self, event):
