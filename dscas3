@@ -48,8 +48,9 @@ class dscas3_main:
 	return self.modules[-1]
     
     def delete_module(self, instance):
-	self.modules.remove(instance)
-	del instance
+	instance.close()
+	# take away the reference AND remove (neat huh?)
+	del self.modules[self.modules.index(instance)]
 	
     def get_module_list(self):
 	return self.module_manager.get_module_list()

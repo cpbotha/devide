@@ -53,19 +53,23 @@ class glyph:
 	
     def __del__(self):
 	print "in glyph.__del__()"
+	
+    def close(self):
+	print "in glyph.close()"
+	# take care of our reference to the module
+	del self.module_instance
+	# remove ourselves from the canvas
 	self.canvas.delete(self.text)
 	self.canvas.delete(self.rectangle)
 	for cur_input in self.inputs:
 	    self.canvas.delete(cur_input['item'])
 	for cur_output in self.outputs:
 	    self.canvas.delete(cur_output)
-	for cur_output_line in self.output_lines:
-	    self.canvas.delete(cur_output_line)
+	#for cur_output_line in self.output_lines:
+	#    self.canvas.delete(cur_output_line)
 	for cur_input in self.inputs:
 	    if cur_input['line']:
 		self.canvas.delete(cur_input['line'])
-	    
-	
 	
     def accept_connection(self, from_glyph, input_line, input_idx):
 	self.inputs[input_idx]['line'] = input_line
@@ -110,6 +114,14 @@ class glyph:
     
     def get_module_instance(self):
 	return self.module_instance
+    
+    def find_inputs(self, output_glyph):
+	"Finds on which inputs we're getting input from output_glyph."
+	input_idxs = []
+	for i in self.inputs:
+	    if i['glyph'] == output_glyph:
+		input_idxs.append(self.inputs.index(i))
+	return input_idxs
     
     def is_connected_on(self, input_idx):
 	return self.inputs[input_idx]['glyph']
@@ -268,23 +280,35 @@ class graph_editor:
 		    
     def delete_glyph(self, glyph):
 	try:
-	    # IMPORTANT: WE HAVE TO DISCONNECT AS WELL... ALL GLYPHS GETTING INPUT FROM THIS ONE
+	    # iterate through all glyphs, finding out whether this glyph is an
+	    # input glyph for it
+	    for cur_input_glyph in self.glyphs:
+		if cur_input_glyph != glyph: # hmmm, can I do this?
+		    # if our glyph supplies output to cur_input_glyph, this will find
+		    # all the input indexes on cur_input_glyph
+		    input_idxs = cur_input_glyph.find_inputs(glyph)
+		    for cur_idx in input_idxs:
+			# "glyph" is the output glyph, disconnect the glyph
+			print "disconnecting %s from %s, index %s" % (glyph.get_module_instance().__class__,
+			cur_input_glyph.get_module_instance().__class__, cur_idx)
+			self.disconnect_glyphs(glyph, cur_input_glyph, cur_idx)
+	    # now get dscas3 to delete the actual module
 	    self.dscas3_main.delete_module(glyph.get_module_instance())
-	    self.glyphs.remove(glyph)
-	    print sys.getrefcount(glyph)
-	    del glyph		
+	    # then de-init the glyph object
+	    glyph.close()
+	    # then remove and delete the reference to it from the glyphs list
+	    del self.glyphs[self.glyphs.index(glyph)]
 	except Exception, e:
 	    tkMessageBox.showerror("Destruction error", "Unable to destroy object: %s" % str(e))
-	    #print sys.exc_info()
+	    print sys.exc_info()
 	
     def canvas_b1click_cb(self, event):
-	item = self.canvas.find_withtag(Tix.CURRENT)
-	item_type = self.canvas.type(item)
-	# we only create a glyph if we don't click on anything already in the canvas
-	if item_type == None:
-	    self.create_glyph(event.x, event.y)
-	    #self.glyphs.append(glyph(self, self.canvas, (event.x, event.y),
-	    #"HDF Reader", ('vtkStructuredPoints', 'vtkImageData'), ( 'vtkStructuredPoints',)))
+	if self.get_mode() == 'edit':
+	    item = self.canvas.find_withtag(Tix.CURRENT)
+	    item_type = self.canvas.type(item)
+	    # we only create a glyph if we don't click on anything already in the canvas
+	    if item_type == None:
+		self.create_glyph(event.x, event.y)
 	
     def glyph_input_clicked(self, glyph, idx):
 	if self.conn_ip['glyph0']:

@@ -1,30 +1,28 @@
 import vtkpython
 
-class vtk_vol16_rdr:
+class vtk_mc_flt:
     def __init__(self):
-	# initialise vtkVolume16Reader
-	self.reader = vtkpython.vtkVolume16Reader()
+	#self.reader = vtkpython.vtkVolume16Reader()
+	print "__init__()"
 	
     def __del__(self):
 	# do some cleanup
-	print "vtk_volume16_reader.__del__()"
+	print "vtk_mc_flt.__del__()"
 	
-    # BASE
-    # disconnect all inputs and outputs
     def close(self):
-	del self.reader
+	print "close()"
 	
     # BASE
     def get_input_types(self):
-	return ()
+	return ('vtkStructuredPoints',)
     
     # BASE
     def get_output_types(self):
-	return (type(self.reader.GetOutput()),)
+	return ('vtkPolyData',)
 
     # BASE
     def get_output(self, idx):
-	return self.reader.GetOutput()
+	return None
     
     # BASE
     def get_input(self, idx):
