@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<resource>
+  <object class="wxPanel" name="PNL_MAIN_WINDOW">
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxGridSizer">
+          <cols>3</cols>
+          <object class="sizeritem">
+            <object class="wxButton" name="ID_LOAD_DATA_BTN">
+              <label>Load Data</label>
+            </object>
+            <option>1</option>
+            <flag>wxALL|wxEXPAND</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="ID_VIEW_SLICES_BTN">
+              <label>View Slices</label>
+            </object>
+            <option>1</option>
+            <flag>wxALL|wxEXPAND</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="ID_RENDER_VOLUME_BTN">
+              <label>Render Volume</label>
+            </object>
+            <option>1</option>
+            <flag>wxALL|wxEXPAND</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="ID_SEGMENT_BONES_BTN">
+              <label>Segment Bones</label>
+            </object>
+            <option>1</option>
+            <flag>wxALL|wxEXPAND</flag>
+            <border>2</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="ID_EXTRACT_SURFACES_BTN">
+              <label>Extract Surfaces</label>
+            </object>
+            <option>1</option>
+            <flag>wxALL|wxEXPAND</flag>
+            <border>2</border>
+          </object>
+        </object>
+        <option>1</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>2</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="ID_STATUS_STXT">
+              <label>Some status message...</label>
+            </object>
+            <flag>wxALIGN_CENTRE</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxGauge" name="ID_PROGRESS_GAUGE">
+              <range>100</range>
+            </object>
+            <flag>wxEXPAND</flag>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>4</border>
+      </object>
+    </object>
+  </object>
+</resource>
