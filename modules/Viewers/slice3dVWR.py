@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.26 2004/10/20 16:16:05 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.27 2004/10/27 15:10:04 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.26 $
+    $Revision: 1.27 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -85,6 +85,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                                      self.voiWidgetInteractionCallback)
         self._voi_widget.AddObserver('EndInteractionEvent',
                                      self.voiWidgetEndInteractionCallback)
+        self._voi_widget.NeedsPlacement = True
 
         # also create the VTK construct for actually extracting VOI from data
         self._extractVOI = vtk.vtkExtractVOI()
@@ -474,19 +475,13 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
         # event logic for the voi panel
 
-        def widgetEnabledCBoxCallback(event):
-            if self._voi_widget.GetInput():
-                if event.Checked():
-                    self._voi_widget.On()
-                    self.voiWidgetInteractionCallback(self._voi_widget, None)
-                    self.voiWidgetEndInteractionCallback(self._voi_widget,
-                                                         None)
-                else:
-                    self._voi_widget.Off()
-            
         EVT_CHECKBOX(self.controlFrame,
                      self.controlFrame.voiEnabledCheckBoxId,
-                     widgetEnabledCBoxCallback)
+                     self._handlerWidgetEnabledCheckBox)
+
+        EVT_CHOICE(self.controlFrame,
+                   self.controlFrame.voiAutoSizeChoice.GetId(),
+                   self._handlerVoiAutoSizeChoice)
 
         def _ps_cb():
             # FIXME: update to new factoring
@@ -653,9 +648,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # reset the VOI widget
         self._voi_widget.SetInteractor(self.threedFrame.threedRWI)
         self._voi_widget.SetInput(inputData)
-        self._voi_widget.PlaceWidget()
+
+        # we only want to placewidget if this is the first time
+        if self._voi_widget.NeedsPlacement:
+            self._voi_widget.PlaceWidget()
+            self._voi_widget.NeedsPlacement = False
+
         self._voi_widget.SetPriority(0.6)
-        #self._voi_widget.On()
+        self._handlerWidgetEnabledCheckBox()
 
         self._threedRenderer.ResetCamera()
 
@@ -742,6 +742,49 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     #################################################################
     # callbacks
     #################################################################
+
+    def _handlerVoiAutoSizeChoice(self, event):
+        if self._voi_widget.GetEnabled():
+            asc = self.controlFrame.voiAutoSizeChoice.GetSelection()
+
+            if asc == 0: # bounding box of selected points
+                swp = self.selectedPoints.getSelectedWorldPoints()
+
+                if len(swp) > 0:
+                    minxyz = list(swp[0])
+                    maxxyz = list(swp[0])
+
+                    # find max bounds of the selected points
+                    for p in swp:
+                        for i in range(3):
+                            if p[i] < minxyz[i]:
+                                minxyz[i] = p[i]
+
+                            if p[i] > maxxyz[i]:
+                                maxxyz[i] = p[i]
+
+                    # now set bounds on VOI thingy
+                    # first we zip up minxyz maxxyz to get minx, maxx, miny
+                    # etc., then we use * to break this open into 6 args
+                    self._voi_widget.SetPlaceFactor(1.0)
+                    self._voi_widget.PlaceWidget(minxyz[0], maxxyz[0],
+                                                 minxyz[1], maxxyz[1],
+                                                 minxyz[2], maxxyz[2])
+                    self.render3D()
+                    
+                        
+    def _handlerWidgetEnabledCheckBox(self, event=None):
+        # event can be None
+        if self._voi_widget.GetInput():
+            if self.controlFrame.voiEnabledCheckBox.GetValue():
+                self._voi_widget.On()
+                self.voiWidgetInteractionCallback(self._voi_widget, None)
+                self.voiWidgetEndInteractionCallback(self._voi_widget,
+                                                         None)
+            else:
+                self._voi_widget.Off()
+            
+            
 
     def _handlerIntrospectButton(self, event):
         """Open Python introspection window with this module as main object.
