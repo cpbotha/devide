@@ -1,4 +1,4 @@
-# $Id: vtk_stl_rdr.py,v 1.1 2002/07/30 14:02:39 cpbotha Exp $
+# $Id: vtk_stl_rdr.py,v 1.2 2002/09/06 15:27:55 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -115,8 +115,8 @@ class vtk_stl_rdr(module_base,
         
     def fn_browse_cb(self, event):
         path = self.fn_browse(self._view_frame,
-                              "Choose a VTK polydata filename",
-                              "VTK Polydata (*.vtk)|*.vtk|All files (*)|*")
+                              "Choose an STL filename",
+                              "STL data (*.stl)|*.stl|All files (*)|*")
 
         if path != None:
             fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
@@ -125,7 +125,7 @@ class vtk_stl_rdr(module_base,
     def vtk_object_choice_cb(self, event):
         choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
         if choice != None:
-            if choice.GetStringSelection() == 'vtkPolyDataReader':
+            if choice.GetStringSelection() == 'vtkSTLReader':
                 self.vtk_object_configure(self._view_frame, None, self._reader)
 
     def vtk_pipeline_cb(self, event):
