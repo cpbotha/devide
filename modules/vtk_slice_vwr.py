@@ -1,6 +1,6 @@
-# $Id: vtk_slice_vwr.py,v 1.59 2002/09/04 14:33:20 cpbotha Exp $
-
-# TODO: vtkTextureMapToPlane, like thingy...
+# vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
+# $Id: vtk_slice_vwr.py,v 1.60 2002/09/05 14:20:21 cpbotha Exp $
+# next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -262,17 +262,27 @@ class vtk_slice_vwr(module_base,
         sab = wxButton(panel, sa_id, 'Select all')
         EVT_BUTTON(panel, sa_id, select_all_cb)
 
+        def deselect_all_cb(event):
+            for i in range(self._spoint_listctrl.GetItemCount()):
+                self._spoint_listctrl.SetItemState(i, 0,
+                                                   wxLIST_STATE_SELECTED)
         
         da_id = wxNewId()
         dab = wxButton(panel, da_id, 'Deselect all')
+        EVT_BUTTON(panel, da_id, deselect_all_cb)
 
-        def deselect_all_cb(event):
-            for i in range(self._spoint_listctrl.GetItemCount()):
-                self._spoint_listctrl.SetItemState(i, not wxLIST_STATE_SELECTED,
-                                                   not wxLIST_STATE_SELECTED)
+        def remove_cb(event):
+            idx = self._spoint_listctrl.GetItemCount() - 1
+            while idx >= 0:
+                if self._spoint_listctrl.GetItemState(idx,
+                                                      wxLIST_STATE_SELECTED):
+                    self._remove_cursor(idx)
+                    
+                idx -= 1
             
         rm_id = wxNewId()
         rmb = wxButton(panel, rm_id, 'Remove')
+        EVT_BUTTON(panel, rm_id, remove_cb)
         
         # the button control panel
         # -----------------------------------------------------------------
@@ -437,7 +447,24 @@ class vtk_slice_vwr(module_base,
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
 
+    def _remove_cursor(self, idx):
+
+        # remove the actor from the renderer
+        self._renderer.RemoveActor(self._sel_points[idx]['actor'])
+        self._rwi.Render()
+
+        # remove the entry from the wxListCtrl
+        self._spoint_listctrl.DeleteItem(idx)
+
+        # then remove it from our internal list
+        del self._sel_points[idx]
+
     def _store_cursor(self, cursor):
+
+        # we first have to check that we don't have this pos already
+        cursors = [i['cursor'] for i in self._sel_points]
+        if cursor in cursors:
+            return
         
         input_data = self._ipws[0].GetInput()
         ispacing = input_data.GetSpacing()
@@ -463,6 +490,7 @@ class vtk_slice_vwr(module_base,
         
         axes_actor = vtk.vtkActor()
         axes_actor.SetMapper(axes_mapper)
+        axes_actor.PickableOff()
         axes_actor.GetProperty().BackfaceCullingOff()
         self._renderer.AddActor(axes_actor)
         
