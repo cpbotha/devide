@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.7 2004/02/20 13:38:46 cpbotha Exp $
+# $Id: devide.py,v 1.8 2004/02/25 22:47:32 cpbotha Exp $
 
 DEVIDE_VERSION = '20040220'
 
@@ -242,7 +242,7 @@ class devide_app_t(wx.App):
         if self._inProgress.testandset():
             if message != self._currentProgressMsg or \
                    progress != self._currentProgress:
-                if progress >= 100 or noTime or \
+                if abs(progress - 100.0) < 0.01 or noTime or \
                        time.time() - self._previousProgressTime >= 1:
                     self._previousProgressTime = time.time()
                     self._currentProgressMsg = message
@@ -251,7 +251,7 @@ class devide_app_t(wx.App):
                     self._mainFrame.progressText.SetLabel(message)
 
                     # activate the busy cursor
-                    if progress < 100.0:
+                    if abs(progress - 100.0) > 0.01:
                         if not wx.IsBusy():
                             wx.BeginBusyCursor()
                             
