@@ -1,4 +1,4 @@
-# $Id: vtk_dicom_rdr.py,v 1.6 2002/08/20 09:52:14 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.7 2002/08/20 12:37:45 cpbotha Exp $
 
 import gen_utils
 import os
@@ -23,7 +23,7 @@ class vtk_dicom_rdr(module_base,
 
         # setup necessary VTK objects
 	self._reader = vtkcpbothapython.vtkDICOMVolumeReader()
-        #self._reader.DebugOn()
+        self._reader.DebugOn()
 
         # this part of the config is stored in this module, and not in
         # the reader.
