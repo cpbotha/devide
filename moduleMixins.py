@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.6 2003/02/25 14:34:52 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.7 2003/03/14 16:17:40 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -259,6 +259,8 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
 
         self.vtkPipelineConfigure(self._viewFrame, None, objects)
 
+# ----------------------------------------------------------------------------
+
 import resources.python.noConfigModuleMixinViewFrame
 
 class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
@@ -327,3 +329,5 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
                          if hasattr(object, 'GetClassName')])
 
         self.vtkPipelineConfigure(self._viewFrame, None, objects)
+
+# ----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.6 2003/03/09 23:34:26 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.7 2003/03/14 16:17:43 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -29,6 +29,13 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
         mm = self._moduleManager
         self._reader.SetProgressMethod(lambda s=self, mm=mm:
                                        mm.vtk_progress_cb(s._reader))
+
+        def errorEventCallback(o, e, msg):
+            print msg
+
+        errorEventCallback.callDataType = 'string0'
+            
+        self._reader.AddObserver('ErrorEvent', errorEventCallback)
         
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('VTK PolyData Reader',
