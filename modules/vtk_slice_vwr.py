@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.45 2002/06/21 07:04:11 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.46 2002/07/03 15:48:45 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -49,7 +49,7 @@ class vtk_slice_vwr(module_base,
         # each ortho view
         self._ortho_huds = []
         # list of selected points (we can make this grow or be overwritten)
-        self._ortho_sel_points = []
+        self._sel_points = []
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -302,6 +302,10 @@ class vtk_slice_vwr(module_base,
 # utility methods
 #################################################################
 
+    def _add_sel_point(self, point):
+        self._sel_points.append(point)
+        self._spoint_listctrl.InsertStringItem(0, str(point))
+
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
 
@@ -382,12 +386,33 @@ class vtk_slice_vwr(module_base,
         # panel inside the frame
         panel = wxPanel(self._view_frame, id=-1)
 
-        # top level split window
-        tl_splitwin = wxSplitterWindow(parent=panel, id=-1, size=(640,480))
+
+        #
+        l_panel = wxPanel(parent=panel, id=-1)
+
+        self._spoint_listctrl = wxListCtrl(l_panel, -1, size=(320,100),
+                                           style=wxLC_REPORT|wxSUNKEN_BORDER)
+        self._spoint_listctrl.InsertColumn(0, 'Position')
+        self._spoint_listctrl.InsertColumn(1, 'Position')
+        self._spoint_listctrl.InsertColumn(2, 'Value')
+        #self._spoint_listctrl.InsertStringItem(0, 'yaa')
+        #self._spoint_listctrl.InsertStringItem(1, 'yaa2')        
+
+        
+        l_sizer = wxBoxSizer(wxVERTICAL)
+        l_sizer.Add(self._spoint_listctrl, option=1, flag=wxEXPAND)
+        #l_sizer.Add(wxButton(l_panel, -1, 'blaaaaat'))
+        l_panel.SetAutoLayout(true)
+        l_panel.SetSizer(l_sizer)
+        l_sizer.Fit(l_panel)
+
+        # right split window with 3d and ortho views
+        r_splitwin = wxSplitterWindow(parent=panel, id=-1,
+                                      size=(640,480))
         
         # top split window with 3d and ortho view
         #########################################
-        top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
+        top_splitwin = wxSplitterWindow(parent=r_splitwin, id=-1)
         # 3d view
         td_panel = wxPanel(top_splitwin, id=-1)
         self._rwis.append(wxVTKRenderWindowInteractor(td_panel, -1))
@@ -416,7 +441,7 @@ class vtk_slice_vwr(module_base,
 
         # bottom split window with two (2) ortho views
         ##############################################
-        bottom_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
+        bottom_splitwin = wxSplitterWindow(parent=r_splitwin, id=-1)
         # second ortho
         o1_panel = self._create_ortho_panel(bottom_splitwin)
         # third ortho
@@ -426,13 +451,14 @@ class vtk_slice_vwr(module_base,
 
         # finally split the top level split win
         #######################################
-        tl_splitwin.SplitHorizontally(top_splitwin, bottom_splitwin, 240)
-
+        r_splitwin.SplitHorizontally(top_splitwin, bottom_splitwin, 240)
 
         # then make a top-level sizer
         #############################
         tl_sizer = wxBoxSizer(wxVERTICAL)
-        tl_sizer.Add(tl_splitwin, option=1, flag=wxEXPAND)
+        tl_sizer.Add(r_splitwin, option=1, flag=wxEXPAND)        
+        tl_sizer.Add(l_panel, option=0, flag=wxEXPAND)
+
         # the panel will make use of the sizer to calculate layout
         panel.SetAutoLayout(true)
         panel.SetSizer(tl_sizer)
@@ -603,8 +629,8 @@ class vtk_slice_vwr(module_base,
         # the easiest way to do this is to make use of the 3d plane
         # on which we've texture mapped; this has already been adjusted
         # by the call to _pw_cb()
-        if len(self._ortho_sel_points[ortho_idx]):
-            selp = self._ortho_sel_points[ortho_idx][0]
+        if len(self._sel_points[ortho_idx]):
+            selp = self._sel_points[ortho_idx][0]
             # p - tp
             ps = self._pws[ortho_idx].GetPolyDataSource()
             pmtp = map(operator.sub, ps.GetOrigin(), selp)
@@ -832,7 +858,7 @@ class vtk_slice_vwr(module_base,
                    inpoint[2] >= input_bounds[4] and \
                    inpoint[2] <= input_bounds[5]:
 
-                    self._ortho_sel_points[r_idx - 1] = [inpoint[0:3]]
+                    self._add_sel_point(inpoint[0:3])
 
                     self._ortho_huds[r_idx - 1]['vtkAxes'].SetOrigin(ppx,ppy,
                                                                      0.5)
