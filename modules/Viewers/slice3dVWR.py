@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.22 2004/03/18 11:46:42 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.23 2004/03/19 12:46:06 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.22 $
+    $Revision: 1.23 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -425,7 +425,10 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
                    self._handlerResetCamera)
 
         EVT_BUTTON(self.threedFrame, self.threedFrame.resetAllButtonId,
-                   lambda e, s=self: s._resetAll())
+                   lambda e: (self._resetAll(), self._resetAll()))
+
+        EVT_BUTTON(self.threedFrame, self.threedFrame.saveImageButton.GetId(),
+                   self._handlerSaveImageButton)
         
         EVT_CHOICE(self.threedFrame,
                    self.threedFrame.projectionChoiceId,
@@ -590,6 +593,17 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
         # whee, thaaaar she goes.
         self.render3D()
 
+    def _save3DToImage(self, filename):
+        self._moduleManager.setProgress(0, "Writing PNG image...")
+        w2i = vtk.vtkWindowToImageFilter()
+        w2i.SetInput(self.threedFrame.threedRWI.GetRenderWindow())
+
+        writer = vtk.vtkPNGWriter()
+        writer.SetInput(w2i.GetOutput())
+        writer.SetFileName(filename)
+        writer.Write()
+        self._moduleManager.setProgress(100, "Writing PNG image... [DONE]")
+
     def _showScalarBarForProp(self, prop):
         """Show scalar bar for the data represented by the passed prop.
         If prop is None, the scalar bar will be removed and destroyed if
@@ -678,6 +692,17 @@ class slice3dVWR(vtkPipelineConfigModuleMixin, colourDialogMixin, moduleBase):
     def _handlerResetCamera(self, event):
         self._threedRenderer.ResetCamera()
         self.render3D()
+
+    def _handlerSaveImageButton(self, event):
+        # first get the filename
+        filename = wxFileSelector(
+            "Choose filename for PNG image",
+            "", "", "png",
+            "PNG files (*.png)|*.png|All files (*.*)|*.*",
+            wxSAVE)
+                    
+        if filename:
+            self._save3DToImage(filename)
 
     def _handlerShowControls(self, event):
         if not self.controlFrame.Show(True):
