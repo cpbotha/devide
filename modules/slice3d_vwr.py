@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.7 2003/01/21 16:44:16 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.8 2003/01/22 18:24:16 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -75,9 +75,12 @@ class slice3d_vwr(module_base,
         self._voi_widget.SetRotationEnabled(0)
         self._voi_widget.AddObserver('InteractionEvent',
                                      self.voiWidgetInteractionCallback)
+        self._voi_widget.AddObserver('EndInteractionEvent',
+                                     self.voiWidgetEndInteractionCallback)
 
         # also create the VTK construct for actually extracting VOI from data
         self._extractVOI = vtk.vtkExtractVOI()
+        self._currentVOI = 6 * [0]
 
         self._left_mouse_button = 0
 
@@ -245,6 +248,8 @@ class slice3d_vwr(module_base,
                 for ipw in self._ipws:
                     ipw.SetInput(input_stream)
 
+                self._extractVOI.SetInput(input_stream)
+
                 # add outline actor and cube axes actor to renderer
                 self._threedRenderer.AddActor(self._outline_actor)
                 self._outline_actor.PickableOff()
@@ -281,13 +286,13 @@ class slice3d_vwr(module_base,
 #################################################################
 
     def _create_window(self):
-        import resources.python.slice3d_vwr_frame
-        reload(resources.python.slice3d_vwr_frame)
+        import modules.resources.python.slice3d_vwr_frame
+        reload(modules.resources.python.slice3d_vwr_frame)
 
         # create main frame, make sure that when it's closed, it merely hides
         parent_window = self._module_manager.get_module_view_parent_window()
-        slice3d_vwr_frame = \
-                          resources.python.slice3d_vwr_frame.slice3d_vwr_frame
+        slice3d_vwr_frame = modules.resources.python.slice3d_vwr_frame.\
+                            slice3d_vwr_frame
         self._view_frame = slice3d_vwr_frame(parent_window, id=-1,
                                              title='dummy')
 
@@ -362,6 +367,8 @@ class slice3d_vwr(module_base,
                 if event.Checked():
                     self._voi_widget.On()
                     self.voiWidgetInteractionCallback(self._voi_widget, None)
+                    self.voiWidgetEndInteractionCallback(self._voi_widget,
+                                                         None)
                 else:
                     self._voi_widget.Off()
             
@@ -820,14 +827,38 @@ class slice3d_vwr(module_base,
     def voiWidgetInteractionCallback(self, o, e):
         planes = vtk.vtkPlanes()
         o.GetPlanes(planes)
-        self._view_frame.voiPanel.voiBoundsText.SetValue(
+        bounds =  planes.GetPoints().GetBounds()
+
+        # first set bounds
+        self._view_frame.voiPanel.boundsText.SetValue(
             "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
-            planes.GetPoints().GetBounds())
+            bounds)
+
+        # then set discrete extent (volume relative)
+        input_data = self._extractVOI.GetInput()
+        ispacing = input_data.GetSpacing()
+        iorigin = input_data.GetOrigin()
+        # calculate discrete coords
+        bounds = planes.GetPoints().GetBounds()
+        voi = 6 * [0]
+        # excuse the for loop :)
+        for i in range(6):
+            voi[i] = round((bounds[i] - iorigin[i / 2]) / ispacing[i / 2])
+        # store the VOI (this is a shallow copy)
+        self._currentVOI = voi
+        # display the discrete extent
+        self._view_frame.voiPanel.extentText.SetValue(
+            "(%d %d %d %d %d %d)" % tuple(voi))
+
 
     def voiWidgetEndInteractionCallback(self, o, e):
-        # FIXME: continue here
-        # we want to adjust the vtkExtractVOI
-        pass
+        # adjust the vtkExtractVOI with the latest coords
+        self._extractVOI.SetVOI(self._currentVOI)
+
+
+
+        
+
     
     
         
