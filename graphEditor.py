@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.47 2003/09/30 17:03:17 cpbotha Exp $
+# $Id: graphEditor.py,v 1.48 2003/10/05 17:30:27 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -7,6 +7,7 @@ from wxPython.wx import *
 from internal.wxPyCanvas import wxpc
 import genUtils
 import moduleUtils # for getModuleIcon
+import os
 import re
 import string
 import sys
@@ -172,9 +173,19 @@ class graphEditor:
         dropSource.DoDragDrop(TRUE)
 
     def canvasDropText(self, x, y, itemText):
-        """itemText is usually the complete module spec.
+        """itemText is a complete module or segment spec, e.g.
+        module:modules.Readers.dicomRDR or
+        segment:/home/cpbotha/work/code/dscas3/networkSegments/blaat.d3n
         """
-        self.createModuleAndGlyph(x, y, itemText)
+
+        modp = 'module:'
+        segp = 'segment:'
+        
+        if itemText.startswith(modp):
+            self.createModuleAndGlyph(x, y, itemText[len(modp):])
+        elif itemText.startswith(segp):
+            self._loadAndRealiseNetwork(itemText[len(segp):], (x,y),
+                                        reposition=True)
 
 
     def close(self):
@@ -362,11 +373,13 @@ class graphEditor:
         """
         self._graphFrame.treeCtrl.DeleteAllItems()
 
-        rootNode = self._graphFrame.treeCtrl.AddRoot('Modules')
+        rootNode = self._graphFrame.treeCtrl.AddRoot('Modules and Segments')
         coreNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
                                                         'Core Modules')
         userNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
                                                         'User Modules')
+        segNode = self._graphFrame.treeCtrl.AppendItem(rootNode,
+                                                       'Segments')
         rootDict = {'modules' : coreNode,
                     'userModules' : userNode}
 
@@ -391,9 +404,19 @@ class graphEditor:
                     catDict[mParts[1]] = catNode
 
             nn = self._graphFrame.treeCtrl.AppendItem(catNode, lastName)
-            self._graphFrame.treeCtrl.SetPyData(nn, moduleName)
+            self._graphFrame.treeCtrl.SetPyData(nn,
+                                                'module:%s' % (moduleName,))
 
-        for node in rootDict.values() + [rootNode]:
+        # the availableSegmentsList is a list of fully qualified filenames
+        self.availableSegmentsList = mm.availableSegmentsList
+        for segmentName in self.availableSegmentsList:
+            # we want basename without extension to put in the tree
+            basename = os.path.splitext(os.path.basename(segmentName))[0]
+            nn = self._graphFrame.treeCtrl.AppendItem(segNode, basename)
+            self._graphFrame.treeCtrl.SetPyData(nn,
+                                                'segment:%s' % (segmentName,))
+
+        for node in rootDict.values() + [segNode, rootNode]:
             self._graphFrame.treeCtrl.Expand(node)
 
     def close_graph_frame_cb(self, event):
@@ -757,7 +780,8 @@ class graphEditor:
         self._graphFrame.canvas.Refresh()
 
 
-    def _loadAndRealiseNetwork(self, filename):
+    def _loadAndRealiseNetwork(self, filename, position=(0,0),
+                               reposition=False):
         """Attempt to load (i.e. unpickle) a D3N network file and recreate
         this network on the canvas.
         """
@@ -765,7 +789,7 @@ class graphEditor:
         try:
             pmsDict, connectionList, glyphPosDict = self._loadNetwork(filename)
             self._realiseNetwork(pmsDict, connectionList, glyphPosDict,
-                                 (0,0))
+                                 position, reposition)
         except Exception, e:
             genUtils.logError(str(e))
 
