@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.1 2002/02/16 00:33:45 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.2 2002/04/29 11:25:12 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -91,7 +91,8 @@ icon_map = {'RenderWindow': 'renwin', 'Renderer': 'ren',
             'Actor': 'actor', 'Light': 'light', 'Camera': 'camera',
             'Mapper': 'process', 'Property': 'file',
 	    'Coordinate': 'coord', 'Source': 'data', 
-	    'LookupTable': 'colormap', 'Reader': 'data'}
+            'LookupTable': 'colormap', 'Reader': 'data',
+            'Assembly': 'actor'}
 
 def get_icon (vtk_obj):
     strng = vtk_obj.GetClassName ()[3:]
@@ -152,6 +153,11 @@ def get_methods (vtk_obj):
     if re.match ("vtk\w*Renderer", vtk_obj.GetClassName ()):
 	methods.append (["ActiveCamera", ""])
 
+    if re.match ("vtk\w*Assembly", vtk_obj.GetClassName ()):
+        methods.append (["Parts", ""])
+        methods.append (["Volumes", ""])
+        methods.append (["Actors", ""])
+
     # fixes bug with infinite loop for GetInverse() method.  Thanks to
     # "Blezek, Daniel J" <blezek@crd.ge.com> for reporting it.    
     global last_transform
@@ -194,7 +200,7 @@ def get_vtk_objs (vtk_obj):
 		col.InitTraversal ()
 		n = col.GetNumberOfItems ()
 		prop = 0
-		if string.find (t, "vtkPropC") > -1:
+		if re.match ("vtkProp\w*C", t):
 		    prop = 1
 		for i in range (0, n):
 		    if prop:

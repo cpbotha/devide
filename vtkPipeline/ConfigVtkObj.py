@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.1 2002/02/16 00:33:45 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.2 2002/04/29 11:25:12 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
