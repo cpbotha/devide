@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.70 2003/12/18 16:00:50 cpbotha Exp $
+# $Id: dscas3.py,v 1.71 2003/12/18 16:07:26 cpbotha Exp $
 
-DSCAS3_VERSION = '20031215'
+DSCAS3_VERSION = '20031218'
 
 # standard Python imports
 import getopt
