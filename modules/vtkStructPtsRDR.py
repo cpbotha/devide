@@ -1,13 +1,16 @@
-from module_base import module_base, filenameViewModuleMixin
+# $Id: vtkStructPtsRDR.py,v 1.3 2003/02/06 17:06:00 cpbotha Exp $
+
+from moduleBase import moduleBase
+from moduleMixins import filenameViewModuleMixin
 from wxPython.wx import *
 import vtk
 
-class vtkStructPtsRDR(module_base, filenameViewModuleMixin):
+class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
 
-    def __init__(self, module_manager):
+    def __init__(self, moduleManager):
 
         # call parent constructor
-        module_base.__init__(self, module_manager)
+        moduleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
@@ -19,41 +22,55 @@ class vtkStructPtsRDR(module_base, filenameViewModuleMixin):
                               'Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
                               {'vtkStructuredPointsReader': self._reader})
+
+        # set up some defaults
+        self._config.filename = ''
+        self.configToLogic()
+        # make sure these filter through from the bottom up
+        self.syncViewWithLogic()
+
+        # finally we can display the GUI
+        self._viewFrame.Show(1)
         
     def close(self):
         del self._reader
         filenameViewModuleMixin.close(self)
 
-    def get_input_descriptions(self):
+    def getInputDescriptions(self):
         return ()
     
-    def set_input(self, idx, input_stream):
+    def setInput(self, idx, input_stream):
         raise Exception
-
     
-    def get_output_descriptions(self):
-        return ('vtkStructuredPoints',)        
+    def getOutputDescriptions(self):
+        return ('vtkStructuredPoints',)
     
-    def get_output(self, idx):
+    def getOutput(self, idx):
         return self._reader.GetOutput()
-    
-    def sync_config(self):
+
+    def logicToConfig(self):
         filename = self._reader.GetFileName()
         if filename == None:
             filename = ''
 
-        self._setViewFrameFilename(filename)
-	
-    def apply_config(self):
-        self._reader.SetFileName(self._getViewFrameFilename())
+        self._config.filename = filename
 
-    def execute_module(self):
+    def configToLogic(self):
+        self._reader.SetFileName(self._config.filename)
+
+    def viewToConfig(self):
+        self._config.filename = self._getViewFrameFilename()
+
+    def configToView(self):
+        self._setViewFrameFilename(self._config.filename)
+    
+    def executeModule(self):
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
         # your module - you could do this in __init__ as well, it seems
         # neater here though
         self._reader.SetProgressText('Reading vtk Structured Points data')
-        mm = self._module_manager
+        mm = self._moduleManager
         self._reader.SetProgressMethod(lambda s=self, mm=mm:
                                        mm.vtk_progress_cb(s._reader))
         
@@ -65,15 +82,14 @@ class vtkStructPtsRDR(module_base, filenameViewModuleMixin):
         # pop up.  you should do this in all your modules right after you
         # caused some VTK processing which might have resulted in VTK
         # outputting to the error log
-        self._module_manager.vtk_poll_error()
+        self._moduleManager.vtk_poll_error()
 
         # tell the user that we're done
         mm.setProgress(100, 'DONE reading vtk Structured Points data')
 
     def view(self, parent_window=None):
-	# first make sure that our variables agree with the stuff that
-        # we're configuring
-	self.sync_config()
+        # if the frame is already visible, bring it to the top; this makes
+        # it easier for the user to associate a frame with a glyph
         if not self._viewFrame.Show(true):
             self._viewFrame.Raise()
 
