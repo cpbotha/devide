@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.25 2003/06/06 16:08:31 cpbotha Exp $
+# $Id: graphEditor.py,v 1.26 2003/06/06 16:10:24 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -90,8 +90,9 @@ class graphEditor:
         """This gracefull takes care of all graphEditor shutdown and is mostly
         called at application shutdown.
         """
-        # FIXME: clean the canvas!
-        pass
+
+        # this should take care of just about everything!
+        self.clearAllGlyphsFromCanvas()
 
     def createGlyph(self, rx, ry, moduleName, moduleInstance):
         """Create only a glyph on the canvas given an already created
