@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.30 2003/06/08 00:42:49 cpbotha Exp $
+# $Id: graphEditor.py,v 1.31 2003/06/09 13:31:15 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -489,13 +489,11 @@ class graphEditor:
         self._graphFrame.canvas.Refresh()
 
     def loadNetwork(self, filename, position=(-1,-1)):
-        print "Loading from %s" % (filename)
-
         f = None
         try:
-            # load the stream
+            # load the fileData
             f = open(filename, 'rb')
-            stream = f.read()
+            fileData = f.read()
         except Exception, e:
             genUtils.logError('Could not load network from %s: %s' % \
                               (filename,str(e)))
@@ -506,13 +504,19 @@ class graphEditor:
         f.close()
 
         try:
-            # unpickle it
-            tup = cPickle.loads(stream)
-            pmsDict, connectionList, glyphPosDict = tup
+            blaat = cPickle.loads(fileData)
+            (headerTuple, dataTuple) = cPickle.loads(fileData)
+            magic, major, minor, patch = headerTuple
+            pmsDict, connectionList, glyphPosDict = dataTuple
+            
         except Exception, e:
             genUtils.logError('Could not interpret network from %s: %s' % \
                               (filename,str(e)))
             return
+
+        if magic != 'D3N' or (major,minor,patch) != (1,0,0):
+            genUtils.logError('%s is not a valid DSCAS3 network file.' % \
+                              (filename,))
 
 
         # get the module manager to deserialise
@@ -542,8 +546,47 @@ class graphEditor:
             tGlyph = newGlyphDict[connection.targetInstanceName]
             self._createLine(sGlyph, connection.outputIdx,
                              tGlyph, connection.inputIdx)
-        
-                                         
+
+    def saveNetwork(self, filename):
+        # make a list of all module instances
+        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
+        mm = self._dscas3_app.getModuleManager()
+
+        # let the moduleManager serialise what it can
+        pmsDict, connectionList = mm.serialiseModuleInstances(
+            moduleInstances)
+
+        savedInstanceNames = [pms.instanceName for pms in pmsDict.values()]
+                                  
+        # now we also get to store the coordinates of the glyphs which
+        # have been saved (keyed on instanceName)
+        savedGlyphs = [glyph for glyph in allGlyphs
+                       if mm.getInstanceName(glyph.moduleInstance)\
+                       in savedInstanceNames]
+            
+        glyphPosDict = {}
+        for savedGlyph in savedGlyphs:
+            instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
+            glyphPosDict[instanceName] = savedGlyph.getPosition()
+                
+
+        # change the serialised moduleInstances to a pickled stream
+        headerAndData = (('D3N', 1, 0, 0), \
+                        (pmsDict, connectionList, glyphPosDict))
+        stream = cPickle.dumps(headerAndData, True)
+            
+        f = None
+        try:
+            f = open(filename, 'wb')
+            f.write(stream)
+        except Exception, e:
+            genUtils.logError('Could not write network to %s: %s' % (filename,
+                                                                     str(e)))
+                                                                     
+        if f:
+            f.close()
+                
 
     def updatePortInfoStatusBar(self, currentGlyph, currentPort):
         
@@ -601,36 +644,7 @@ class graphEditor:
         
         if filename:
             print "Saving to %s" % (filename)
-            # make a list of all module instances
-            allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
-            moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
-            mm = self._dscas3_app.getModuleManager()
-
-            # let the moduleManager serialise what it can
-            pmsDict, connectionList = mm.serialiseModuleInstances(
-                moduleInstances)
-
-            savedInstanceNames = [pms.instanceName for pms in pmsDict.values()]
-                                  
-            # now we also get to store the coordinates of the glyphs which
-            # have been saved (keyed on instanceName)
-            savedGlyphs = [glyph for glyph in allGlyphs
-                           if mm.getInstanceName(glyph.moduleInstance)\
-                           in savedInstanceNames]
-            
-            glyphPosDict = {}
-            for savedGlyph in savedGlyphs:
-                instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
-                glyphPosDict[instanceName] = savedGlyph.getPosition()
-                
-            # change the serialised moduleInstances to a pickled stream
-            stream = cPickle.dumps(\
-                     (pmsDict, connectionList, glyphPosDict), True)
-
-            # FIXME: check for file errors, check for overwriting!
-            f = open(filename, 'wb')
-            f.write(stream)
-            f.close()
+            self.saveNetwork(filename)
 
     def _glyphDrag(self, glyph, eventName, event, module):
 
