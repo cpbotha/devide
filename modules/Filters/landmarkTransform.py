@@ -1,5 +1,5 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: landmarkTransform.py,v 1.5 2004/04/13 14:39:33 cpbotha Exp $
+# $Id: landmarkTransform.py,v 1.6 2004/11/19 17:52:48 cpbotha Exp $
 # see module documentation
 
 # TODO:
@@ -133,8 +133,12 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
         tempTargetLandmarks = [i['world'] for i in self._inputPoints
                                if i['name'].lower().startswith('target')]
 
+        print "hi there"
+        
         if tempSourceLandmarks != self._sourceLandmarks or \
            tempTargetLandmarks != self._targetLandmarks:
+
+            print "seems like I have to update"
 
             if len(tempSourceLandmarks) != len(tempTargetLandmarks):
                 md= wx.MessageDialog(
