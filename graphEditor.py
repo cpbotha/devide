@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.82 2004/05/17 16:45:21 cpbotha Exp $
+# $Id: graphEditor.py,v 1.83 2004/06/10 16:04:40 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -709,6 +709,15 @@ class graphEditor:
             idx += 1
 
         mlc.SetColumnWidth(0, wxLIST_AUTOSIZE)
+
+    def _handlerMarkModule(self, instance):
+        markedModuleName = wxGetTextFromUser(
+            'Please enter a name for this module to be keyed on.')
+
+        if markedModuleName:
+            self._devide_app.getModuleManager().markModule(
+                instance, markedModuleName)
+                
 
     def _handlerModulesListCtrlSelected(self, event):
         mlc = self._graphFrame.modulesListCtrl
@@ -1478,10 +1487,19 @@ class graphEditor:
             EVT_MENU(self._graphFrame.canvas, exe_id,
                      lambda e: self._executeModule(module))
 
+            pmenu.AppendSeparator()            
+
             del_id = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete Module'))
             EVT_MENU(self._graphFrame.canvas, del_id,
                      lambda e: self._deleteModule(glyph))
+
+            markModuleId = wxNewId()
+            pmenu.AppendItem(wxMenuItem(pmenu, markModuleId, 'Mark Module'))
+            EVT_MENU(self._graphFrame.canvas, markModuleId,
+                     lambda e: self._handlerMarkModule(module))
+
+            pmenu.AppendSeparator()
 
             self._appendEditCommands(pmenu, self._graphFrame.canvas,
                                      (event.GetX(), event.GetY()))
