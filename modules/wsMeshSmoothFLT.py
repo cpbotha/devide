@@ -124,7 +124,7 @@ class wsMeshSmoothFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
         # instantiate the view frame, add close handler, set default icon
         viewFrame = moduleUtils.instantiateModuleViewFrame(
-            'wsMeshSmooth', mm,
+            self, mm,
             modules.resources.python.wsMeshSmoothFLTViewFrame.\
             wsMeshSmoothFLTViewFrame)
 

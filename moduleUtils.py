@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.11 2003/05/20 17:16:57 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.12 2003/05/20 20:31:49 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -241,7 +241,7 @@ def getModuleIcon():
         resources.graphics.images.getdscas3logom32x32Bitmap())
     return icon
     
-def instantiateModuleViewFrame(name, moduleManager, frameClass):
+def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
     # instantiate the frame
     pw = moduleManager.get_module_view_parent_window()
     viewFrame = frameClass(pw, -1, 'dummy')
@@ -249,6 +249,11 @@ def instantiateModuleViewFrame(name, moduleManager, frameClass):
     # make sure that it's only hidden when it's closed
     EVT_CLOSE(viewFrame,
               lambda e: viewFrame.Show(False))
+
+    # set its title (is there not an easier way to get the class name?)
+    viewFrame.SetTitle('%s View: %s' % \
+                       (str(d3module.__class__).split('.')[-1],
+                        moduleManager.getInstanceName(d3module)))
 
     # set its icon!
     viewFrame.SetIcon(getModuleIcon())

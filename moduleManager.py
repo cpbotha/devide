@@ -90,6 +90,17 @@ class moduleManager:
     def getAvailableModuleList(self):
 	return self._availableModuleList
 
+    def getInstanceName(self, instance):
+        """Given the actual instance, return its unique instance.  If the
+        instance doesn't exist in self._moduleDict, return the currently
+        halfborn instance.
+        """
+
+        try:
+            return self._moduleDict[instance].instanceName
+        except Exception:
+            return self._halfBornInstanceName
+
     def get_modules_dir(self):
 	return self._modules_dir
 
@@ -99,6 +110,12 @@ class moduleManager:
     
     def createModule(self, name, instanceName=None):
 	try:
+            # think up name for this module (we have to think this up now
+            # as the module might want to know about it whilst it's being
+            # constructed
+            instanceName = self._makeUniqueInstanceName(instanceName)
+            self._halfBornInstanceName = instanceName
+            
             # find out whether it's built-in or user
             mtypePrefix = ['userModules', 'modules']\
                           [bool(name in modules.module_list)]
@@ -110,40 +127,18 @@ class moduleManager:
             exec('import %s' % fullName)
             # in THIS case, there is a McMillan hook which'll tell the
             # installer about all the dscas3 modules. :)
-                
             print "imported: " + str(id(sys.modules[fullName]))
+
 	    # then instantiate the requested class
             exec('moduleInstance = %s.%s(self)' % (fullName, name))
-	    #exec('self.modules.append(' + fullName + '.' + name + '(self))')
-            numIns = len(moduleInstance.getInputDescriptions())
-            numOuts = len(moduleInstance.getOutputDescriptions())
 
-            if not instanceName:
-                instanceName = "d3m%d" % (len(self._moduleDict),)
-
-            # now make sure that instanceName is unique
-            uniqueName = False
-            while not uniqueName:
-                # first check that this doesn't exist in the module dictionary
-                uniqueName = True
-                for mmt in self._moduleDict.items():
-                    if mmt[1].instanceName == instanceName:
-                        uniqueName = False
-                        break
-
-                if not uniqueName:
-                    # this means that this exists already!
-                    # create a random 3 character string
-                    chars = string.letters
-                    tl = ""
-                    for i in range(3):
-                        tl += choice(chars)
-                        
-                    instanceName == "%s%s%d" % (instanceName, tl,
-                                                len(self._moduleDict))
-                
+            # and store it in our internal structures
             self._moduleDict[moduleInstance] = metaModule(moduleInstance,
                                                           instanceName)
+
+            # it's now fully born ;)
+            self._halfBornInstanceName = None
+
 
 	except ImportError:
 	    genUtils.logError("Unable to import module %s!" % name)
@@ -333,4 +328,38 @@ class moduleManager:
     def setProgress(self, progress, message):
         self._dscas3_app.setProgress(progress, message)
 
-	
+    def _makeUniqueInstanceName(self, instanceName=None):
+        """Ensure that instanceName is unique or create a new unique
+        instanceName.
+
+        If instanceName is None, a unique one will be created.  An
+        instanceName (whether created or passed) will be permuted until it
+        unique and then returned.
+        """
+        
+        # first we make sure we have a unique instance name
+        if not instanceName:
+            instanceName = "d3m%d" % (len(self._moduleDict),)
+
+        # now make sure that instanceName is unique
+        uniqueName = False
+        while not uniqueName:
+            # first check that this doesn't exist in the module dictionary
+            uniqueName = True
+            for mmt in self._moduleDict.items():
+                if mmt[1].instanceName == instanceName:
+                    uniqueName = False
+                    break
+
+            if not uniqueName:
+                # this means that this exists already!
+                # create a random 3 character string
+                chars = string.letters
+                tl = ""
+                for i in range(3):
+                    tl += choice(chars)
+                        
+                instanceName == "%s%s%d" % (instanceName, tl,
+                                            len(self._moduleDict))
+        
+        return instanceName
