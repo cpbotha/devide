@@ -64,7 +64,7 @@ pyz = PYZ(a.pure)
 
     
 exe = EXE(pyz,
-          a.scripts, #+ [('v', '', 'OPTION')],
+          a.scripts + [('v', '', 'OPTION')],
           exclude_binaries=1,
           name=exeName,
           icon=os.path.join(D3_DIR, 'resources/graphics/dscas3logo64x64.ico'),

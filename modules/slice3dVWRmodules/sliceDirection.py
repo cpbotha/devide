@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.6 2003/07/07 14:45:32 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.7 2003/07/22 14:45:53 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -463,7 +463,7 @@ class sliceDirection:
         if len(self._ipws) > 1:
             # iterate through overlay layers
             for ipw in self._ipws[1:]:
-                lut = vtk.vtkLookupTable()            
+                lut = vtk.vtkLookupTable()
                 inputStream = ipw.GetInput()
                 minv, maxv = inputStream.GetScalarRange()
                 lut.SetTableRange((minv,maxv))
@@ -473,7 +473,7 @@ class sliceDirection:
                 lut.Build()
 
                 ipw.SetInteractor(
-                    self.sliceDirection.slice3dVWR.threedFrame.threedRWI)
+                    self.sliceDirections.slice3dVWR.threedFrame.threedRWI)
                 # default axial orientation
                 ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
                 ipw.SetSliceIndex(0)
