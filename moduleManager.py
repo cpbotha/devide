@@ -155,6 +155,44 @@ class moduleManager:
                 self._availableModuleList['modules.%s' % (mn,)] = \
                                                        modules.moduleList[mn]
 
+        # now do the modulePacks
+        # first get a list of directories in modulePacks
+        modulePacksDir = os.path.join(appDir, 'modulePacks')        
+        try:
+            mpdcands = os.listdir(modulePacksDir)
+        except Exception, e:
+            print "Could not list modulePacks: %s." % (str(e),)
+        else:
+            try:
+                import modulePacks
+            except ImportError, e:
+                print "Could not import modulePacks: %s." % (str(e),)
+            else:
+                mpdirs = [mpdir for mpdir in mpdcands
+                          if os.path.isdir(
+                    os.path.join(modulePacksDir, mpdir))]
+
+                for mpdir in mpdirs:
+                    # this should remove trailing dirseps
+                    mpdir = os.path.normpath(mpdir)
+                    try:
+                        # import the modulePack
+                        __import__('modulePacks.%s' % (mpdir,),
+                                   globals(), locals())
+                        # reload it
+                        reload(getattr(modulePacks, mpdir))
+                    except ImportError:
+                        # skip to next mpdir
+                        continue
+
+                    mpdirModuleList = getattr(modulePacks, mpdir).moduleList
+                    for mn,cats in mpdirModuleList.items():
+                        self._availableModuleList['modulePacks.%s.%s' %
+                                                  (mpdir, mn)] = cats
+                                                  
+
+            
+
         # then all the user modules
         for umn in userModuleList:
             self._availableModuleList['%s' % (umn,)] = \
