@@ -1,4 +1,4 @@
-# $Id: gradientAnisotropicDiffusion.py,v 1.1 2004/03/03 12:20:16 cpbotha Exp $
+# $Id: gradientAnisotropicDiffusion.py,v 1.2 2004/03/10 22:15:46 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -8,7 +8,14 @@ import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
+    """Performs a gradient-based anisotropic diffusion.
 
+    This will smooth homogeneous areas whilst preserving features
+    (e.g. edges).
+
+    $Revision: 1.2 $
+    """
+    
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

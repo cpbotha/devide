@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.16 2004/02/29 21:24:30 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.17 2004/03/10 22:15:46 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -43,10 +43,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     
     """Slicing, dicing slice viewing class.
 
-    This class is used as a devide module.  Given vtkImageData-like input data,
-    it will show 3 slices and 3 planes in a 3d scene.  PolyData objects can
-    also be added.  One can interact with the 3d slices to change the slice
-    orientation and position.
+    Please see the main DeVIDE help/user manual by pressing F1.  This module,
+    being so absolutely great, has its own section.
+
+    $Revision: 1.17 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -233,7 +233,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
             elif self._inputs[idx]['Connected'] == 'vtkImageDataPrimary' or \
                  self._inputs[idx]['Connected'] == 'vtkImageDataOverlay':
-
                 # remove data from the sliceDirections
                 self.sliceDirections.removeData(self._inputs[idx]['inputData'])
 
@@ -282,14 +281,23 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 self._inputs[idx]['tdObject'] = inputStream
                 
             elif inputStream.IsA('vtkImageData'):
+                connecteds = [i['Connected'] for i in self._inputs]
+                if 'vtkImageDataOverlay' in connecteds and \
+                   'vtkImageDataPrimary' not in connecteds:
+                    # this means the user has disconnected his primary and
+                    # is trying to reconnect something in its place.  We
+                    # don't like that...
+                    raise Exception, \
+                          "Please remove all overlays first " \
+                          "before attempting to add primary data."
+                
                 # tell all our sliceDirections about the new data
                 self.sliceDirections.addData(inputStream)
                 
                 # find out whether this is  primary or an overlay, record it
-                connecteds = [i['Connected'] for i in self._inputs]
-                if 'vtkImageDataPrimary' in connecteds or \
-                       'vtkImageDataOverlay' in connecteds:
-                    # this must be an overlay
+                if 'vtkImageDataPrimary' in connecteds:
+                    # there's no way there can be only overlays in the list,
+                    # the check above makes sure of that
                     self._inputs[idx]['Connected'] = 'vtkImageDataOverlay'
                 else:
                     # there are no primaries or overlays, this must be
@@ -339,6 +347,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                     self.selectedPoints._storePoint(
                         (0,0,0), point['world'], 0.0,
                         point['name'])
+
+        else:
+            raise TypeError, "Input type not recognised!"
 
     def getOutputDescriptions(self):
         return ('Selected points',

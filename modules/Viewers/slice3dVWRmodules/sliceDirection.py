@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.5 2003/12/17 16:34:28 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.6 2004/03/10 22:15:46 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -484,10 +484,7 @@ class sliceDirection:
                 lut = vtk.vtkLookupTable()
                 inputStream = ipw.GetInput()
                 minv, maxv = inputStream.GetScalarRange()
-                lut.SetTableRange((minv,maxv))
-                lut.SetAlphaRange((0.0, 1.0))
-                lut.SetValueRange((1.0, 1.0))
-                lut.SetSaturationRange((1.0, 1.0))
+                self._setOverlayLookupTable(lut, 'blueOpacityRange', minv, maxv)
                 lut.Build()
 
                 ipw.SetInteractor(
@@ -573,6 +570,71 @@ class sliceDirection:
             # set the window and level
             ipw.SetWindowLevel(window, level)
             ipw.On()
+
+    def _setOverlayLookupTable(self, lut, mode, minv, maxv, srcAlpha=0.4):
+        """Configures overlay lookup table according to mode.
+
+        fusion: the whole overlay gets constast alpha == srcAlpha.
+        greenOpacityRange: the overlay gets pure green, opacity 0.0 -> 1.0
+        hueOpacityRange: the overlay gets hue and opacity 0.0 -> 1.0
+        """
+
+        redHue = 0.0
+        greenHue = 0.335
+        blueHue = 0.670
+
+        lut.SetTableRange((minv,maxv))
+
+        if mode == 'greenFusion':
+            lut.SetHueRange((greenHue, greenHue))
+            lut.SetAlphaRange((srcAlpha, srcAlpha))
+            lut.SetValueRange((0.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'redFusion':
+            lut.SetHueRange((redHue, redHue))
+            lut.SetAlphaRange((srcAlpha, srcAlpha))
+            lut.SetValueRange((0.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'blueFusion':
+            lut.SetHueRange((blueHue, blueHue))
+            lut.SetAlphaRange((srcAlpha, srcAlpha))
+            lut.SetValueRange((0.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'hueFusion':
+            lut.SetHueRange((0.0, 1.0))
+            lut.SetAlphaRange((srcAlpha, srcAlpha))
+            lut.SetValueRange((1.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'hueFusion2':
+            lut.SetHueRange((0.0, 1.0))
+            lut.SetAlphaRange((srcAlpha, srcAlpha))
+            lut.SetValueRange((0.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+            
+        elif mode == 'greenOpacityRange':
+            lut.SetHueRange((greenHue, greenHue))
+            lut.SetAlphaRange((0.0, 1.0))
+            lut.SetValueRange((1.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'blueOpacityRange':
+            lut.SetHueRange((blueHue, blueHue))
+            lut.SetAlphaRange((0.0, 1.0))
+            lut.SetValueRange((1.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'hueOpacityRange':
+            lut.SetHueRange((0.0, 1.0))
+            lut.SetAlphaRange((0.0, 1.0))
+            lut.SetValueRange((1.0, 1.0))
+            lut.SetSaturationRange((1.0, 1.0))
+
+        lut.Build()
+        
 
     def _syncAllToPrimary(self):
         """This will synchronise everything that can be synchronised to
