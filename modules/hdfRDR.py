@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.24 2003/02/10 16:04:20 cpbotha Exp $
+# $Id: hdfRDR.py,v 1.1 2003/02/13 12:55:54 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -10,7 +10,7 @@ import vtkdscas
 import module_utils
 import sys
 
-class vtk_hdf_rdr(moduleBase,
+class hdfRDR(moduleBase,
                   filenameViewModuleMixin):
 
     """dscas3 module for reading dscas HDF datasets.
