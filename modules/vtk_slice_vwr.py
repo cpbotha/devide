@@ -1,12 +1,20 @@
-# $Id: vtk_slice_vwr.py,v 1.26 2002/05/14 15:10:58 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.27 2002/05/15 14:06:47 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
 import vtk
 from wxPython.wx import *
 from wxPython.xrc import *
-from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+
+# wxGTK 2.3.2.1 bugs with mouse capture (BADLY), so we disable this
+try:
+    WX_USE_X_CAPTURE
+except NameError:
+    if wxPlatform == '__WXMSW__':
+        WX_USE_X_CAPTURE = 1
+    else:
+        WX_USE_X_CAPTURE = 0
 
 class vtk_slice_vwr(module_base):
 
@@ -23,8 +31,6 @@ class vtk_slice_vwr(module_base):
         # the render windows themselves (4, 1 x 3d and 3 x ortho)
 	self._rwis = []
         self._pws = []
-        # the last clicked/interacted with xy positions for every rw
-	self._rw_lastxys = []
         # the renderers corresponding to the render windows
 	self._renderers = []
 
@@ -41,6 +47,8 @@ class vtk_slice_vwr(module_base):
                                     'origin' : (0,0,0)}, # sagittal (yz-plane)
                                    {'axes' : (1,0,0, 0,0,1, 0,1,0),
                                     'origin' : (0,0,0)}] # coronal (zx-plane)
+
+        self._left_mouse_button = 0
 	
         # set the whole UI up!
 	self._create_window()
@@ -60,9 +68,68 @@ class vtk_slice_vwr(module_base):
         if hasattr(self,'_ortho_pipes'):
             del self._ortho_pipes
 
-    def _istyle_lbp_cb(self, vtk_object, command_name):
-        print one.GetClassName()
-        print two
+    def _find_wxvtkrwi_by_istyle(self, istyle):
+        """Find the wxVTKRenderWindowInteractor (out of self._rwis) that owns
+        the given vtkInteractorStyle.
+
+        If one uses vtkInteractorStyle::GetInteractor, one gets the vtk_object,
+        and we sometimes want the python wxVTKRenderWindowInteractor to use
+        some of the wx calls.
+        """
+
+        # kind of stupid, this will always iterate over the whole list :(
+        frwis = [i for i in self._rwis if i.GetInteractorStyle() == istyle]
+        if len(frwis) > 0:
+            return frwis[0]
+        else:
+            return None
+
+    def _istyle_img_cb(self, istyle, command_name):
+        """Call-back (observer) for InteractorStyleImage.
+
+        We keep track of left mouse button status.  If the user drags with
+        the left mouse button, we change the current slice.  Because mouse
+        capturing is broken in wxGTK 2.3.2.1, we can't do that.
+        """
+
+        if command_name == 'LeftButtonPressEvent':
+            # only capture mouse if we're told to
+            if WX_USE_X_CAPTURE:
+                rwi = self._find_wxvtkrwi_by_istyle(istyle)
+                rwi.CaptureMouse()
+            # note status of mouse button
+            self._left_mouse_button = 1
+            # chain to built-in method
+            istyle.OnLeftButtonDown()
+            
+        elif command_name == 'MouseMoveEvent':
+            if self._left_mouse_button:
+                rwi = self._find_wxvtkrwi_by_istyle(istyle)                
+                self._rw_slice_cb(rwi)
+            else:
+                istyle.OnMouseMove()
+
+        elif command_name == 'LeftButtonReleaseEvent':
+            # release mouse if we captured it
+            if WX_USE_X_CAPTURE:
+                rwi = self._find_wxvtkrwi_by_istyle(istyle)                
+                rwi.ReleaseMouse()
+            # update state variable
+            self._left_mouse_button = 0
+            # chain to built-in event
+            istyle.OnLeftButtonUp()
+
+        elif command_name == 'LeaveEvent':
+            if not WX_USE_X_CAPTURE:
+                # we only let cancel the button down if we're kludging it
+                # i.e. mouse capturing DOESN'T work
+                self._left_mouse_button = 0
+            # chain to built-in leave handler
+            istyle.OnLeave()
+
+        else:
+            raise TypeError
+            
 
     def _create_ortho_panel(self, parent):
         panel = wxPanel(parent, id=-1)
@@ -72,8 +139,11 @@ class vtk_slice_vwr(module_base):
         self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
         #istyle = vtk.vtkInteractorStyleTrackballCamera()
         istyle = vtk.vtkInteractorStyleImage()
+        istyle.AddObserver('LeftButtonPressEvent', self._istyle_img_cb)        
+        istyle.AddObserver('MouseMoveEvent', self._istyle_img_cb)
+        istyle.AddObserver('LeftButtonReleaseEvent', self._istyle_img_cb)
+        istyle.AddObserver('LeaveEvent', self._istyle_img_cb)
         self._rwis[-1].SetInteractorStyle(istyle)
-        #istyle.AddObserver('LeftButtonPressEvent', self._istyle_lbp_cb)
         panel_sizer = wxBoxSizer(wxVERTICAL)
         panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
         panel.SetAutoLayout(true)
@@ -342,7 +412,25 @@ class vtk_slice_vwr(module_base):
                 # we might want to use the IsA() method later) we must check
                 # the new dataset for certain requirements
 
-                you should continue here.  thar she blows.
+                # if newly added data has the same bounds as already added
+                # data, then it may be overlayed; we should make an exception
+                # with single slice overlays (ouch)
+                validInput = 0
+                if len(self._ortho_pipes[0]) == 0:
+                    # there's nothing in the first pipeline, so the data
+                    # that's being added is the first
+                    validInput = 1
+                else:
+                    ois = self._ortho_pipes[0][0]['vtkImageReslice'].GetInput()
+                    input_stream.Update()
+                    input_stream.ComputeBounds()
+                    if input_stream.GetBounds() == ois.GetBounds():
+                        validInput = 1
+                    
+                if not validInput:
+                    raise TypeError, "You have tried to add volume data to " \
+                          "the Slice Viewer which does not have the same " \
+                          "dimensions as already added volume data."
                 
                 for i in range(self._num_orthos):
                     self._ortho_pipes[i].append(
@@ -428,10 +516,12 @@ class vtk_slice_vwr(module_base):
 	rw.EndMotion(x,y)
 	self.rw_lastxys[self.rws.index(rw)] = {'x' : x, 'y' : y}
 	
-    def rw_slice_cb(self, x, y, rw):
-	r_idx = self.rws.index(rw)
-	
-	delta = y - self.rw_lastxys[r_idx]['y']
+    def _rw_slice_cb(self, wxvtkrwi):
+        delta = wxvtkrwi.GetEventPosition()[1] - \
+                wxvtkrwi.GetLastEventPosition()[1]
+
+        r_idx = self._rwis.index(wxvtkrwi)
+
         for layer_pl in self._ortho_pipes[r_idx - 1]:
 	    reslice = layer_pl['vtkImageReslice']
             
@@ -469,21 +559,19 @@ class vtk_slice_vwr(module_base):
                 o_ra_origin[2] = zmax
             o_ra_origin = tuple(o_ra_origin)
             # make sure the 3d plane moves with us
-            self.update_3d_plane(layer_pl, o_ra_origin[2])
+            self._update_3d_plane(layer_pl, o_ra_origin[2])
 
             # invert the ResliceAxes
-            rm = vtkMatrix4x4()
-            vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rm)
+            rm = vtk.vtkMatrix4x4()
+            vtk.vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rm)
             # transform our new origin back to the input
             new_ResliceAxesOrigin = rm.MultiplyPoint(o_ra_origin)[0:3]
             # and set it up!
             reslice.SetResliceAxesOrigin(new_ResliceAxesOrigin)
 
-	# at the end
-	self.rw_lastxys[r_idx] = {'x' : x, 'y' : y}
         # render the pertinent orth
-	rw.Render()
+	wxvtkrwi.Render()
         # render the 3d viewer
-        self.rws[0].Render()
+        self._rwis[0].Render()
 
 	
