@@ -85,6 +85,7 @@ class module_manager:
 	    exec('reload(' + fullName + ')')
 	    # then instantiate the requested class
 	    exec('self.modules.append(' + fullName + '.' + name + '(self))')
+
 	except ImportError:
 	    genUtils.logError("Unable to import module %s!" % name)
 	    return None
@@ -96,6 +97,7 @@ class module_manager:
 	return self.modules[-1]
 
     def view_module(self, instance):
+        print dir(modules)
         instance.view()
     
     def delete_module(self, instance):

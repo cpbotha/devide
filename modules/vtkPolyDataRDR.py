@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.8 2003/03/14 20:50:21 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.9 2003/05/02 12:47:34 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -14,7 +14,7 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
         This is almost standard code for most of the modules making use of
         the filenameViewModuleMixin mixin.
         """
-        
+
         # call the constructor in the "base"
         moduleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
