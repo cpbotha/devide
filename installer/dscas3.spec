@@ -56,7 +56,7 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
               os.path.join(SUPPORT_DIR, 'useUnicode.py'),
               mainScript],
              pathex=[],
-             hookspath=[os.path.join(D3_DIR, 'installer\\hooks\\')])
+             hookspath=[os.path.join(D3_DIR, 'installer/hooks/')])
 
 pyz = PYZ(a.pure)
 
