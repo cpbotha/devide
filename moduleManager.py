@@ -143,7 +143,8 @@ class moduleManager:
                                                     'userModules'),
                                        'userModules', userModuleList)
 
-
+        # make sure we pick it up if someone has edited the moduleList
+        reload(modules)
         # first add the core modules to our central list
         for mn in modules.moduleList:
             if self._devide_app.mainConfig.useInsight or \
