@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.19 2003/08/06 22:16:05 cpbotha Exp $
+# $Id: tdObjects.py,v 1.20 2003/08/07 13:17:57 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -11,6 +11,11 @@ import wx
 from wx.lib import colourdb
 
 class tdObjects:
+    """Class for keeping track and controlling everything to do with
+    3d objects in a slice viewer.  A so-called tdObject can be a vtkPolyData
+    or a vtkVolume at this stage.  The internal dict is keyed on the
+    tdObject binding itself.
+    """
 
     _objectColours = ['LIMEGREEN', 'SKYBLUE', 'PERU', 'CYAN', 
                       'GOLD',  'MAGENTA', 'GREY80',
@@ -48,9 +53,19 @@ class tdObjects:
         given tdObject.
         """
 
+        # vector from 0 to 1
+        vn = map(operator.sub, twoPoints[1], twoPoints[0])
+        # normalise it
+        d = vtk.vtkMath.Normalize(vn)
+        # calculate new lengthening vector
+        v = [0.5 * d * e for e in vn]
+        new0 = map(operator.sub, twoPoints[0], v)
+        new1 = map(operator.add, twoPoints[1], v)
+        
+        # we want the actor double as long
         lineSource = vtk.vtkLineSource()
-        lineSource.SetPoint1(twoPoints[0])
-        lineSource.SetPoint2(twoPoints[1])
+        lineSource.SetPoint1(new0)
+        lineSource.SetPoint2(new1)
 
         tubeFilter = vtk.vtkTubeFilter()
         tubeFilter.SetNumberOfSides(8)
@@ -60,6 +75,7 @@ class tdObjects:
         lineMapper.SetInput(tubeFilter.GetOutput())
 
         lineActor = vtk.vtkActor()
+        lineActor.GetProperty().SetColor(1.0, 0.0, 0.0)
         lineActor.SetMapper(lineMapper)
 
         self._slice3dVWR._threedRenderer.AddActor(lineActor)
@@ -208,6 +224,8 @@ class tdObjects:
         sObjects = self._getSelectedObjects()
         if len(worldPoints) >= 2 and sObjects:
             for sObject in sObjects:
+                # detach any previous stuff
+                self._detachAxis(sObject)
                 # the user asked for it, so we're doing all of 'em
                 self._attachAxis(sObject, worldPoints[0:2])
 
@@ -347,7 +365,7 @@ class tdObjects:
         to the list and updating it in the list control.
         """
 
-        if not self._tdObjectsDict.has_key(tdObject):
+        if tdObject not in self._tdObjectsDict:
 
             # we get to pick a colour and a name
             colourName = self._objectColours[
@@ -460,11 +478,24 @@ class tdObjects:
         else:
             return -1
 
-    def findObjectByActor(self, actor):
-        for oi in objectsDict.items():
-            if oi[1]['type'] == vtkPolyData and \
-               oi[1]['vtkActor'] == actor:
-                return oi[0]
+    def findObjectByProp(self, prop):
+        """Find the tdObject corresponding to prop.  Prop can be the vtkActor
+        corresponding with a vtkPolyData tdObject or a vtkVolume tdObject.
+        Whatever the case may be, this will return something that is a valid
+        key in the tdObjectsDict or None
+        """
+
+        try:
+            # this will succeed if prop is a vtkVolume
+            return self._tdObjectsDict[prop]
+        except KeyError:
+            #
+            for objectDict in self._tdObjectsDict.values():
+                if objectDict['vtkActor'] == prop:
+                    return objectDict['tdObject']
+
+        return None
+        
 
     def findObjectsByNames(self, objectNames):
         """Given an objectName, return a tdObject binding.
@@ -513,13 +544,23 @@ class tdObjects:
         self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(
             eventObject.GetProp3D())
 
+        # now make sure that the object axis (if any) is also aligned
+        # find the tdObject corresponding to the prop
+        tdObject = self.findObjectByProp(eventObject.GetProp3D())
+        try:
+            # if there's a line, move it too!
+            axisLineActor = self._tdObjectsDict[tdObject]['axisLineActor']
+            bwTransform = vtk.vtkTransform()
+            eventObject.GetTransform(bwTransform)
+            axisLineActor.SetUserTransform(bwTransform)
+        except KeyError:
+            pass
+
     def _observerMotionBoxWidgetInteraction(self, eventObject, eventType):
         bwTransform = vtk.vtkTransform()
         eventObject.GetTransform(bwTransform)
+        
         eventObject.GetProp3D().SetUserTransform(bwTransform)
-
-        # FIXME: continue here: axis should also be transformed (and
-        # later also flattened!)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -541,7 +582,7 @@ class tdObjects:
             self._slice3dVWR._threedRenderer.RemoveActor(actor)
 
             try:
-                # if there was a lineAxisActor, remove that as well
+                # if there was a axisLineActor, remove that as well
                 lineActor = self._tdObjectsDict[tdObject]['axisLineActor']
                 self._slice3dVWR._threedRenderer.RemoveActor(lineActor)
             except KeyError:
@@ -691,8 +732,13 @@ class tdObjects:
                 bw.SetInteractor(self._slice3dVWR.threedFrame.threedRWI)
                 # also "flatten" the actor (i.e. integrate its UserTransform)
                 genUtils.flattenProp3D(objectDict['vtkActor'])
+                # and the axis, if any
+                try:
+                    genUtils.flattenProp3D(objectDict['axisLineActor'])
+                except KeyError:
+                    pass
+                                          
                 bw.SetProp3D(objectDict['vtkActor'])
-
                 
                 bw.SetPlaceFactor(1.0)
                 bw.PlaceWidget()
@@ -716,9 +762,13 @@ class tdObjects:
             else:
                 if 'motionBoxWidget' in objectDict and \
                    objectDict['motionBoxWidget']:
-                    # let's flatten the prop again (if there is one)
-                    if objectDict['vtkActor']:
+                    try:
+                        # let's flatten the prop again (if there is one)
                         genUtils.flattenProp3D(objectDict['vtkActor'])
+                        # and flatten the axis (if any)
+                        genUtils.flattenProp3D(objectDict['axisLineActor'])
+                    except KeyError:
+                        pass
                         
                     objectDict['motionBoxWidget'].Off()
                     objectDict['motionBoxWidget'].SetInteractor(None)
@@ -735,7 +785,6 @@ class tdObjects:
                     self._grid.SetCellValue(gridRow, self._gridMotionCol,
                                             'N/A')
                     
-
     def _tdObjectModifiedCallback(self, o, e):
         self._slice3dVWR.render3D()
 
