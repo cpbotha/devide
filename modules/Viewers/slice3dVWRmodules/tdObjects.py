@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.13 2004/11/19 17:38:00 cpbotha Exp $
+# $Id: tdObjects.py,v 1.14 2004/11/20 22:01:23 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -87,6 +87,9 @@ class tdObjects(s3dcGridMixin):
             # normalise
             nColour = tuple([c / 255.0 for c in colour])
 
+            # we'll need this later (when we decide about scalar vis)
+            scalarsName = None
+            
             # now actually create the necessary thingies and add the object
             # to the scene
             if hasattr(tdObject, 'GetClassName') and \
@@ -113,11 +116,12 @@ class tdObjects(s3dcGridMixin):
                     tdObject.Update()
                 
                     if tdObject.GetPointData().GetScalars():
-                        sname = tdObject.GetPointData().GetScalars().GetName()
+                        scalarsName = tdObject.GetPointData().GetScalars().\
+                                      GetName()
                     else:
-                        sname = None
+                        scalarsName = None
 
-                    if sname:
+                    if scalarsName:
                         mapper.SetScalarRange(tdObject.GetScalarRange())
 
                     #mapper.ScalarVisibilityOff()
@@ -173,7 +177,7 @@ class tdObjects(s3dcGridMixin):
             # and the motion
             self._setObjectMotion(tdObject, False)
             # scalar visibility
-            if sname:
+            if scalarsName:
                 self._setObjectScalarVisibility(tdObject, True)
             else:
                 self._setObjectScalarVisibility(tdObject, False)
