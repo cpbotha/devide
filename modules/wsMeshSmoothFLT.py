@@ -95,9 +95,9 @@ class wsMeshSmoothFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
     def configToView(self):
         self._viewFrame.smoothingIterationsText.SetValue(
-            str(self._config.numberOfIterations))
+            "%d" % (self._config.numberOfIterations,))
         self._viewFrame.passBandText.SetValue(
-            str(self._config.passBand))
+            "%.2f" % (self._config.passBand,))
         self._viewFrame.featureEdgeSmoothingCheckBox.SetValue(
             bool(self._config.featureEdgeSmoothing))
         self._viewFrame.boundarySmoothingCheckBox.SetValue(
