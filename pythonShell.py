@@ -1,12 +1,12 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.1 2003/12/15 09:47:25 cpbotha Exp $
+# $Id: pythonShell.py,v 1.2 2003/12/15 09:48:49 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
 from wxPython.xrc import *
 from wxPython import py # shell, version, filling
 
-class python_shell:
+class pythonShell:
 
     def __init__(self, app):
         self._app = app

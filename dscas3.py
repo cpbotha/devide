@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.65 2003/12/14 21:11:37 cpbotha Exp $
+# $Id: dscas3.py,v 1.66 2003/12/15 09:48:49 cpbotha Exp $
 
 DSCAS3_VERSION = '20031214 no-ITK'
 
@@ -18,7 +18,7 @@ startupImports.doImports()
 from assistants import assistants
 from graphEditor import graphEditor
 from moduleManager import moduleManager
-from python_shell import python_shell
+from pythonShell import pythonShell
 
 import resources.python.mainFrame
 import resources.graphics.images
@@ -91,7 +91,7 @@ class dscas3_app_t(wx.App):
 
         self._assistants = assistants(self)
         self._graphEditor = None
-        self._python_shell = None
+        self._pythonShell = None
 	
 
     def OnInit(self):
@@ -208,11 +208,11 @@ class dscas3_app_t(wx.App):
 	# take care of main window
 	self._mainFrame.Close()
 
-    def start_python_shell(self):
-        if self._python_shell == None:
-            self._python_shell = python_shell(self)
+    def startPythonShell(self):
+        if self._pythonShell == None:
+            self._pythonShell = pythonShell(self)
         else:
-            self._python_shell.show()
+            self._pythonShell.show()
 
     def start_graph_editor(self):
         if self._graphEditor == None:
@@ -320,7 +320,7 @@ class dscas3_app_t(wx.App):
         self.start_graph_editor()
 
     def pythonShellCallback(self, event):
-        self.start_python_shell()
+        self.startPythonShell()
 
 	
 # ---------------------------------------------------------------------------
