@@ -12,7 +12,6 @@
             </object>
             <option>1</option>
             <flag>wxALL|wxEXPAND</flag>
-            <border>2</border>
           </object>
           <object class="sizeritem">
             <object class="wxButton" name="ID_VIEW_SLICES_BTN">
@@ -20,7 +19,6 @@
             </object>
             <option>1</option>
             <flag>wxALL|wxEXPAND</flag>
-            <border>2</border>
           </object>
           <object class="sizeritem">
             <object class="wxButton" name="ID_RENDER_VOLUME_BTN">
@@ -28,7 +26,6 @@
             </object>
             <option>1</option>
             <flag>wxALL|wxEXPAND</flag>
-            <border>2</border>
           </object>
           <object class="sizeritem">
             <object class="wxButton" name="ID_SEGMENT_BONES_BTN">
@@ -36,7 +33,6 @@
             </object>
             <option>1</option>
             <flag>wxALL|wxEXPAND</flag>
-            <border>2</border>
           </object>
           <object class="sizeritem">
             <object class="wxButton" name="ID_EXTRACT_SURFACES_BTN">
@@ -44,31 +40,64 @@
             </object>
             <option>1</option>
             <flag>wxALL|wxEXPAND</flag>
-            <border>2</border>
           </object>
+        </object>
+        <option>2</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>2</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel">
+          <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+              <object class="wxStaticText" name="ID_STATUS_STXT">
+                <label>Some status message...</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>4</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxGauge" name="ID_PROGRESS_GAUGE">
+                <range>100</range>
+                <value>25</value>
+                <fg>#FFFFFF</fg>
+                <bg>#007FFF</bg>
+              </object>
+              <option>1</option>
+              <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
+              <border>4</border>
+            </object>
+          </object>
+          <style>wxRAISED_BORDER</style>
         </object>
         <option>1</option>
         <flag>wxALL|wxEXPAND</flag>
         <border>2</border>
       </object>
-      <object class="sizeritem">
-        <object class="wxBoxSizer">
-          <orient>wxVERTICAL</orient>
-          <object class="sizeritem">
-            <object class="wxStaticText" name="ID_STATUS_STXT">
-              <label>Some status message...</label>
-            </object>
-            <flag>wxALIGN_CENTRE</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxGauge" name="ID_PROGRESS_GAUGE">
-              <range>100</range>
-            </object>
-            <flag>wxEXPAND</flag>
-          </object>
-        </object>
-        <flag>wxALL|wxEXPAND</flag>
-        <border>4</border>
+    </object>
+    <style></style>
+  </object>
+  <object class="wxMenuBar" name="MBAR_MAIN_WINDOW">
+    <object class="wxMenu">
+      <label>&amp;File</label>
+      <object class="wxMenuItem" name="ID_EXIT_MI">
+        <label>E&amp;xit</label>
+      </object>
+    </object>
+    <object class="wxMenu">
+      <label>&amp;Window</label>
+      <object class="wxMenuItem" name="ID_GRAPH_EDITOR_MI">
+        <label>&amp;Graph Editor</label>
+      </object>
+      <object class="wxMenuItem" name="ID_PYTHON_SHELL_MI">
+        <label>&amp;Python Shell</label>
+      </object>
+    </object>
+    <object class="wxMenu">
+      <label>&amp;Help</label>
+      <object class="wxMenuItem" name="ID_ABOUT_MI">
+        <label>&amp;About</label>
       </object>
     </object>
   </object>
