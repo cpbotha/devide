@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.64 2003/12/14 21:05:56 cpbotha Exp $
+# $Id: dscas3.py,v 1.65 2003/12/14 21:11:37 cpbotha Exp $
 
 DSCAS3_VERSION = '20031214 no-ITK'
 
@@ -293,7 +293,7 @@ class dscas3_app_t(wx.App):
         # what to checkout)
         vsv = vtk.vtkVersion.GetVTKSourceVersion()
         # VTK source nightly date
-        vnd = re.match('.*\$Date: 2003/12/14 21:05:56 $.*', vsv).group(1)
+        vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
         vvs = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
         
         about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION,
