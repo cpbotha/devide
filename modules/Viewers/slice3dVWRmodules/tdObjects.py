@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.4 2003/12/17 16:34:28 cpbotha Exp $
+# $Id: tdObjects.py,v 1.5 2004/01/15 11:01:22 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -8,7 +8,7 @@ import math
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
-import vtkdscas
+import vtkdevide
 import wx
 import wx.grid
 from wx.lib import colourdb
@@ -1245,7 +1245,7 @@ class tdObjects(object, s3dcGridMixin):
                     objectDict['motionBoxWidget'] = None
 
                 # we like to do it anew
-                objectDict['motionBoxWidget'] = vtkdscas.\
+                objectDict['motionBoxWidget'] = vtkdevide.\
                                                 vtkBoxWidgetConstrained()
                 bw = objectDict['motionBoxWidget']
                     

@@ -5,7 +5,7 @@ from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
-import vtkdscas
+import vtkdevide
 
 class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
@@ -248,7 +248,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
     def _createPipeline(self):
         # setup our pipeline
-        self._splatMapper = vtkdscas.vtkOpenGLVolumeShellSplatMapper()
+        self._splatMapper = vtkdevide.vtkOpenGLVolumeShellSplatMapper()
         self._splatMapper.SetOmegaL(0.9)
         self._splatMapper.SetOmegaH(0.9)
         # high-quality rendermode

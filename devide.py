@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.1 2004/01/15 10:47:40 cpbotha Exp $
+# $Id: devide.py,v 1.2 2004/01/15 11:01:20 cpbotha Exp $
 
 DEVIDE_VERSION = '20031218'
 
@@ -150,7 +150,7 @@ class devide_app_t(wx.App):
         vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
         
         # now make sure that VTK will always send error to vtk.log logfile
-        temp = vtkdscas.vtkEventOutputWindow()
+        temp = vtkdevide.vtkEventOutputWindow()
         temp.SetInstance(temp)
 
         def observerEOW(theObject, eventType):
@@ -353,7 +353,7 @@ def postWxInitImports():
     """
     
     global assistants, graphEditor, moduleManager, pythonShell
-    global vtk, vtkdscas
+    global vtk, vtkdevide
     
     from assistants import assistants
     from graphEditor import graphEditor
@@ -361,7 +361,7 @@ def postWxInitImports():
     from pythonShell import pythonShell
 
     import vtk
-    import vtkdscas
+    import vtkdevide
     
 
 

@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.7 2003/10/16 10:12:34 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.8 2004/01/15 11:01:21 cpbotha Exp $
 
 import genUtils
 import os
@@ -10,7 +10,7 @@ import moduleUtils
 import stat
 from wxPython.wx import *
 import vtk
-import vtkdscas
+import vtkdevide
 import moduleUtils
 
 class dicomRDR(moduleBase,
@@ -22,7 +22,7 @@ class dicomRDR(moduleBase,
         moduleBase.__init__(self, moduleManager)
 
         # setup necessary VTK objects
-	self._reader = vtkdscas.vtkDICOMVolumeReader()
+	self._reader = vtkdevide.vtkDICOMVolumeReader()
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')

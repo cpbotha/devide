@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.11 2004/01/15 10:46:30 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.12 2004/01/15 11:01:21 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -26,7 +26,7 @@ from modules.Viewers.slice3dVWRmodules.tdObjects import tdObjects
 
 import time
 import vtk
-import vtkdscas
+import vtkdevide
 from wxPython.wx import *
 from wxPython.grid import *
 from wxPython.lib import colourdb
