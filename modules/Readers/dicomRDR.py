@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.8 2004/01/15 11:01:21 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.9 2004/03/04 17:31:26 cpbotha Exp $
 
 import genUtils
 import os
@@ -8,7 +8,7 @@ from moduleMixins import \
 import moduleUtils
 
 import stat
-from wxPython.wx import *
+import wx
 import vtk
 import vtkdevide
 import moduleUtils
@@ -30,8 +30,9 @@ class dicomRDR(moduleBase,
         self._viewFrame = ""
         self._createViewFrame()
 
+        self._fileDialog = None
+
         # setup some defaults
-        self._config.dicomDirname = ""
         self._config.dicomFilenames = []
         self._config.seriesInstanceIdx = 0
 
@@ -40,6 +41,7 @@ class dicomRDR(moduleBase,
         self.syncViewWithLogic()
 	
     def close(self):
+        del self._fileDialog
         # this will take care of all the vtkPipeline windows
         vtkPipelineConfigModuleMixin.close(self)
         # take care of our own window
@@ -87,40 +89,37 @@ class dicomRDR(moduleBase,
 
     def viewToConfig(self):
         self._config.seriesInstanceIdx = self._viewFrame.si_idx_spin.GetValue()
-        self._config.dicomDirname = self._viewFrame.dirname_text.GetValue()
 
-        # get a list of files in the indicated directory, stuff them all
-        # into the config list
-        if self._config.dicomDirname == None or \
-           self._config.dicomDirname == "":
-            return
-        try:
-            filenames_init = os.listdir(self._config.dicomDirname)
-        except Exception, e:
-            genUtils.logError('Could not read DICOM directory: %s' % e)
-            return
+        lb = self._viewFrame.dicomFilesListBox
+        count = lb.GetCount()
 
+        filenames_init = []
+        for n in range(count):
+            filenames_init.append(lb.GetString(n))
+        
         # go through list of files in directory, perform trivial tests
         # and create a new list of files 
         del self._config.dicomFilenames[:]
         for filename in filenames_init:
-            # make full filename
-            fullname = os.path.join(self._config.dicomDirname, filename)
             # at the moment, we check that it's a regular file
-            if stat.S_ISREG(os.stat(fullname)[stat.ST_MODE]):
-                self._config.dicomFilenames.append(fullname)
+            if stat.S_ISREG(os.stat(filename)[stat.ST_MODE]):
+                self._config.dicomFilenames.append(filename)
 
         if len(self._config.dicomFilenames) == 0:
-            wxLogError('Empty directory specified, not attempting '
+            wx.LogError('Empty directory specified, not attempting '
                        'change in config.')
 
 
     def configToView(self):
+        # first transfer list of files to listbox
+        lb = self._viewFrame.dicomFilesListBox
+        lb.Clear()
+        for fn in self._config.dicomFilenames:
+            lb.Append(fn)
+        
         # at this stage, we can always assume that the logic is current
         # with the config struct...
-
         self._viewFrame.si_idx_spin.SetValue(self._config.seriesInstanceIdx)
-        self._viewFrame.dirname_text.SetValue(self._config.dicomDirname)
 
         # some information in the view does NOT form part of the config,
         # but comes directly from the logic:
@@ -179,6 +178,9 @@ class dicomRDR(moduleBase,
             modules.Readers.resources.python.dicomRDRViewFrame.\
             dicomRDRViewFrame)
 
+        # make sure the listbox is empty
+        self._viewFrame.dicomFilesListBox.Clear()
+
         objectDict = {'dicom reader' : self._reader}
         moduleUtils.createStandardObjectAndPipelineIntrospection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
@@ -187,19 +189,57 @@ class dicomRDR(moduleBase,
         moduleUtils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
-        EVT_BUTTON(self._viewFrame, self._viewFrame.BROWSE_BUTTON_ID,
-                   self.dn_browse_cb)
+        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.addButton.GetId(),
+                      self._handlerAddButton)
+
+        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.removeButton.GetId(),
+                      self._handlerRemoveButton)
+        
         
 
     def view(self, parent_window=None):
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
         
-    def dn_browse_cb(self, event):
-        path = self.dirnameBrowse(self._viewFrame,
-                                  "Choose a DICOM directory",
-                                  self._moduleManager.get_app_dir())
+    def _handlerAddButton(self, event):
 
-        if path != None:
-            self._viewFrame.dirname_text.SetValue(path)
+        if not self._fileDialog:
+            self._fileDialog = wx.FileDialog(
+                self._moduleManager.getModuleViewParentWindow(),
+                'Select files to add to the list', "", "",
+                "DICOM files (*.dcm)|*.dcm|All files (*.*)|*.*",
+                wx.OPEN | wx.MULTIPLE)
+            
+        if self._fileDialog.ShowModal() == wx.ID_OK:
+            newFilenames = self._fileDialog.GetPaths()
 
+            # first check for duplicates in the listbox
+            lb = self._viewFrame.dicomFilesListBox
+            count = lb.GetCount()
+
+            oldFilenames = []
+            for n in range(count):
+                oldFilenames.append(lb.GetString(n))
+
+            filenamesToAdd = [fn for fn in newFilenames
+                              if fn not in oldFilenames]
+
+            for fn in filenamesToAdd:
+                lb.Append(fn)
+
+    def _handlerRemoveButton(self, event):
+        """Remove all selected filenames from the internal list.
+        """
+
+        lb = self._viewFrame.dicomFilesListBox
+        sels = list(lb.GetSelections())
+
+        # we have to delete from the back to the front
+        sels.sort()
+        sels.reverse()
+
+        # build list
+        for sel in sels:
+            lb.Delete(sel)
+
+            
