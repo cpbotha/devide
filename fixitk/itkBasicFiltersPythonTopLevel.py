@@ -1,11 +1,12 @@
 from itkCommonPythonTopLevel import *
 __itk_import_data__ = itkBasePythonTopLevel.preimport()
-from ITKBasicFiltersPython import *
 
 # ITKBasicFiltersBPython was added AFTER ITK 1.6
 try:
+    from ITKBasicFiltersAPython import *
     from ITKBasicFiltersBPython import *
 except ImportError:
-    pass
+    # we revert to old behaviour if the above libs can't be found
+    from ITKBasicFiltersPython import *
 
 itkBasePythonTopLevel.postimport(__itk_import_data__)
