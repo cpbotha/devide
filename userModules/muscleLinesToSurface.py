@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.5 2004/01/29 22:11:24 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.6 2004/01/30 12:30:23 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
@@ -88,8 +88,20 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         outputData = self._pf1.GetOutput()
 
         # we would like to operate on the WHOLE shebang
+        inputData.UpdateInformation() # SetUpdateExtentToWholeExtent precond
         inputData.SetUpdateExtentToWholeExtent()
         inputData.Update()
+
+        #print "Extent: %s" % (inputData.GetUpdateExtent(),)
+        dimx, dimy, dimz = inputData.GetDimensions()
+        #print "Dimensions: %s" % ((dimx, dimy, dimz),)
+        if dimx == 0 or dimy == 0 or dimz == 0:
+            # FIXME: say something about what went wrong
+            outputData.SetExtent(0, -1, 0, -1, 0, -1)
+            outputData.SetUpdateExtent(0, -1, 0, -1, 0, -1)
+            outputData.SetWholeExtent(0, -1, 0, -1, 0, -1)
+            outputData.AllocateScalars()
+            return
         
         outputData.DeepCopy(inputData)
 
@@ -207,8 +219,18 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
         outputData = self._pf2.GetOutput()
 
         # we would like to operate on the WHOLE shebang
+        inputData.UpdateInformation()
         inputData.SetUpdateExtentToWholeExtent()
         inputData.Update()
+        
+        dimx, dimy, dimz = inputData.GetDimensions()
+        if dimx == 0 or dimy == 0 or dimz == 0:
+            # FIXME: say something about what went wrong
+            outputData.SetExtent(0, -1, 0, -1, 0, -1)
+            outputData.SetUpdateExtent(0, -1, 0, -1, 0, -1)
+            outputData.SetWholeExtent(0, -1, 0, -1, 0, -1)
+            outputData.AllocateScalars()
+            return
         
         outputData.DeepCopy(inputData)
 
