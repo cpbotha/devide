@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.24 2004/02/27 17:00:26 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.25 2004/03/04 13:50:57 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -388,7 +388,7 @@ class noConfigModuleMixin(introspectModuleMixin):
 
         # make sure that a close of that window does the right thing
         wx.EVT_CLOSE(viewFrame,
-                  lambda e: viewFrame.Show(false))
+                  lambda e: viewFrame.Show(False))
 
         # set cute icon
         viewFrame.SetIcon(moduleUtils.getModuleIcon())

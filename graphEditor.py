@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.61 2004/02/20 23:43:18 cpbotha Exp $
+# $Id: graphEditor.py,v 1.62 2004/03/04 13:50:57 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -13,14 +13,41 @@ import string
 import sys
 
 # ----------------------------------------------------------------------------
-class geCanvasDropTarget(wxTextDropTarget):
+# class geCanvasDropTarget(wxTextDropTarget):
     
+#     def __init__(self, graphEditor):
+#         wxTextDropTarget.__init__(self)        
+#         self._graphEditor = graphEditor
+
+#     def OnDropText(self, x, y, text):
+#         self._graphEditor.canvasDropText(x, y, text)
+
+class geCanvasDropTarget(wxPyDropTarget):
     def __init__(self, graphEditor):
-        wxTextDropTarget.__init__(self)        
+        wxPyDropTarget.__init__(self)
         self._graphEditor = graphEditor
 
-    def OnDropText(self, x, y, text):
-        self._graphEditor.canvasDropText(x, y, text)
+        do = wxDataObjectComposite()
+        tdo = wxTextDataObject()
+        fdo = wxFileDataObject()
+        do.Add(tdo)
+        do.Add(fdo)
+
+        self.SetDataObject(do)
+        self._dataObject = do
+        
+
+    def OnDrop(self, x, y):
+        return True
+
+    def OnData(self, x, y, d):
+        
+        if self.GetData():
+            print self._dataObject.GetData()
+
+        return d
+        
+        
 
 # ----------------------------------------------------------------------------
 class glyphSelection:
