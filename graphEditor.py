@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.27 2003/06/06 16:16:30 cpbotha Exp $
+# $Id: graphEditor.py,v 1.28 2003/06/06 16:25:12 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -333,7 +333,7 @@ class graphEditor:
         f = None
         try:
             # load the stream
-            f = open(filename, 'r')
+            f = open(filename, 'rb')
             stream = f.read()
         except Exception, e:
             genUtils.logError('Could not load network from %s: %s' % \
@@ -464,10 +464,10 @@ class graphEditor:
                 
             # change the serialised moduleInstances to a pickled stream
             stream = cPickle.dumps(\
-                     (pmsDict, connectionList, glyphPosDict), False)
+                     (pmsDict, connectionList, glyphPosDict), True)
 
             # FIXME: check for file errors, check for overwriting!
-            f = open(filename, 'w')
+            f = open(filename, 'wb')
             f.write(stream)
             f.close()
 
