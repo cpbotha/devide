@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.38 2003/06/22 00:53:39 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.39 2003/06/24 15:40:42 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -1384,6 +1384,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._viewFrame.sliceCursorNameCombo.Append('FBZ Inferior')
         
         # event handlers for the global control buttons
+        EVT_CHOICE(self._viewFrame,
+                   self._viewFrame.projectionChoiceId,
+                   self._handlerProjectionChoice)
+
+        EVT_CHOICE(self._viewFrame,
+                   self._viewFrame.mouseMovesChoiceId,
+                   self._handlerMouseMovesChoice)
+        
         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
                    lambda e, pw=self._viewFrame, s=self,
                    rw=self._viewFrame.threedRWI.GetRenderWindow():
@@ -1939,7 +1947,26 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
             # once we've done this, we have to redraw
             self._viewFrame.threedRWI.Render()
-    
+
+    def _handlerProjectionChoice(self, event):
+        """Handler for global projection type change.
+        """
+        
+        cam = self._threedRenderer.GetActiveCamera()
+        if not cam:
+            return
+        
+        pcs = self._viewFrame.projectionChoice.GetSelection()
+        if pcs == 0:
+            # perspective
+            cam.ParallelProjectionOff()
+        else:
+            cam.ParallelProjectionOn()
+
+        self.render3D()
+
+    def _handlerMouseMovesChoice(self, event):
+        pass
 
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
