@@ -1,8 +1,9 @@
-# $Id: module_base.py,v 1.8 2002/03/13 11:36:40 cpbotha Exp $
+# $Id: module_base.py,v 1.9 2002/03/19 13:53:37 cpbotha Exp $
 import vtkpython
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
 from vtkPipeline.ConfigVtkObj import ConfigVtkObj
 import Tkinter
+import Pmw
 
 class module_base:
     """Base class for all modules.  Any module wishing to take part in the dscas3
@@ -43,10 +44,43 @@ class module_base:
 	the input of another module."""
 	raise NotImplementedError
     
+    def sync_config(self):
+	raise NotImplementedError
+    
+    def apply_config(self):
+	raise NotImplementedError
+    
+    def execute_module(self):
+	raise NotImplementedError
+    
     def view(self):
 	"""Pop up a dialog with all config possibilities, including optional use
 	of the pipeline browser."""
 	raise NotImplementedError
+    
+    def add_CSAEO_box(self, parent_window, grid_row, col_span):
+	"""Adds button box with cancel, sync, apply, execute and ok buttons.  this
+	is standard for many of the modules.  The methods sync_config(), apply_config()
+	and execute_module() have to be defined."""
+	box2 = Pmw.ButtonBox(parent_window)
+	box2.add('Cancel', command=parent_window.destroy)
+	# synch settings with underlying code
+	box2.add('Sync', command=self.sync_config)
+	# apply settings
+	box2.add('Apply', command=self.apply_config)
+	# apply and execute
+	box2.add('Execute', command=lambda self=self: (self.apply_config(), self.execute_module()))
+	# apply and close dialog
+	box2.add('Ok', command=lambda self=self, parent_window=parent_window: (self.apply_config(), parent_window.destroy()))
+
+	balloon = Pmw.Balloon(parent_window)
+	balloon.bind(box2.button(0), balloonHelp='Close this dialogue without applying.')
+	balloon.bind(box2.button(1), balloonHelp='Synchronise dialogue with configuration of underlying system.')
+	balloon.bind(box2.button(2), balloonHelp='Modify configuration of underlying system as specified by this dialogue.')
+	balloon.bind(box2.button(3), balloonHelp='Apply, then execute the module.')
+	balloon.bind(box2.button(4), balloonHelp='Apply, then close the window.')
+	
+	box2.grid(row=grid_row, column=0, columnspan=col_span, sticky=Tkinter.W + Tkinter.E)
     
     def browse_vtk_pipeline(self, vtk_objects, parent_window=None):
 	"""Helper function for all derived classes.  They can call this method from
