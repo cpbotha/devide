@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeHtmlHelp.sh,v 1.3 2004/03/07 15:45:13 cpbotha Exp $
+# $Id: makeHtmlHelp.sh,v 1.4 2004/03/07 20:16:58 cpbotha Exp $
 
 # go to dir containing script
 cd `dirname $0`
@@ -9,7 +9,7 @@ rm -rf build
 mkdir build
 
 if [ `uname` == Linux ]; then
-TEX2RTF=''
+TEX2RTF='tex2rtf'
 else
 TEX2RTF='f:/apps/Tex2RTF/tex2rtf.exe'
 fi
