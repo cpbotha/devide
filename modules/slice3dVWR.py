@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.6 2003/03/18 15:13:44 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.7 2003/03/19 19:07:05 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -635,8 +635,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                     if self._inputs[idx]['observerID'] >= 0:
                         # remove the observer (if we had one)
                         source = actor.GetMapper().GetInput().GetSource()
-                        source.RemoveObserver(
-                            self._inputs[idx]['observerID'])
+                        if source:
+                            source.RemoveObserver(
+                                self._inputs[idx]['observerID'])
+                        # whether we had a source or not, zero this
                         self._inputs[idx]['observerID'] = -1
 
                     self._threedRenderer.RemoveActor(self._inputs[idx][
@@ -651,8 +653,11 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
                 # remove our observer
                 if self._inputs[idx]['observerID'] >= 0:
-                    self._inputs[idx]['inputData'].GetSource().RemoveObserver(
-                        self._inputs[idx]['observerID'])
+                    source = self._inputs[idx]['inputData'].GetSource()
+                    if source:
+                        source.RemoveObserver(
+                            self._inputs[idx]['observerID'])
+                    # whether we had a source or not, make sure to zero this
                     self._inputs[idx]['observerID'] = -1
 
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
@@ -691,9 +696,11 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 self._viewFrame.threedRWI.Render()
 
                 # connect an event handler to the data
-                oid = input_stream.GetSource().AddObserver('EndEvent',
-                                                   self.inputModifiedCallback)
-                self._inputs[idx]['observerID'] = oid
+                source = input_stream.GetSource()
+                if source:
+                    oid = source.AddObserver('EndEvent',
+                                             self.inputModifiedCallback)
+                    self._inputs[idx]['observerID'] = oid
                 
                 
             elif input_stream.IsA('vtkImageData'):
@@ -725,10 +732,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 self._inputs[idx]['inputData'] = input_stream
 
                 # add an observer to this data and store the id
-                oid = input_stream.GetSource().AddObserver(
-                    'EndEvent',
-                    self.inputModifiedCallback)
-                self._inputs[idx]['observerID'] = oid
+                source = input_stream.GetSource()
+                if source:
+                    oid = source.AddObserver(
+                        'EndEvent',
+                        self.inputModifiedCallback)
+                    self._inputs[idx]['observerID'] = oid
                 
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     # things to setup when primary data is added

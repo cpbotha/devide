@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.2 2003/03/18 17:48:40 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.3 2003/03/19 19:07:05 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -12,6 +12,7 @@
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
+import operator
 import vtk
 from wxPython.wx import *
 
@@ -70,7 +71,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
     def getOutputDescriptions(self):
         return ('Mould design (vtkPolyData)',) # for now
 
-    def getOutput(self):
+    def getOutput(self, idx):
         return self._outputPolyData
 
     def logicToConfig(self):
@@ -91,8 +92,62 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             # the planes should go somewhat further proximally than the
             # proximal insertion axis point
 
-            pass # a stone (ha ha)
-            
+            # first calculate the distal-proximal glenoid insertion axis
+            gia = tuple(map(operator.sub, self._giaProximal, self._giaDistal))
+            # and in one swift move, we normalize it and get the magnitude
+            giaN = list(gia)
+            giaM = vtk.vtkMath.Normalize(giaN)
+
+            # extend gia with a few millimetres
+            giaM += 5
+            gia = tuple([giaM * i  for i in giaN])
+
+            stuff = []
+            yN = [0,0,0]
+            zN = [0,0,0]
+            angleIncr = 2.0 * vtk.vtkMath.Pi() / 8.056
+            for i in range(4):
+                angle = float(i) * angleIncr
+                vtk.vtkMath.Perpendiculars(gia, yN, zN, angle)
+                # each ridge is 1 cm (10 mm) - we'll change this later
+                y = [10.0 * j for j in yN]
+                
+                origin = map(operator.add, self._giaDistal, y)
+                point1 = map(operator.add, origin, [-2.0 * k for k in y])
+                point2 = map(operator.add, origin, gia)
+
+                # now create the plane source
+                ps = vtk.vtkPlaneSource()
+                ps.SetOrigin(origin)
+                ps.SetPoint1(point1)
+                ps.SetPoint2(point2)
+                ps.Update()
+
+                plane = vtk.vtkPlane()
+                plane.SetOrigin(ps.GetOrigin())
+                plane.SetNormal(ps.GetNormal())
+
+                cut = vtk.vtkCutter()
+                cut.SetInput(self._inputPolyData)
+                cut.SetCutFunction(plane)
+                cut.GenerateCutScalarsOn()
+                cut.SetValue(0,1)
+                cut.Update()
+
+                #tf = vtk.vtkTubeFilter()
+                #tf.SetInput(cut.GetOutput())
+                #tf.Update()
+                
+                stuff.append(cut.GetOutput())
+
+
+            ap = vtk.vtkAppendPolyData()
+            # copy everything to output (for testing)
+            for thing in stuff:
+                ap.AddInput(thing)
+
+            ap.Update()
+            self._outputPolyData.DeepCopy(ap.GetOutput())
 
     def view(self):
         if not self._viewFrame.Show(True):
