@@ -1,4 +1,4 @@
-$Id: TODO,v 1.16 2003/09/04 20:18:46 cpbotha Exp $
+$Id: TODO,v 1.17 2003/09/04 22:35:20 cpbotha Exp $
 
 * planes (after locking to points, or maybe explicit function) should grow
   to encompass all data in their current orientation.
@@ -28,8 +28,6 @@ $Id: TODO,v 1.16 2003/09/04 20:18:46 cpbotha Exp $
 
 BUGS:
 
-- attaching axis WHILST motion is active seems to break things.  FIX!
-
 - when a plane gets hidden, the interaction button should be disabled
   (else the user can muck about with interaction, and we don't want that)
   in general, make sure of consistency with show/hide and interaction
@@ -39,6 +37,8 @@ BUGS:
   easily.
 
 FIXED:
+
+* attaching axis WHILST motion is active seems to break things. 
 
 * When a slice in hidden, its contours still show.
 

@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.32 2003/09/04 20:18:46 cpbotha Exp $
+# $Id: tdObjects.py,v 1.33 2003/09/04 22:35:20 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -163,6 +163,13 @@ class tdObjects:
         given tdObject.
         """
 
+        # before we attach this axis, we have to disable the current motion
+        # temporarily (if any) else the transform will go bonkers
+        motionSwitched = False
+        if self.getObjectMotion(sObject):
+            self._setObjectMotion(sObject, False)
+            motionSwitched = True
+
         # vector from 0 to 1
         vn = map(operator.sub, twoPoints[1], twoPoints[0])
         # normalise it
@@ -193,11 +200,14 @@ class tdObjects:
         self._tdObjectsDict[sObject]['axisPoints'] = twoPoints
         self._tdObjectsDict[sObject]['axisLineActor'] = lineActor
 
+        if motionSwitched:
+            self._setObjectMotion(sObject, True)
+
     def _axisToLineTransform(self, axisPoints, lineOrigin, lineVector):
         """Calculate the transform required to move and rotate an axis
         so that it is collinear with the given line.
         """
-        
+
         # 2. calculate vertical distance from first axis point to line
         tp0o = map(operator.sub, axisPoints[0], lineOrigin)
         bvm = vtk.vtkMath.Dot(tp0o, lineVector) # bad vector magnitude
@@ -217,7 +227,7 @@ class tdObjects:
         objectAxisM = vtk.vtkMath.Norm(objectAxis)
         rotAxis = [0.0, 0.0, 0.0]
         vtk.vtkMath.Cross(objectAxis, lineVector, rotAxis)
-                    
+        
         # calculate the new tp[1] (i.e. after the translate)
         ntp1 = map(operator.add, axisPoints[1], od)
         # relative to line origin
@@ -233,6 +243,13 @@ class tdObjects:
         # and convert everything to degrees
         rotAngle = math.asin(spdM / objectAxisM) / math.pi * 180
 
+        # bvm indicates the orientation of the objectAxis w.r.t. the
+        # intersection line
+        # draw the figures, experiment with what this code does when the
+        # lineVector is exactly the same but with opposite direction :)
+        if bvm < 0:
+            rotAngle *= -1.0
+
         # 4. create a homogenous transform with this translation and
         #    rotation
         
@@ -243,7 +260,7 @@ class tdObjects:
         tp0n = [-e for e in axisPoints[0]]
         newTransform.Translate(axisPoints[0])
         newTransform.RotateWXYZ(
-            -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
+            rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
         newTransform.Translate(tp0n)
 
         return newTransform
@@ -284,23 +301,12 @@ class tdObjects:
         newTransform = self._axisToLineTransform(
             twoPoints, lineOrigin, lineVector)
 
-        # build in theProp's existing transform
-        theProp = self.findPropByObject(tdObject)
-        newTransform.Concatenate(
-            theProp.GetMatrix())
-
-        # do the transform!
-        for prop in (theProp, objectDict['axisLineActor']):
-            prop.SetOrientation(
-                newTransform.GetOrientation())
-            prop.SetScale(
-                newTransform.GetScale())
-            prop.SetPosition(
-                newTransform.GetPosition())
+        # perform the actual transform and flatten all afterwards
+        self._transformObjectProps(tdObject, newTransform)
 
         # perform other post object motion synchronisation, such as
         # for contours e.g.
-        self._postObjectMotionSync(theProp)
+        self._postObjectMotionSync(tdObject)
 
         if motionSwitched:
             self._setObjectMotion(tdObject, True)
@@ -409,23 +415,12 @@ class tdObjects:
         newTransform = self._axisToPlaneTransform(
             twoPoints, ipw.GetNormal(), ipw.GetOrigin())
 
-        # build in theProp's existing transform
-        theProp = self.findPropByObject(tdObject)
-        newTransform.Concatenate(
-            theProp.GetMatrix())
-
-        # do the transform!
-        for prop in (theProp, objectDict['axisLineActor']):
-            prop.SetOrientation(
-                newTransform.GetOrientation())
-            prop.SetScale(
-                newTransform.GetScale())
-            prop.SetPosition(
-                newTransform.GetPosition())
+        # transform the object and all its thingies
+        self._transformObjectProps(tdObject, newTransform)
 
         # perform other post object motion synchronisation, such as
         # for contours e.g.
-        self._postObjectMotionSync(theProp)
+        self._postObjectMotionSync(tdObject)
 
         if motionSwitched:
             self._setObjectMotion(tdObject, True)
@@ -892,7 +887,8 @@ class tdObjects:
         # make sure the transform is up to date
         self._observerMotionBoxWidgetInteraction(eventObject, eventType)
 
-        self._postObjectMotionSync(eventObject.GetProp3D())
+        tdObject = self.findObjectByProp(eventObject.GetProp3D())
+        self._postObjectMotionSync(tdObject)
         
 
     def _observerMotionBoxWidgetInteraction(self, eventObject, eventType):
@@ -912,14 +908,14 @@ class tdObjects:
             pass
         
 
-    def _postObjectMotionSync(self, prop):
+    def _postObjectMotionSync(self, tdObject):
         """Perform any post object motion synchronisation, such as
         recalculating the contours.  This method is called when the user
         has stopped interacting with an object or if the system has
         explicitly moved an object.
         """
         # and update the contours after we're done moving things around
-        self.slice3dVWR.sliceDirections.syncContoursToObjectViaProp(prop)
+        self.slice3dVWR.sliceDirections.syncContoursToObject(tdObject)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -1182,6 +1178,36 @@ class tdObjects:
 
     def _tdObjectModifiedCallback(self, o, e):
         self.slice3dVWR.render3D()
+
+    def _transformObjectProps(self, tdObject, transform):
+        """This will perform the final transformation on all props belonging
+        to an object, including the main prop and all extras, such as the
+        optional object axis.  It will also make sure all the transforms of
+        all props are flattened.
+        """
+
+        try:
+            mainProp = self.findPropByObject(tdObject)
+            objectDict = self._tdObjectsDict[tdObject]
+        except KeyError:
+            # invalid tdObject!
+            return
+
+        props = [mainProp]
+
+        try:
+            props.append(objectDict['axisLineActor'])
+        except KeyError:
+            # no problem
+            pass
+
+        for prop in props:
+            # first we make sure that there's no UserTransform
+            genUtils.flattenProp3D(prop)
+            # then set the UserTransform that we want
+            prop.SetUserTransform(transform)
+            # then flatten the f*cker (i.e. UserTransform absorbed)
+            genUtils.flattenProp3D(prop)
 
     def _unlockObjectFromPlanes(self, tdObject):
         """Make sure that there are no plane constraints on the motion

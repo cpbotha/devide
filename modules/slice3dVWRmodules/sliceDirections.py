@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.10 2003/08/27 15:09:11 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.11 2003/09/04 22:35:20 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -342,6 +342,10 @@ class sliceDirections(object):
             if row >= 0:
                 genUtils.setGridCellYesNo(
                     self._grid, row, self._gridInteractionCol, interaction)
+
+    def syncContoursToObject(self, tdObject):
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection.syncContourToObject(tdObject)
 
     def syncContoursToObjectViaProp(self, prop):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():

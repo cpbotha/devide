@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.12 2003/08/15 15:49:09 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.13 2003/09/04 22:35:20 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -125,7 +125,8 @@ class sliceDirection:
                 break
         
     def syncContourToObject(self, contourObject):
-        """Update the contour for the given contourObject.
+        """Update the contour for the given contourObject.  contourObject
+        corresponds to a tdObject in tdObjects.py.
         """
         # yes, in and not in work on dicts, doh
         if contourObject not in self._contourObjectsDict:
