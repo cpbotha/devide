@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.67 2003/12/15 10:29:04 cpbotha Exp $
-
-DSCAS3_VERSION = '20031214 no-ITK'
+# $Id: dscas3.py,v 1.68 2003/12/15 10:54:45 cpbotha Exp $
 
 # standard Python imports
 import getopt
@@ -26,12 +24,14 @@ import resources.graphics.images
 class mainConfigClass(object):
 
     def __init__(self):
-        self.useInsight = True
+        import defaults
+        self.useInsight = defaults.USE_INSIGHT
         
         self._parseCommandLine()
 
     def dispUsage(self):
         print "-h or --help               : Display this message."
+        print "--insight or --itk         : Use ITK-based modules."
         print "--no-insight or --no-itk   : Do not use ITK-based modules."
 
     def _parseCommandLine(self):
@@ -47,6 +47,9 @@ class mainConfigClass(object):
         for o, a in optlist:
             if o in ('-h', '--help'):
                 self.dispUsage()
+
+            elif o in ('--insight', '--itk'):
+                self.useInsight = True
 
             elif o in ('--no-itk', '--no-insight'):
                 self.useInsight = False
@@ -283,7 +286,7 @@ class dscas3_app_t(wx.App):
         </p>
         <p>
         wxPython %s, Python %s<br>
-        VTK %s
+        VTK %s, ITK %s
         </p>
         </center>
         </body>
@@ -299,11 +302,23 @@ class dscas3_app_t(wx.App):
         # VTK source nightly date
         vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
         vvs = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
-        
-        about.htmlWindow.SetPage(aboutText % (DSCAS3_VERSION,
+
+        # if applicable, let's make an ITK version string
+        ivs = ''
+        if self.mainConfig.useInsight:
+            # let's hope McMillan doesn't catch this one!
+            itk = __import__('InsightToolkit')
+            isv = itk.itkVersion.GetITKSourceVersion()
+            ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
+            ivs = '%s (%s)' % (itk.itkVersion.GetITKVersion(), ind)
+        else:
+            ivs = 'N/A'
+
+        import defaults
+        about.htmlWindow.SetPage(aboutText % (defaults.DSCAS3_VERSION,
                                               wx.VERSION_STRING,
                                               pyver,
-                                              vvs))
+                                              vvs, ivs))
 
         ir = about.htmlWindow.GetInternalRepresentation()
         ir.SetIndent(0, wx.html.HTML_INDENT_ALL)

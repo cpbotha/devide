@@ -13,7 +13,10 @@ import modules
 # * the installer will treat these imports as if they were explicitly
 #   imported by the moduleManager, so THEIR dependecies will automatically
 #   be analysed.
-ml2 = ["modules." + i for i in modules.moduleList]
+# * we have to look at the USE_INSIGHT defaults flag as well...
+import defaults
+ml2 = ["modules." + i for i in modules.moduleList if defaults.USE_INSIGHT or
+       not i.startswith('Insight')]
 hiddenimports = ml2
 
 print "[*] hook-moduleManager.py - HIDDENIMPORTS"
