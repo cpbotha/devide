@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.15 2003/02/17 21:21:08 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.16 2003/02/17 23:07:17 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -105,6 +105,9 @@ class slice3d_vwr(moduleBase,
         # call set_input(idx, None) for all inputs
         for idx in range(self._numDataInputs):
             self.setInput(idx, None)
+
+        # don't forget to call the mixin close() methods
+        vtkPipelineConfigModuleMixin.close(self)
         
         # unbind everything that we bound in our __init__
         del self._outline_source

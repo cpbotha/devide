@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsWRT.py,v 1.4 2003/02/06 17:06:00 cpbotha Exp $
+# $Id: vtkStructPtsWRT.py,v 1.5 2003/02/17 23:07:17 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -36,7 +36,7 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         
     def close(self):
         # we should disconnect all inputs
-        self.set_input(0, None)
+        self.setInput(0, None)
         del self._writer
         filenameViewModuleMixin.close(self)
 

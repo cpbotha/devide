@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.6 2003/02/17 21:21:08 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.7 2003/02/17 23:07:17 cpbotha Exp $
 
 import genUtils
 import os
@@ -14,8 +14,8 @@ import vtkdscas
 import moduleUtils
 
 class dicomRDR(moduleBase,
-                    vtkPipelineConfigModuleMixin,
-                    fileOpenDialogModuleMixin):
+               vtkPipelineConfigModuleMixin,
+               fileOpenDialogModuleMixin):
     
     def __init__(self, moduleManager):
         # call the constructor in the "base"
@@ -40,7 +40,11 @@ class dicomRDR(moduleBase,
         self.view()
 	
     def close(self):
+        # this will take care of all the vtkPipeline windows
+        vtkPipelineConfigModuleMixin.close(self)
+        # take care of our own window
         self._viewFrame.Destroy()
+        # also remove the binding we have to our reader
         del self._reader
 
     def getInputDescriptions(self):
@@ -222,9 +226,9 @@ class dicomRDR(moduleBase,
     def vtk_object_choice_cb(self, event):
         if self._viewFrame.object_choice.GetStringSelection() == \
            'vtkDICOMVolumeReader':
-            self.vtk_object_configure(self._viewFrame, None, self._reader)
+            self.vtkObjectConfigure(self._viewFrame, None, self._reader)
 
     def vtk_pipeline_cb(self, event):
         # move this to module utils too, or to base...
-        self.vtk_pipeline_configure(self._viewFrame, None, (self._reader,))
+        self.vtkPipelineConfigure(self._viewFrame, None, (self._reader,))
 	    

@@ -1,10 +1,11 @@
 import genUtils
 from moduleBase import moduleBase
+from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class marchingCubesFLT(moduleBase):
+class marchingCubesFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -33,6 +34,8 @@ class marchingCubesFLT(moduleBase):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
         self.setInput(0, None)
+        # don't forget to call the close() method of the vtkPipeline mixin
+        vtkPipelineConfigModuleMixin.close(self)
         # take out our view interface
         self._viewFrame.Destroy()
         # get rid of our reference
@@ -113,13 +116,21 @@ class marchingCubesFLT(moduleBase):
         # default binding for the buttons at the bottom
         moduleUtils.bindCSAEO(self, self._viewFrame)        
 
-        # connect threshold sliders to each other and to text inputs
+        # connect slider to its callback for instant processing
         EVT_SCROLL(self._viewFrame.isoValueSlider,
                    self._sliderCallback())
 
+        # the checkbox should directly modify its own bit of the self._config
         EVT_CHECKBOX(self._viewFrame,
                      self._viewFrame.realtimeUpdateCheckBoxId,
                      self._realtimeUpdateCheckBoxCallback)
+
+        # and now the standard examine object/pipeline stuff
+        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
+                   self.vtkObjectChoiceCallback)
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+                   self.vtkPipelineCallback)
+        
         
 
     def _sliderCallback(self):
@@ -130,3 +141,11 @@ class marchingCubesFLT(moduleBase):
     def _realtimeUpdateCheckBoxCallback(self, event):
         self._config.rtu = self._viewFrame.realtimeUpdateCheckBox.GetValue()
         
+    def vtkObjectChoiceCallback(self, event):
+        self.vtkObjectConfigure(self._viewFrame, None,
+                                self._marchingCubes)
+
+    def vtkPipelineCallback(self, event):
+        # move this to module utils too, or to base...
+        self.vtkPipelineConfigure(self._viewFrame, None,
+                                  (self._marchingCubes,))

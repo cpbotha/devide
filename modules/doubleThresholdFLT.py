@@ -1,10 +1,12 @@
 import genUtils
 from moduleBase import moduleBase
+from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class doubleThresholdFLT(moduleBase):
+class doubleThresholdFLT(moduleBase,
+                         vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -48,10 +50,11 @@ class doubleThresholdFLT(moduleBase):
         self._viewFrame.Show(1)
         
     def close(self):
-        print "doubleThresholdFLT.close()"
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
         self.setInput(0, None)
+        # close down the vtkPipeline stuff
+        vtkPipelineConfigModuleMixin.close(self)
         # take out our view interface
         self._viewFrame.Destroy()
         # get rid of our reference
@@ -218,6 +221,13 @@ class doubleThresholdFLT(moduleBase):
         EVT_CHECKBOX(self._viewFrame,
                      self._viewFrame.realtimeUpdateCheckboxId,
                      self._realtimeUpdateCheckboxCallback)
+
+        # and now the standard examine object/pipeline stuff
+        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
+                   self.vtk_object_choice_cb)
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+                   self.vtk_pipeline_cb)
+        
         
 
     def _setThresholdControls(self, whichControl, newValue):
@@ -287,3 +297,11 @@ class doubleThresholdFLT(moduleBase):
     def _realtimeUpdateCheckboxCallback(self, event):
         self._config.rtu = self._viewFrame.realtimeUpdateCheckbox.GetValue()
         
+    def vtk_object_choice_cb(self, event):
+        self.vtkObjectConfigure(self._viewFrame, None,
+                                self._imageThreshold)
+
+    def vtk_pipeline_cb(self, event):
+        # move this to module utils too, or to base...
+        self.vtkPipelineConfigure(self._viewFrame, None,
+                                  (self._imageThreshold,))
