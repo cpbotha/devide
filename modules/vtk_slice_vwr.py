@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.64 2002/09/16 16:03:59 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.65 2002/09/17 15:35:43 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -137,8 +137,14 @@ class vtk_slice_vwr(module_base,
                 for input in self._inputs:
                     if input['Connected'] == 'vtkImageData':
 
-                        # this means we might be getting on overlay, let's
-                        # check it for size and spacing
+                        # this means we might be getting on overlay
+                        # first check that we don't already have an overlay
+                        if self._overlay_ipws:
+                            raise TypeError, \
+                                  "This slice viewer already has an overlay. "\
+                                  "You can't add another."
+
+                        # check the overlay for size and spacing
                         input_stream.Update()
 
                         main_input = self._ipws[0].GetInput()
@@ -148,7 +154,12 @@ class vtk_slice_vwr(module_base,
                                input_stream.GetSpacing() == \
                                main_input.GetSpacing():
                             
-                            pass
+                            # add a set of overlays
+                            self._overlay_ipws = [vtk.vtkImagePlaneWidget()
+                                                  for i in range(3)]
+                            
+                                
+                            
                             
                         else:
                             raise TypeError, \
@@ -316,6 +327,7 @@ class vtk_slice_vwr(module_base,
             path = picker.GetPath()
             if path:
                 prop = path.GetFirstNode().GetProp()
+                print prop.__this__
                 if prop:
                     self.vtk_pipeline_configure(self._view_frame,
                                                 self._rwi.GetRenderWindow(),
