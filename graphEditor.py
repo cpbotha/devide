@@ -1,6 +1,6 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.3 2003/05/07 16:40:17 cpbotha Exp $
+# $Id: graphEditor.py,v 1.4 2003/05/07 21:24:45 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -86,17 +86,24 @@ class graphEditor:
     def hide(self):
         self._graphFrame.Show(False)
 
-    def draw_preview_line(self, io_shape, to_x, to_y):
-        # dotted line
-        dotted_pen = wxPen('#000000', 1, wxDOT)
+    def _drawPreviewLine(self, beginp, endp0, endp1):
+
         # make a DC to draw on
         dc = wxClientDC(self._graphFrame.canvas)
         self._graphFrame.canvas.PrepareDC(dc)
+
+        dc.BeginDrawing()
+        
+        # dotted line
+        dc.SetBrush(wxBrush('WHITE', wx.wxTRANSPARENT))
+        dc.SetPen(wxPen('BLACK', 1, wxDOT))
         dc.SetLogicalFunction(wxINVERT) # NOT dst
-        dc.SetPen(dotted_pen)
-        # draw the line (I honestly don't know what happens to the previous
-        # one)
-        dc.DrawLine(io_shape.GetX(), io_shape.GetY(), to_x, to_y)
+
+        # nuke the previous line, draw the new one
+        dc.DrawLine(beginp[0], beginp[1], endp0[0], endp0[1])
+        dc.DrawLine(beginp[0], beginp[1], endp1[0], endp1[1])
+        
+        dc.EndDrawing()
 
     def connect_glyphs_by_shapes(self, from_io_shape, to_io_shape):
         # get the main shapes associated with the actual glyphs
@@ -126,6 +133,17 @@ class graphEditor:
                 to_io_shape.dont_move()
             except Exception, e:
                 genUtils.logError('Could not connect modules: %s' % (str(e)))
+
+    def _disconnect(self, glyph, inputIdx):
+        """Disconnect inputIdx'th input of glyph.
+        """
+
+        try:
+            mm = self._dscas3_app.getModuleManager()
+            mm.disconnectModules(glyph.moduleInstance, inputIdx)
+        except Exception, e:
+            genUtils.logError('Could not disconnect modules: %s' \
+                              % (str(e)))
                 
     def disconnect_glyphs_by_ishape(self, ishape):
         if len(ishape.GetLines()) > 0:
@@ -186,16 +204,65 @@ class graphEditor:
                 co = wxpc.coGlyph((event.realX, event.realY),
                                   len(temp_module.getInputDescriptions()),
                                   len(temp_module.getOutputDescriptions()),
-                                  mod_name)
+                                  mod_name, temp_module)
                 canvas.addObject(co)
 
                 co.addObserver('buttonDown',
                                self._glyphRightClick, temp_module)
+                co.addObserver('buttonUp',
+                               self._glyphButtonUp, temp_module)
                 co.addObserver('drag',
                                self._glyphDrag, temp_module)
                 
                 canvas.Refresh()
                 #ge_glyph(self._graphFrame.canvas, mod_name, temp_module, x, y)
+
+    def _checkAndConnect(self, draggedObject, draggedPort,
+                         droppedObject, droppedInputPort):
+
+        if droppedObject.inputLines[droppedInputPort]:
+            # the user dropped us on a connected input, we can just bail
+            return
+            
+        if draggedPort[0] == 1:
+            # this is a good old "I'm connecting an output to an input"
+            self._connect(draggedObject, draggedPort[1],
+                          droppedObject, droppedInputPort)
+            
+            self._graphFrame.canvas.Refresh()
+
+        else:
+            # this means the user was dragging an input port and has now
+            # dropped it on another input port... (we've already eliminated
+            # the case of a drop on an occupied input port, and thus also
+            # a drop on the dragged port)
+            # what's left: the user drops us on an unoccupied port, this means
+            # we have to delete the old connection and create a new one
+
+            FIXME CONTINUE HERE
+            
+
+    def _connect(self, fromObject, fromOutputIdx,
+                 toObject, toInputIdx):
+
+        try:
+            # connect the actual modules
+            mm = self._dscas3_app.getModuleManager()
+            mm.connectModules(fromObject.moduleInstance, fromOutputIdx,
+                              toObject.moduleInstance, toInputIdx)
+
+            # if that worked, we can make a linypoo
+            l1 = wxpc.coLine(fromObject, fromOutputIdx,
+                             toObject, toInputIdx)
+            self._graphFrame.canvas.addObject(l1)
+
+            # also record the line in the glyphs
+            toObject.inputLines[toInputIdx] = l1
+            fromObject.outputLines[fromOutputIdx].append(l1)
+
+        except Exception, e:
+            genUtils.logError('Could not connect modules: %s' % (str(e)))
+                                         
 
     def updatePortInfoStatusbar(self, from_io_shape, to_io_shape=None):
 
@@ -315,17 +382,46 @@ class graphEditor:
             self.updatePortInfoStatusbar(io_shape, f_ret[0])
 
     def _glyphDrag(self, glyph, eventName, event, module):
-        # determine whether this drag belongs to one of the ports
-        if glyph.draggingPort():
-            FIXME continue here
-        
-        canvas = glyph.getCanvas()
-        canvas.dragObject(glyph, canvas.getMouseDelta())
+
+        canvas = glyph.getCanvas()        
+
+        # this clause will execute once at the beginning of a drag...
+        if not glyph.draggedPort:
+            # we're dragging, but we don't know if we're dragging a port yet
+            port = glyph.findPortContainingMouse(event.realX, event.realY)
+            if port:
+                # 
+                glyph.draggedPort = port
+            else:
+                # this indicates that the glyph is being dragged, but that
+                # we don't have to check for a port during this drag
+                glyph.draggedPort = (-1, -1)
+
+        # when we get here, glyph.draggedPort CAN't BE None
+        if glyph.draggedPort == (-1, -1):
+            # this means that there's no port involved, so the glyph itself
+            # gets dragged
+            canvas.dragObject(glyph, canvas.getMouseDelta())
+        else:
+            if glyph.draggedPort[0] == 1:
+                # the user is attempting a new connection starting with
+                # an output port 
+
+                cop = glyph.getCenterOfPort(glyph.draggedPort)
+                self._drawPreviewLine(cop,
+                                      canvas._previousRealCoords,
+                                      (event.realX, event.realY))
+
+            elif glyph.inputLines and glyph.inputLines[glyph.draggedPort[1]]:
+                # the user is attempting to relocate or disconnect an input
+                gap = glyph.inputLines[glyph.draggedPort[1]].fromGlyphAndPort
+                cop = gap[0].GetCenterOfPort(gap[1])
         
         if not canvas.getDraggedObject():
             # this means that this drag has JUST been cancelled
-            # neat huh?
-            glyph.setDraggedPort(None)
+            # switch off the draggedPort
+            glyph.draggedPort = None
+            # redraw everything
             canvas.Refresh()
 
     def _glyphRightClick(self, glyph, eventName, event, module):
@@ -355,6 +451,46 @@ class graphEditor:
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
                                                              event.GetY()))
 
+    def _glyphButtonUp(self, glyph, eventName, event, module):
+        if event.LeftUp():
+            canvas = glyph.getCanvas()
+
+            # when we receive the ButtonUp that ends the drag event, 
+            # canvas.getDraggedObject is still set!
+            
+            if canvas.getDraggedObject() and \
+                   canvas.getDraggedObject().draggedPort and \
+                   canvas.getDraggedObject().draggedPort != (-1,-1):
+                # this means the user was dragging a port... so we're
+                # interested
+                pcm = glyph.findPortContainingMouse(event.realX, event.realY)
+                if not pcm:
+                    # the user dropped us inside of the glyph, NOT above a port
+                    # if the user was dragging an input port, we have to
+                    # manually disconnect
+                    if canvas.getDraggedObject().draggedPort[0] == 0:
+                        self._disconnect(canvas.getDraggedObject(),
+                                         canvas.getDraggedObject().draggedPort)
+
+                    else:
+                        # the user was dragging a port and dropped us
+                        # inside a glyph... we do nothing
+                        pass
+
+                else:
+                    # this means the drag is ended above a port!
+                    if pcm[0] == 0:
+                        # ended above an INPUT port
+                        self._checkAndConnect(
+                            canvas.getDraggedObject(),
+                            canvas.getDraggedObject().draggedPort,
+                            glyph, pcm[1])
+
+                    else:
+                        # ended above an output port... we can't do anything
+                        # (I think)
+                        pass
+
     def _viewConfModule(self, module):
         mm =self._dscas3_app.getModuleManager()
         mm.viewModule(module)
@@ -383,6 +519,9 @@ class graphEditor:
 
             canvas = glyph.getCanvas()
             canvas.removeObject(glyph)
+            # take care of possible lyings around
+            glyph.close()
+            
             canvas.Refresh()
 
         except Exception, e:
