@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.53 2003/07/02 22:24:16 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.54 2003/07/04 07:32:14 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -46,7 +46,7 @@ class sliceDirectionsClass(object):
     _gridInteractionCol = 2
 
     def __init__(self, slice3dVWRThingy, sliceGrid):
-        self._slice3dVWR = slice3dVWRThingy
+        self.slice3dVWR = slice3dVWRThingy
         self._grid = sliceGrid
         self._sliceDirectionsDict = {}
         self._currentSliceDirection = None
@@ -54,7 +54,7 @@ class sliceDirectionsClass(object):
         self._sliceDirections = []
         self.currentSliceDirection = None
         # this same picker is used on all new IPWS of all sliceDirections
-        self._ipwPicker = vtk.vtkCellPicker()
+        self.ipwPicker = vtk.vtkCellPicker()
 
         self._currentCursor = None
 
@@ -64,12 +64,27 @@ class sliceDirectionsClass(object):
         # bind all events
         self._bindEvents()
 
+        # create the first slice
+        self._createSlice('Axial')
+
+    def addData(self, theData):
+        try:
+            # add this input to all available sliceDirections
+            for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+                sliceDirection.addData(theData)
+                    
+        except Exception, msg:
+            # if an exception was thrown, clean up and raise again
+            for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+                sliceDirection.removeData(theData)
+                
+            raise Exception, msg
+
     def _bindEvents(self):
-        svViewFrame = self._slice3dVWR._viewFrame
+        svViewFrame = self.slice3dVWR._viewFrame
 
         EVT_BUTTON(svViewFrame, svViewFrame.createSliceButtonId,
                    self._handlerCreateSlice)
-        
         EVT_BUTTON(svViewFrame, svViewFrame.sliceSelectAllButtonId,
                    self._handlerSliceSelectAll)
         EVT_BUTTON(svViewFrame, svViewFrame.sliceDeselectAllButtonId,
@@ -81,32 +96,126 @@ class sliceDirectionsClass(object):
         EVT_BUTTON(svViewFrame, svViewFrame.sliceDeleteButtonId,
                    self._handlerSliceDelete)
 
-        EVT_CHOICE(self._viewFrame, self._viewFrame.acsChoiceId,
+        EVT_CHOICE(svViewFrame, svViewFrame.acsChoiceId,
                    self._handlerSliceACS)
 
         # for ortho view use sliceDirection.createOrthoView()
 
+    def close(self):
+        for sliceName, sd in self._sliceDirectionsDict.items():
+            self._destroySlice(sliceName)
+
+    def _createSlice(self, sliceName):
+        print "creating %s" % (sliceName,)
+        if sliceName:
+            if sliceName in self._sliceDirectionsDict:
+                wxLogError("A slice with that name already exists.")
+
+            else:
+                newSD = sliceDirection(sliceName, self)
+                self._sliceDirectionsDict[sliceName] = newSD
+
+                # now attach all inputs to it
+                for i in self.slice3dVWR._inputs:
+                    if i['Connected'] == 'vtkImageDataPrimary' or \
+                           i['Connected'] == 'vtkImageDataOverlay':
+                        newSD.addData(i['inputData'])
+
+                # add it to our grid
+                nrGridRows = self._grid.GetNumberRows()
+                self._grid.AppendRows()
+                self._grid.SetCellValue(nrGridRows, self._gridNameCol,
+                                        sliceName)
+
+                self._setSliceEnabled(sliceName, True)
+                self._setSliceInteraction(sliceName, True)
+
+    def _destroySlice(self, sliceName):
+        """Destroy the named slice."""
+
+        if sliceName in self._sliceDirectionsDict:
+            sliceDirection = self._sliceDirectionsDict[sliceName]
+            # this will disconnect all inputs
+            sliceDirection.close()
+
+            # remove from the grid
+            row = self._findGridRowByName(sliceName)
+            if row >= 0:
+                self._grid.DeleteRows(row)
+
+            # and remove it from our dict
+            del self._sliceDirectionsDict[sliceName]
+
+    def _findGridRowByName(self, sliceName):
+        nrGridRows = self._grid.GetNumberRows()
+        rowFound = False
+        row = 0
+
+        while not rowFound and row < nrGridRows:
+            value = self._grid.GetCellValue(row, self._gridNameCol)
+            rowFound = (value == sliceName)
+            row += 1
+
+        if rowFound:
+            # prepare and return the row
+            row -= 1
+            return row
+        
+        else:
+            return -1
+
+    def _getSelectedSliceNames(self):
+        """
+        """
+        sliceNames = []
+        selectedRows = self._grid.GetSelectedRows()
+        for row in selectedRows:
+            sliceNames.append(
+                self._grid.GetCellValue(row, self._gridNameCol))
+
+        return sliceNames
+
     def _handlerCreateSlice(self, event):
-        pass
+        self._createSlice(
+            self.slice3dVWR._viewFrame.createSliceText.GetValue())
 
     def _handlerSliceSelectAll(self, event):
-        pass
+        for row in range(self._grid.GetNumberRows()):
+            self._grid.SelectRow(row, True)        
 
     def _handlerSliceDeselectAll(self, event):
-        pass
+        self._grid.ClearSelection()
 
     def _handlerSliceShowHide(self, event):
-        # use sliceDirection.enable() or disable()
-        pass
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._setSliceEnabled(
+                name, not self._sliceDirectionsDict[name].getEnabled())
 
     def _handlerSliceInteraction(self, event):
-        pass
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._setSliceInteraction(
+                name,
+                not self._sliceDirectionsDict[name].getInteractionEnabled())
 
     def _handlerSliceDelete(self, event):
-        pass
+        names = self._getSelectedSliceNames()
+        for name in names:
+            self._destroySlice(name)
+
+        if names:
+            self.slice3dVWR.render3D()
 
     def _handlerSliceACS(self, event):
-        pass
+        selection = self.slice3dVWR._viewFrame.acsChoice.GetSelection()
+        names = self._getSelectedSliceNames()
+        for name in names:
+            sd = self._sliceDirectionsDict[name]
+            sd.resetToACS(selection)
+
+        if names:
+            self.slice3dVWR.render3D()
 
     def _initialiseGrid(self):
         # delete all existing columns
@@ -131,10 +240,81 @@ class sliceDirectionsClass(object):
                 self._grid.SetColSize(colIdx, size)
 
         # make sure we have no rows again...
-        self._grid.DeleteRows(0, self._grid.GetNumberRows())            
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())
+
+    def removeData(self, theData):
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection.removeData(theData)
+
+    def resetAll(self):
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection._resetPrimary()
+            sliceDirection._resetOverlays()
+            sliceDirection._syncContours()
         
+    def setCurrentCursor(self, cursor):
+        self._currentCursor = cursor
+        cstring = str(self._currentCursor[0:3]) + " = " + \
+                  str(self._currentCursor[3])
         
-    
+        self.slice3dVWR._viewFrame.sliceCursorText.SetValue(cstring)
+
+    def setCurrentSliceDirection(self, sliceDirection):
+        # find this sliceDirection
+        sdFound = false
+
+        for sliceName, sd in self._sliceDirectionsDict.items():
+            if sd == sliceDirection:
+                sdFound = True
+                break
+
+        if sdFound:
+            row = self._findGridRowByName(sliceName)
+            if row >= 0:
+                self._grid.SelectRow(row, False)
+        
+    def _setSliceEnabled(self, sliceName, enabled):
+        if sliceName in self._sliceDirectionsDict:
+            sd = self._sliceDirectionsDict[sliceName]
+            if enabled:
+                sd.enable()
+            else:
+                sd.disable()
+                
+            row = self._findGridRowByName(sliceName)
+            if row >= 0:
+                if enabled:
+                    self._grid.SetCellValue(
+                        row, self._gridEnabledCol, 'Yes')
+                    self._grid.SetCellBackgroundColour(
+                        row, self._gridEnabledCol, wxColour(0,255,0))
+                else:
+                    self._grid.SetCellValue(
+                        row, self._gridEnabledCol, 'No')
+                    self._grid.SetCellBackgroundColour(
+                        row, self._gridEnabledCol, wxColour(255,0,0))
+
+    def _setSliceInteraction(self, sliceName, interaction):
+        if sliceName in self._sliceDirectionsDict:
+            sd = self._sliceDirectionsDict[sliceName]
+            if interaction:
+                sd.enableInteraction()
+            else:
+                sd.disableInteraction()
+                
+            row = self._findGridRowByName(sliceName)
+            if row >= 0:
+                if interaction:
+                    self._grid.SetCellValue(
+                        row, self._gridInteractionCol, 'Yes')
+                    self._grid.SetCellBackgroundColour(
+                        row, self._gridInteractionCol, wxColour(0,255,0))
+                else:
+                    self._grid.SetCellValue(
+                        row, self._gridInteractionCol, 'No')
+                    self._grid.SetCellBackgroundColour(
+                        row, self._gridInteractionCol, wxColour(255,0,0))
+                
 
 # -------------------------------------------------------------------------
 
@@ -225,19 +405,16 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         # initialise our sliceDirections, this will also setup the grid and
         # bind all slice UI events
-        self.sliceDirections = sliceDirectionsClass(self._viewFrame.sliceGrid)
+        self.sliceDirections = sliceDirectionsClass(
+            self, self._viewFrame.sliceGrid)
 
         # we now have a wxListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
                                     self._viewFrame.objectsListGrid)
 
-        # create a default slice
-        self._createSlice('Axial')
-
     #################################################################
     # module API methods
     #################################################################
-        
 
     def close(self):
         print "starting close"
@@ -251,10 +428,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             self.setInput(idx, None)
 
         # take care of the sliceDirections
-        for sliceDirection in self._sliceDirections:
-            sliceDirection.close()
-
-        del self._sliceDirections
+        self.sliceDirections.close()
+        del self.sliceDirections
 
         # don't forget to call the mixin close() methods
         vtkPipelineConfigModuleMixin.close(self)
@@ -347,8 +522,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             elif self._inputs[idx]['Connected'] == 'vtkImageDataPrimary' or \
                  self._inputs[idx]['Connected'] == 'vtkImageDataOverlay':
 
-                for sliceDirection in self._sliceDirections:
-                    sliceDirection.removeData(self._inputs[idx]['inputData'])
+                # remove data from the sliceDirections
+                self.sliceDirections.removeData(self._inputs[idx]['inputData'])
 
                 # remove our observer
                 if self._inputs[idx]['observerID'] >= 0:
@@ -391,19 +566,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 self._inputs[idx]['tdObject'] = input_stream
                 
             elif input_stream.IsA('vtkImageData'):
-
-                try:
-                    # add this input to all available sliceDirections
-                    for sliceDirection in self._sliceDirections:
-                        sliceDirection.addData(input_stream)
-                    
-                except Exception, msg:
-                    # if an exception was thrown, clean up and raise again
-                    for sliceDirection in self._sliceDirections:
-                        sliceDirection.removeData(input_stream)
-
-                    raise Exception, msg
-
+                # tell all our sliceDirections about the new data
+                self.sliceDirections.addData(input_stream)
+                
                 # find out whether this is  primary or an overlay, record it
                 connecteds = [i['Connected'] for i in self._inputs]
                 if 'vtkImageDataPrimary' in connecteds or \
@@ -490,37 +655,12 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         """
         self._viewFrame.threedRWI.Render()
 
-    def setCurrentCursor(self, cursor):
-        self._currentCursor = cursor
-        cstring = str(self._currentCursor[0:3]) + " = " + \
-                  str(self._currentCursor[3])
-        
-        self._viewFrame.sliceCursorText.SetValue(cstring)
         
 
     #################################################################
     # internal utility methods
     #################################################################
 
-    def _createSlice(self, sliceName):
-        #sliceName = self._viewFrame.createSliceText.GetValue()
-        if sliceName:
-            names = [i.getName() for i in self._sliceDirections]
-            if sliceName in names:
-                wxLogError("A slice with that name already exists.")
-
-            else:
-                self._sliceDirections.append(sliceDirection(sliceName, self))
-                # now attach all inputs to it
-                for i in self._inputs:
-                    if i['Connected'] == 'vtkImageDataPrimary' or \
-                           i['Connected'] == 'vtkImageDataOverlay':
-                        self._sliceDirections[-1].addData(i['inputData'])
-
-                # add it to the GUI choice
-                self._viewFrame.sliceNameChoice.Append(sliceName)
-                self.setCurrentSliceDirection(self._sliceDirections[-1])
-                #self._viewFrame.sliceNameChoice.SetStringSelection(sliceName)
 
     def _create_window(self):
         import modules.resources.python.slice3dVWRFrames
@@ -665,36 +805,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # display the window
         self._viewFrame.Show(True)
 
-
-    def _destroySlice(self):
-        """Destroy the currently selected slice."""
-
-        sliceDirection = self._getCurrentSliceDirection()
-        if sliceDirection:
-            name = sliceDirection.getName()
-            # this will disconnect all inputs
-            sliceDirection.close()
-            # delete it from our internal list
-            idx = self._sliceDirections.index(sliceDirection)
-            del self._sliceDirections[idx]
-            # remove it from the choice thingy
-            idx = self._viewFrame.sliceNameChoice.FindString(name)
-            self._viewFrame.sliceNameChoice.Delete(idx)
-            self._viewFrame.sliceNameChoice.SetSelection(1)
-
-    def _findSliceDirectionByName(self, name):
-        sliceDirectionL = [i for i in self._sliceDirections if
-                          i.getName() == name]
-                           
-        if sliceDirectionL:
-           return sliceDirectionL[0]
-        else:
-           return None
-        
-
-    def _getCurrentSliceDirection(self):
-        return self._currentSliceDirection
-
     def _getPrimaryInput(self):
         """Get primary input data, i.e. bottom layer.
 
@@ -710,23 +820,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             inputData = None
 
         return inputData
-
-
-    def setCurrentSliceDirection(self, sliceDirection):
-        if sliceDirection != self._currentSliceDirection:
-            self._currentSliceDirection = sliceDirection
-            if sliceDirection is not None:
-                name = sliceDirection.getName()
-                print name
-                self._viewFrame.sliceNameChoice.SetStringSelection(name)
-                # update all GUI elements
-                self._viewFrame.sliceEnabledCheckBox.SetValue(
-                    sliceDirection.getEnabled())
-                self._viewFrame.sliceInteractionCheckBox.SetValue(
-                    sliceDirection.getInteractionEnabled())
-                self._viewFrame.orthoViewCheckBox.SetValue(
-                    sliceDirection.getOrthoViewEnabled())
-        
 
     def _remove_cursors(self, idxs):
 
@@ -805,13 +898,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self._threedRenderer.ResetCamera()
 
         # make sure the overlays follow  suit
-        for sliceDirection in self._sliceDirections:
-            sliceDirection._resetPrimary()
-            sliceDirection._resetOverlays()
-            sliceDirection._syncContours()
-
+        self.sliceDirections.resetAll()
+        
         # whee, thaaaar she goes.
-        self._viewFrame.threedRWI.Render()
+        self.render3D()
 
     def _showScalarBarForProp(self, prop):
         """Show scalar bar for the data represented by the passed prop.
@@ -1045,16 +1135,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     #################################################################
     # callbacks
     #################################################################
-
-
-    def _acsChoiceCallback(self):
-        sliceDirection = self._getCurrentSliceDirection()
-        if sliceDirection:
-            selection = self._viewFrame.acsChoice.GetSelection()
-            sliceDirection.resetToACS(selection)
-
-            # once we've done this, we have to redraw
-            self._viewFrame.threedRWI.Render()
 
     def _handlerPointsLockSlice(self, event):
         selRows = self._viewFrame.spointsGrid.GetSelectedRows()
@@ -1290,12 +1370,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # display the discrete extent
         self._viewFrame.voiPanel.extentText.SetValue(
             "(%d %d %d %d %d %d)" % tuple(voi))
-
-    def _sliceNameChoiceCallback(self, e):
-        sliceDirection = self._findSliceDirectionByName(
-            self._viewFrame.sliceNameChoice.GetStringSelection())
-        
-        self.setCurrentSliceDirection(sliceDirection)
 
     def voiWidgetEndInteractionCallback(self, o, e):
         # adjust the vtkExtractVOI with the latest coords

@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.4 2003/06/30 07:44:26 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.5 2003/07/04 07:32:14 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -15,9 +15,8 @@ class sliceDirection:
     has its own window with an orthogonal view.
     """
 
-    def __init__(self, name, slice3dViewer, defaultPlaneOrientation=2):
-        self._name = name
-        self._slice3dViewer = slice3dViewer
+    def __init__(self, name, sliceDirections, defaultPlaneOrientation=2):
+        self.sliceDirections = sliceDirections
         self._defaultPlaneOrientation = 2
 
         # orthoPipeline is a list of dictionaries.  each dictionary is:
@@ -32,6 +31,10 @@ class sliceDirection:
 
         # list of vtkImagePlaneWidgets (first is "primary", rest are overlays)
         self._ipws = []
+
+        # then some state variables
+        self._enabled = True
+        self._interactionEnabled = True
 
         # list of objects that want to be contoured by this slice
         self._contourObjectsDict = {}
@@ -67,12 +70,13 @@ class sliceDirection:
             mapper.ScalarVisibilityOff()
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            c = self._slice3dViewer._tdObjects.getObjectColour(contourObject)
+            c = self.sliceDirections.slice3dVWR._tdObjects.getObjectColour(
+                contourObject)
             actor.GetProperty().SetColor(c)
             actor.GetProperty().SetInterpolationToFlat()
 
             # add it to the renderer
-            self._slice3dViewer._threedRenderer.AddActor(actor)
+            self.sliceDirections.slice3dVWR._threedRenderer.AddActor(actor)
             
             # add all necessary metadata to our dict
             contourDict = {'contourObject' : contourObject,
@@ -87,7 +91,7 @@ class sliceDirection:
             self.syncContourToObject(contourObject)
 
     def addAllContourObjects(self):
-        cos = self._slice3dViewer._tdObjects.getContourObjects()
+        cos = self.sliceDirections.slice3dVWR._tdObjects.getContourObjects()
         for co in cos:
             self.addContourObject(co)
 
@@ -100,7 +104,7 @@ class sliceDirection:
         if contourObject in self._contourObjectsDict:
             # let's remove it from the renderer
             actor  = self._contourObjectsDict[contourObject]['tdActor']
-            self._slice3dViewer._threedRenderer.RemoveActor(actor)
+            self.sliceDirections.slice3dVWR._threedRenderer.RemoveActor(actor)
             # and remove it from the dict
             del self._contourObjectsDict[contourObject]
 
@@ -192,7 +196,7 @@ class sliceDirection:
                 # this means primary data!
                 self._ipws.append(vtk.vtkImagePlaneWidget())
                 self._ipws[-1].SetInput(inputData)
-                self._ipws[-1].SetPicker(self._slice3dViewer.getIPWPicker())
+                self._ipws[-1].SetPicker(self.sliceDirections.ipwPicker)
                 self._ipws[-1].GetImageMapToColors().SetOutputFormatToRGB()
 
                 # now make callback for the ipw
@@ -236,8 +240,8 @@ class sliceDirection:
         # kill the whole list
         del self._ipws
 
-        # make sure we don't point to the sliceviewer
-        del self._slice3dViewer
+        # make sure we don't point to our sliceDirections
+        del self.sliceDirections
         
 
     def createOrthoView(self):
@@ -251,8 +255,9 @@ class sliceDirection:
             import modules.resources.python.slice3dVWRFrames            
             # import our wxGlade-generated frame
             ovf = modules.resources.python.slice3dVWRFrames.orthoViewFrame
-            self._orthoViewFrame = ovf(self._slice3dViewer._viewFrame, id=-1,
-                                  title='dummy')
+            self._orthoViewFrame = ovf(
+                self.sliceDirections.slice3dVWR._viewFrame, id=-1,
+                title='dummy')
 
             self._orthoViewFrame.SetIcon(moduleUtils.getModuleIcon())
 
@@ -308,42 +313,34 @@ class sliceDirection:
 
     def enable(self):
         """Switch this sliceDirection on."""
+        self._enabled = True
         for ipw in self._ipws:
             ipw.On()
 
     def enableInteraction(self):
+        self._interactionEnabled = True
         if self._ipws:
             self._ipws[0].SetInteraction(1)
 
     def disable(self):
         """Switch this sliceDirection off."""
+        self._enabled = False
         for ipw in self._ipws:
             ipw.Off()
 
     def disableInteraction(self):
+        self._interactionEnabled = False
         if self._ipws:
             self._ipws[0].SetInteraction(0)
 
     def getEnabled(self):
-        if self._ipws:
-            return self._ipws[0].GetEnabled()
-        else:
-            # if we have no ipws yet, we are enabled (because the first ipw
-            # will be)
-            return 1
-
+        return self._enabled
+    
     def getInteractionEnabled(self):
-        if self._ipws:
-            return self._ipws[0].GetInteraction()
-        else:
-            # if we have no ipws yet, we are interaction enabled
-            return 1
+        return self._interactionEnabled
 
     def getOrthoViewEnabled(self):
         return self._orthoViewFrame is not None
-
-    def getName(self):
-        return self._name
 
     def getNumberOfLayers(self):
         return len(self._ipws)
@@ -475,7 +472,8 @@ class sliceDirection:
                 lut.SetSaturationRange((1.0, 1.0))
                 lut.Build()
 
-                ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
+                ipw.SetInteractor(
+                    self.sliceDirection.slice3dVWR._viewFrame.threedRWI)
                 # default axial orientation
                 ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
                 ipw.SetSliceIndex(0)
@@ -547,7 +545,8 @@ class sliceDirection:
 
             ipw = self._ipws[0]
             ipw.DisplayTextOn()
-            ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
+            ipw.SetInteractor(
+                self.sliceDirections.slice3dVWR._viewFrame.threedRWI)
             ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
             ipw.SetSliceIndex(0)
             ipw.GetPlaneProperty().SetColor(
@@ -619,13 +618,13 @@ class sliceDirection:
                 tm2p.SetPoint2(0, roBounds[3] - roBounds[2], 0)
 
     def _ipwStartInteractionCallback(self):
-        self._slice3dViewer.setCurrentSliceDirection(self)
+        self.sliceDirections.setCurrentSliceDirection(self)
         self._ipwInteractionCallback()
 
     def _ipwInteractionCallback(self):
         cd = 4 * [0.0]
         if self._ipws[0].GetCursorData(cd):
-            self._slice3dViewer.setCurrentCursor(cd)
+            self.sliceDirections.setCurrentCursor(cd)
 
         # find the orthoView (if any) which tracks this IPW
         #directionL = [v['direction'] for v in self._orthoViews
