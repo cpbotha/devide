@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.14 2003/02/17 17:20:44 cpbotha Exp $
+# $Id: dscas3.py,v 1.15 2003/02/19 00:58:36 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
@@ -7,6 +7,7 @@ import os
 import stat
 import string
 import sys
+import time
 
 from assistants import assistants
 from graph_editor import graph_editor
@@ -131,6 +132,11 @@ class dscas3_app_t(wxApp):
     """
     
     def __init__(self):
+        self._inProgress = 0
+        self._previousProgressTime = 0
+        self._currentProgress = -1
+        self._currentProgressMsg = ''
+        
         self._old_stderr = None
         self._old_stdout = None
         
@@ -158,6 +164,7 @@ class dscas3_app_t(wxApp):
 	
 	# this will instantiate the module manager and get a list of plugins
 	self.module_manager = module_manager(self)
+
 
     def OnInit(self):
         import resources.python.mainFrame
@@ -241,11 +248,28 @@ class dscas3_app_t(wxApp):
         self._vtk_lw.update()
 
     def setProgress(self, progress, message):
-        self._mainFrame.progressGauge.SetValue(progress)
-        self._mainFrame.progressText.SetLabel(message)
-        # give wx some time to realise the changes
-        self._mainFrame.Raise()
-        wxYield()
+        # 1. we shouldn't call setProgress whilst busy with setProgress
+        # 2. only do something if the message or the progress has changed
+        # 3. we only perform an update if a second or more has passed
+        #    since the previous update, unless this is the final
+        #    (i.e. 100% update)
+        if not self._inProgress and \
+           message != self._currentProgressMsg or \
+                   progress != self._currentProgress:
+               if progress >= 100 or \
+                  time.time() - self._previousProgressTime >= 1:
+                self._previousProgressTime = time.time()
+                self._inProgress = 1
+                self._currentProgressMsg = message
+                self._currentProgress = progress
+                self._mainFrame.progressGauge.SetValue(progress)
+                self._mainFrame.progressText.SetLabel(message)
+                # bring this window to the top
+                self._mainFrame.Raise()
+                # we want wx to update its UI, but it shouldn't accept any user
+                # input, else things can get really crazy.
+                wxSafeYield()
+                self._inProgress = 0
 
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog

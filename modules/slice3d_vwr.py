@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.17 2003/02/18 18:07:59 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.18 2003/02/19 00:58:36 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -223,7 +223,11 @@ class slice3d_vwr(moduleBase,
              callable(input_stream.GetClassName):
 
             if input_stream.GetClassName() == 'vtkPolyData':
-               
+                # if we don't do this (and here it fortunately does no
+                # data-flow harm) and we connect up the output of an
+                # un-updated decimateFLT, DSCAS3 goes BYE-BYE
+                input_stream.Update()
+                
                 mapper = vtk.vtkPolyDataMapper()
                 mapper.SetInput(input_stream)
                 self._inputs[idx]['vtkActor'] = vtk.vtkActor()
@@ -964,7 +968,6 @@ class slice3d_vwr(moduleBase,
     def voiWidgetEndInteractionCallback(self, o, e):
         # adjust the vtkExtractVOI with the latest coords
         self._extractVOI.SetVOI(self._currentVOI)
-
 
     def inputModifiedCallback(self, o, e):
         # the data has changed, so re-render what's on the screen
