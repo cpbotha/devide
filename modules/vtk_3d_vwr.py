@@ -1,6 +1,6 @@
 from module_base import module_base
 from vtkpython import *
-import Tix
+import Tkinter
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
 from vtkTkRenderWidget import vtkTkRenderWidget
 
@@ -25,6 +25,9 @@ class vtk_3d_vwr(module_base):
     def close(self):
 	# remove all our references; close is used by __del__ or when
 	# somebody wishes to destroy us
+	for i in range(5):
+	    # neatly remove all actors
+	    self.set_input(i, None)
 	if hasattr(self, 'renderer'):
 	    del self.renderer
 	if hasattr(self, 'rw'):
@@ -34,7 +37,7 @@ class vtk_3d_vwr(module_base):
 	    del self.rw_window
 	    
     def create_window(self):
-    	self.rw_window = Tix.Toplevel(None)
+    	self.rw_window = Tkinter.Toplevel(None)
 	self.rw_window.title("3d viewer")
 	# widthdraw hides the window, deiconify makes it appear again
 	self.rw_window.protocol("WM_DELETE_WINDOW", self.rw_window.withdraw)
@@ -43,7 +46,7 @@ class vtk_3d_vwr(module_base):
 	self.renderer = vtkRenderer()
 	self.rw.GetRenderWindow().AddRenderer(self.renderer)
 	
-	self.rw.pack(side=Tix.TOP)
+	self.rw.pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
 	
 	
     def get_input_descriptions(self):
@@ -53,10 +56,20 @@ class vtk_3d_vwr(module_base):
 	if input_stream == None:
 	    # now we should try to disconnect the input at idx
 	    # (remove from renderer, del any bindings)
-	    print "eeke"
+	    self.inputs[idx]['Connected'] = 0
+	    if hasattr(self.inputs[idx]['vtkActor'], 'GetClassName'):
+		print self.inputs[idx]['vtkActor'].GetClassName()
+	    if self.inputs[idx]['vtkActor'] != None:
+		# take this actor out of the renderer
+		self.renderer.RemoveActor(self.inputs[idx]['vtkActor'])
+		# whether we've created or not, we have to remove our reference (easy, huh?)
+		self.inputs[idx]['vtkActor'] = None
 	    
 	# *sniff* this is so beautiful
 	elif hasattr(input_stream, 'GetClassName') and callable(input_stream.GetClassName):
+	    # if we got this far, let's disconnect the input which is connected atm
+	    self.set_input(idx, None)
+	    # and then continue with our game
 	    if input_stream.GetClassName() == 'vtkPolyData':
 		mapper = vtkPolyDataMapper()
 		mapper.SetInput(input_stream)

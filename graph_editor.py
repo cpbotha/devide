@@ -1,6 +1,7 @@
 import sys, re
 import Tkinter
 from Tkconstants import *
+import tkMessageBox
 import Pmw
 import external.Tree
 
@@ -239,17 +240,17 @@ class graph_editor:
 	self.window = Tkinter.Toplevel()
 	# FIXME: we need to set some better close method
 	self.window.title("dscas3 graph editor")
-	self.window.protocol ("WM_DELETE_WINDOW", self.window.destroy)
+	self.window.protocol("WM_DELETE_WINDOW", self.window.destroy)
 	
 	# sunken label with border width 1
         self.status = Tkinter.Label(self.window, relief=SUNKEN, bd=1, anchor=W)
         self.status.pack(side=BOTTOM, fill=X, padx=2, pady=1)
-	self.status['text'] = "hello"
+	self.status['text'] = "Welcome to the Graph Editor"
 	
 	tree_frame = Tkinter.Frame(self.window)
 	tree_frame.pack(side=LEFT, fill=Y, expand=0)
-	
-	self.module_tree = external.Tree.Tree(master=tree_frame, root_id='.', root_label='Modules', get_contents_callback=self.get_tree_node_contents, node_class=my_tree_node)
+
+	self.module_tree = external.Tree.Tree(width=140, master=tree_frame, root_id='.', root_label='Modules', get_contents_callback=self.get_tree_node_contents, node_class=my_tree_node)
 	self.module_tree.root.expand()
 
 	# let's just create and pack this first
@@ -266,12 +267,9 @@ class graph_editor:
 	sb.pack(side=LEFT, fill=Y)
 	self.module_tree.configure(yscrollcommand=sb.set)
 	sb.configure(command=self.module_tree.yview)
-
-
-	
 	
 	# create canvas for drawing glyph layouts on
-	self.canvas = Tkinter.Canvas(self.window)
+	self.canvas = Tkinter.Canvas(self.window, background="white")
 	self.canvas.bind("<Button-1>", self.canvas_b1click_cb)
 	self.canvas.pack(side=LEFT, expand=1, fill=BOTH)
 	
@@ -379,7 +377,7 @@ class graph_editor:
 	try:
 	    # do the actual connection (this should actually go to the module_manager)
 	    self.dscas3_main.get_module_manager().connect_modules(self.conn_ip['glyph0'].get_module_instance(), self.conn_ip['out_idx'],
-	    self.conn_ip['glyph1'].get_module_instance(), self.conn_ip['out_idx'])
+	    self.conn_ip['glyph1'].get_module_instance(), self.conn_ip['in_idx'])
 	    # tell the glyphs to connect to each other (and store the line handles, aaaaaai!)
 	    self.conn_ip['glyph0'].connect_to(self.conn_ip['out_idx'], self.conn_ip['glyph1'], self.conn_ip['in_idx'])
 	    # we only have to do this bit for new connections to work again

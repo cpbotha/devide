@@ -75,6 +75,7 @@ class module_manager:
 	input_module.set_input(input_idx, output_module.get_output(output_idx))
 	
     def disconnect_modules(self, input_module, input_idx):
+	print "disconnecting input %d of module %s" % (input_idx, input_module)
 	input_module.set_input(input_idx, None)
     
 
