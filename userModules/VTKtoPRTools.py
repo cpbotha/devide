@@ -7,19 +7,20 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
     """Module to convert multi-component VTK image data to PRTools-compatible
     dataset.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
-        self._config.filename = 'default.m'
+        self._config.filename = ''
 
         configList = [
             ('Output filename:', 'filename', 'base:str', 'filebrowser',
              'Type filename or click "browse" button to choose.',
              {'fileMode' : wx.wxSAVE,
-              'fileMask' : 'Matlab M-file (*.m)|*.m|All files (*.*)|*.*'})
+              'fileMask' :
+              'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*'})
             ]
 
         scriptedConfigModuleMixin.__init__(self, configList)
@@ -43,13 +44,49 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
         del self._inputData
 
     def executeModule(self):
-        pass
+        # this is where the good stuff happens...
+
+        if len(self._config.filename) == 0:
+            raise RuntimeError, 'No filename has been set.'
+
+        if self._inputData == None:
+            raise RuntimeError, 'No input data to convert.'
+
+        # now let's start going through the data
+        outfile = file(self._config.filename, 'w')
+        self._inputData.Update()
+
+        nop = self._inputData.GetNumberOfPoints()
+        noc = self._inputData.GetNumberOfScalarComponents()
+        pd = self._inputData.GetPointData()
+        curList = [''] * noc
+
+        for i in xrange(nop):
+            for j in range(noc):
+                curList[j] = str(pd.GetComponent(i, j))
+
+            outfile.write('%s\n' % (' '.join(curList),))
+
+            self._moduleManager.setProgress((float(i) / (nop - 1)) * 100.0,
+                                            'Exporting PRTools data.')
+
+
+        self._moduleManager.setProgress(100.0,
+                                        'Exporting PRTools data [DONE].')
+        
 
     def getInputDescriptions(self):
         return ('VTK Image Data (multiple components)',)
 
     def setInput(self, idx, inputStream):
-        self._inputData = inputStream
+        try:
+            if inputStream == None or inputStream.IsA('vtkImageData'):
+                self._inputData = inputStream
+            else:
+                raise AttributeError
+            
+        except AttributeError:
+            raise TypeError, 'This module requires a vtkImageData as input.'
 
     def getOutputDescriptions(self):
         return ()
