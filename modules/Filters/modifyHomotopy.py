@@ -17,7 +17,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     This module uses a DeVIDE-specific implementation of Luc Vincent's
     fast greyscale reconstruction algorithm, extended for 3D.
     
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -31,6 +31,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         self._inputPointsObserverID = None
 
         self._dualGreyReconstruct = vtkdevide.vtkImageGreyscaleReconstruct3D()
+        self._dualGreyReconstruct.SetDual(1)
         # we'll use this to synthesise a volume according to the seed points
         self._markerSource = vtk.vtkProgrammableSource()
         self._markerSource.SetExecuteMethod(self._markerSourceExecute)
