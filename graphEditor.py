@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.20 2003/06/04 14:44:41 cpbotha Exp $
+# $Id: graphEditor.py,v 1.21 2003/06/04 21:58:46 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -142,6 +142,8 @@ class graphEditor:
                 self._graphFrame.treeCtrl.AppendItem(miscn, cur_mod)
 
         # only do stuff if !ItemHasChildren()
+
+        self._graphFrame.treeCtrl.Expand(tree_root)
 
     def close_graph_frame_cb(self, event):
         self.hide()
