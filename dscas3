@@ -40,8 +40,8 @@ class dscas3_main:
 	except ImportError:
 	    tkMessageBox.showerror("Import error", "Unable to import module %s!" % name)
 	    return None
-	except:
-	    tkMessageBox.showerror("Instantiation error", "Unable to instantiate module %s!" % name)
+	except Exception, e:
+	    tkMessageBox.showerror("Instantiation error", "Unable to instantiate module %s: %s" % (name, str(e)))
 	    print sys.exc_info()
 	    return None
 	# return the instance
