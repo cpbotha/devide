@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.84 2004/06/23 08:41:56 cpbotha Exp $
+# $Id: graphEditor.py,v 1.85 2004/07/06 12:49:55 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -1126,7 +1126,8 @@ class graphEditor:
             newGlyphDict[newModulePickledName] = newGlyph
 
         # now make lines for all the existing connections
-        for connection in connectionList:
+        # note that we use "newConnections" and not connectionList
+        for connection in newConnections:
             sGlyph = newGlyphDict[connection.sourceInstanceName]
             tGlyph = newGlyphDict[connection.targetInstanceName]
             self._createLine(sGlyph, connection.outputIdx,
