@@ -6,10 +6,10 @@ from vtkTkRenderWidget import vtkTkRenderWidget
 
 class vtk_3d_vwr(module_base):
     def __init__(self):
+	self.num_inputs = 5
 	# list of dictionaries containing some input info
-	self.inputs = []	
-	for i in range(5):
-	    self.inputs.append({'Connected' : 0, 'vtkActor' : None})
+	# don't you just love Python List Comprehension?
+	self.inputs = [{'Connected' : 0, 'vtkActor' : None} for i in range(self.num_inputs)]
 
 	# class variables we'll use alter
 	self.renderer = None
@@ -25,7 +25,7 @@ class vtk_3d_vwr(module_base):
     def close(self):
 	# remove all our references; close is used by __del__ or when
 	# somebody wishes to destroy us
-	for i in range(5):
+	for i in range(self.num_inputs):
 	    # neatly remove all actors
 	    self.set_input(i, None)
 	if hasattr(self, 'renderer'):
@@ -50,7 +50,7 @@ class vtk_3d_vwr(module_base):
 	
 	
     def get_input_descriptions(self):
-	return ('vtkPolyData|vtkActor', 'vtkPolyData|vtkActor', 'vtkPolyData|vtkActor', 'vtkPolyData|vtkActor', 'vtkPolyData|vtkActor')
+	return self.num_inputs * ('vtkPolyData|vtkActor',)
 	
     def set_input(self, idx, input_stream):
 	if input_stream == None:
