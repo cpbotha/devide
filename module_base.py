@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.16 2002/06/07 15:52:40 cpbotha Exp $
+# $Id: module_base.py,v 1.17 2002/06/10 16:58:33 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -79,8 +79,8 @@ class module_base:
     
 # ----------------------------------------------------------------------------
 
-from vtkPipeline.ConfigVtkObj import ConfigVtkObj
-from vtkPipeline.vtkPipeline import vtkPipelineBrowser
+from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
+from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 
 class module_mixin_vtk_pipeline_config:
     """Mixin to use for modules that want to make use of the vtkPipeline

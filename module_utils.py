@@ -1,10 +1,10 @@
-# $Id: module_utils.py,v 1.6 2002/06/10 15:00:55 cpbotha Exp $
+# $Id: module_utils.py,v 1.7 2002/06/10 16:58:33 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
-from vtkPipeline.vtkPipeline import \
+from external.vtkPipeline.vtkPipeline import \
      vtkPipelineBrowser
-from vtkPipeline.ConfigVtkObj import ConfigVtkObj
+from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 
 def bind_CSAEO(module, view_frame):
     # it seems wxID_CANCEL (and probably some others) is an exception

@@ -90,7 +90,6 @@ class module_manager:
     def connect_modules(self, output_module, output_idx,
                         input_module, input_idx):
 
-        print "connect_modules"
 	input_module.set_input(input_idx, output_module.get_output(output_idx))
 	
     def disconnect_modules(self, input_module, input_idx):
