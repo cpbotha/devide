@@ -1,7 +1,8 @@
-# $Id: vtkStructPtsWRT.py,v 1.8 2003/05/13 11:44:59 cpbotha Exp $
+# $Id: vtkStructPtsWRT.py,v 1.9 2003/05/20 21:57:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import moduleUtils
 from wxPython.wx import *
 import vtk
 
@@ -16,20 +17,16 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
 
         self._writer = vtk.vtkStructuredPointsWriter()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        self._writer.SetProgressText('Writing vtk Structured Points data')
-        mm = self._moduleManager
-        self._writer.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._writer))
-        
+        moduleUtils.setupVTKObjectProgress(
+            self, self._writer,
+            'Writing vtk structured points data')
+
         # we do this to save space - if you're going to be transporting files
         # to other architectures, change this to ASCII
         self._writer.SetFileTypeToBinary()
 
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('VTK Structured Points Writer',
-                              'Select a filename',
+        self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
                               {'vtkStructuredPointsWriter': self._writer})
 

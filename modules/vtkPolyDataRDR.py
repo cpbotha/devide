@@ -1,7 +1,8 @@
-# $Id: vtkPolyDataRDR.py,v 1.11 2003/05/13 10:33:31 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.12 2003/05/20 21:57:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import moduleUtils
 from wxPython.wx import *
 import vtk
 import os
@@ -23,12 +24,9 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
         # setup necessary VTK objects
 	self._reader = vtk.vtkPolyDataReader()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        self._reader.SetProgressText('Reading vtk PolyData')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
+        moduleUtils.setupVTKObjectProgress(
+            self, self._reader,
+            'Reading vtk polydata')
 
 #         def errorEventCallback(o, e, msg):
 #             print msg
@@ -38,8 +36,7 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
 #         self._reader.AddObserver('ErrorEvent', errorEventCallback)
         
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('VTK PolyData Reader',
-                              'Select a filename',
+        self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
                               {'vtkPolyDataReader': self._reader})
 

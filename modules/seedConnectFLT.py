@@ -1,6 +1,3 @@
-# TODO: vtkImageCast - cast whatever to unsigned char output
-
-
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
@@ -20,21 +17,10 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._seedConnect = vtk.vtkImageSeedConnectivity()
         self._seedConnect.SetInput(self._imageCast.GetOutput())
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module
-        self._seedConnect.SetProgressText('performing region growing')
-        mm = self._moduleManager
-        self._seedConnect.SetProgressMethod(lambda s=self, mm=mm:
-                                               mm.vtk_progress_cb(
-            s._seedConnect))
-
-        self._imageCast.SetProgressText('casting data to unsigned char')
-        mm = self._moduleManager
-        self._imageCast.SetProgressMethod(lambda s=self, mm=mm:
-                                               mm.vtk_progress_cb(
-            s._imageCast))
-        
+        moduleUtils.setupVTKObjectProgress(self, self._seedConnect,
+                                           'Performing region growing')
+        moduleUtils.setupVTKObjectProgress(self, self._imageCast,
+                                           'Casting data to unsigned char')
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
@@ -163,33 +149,19 @@ class seedConnectFLT(moduleBase, vtkPipelineConfigModuleMixin):
         import modules.resources.python.seedConnectFLTViewFrame
         reload(modules.resources.python.seedConnectFLTViewFrame)
 
-        # find our parent window and instantiate the frame
-        pw = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = modules.resources.python.seedConnectFLTViewFrame.\
-                          seedConnectFLTViewFrame(pw, -1, 'dummy')
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.resources.python.seedConnectFLTViewFrame.\
+            seedConnectFLTViewFrame)
 
-        # make sure that a close of that window does the right thing
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
+        objectDict = {'imageCast' : self._imageCast,
+                      'seedConnect' : self._seedConnect}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            objectDict, None)
 
-        # default binding for the buttons at the bottom
-        moduleUtils.bindCSAEO(self, self._viewFrame)
-
-        # and now the standard examine object/pipeline stuff
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   self.vtkObjectChoiceCallback)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   self.vtkPipelineCallback)
-        
-
-    def vtkObjectChoiceCallback(self, event):
-        self.vtkObjectConfigure(self._viewFrame, None,
-                                self._seedConnect)
-
-    def vtkPipelineCallback(self, event):
-        # move this to module utils too, or to base...
-        self.vtkPipelineConfigure(self._viewFrame, None,
-                                  (self._seedConnect,))
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
 
     def _inputPointsObserver(self, obj):
         # extract a list from the input points

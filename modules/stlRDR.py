@@ -1,7 +1,8 @@
-# $Id: stlRDR.py,v 1.7 2003/05/13 11:44:59 cpbotha Exp $
+# $Id: stlRDR.py,v 1.8 2003/05/20 21:57:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import moduleUtils
 from wxPython.wx import *
 import vtk
 import os
@@ -23,16 +24,11 @@ class stlRDR(moduleBase, filenameViewModuleMixin):
         # setup necessary VTK objects
 	self._reader = vtk.vtkSTLReader()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        self._reader.SetProgressText('Reading STL data')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
-        
+        moduleUtils.setupVTKObjectProgress(self, self._reader,
+                                           'Reading STL data')
+
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('STL Reader',
-                              'Select a filename',
+        self._createViewFrame('Select a filename',
                               'STL data (*.stl)|*.stl|All files (*)|*',
                               {'vtkSTLReader': self._reader})
 

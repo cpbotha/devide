@@ -20,7 +20,6 @@ class polyDataNormalsFLT(moduleBase, noConfigModuleMixin):
                                            'Calculating normals')
 
         self._viewFrame = self._createViewFrame(
-            'polyDataNormalsFLT View',
             {'vtkPolyDataNormals' : self._pdNormals})
 
         # pass the data down to the underlying logic

@@ -272,15 +272,9 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # requires it and so that it's available in this namespace.
         import modules.resources.python.shellSplatSimpleFLTViewFrame
 
-        # find our parent window and instantiate the frame
-        pw = mm.get_module_view_parent_window()
-        self._viewFrame = \
-                        modules.resources.python.shellSplatSimpleFLTViewFrame.\
-                        shellSplatSimpleFLTViewFrame(pw, -1, 'dummy')
-
-        # make sure that a close of that window does the right thing (VERY NB)
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(False))
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, mm, modules.resources.python.shellSplatSimpleFLTViewFrame.\
+            shellSplatSimpleFLTViewFrame)
 
         # setup introspection with default everythings
         moduleUtils.createStandardObjectAndPipelineIntrospection(

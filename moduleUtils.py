@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.12 2003/05/20 20:31:49 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.13 2003/05/20 21:57:51 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -176,8 +176,6 @@ def bindCSAEO(module, view_frame):
     view_frame.SetAcceleratorTable(accel_table)
 
 def createStandardObjectAndPipelineIntrospection(d3module,
-
-                                                 
                                                  viewFrame, viewFramePanel,
                                                  objectDict, renderWindow):
        
@@ -240,7 +238,12 @@ def getModuleIcon():
     icon.CopyFromBitmap(
         resources.graphics.images.getdscas3logom32x32Bitmap())
     return icon
-    
+
+def createModuleViewFrameTitle(d3module):
+    return '%s View: %s' % \
+           (str(d3module.__class__).split('.')[-1],
+            d3module._moduleManager.getInstanceName(d3module))
+
 def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
     # instantiate the frame
     pw = moduleManager.get_module_view_parent_window()
@@ -251,9 +254,7 @@ def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
               lambda e: viewFrame.Show(False))
 
     # set its title (is there not an easier way to get the class name?)
-    viewFrame.SetTitle('%s View: %s' % \
-                       (str(d3module.__class__).split('.')[-1],
-                        moduleManager.getInstanceName(d3module)))
+    viewFrame.SetTitle(createModuleViewFrameTitle(d3module))
 
     # set its icon!
     viewFrame.SetIcon(getModuleIcon())

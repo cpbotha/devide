@@ -29,7 +29,6 @@ class polyDataConnectFLT(moduleBase, noConfigModuleMixin):
         self._seedIds = []
 
         self._viewFrame = self._createViewFrame(
-            'Polydata Connectivity Filter',
             {'vtkPolyDataConnectivityFilter' :
              self._polyDataConnect})
 

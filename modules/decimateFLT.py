@@ -1,5 +1,5 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimateFLT.py,v 1.6 2003/05/13 11:44:59 cpbotha Exp $
+# $Id: decimateFLT.py,v 1.7 2003/05/20 21:57:51 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils
@@ -23,19 +23,11 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._decimate.PreserveTopologyOn()
         self._decimate.SetInput(self._triFilter.GetOutput())
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module
-        self._triFilter.SetProgressText('converting to triangles')
-        mm = self._moduleManager
-        self._triFilter.SetProgressMethod(lambda s=self, mm=mm:
-                                         mm.vtk_progress_cb(s._triFilter))
-        
-        self._decimate.SetProgressText('decimating mesh')
-        mm = self._moduleManager
-        self._decimate.SetProgressMethod(lambda s=self, mm=mm:
-                                         mm.vtk_progress_cb(s._decimate))
-
+        moduleUtils.setupVTKObjectProgress(self, self._triFilter,
+                                           'Converting to triangles')
+        moduleUtils.setupVTKObjectProgress(self, self._decimate,
+                                           'Decimating mesh')
+                                           
         # now setup some defaults before our sync
         self._config.targetReduction = self._decimate.GetTargetReduction()
 
@@ -79,23 +71,17 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
         self._decimate.SetTargetReduction(self._config.targetReduction)
 
     def viewToConfig(self):
-        self._config.targetReduction = self._viewFrame.targetReductionSlider.\
-                                       GetValue() / 100.0
+        f = genUtils.textToFloat(self._viewFrame.targetReductionText.\
+                                 GetValue(), self._config.targetReduction)
+        self._config.targetReduction = f / 100.0
 
     def configToView(self):
-        self._viewFrame.targetReductionSlider.SetValue(
-            self._config.targetReduction * 100.0)
+        self._viewFrame.targetReductionText.SetValue(
+            '%.2f' % (self._config.targetReduction * 100.0,))
 
     def executeModule(self):
         # get the filter doing its thing
         self._decimate.Update()
-
-        # tell the vtk log file window to poll the file; if the file has
-        # changed, i.e. vtk has written some errors, the log window will
-        # pop up.  you should do this in all your modules right after you
-        # caused some VTK processing which might have resulted in VTK
-        # outputting to the error log
-        self._moduleManager.vtk_poll_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
@@ -108,40 +94,16 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
         import modules.resources.python.decimateFLTViewFrame
         reload(modules.resources.python.decimateFLTViewFrame)
 
-        # find our parent window and instantiate the frame
-        pw = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = modules.resources.python.decimateFLTViewFrame.\
-                          decimateFLTViewFrame(pw, -1, 'dummy')
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.resources.python.decimateFLTViewFrame.\
+            decimateFLTViewFrame)
 
-        # make sure that a close of that window does the right thing
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
+        objectDict = {'triangle filter' : self._triFilter,
+                      'decimator' : self._decimate}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            objectDict, None)
 
-        # default binding for the buttons at the bottom
-        moduleUtils.bindCSAEO(self, self._viewFrame)        
-
-        # and now the standard examine object/pipeline stuff
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   self.vtkObjectChoiceCallback)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   self.vtkPipelineCallback)
-        
-        
-    def vtkObjectChoiceCallback(self, event):
-        choice = self._viewFrame.objectChoice.GetStringSelection()
-        if choice == 'vtkDecimate':
-            self.vtkObjectConfigure(self._viewFrame, None,
-                                    self._decimate)
-            
-        elif choice == 'vtkTriangleFilter':
-            self.vtkObjectConfigure(self._viewFrame, None,
-                                    self._triFilter)
-
-        else:
-            genUtils.wxLogError('decimateFLT.py: This should not happen!')
-            
-
-    def vtkPipelineCallback(self, event):
-        # move this to module utils too, or to base...
-        self.vtkPipelineConfigure(self._viewFrame, None,
-                                  (self._decimate,))
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)

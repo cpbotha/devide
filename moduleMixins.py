@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.15 2003/05/19 20:09:25 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.16 2003/05/20 21:57:51 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -212,7 +212,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
         self._viewFrame.Destroy()
         del self._viewFrame
 
-    def _createViewFrame(self, frameTitle,
+    def _createViewFrame(self,
                          browseMsg="Select a filename",
                          fileWildcard=
                          "VTK data (*.vtk)|*.vtk|All files (*)|*",
@@ -221,22 +221,14 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
         if objectDict == None:
             objectDict = {}
 
-        parent_window = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = resources.python.filenameViewModuleMixinFrame.\
-                          filenameViewModuleMixinFrame(parent_window, -1,
-                                                       'dummy')
-
-        self._viewFrame.SetTitle(frameTitle)
-
-        # make sure that a close of that window does the right thing
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
-
-
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            resources.python.filenameViewModuleMixinFrame.\
+            filenameViewModuleMixinFrame)
+                                               
         EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
                    lambda e: self.browseButtonCallback(browseMsg,
                                                        fileWildcard))
-
         
         moduleUtils.createStandardObjectAndPipelineIntrospection(
             self,
@@ -286,8 +278,7 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         self._viewFrame.Destroy()
         del self._viewFrame
 
-    def _createViewFrame(self, frameTitle,
-                         objectDict=None):
+    def _createViewFrame(self, objectDict=None):
 
         """This will create the self._viewFrame for this module.
 
@@ -296,8 +287,9 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         """
 
         parent_window = self._moduleManager.get_module_view_parent_window()
-        
-        viewFrame = wxFrame(parent_window, -1, frameTitle)
+
+        viewFrame = wxFrame(parent_window, -1,
+                            moduleUtils.createModuleViewFrameTitle(self))
         viewFrame.viewFramePanel = wxPanel(viewFrame, -1)
 
         viewFramePanelSizer = wxBoxSizer(wxVERTICAL)
@@ -322,6 +314,9 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         # make sure that a close of that window does the right thing
         EVT_CLOSE(viewFrame,
                   lambda e: viewFrame.Show(false))
+
+        # set cute icon
+        viewFrame.SetIcon(moduleUtils.getModuleIcon())
 
         return viewFrame
         

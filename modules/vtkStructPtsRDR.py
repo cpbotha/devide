@@ -1,7 +1,8 @@
-# $Id: vtkStructPtsRDR.py,v 1.6 2003/05/13 11:44:59 cpbotha Exp $
+# $Id: vtkStructPtsRDR.py,v 1.7 2003/05/20 21:57:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import moduleUtils
 from wxPython.wx import *
 import vtk
 
@@ -16,16 +17,12 @@ class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
 
         self._reader = vtk.vtkStructuredPointsReader()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        self._reader.SetProgressText('Reading vtk Structured Points data')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
-        
+        moduleUtils.setupVTKObjectProgress(
+            self, self._reader,
+            'Reading vtk structured points data')
+
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('VTK Structured Points Reader',
-                              'Select a filename',
+        self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
                               {'vtkStructuredPointsReader': self._reader})
 

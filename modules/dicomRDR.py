@@ -1,10 +1,11 @@
-# $Id: dicomRDR.py,v 1.11 2003/05/13 12:50:05 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.12 2003/05/20 21:57:51 cpbotha Exp $
 
 import genUtils
 import os
 from moduleBase import moduleBase
 from moduleMixins import \
      vtkPipelineConfigModuleMixin, fileOpenDialogModuleMixin
+import moduleUtils
 
 import stat
 from wxPython.wx import *
@@ -23,13 +24,8 @@ class dicomRDR(moduleBase,
         # setup necessary VTK objects
 	self._reader = vtkdscas.vtkDICOMVolumeReader()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # in your module
-        self._reader.SetProgressText('Reading DICOM data')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
+        moduleUtils.setupVTKObjectProgress(self, self._reader,
+                                           'Reading DICOM data')
 
         self._viewFrame = ""
         self._createViewFrame()
@@ -179,28 +175,23 @@ class dicomRDR(moduleBase,
     def _createViewFrame(self):
         import modules.resources.python.dicomRDRViewFrame
         reload(modules.resources.python.dicomRDRViewFrame)
-        
-        parent_window = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = modules.resources.python.dicomRDRViewFrame.\
-                          dicomRDRViewFrame(parent_window, id=-1,
-                                            title='dummy')
-        
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
+
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.resources.python.dicomRDRViewFrame.\
+            dicomRDRViewFrame)
+
+        objectDict = {'dicom reader' : self._reader}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            objectDict, None)
+
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
 
         EVT_BUTTON(self._viewFrame, self._viewFrame.BROWSE_BUTTON_ID,
                    self.dn_browse_cb)
-        EVT_CHOICE(self._viewFrame, self._viewFrame.VTK_OBJECT_CHOICE_ID,
-                   self.vtk_object_choice_cb)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.VTK_PIPELINE_ID,
-                   self.vtk_pipeline_cb)
-
-        moduleUtils.bindCSAEO(self, self._viewFrame)
-
-        # bind events to the standard cancel, sync, apply, execute, ok buttons
-#        moduleUtils.bind_CSAEO(self, self._viewFrame)
-
-
+        
 
     def view(self, parent_window=None):
         if not self._viewFrame.Show(True):
@@ -214,12 +205,3 @@ class dicomRDR(moduleBase,
         if path != None:
             self._viewFrame.dirname_text.SetValue(path)
 
-    def vtk_object_choice_cb(self, event):
-        if self._viewFrame.object_choice.GetStringSelection() == \
-           'vtkDICOMVolumeReader':
-            self.vtkObjectConfigure(self._viewFrame, None, self._reader)
-
-    def vtk_pipeline_cb(self, event):
-        # move this to module utils too, or to base...
-        self.vtkPipelineConfigure(self._viewFrame, None, (self._reader,))
-	    

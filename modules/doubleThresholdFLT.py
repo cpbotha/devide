@@ -101,7 +101,6 @@ class doubleThresholdFLT(moduleBase,
     def viewToConfig(self):
         self._config.lt = self._sanitiseThresholdTexts(0)
         self._config.ut = self._sanitiseThresholdTexts(1)
-        self._config.rtu = self._viewFrame.realtimeUpdateCheckbox.GetValue()
         self._config.ri = self._viewFrame.replaceInCheckBox.GetValue()
         self._config.iv = float(self._viewFrame.replaceInText.GetValue())
         self._config.ro = self._viewFrame.replaceOutCheckBox.GetValue()
@@ -136,7 +135,6 @@ class doubleThresholdFLT(moduleBase,
     def configToView(self):
         self._viewFrame.lowerThresholdText.SetValue("%.2f" % (self._config.lt))
         self._viewFrame.upperThresholdText.SetValue("%.2f" % (self._config.ut))
-        self._viewFrame.realtimeUpdateCheckbox.SetValue(self._config.rtu)
         self._viewFrame.replaceInCheckBox.SetValue(self._config.ri)
         self._viewFrame.replaceInText.SetValue(str(self._config.iv))
         self._viewFrame.replaceOutCheckBox.SetValue(self._config.ro)
@@ -188,41 +186,24 @@ class doubleThresholdFLT(moduleBase,
         import modules.resources.python.doubleThresholdFLTFrame
         reload(modules.resources.python.doubleThresholdFLTFrame)
 
-        # find our parent window and instantiate the frame
-        pw = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = modules.resources.python.doubleThresholdFLTFrame.\
-                          doubleThresholdFLTFrame(pw, -1, 'dummy')
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.resources.python.doubleThresholdFLTFrame.\
+            doubleThresholdFLTFrame)
 
-        # make sure that a close of that window does the right thing
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
+        objectDict = {'imageThreshold' : self._imageThreshold}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            objectDict, None)
 
-        # default binding for the buttons at the bottom
-        moduleUtils.bindCSAEO(self, self._viewFrame)        
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
 
         # finish setting up the output datatype choice
         self._viewFrame.outputDataTypeChoice.Clear()
         for aType in self._outputTypes.keys():
-            self._viewFrame.outputDataTypeChoice.Append(aType)
+            self._viewFrame.outputDataTypeChoice.Append(aType)    
 
-        EVT_TEXT_ENTER(self._viewFrame,
-                       self._viewFrame.lowerThresholdTextId,
-                       lambda e, s=self: s._threshTextCallback(0))
-
-        EVT_TEXT_ENTER(self._viewFrame,
-                       self._viewFrame.upperThresholdTextId,
-                       lambda e, s=self: s._threshTextCallback(1))
-
-        EVT_CHECKBOX(self._viewFrame,
-                     self._viewFrame.realtimeUpdateCheckboxId,
-                     self._realtimeUpdateCheckboxCallback)
-
-        # and now the standard examine object/pipeline stuff
-        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
-                   self.vtk_object_choice_cb)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
-                   self.vtk_pipeline_cb)
-        
     def _sanitiseThresholdTexts(self, whichText):
         if whichText == 0:
             try:
@@ -261,24 +242,3 @@ class doubleThresholdFLT(moduleBase,
                 self._viewFrame.upperThresholdText.SetValue(str(upper))
 
             return upper
-        
-
-    def _threshTextCallback(self, whichText):
-        self._sanitiseThresholdTexts(whichText)
-
-        if self._config.rtu:
-            self.applyViewToLogic()
-            self.executeModule()
-
-    def _realtimeUpdateCheckboxCallback(self, event):
-        self._config.rtu = self._viewFrame.realtimeUpdateCheckbox.GetValue()
-        
-
-    def vtk_object_choice_cb(self, event):
-        self.vtkObjectConfigure(self._viewFrame, None,
-                                self._imageThreshold)
-
-    def vtk_pipeline_cb(self, event):
-        # move this to module utils too, or to base...
-        self.vtkPipelineConfigure(self._viewFrame, None,
-                                  (self._imageThreshold,))

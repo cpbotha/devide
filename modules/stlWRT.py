@@ -1,7 +1,7 @@
-# $Id: stlWRT.py,v 1.3 2003/05/13 11:44:59 cpbotha Exp $
-
+# $Id: stlWRT.py,v 1.4 2003/05/20 21:57:51 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import moduleUtils
 from wxPython.wx import *
 import vtk
 
@@ -30,14 +30,11 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         for textobj in (('Cleaning data', self._cleaner),
                         ('Converting to triangles', self._tf),
                         ('Writing STL data', self._writer)):
-            print textobj[1].GetClassName()
-            textobj[1].SetProgressText(textobj[0])
-            textobj[1].SetProgressMethod(lambda textobj=textobj, mm=mm:
-                                         mm.vtk_progress_cb(textobj[1]))
+            moduleUtils.setupVTKObjectProgress(self, textobj[1],
+                                               textobj[0])
         
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('STL Writer',
-                              'Select a filename',
+        self._createViewFrame('Select a filename',
                               'STL data (*.stl)|*.stl|All files (*)|*',
                               {'vtkSTLWriter': self._writer})
 

@@ -1,7 +1,8 @@
-# $Id: vtkPolyDataWRT.py,v 1.3 2003/05/13 11:44:59 cpbotha Exp $
+# $Id: vtkPolyDataWRT.py,v 1.4 2003/05/20 21:57:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import moduleUtils
 from wxPython.wx import *
 import vtk
 
@@ -19,20 +20,12 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
         # in ASCII - I'll make this a gui option later.
         self._writer.SetFileTypeToBinary()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        self._writer.SetProgressText('Writing VTK Polygonal data')
-        mm = self._moduleManager
-        self._writer.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._writer))
-        
-        # we do this to save space - if you're going to be transporting files
-        # to other architectures, change this to ASCII
-        #self._writer.SetFileTypeToBinary()
+        moduleUtils.setupVTKObjectProgress(
+            self, self._writer,
+            'Writing VTK Polygonal data')
 
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('VTK PolyData Writer',
-                              'Select a filename',
+        self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
                               {'vtkPolyDataWriter': self._writer})
 

@@ -17,17 +17,10 @@ class rawVolumeRDR(moduleBase,
 
 	self._reader = vtk.vtkImageReader()
         self._reader.SetFileDimensionality(3)
-        
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-        self._reader.SetProgressText('Reading raw volume data')
-        mm = self._moduleManager
-        self._reader.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._reader))
-        
 
+        moduleUtils.setupVTKObjectProgress(self, self._reader,
+                                           'Reading raw volume data')
+        
         self._dataTypes = {'Double': vtk.VTK_DOUBLE,
                            'Float' : vtk.VTK_FLOAT,
                            'Long'  : vtk.VTK_LONG,
@@ -41,7 +34,6 @@ class rawVolumeRDR(moduleBase,
 
         self._viewFrame = None
         self._createViewFrame()
-
 
         # now setup some defaults before our sync
         self._config.filename = ''
@@ -193,14 +185,10 @@ class rawVolumeRDR(moduleBase,
         import modules.resources.python.rawVolumeRDRViewFrame
         reload(modules.resources.python.rawVolumeRDRViewFrame)
 
-        # find our parent window and instantiate the frame
-        pw = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = modules.resources.python.rawVolumeRDRViewFrame.\
-                          rawVolumeRDRViewFrame(pw, -1, 'dummy')
-
-        # make sure that a close of that window does the right thing
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(False))
+        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.resources.python.rawVolumeRDRViewFrame.\
+            rawVolumeRDRViewFrame)
 
         # bind the file browse button
         EVT_BUTTON(self._viewFrame,
@@ -221,7 +209,6 @@ class rawVolumeRDR(moduleBase,
         self._viewFrame.dataTypeChoice.Clear()
         for aType in self._dataTypes.keys():
             self._viewFrame.dataTypeChoice.Append(aType)
-
 
     def _browseButtonCallback(self, event): 
         path = self.filenameBrowse(self._viewFrame,

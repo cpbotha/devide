@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.23 2003/04/30 22:15:44 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.24 2003/05/20 21:57:51 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -7,6 +7,7 @@ from genUtils import logError
 from genMixins import subjectMixin
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
+import moduleUtils
 import vtk
 from wxPython.wx import *
 from wxPython.grid import *
@@ -145,6 +146,8 @@ class sliceDirection:
             ovf = modules.resources.python.slice3dVWRFrames.orthoViewFrame
             self._orthoViewFrame = ovf(self._slice3dViewer._viewFrame, id=-1,
                                   title='dummy')
+
+            self._orthoViewFrame.SetIcon(moduleUtils.getModuleIcon())
 
             self._renderer = vtk.vtkRenderer()
             self._renderer.SetBackground(0.5, 0.5, 0.5)
@@ -873,6 +876,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                             MainFrame
         self._viewFrame = slice3d_vwr_frame(parent_window, id=-1,
                                              title='dummy')
+
+        self._viewFrame.SetIcon(moduleUtils.getModuleIcon())
 
         # fix for the grid
         self._viewFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
