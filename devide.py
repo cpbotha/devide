@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.74 2004/01/15 10:46:21 cpbotha Exp $
+# $Id: devide.py,v 1.1 2004/01/15 10:47:40 cpbotha Exp $
 
 DEVIDE_VERSION = '20031218'
 
