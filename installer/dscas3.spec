@@ -25,7 +25,7 @@ docsTree = Tree(os.path.join(D3_DIR, 'docs'), 'docs', ['CVS'])
 
 # USER MODULES
 userModulesTree = Tree(os.path.join(D3_DIR, 'userModules'), 'userModules',
-                       ['CVS'])
+                       ['CVS', '*~'])
 
 # VTKPIPELINE ICONS
 
