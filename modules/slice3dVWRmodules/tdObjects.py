@@ -1,9 +1,10 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.7 2003/06/30 07:44:26 cpbotha Exp $
+# $Id: tdObjects.py,v 1.8 2003/06/30 10:00:00 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import operator
 import vtk
+import vtkdscas
 import wx
 from wx.lib import colourdb
 
@@ -292,6 +293,12 @@ class tdObjects:
         else:
             return -1
 
+    def findObjectByActor(self, actor):
+        for oi in objectsDict.items():
+            if oi[1]['type'] == vtkPolyData and \
+               oi[1]['vtkActor'] == actor:
+                return oi[0]
+
     def findObjectsByNames(self, objectNames):
         """Given an objectName, return an object binding.
         """
@@ -366,6 +373,42 @@ class tdObjects:
         # and update the contours after we've moved things around
         for sd in self._slice3dVWR._sliceDirections:
             sd.syncContourToObjectViaProp(eventObject.GetProp3D())
+
+    def _observerMotionBoxWidgetInteraction(
+        self, eventObject, eventType, objectDict):
+        # if the object has been constrained, we do our thing here
+
+        # for now, we just use the first frikking plane, mmmkay?
+        try:
+            ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
+        except:
+            # no plane, so we don't do anything
+            return
+
+        planeNormal = ipw.GetNormal()
+        prevCentre = objectDict['motionBoxWidgetPrevCentre']
+
+        pd = vtk.vtkPolyData()
+        eventObject.GetPolyData(pd)
+        curCentre = pd.GetPoints().GetData().GetTuple3(14)
+
+        # now calculate motion vector
+        mv = map(operator.sub, curCentre, prevCentre)
+        # calculate "bad" component
+        bc = vtk.vtkMath.Dot(planeNormal, mv)
+        bc = [bc * e for e in planeNormal]
+        # because this is a hack and a kludge, we're just going to translate
+        # the boxwidget with the negative "bad" component
+        nbc = [-e for e in bc]
+
+        print mv
+        print nbc
+
+        trfm = vtk.vtkTransform()
+        eventObject.GetTransform(trfm)
+        #trfm.PostMultiply()
+        #trfm.Translate(nbc)
+        eventObject.SetTransform(trfm)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -518,7 +561,8 @@ class tdObjects:
                     objectDict['motionBoxWidget'] = None
 
                 # we like to do it anew
-                objectDict['motionBoxWidget'] = vtk.vtkBoxWidget()
+                objectDict['motionBoxWidget'] = vtkdscas.\
+                                                vtkBoxWidgetConstrained()
                 bw = objectDict['motionBoxWidget']
                     
                 # we don't want the user to scale, only move and rotate
@@ -527,15 +571,22 @@ class tdObjects:
                 bw.RotationEnabledOff()
                 bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
                 bw.SetProp3D(objectDict['vtkActor'])
-                # now add some observers that will actually move and rotate
-                # the actor
-                bw.AddObserver('EndInteractionEvent',
-                               self._observerMotionBoxWidgetEndInteraction)
-
-                
                 bw.SetPlaceFactor(1.0)
                 bw.PlaceWidget()
                 bw.On()
+
+                bw.AddObserver('EndInteractionEvent',
+                               self._observerMotionBoxWidgetEndInteraction)
+
+                try:
+                    ipw = self._slice3dVWR._sliceDirections[0]._ipws[0]
+                except:
+                    # no plane, so we don't do anything
+                    pass
+                else:
+                    bw.ConstrainToPlaneOn()
+                    bw.SetConstrainPlaneNormal(ipw.GetNormal())
+                
 
             else:
                 if 'motionBoxWidget' in objectDict and \
