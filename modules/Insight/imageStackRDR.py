@@ -1,6 +1,7 @@
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
 import InsightToolkit as itk
 from moduleBase import moduleBase
+import moduleUtils
 import wx
 
 class imageStackClass(list,
@@ -34,10 +35,11 @@ class imageStackRDR(moduleBase):
         self._createViewFrame()
 
         # list of names that are to be loaded
-        self._config._imageFileNames
+        self._config._imageFileNames = []
         # we'll use this variable to check when we need to reload
         # filenames.
         self._imageFileNamesChanged = True
+        #
 
         self.configToLogic()
         self.syncViewWithLogic()
@@ -79,18 +81,30 @@ class imageStackRDR(moduleBase):
         if tempList != self._config._imageFileNames:
             # this is a new list
             self._imageFileNamesChanged = True
-            # copy it...
-
-
+            # copy...
+            self._config._imageFileNames = tempList
+            
     def configToView(self):
-        stdText = '(%.2f, %.2f, %.2f)' % self._config.standardDeviation
-        self._viewFrame.stdTextCtrl.SetValue(stdText)
-
-        cutoffText = '(%.2f, %.2f, %.2f)' % self._config.radiusCutoff
-        self._viewFrame.radiusCutoffTextCtrl.SetValue(cutoffText)
+        # clear wxListBox
+        self._viewFrame.fileNamesListBox.Clear()
+        for fileName in self._config._imageFileNames:
+            self._viewFrame.Append(fileName)
 
     def executeModule(self):
-        self._imageGaussianSmooth.Update()
+        if self._imageFileNamesChanged:
+            # only if things have changed do we do our thing
+            # first take care of old refs
+            del self._imageStack[:]
+            for imageFileName in self._config._imageFileNames:
+                reader = itk.itkImageFileReaderF2_New()
+                reader.SetFileName(imageFileName)
+                reader.Update()
+                self._imageStack.append(reader.GetOutput())
+
+            # make sure all observers know about the changes
+            self._imageStack.notify()
+            # indicate that we're in sync now
+            self._imageFileNamesChanged = False
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
@@ -99,21 +113,14 @@ class imageStackRDR(moduleBase):
 
     def _createViewFrame(self):
         self._moduleManager.importReload(
-            'modules.Filters.resources.python.imageGaussianSmoothViewFrame')
-        import modules.Filters.resources.python.imageGaussianSmoothViewFrame
+            'modules.Insight.resources.python.imageStackRDRViewFrame')
+        import modules.Insight.resources.python.imageStackRDRViewFrame
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.Filters.resources.python.imageGaussianSmoothViewFrame.\
-            imageGaussianSmoothViewFrame)
-
-        objectDict = {'vtkImageGaussianSmooth' : self._imageGaussianSmooth}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._viewFrame, self._viewFrame.viewFramePanel,
-            objectDict, None)
+            modules.Insight.resources.python.imageStackRDRViewFrame.\
+            imageStackRDRViewFrame)
 
         moduleUtils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
-
-        
 
