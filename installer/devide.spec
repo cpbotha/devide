@@ -71,12 +71,13 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
 
 pyz = PYZ(a.pure)
 
-
-options = [('f','','OPTION')] # LD_LIBRARY_PATH is correctly set on Linux
-#+ [('v', '', 'OPTION')],     # Python is ran with -v
+# in Installer 6a2, the -f option is breaking things (the support directory
+# is deleted after the first invocation!)
+#options = [('f','','OPTION')] # LD_LIBRARY_PATH is correctly set on Linux
+#options += [('v', '', 'OPTION')]     # Python is ran with -v
 
 exe = EXE(pyz,
-          a.scripts + options,
+          a.scripts, #+ options,
           exclude_binaries=1,
           name=exeName,
           icon=os.path.join(APP_DIR, 'resources/graphics/devidelogo64x64.ico'),
