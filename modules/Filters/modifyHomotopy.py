@@ -23,7 +23,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     This module uses a DeVIDE-specific implementation of Luc Vincent's
     fast greyscale reconstruction algorithm, extended for 3D.
     
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
     
     def __init__(self, moduleManager):
@@ -31,19 +31,13 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
-
-        # inputImage + J -> vtkImageMathematics(min) -> I
-        # (inputJ -> vtkImageThreshold) + markerSource(seedpoints) -> vtkImageLogic(or) ->
-        # vtkImageThreshold -> J
-
         # these will be our markers
         self._inputPoints = None
-        # we keep track of our observer ID so we can remove it
-        self._inputPointsObserverID = None
 
         # we can't connect the image input directly to the masksource,
         # so we have to keep track of it separately.
         self._inputImage = None
+        self._inputImageObserverID = None
 
         # we need to modify the mask (I) as well.  The problem with a
         # ProgrammableFilter is that you can't request GetOutput() before
@@ -67,6 +61,8 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         self._imageThreshold = vtk.vtkImageThreshold()
         # everything equal to or above 1.0 will be "on"
         self._imageThreshold.ThresholdByUpper(1.0)
+        self._imageThresholdObserverID = self._imageThreshold.AddObserver(
+            'EndEvent', self._observerImageThreshold)
         
         moduleUtils.setupVTKObjectProgress(
             self, self._dualGreyReconstruct,
@@ -91,6 +87,9 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         noConfigModuleMixin.close(self)
 
         moduleBase.close(self)
+
+        #
+        self._imageThreshold.RemoveObserver(self._imageThresholdObserverID)
         
         # get rid of our reference
         del self._dualGreyReconstruct
@@ -104,13 +103,33 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     def setInput(self, idx, inputStream):
         if idx == 0:
             if inputStream != self._inputImage:
-                self._inputImage = inputStream
                 # if we have a different image input, the seeds will have to
                 # be rebuilt!
                 self._markerSource.Modified()
-                # and obviously the masksource has to know that it has to work
+                # and obviously the masksource has to know that its "input"
+                # has changed
                 self._maskSource.Modified()
                 self._dualGreyReconstruct.Modified()
+
+                if inputStream:
+                    # we have to add an observer
+                    s = inputStream.GetSource()
+                    if s:
+                        self._inputImageObserverID = s.AddObserver(
+                            'EndEvent', self._observerInputImage)
+
+                else:
+                    # if we had an observer, remove it
+                    if self._inputImage:
+                        s = self._inputImage.GetSource()
+                        if s and self._inputImageObserverID:
+                            s.RemoveObserver(
+                                self._inputImageObserverID)
+                            
+                        self._inputImageObserverID = None
+
+                # finally store the new data
+                self._inputImage = inputStream
                 
         elif idx == 1:
             if inputStream != self._inputPoints:
@@ -128,15 +147,12 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
                 
                 if self._inputPoints:
                     self._inputPoints.removeObserver(
-                        self._inputPointsObserverID)
-                    self._inputPointsObserverID = None
+                        self._observerInputPoints)
 
                 self._inputPoints = inputStream
                 
                 if self._inputPoints:
-                    self._inputPointsObserverID = self._inputPoints.\
-                                                  addObserver(
-                        self._observerInputPoints)
+                    self._inputPoints.addObserver(self._observerInputPoints)
 
                 # the input points situation has changed, make sure
                 # the marker source knows this...
@@ -155,10 +171,15 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
 
 
     def getOutputDescriptions(self):
-        return ('VTK Image Data', )
+        return ('Modified VTK Image Data', 'I input', 'J input')
 
     def getOutput(self, idx):
-        return self._dualGreyReconstruct.GetOutput()
+        if idx == 0:
+            return self._dualGreyReconstruct.GetOutput()
+        elif idx == 1:
+            return self._maskSource.GetStructuredPointsOutput()
+        else:
+            return self._markerSource.GetStructuredPointsOutput()
 
     def logicToConfig(self):
         pass
@@ -223,9 +244,18 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     def _maskSourceExecute(self):
         inputI = self._inputImage
         if inputI:
+            inputI.Update()
+                
             self._markerSource.Update()
             outputJ = self._markerSource.GetStructuredPointsOutput()
             # we now have an outputJ
+
+            if not inputI.GetScalarPointer() or \
+               not outputJ.GetScalarPointer() or \
+               not inputI.GetDimensions() > (0,0,0):
+                vtk.vtkOutputWindow.GetInstance().DisplayErrorText(
+                    'modifyHomotopy: Input is empty.')
+                return
 
             iMath = vtk.vtkImageMathematics()
             iMath.SetOperationToMin()
@@ -235,14 +265,25 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
             iMath.Update()
 
             outputI = self._maskSource.GetStructuredPointsOutput()
-            print outputI.__this__
             outputI.DeepCopy(iMath.GetOutput())
-            print outputI.__this__
-            
 
     def _observerInputPoints(self, obj):
         # this will be called if anything happens to the points
         # simply make sure our markerSource knows that it's now invalid
-        self._maskSource.Modified()
         self._markerSource.Modified()
+        self._maskSource.Modified()        
+        self._dualGreyReconstruct.Modified()
+
+    def _observerInputImage(self, obj, eventName):
+        # the inputImage has changed, so the marker will have to change too
+        self._markerSource.Modified()
+        # logical, input image has changed
+        self._maskSource.Modified()
+        self._dualGreyReconstruct.Modified()
+
+    def _observerImageThreshold(self, obj, eventName):
+        # if anything in the threshold has changed, (e.g. the input) we
+        # have to invalidate everything else after it
+        self._markerSource.Modified()
+        self._maskSource.Modified()
         self._dualGreyReconstruct.Modified()

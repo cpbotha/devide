@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.19 2004/03/14 17:41:33 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.20 2004/03/15 22:27:51 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.19 $
+    $Revision: 1.20 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -825,9 +825,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
     def inputModifiedCallback(self, o, e):
         # the data has changed, so re-render what's on the screen
-        print "calling Render"
         self.threedFrame.threedRWI.Render()
-        print "done calling Render"
 
     def _rwiLeftButtonCallback(self, obj, event):
 

@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.30 2004/03/14 16:18:41 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.31 2004/03/15 22:27:51 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -420,7 +420,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
               in the case of tuple, the actual cast followed by a comma
               and the number of elements
 
-    widgetType: text, checkbox
+    widgetType: text, checkbox, choice (you'll get a string back)
 
     NOTE: this mixin assumes that your module is derived from moduleBase,
     e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
@@ -466,8 +466,15 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             widget = None
             if configTuple[3] == 'text':
                 widget = wx.TextCtrl(panel, -1, "")
-            else: # checkbox
+                
+            elif configTuple[3] == 'checkbox': # checkbox
                 widget = wx.CheckBox(panel, -1, "")
+                
+            else: # choice
+                widget = wx.Choice(panel, -1)
+                # in this case, configTuple[5] has to be a list of strings
+                for cString in configTuple[5]:
+                    widget.Append(cString)
                 
             if len(configTuple[4]) > 0:
                 widget.SetToolTip(wx.ToolTip(configTuple[4]))
@@ -491,10 +498,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         for configTuple in self._configList:
             widget = self._widgets[configTuple[0]]
             typeD = configTuple[2]
+
+            if configTuple[3] == 'choice':
+                wv = widget.GetStringSelection()
+            else:
+                wv = widget.GetValue()
             
             if typeD.startswith('base:'):
                 # we're only supporting 'text' widget so far
-                wv = widget.GetValue()
                 castString = typeD.split(':')[1]
                 try:
                     val = eval('%s(wv)' % (castString,))
@@ -505,8 +516,6 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
             elif typeD.startswith('tuple:'):
                 # e.g. tuple:float,3
-                wv = widget.GetValue()
-
                 castString, numString = typeD.split(':')[1].split(',')
                 val = genUtils.textToTypeTuple(
                     wv, eval('self._config.%s' % (configTuple[1],)),
@@ -526,8 +535,11 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             # only supporting 'text' widgets for now
             if configTuple[3] == 'text':
                 widget.SetValue(str(val))
-            else: # checkbox
+            elif configTuple[3] == 'checkbox': # checkbox
                 widget.SetValue(bool(val))
+            else: # choice
+                print str(val)
+                widget.SetStringSelection(str(val))
 
     def view(self):
         self._viewFrame.Show(True)
