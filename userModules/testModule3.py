@@ -292,7 +292,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
             gPtId = seedPd.FindPoint(self._giaGlenoid)
             pointLabels[gPtId] = 1
 
-            i = 0
+            i = 1
             for outsidePoint in self._outsidePoints:
                 oPtId = seedPd.FindPoint(outsidePoint)
                 pointLabels[oPtId] = i * 200
@@ -356,55 +356,71 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
                             # c0 is the "current" curvature
 
-                            plateau, plateauNeighbours = self._getPlateau(
-                                nbh[0], neighbourMap, seedPdScalars)
+                            plateau, plateauNeighbours, plateauLabel = \
+                                     self._getPlateau(nbh[0], neighbourMap,
+                                                      seedPdScalars,
+                                                      pointLabels)
 
-                            # now look for the lowest neighbour
-                            # (c0 is the plateau scalar)
-                            minScalar = cms
-                            minId = -1
-                            for nId in plateauNeighbours:
-                                si = seedPdScalars.GetTuple1(nId)
-                                if si < minScalar:
-                                    minId = nId
-                                    minScalar = si
 
-                            if not plateauNeighbours:
+                            if plateauLabel != -1:
+                                # this means the whole plateau is with a basin
+                                for i in plateau:
+                                    thePath.append(i)
+
+                                for newLabelPtId in thePath:
+                                    pointLabels[newLabelPtId] = plateauLabel
+
+                                print "found new path: %d (%d)" % \
+                                      (plateauLabel, len(thePath))
+                                # and our loop is done
+                                pathDone = True
+                                    
+                            elif not plateauNeighbours:
                                 # i.e. we have a single point or a floating
                                 # plateau...
                                 print "floating plateau!"
                                 pathDone = True
                                 
-                            elif minId != -1:
-                                # this means we found the smallest neighbour
-
-                                # everything on the plateau gets added to
-                                # the path
-                                for i in plateau:
-                                    thePath.append(i)
-
-                                if pointLabels[minId] != -1:
-                                    # if this is a labeled point, we know which
-                                    # basin thePath belongs to
-                                    theLabel = pointLabels[minId]
-                                    for newLabelPtId in thePath:
-                                        pointLabels[newLabelPtId] = theLabel
-
-                                    print "found new path: %d (%d)" % \
-                                          (theLabel, len(thePath))
-                                    # and our loop is done
-                                    pathDone = True
-
-                                else:
-                                    # this is not a labeled point, which means
-                                    # we just add it to our path
-                                    thePath.append(minId)
-                                    
                             else:
-                                print "HELP! - we found a minimum plateau!"
-                                
-                                
+                                # now look for the lowest neighbour
+                                # (c0 is the plateau scalar)
+                                minScalar = cms
+                                minId = -1
+                                for nId in plateauNeighbours:
+                                    si = seedPdScalars.GetTuple1(nId)
+                                    if si < minScalar:
+                                        minId = nId
+                                        minScalar = si
+
+                                if minId != -1:
+                                    # this means we found the smallest
+                                    # neighbour
+
+                                    # everything on the plateau gets added to
+                                    # the path
+                                    for i in plateau:
+                                        thePath.append(i)
+
+                                    if pointLabels[minId] != -1:
+                                        # if this is a labeled point, we know
+                                        # which basin thePath belongs to
+                                        theLabel = pointLabels[minId]
+                                        for newLabelPtId in thePath:
+                                            pointLabels[newLabelPtId] = \
+                                                                      theLabel
+
+                                        print "found new path: %d (%d)" % \
+                                              (theLabel, len(thePath))
+                                        # and our loop is done
+                                        pathDone = True
+
+                                    else:
+                                        # this is not a labeled point, which
+                                        # means we just add it to our path
+                                        thePath.append(minId)
                                     
+                                else:
+                                    print "HELP! - we found a minimum plateau!"
 
             # we're done with our little path walking... now we have to assign
             # our watershedded thingy to the output data
@@ -416,7 +432,8 @@ class testModule3(moduleBase, noConfigModuleMixin):
                     ptId,
                     pointLabels[ptId])
 
-    def _getPlateau(self, initPt, neighbourMap, scalars):
+
+    def _getPlateau(self, initPt, neighbourMap, scalars, pointLabels):
 
         """Grow outwards from ptId nbh[0] and include all points with the
         same scalar value.
@@ -428,6 +445,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
         # by definition, the plateau will contain at least the initial point
         plateau = [initPt]
         plateauNeighbours = []
+        plateauLabel = -1
         # we're going to use this to check VERY quickly whether we've
         # already stored a point
         donePoints = [False for i in xrange(len(neighbourMap))]
@@ -448,6 +466,11 @@ class testModule3(moduleBase, noConfigModuleMixin):
                     ns = scalars.GetTuple1(npt)
                     if ns == initScalar:
                         plateau.append(npt)
+                        # it could be that a point in our plateau is already
+                        # labeled - check for this
+                        if pointLabels[npt] != -1:
+                            plateauLabel = pointLabels[npt]
+                        
                     else:
                         plateauNeighbours.append(npt)
 
@@ -460,10 +483,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
             currentNeighbourPts = newNeighbourPts
 
-        print plateau
-        print plateauNeighbours
-        print "hi mom"
-        return (plateau, plateauNeighbours)
+        return (plateau, plateauNeighbours, plateauLabel)
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

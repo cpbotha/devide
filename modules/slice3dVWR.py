@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.13 2003/04/16 22:48:48 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.14 2003/04/17 23:04:33 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -692,7 +692,11 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
                 
                 # now some special case handling
-                sname = input_stream.GetPointData().GetScalars().GetName()
+                if input_stream.GetPointData().GetScalars():
+                    sname = input_stream.GetPointData().GetScalars().GetName()
+                else:
+                    sname = ""
+                
                 if sname.lower().find("curvature") >= 0:
                     # if the active scalars have "curvature" somewhere in
                     # their name, activate flat shading and scalar vis
