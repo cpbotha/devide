@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.44 2003/06/27 21:14:09 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.45 2003/06/27 23:45:39 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -620,10 +620,14 @@ class tdObjects:
                       'GOLD',  'MAGENTA', 'GREY80',
                       'PURPLE']
 
+    _gridCols = [('Object Name', 0), ('Colour', 150), ('Visible', 0),
+                 ('Contour', 0), ('3D Motion', 0)]
+    
     _gridNameCol = 0
     _gridColourCol = 1
     _gridVisibleCol = 2
     _gridContourCol = 3
+    _gridTDMotionCol = 4
 
     def __init__(self, slice3dVWRThingy, grid):
         self._tdObjectsDict = {}
@@ -736,14 +740,30 @@ class tdObjects:
         """Setup the object listCtrl from scratch, mmmkay?
         """
 
-        # delete all items and columns
-        self._grid.DeleteRows(0, self._grid.GetNumberRows())
+        # delete all existing columns
+        self._grid.DeleteCols(0, self._grid.GetNumberCols())
 
-        self._grid.SetColSize(self._gridNameCol, 100)
-        self._grid.SetColSize(self._gridColourCol, 150)
-        self._grid.SetColSize(self._gridVisibleCol, 50)
-        self._grid.SetColSize(self._gridContourCol, 50)        
+        # we need at least one row, else adding columns doesn't work (doh)
+        self._grid.AppendRows()
+        
+        # setup columns
+        self._grid.AppendCols(len(self._gridCols))
+        for colIdx in range(len(self._gridCols)):
+            # add labels
+            self._grid.SetColLabelValue(colIdx, self._gridCols[colIdx][0])
 
+        # set size according to labels
+        self._grid.AutoSizeColumns()
+
+        for colIdx in range(len(self._gridCols)):
+            # now set size overrides
+            size = self._gridCols[colIdx][1]
+            if size > 0:
+                self._grid.SetColSize(colIdx, size)
+
+        # make sure we have no rows again...
+        self._grid.DeleteRows(0, self._grid.GetNumberRows())            
+        
     def addObject(self, tdObject):
         """Takes care of all the administration of adding a new 3-d object
         to the list and updating it in the list control.
