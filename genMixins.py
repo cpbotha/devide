@@ -1,5 +1,5 @@
 # genMixins copyright 2003 by Charl P. Botha <http://cpbotha.net/>
-# $Id: genMixins.py,v 1.6 2004/08/12 16:47:48 cpbotha Exp $
+# $Id: genMixins.py,v 1.7 2004/08/12 16:50:21 cpbotha Exp $
 
 class subjectMixin(object):
 
@@ -33,8 +33,10 @@ class subjectMixin(object):
             
         if observer in self._observers:
             self._observers.remove(observer)
-            print "Successfully removed %s as observer." % (observer,)
             return True
+        
+        print "WARNING: observer %s not removed in " \
+              "subjectMixin.removeObserver()." % (observer,)
 
         return False
 
