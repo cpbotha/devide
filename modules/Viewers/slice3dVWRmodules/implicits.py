@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.12 2004/03/17 12:51:40 cpbotha Exp $
+# $Id: implicits.py,v 1.13 2004/06/02 22:16:19 cpbotha Exp $
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -15,7 +15,7 @@ class implicitInfo:
         self.bounds = None
         self.function = None
 
-class implicits(object, s3dcGridMixin):
+class implicits(s3dcGridMixin):
     _gridCols = [('Name', 100), ('Type', 75), ('Enabled', 0)]
     _gridNameCol = 0
     _gridTypeCol = 1

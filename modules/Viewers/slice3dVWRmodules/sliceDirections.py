@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.3 2004/03/11 00:00:57 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.4 2004/06/02 22:16:19 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -16,7 +16,7 @@ import vtk
 import wx
 import wx.grid
 
-class sliceDirections(object, s3dcGridMixin):
+class sliceDirections(s3dcGridMixin):
 
     _gridCols = [('Slice Name', 0), ('Enabled', 0), ('Interaction', 0)]
 

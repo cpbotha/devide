@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeHtmlHelp.sh,v 1.5 2004/03/08 10:42:23 cpbotha Exp $
+# $Id: makeHtmlHelp.sh,v 1.6 2004/06/02 22:16:19 cpbotha Exp $
 
 # go to dir containing script
 cd `dirname $0`
@@ -11,7 +11,7 @@ mkdir build
 if [ `uname` == Linux ]; then
 TEX2RTF='tex2rtf'
 else
-TEX2RTF='f:/apps/Tex2RTF/tex2rtf.exe'
+TEX2RTF='c:/apps/Tex2RTF/tex2rtf.exe'
 fi
 
 $TEX2RTF devideHelp.tex build/devidehelp -macros devideHelp.ini

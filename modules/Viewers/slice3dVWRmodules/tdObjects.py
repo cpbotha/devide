@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.6 2004/02/24 11:12:00 cpbotha Exp $
+# $Id: tdObjects.py,v 1.7 2004/06/02 22:16:19 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -13,7 +13,7 @@ import wx
 import wx.grid
 from wx.lib import colourdb
 
-class tdObjects(object, s3dcGridMixin):
+class tdObjects(s3dcGridMixin):
     """Class for keeping track and controlling everything to do with
     3d objects in a slice viewer.  A so-called tdObject can be a vtkPolyData
     or a vtkVolume at this stage.  The internal dict is keyed on the

@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.8 2004/03/22 11:28:20 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.9 2004/06/02 22:16:19 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -27,7 +27,7 @@ class outputSelectedPoints(list, subjectMixin):
         
 # -------------------------------------------------------------------------
 
-class selectedPoints(object, s3dcGridMixin):
+class selectedPoints(s3dcGridMixin):
     _gridCols = [('Point Name', 0), ('World', 150), ('Discrete', 100),
                  ('Value', 0)]
     _gridNameCol = 0
