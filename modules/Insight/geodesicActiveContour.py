@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.5 2004/03/01 12:30:22 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.6 2004/03/02 13:33:54 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -22,7 +22,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
     geodesicActiveContour object.  Also see figure 9.18 in the ITK
     Software Guide.
 
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
 
     def __init__(self, moduleManager):
@@ -162,6 +162,19 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         fastMarching.SetSpeedConstant(1.0)
         self._fastMarching = fastMarching
 
+        def fmSetSizeCallable():
+            # this will get called as soon as fastMarching's UpdateOutputData
+            # is called... (see itkProcessObject)
+            print "fmSetSizeCallable"
+            # 1. first we must make sure that the output size is good
+            self._itkImporter.GetOutput().Update()
+            fastMarching.SetOutputSize(
+                self._itkImporter.GetOutput().GetBufferedRegion().GetSize())
+
+        pc = itk.itkPyCommand_New()
+        pc.SetCommandCallable(fmSetSizeCallable)
+        self._smoothing.AddObserver(itk.itkEndEvent(), pc.GetPointer())
+
         gAC = itk.itkGeodesicActiveContourLevelSetImageFilterF3F3_New()
         geodesicActiveContour = gAC
         geodesicActiveContour.SetCurvatureScaling( 1.0 );
@@ -176,6 +189,19 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
             'GeodesicActiveContourLevelSetImageFilter',
             'Growing active contour')
 
+        def gACCallable():
+            # make sure our feature image is up to date before we even
+            # start...
+            sigmoid.Update()
+            # updating the sigmoid will also trigger an update of the
+            # smoothing filter, which in its turn will make sure the
+            # fastMarching has the correct size set
+            
+        pc = itk.itkPyCommand_New()
+        pc.SetCommandCallable(gACCallable)
+        self._geodesicActiveContour.AddObserver(itk.itkStartEvent(),
+                                                pc.GetPointer())
+
         thresholder = itk.itkBinaryThresholdImageFilterF3US3_New()
         thresholder.SetLowerThreshold( -1000.0 );
         thresholder.SetUpperThreshold( 0.0 );
@@ -183,26 +209,6 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         thresholder.SetInsideValue( 65535 );
         thresholder.SetInput( geodesicActiveContour.GetOutput() );
         self._thresholder = thresholder
-
-    def _psExecute(self):
-        print "_psExecute()"
-
-        # ITK should trigger any exceptions here (we're calling Update()
-        # on the terminal part of the ITK pipeline)
-        try:
-            self._thresholder.Update()
-        except RuntimeError, e:
-            # there was a problem, make sure the psExecute knows it's not
-            # done yet...
-            genUtils.logError(str(e))
-
-        # copy information
-        out = self._pSource.GetStructuredPointsOutput()
-        inp = self._vtkImporter.GetOutput()
-        inp.Update()
-        out.CopyStructure(inp)
-        out.GetPointData().PassData(inp.GetPointData())
-        out.GetCellData().PassData(inp.GetCellData())
 
     def _createConnectPipeline(self):
         """When creating a new VTK->ITK-VTK pipeline, copy this method,
