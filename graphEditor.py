@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.70 2004/03/19 11:21:14 cpbotha Exp $
+# $Id: graphEditor.py,v 1.71 2004/03/22 14:20:41 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -191,7 +191,8 @@ class graphEditor:
                             self._graphFrame.modulesListCtrlId,
                             self.modulesListCtrlBeginDragHandler)
 
-        # (shortName, longName) tuples
+        # (shortName, longName) tuples, updated every time the user changes
+        # here module category selection
         self._selectedModulesList = []
         
         # and also setup the module quick search
@@ -230,17 +231,30 @@ class graphEditor:
 
     def modulesListCtrlBeginDragHandler(self, event):
         mlc = self._graphFrame.modulesListCtrl
-        shortName, moduleName = \
-                   self._selectedModulesList[mlc.GetItemData(event.GetIndex())]
 
-        if type(moduleName) != str:
-            return
+        # this is more robust than using event.GetIndex() or somesuch:
+        # if there's a drag event, we use the currently selected item
+        # as the drag source
+        selectedFound = False
+        if mlc.GetSelectedItemCount():
+            for idx in range(mlc.GetItemCount()):
+                if mlc.GetItemState(
+                    idx, wxLIST_STATE_SELECTED) == wxLIST_STATE_SELECTED:
+                    selectedFound = True
+                    break
+
+        if selectedFound:
+            shortName, moduleName = \
+                       self._selectedModulesList[mlc.GetItemData(idx)]
+            
+            if type(moduleName) != str:
+                return
         
-        dataObject = wxTextDataObject(moduleName)
-        dropSource = wxDropSource(self._graphFrame)
-        dropSource.SetData(dataObject)
-        # we don't need the result of the DoDragDrop call (phew)
-        dropSource.DoDragDrop(TRUE)
+            dataObject = wxTextDataObject(moduleName)
+            dropSource = wxDropSource(self._graphFrame)
+            dropSource.SetData(dataObject)
+            # we don't need the result of the DoDragDrop call (phew)
+            dropSource.DoDragDrop(TRUE)
 
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
