@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.8 2003/05/13 09:22:32 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.9 2003/05/13 09:51:08 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -32,7 +32,8 @@ def createECASButtons(d3module, viewFrame, viewFramePanel):
 
     IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
     the viewFramePanel.  This is the default for wxGlade created dialogs
-    with a top-level panel.
+    with a top-level panel.  The viewFramePanel's sizer must be a
+    vertical box sizer.
 
     The Execute, Close, Apply and Sync buttons will be created with the
     viewFramePanel as their parent.  They will be added to a horizontal sizer
@@ -185,6 +186,12 @@ def createStandardObjectAndPipelineIntrospection(d3module,
 
     In order to use this, the module HAS to use the
     vtkPipelineConfigModuleMixin.
+
+    IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
+    the viewFramePanel.  This is the default for wxGlade created dialogs
+    with a top-level panel.  The viewFramePanel's sizer must be a
+    vertical box sizer.
+    
     """
 
     ocLabel = wxStaticText(viewFramePanel, -1, "Examine the")
