@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.76 2004/03/11 12:44:21 cpbotha Exp $
+# $Id: __init__.py,v 1.77 2004/03/14 16:18:41 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -28,8 +28,8 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Filters.doubleThreshold' : ('Filters',),
               'Filters.imageFlip' : ('Filters',),
               'Filters.imageGaussianSmooth' : ('Filters',),
-              'Filters.imageGreyDilate' : ('Filters',),
-              'Filters.imageGreyErode' : ('Filters',),
+              'Filters.imageGreyDilate' : ('Filters', 'Morphology'),
+              'Filters.imageGreyErode' : ('Filters', 'Morphology'),
               'Filters.imageGradientMagnitude' : ('Filters',),
               'Filters.imageMask' : ('Filters',),
               'Filters.imageMedian3D' : ('Filters',),
@@ -37,6 +37,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Filters.glenoidMouldDesign' : ('Filters',),
               'Filters.landmarkTransform' : ('Filters',),
               'Filters.marchingCubes' : ('Filters',),
+              'Filters.modifyHomotopy' : ('Filters', 'Morphology'),              
               'Filters.polyDataConnect' : ('Filters',),
               'Filters.polyDataNormals' : ('Filters',),
               'Filters.resampleImage' : ('Filters',),
@@ -62,7 +63,7 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Insight.gradientMagnitudeGaussian' : ('Insight',),
               'Insight.curvatureAnisotropicDiffusion' : ('Insight',),
               'Insight.geodesicActiveContour' : ('Insight',),
-              'Insight.watershed' : ('Insight',),
+              'Insight.watershed' : ('Insight', 'Morphology'),
               'Insight.imageStackRDR' : ('Insight',),
               'Insight.register2D' : ('Insight',),
               'Insight.transform2D' : ('Insight',),
