@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.34 2003/06/09 22:42:32 cpbotha Exp $
+# $Id: graphEditor.py,v 1.35 2003/08/12 09:59:49 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -137,6 +137,9 @@ class graphEditor:
         self._glyphSelection = glyphSelection(self._graphFrame.canvas)
 
         self._rubberBandCoords = None
+
+        # initialise cut/copy/paste buffer
+        self._copyBuffer = None
         
         # now display the shebang
         self.show()
@@ -163,6 +166,38 @@ class graphEditor:
         self._glyphSelection.close()
         # this should take care of just about everything!
         self.clearAllGlyphsFromCanvas()
+
+    def _appendEditCommands(self, pmenu):
+            copyId = wxNewId()
+            ni = wxMenuItem(pmenu, copyId, 'Copy Selected')
+            pmenu.AppendItem(ni)
+            EVT_MENU(self._graphFrame.canvas, copyId,
+                     self._handlerCopySelected)
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
+
+            cutId = wxNewId()
+            ni = wxMenuItem(pmenu, cutId, 'Cut Selected')
+            pmenu.AppendItem(ni)
+            EVT_MENU(self._graphFrame.canvas, cutId,
+                     self._handlerCutSelected)
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
+                
+            pasteId = wxNewId()
+            ni = wxMenuItem(pmenu, pasteId, 'Paste')
+            pmenu.AppendItem(ni)
+            EVT_MENU(self._graphFrame.canvas, pasteId,
+                     self._handlerPaste)
+
+            deleteId = wxNewId()
+            ni = wxMenuItem(pmenu, deleteId, 'Delete Selected')
+            pmenu.AppendItem(ni)
+            EVT_MENU(self._graphFrame.canvas, deleteId,
+                     lambda e: self._deleteSelectedGlyphs())
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
+        
 
     def createGlyph(self, rx, ry, moduleName, moduleInstance):
         """Create only a glyph on the canvas given an already created
@@ -248,6 +283,15 @@ class graphEditor:
 
     def show(self):
         self._graphFrame.Show(True)
+
+    def _handlerPaste(self, event):
+        pass
+
+    def _handlerCopySelected(self, event):
+        pass
+
+    def _handlerCutSelected(self, event):
+        pass
 
     def hide(self):
         self._graphFrame.Show(False)
@@ -340,7 +384,16 @@ class graphEditor:
 
     def _canvasButtonDown(self, canvas, eventName, event, userData):
         # we should only get this if there's no glyph involved
-        if not event.ShiftDown() and not event.ControlDown():
+        if event.RightDown():
+            pmenu = wxMenu('Canvas Menu')
+
+            # fill it out with edit (copy, cut, paste, delete) commands
+            self._appendEditCommands(pmenu)
+
+            self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
+                                                             event.GetY()))
+            
+        elif not event.ShiftDown() and not event.ControlDown():
             self._glyphSelection.removeAllGlyphs()
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
@@ -550,26 +603,9 @@ class graphEditor:
     def saveNetwork(self, filename):
         # make a list of all module instances
         allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
-        moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
-        mm = self._dscas3_app.getModuleManager()
 
-        # let the moduleManager serialise what it can
-        pmsDict, connectionList = mm.serialiseModuleInstances(
-            moduleInstances)
-
-        savedInstanceNames = [pms.instanceName for pms in pmsDict.values()]
-                                  
-        # now we also get to store the coordinates of the glyphs which
-        # have been saved (keyed on instanceName)
-        savedGlyphs = [glyph for glyph in allGlyphs
-                       if mm.getInstanceName(glyph.moduleInstance)\
-                       in savedInstanceNames]
-            
-        glyphPosDict = {}
-        for savedGlyph in savedGlyphs:
-            instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
-            glyphPosDict[instanceName] = savedGlyph.getPosition()
-                
+        (pmsDict, connectionList, glyphPosDict) = \
+                  self._serialiseNetwork(allGlyphs)
 
         # change the serialised moduleInstances to a pickled stream
         headerAndData = (('D3N', 1, 0, 0), \
@@ -586,7 +622,36 @@ class graphEditor:
                                                                      
         if f:
             f.close()
-                
+
+    def _serialiseNetwork(self, glyphs):
+        """Given a list of glyphs, return a tuple containing pmsDict,
+        connectionList and glyphPosDict.  This can be used to reconstruct the
+        whole network from scratch and is used for saving and
+        cutting/copying.
+        """
+
+        moduleInstances = [glyph.moduleInstance for glyph in glyphs]
+        mm = self._dscas3_app.getModuleManager()
+
+        # let the moduleManager serialise what it can
+        pmsDict, connectionList = mm.serialiseModuleInstances(
+            moduleInstances)
+
+        savedInstanceNames = [pms.instanceName for pms in pmsDict.values()]
+                                  
+        # now we also get to store the coordinates of the glyphs which
+        # have been saved (keyed on instanceName)
+        savedGlyphs = [glyph for glyph in glyphs
+                       if mm.getInstanceName(glyph.moduleInstance)\
+                       in savedInstanceNames]
+            
+        glyphPosDict = {}
+        for savedGlyph in savedGlyphs:
+            instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
+            glyphPosDict[instanceName] = savedGlyph.getPosition()
+
+        return (pmsDict, connectionList, glyphPosDict)
+        
 
     def updatePortInfoStatusBar(self, currentGlyph, currentPort):
         
@@ -738,13 +803,7 @@ class graphEditor:
             EVT_MENU(self._graphFrame.canvas, del_id,
                      lambda e: self._deleteModule(glyph))
 
-            if self._glyphSelection.getSelectedGlyphs():
-                dels_id = wxNewId()
-                pmenu.AppendItem(
-                    wxMenuItem(pmenu, dels_id, 'Delete Selected Modules'))
-                EVT_MENU(self._graphFrame.canvas, dels_id,
-                         lambda e: self._deleteSelectedGlyphs())
-            
+            self._appendEditCommands(pmenu)
 
             # popup that menu!
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
