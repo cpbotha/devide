@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.3 2003/01/18 11:05:46 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.4 2003/01/19 19:22:02 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -94,17 +94,30 @@ class slice3d_vwr(module_base,
         del self._cube_axes_actor2d
         del self._voi_widget
         
-        if hasattr(self, '_ipws'):
-            del self._ipws
-
-        if hasattr(self,'_view_frame'):
-            self._view_frame.Destroy()
-            del self._view_frame
+	del self._ipws
 
         del self._threedRenderer
         del self._ortho1Renderer
         del self._ortho2Renderer
-
+	
+	
+	# hide it so long
+	self._view_frame.Show(0)
+	# this event handler will finally Destroy the containing frame
+	vf = self._view_frame
+	def rwDestroyEventHandler(o, e):
+	    vf.Destroy()
+	# set it to be called on destruction
+	rwi = self._view_frame.threedRWI
+	rwi.GetRenderWindow().AddObserver('DeleteEvent', 
+	                                  rwDestroyEventHandler)
+	# kill our binding
+	del rwi						
+	# now destroy all the containing frame's children
+	self._view_frame.DestroyChildren()
+	# unbind the _view_frame binding
+	del self._view_frame	    
+	
     def get_input_descriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
         return self._num_inputs * \
