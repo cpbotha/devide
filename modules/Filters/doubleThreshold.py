@@ -34,14 +34,14 @@ class doubleThreshold(moduleBase,
         self._createViewFrame()
 
         # now setup some defaults before our sync
-        self._config.lt = 1250
-        self._config.ut = 2500
-        self._config.rtu = 1
-        self._config.ri = 1
-        self._config.iv = 1
-        self._config.ro = 1
-        self._config.ov = 0
-        self._config.os = self._imageThreshold.GetOutputScalarType()
+        self._config.lowerThreshold = 1250
+        self._config.upperThreshold = 2500
+        #self._config.rtu = 1
+        self._config.replaceIn = 1
+        self._config.inValue = 1
+        self._config.replaceOut = 1
+        self._config.outValue = 0
+        self._config.outputScalarType = self._imageThreshold.GetOutputScalarType()
 
         # transfer these defaults to the logic
         self.configToLogic()
@@ -78,33 +78,33 @@ class doubleThreshold(moduleBase,
         return self._imageThreshold.GetOutput()
 
     def logicToConfig(self):
-        self._config.lt = self._imageThreshold.GetLowerThreshold()
-        self._config.ut = self._imageThreshold.GetUpperThreshold()
-        self._config.ri = self._imageThreshold.GetReplaceIn()
-        self._config.iv = self._imageThreshold.GetInValue()
-        self._config.ro = self._imageThreshold.GetReplaceOut()
-        self._config.ov = self._imageThreshold.GetOutValue()
-        self._config.os = self._imageThreshold.GetOutputScalarType()
+        self._config.lowerThreshold = self._imageThreshold.GetLowerThreshold()
+        self._config.upperThreshold = self._imageThreshold.GetUpperThreshold()
+        self._config.replaceIn = self._imageThreshold.GetReplaceIn()
+        self._config.inValue = self._imageThreshold.GetInValue()
+        self._config.replaceOut = self._imageThreshold.GetReplaceOut()
+        self._config.outValue = self._imageThreshold.GetOutValue()
+        self._config.outputScalarType = self._imageThreshold.GetOutputScalarType()
 
     def configToLogic(self):
-        self._imageThreshold.ThresholdBetween(self._config.lt, self._config.ut)
+        self._imageThreshold.ThresholdBetween(self._config.lowerThreshold, self._config.upperThreshold)
         # SetInValue HAS to be called before SetReplaceIn(), as SetInValue()
         # always toggles SetReplaceIn() to ON
-        self._imageThreshold.SetInValue(self._config.iv)        
-        self._imageThreshold.SetReplaceIn(self._config.ri)
+        self._imageThreshold.SetInValue(self._config.inValue)        
+        self._imageThreshold.SetReplaceIn(self._config.replaceIn)
         # SetOutValue HAS to be called before SetReplaceOut(), same reason
         # as above
-        self._imageThreshold.SetOutValue(self._config.ov)
-        self._imageThreshold.SetReplaceOut(self._config.ro)
-        self._imageThreshold.SetOutputScalarType(self._config.os)
+        self._imageThreshold.SetOutValue(self._config.outValue)
+        self._imageThreshold.SetReplaceOut(self._config.replaceOut)
+        self._imageThreshold.SetOutputScalarType(self._config.outputScalarType)
 
     def viewToConfig(self):
-        self._config.lt = self._sanitiseThresholdTexts(0)
-        self._config.ut = self._sanitiseThresholdTexts(1)
-        self._config.ri = self._viewFrame.replaceInCheckBox.GetValue()
-        self._config.iv = float(self._viewFrame.replaceInText.GetValue())
-        self._config.ro = self._viewFrame.replaceOutCheckBox.GetValue()
-        self._config.ov = float(self._viewFrame.replaceOutText.GetValue())
+        self._config.lowerThreshold = self._sanitiseThresholdTexts(0)
+        self._config.upperThreshold = self._sanitiseThresholdTexts(1)
+        self._config.replaceIn = self._viewFrame.replaceInCheckBox.GetValue()
+        self._config.inValue = float(self._viewFrame.replaceInText.GetValue())
+        self._config.replaceOut = self._viewFrame.replaceOutCheckBox.GetValue()
+        self._config.outValue = float(self._viewFrame.replaceOutText.GetValue())
 
         ocString = self._viewFrame.outputDataTypeChoice.GetStringSelection()
         if len(ocString) == 0:
@@ -122,23 +122,23 @@ class doubleThreshold(moduleBase,
             symbolicOutputType = self._outputTypes.values()[-1]
 
         if symbolicOutputType == -1:
-            self._config.os = -1
+            self._config.outputScalarType = -1
         else:
             try:
-                self._config.os = getattr(vtk, symbolicOutputType)
+                self._config.outputScalarType = getattr(vtk, symbolicOutputType)
             except AttributeError:
                 genUtils.logError("Impossible error with symbolicOutputType "
                                   "in doubleThresholdFLT.py.  Picking sane "
                                   "default.")
-                self._config.os = -1
+                self._config.outputScalarType = -1
 
     def configToView(self):
-        self._viewFrame.lowerThresholdText.SetValue("%.2f" % (self._config.lt))
-        self._viewFrame.upperThresholdText.SetValue("%.2f" % (self._config.ut))
-        self._viewFrame.replaceInCheckBox.SetValue(self._config.ri)
-        self._viewFrame.replaceInText.SetValue(str(self._config.iv))
-        self._viewFrame.replaceOutCheckBox.SetValue(self._config.ro)
-        self._viewFrame.replaceOutText.SetValue(str(self._config.ov))
+        self._viewFrame.lowerThresholdText.SetValue("%.2f" % (self._config.lowerThreshold))
+        self._viewFrame.upperThresholdText.SetValue("%.2f" % (self._config.upperThreshold))
+        self._viewFrame.replaceInCheckBox.SetValue(self._config.replaceIn)
+        self._viewFrame.replaceInText.SetValue(str(self._config.inValue))
+        self._viewFrame.replaceOutCheckBox.SetValue(self._config.replaceOut)
+        self._viewFrame.replaceOutText.SetValue(str(self._config.outValue))
 
         for key in self._outputTypes.keys():
             symbolicOutputType = self._outputTypes[key]
@@ -147,7 +147,7 @@ class doubleThreshold(moduleBase,
             else:
                 numericOutputType = -1
                 
-            if self._config.os == numericOutputType:
+            if self._config.outputScalarType == numericOutputType:
                 break
 
         self._viewFrame.outputDataTypeChoice.SetStringSelection(key)
@@ -205,9 +205,9 @@ class doubleThreshold(moduleBase,
                 # this means that the user did something stupid, so we
                 # restore the value to what's in our config
                 self._viewFrame.lowerThresholdText.SetValue(str(
-                    self._config.lt))
+                    self._config.lowerThreshold))
                 
-                return self._config.lt
+                return self._config.lowerThreshold
                 
             # lower is the new value...
             upper = float(self._viewFrame.upperThresholdText.GetValue())
@@ -224,9 +224,9 @@ class doubleThreshold(moduleBase,
                 # this means that the user did something stupid, so we
                 # restore the value to what's in our config
                 self._viewFrame.upperThresholdText.SetValue(str(
-                    self._config.ut))
+                    self._config.upperThreshold))
                 
-                return self._config.ut
+                return self._config.upperThreshold
 
             # upper is the new value
             lower = float(self._viewFrame.lowerThresholdText.GetValue())
