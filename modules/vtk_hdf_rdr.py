@@ -1,11 +1,8 @@
-# $Id: vtk_hdf_rdr.py,v 1.5 2002/03/28 16:02:18 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.6 2002/04/25 14:32:25 cpbotha Exp $
 
 from module_base import module_base
 import vtkpython
 import vtkcpbothapython
-import Tkinter
-from Tkconstants import *
-import Pmw
 import module_utils
 
 class vtk_hdf_rdr(module_base):
@@ -16,18 +13,17 @@ class vtk_hdf_rdr(module_base):
     
     def __init__(self):
 	self.reader = vtkcpbothapython.vtkHDFVolumeReader()
-	self.filename = Tkinter.StringVar()
-	self.sync_config()
+	#self.sync_config()
         # declare this var here out of good habit
         self.config_window = None
         # go on, create that view window
-        self.create_view_window()
+        #self.create_view_window()
     
     def __del__(self):
 	self.close()
 	
     def close(self):
-        self.config_window.destroy()
+        #self.config_window.destroy()
 	if hasattr(self, 'reader'):
 	    del self.reader
 	    

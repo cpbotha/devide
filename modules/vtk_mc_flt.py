@@ -12,10 +12,10 @@ class vtk_mc_flt(module_base):
         self.mc.SetProgressMethod(lambda s=self, po=self.mc:
                                   s.vtk_progress_callback(po))
 
-        self.isovalue = Tkinter.StringVar()
+        #self.isovalue = Tkinter.StringVar()
 
         self.config_window = None
-        self.create_view_window()
+        #self.create_view_window()
 
     def __del__(self):
 	# do some cleanup
