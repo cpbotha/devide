@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.29 2003/05/07 16:13:38 cpbotha Exp $
+# $Id: dscas3.py,v 1.30 2003/05/10 02:23:02 cpbotha Exp $
 
 DSCAS3_VERSION = '20030507'
 
@@ -208,7 +208,7 @@ class dscas3_app_t(wxApp):
         self._vtk_lw = dscas3_log_window('VTK error log',
                                          self._mainFrame,
                                          vtk_logfn)
-        
+
         return True
 
     def OnExit(self):
