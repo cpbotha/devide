@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.37 2003/08/12 12:42:58 cpbotha Exp $
+# $Id: graphEditor.py,v 1.38 2003/08/12 12:58:37 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -184,7 +184,7 @@ class graphEditor:
         """
         
         copyId = wxNewId()
-        ni = wxMenuItem(pmenu, copyId, 'Copy Selected',
+        ni = wxMenuItem(pmenu, copyId, '&Copy Selected\tCtrl-C',
                         'Copy the selected glyphs into the copy buffer.')
         pmenu.AppendItem(ni)
         EVT_MENU(eventWidget, copyId,
@@ -194,7 +194,7 @@ class graphEditor:
                 ni.Enable(False)
             
         cutId = wxNewId()
-        ni = wxMenuItem(pmenu, cutId, 'Cut Selected',
+        ni = wxMenuItem(pmenu, cutId, 'Cu&t Selected\tCtrl-X',
                         'Cut the selected glyphs into the copy buffer.')
         pmenu.AppendItem(ni)
         EVT_MENU(eventWidget, cutId,
@@ -205,7 +205,7 @@ class graphEditor:
             
         pasteId = wxNewId()
         ni = wxMenuItem(
-            pmenu, pasteId, 'Paste',
+            pmenu, pasteId, '&Paste\tCtrl-V',
             'Paste the contents of the copy buffer onto the canvas.')
         pmenu.AppendItem(ni)
         EVT_MENU(eventWidget, pasteId,
@@ -215,7 +215,7 @@ class graphEditor:
                 ni.Enable(False)
         
         deleteId = wxNewId()
-        ni = wxMenuItem(pmenu, deleteId, 'Delete Selected',
+        ni = wxMenuItem(pmenu, deleteId, '&Delete Selected\tCtrl-D',
                         'Delete all selected glyphs.')
         pmenu.AppendItem(ni)
         EVT_MENU(eventWidget, deleteId,
@@ -314,7 +314,8 @@ class graphEditor:
         filename = wxFileSelector(
             "Choose DSCAS3 network to load into copy buffer",
             "", "", "d3n",
-            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+            wxOPEN)
         
         if filename:
             self._loadNetworkIntoCopyBuffer(filename)
@@ -325,7 +326,8 @@ class graphEditor:
             filename = wxFileSelector(
                 "Choose filename for DSCAS3 network",
                 "", "", "d3n",
-                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+                wxSAVE)
                     
             if filename:
                 self._saveNetwork(glyphs, filename)
@@ -800,7 +802,8 @@ class graphEditor:
         filename = wxFileSelector(
             "Choose DSCAS3 network to load",
             "", "", "d3n",
-            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+            wxOPEN)
         
         if filename:
             self.clearAllGlyphsFromCanvas()
@@ -813,7 +816,8 @@ class graphEditor:
             filename = wxFileSelector(
                 "Choose filename for DSCAS3 network",
                 "", "", "d3n",
-                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+                wxSAVE)
         
             if filename:
                 self._saveNetwork(allGlyphs, filename)
