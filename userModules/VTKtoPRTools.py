@@ -1,7 +1,14 @@
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
+from wxPython import wx
 
 class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
+
+    """Module to convert multi-component VTK image data to PRTools-compatible
+    dataset.
+
+    $Revision: 1.2 $
+    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -10,7 +17,10 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
 
         configList = [
             ('Output filename:', 'filename', 'base:str', 'filebrowser',
-             'Type filename or click "browse" button to choose.')]
+             'Type filename or click "browse" button to choose.',
+             {'fileMode' : wx.wxSAVE,
+              'fileMask' : 'Matlab M-file (*.m)|*.m|All files (*.*)|*.*'})
+            ]
 
         scriptedConfigModuleMixin.__init__(self, configList)
 
@@ -29,6 +39,8 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
         moduleBase.close(self)
+
+        del self._inputData
 
     def executeModule(self):
         pass

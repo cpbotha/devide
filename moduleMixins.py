@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.50 2004/08/04 14:11:49 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.51 2004/08/04 14:26:30 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -728,7 +728,8 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
     """
 
     configList: list of tuples, where each tuple is
-    (name/label, destinationConfigVar, typeDescription, widgetType, toolTip)
+    (name/label, destinationConfigVar, typeDescription, widgetType, toolTip,
+     optional data)
     e.g.
     ('Initial Distance', 'initialDistance', 'base:float', 'text',
     'A tooltip for the initial distance text thingy.')
@@ -739,8 +740,11 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
               in the case of tuple, the actual cast followed by a comma
               and the number of elements
 
-    widgetType: text, checkbox, choice (you'll get a string back),
-                filebrowser (you get a string)
+    widgetType: text,
+                checkbox,
+                choice - optional data is a list of choices,
+                filebrowser - optional data is a dict with fileMask and
+                              fileMode keys
 
     NOTE: this mixin assumes that your module is derived from moduleBase,
     e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
@@ -799,13 +803,15 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             else: # filebrowser
                 widget = FileBrowseButton(
                     panel, -1,
+                    fileMask=configTuple[5]['fileMask'],
+                    fileMode=configTuple[5]['fileMode'],
                     labelText=None)
                 
             if len(configTuple[4]) > 0:
                 widget.SetToolTip(wx.ToolTip(configTuple[4]))
                 
             gridSizer.Add(widget, 0, wx.EXPAND, 0)
-            self._widgets[configTuple] = widget
+            self._widgets[configTuple[0:5]] = widget
 
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
@@ -824,7 +830,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
     def viewToConfig(self):
         for configTuple in self._configList:
-            widget = self._widgets[configTuple]
+            widget = self._widgets[configTuple[0:5]]
             typeD = configTuple[2]
 
             if configTuple[3] == 'choice':
@@ -864,7 +870,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         # long
         
         for configTuple in self._configList:
-            widget = self._widgets[configTuple]
+            widget = self._widgets[configTuple[0:5]]
             val = getattr(self._config, configTuple[1])
 
             typeD = configTuple[2]
