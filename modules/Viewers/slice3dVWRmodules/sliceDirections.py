@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.3 2004/03/11 00:00:57 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -37,6 +37,8 @@ class sliceDirections(object, s3dcGridMixin):
         # configure the grid from scratch
         self._initialiseGrid()
 
+        self._initUI()
+
         # bind all events
         self._bindEvents()
 
@@ -44,6 +46,9 @@ class sliceDirections(object, s3dcGridMixin):
         self._disableMenuItems = self._appendGridCommandsToMenu(
             self.slice3dVWR.controlFrame.slicesMenu,
             self.slice3dVWR.controlFrame, disable=True)
+
+        self.overlayMode = 'greenOpacityRange'
+        self.fusionAlpha = 0.4
 
         # create the first slice
         self._createSlice('Axial')
@@ -126,6 +131,17 @@ class sliceDirections(object, s3dcGridMixin):
 
         wx.grid.EVT_GRID_RANGE_SELECT(
             self._grid, self._handlerGridRangeSelect)
+
+        # now do the fusion stuff
+        wx.EVT_CHOICE(
+            self.slice3dVWR.controlFrame,
+            self.slice3dVWR.controlFrame.overlayModeChoice.GetId(),
+            self._handlerOverlayModeChoice)
+
+        wx.EVT_COMMAND_SCROLL(
+            self.slice3dVWR.controlFrame,
+            self.slice3dVWR.controlFrame.fusionAlphaSlider.GetId(),
+            self._handlerFusionAlphaSlider)
         
 
     def close(self):
@@ -141,6 +157,10 @@ class sliceDirections(object, s3dcGridMixin):
             else:
                 newSD = sliceDirection(sliceName, self)
                 self._sliceDirectionsDict[sliceName] = newSD
+
+                # setup the correct overlayMode and fusionAlpha
+                newSD.overlayMode = self.overlayMode
+                newSD.fusionAlpha = self.fusionAlpha
 
                 # now attach all inputs to it
                 for i in self.slice3dVWR._inputs:
@@ -246,6 +266,30 @@ class sliceDirections(object, s3dcGridMixin):
 
         self._appendGridCommandsToMenu(pmenu, self._grid)
         self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
+
+    def _handlerOverlayModeChoice(self, event):
+        ss = self.slice3dVWR.controlFrame.overlayModeChoice.\
+             GetStringSelection()
+        # look it up
+        self.overlayMode = sliceDirection.overlayModes[ss]
+
+        for sliceName, sliceDir in self._sliceDirectionsDict.items():
+            sliceDir.overlayMode = self.overlayMode
+            sliceDir.setAllOverlayLookupTables()
+
+        if len(self._sliceDirectionsDict) > 0:
+            self.slice3dVWR.render3D()
+
+    def _handlerFusionAlphaSlider(self, event):
+        val = self.slice3dVWR.controlFrame.fusionAlphaSlider.GetValue()
+        self.fusionAlpha = val / 100.0
+
+        for sliceName, sliceDir in self._sliceDirectionsDict.items():
+            sliceDir.fusionAlpha = self.fusionAlpha
+            sliceDir.setAllOverlayLookupTables()
+
+        if len(self._sliceDirectionsDict) > 0:
+            self.slice3dVWR.render3D()
 
     def _handlerSliceSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
@@ -386,6 +430,20 @@ class sliceDirections(object, s3dcGridMixin):
 
         # make sure we have no rows again...
         self._grid.DeleteRows(0, self._grid.GetNumberRows())
+
+    def _initUI(self):
+        """Perform any UI initialisation during setup.
+        """
+
+        #
+        c = self.slice3dVWR.controlFrame.overlayModeChoice
+        c.Clear()
+        overlayModeTexts = sliceDirection.overlayModes.keys()
+        overlayModeTexts.sort()
+        for overlayModeText in overlayModeTexts:
+            c.Append(overlayModeText)
+
+        c.SetStringSelection('Green Opacity Range')
 
     def removeData(self, theData):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():

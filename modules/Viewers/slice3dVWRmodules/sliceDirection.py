@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.6 2004/03/10 22:15:46 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.7 2004/03/11 00:00:57 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -14,6 +14,15 @@ class sliceDirection:
     (primary + overlays) representing a single view direction.  It optionally
     has its own window with an orthogonal view.
     """
+
+    overlayModes = {'Green Fusion' : 'greenFusion',
+                     'Red Fusion' : 'redFusion',
+                     'Blue Fusion' : 'blueFusion',
+                     'Hue Fusion' : 'hueFusion',
+                     'Hue/Value Fusion' : 'hueValueFusion',
+                     'Green Opacity Range' : 'greenOpacityRange',
+                     'Blue Opacity Range' : 'blueOpacityRange',
+                     'Hue Opacity Range' : 'hueOpacityRange'}
 
     def __init__(self, name, sliceDirections, defaultPlaneOrientation=2):
         self.sliceDirections = sliceDirections
@@ -38,6 +47,9 @@ class sliceDirection:
 
         # list of objects that want to be contoured by this slice
         self._contourObjectsDict = {}
+
+        self.overlayMode = 'greenOpacityRange'
+        self.fusionAlpha = 0.4
 
     def addContourObject(self, contourObject, prop3D):
         """Activate contouring for the contourObject.  The contourObject
@@ -481,11 +493,9 @@ class sliceDirection:
         if len(self._ipws) > 1:
             # iterate through overlay layers
             for ipw in self._ipws[1:]:
-                lut = vtk.vtkLookupTable()
-                inputStream = ipw.GetInput()
-                minv, maxv = inputStream.GetScalarRange()
-                self._setOverlayLookupTable(lut, 'blueOpacityRange', minv, maxv)
-                lut.Build()
+                lut = vtk.vtkLookupTable()                
+                ipw.SetLookupTable(lut)
+                self._setOverlayLookupTable(ipw)
 
                 ipw.SetInteractor(
                     self.sliceDirections.slice3dVWR.threedFrame.threedRWI)
@@ -493,7 +503,6 @@ class sliceDirection:
                 ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
                 ipw.SetSliceIndex(0)
                 
-                ipw.SetLookupTable(lut)
                 ipw.On()
                 ipw.InteractionOff()
 
@@ -571,7 +580,12 @@ class sliceDirection:
             ipw.SetWindowLevel(window, level)
             ipw.On()
 
-    def _setOverlayLookupTable(self, lut, mode, minv, maxv, srcAlpha=0.4):
+    def setAllOverlayLookupTables(self):
+        if len(self._ipws) > 1:
+            for ipw in self._ipws[1:]:
+                self._setOverlayLookupTable(ipw)
+
+    def _setOverlayLookupTable(self, ipw):
         """Configures overlay lookup table according to mode.
 
         fusion: the whole overlay gets constast alpha == srcAlpha.
@@ -583,7 +597,14 @@ class sliceDirection:
         greenHue = 0.335
         blueHue = 0.670
 
+        inputStream = ipw.GetInput()
+        minv, maxv = inputStream.GetScalarRange()
+
+        lut = ipw.GetLookupTable()
         lut.SetTableRange((minv,maxv))
+
+        mode = self.overlayMode
+        srcAlpha = self.fusionAlpha
 
         if mode == 'greenFusion':
             lut.SetHueRange((greenHue, greenHue))
@@ -609,7 +630,7 @@ class sliceDirection:
             lut.SetValueRange((1.0, 1.0))
             lut.SetSaturationRange((1.0, 1.0))
 
-        elif mode == 'hueFusion2':
+        elif mode == 'hueValueFusion':
             lut.SetHueRange((0.0, 1.0))
             lut.SetAlphaRange((srcAlpha, srcAlpha))
             lut.SetValueRange((0.0, 1.0))
