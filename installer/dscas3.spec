@@ -3,9 +3,11 @@ import fnmatch
 import sys
 
 if sys.platform.startswith('win'):
+    INSTALLER_DIR = 'c:\\build\\Installer'
     D3_DIR = 'c:\\work\\code\\dscas3'
     exeName = 'builddscas3/dscas3.exe'    
 else:
+    INSTALLER_DIR = '/home/cpbotha/build/Installer'
     D3_DIR = '/home/cpbotha/work/code/dscas3'
     exeName = 'builddscas3/dscas3'
 
@@ -49,9 +51,9 @@ else:
 
 ##########################################################################
 
-
-a = Analysis(['c:\\build\\Installer\\support\\_mountzlib.py',
-              'c:\\build\\Installer\\support\\useUnicode.py',
+SUPPORT_DIR = os.path.join(INSTALLER_DIR, 'support')
+a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
+              os.path.join(SUPPORT_DIR, 'useUnicode.py'),
               mainScript],
              pathex=[],
              hookspath=[os.path.join(D3_DIR, 'installer\\hooks\\')])
