@@ -1,6 +1,8 @@
-# $Id: histogram2D.py,v 1.2 2004/02/18 17:19:46 cpbotha Exp $
+# $Id: histogram2D.py,v 1.3 2004/02/18 17:29:49 cpbotha Exp $
 
 from moduleBase import moduleBase
+import vtk
+import vtkdevide
 
 class histogram2D(moduleBase):
     """This module takes two inputs and creates a 2D histogram with input 1
@@ -11,6 +13,8 @@ class histogram2D(moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
+
+        self._histogramSource = vtk.vtkProgrammableSource()
 
         self.setInput(0, None)
         self.setInput(1, None)
@@ -76,3 +80,8 @@ class histogram2D(moduleBase):
     # non-API methods start here -------------------------------------------
     # ----------------------------------------------------------------------
     
+    def _histogramSourceExecute(self):
+        """Execute callback for the vtkProgrammableSource histogram instance.
+        """
+
+        self._histogramSource 
