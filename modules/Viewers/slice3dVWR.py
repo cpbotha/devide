@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.18 2004/03/12 12:28:27 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.19 2004/03/14 17:41:33 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.18 $
+    $Revision: 1.19 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -337,9 +337,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 raise TypeError, "Wrong input type!"
 
         # ends: elif hasattr GetClassName
-        elif hasattr(inputStream, 'd3type'):
+        elif hasattr(inputStream, 'devideType'):
             print "has d3type"
-            if inputStream.d3type == 'namedWorldPoints':
+            if inputStream.devideType == 'namedPoints':
                 print "d3type correct"
                 # add these to our selected points!
                 self._inputs[idx]['Connected'] = 'namedWorldPoints'

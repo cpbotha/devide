@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.6 2003/12/11 15:20:09 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.7 2004/03/14 17:41:33 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -16,7 +16,7 @@ class outputSelectedPoints(list, subjectMixin):
     Derived from list as base and the subject/observer mixin.
     """
 
-    d3type = 'namedWorldPoints'
+    devideType = 'namedPoints'
     
     def __init__(self):
         list.__init__(self)
