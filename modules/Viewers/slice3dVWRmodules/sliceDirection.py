@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.11 2004/03/22 14:13:10 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.12 2004/03/29 15:02:16 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -608,7 +608,6 @@ class sliceDirection:
 
         lut = ipw.GetLookupTable()
         lut.SetTableRange((minv,maxv))
-        print lut.GetTableRange()
 
         mode = self.overlayMode
         srcAlpha = self.fusionAlpha
