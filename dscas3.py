@@ -1,19 +1,22 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.4 2002/05/18 14:10:20 cpbotha Exp $
+# $Id: dscas3.py,v 1.5 2002/05/19 13:35:59 cpbotha Exp $
 
 import os
+import stat
 import sys
 
 from assistants import assistants
 from graph_editor import graph_editor
 from module_manager import module_manager
 from python_shell import python_shell
+import gen_utils
 
 from wxPython.wx import *
 from wxPython.xrc import *
 
 import vtk
 
+# ---------------------------------------------------------------------------
 class main_window(wxFrame):
     """Main dscas3 application window.
 
@@ -98,27 +101,90 @@ class main_window(wxFrame):
     def python_shell_cb(self, event):
         self._dscas3_app.start_python_shell()
 
-class log_frame:
-    """Log frame that can display file or whose TextCtrl can be used as
-    destination file object to replace stderr for example.
+# ---------------------------------------------------------------------------
+class dscas3_log_window:
+    """Log window that can display file or can be used as destination file
+    object.
     """
     
-    def __init__(self, title, parent_frame=None):
-        self._filename = None
-        #
-        frame = wxFrame(parent_frame, -1, title)
-
-    
-
-    def set_filename(self, filename):
+    def __init__(self, title, parent_frame=None, filename=None):
         self._filename = filename
+        self._previous_fsize = -1
+        self._create_window(title, parent_frame)
+        #
 
-    
-
-class wx_output_pipe:
-    def write(self, data):
-        print "SOMETHING ELSE! %s" % (data)
+    def _create_window(self, title, parent_frame):
+        self._view_frame = wxFrame(parent_frame, -1, title)
+        EVT_CLOSE(self._view_frame, lambda e, s=self: s.hide())
         
+        panel = wxPanel(self._view_frame, -1)
+        self._textctrl = wxTextCtrl(panel, id=-1,
+                                    size=wxSize(320,200),
+                                    style=wxTE_MULTILINE | wxTE_READONLY)
+
+        cid = wxNewId()
+        cb = wxButton(panel, cid, 'Close')
+        EVT_BUTTON(self._view_frame, cid, lambda e, s=self: s.hide())
+
+        uid = wxNewId()
+        ub = wxButton(panel, uid, 'Update')
+        EVT_BUTTON(self._view_frame, uid, lambda e, s=self: s.update())
+        
+        button_sizer = wxBoxSizer(wxHORIZONTAL)
+        button_sizer.Add(ub)
+        button_sizer.Add(cb)
+
+        tl_sizer = wxBoxSizer(wxVERTICAL)
+        tl_sizer.Add(self._textctrl, option=1, flag=wxEXPAND)
+        tl_sizer.Add(button_sizer, flag=wxALIGN_RIGHT)
+
+        panel.SetAutoLayout(true)
+        panel.SetSizer(tl_sizer)
+        tl_sizer.Fit(self._view_frame)
+        tl_sizer.SetSizeHints(self._view_frame)
+
+    def show(self):
+        self._view_frame.Show(true)
+
+    def hide(self):
+        self._view_frame.Show(false)
+
+    def write(self, data):
+        """Method so that we can be used as output pipe."""
+        self._textctrl.write(data)
+        self.show()
+
+    def update(self):
+        """Update textctrl contents according to self._filename, if this
+        has been set.
+
+        This should be called regularly, or whenever you know that the
+        file it's watching could have changed.  If the file exists and the
+        filesize has changed since the previous update, the textctrl will
+        be cleared and the file will be read from scratch and contents will
+        be put into the textctrl.
+        """
+
+        if self._filename:
+            try:
+                fsize = os.stat(self._filename)[stat.ST_SIZE]
+                if not fsize == self._previous_fsize:
+                    # try to open the log file
+                    f = open(self._filename)
+                    # put the contents in the text control
+                    self._textctrl.SetValue(f.read())
+                    # move the user to the last line
+                    lp = self._textctrl.GetLastPosition()
+                    self._textctrl.SetInsertionPoint(lp)
+                    # now make sure this frame is visible
+                    self.show()
+                    # and update the previous size
+                    self._previous_fsize = fsize
+            except:
+                gen_utils.log_error("Could not stat/open log file %s!" %
+                                    self._filename)
+    
+# ---------------------------------------------------------------------------
 class dscas3_app_t(wxApp):
     """Main dscas3 application class.
 
@@ -133,6 +199,10 @@ class dscas3_app_t(wxApp):
         self._old_stdout = None
         
         self.main_window = None
+
+        self._stdo_lw = None
+        self._stde_lw = None
+        self._vtk_lw = None
 
         #self._appdir, exe = os.path.split(sys.executable)
         dirname = os.path.dirname(sys.argv[0])
@@ -156,28 +226,35 @@ class dscas3_app_t(wxApp):
         self.main_window = main_window(self)
         self.SetTopWindow(self.main_window)
 
-        # after we have the gui going, we can redirect
-        _output_pipe = wx_output_pipe()
-        self._old_stderr = sys.stderr
-        sys.stderr = _output_pipe
-#        self._old_stdout = sys.stdout
-#        sys.stdout = _output_pipe
         
-        # "true" is defined in wxPython.wx
+        # after we get the gui going, we can redirect
+        self._stde_lw = dscas3_log_window('Standard Error Log',
+                                          self.main_window)
+        self._old_stderr = sys.stderr
+        sys.stderr = self._stde_lw
 
+        self._stdo_lw = dscas3_log_window('Standard Output Log',
+                                          self.main_window)
+        self._old_stdout = sys.stdout
+        sys.stdout = self._stdo_lw
+        
         # now make sure that VTK will always send error to vtk.log logfile
         temp = vtk.vtkFileOutputWindow()
         vtk_logfn = os.path.join(self.get_appdir(), 'vtk.log')
         temp.SetFileName(vtk_logfn)
         temp.SetInstance(temp)
         del temp
+
+        self._vtk_lw = dscas3_log_window('VTK error log',
+                                         self.main_window,
+                                         vtk_logfn)
+        self._vtk_lw.show()
         
         return true
 
     def OnExit(self):
         sys.stderr = self._old_stderr
-#        sys.stdout = self._old_stdout
-#        return true
+        sys.stdout = self._old_stdout
 	
     def get_main_window(self):
         return self.main_window
@@ -207,7 +284,12 @@ class dscas3_app_t(wxApp):
             self._graph_editor = graph_editor(self)
         else:
             self._graph_editor.show()
+
+    def update_vtk_log_window(self):
+        self._vtk_lw.update()
 	
+# ---------------------------------------------------------------------------
+
 
 def main():
     dscas3_app = dscas3_app_t()

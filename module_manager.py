@@ -90,7 +90,25 @@ class module_manager:
 	print "disconnecting input %d of module %s" % (input_idx, input_module)
 	input_module.set_input(input_idx, None)
     
-	    
+    def vtk_progress_cb(process_object):
+        """Default callback that can be used for VTK ProcessObject callbacks.
+
+        In all VTK-using child classes, this method can be used if such a
+        class wants to show its process graphically.
+        """
+
+        print "progress! %s" % (process_object.GetProgress())
+
+    def vtk_poll_error(self):
+        """This method should be called whenever VTK processing might have
+        taken place, e.g. in the execute() method of a dscas3 module.
+
+        update() will be called on the central vtk_log_window.  This will
+        only show if the filesize of the vtk log file has changed since the
+        last call.
+        """
+        self._dscas3_app.update_vtk_log_window()
+
 	
 
 	

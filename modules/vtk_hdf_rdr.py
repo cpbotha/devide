@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.16 2002/05/18 00:38:26 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.17 2002/05/19 13:35:59 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -61,6 +61,8 @@ class vtk_hdf_rdr(module_base,
 	
     def execute_module(self):
 	self._reader.Update()
+        # important call to make sure the app catches VTK error in the GUI
+        self._module_manager.vtk_poll_error()
 
     def create_view_window(self, parent_window=None):
         """Create configuration/view window.

@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.29 2002/05/17 11:49:20 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.30 2002/05/19 13:35:59 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -424,6 +424,8 @@ class vtk_slice_vwr(module_base):
 		self._inputs[idx]['vtkActor'].SetMapper(mapper)
 		self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
 		self._inputs[idx]['Connected'] = 'vtkPolyData'
+                self._renderers[0].ResetCamera()                
+                self._rwis[0].Render()
             elif input_stream.GetClassName() == 'vtkStructuredPoints':
                 # if we already have a vtkStructuredPoints (or similar,
                 # we might want to use the IsA() method later) we must check
@@ -513,6 +515,9 @@ class vtk_slice_vwr(module_base):
 
 	    else:
 		raise TypeError, "Wrong input type!"
+
+        # make sure we catch any errors!
+        self._module_manager.vtk_poll_error()
 
 	
     def get_output_descriptions(self):

@@ -1,4 +1,4 @@
-# $Id: module_utils.py,v 1.4 2002/05/03 10:03:54 cpbotha Exp $
+# $Id: module_utils.py,v 1.5 2002/05/19 13:35:59 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -25,48 +25,3 @@ def bind_CSAEO(module, view_frame):
                lambda e, m=module: (m.apply_config(),
                                     m.execute_module()))
     
-
-def CSAEO_box(module, parent_window):
-    """Adds button box with cancel, sync, apply, execute and ok buttons.
-    
-    This is standard for many of the modules.  The methods sync_config(),
-    apply_config() and execute_module() have to be defined.
-    """
-
-    box2 = Pmw.ButtonBox(parent_window)
-    box2.add('Cancel', command=parent_window.withdraw)
-    # synch settings with underlying code
-    box2.add('Sync', command=module.sync_config)
-    # apply settings
-    box2.add('Apply', command=module.apply_config)
-    # apply and execute
-    box2.add('Execute', command=lambda module=module:
-             (module.apply_config(), module.execute_module()))
-    # apply and close dialog
-    box2.add('Ok', command=lambda module=module, parent_window=parent_window:
-             (module.apply_config(), parent_window.withdraw()))
-    
-    balloon = Pmw.Balloon(parent_window)
-    balloon.bind(box2.button(0),
-                 balloonHelp='Close this dialogue without applying.')
-    balloon.bind(box2.button(1),
-                 balloonHelp='Synchronise dialogue with configuration '
-                 'of underlying system.')
-    balloon.bind(box2.button(2),
-                 balloonHelp='Modify configuration of underlying system '
-                 'as specified by this dialogue.')
-    balloon.bind(box2.button(3),
-                 balloonHelp='Apply, then execute the module.')
-    balloon.bind(box2.button(4),
-                     balloonHelp='Apply, then close the window.')
-    
-    return box2
-    
-def vtk_progress_callback(process_object):
-    """Default callback that can be used for VTK ProcessObject callbacks.
-    
-    In all VTK-using child classes, this method can be used if such a
-    class wants to show its process graphically.
-    """
-    
-    print "progress! %s" % (process_object.GetProgress())
