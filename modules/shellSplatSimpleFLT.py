@@ -106,12 +106,15 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
                         modules.resources.python.shellSplatSimpleFLTViewFrame.\
                         shellSplatSimpleFLTViewFrame(pw, -1, 'dummy')
 
+        moduleUtils.createECASButtons(self, self._viewFrame,
+                                      self._viewFrame.viewFramePanel)
+
         # make sure that a close of that window does the right thing
         EVT_CLOSE(self._viewFrame,
                   lambda e, s=self: s._viewFrame.Show(false))
 
         # default binding for the buttons at the bottom
-        moduleUtils.bindCSAEO(self, self._viewFrame)        
+        #moduleUtils.bindCSAEO(self, self._viewFrame)        
 
         # and now the standard examine object/pipeline stuff
         #EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
