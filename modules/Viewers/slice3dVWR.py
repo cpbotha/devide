@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.5 2003/10/15 20:18:30 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.6 2003/10/16 13:49:21 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -509,6 +509,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
                 val = None
 
         else:
+            discrete = (0,0,0)
             val = None
 
         return (val, discrete)
