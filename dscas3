@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 import Tix
 
 from graph_editor import graph_editor
+from module_manager import module_manager
 
 class dscas3_main:
     def __init__(self, root):
@@ -8,14 +10,27 @@ class dscas3_main:
 	self.root.title("dscas 3")
 	# quit gets called if window gets closed
 	self.root.protocol ("WM_DELETE_WINDOW", self.quit)
+	
+	# interpreter input line
+	self.pyco = Tix.ComboBox(self.root, editable=Tix.TRUE, history=Tix.TRUE, anchor=Tix.E, command=self.pyco_exec)
+	self.pyco.pack(side=Tix.TOP, fill=Tix.X)
+	
 
 	# button box
 	box = Tix.ButtonBox(self.root, orientation=Tix.HORIZONTAL)
 	box.add('ok', text='Quit', underline=0, width=6,
 	command=self.quit)
-	box.pack(side=Tix.TOP, fill=Tix.X)
+	box.pack(side=Tix.TOP, fill=Tix.X, expand=1)
 	
+	# this will instantiate the module manager and get a list of plugins
+	self.module_manager = module_manager()
 	self.graph_editor = graph_editor(self)
+	
+    def get_module_list(self):
+	return self.module_manager.get_module_list()
+	
+    def pyco_exec(self, py_command):
+	exec(py_command)
 	
     def quit(self):
 	print "quit called!"
