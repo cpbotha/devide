@@ -1,69 +1,71 @@
-# $Id: ivWRT.py,v 1.3 2003/09/29 20:20:49 cpbotha Exp $
+# $Id: objRDR.py,v 1.1 2003/09/29 20:20:49 cpbotha Exp $
+
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
+import os
 
-class ivWRT(moduleBase, filenameViewModuleMixin):
-
+class objRDR(moduleBase, filenameViewModuleMixin):
+    
     def __init__(self, moduleManager):
+        """Constructor (initialiser) for the PD reader.
 
-        # call parent constructor
+        This is almost standard code for most of the modules making use of
+        the filenameViewModuleMixin mixin.
+        """
+        
+        # call the constructor in the "base"
         moduleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
-        self._writer = vtk.vtkIVWriter()
-        # sorry about this, but the files get REALLY big if we write them
-        # in ASCII - I'll make this a gui option later.
-        #self._writer.SetFileTypeToBinary()
+        # setup necessary VTK objects
+	self._reader = vtk.vtkOBJReader()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        mm = self._moduleManager
-        moduleUtils.setupVTKObjectProgress(
-            self, self._writer, 'Writing polydata to Inventor Viewer format')
-        
+        moduleUtils.setupVTKObjectProgress(self, self._reader,
+                                           'Reading Wavefront OBJ data')
+
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame(
             'Select a filename',
-            'InventorViewer data (*.iv)|*.iv|All files (*)|*',
-            {'vtkIVWriter': self._writer})
+            'Wavefront OBJ data (*.obj)|*.obj|All files (*)|*',
+            {'vtkOBJReader': self._reader})
 
         # set up some defaults
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
-        
+	
     def close(self):
-        # we should disconnect all inputs
-        self.setInput(0, None)
-        del self._writer
+        del self._reader
+        # call the close method of the mixin
         filenameViewModuleMixin.close(self)
 
     def getInputDescriptions(self):
-	return ('vtkPolyData',)
-    
-    def setInput(self, idx, input_stream):
-        self._writer.SetInput(input_stream)
-    
-    def getOutputDescriptions(self):
 	return ()
     
-    def getOutput(self, idx):
-        raise Exception
+    def setInput(self, idx, input_stream):
+	raise Exception
     
+    def getOutputDescriptions(self):
+        # equivalent to return ('vtkPolyData',)
+	return (self._reader.GetOutput().GetClassName(),)
+    
+    def getOutput(self, idx):
+	return self._reader.GetOutput()
+
     def logicToConfig(self):
-        filename = self._writer.GetFileName()
+        filename = self._reader.GetFileName()
         if filename == None:
             filename = ''
 
         self._config.filename = filename
 
     def configToLogic(self):
-        self._writer.SetFileName(self._config.filename)
+        self._reader.SetFileName(self._config.filename)
 
     def viewToConfig(self):
         self._config.filename = self._getViewFrameFilename()
@@ -72,11 +74,13 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
         self._setViewFrameFilename(self._config.filename)
 
     def executeModule(self):
-        if len(self._writer.GetFileName()):
-            self._writer.Write()
-
+        # get the vtkSTLReader to try and execute (if there's a filename)
+        if len(self._reader.GetFileName()):        
+            self._reader.Update()
+            
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes
         # it easier for the user to associate a frame with a glyph
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
+
