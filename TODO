@@ -1,4 +1,9 @@
-$Id: TODO,v 1.10 2003/08/08 15:05:17 cpbotha Exp $
+$Id: TODO,v 1.11 2003/08/12 13:09:59 cpbotha Exp $
+
+* Saving/restoring: call setConfig twice on all loaded modules, once before
+  and once after connection.  Make sure the widgets know with which they are
+  being called.  This will enable e.g. the slice3dVWR to do its job at
+  restore.
 
 * Splash screen with progress bar showing vtk and itk import progress at
   startup.
@@ -15,20 +20,19 @@ $Id: TODO,v 1.10 2003/08/08 15:05:17 cpbotha Exp $
 
 BUGS:
 
-* At the moment, an object with motion activated latches to the first active
-  plane; this should obviously be cleaned up.
-
 * When an IPW is moved, the ConstrainPlaneNormals on any BoxWidgets are not
   updated.
 
-* Fix ::Rotate constraining in vtkBoxWidgetConstrained.
+FIXED:
 
 * vtkBoxWidget GetTransform() seems to be really borked.  I've mailed the
   vtk users list with a piece of python code with which this can be
   reproduced.
 
+* Fix ::Rotate constraining in vtkBoxWidgetConstrained.
 
-FIXED:
+* At the moment, an object with motion activated latches to the first active
+  plane; this should obviously be cleaned up.
 
 * connect doubleThreshold and seedConnect to slice3dVWR without any input file
   (i.e. no reader) and watch the application become unresponsive - FIXED and
