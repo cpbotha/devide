@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.53 2002/08/27 15:16:16 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.54 2002/08/28 14:59:50 cpbotha Exp $
 
 # TODO: vtkTextureMapToPlane, like thingy...
 
@@ -57,12 +57,12 @@ class vtk_slice_vwr(module_base,
         self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
 
         self._left_mouse_button = 0
-        
-        # set the whole UI up!
-        self._create_window()
 
         # make the list of imageplanewidgets
         self._ipws = [vtk.vtkImagePlaneWidget() for i in range(3)]
+        
+        # set the whole UI up!
+        self._create_window()
         
     def close(self):
         for idx in range(self._num_inputs):
@@ -143,16 +143,13 @@ class vtk_slice_vwr(module_base,
                 for ipw in self._ipws:
                     ipw.SetInput(input_stream)
 
-                self._outline_source.SetBounds(input_stream.GetBounds())
                 self._renderer.AddActor(self._outline_actor)
-                self._cube_axes_actor2d.SetBounds(input_stream.GetBounds())
-                self._cube_axes_actor2d.SetCamera(
-                    self._renderer.GetActiveCamera())
+                self._outline_actor.PickableOff()
                 self._renderer.AddActor(self._cube_axes_actor2d)
+                self._cube_axes_actor2d.PickableOff()
 
                 self._reset()
 
-                self._renderer.ResetCamera()
                 self._rwi.Render()
                 self._inputs[idx]['Connected'] = 'vtkImageData'
 
@@ -280,13 +277,35 @@ class vtk_slice_vwr(module_base,
         button_sizer.Add(pcb)
         button_sizer.Add(rb)
 
+        # slices notebook
+        # -----------------------------------------------------------------
+
+        nb = wxNotebook(panel, -1)
+        # by this time the _ipws must exist!
+        pnames = ["Axial", "Coronal", "Sagittal"]
+        for i in range(len(self._ipws)):
+            # create and populate panel
+            spanel = wxPanel(nb, -1)
+            nb.AddPage(spanel, pnames[i])
+            # now make callback for the ipw
+            self._ipws[i].AddObserver('StartInteractionEvent',
+                                      lambda e, o, nb=nb, i=i:
+                                      nb.SetSelection(i))
+            
+            
+
+        # this sizer will contain the button_sizer and the notebook
+        button_nb_sizer = wxBoxSizer(wxVERTICAL)
+        button_nb_sizer.Add(button_sizer)
+        button_nb_sizer.Add(nb, option=1, flag=wxEXPAND)
+
         bottom_sizer = wxBoxSizer(wxHORIZONTAL)
-        bottom_sizer.Add(self._spoint_listctrl, option=1, flag=wxEXPAND)
-        bottom_sizer.Add(button_sizer)
+        bottom_sizer.Add(self._spoint_listctrl, flag=wxEXPAND)
+        bottom_sizer.Add(button_nb_sizer, flag=wxEXPAND)
 
         tl_sizer = wxBoxSizer(wxVERTICAL)
         tl_sizer.Add(self._rwi, option=1, flag=wxEXPAND)
-        tl_sizer.Add(bottom_sizer)
+        tl_sizer.Add(bottom_sizer, flag=wxEXPAND)
 
         panel.SetAutoLayout(true)
         panel.SetSizer(tl_sizer)
@@ -324,15 +343,33 @@ class vtk_slice_vwr(module_base,
         won't CREATE anything.
         """
 
-        # FIXME: also redo axis-actors and things
-
+        # if we don't have any _ipws, it means we haven't been given data
+        # yet, so let's bail
         if len(self._ipws) <= 0:
             return
 
+        input_data = self._ipws[0].GetInput()
+
+        # we might have ipws, but no input_data, in which we can't do anything
+        # either, so we bail
+        if input_data is None:
+            return
+
+        # make sure this is all nicely up to date
+        input_data.Update()
+
+        # set up helper actors
+        self._outline_source.SetBounds(input_data.GetBounds())
+        self._cube_axes_actor2d.SetBounds(input_data.GetBounds())
+        self._cube_axes_actor2d.SetCamera(self._renderer.GetActiveCamera())
+
         # calculate default window/level once
-        (dmin,dmax) = self._ipws[0].GetInput().GetScalarRange()
+        (dmin,dmax) = input_data.GetScalarRange()
         iwindow = (dmax - dmin) / 2
         ilevel = dmin + iwindow
+
+        # colours of imageplanes; we will use these as keys
+        ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
 
         idx = 2
         for ipw in self._ipws:
@@ -343,8 +380,7 @@ class vtk_slice_vwr(module_base,
             ipw.SetSliceIndex(0)
             #ipw.SetPicker(some_same_picker)
             #ipw.SetKeyPressActivationValue('x')
-            ipw.GetPlaneProperty().SetColor((1,0,0))
-            ipw.On()
+            ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
 
             # see if the creator of the input_data can tell
             # us something about Window/Level
@@ -354,12 +390,14 @@ class vtk_slice_vwr(module_base,
             if hasattr(input_data_source, 'GetWindowCenter') and \
                callable(input_data_source.GetWindowCenter):
                 level = input_data_source.GetWindowCenter()
+                print "Retrieved level of %f" % level
             else:
                 level = ilevel
 
             if hasattr(input_data_source, 'GetWindowWidth') and \
                callable(input_data_source.GetWindowWidth):
                 window = input_data_source.GetWindowWidth()
+                print "Retrieved window of %f" % window
             else:
                 window = iwindow
 
@@ -368,136 +406,13 @@ class vtk_slice_vwr(module_base,
             lut.SetLevel(level)
             lut.Build()
             ipw.SetLookupTable(lut)
+            ipw.On()
 
-
-#         input_d = reslice.GetInput()
-#         (dmin, dmax) = input_d.GetScalarRange()
-#         w = (dmax - dmin) / 2
-#         l = dmin + w
-#         overlay_pipe['vtkLookupTable'].SetWindow(w)
-#         overlay_pipe['vtkLookupTable'].SetLevel(l)
-#         overlay_pipe['vtkLookupTable'].Build()
+        self._renderer.ResetCamera()
 
         # whee, thaaaar she goes.
         self._rwi.Render()
 
-    def _setup_ortho_cam(self, plane_source, reslice_output, renderer):
-        # now we're going to manipulate the camera in order to achieve some
-        # gluOrtho2D() goodness
-        icam = renderer.GetActiveCamera()
-        # set to orthographic projection
-        #icam.SetParallelProjection(1);
-        # set camera 10 units away, right in the centre
-        icam.SetPosition(plane_source.GetCenter()[0],
-                         plane_source.GetCenter()[1], 10);
-        icam.SetFocalPoint(plane_source.GetCenter());
-        #icam.OrthogonalizeViewUp()
-        # make sure it's the right way up
-        icam.SetViewUp(0,1,0);
-        # if we don't do this, the frikking plane often gets lost
-        icam.SetClippingRange(1, 11);
-        # we're assuming icam->WindowCenter is (0,0), then  we're effectively
-        # doing this:
-        # glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
-        #output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
-        we = reslice_output.GetWholeExtent()
-        icam.SetParallelScale((we[1] - we[0]) / 2.0)
-        icam.ParallelProjectionOn()
-
-        #icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
-
-    def _sync_hud_with_pwsrc_and_reslice(self, ortho_idx):
-        # check if we have moved onto ANY of the selection points
-        # the easiest way to do this is to make use of the 3d plane
-        # on which we've texture mapped; this has already been adjusted
-        # by the call to _pw_cb()
-        for point in self._sel_points:
-            # point has the position, discrete position, and value
-            # extract only the real position
-            pos = point[0]
-            # p - tp
-            ps = self._pws[ortho_idx].GetPolyDataSource()
-            pmtp = map(operator.sub, ps.GetOrigin(), pos)
-            # then calculate dotproduct of p - tp and Normal
-            es = map(operator.mul, pmtp, ps.GetNormal())
-            dotp = reduce(operator.add, es)
-
-            # we use only the first reslicer
-            reslice = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
-
-            # once again, this is how we transform from input to sliced
-            # output, with the fricking INVERSE of the ResliceAxes()
-            input_spacing = reslice.GetInput().GetSpacing()
-            rai = vtk.vtkMatrix4x4()
-            vtk.vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rai)
-            output_spacing = rai.MultiplyPoint(input_spacing + (0.0,))
-            
-            if abs(dotp) < abs(output_spacing[2]):
-                # here we have to project the selected point onto the
-                # slice plane and update the origin of the axes_actor
-                # FIXME!!!
-                print str(point) + " visible!"
-            else:
-                self._ortho_huds[ortho_idx]['axes_actor'].VisibilityOff()
-
-    def _sync_ortho_plane_with_ipw(self, overlay_pipe, ipw):
-        # try and pull the data through
-        ipw.GetInput().Update()
-        rout = ipw.GetResliceOutput()
-        rout.Update()
-
-        output_bounds = rout.GetBounds()
-        plane_source = overlay_pipe['vtkPlaneSourceO']
-        
-        # we want our plane source the same as the vtkImagePlaneWidget
-        # planesource, except "flat"
-        v1 = 3 * [0]        
-        ipw.GetVector1(v1)
-        v1m = reduce(operator.add, map(operator.mul, v1, v1)) ** .5
-        v2 = 3 * [0]        
-        ipw.GetVector2(v2)
-        v2m = reduce(operator.add, map(operator.mul, v2, v2)) ** .5
-
-        plane_source.SetOrigin(0,0,0)
-        plane_source.SetPoint1(v1m, 0, 0)
-        plane_source.SetPoint2(0, v2m, 0)
-
-        # we want our vtkTextureMapToPlane the same size as that of the
-        # vtkImagePlaneWidget
-        tm2p = overlay_pipe['vtkTextureMapToPlaneO']
-        tm2p.SetOrigin(0,0,0)
-        tm2p.SetPoint1(output_bounds[1] - output_bounds[0], 0, 0)
-        tm2p.SetPoint2(0, output_bounds[3] - output_bounds[2], 0)
-
-    def _sync_pw_with_reslice(self, pw, reslice, update_placement=1):
-        """Change plane-widget to be in sync with current reslice output.
-
-        If you've made changes to the a vtkImageReslice, you can have the
-        accompanying planewidget follow suit by calling this method.  If
-        update_placement is 0, PlaneWidget.UpdatePlacement() won't be called.
-        Do this if you're calling _sync_pw_with_reslice BEFORE PlaceWidget().
-        """
-        
-        reslice.Update()
-        output_bounds = reslice.GetOutput().GetBounds()
-        origin = reslice.GetResliceAxesOrigin()
-        p1mag = output_bounds[1] - output_bounds[0]
-        p2mag = output_bounds[3] - output_bounds[2]
-        radc = reslice.GetResliceAxesDirectionCosines()
-        p1vn = radc[0:3]
-        p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
-        p2vn = radc[3:6]
-        p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
-            
-        ps = pw.GetPolyDataSource()
-        ps.SetOrigin(origin)
-        ps.SetPoint1(p1v)
-        ps.SetPoint2(p2v)
-        
-        if (update_placement):
-            pw.UpdatePlacement()
-
-        
         
 #################################################################
 # callbacks
