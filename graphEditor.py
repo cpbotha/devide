@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.11 2003/05/09 08:58:13 cpbotha Exp $
+# $Id: graphEditor.py,v 1.12 2003/05/09 09:08:42 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -156,6 +156,14 @@ class graphEditor:
                                    self._glyphDrag, temp_module)
 
                     # we've just placed a glyph, reroute all lines
+                    
+                    # first have to draw the just-placed glyph so it has
+                    # time to update its (label-dependent) dimensions
+                    dc = wxClientDC(self._graphFrame.canvas)
+                    self._graphFrame.canvas.PrepareDC(dc)
+                    co.draw(dc)
+
+                    # THEN reroute all lines
                     allLines = self._graphFrame.canvas.getObjectsOfClass(
                         wxpc.coLine)
                     print "Rerouting %d" % (len(allLines))
@@ -163,6 +171,7 @@ class graphEditor:
                     for line in allLines:
                         self._routeLine(line)
 
+                    # redraw all
                     canvas.Refresh()
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
