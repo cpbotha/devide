@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.28 2003/06/06 16:25:12 cpbotha Exp $
+# $Id: graphEditor.py,v 1.29 2003/06/07 19:53:47 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -21,6 +21,60 @@ class geCanvasDropTarget(wxTextDropTarget):
         self._graphEditor.canvasDropText(x, y, text)
 
 # ----------------------------------------------------------------------------
+class glyphSelection:
+    def __init__(self, canvas):
+        self._canvas = canvas
+        self._selectedGlyphs = []
+
+    def close(self):
+        # take care of all references
+        self.removeAllGlyphs()
+
+    def addGlyph(self, glyph):
+        """Add a glyph to the selection.
+        """
+
+        if glyph in self._selectedGlyphs:
+            # it's already selected, ignore
+            return
+
+        # add it to our structures
+        self._selectedGlyphs.append(glyph)
+        # tell it that it's the chosen one (ha ha)
+        glyph.selected = True
+        # redraw it
+        self._canvas.drawObject(glyph)
+
+    def removeGlyph(self, glyph):
+        """Remove a glyph from the selection.
+        """
+        if not glyph in self._selectedGlyphs:
+            # it's not in the selection, do nothing.
+            return
+
+        del self._selectedGlyphs[self._selectedGlyphs.index(glyph)]
+        self._selectedGlyphs.selected = False
+        self._canvas.drawObject(glyph)
+
+    def removeAllGlyphs(self):
+        """Remove all glyphs from selection.
+        """
+        for glyph in self._selectedGlyphs:
+            glyph.selected = False
+            self._canvas.drawObject(glyph)
+
+        self._selectedGlyphs = []
+        
+    def selectGlyph(self, glyph):
+        """Set the selection on one single glyph.  All others must be
+        unselected.
+        """
+
+        self.removeAllGlyphs()
+        self.addGlyph(glyph)
+
+# ----------------------------------------------------------------------------
+
 class graphEditor:
     def __init__(self, dscas3_app):
         # initialise vars
@@ -67,8 +121,12 @@ class graphEditor:
         self._graphFrame.canvas.SetDropTarget(self._canvasDropTarget)
         
         # bind events on the canvas
+        self._graphFrame.canvas.addObserver('buttonDown',
+                                            self._canvasButtonDown)
         self._graphFrame.canvas.addObserver('buttonUp',
                                             self._canvasButtonUp)
+
+        self._glyphSelection = glyphSelection(self._graphFrame.canvas)
         
         # now display the shebang
         self.show()
@@ -91,6 +149,8 @@ class graphEditor:
         called at application shutdown.
         """
 
+        # make sure no refs are stuck in the selection
+        self._glyphSelection.close()
         # this should take care of just about everything!
         self.clearAllGlyphsFromCanvas()
 
@@ -112,7 +172,7 @@ class graphEditor:
         co.addObserver('motion', self._glyphMotion)
                     
         co.addObserver('buttonDown',
-                       self._glyphRightClick, moduleInstance)
+                       self._glyphButtonDown, moduleInstance)
         co.addObserver('buttonUp',
                        self._glyphButtonUp, moduleInstance)
         co.addObserver('drag',
@@ -227,7 +287,10 @@ class graphEditor:
         except Exception, e:
             genUtils.logError('Could not disconnect modules: %s' \
                               % (str(e)))
-                
+
+    def _canvasButtonDown(self, canvas, eventName, event, userData):
+        # we should only get this if there's no glyph involved
+        self._glyphSelection.removeAllGlyphs()
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
         if event.LeftUp():
@@ -537,7 +600,7 @@ class graphEditor:
         if port:
             self.updatePortInfoStatusBar(glyph, port)
 
-    def _glyphRightClick(self, glyph, eventName, event, module):
+    def _glyphButtonDown(self, glyph, eventName, event, module):
         if event.RightDown():
 
             pmenu = wxMenu(glyph.getLabel())
@@ -555,7 +618,15 @@ class graphEditor:
             # popup that menu!
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
                                                              event.GetY()))
-
+        elif event.LeftDown():
+            if event.ControlDown() or event.ShiftDown():
+                self._glyphSelection.addGlyph(glyph)
+            else:
+                # if the user already has a selection of which this is a part,
+                # we're not going to muck around with that.
+                if not glyph.selected:
+                    self._glyphSelection.selectGlyph(glyph)
+            
     def _glyphButtonUp(self, glyph, eventName, event, module):
         if event.LeftUp():
             canvas = glyph.getCanvas()
@@ -834,6 +905,8 @@ class graphEditor:
             canvas.removeObject(glyph)
             # take care of possible lyings around
             glyph.close()
+            # it might also be part of a selection
+            self._glyphSelection.removeAllGlyphs()
             
             # after all that work, we deserve a redraw
             if refreshCanvas:

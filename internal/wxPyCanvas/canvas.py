@@ -5,7 +5,7 @@ from canvasObject import *
 class canvas(wx.wxScrolledWindow, canvasSubject):
     def __init__(self, parent, id = -1, size = wx.wxDefaultSize):
         wx.wxScrolledWindow.__init__(self, parent, id, wx.wxPoint(0, 0), size,
-                                     wx.wxSUNKEN_BORDER)
+                                    wx.wxSUNKEN_BORDER)
 
         self._cobjects = []
         self._previousRealCoords = None
@@ -138,6 +138,13 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             cobj.setCanvas(self)
             self._cobjects.append(cobj)
             cobj.__hasMouse = False
+
+    def drawObject(self, cobj):
+        """Use this if you want to redraw a single canvas object.
+        """
+        dc = wx.wxClientDC(self)
+        self.PrepareDC(dc)
+        cobj.draw(dc)
 
     def removeObject(self, cobj):
         if cobj and cobj in self._cobjects:
