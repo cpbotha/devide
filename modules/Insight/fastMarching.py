@@ -1,4 +1,4 @@
-# $Id: fastMarching.py,v 1.1 2004/04/27 09:22:59 cpbotha Exp $
+# $Id: fastMarching.py,v 1.2 2004/04/28 09:38:05 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
     propagate a moving front out from those points using the fast marching
     level set formulation.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -126,10 +126,11 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
         if len(self._inputPoints) > 0:
 
             seeds = itk.itkNodeContainerF3_New()
+            # this will clear it
             seeds.Initialize()
-            
-            for ip,i in zip(self._inputPoints,
-                            range(len(self._inputPoints))):
+
+            for ip,nodePos in zip(self._inputPoints,
+                                  range(len(self._inputPoints))):
                 # bugger, it could be that our input dataset has an extent
                 # that doesn't start at 0,0,0... ITK doesn't understand this
                 x,y,z = [int(i) for i in ip['discrete']]
@@ -143,10 +144,12 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
                 node.SetValue(0)
                 node.SetIndex(idx)
 
-                seeds.InsertElement(i, node)
+                seeds.InsertElement(nodePos, node)
+                
+                print "Added %d,%d,%d at %d" % (x,y,z,nodePos)
 
-                self._fastMarching.SetTrialPoints(seeds.GetPointer())
+            self._fastMarching.SetTrialPoints(seeds.GetPointer())
 
-                print "Added %d,%d,%d" % (x,y,z)
+
 
     
