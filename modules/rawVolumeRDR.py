@@ -136,8 +136,8 @@ class rawVolumeRDR(moduleBase,
             if type(spacing) != tuple or len(spacing) != 3:
                 raise Exception
 
-            # make sure that each element is an int
-            spacing = tuple([int(i) for i in spacing])
+            # make sure that each element is an FLOAT
+            spacing = tuple([float(i) for i in spacing])
             
         except:
             # if this couldn't be converted to a 6-element int tuple, default
@@ -161,7 +161,8 @@ class rawVolumeRDR(moduleBase,
             not self._config.endianness)
         self._viewFrame.headerSizeText.SetValue(str(self._config.headerSize))
         self._viewFrame.extentText.SetValue(str(self._config.extent))
-        self._viewFrame.spacingText.SetValue(str(self._config.spacing))
+        spacingText = "(%.3f, %.3f, %.3f)" % tuple(self._config.spacing)
+        self._viewFrame.spacingText.SetValue(spacingText)
 
     def executeModule(self):
         # get the reader to read :)
