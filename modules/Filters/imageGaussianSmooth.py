@@ -1,7 +1,8 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: imageGaussianSmooth.py,v 1.1 2003/09/21 16:52:43 cpbotha Exp $
+# $Id: imageGaussianSmooth.py,v 1.2 2003/09/21 18:56:46 cpbotha Exp $
 # performs image smoothing by convolving with a Gaussian
 
+import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
@@ -63,3 +64,7 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
             self._config.standardDeviation)
         self._imageGaussianSmooth.SetRadiusFactors(
             self._config.radiusCutoff)
+
+    def viewToConfig(self):
+        # continue with textToTuple in genUtils
+        pass

@@ -136,3 +136,7 @@ def textToInt(text, defaultInt):
 
     return returnInt
 
+def textToTuple(text, tuple):
+
+    # first make sure that the text starts and ends with brackets
+    text = text.strip()
