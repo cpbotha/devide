@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.29 2003/06/15 01:30:17 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.30 2003/06/15 20:56:23 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -11,6 +11,7 @@ import moduleUtils
 import vtk
 from wxPython.wx import *
 from wxPython.grid import *
+from wxPython.lib import colourdb
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
@@ -505,9 +506,9 @@ class outputSelectedPoints(list, subjectMixin):
 
 class tdObjects:
 
-    _objectColours = ['SKYBLUE', 'CYAN', 'LIMEGREEN',
-                      'GOLD', 'PERU', 'MAGENTA',
-                      'PURPLE', 'GREY80']
+    _objectColours = ['LIMEGREEN', 'SKYBLUE', 'PERU', 'CYAN', 
+                      'GOLD',  'MAGENTA', 'GREY80',
+                      'PURPLE']
 
     def __init__(self, slice3dVWRThingy, listCtrl):
         self._tdObjectsDict = {}
@@ -516,7 +517,9 @@ class tdObjects:
         self._slice3dVWR = slice3dVWRThingy
         self._listCtrl = listCtrl
         self._initialiseListCtrl()
-        
+
+        # this will fix up wxTheColourDatabase
+        colourdb.updateColourDB()
 
     def close(self):
         self._tdObjectsDict.clear()
@@ -542,10 +545,16 @@ class tdObjects:
 
         if not self._tdObjectsDict.has_key(tdObject):
             # we get to pick a colour and a name
+            nrLCItems = self._listCtrl.GetItemCount()            
             colourName = self._objectColours[
-                self._objectId % len(self._objectColours)]
+                nrLCItems % len(self._objectColours)]
             objectName = "%s%d" % ('obj', self._objectId)
             self._objectId += 1
+
+            # create a colour as well
+            colour = wxTheColourDatabase.FindColour(colourName).asTuple()
+            # normalise
+            colour = tuple([c / 255.0 for c in colour])
 
             # now actually create the necessary thingies and add the object
             # to the scene
@@ -565,6 +574,7 @@ class tdObjects:
                     mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
+                    actor.GetProperty().SetDiffuseColor(colour)
                     self._slice3dVWR._threedRenderer.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
@@ -612,10 +622,10 @@ class tdObjects:
                 raise Exception, 'tdObject has no GetClassName()'
 
             # if we get this far, we've been able to do something
-            print "doing stuff to listctrl %s %s" % (objectName, colourName)
-            nrItems = self._listCtrl.GetItemCount()
-            self._listCtrl.SetStringItem(nrItems, 0, objectName)
-            self._listCtrl.SetStringItem(nrItems, 1, colourName)
+
+            self._listCtrl.InsertStringItem(nrLCItems, objectName)
+            self._listCtrl.SetStringItem(nrLCItems, 1, colourName)
+            self._tdObjectsDict[tdObject]['listCtrlIndex'] = nrLCItems
             
         # ends 
         else:
@@ -627,8 +637,7 @@ class tdObjects:
 
         oType = self._tdObjectsDict[tdObject]['type']
         if oType == 'vtkVolume':
-            self._slice3dVWR._threedRenderer.RemoveVolume()
-            del self._tdObjectsDict[tdObject]
+            self._slice3dVWR._threedRenderer.RemoveVolume(tdObject)
             self._slice3dVWR.render3D()
 
         elif oType == 'vtkPolyData':
@@ -643,8 +652,18 @@ class tdObjects:
                 # whether we had a source or not, zero this
                 self._tdObjectsDict[tdObject]['observerId'] = None
 
-            del self._tdObjectsDict[tdObject]
             self._slice3dVWR.render3D()
+            
+        else:
+            raise Exception,\
+                  'Unhandled object type in tdObjects.removeObject()'
+
+        # whatever the case may be, we need to remove it from the listCtrl
+        self._listCtrl.DeleteItem(
+            self._tdObjectsDict[tdObject]['listCtrlIndex'])
+        # and from the dict
+        del self._tdObjectsDict[tdObject]
+        
 
     def _tdObjectModifiedCallback(self, o, e):
         self._slice3dVWR.render3D()
