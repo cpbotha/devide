@@ -1,7 +1,8 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.10 2003/03/24 18:37:38 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.11 2003/03/25 23:58:09 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
+import cPickle
 from genUtils import logError
 from genMixins import subjectMixin
 from moduleBase import moduleBase
@@ -878,6 +879,20 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         EVT_BUTTON(self._viewFrame,
                    self._viewFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
+
+        def saveListCallback(event):
+            self._syncOutputSelectedPoints()
+            cPickle.Pickler(sys.stdout).dump(self._outputSelectedPoints)
+            pass
+
+        def loadListCallback(event):
+            pass
+
+        EVT_BUTTON(self._viewFrame, self._viewFrame.saveListButtonId,
+                   saveListCallback)
+        EVT_BUTTON(self._viewFrame, self._viewFrame.loadListButtonId,
+                   loadListCallback)
+        
 
         def pointInteractionCheckBoxCallback(event):
             val = self._viewFrame.pointInteractionCheckBox.GetValue()
