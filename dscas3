@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export RADEON_TCL_FORCE_DISABLE=1
+python dscas3.py
