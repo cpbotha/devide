@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.51 2004/08/31 13:03:26 cpbotha Exp $
+# $Id: devide.py,v 1.52 2004/08/31 13:26:09 cpbotha Exp $
 
 DEVIDE_VERSION = '20040714'
 
@@ -433,26 +433,29 @@ class devide_app_t(wx.App):
         children = self._mainFrame.GetChildren()
 
         for w in children:
-            try:
-                # we don't want to attempt to restore things that are
-                # hidden... only iconized
-                if w.IsShown():
-                    w.Restore()
-                
-            except AttributeError:
-                # panels and stuff
-                pass
             
-            except wx.PyAssertionError:
-                # this is usually "not implemented" on gtk, so we
-                # do an ugly work-around: store the window position,
-                # hide it, show it, reposition it - this even works
-                # under KDE
-                if w.IsShown():
-                    p = w.GetPosition() 
-                    w.Hide()
-                    w.Show()
-                    w.SetPosition(p)
+                try:
+                    # we don't want to attempt to restore things that are
+                    # hidden... only iconized
+                    if w.IsShown() and w.IsIconized():
+                        try:
+                            w.Restore()
+
+                        except wx.PyAssertionError:
+                            # this is usually "not implemented" on gtk, so we
+                            # do an ugly work-around: store the window
+                            # position, hide it, show it, reposition it -
+                            # this even works under KDE
+                            p = w.GetPosition() 
+                            w.Hide()
+                            w.Show()
+                            w.SetPosition(p)
+                            
+                
+                except AttributeError:
+                    # panels and stuff simply don't have this method
+                    pass
+            
 
 	
 # ---------------------------------------------------------------------------
