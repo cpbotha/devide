@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.18 2003/09/22 09:47:35 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.19 2003/09/22 11:27:21 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -219,9 +219,6 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                          "VTK data (*.vtk)|*.vtk|All files (*)|*",
                          objectDict=None):
 
-        if objectDict == None:
-            objectDict = {}
-
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             resources.python.filenameViewModuleMixinFrame.\
@@ -231,10 +228,11 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                    lambda e: self.browseButtonCallback(browseMsg,
                                                        fileWildcard))
         
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self,
-            self._viewFrame, self._viewFrame.viewFramePanel,
-            objectDict, None)
+        if objectDict != None:
+            moduleUtils.createStandardObjectAndPipelineIntrospection(
+                self,
+                self._viewFrame, self._viewFrame.viewFramePanel,
+                objectDict, None)
 
         # new style standard ECAS buttons
         moduleUtils.createECASButtons(self, self._viewFrame,
@@ -316,7 +314,8 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         """This will create the self._viewFrame for this module.
 
         objectDict is a dictionary with VTK object descriptions as keys and
-        the actual corresponding instances as values.
+        the actual corresponding instances as values.  If you specify
+        objectDict as none, the introspection controls won't get added.
         """
 
         parent_window = self._moduleManager.get_module_view_parent_window()
@@ -337,11 +336,9 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         viewFrame.SetAutoLayout(True)
         viewFrame.SetSizer(viewFrameSizer)
 
-        if objectDict == None:
-            objectDict = {}
-
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, viewFrame, viewFrame.viewFramePanel, objectDict, None)
+        if objectDict != None:
+            moduleUtils.createStandardObjectAndPipelineIntrospection(
+                self, viewFrame, viewFrame.viewFramePanel, objectDict, None)
 
         moduleUtils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
