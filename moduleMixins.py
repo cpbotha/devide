@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.4 2003/01/28 23:23:02 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.5 2003/02/17 22:45:16 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -7,10 +7,12 @@ class vtkPipelineConfigModuleMixin:
     """Mixin to use for modules that want to make use of the vtkPipeline
     functionality.
 
-    Modules that use this as mixin can make use of the vtk_object_configure
-    and vtk_pipeline_configure methods to use ConfigVtkObj and
+    Modules that use this as mixin can make use of the vtkObjectConfigure
+    and vtkPipelineConfigure methods to use ConfigVtkObj and
     vtkPipelineBrowser, respectively.  These methods will make sure that you
     use only one instance of a browser/config class per object.
+
+    In your close() method, MAKE SURE to call the close method of this Mixin.
     """
 
     def vtkObjectConfigure(self, parent, renwin, vtk_obj):
@@ -42,8 +44,9 @@ class vtkPipelineConfigModuleMixin:
         is not the case, you can make use of this method.
         """
         if hasattr(self, '_vtk_obj_cfs'):
-            for key in self._vtk_obj_cfs.keys():
-                self._vtk_obj_cfs[key].close()
+            for cvo in self._vtk_obj_cfs.values():
+                cvo.close()
+
             self._vtk_obj_cfs.clear()
 
     def vtkPipelineConfigure(self, parent, renwin, objects=None):
@@ -88,12 +91,20 @@ class vtkPipelineConfigModuleMixin:
         care of it explicitly.
         """
         if hasattr(self, '_vtk_pipeline_cfs'):
-            for key in self._vtk_pipeline_cfs:
-                self._vtk_pipeline_cfs[key].close()
+            for pipeline in self._vtk_pipeline_cfs.values():
+                pipeline.close()
 
-        self._vtk_pipeline_cfs.clear()
+            self._vtk_pipeline_cfs.clear()
         
+    def close(self):
+        """Shut down the whole shebang.
 
+        All created ConfigVtkObjs and vtkPiplines should be explicitly
+        closed down.
+        """
+
+        self.closePipelineConfigure()
+        self.closeVtkObjectConfigure()        
             
 # ----------------------------------------------------------------------------
 
@@ -164,12 +175,16 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
     Please call __init__() and close() at the appropriate times from your
     module class.  Call _createViewFrame() at the end of your __init__ and
     Show(1) the resulting frame.
+
+    As with most Mixins, remember to call the close() method of this one at
+    the end of your object.
     """
 
     def __init__(self):
         self._viewFrame = None
 
     def close(self):
+        vtkPipelineConfigModuleMixin.close(self)
         self._viewFrame.Destroy()
         del self._viewFrame
 

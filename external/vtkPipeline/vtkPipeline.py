@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.3 2003/02/17 20:07:01 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.4 2003/02/17 22:45:16 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -391,12 +391,22 @@ class vtkPipelineBrowser:
         self._tree_ctrl.DeleteAllItems()
 
     def close(self, event=None):
-        """This will destroy the frame/window.
+        """This will destroy the frame/window and make sure that bindings
+        to vtk objects are deleted so that VTK reference counts can be
+        decremented.
 
         Make use of this method if you really want to destroy the window and
         don't just want to make it invisible.
         """
+
+        # clean out the tree
         self.clear()
+        # close all ConfigVtkObjs
+        for cvo in self._config_vtk_objs.values():
+            cvo.close()
+        # now make sure the list dies
+        self._config_vtk_objs.clear()
+        # and finally take care of our UI
         self._frame.Destroy()
 
     def item_activate_cb(self, tree_event):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.4 2003/02/17 21:21:08 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.5 2003/02/17 22:45:16 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -33,6 +33,7 @@ related to making the GUI persistent.
 
 import vtkMethodParser
 import types, string, re, traceback
+from wxPython.lib.PyCrust import shell, version
 
 try:
     from wxPython.wx import *
@@ -324,45 +325,35 @@ class ConfigVtkObj:
         vert_sizer.Add(command_sizer, option=0, flag=wxEXPAND)
         vert_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTRE_HORIZONTAL)
 
-        # the button that will show a little help dialog...
-        command_help_id = wxNewId()
-        command_button = wxButton(parent, id=command_help_id, label="Help")
-        # just defaults for the button, we just want its default size
-        command_sizer.Add(command_button)
-        EVT_BUTTON(parent, command_help_id, lambda e, s=self: s.help_user())
-
-        
-        command_entry_id = wxNewId()
-        command_entry = wxTextCtrl(parent, id=command_entry_id,
-                                   style=wxTE_PROCESS_ENTER)
+        command_entry = shell.Shell(parent=parent, id=-1, introText="La la",
+                                    size=(400,100), style=0,
+                                    locals={'obj' : self._vtk_obj})
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
-        EVT_TEXT_ENTER(parent, command_entry_id, 
-                       lambda e, s=self: s.run_command(e))
 
         classdoc_id = wxNewId()
         classdoc_button = wxButton(parent, id=classdoc_id,
                                    label="Class Documentation")
-        button_sizer.Add(classdoc_button)
+        button_sizer.Add(classdoc_button, 0, wxALL, 4)
         EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
 
         update_id = wxNewId()
         update_button = wxButton(parent, id=update_id,
                                  label="Update")
-        button_sizer.Add(update_button)
+        button_sizer.Add(update_button, 0, wxALL, 4)
         EVT_BUTTON(parent, update_id, lambda e, s=self: s.update_gui())
         
         apply_id = wxNewId()
         apply_button = wxButton(parent, id=apply_id,
                                  label="Apply")
-        button_sizer.Add(apply_button)
+        button_sizer.Add(apply_button, 0, wxALL, 4)
         EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
 
         ok_button = wxButton(parent, wxID_OK, label="OK")
-        button_sizer.Add(ok_button)
+        button_sizer.Add(ok_button, 0, wxALL, 4)
         EVT_BUTTON(parent, wxID_OK, lambda e, s=self: s.ok_done())
 
         cancel_button = wxButton(parent, wxID_CANCEL, label="Cancel")
-        button_sizer.Add(cancel_button)
+        button_sizer.Add(cancel_button, 0, wxALL, 4)
         EVT_BUTTON(parent, wxID_CANCEL, lambda e, s=self: s.cancel())
 
         return vert_sizer
@@ -556,38 +547,6 @@ class ConfigVtkObj:
 
         dlg.Destroy()
 
-    def run_command (self, event):
-	"Run the command entered by the user."
-	st = event.GetEventObject().GetValue()
-	if len (st) == 0:
-	    return self.help_user ()
-	obj = self._vtk_obj
-	try:
-	    eval (st)
-	except AttributeError, msg:
-	    print_err ("AttributeError: %s"%msg)
-	except SyntaxError, msg:
-	    print_err ("SyntaxError: %s"%msg)
-	except NameError, msg:
-	    print_err ("NameError: %s"%msg)
-	except TypeError, msg:
-	    print_err ("TypeError: %s"%msg)
-	except ValueError, msg:
-	    print_err ("ValueError: %s"%msg)
-	except:
-	    print_err ("Unhandled exception.  Wrong input.")
-	else:
-	    self.render ()
-
-    def help_user (self, event=None):
-	"Provide help when user clicks the command button."
-	msg = "Enter a valid python command.  Please note the\n"\
-	      "following: The name \'obj\' refers to the vtkObject\n"\
-	      "being configured.  Use the function prn(arguments)\n"\
-	      "to print anything.  Use the enter key to run the\n"\
-	      "command.  Example: obj.SetColor(0.1,0.2,0.3)"
-	wxMessageBox(parent=self._frame, message=msg, caption="Help")
-
     def show_doc (self, event=None):
         "Show the class documentation."
         if self._vtk_obj_doc_view == None:
@@ -649,6 +608,21 @@ class ConfigVtkObj:
         self.hide()
 
     def close(self):
+        """This method will delete all bindings to VTK objects and kill the
+        UI.
+
+        Make sure to call this method if you want to make sure that examined
+        VTK objects will gracefully self-destruct eventually.  If you don't
+        call this, it could take a very long while before the Python garbage
+        collector gets to us.
+        """
+        
+        # make sure we get rid of our reference to the _vtk_obj, else
+        # it may never disappear
+        del self._vtk_obj
+        # also lose our renwin binding, thank you
+        del self._renwin
+        # now get rid of the user interface as well
         self._frame.Destroy()
 
     def render(self):
