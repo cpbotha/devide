@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.20 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: dscas3.py,v 1.21 2003/04/15 17:35:49 cpbotha Exp $
 
 DSCAS3_VERSION = 20030131
 
@@ -266,7 +266,8 @@ class dscas3_app_t(wxApp):
                    self._mainFrame.progressGauge.SetValue(progress)
                    self._mainFrame.progressText.SetLabel(message)
                    # bring this window to the top
-                   self._mainFrame.Raise()
+                   # self._mainFrame.Raise()
+                   # let's rather not!
                    # we want wx to update its UI, but it shouldn't accept any
                    # user input, else things can get really crazy.
                    #print "calling yield"
