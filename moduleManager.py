@@ -311,8 +311,12 @@ class moduleManager:
     def serialiseModuleInstances(self, moduleInstances):
         """Given 
         """
-        
-        pmsList = []
+
+        # dictionary of pickled module instances keyed on unique module
+        # instance name
+        pmsDict = {}
+        # we'll use this list internally to check later (during connection
+        # pickling) which modules are being written away
         pickledModuleInstances = []
         
         for moduleInstance in moduleInstances:
@@ -333,7 +337,7 @@ class moduleManager:
                 # this will only be used for uniqueness purposes
                 pms.instanceName = mModule.instanceName
 
-                pmsList.append(pms)
+                pmsDict[pms.instanceName] = pms
                 pickledModuleInstances.append(moduleInstance)
 
         # now iterate through all the actually pickled module instances
@@ -346,18 +350,38 @@ class moduleManager:
         for moduleInstance in pickledModuleInstances:
             mModule = self._moduleDict[moduleInstance]
             # we only have to iterate through all outputs
-            for outputConnections in mModule.outputs:
+            for outputIdx in range(len(mModule.outputs)):
+                outputConnections = mModule.outputs[outputIdx]
                 # each output can of course have multiple outputConnections
                 # each outputConnection is a tuple:
                 # (consumerModule, consumerInputIdx)
                 for outputConnection in outputConnections:
                     if outputConnection[0] in pickledModuleInstances:
-                        connection = (mModule.instanceName, blaat, blaat, blaat)
-                        # FIXME: continue here
+                        # this means the consumerModule is also one of the
+                        # modules to be pickled and so this connection
+                        # should be stored
+
+                        # find the type of connection (1, 2, 3), work from
+                        # the back...
+                        if outputConnection[0].__class__.__name__ in \
+                           ['slice3dVWR']:
+                            connectionType = 3
+                        else:
+                            connectionType = 2
+                            # FIXME: we still have to check for 1: iterate
+                            # through all inputs, check that none of the
+                            # supplier modules are in the list that we're
+                            # going to pickle
+                            
                         
+                        connection = (mModule.instanceName, outputIdx,
+                                      outputConnection[0].__class__.__name__,
+                                      outputConnection[1], connectionType)
+                        
+                        connectionList.append(connection)
                 
 
-        return cPickle.dumps(pmsList, True)
+        return cPickle.dumps((pmsDict, connectionList), True)
     
     def vtk_progress_cb(self, process_object):
         """Default callback that can be used for VTK ProcessObject callbacks.

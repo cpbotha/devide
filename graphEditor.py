@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.22 2003/06/05 15:59:41 cpbotha Exp $
+# $Id: graphEditor.py,v 1.23 2003/06/05 22:15:24 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -325,12 +325,23 @@ class graphEditor:
         self._dscas3_app.quit()
 
     def _fileSaveCallback(self, event):
-        # make a list of all module instances
-        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
-        moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
-        mm = self._dscas3_app.getModuleManager()
-        stream = mm.serialiseModuleInstances(moduleInstances)
-        mm.deserialiseModuleInstances(stream)
+        filename = wxFileSelector(
+            "Choose filename for DSCAS3 network",
+            "", "", "d3n",
+            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+        
+        if filename:
+            print "Saving to %s" % (filename)
+            # make a list of all module instances
+            allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+            moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
+            mm = self._dscas3_app.getModuleManager()
+            stream = mm.serialiseModuleInstances(moduleInstances)
+
+            # FIXME: check for file errors, check for overwriting!
+            f = open(filename, 'w')
+            f.write(stream)
+            f.close()
 
     def _glyphDrag(self, glyph, eventName, event, module):
 
