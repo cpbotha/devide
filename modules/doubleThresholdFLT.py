@@ -179,6 +179,9 @@ class doubleThresholdFLT(moduleBase,
         self._imageThreshold.Update()
         #self._imageThreshold.Update()
 
+        # fixed it now by adding observer to EndEvent of source of data
+        # input in sliceviewer
+
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
         # pop up.  you should do this in all your modules right after you

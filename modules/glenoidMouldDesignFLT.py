@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.8 2003/03/22 00:56:59 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.9 2003/03/23 23:23:28 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -186,7 +186,8 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                         pt0 = contour.GetPoints().GetPoint(curStartPtId)
 
                         # stop criterion here
-                        if abs(vtk.vtkMath.Dot(giaN, n)) > 0.8:
+                        #if abs(vtk.vtkMath.Dot(giaN, n)) > 0.4:
+                        if vtk.vtkMath.Dot(giaN, n) < -0.6:
                             # store the real ptid, point coords and normal
                             lines[lineIdx].append((curStartPtId,
                                                tuple(pt0), tuple(n)))
@@ -240,7 +241,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                 stuff.append(rsf.GetOutput())
                 #stuff.append(cut.GetOutput())
-                stuff.append(ps.GetOutput())
+                #stuff.append(ps.GetOutput())
 
             
             # closes: for i in range(4)
@@ -276,7 +277,9 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             p0
 
         startPoint, startPointNormal and cutPlaneNormal are all 3-element
-        Python tuples.
+        Python tuples.  Err, this now returns 6 points.  The 6th is a
+        convenience so that our calling function can easily check for
+        negative volume.  See _lineExtrudeHouse.
         """
 
 
@@ -296,8 +299,9 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         p2 = tuple(map(operator.add, p1, houseNormal3))
         p4 = tuple(map(operator.sub, mp, cutPlaneNormal1_5))
         p3 = tuple(map(operator.add, p4, houseNormal3))
+        p5 = tuple(map(operator.add, mp, houseNormal3))
 
-        return (tuple(startPoint), p1, p2, p3, p4)
+        return (tuple(startPoint), p1, p2, p3, p4, p5)
 
     def _lineExtrudeHouse(self, edgeLine, cutPlane):
         """Extrude the house (square with triangle as roof) along edgeLine.
@@ -315,11 +319,28 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
         """
 
         newEdgeLine = []
-        
+
+        prevHousePoint0 = None
+        prevHousePoint5 = None
         for point in edgeLine:
             housePoints = self._buildHouse(point[1], point[2], cutPlane)
-            # check here to see if negative volume occurs
-            newEdgeLine.append(housePoints)
+            if prevHousePoint0:
+                v0 = map(operator.sub, housePoints[0], prevHousePoint0)
+                v1 = map(operator.sub, housePoints[5], prevHousePoint5)
+                # bad-assed trick to test for negative volume
+                if vtk.vtkMath.Dot(v0, v1) < 0.0:
+                    negativeVolume = 1
+                else:
+                    negativeVolume = 0
+
+            else:
+                negativeVolume = 0
+
+            if not negativeVolume:
+                newEdgeLine.append(housePoints[:5])
+                # we only store it as previous if we actually add it
+                prevHousePoint0 = housePoints[0]
+                prevHousePoint5 = housePoints[5]
 
         return newEdgeLine
             
