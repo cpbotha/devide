@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.60 2004/11/19 15:29:02 cpbotha Exp $
+# $Id: devide.py,v 1.61 2004/11/19 17:44:02 cpbotha Exp $
 
 DEVIDE_VERSION = '20041119'
 
@@ -329,8 +329,9 @@ class devide_app_t(wx.App):
                         int(round(progress)))
                     self._mainFrame.progressText.SetLabel(message)
 
-                    # activate the busy cursor
-                    if abs(progress - 100.0) > 0.01:
+                    # activate the busy cursor (we're a bit more lenient
+                    # on its epsilon)
+                    if abs(progress - 100.0) > 1:
                         if not wx.IsBusy():
                             wx.BeginBusyCursor()
                             
@@ -338,6 +339,10 @@ class devide_app_t(wx.App):
                     else:
                         if wx.IsBusy():
                             wx.EndBusyCursor()
+
+                        # let's also show the completion message in the
+                        # message log...
+                        self.logMessage(message)
                    
                     # bring this window to the top if the user wants it
                     if self._mainFrame.progressRaiseCheckBox.GetValue():
