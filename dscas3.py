@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.69 2003/12/15 10:59:25 cpbotha Exp $
+# $Id: dscas3.py,v 1.70 2003/12/18 16:00:50 cpbotha Exp $
 
 DSCAS3_VERSION = '20031215'
 
@@ -309,7 +309,7 @@ class dscas3_app_t(wx.App):
         ivs = ''
         if self.mainConfig.useInsight:
             # let's hope McMillan doesn't catch this one!
-            itk = __import__('InsightToolkit')
+            itk = __import__('fixitk')
             isv = itk.itkVersion.GetITKSourceVersion()
             ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
             ivs = '%s (%s)' % (itk.itkVersion.GetITKVersion(), ind)
