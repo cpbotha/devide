@@ -1,9 +1,11 @@
-# $Id: ifdocRDR.py,v 1.2 2003/08/20 15:41:50 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.3 2003/08/22 12:54:46 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import re
 import vtk
+
+
 
 class ifdocRDR(moduleBase, filenameViewModuleMixin):
 

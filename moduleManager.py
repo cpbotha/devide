@@ -236,6 +236,9 @@ class moduleManager:
         """
         return hasattr(modules, '__importsub__')
 
+    def executeModule(self, instance):
+        instance.executeModule()
+
     def viewModule(self, instance):
         instance.view()
     

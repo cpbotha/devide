@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.39 2003/08/12 13:18:22 cpbotha Exp $
+# $Id: graphEditor.py,v 1.40 2003/08/22 12:54:46 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -273,6 +273,13 @@ class graphEditor:
                 # route all lines
                 self._routeAllLines()
 
+    def _executeModule(self, moduleInstance):
+        """Ask the moduleManager to execute the dscas3 module represented by
+        the parameter moduleInstance.
+        """
+        
+        mm = self._dscas3_app.getModuleManager()
+        mm.executeModule(moduleInstance)
 
     def fill_module_tree(self):
         self._graphFrame.treeCtrl.DeleteAllItems()
@@ -913,6 +920,11 @@ class graphEditor:
             EVT_MENU(self._graphFrame.canvas, vc_id,
                      lambda e: self._viewConfModule(module))
 
+            exe_id = wxNewId()
+            pmenu.AppendItem(wxMenuItem(pmenu, exe_id, "Execute Module"))
+            EVT_MENU(self._graphFrame.canvas, exe_id,
+                     lambda e: self._executeModule(module))
+
             del_id = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete Module'))
             EVT_MENU(self._graphFrame.canvas, del_id,
@@ -1187,7 +1199,7 @@ class graphEditor:
 
 
     def _viewConfModule(self, module):
-        mm =self._dscas3_app.getModuleManager()
+        mm = self._dscas3_app.getModuleManager()
         mm.viewModule(module)
 
     def _deleteModule(self, glyph, refreshCanvas=True):
