@@ -82,7 +82,8 @@ class coLine(canvasObject):
         self.toGlyph = toGlyph
         self.toInputIdx = toInputIdx
 
-        self._linePoints = [(), ()] # ascii porn, hehe
+        # any line begins with 4 (four) points
+        self._linePoints = [() for i in range(4)]
         self.updateEndPoints()
 
         canvasObject.__init__(self, self._linePoints[0])        
@@ -114,8 +115,13 @@ class coLine(canvasObject):
         
         self._linePoints[0] = self.fromGlyph.getCenterOfPort(
             1, self.fromOutputIdx)
+        self._linePoints[1] = (self._linePoints[0][0],
+                               self._linePoints[0][1] + coGlyph._pHeight)
+        
         self._linePoints[-1] = self.toGlyph.getCenterOfPort(
             0, self.toInputIdx)
+        self._linePoints[-2] = (self._linePoints[-1][0],
+                                self._linePoints[-1][1] - coGlyph._pHeight)
         
 
 #############################################################################
