@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.6 2003/06/29 23:59:34 cpbotha Exp $
+# $Id: tdObjects.py,v 1.7 2003/06/30 07:44:26 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import operator
@@ -347,11 +347,6 @@ class tdObjects:
         #p = eventObject.GetProp3D().GetPosition()
         #o = map(operator.sub, p, c)
 
-        bwTransform.PostMultiply()
-        bwTransform.Translate(c)
-        #bwTransform.PostMultiply()
-        #bwTransform.Translate(mc)
-
         # get the current matrix
         cm = eventObject.GetProp3D().GetMatrix()
         # the current prop matrix should be applied before the
@@ -366,7 +361,11 @@ class tdObjects:
         eventObject.GetProp3D().SetPosition(bwTransform.GetPosition())
         eventObject.GetProp3D().SetScale(bwTransform.GetScale())
         
-        #eventObject.PlaceWidget()
+        eventObject.PlaceWidget()
+
+        # and update the contours after we've moved things around
+        for sd in self._slice3dVWR._sliceDirections:
+            sd.syncContourToObjectViaProp(eventObject.GetProp3D())
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
@@ -503,8 +502,11 @@ class tdObjects:
             objectDict['motion'] = bool(motion)
 
             # tell the sliceViewer that this is movable
+            # FIXME WORKAROUND: this will ALWAYS set motion to True, even
+            # when motion is being deactivated... this is a quick workaround
+            # for the superbly broken vtkBoxWidget.  Thanks guys.
             if objectDict['type'] == 'vtkPolyData':
-                self._slice3dVWR.setPropMotion(objectDict['vtkActor'])
+                self._slice3dVWR.setPropMotion(objectDict['vtkActor'], True)
 
             # setup our frikking motionBoxWidget, mmmkay?
             if motion:
@@ -521,6 +523,8 @@ class tdObjects:
                     
                 # we don't want the user to scale, only move and rotate
                 bw.ScalingEnabledOff()
+                # FIXME WORKAROUND: the vtkBoxWidget is BROKEN
+                bw.RotationEnabledOff()
                 bw.SetInteractor(self._slice3dVWR._viewFrame.threedRWI)
                 bw.SetProp3D(objectDict['vtkActor'])
                 # now add some observers that will actually move and rotate

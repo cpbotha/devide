@@ -1,7 +1,8 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.3 2003/06/29 18:27:01 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.4 2003/06/30 07:44:26 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
+import operator
 import moduleUtils
 import vtk
 import wx
@@ -347,11 +348,38 @@ class sliceDirection:
     def getNumberOfLayers(self):
         return len(self._ipws)
 
+    def lockToPoints(self, p0, p1, p2):
+        """Make the plane co-planar with the plane defined by the three points.
+        """
+
+        if not self._ipws:
+            # we can't do anything if we don't have a primary IPW
+            return
+
+        # we pick p0 as the origin
+        p1o = map(operator.sub, p1, p0)
+        p2o = map(operator.sub, p2, p0)
+        planeNormal = [0,0,0]
+        vtk.vtkMath.Cross(p1o, p2o, planeNormal)
+        pnSize = vtk.vtkMath.Normalize(planeNormal)
+
+        if pnSize > 0:
+            planeSource = self._ipws[0].GetPolyDataSource()
+            print planeNormal
+            planeSource.SetNormal(planeNormal)
+            planeSource.SetCenter(p0)
+            self._ipws[0].UpdatePlacement()
+            self._syncAllToPrimary()
+
+        else:
+            wx.wxLogMessage("The points you have chosen don't uniquely "
+                            "define a plane.  Please try again.")
+
     def pushSlice(self, val):
         if self._ipws:
             self._ipws[0].GetPolyDataSource().Push(val)
             self._ipws[0].UpdatePlacement()
-            self._ipwEndInteractionCallback()
+            self._syncAllToPrimary()
 
     def removeData(self, inputData):
         # search for the ipw with this inputData
@@ -386,6 +414,8 @@ class sliceDirection:
             self._defaultPlaneOrientation = orientation 
             ipw.SetPlaneOrientation(orientation)
             ipw.GetPlaneProperty().SetColor(ipw_cols[orientation])
+
+        self._syncAllToPrimary()
 
 
     def _createOrthoPipelineForNewIPW(self, ipw):
@@ -526,6 +556,17 @@ class sliceDirection:
             # luts is somewhat broken at the moment
             ipw.SetLookupTable(lut)
             ipw.On()
+
+    def _syncAllToPrimary(self):
+        """This will synchronise everything that can be synchronised to
+        the primary.
+        """
+        self._syncOverlays()
+        self._syncOrthoView()
+        self._syncContours()
+        if self._orthoViewFrame:
+            self._orthoViewFrame.RWI.Render()
+        
 
     def _syncContours(self):
         """Synchronise all contours to current primary plane.

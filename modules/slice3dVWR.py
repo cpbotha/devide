@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.51 2003/06/29 23:59:34 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.52 2003/06/30 07:44:26 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # some notes w.r.t. the layout of the main window of this module:
@@ -504,6 +504,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         EVT_BUTTON(self._viewFrame,
                    self._viewFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
+
+        EVT_BUTTON(self._viewFrame,
+                   self._viewFrame.pointsLockSliceButtonId,
+                   self._handlerPointsLockSlice)
 
         def pointInteractionCheckBoxCallback(event):
             val = self._viewFrame.pointInteractionCheckBox.GetValue()
@@ -1017,6 +1021,18 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
             # once we've done this, we have to redraw
             self._viewFrame.threedRWI.Render()
+
+    def _handlerPointsLockSlice(self, event):
+        selRows = self._viewFrame.spointsGrid.GetSelectedRows()
+        if len(selRows) >= 3:
+            tp = [self._selectedPoints[idx]['world'] for idx in selRows]
+            sliceDirection = self._getCurrentSliceDirection()
+            if sliceDirection:
+                sliceDirection.lockToPoints(tp[0], tp[1], tp[2])
+                self.render3D()
+                
+        else:
+            wxLogMessage("You have to select at least three points.")
 
     def _handlerProjectionChoice(self, event):
         """Handler for global projection type change.
