@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.104 2004/09/27 17:13:47 cpbotha Exp $
+# $Id: __init__.py,v 1.105 2004/10/08 21:36:35 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -11,6 +11,7 @@
 
 moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Readers.objRDR' : ('Readers',),
+              'Readers.pngRDR' : ('Readers',),
               'Readers.rawVolumeRDR' : ('Readers',),
               'Readers.stlRDR' : ('Readers',),
               'Readers.vtiRDR' : ('Readers',),

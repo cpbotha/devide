@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.51 2004/08/04 14:26:30 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.52 2004/10/08 21:36:35 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -744,7 +744,10 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                 checkbox,
                 choice - optional data is a list of choices,
                 filebrowser - optional data is a dict with fileMask and
-                              fileMode keys
+                              fileMode keys, for example:
+                              {'fileMode' : wx.SAVE,
+                               'fileMask' :
+                        'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*'})
 
     NOTE: this mixin assumes that your module is derived from moduleBase,
     e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
