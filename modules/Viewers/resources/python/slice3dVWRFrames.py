@@ -8,6 +8,8 @@ import wx.grid
 import vtk.wx.wxVTKRenderWindowInteractor
 vtk.wx.wxVTKRenderWindowInteractor.WX_USE_X_CAPTURE = 0
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
+# and this line is to get past a bug in current wxGlade codegen (20031215)
+from wx import MenuBar as wxMenuBar
 
 class threedFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -15,15 +17,15 @@ class threedFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_1 = wx.Panel(self, -1)
-        self.showControlsButtonId  =  wxNewId()
+        self.showControlsButtonId  =  wx.NewId()
         self.button_2 = wx.Button(self.panel_1, self.showControlsButtonId , "Show Controls")
-        self.resetCameraButtonId  =  wxNewId()
+        self.resetCameraButtonId  =  wx.NewId()
         self.resetCameraButton = wx.Button(self.panel_1, self.resetCameraButtonId , "Reset Camera")
-        self.resetAllButtonId  =  wxNewId()
+        self.resetAllButtonId  =  wx.NewId()
         self.button = wx.Button(self.panel_1, self.resetAllButtonId , "Reset All")
-        self.introspectPipelineButtonId  =  wxNewId()
+        self.introspectPipelineButtonId  =  wx.NewId()
         self.button_5 = wx.Button(self.panel_1, self.introspectPipelineButtonId , "Introspect")
-        self.projectionChoiceId  =  wxNewId()
+        self.projectionChoiceId  =  wx.NewId()
         self.projectionChoice = wx.Choice(self.panel_1, self.projectionChoiceId , choices=["Perspective", "Orthogonal"])
         self.threedRWI = wxVTKRenderWindowInteractor(self.panel_1, -1)
 
@@ -72,7 +74,7 @@ class orthoViewFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_2 = wx.Panel(self, -1)
         self.RWI = wxVTKRenderWindowInteractor(self.panel_2, -1)
-        self.closeButtonId  =  wxNewId()
+        self.closeButtonId  =  wx.NewId()
         self.button_1 = wx.Button(self.panel_2, self.closeButtonId , "Close")
 
         self.__set_properties()
@@ -124,20 +126,20 @@ class controlFrame(wx.Frame):
         # Menu Bar end
         self.frame_4_statusbar = self.CreateStatusBar(1)
         self.createSliceComboBox = wx.ComboBox(self.panel_3, -1, choices=["Scapula lateral edge", "Scapula spina", "Axial", "Coronal", "Sagittal"], style=wx.CB_DROPDOWN)
-        self.createSliceButtonId  =  wxNewId()
+        self.createSliceButtonId  =  wx.NewId()
         self.button_2_2 = wx.Button(self.panel_3, self.createSliceButtonId , "Create Slice")
         self.sliceGrid = wx.grid.Grid(self.panel_3, -1)
         self.label_1_2 = wx.StaticText(self.panel_3, -1, "Cursor at")
         self.sliceCursorText = wx.TextCtrl(self.panel_3, -1, "")
         self.label_4_2 = wx.StaticText(self.panel_3, -1, "Name")
         self.sliceCursorNameCombo = wx.ComboBox(self.panel_3, -1, choices=["Point 1", "Point 2", "Point 3", "Point 4"], style=wx.CB_DROPDOWN)
-        self.sliceStoreButtonId  =  wxNewId()
+        self.sliceStoreButtonId  =  wx.NewId()
         self.button_6_2 = wx.Button(self.panel_3, self.sliceStoreButtonId , "Store this point")
         self.pointsGrid = wx.grid.Grid(self.panel_3, -1)
         self.label_5_1 = wx.StaticText(self.panel_3, -1, "When I click on an object in the scene,")
         self.surfacePickActionChoice = wx.Choice(self.panel_3, -1, choices=["do nothing.", "place a point on its surface.", "configure the object.", "show the scalar bar for its input."])
         self.objectsListGrid = wx.grid.Grid(self.panel_3, -1)
-        self.voiEnabledCheckBoxId  =  wxNewId()
+        self.voiEnabledCheckBoxId  =  wx.NewId()
         self.voiEnabledCheckBox = wx.CheckBox(self.panel_3, self.voiEnabledCheckBoxId , "VOI extraction:")
         self.label_7 = wx.StaticText(self.panel_3, -1, "Bounds")
         self.voiBoundsText = wx.TextCtrl(self.panel_3, -1, "", style=wx.TE_READONLY)
