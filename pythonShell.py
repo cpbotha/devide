@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.14 2004/06/23 12:57:31 cpbotha Exp $
+# $Id: pythonShell.py,v 1.15 2004/06/23 13:35:40 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -87,7 +87,11 @@ class pythonShell:
 
             # this is quite sneaky, but yields better results especially
             # if there's an exception.
-            self._psFrame.pyShell.run('execfile("%s")' % (path,))
+            # IMPORTANT: it's very important that we use a raw string
+            # else things go very wonky under windows when double slashes
+            # become single slashes and \r and \b and friends do their thing
+            self._psFrame.pyShell.run('execfile(r"%s")' %
+                                      (path,))
             
         except IOError,e:
             md = wx.MessageDialog(
