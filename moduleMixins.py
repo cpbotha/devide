@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.7 2003/03/14 16:17:40 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.8 2003/03/18 17:48:29 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -285,6 +285,12 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
 
     def _createViewFrame(self, frameTitle,
                          objectDict=None):
+
+        """This will create the self._viewFrame for this module.
+
+        objectDict is a dictionary with VTK object descriptions as keys and
+        the actual corresponding instances as values.
+        """
 
         if objectDict == None:
             objectDict = {}
