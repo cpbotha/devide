@@ -1,5 +1,5 @@
 ; devide.nsi - based on example2.nsi
-; $Id: devide.nsi,v 1.1 2004/01/15 19:57:22 cpbotha Exp $
+; $Id: devide.nsi,v 1.2 2004/03/21 00:32:06 cpbotha Exp $
 
 ;--------------------------------
 
@@ -10,22 +10,33 @@ Name "DeVIDE"
 OutFile "devidesetup.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\devide
+InstallDir $PROGRAMFILES\DeVIDE
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM SOFTWARE\devide "Install_Dir"
+InstallDirRegKey HKLM SOFTWARE\DeVIDE "Install_Dir"
 
 ; The text to prompt the user to enter a directory
 ComponentText "Select optional components."
 
 ; The text to prompt the user to enter a directory
-DirText "Choose the directory where you'd like to install devide:"
+DirText "Choose the directory where you'd like to install DeVIDE:"
+
+;--------------------------------
+
+; Pages
+
+Page components
+Page directory
+Page instfiles
+
+UninstPage uninstConfirm
+UninstPage instfiles
 
 ;--------------------------------
 
 ; The stuff to install
-Section "devide (required)"
+Section "DeVIDE (required)"
 
   SectionIn RO
   
@@ -36,11 +47,11 @@ Section "devide (required)"
   File /r "distdevide\*.*"
   
   ; Write the installation path into the registry
-  WriteRegStr HKLM SOFTWARE\devide "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\DeVIDE "Install_Dir" "$INSTDIR"
   
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\devide" "DisplayName" "devide (remove only)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\devide" "UninstallString" '"$INSTDIR\uninstall.exe"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DeVIDE" "DisplayName" "DeVIDE (remove only)"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DeVIDE" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteUninstaller "uninstall.exe"
   
 SectionEnd
@@ -48,41 +59,46 @@ SectionEnd
 ; optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
 
-  CreateDirectory "$SMPROGRAMS\devide"
-  CreateShortCut "$SMPROGRAMS\devide\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\devide\devide.lnk" "$INSTDIR\devide.exe" "" "$INSTDIR\devide.exe" 0
+  CreateDirectory "$SMPROGRAMS\DeVIDE"
+  CreateShortCut "$SMPROGRAMS\DeVIDE\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+  CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE.lnk" "$INSTDIR\devide.exe" "" "$INSTDIR\devide.exe" 0
   
 SectionEnd
 
 Section "Desktop Shortcut"
-   CreateShortCut "$DESKTOP\devide.lnk" "$INSTDIR\devide.exe"
+   CreateShortCut "$DESKTOP\DeVIDE.lnk" "$INSTDIR\devide.exe"
 SectionEnd
 
 ;--------------------------------
 
 ; Uninstaller
 
-UninstallText "This will uninstall devide. Hit next to continue."
+UninstallText "This will uninstall DeVIDE. Hit next to continue."
 
 ; Uninstall section
 
 Section "Uninstall"
   
   ; remove registry keys
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\devide"
-  DeleteRegKey HKLM SOFTWARE\devide
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DeVIDE"
+  DeleteRegKey HKLM SOFTWARE\DeVIDE
 
   ; remove files and uninstaller
   Delete $INSTDIR\*.*
 
   ; remove shortcuts, if any
-  Delete "$SMPROGRAMS\devide\*.*"
+  Delete "$SMPROGRAMS\DeVIDE\*.*"
 
   ; remove desktop shortcut
-  Delete "$DESKTOP\devide.lnk"
+  Delete "$DESKTOP\DeVIDE.lnk"
 
   ; remove directories used
-  RMDir "$SMPROGRAMS\devide"
-  RMDir "$INSTDIR"
+  RMDir "$SMPROGRAMS\DeVIDE"
+
+  ; actually this will do a recursive delete on everything
+  RMDir /R "$INSTDIR"
 
 SectionEnd
+
+
+
