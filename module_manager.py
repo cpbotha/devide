@@ -60,6 +60,7 @@ class module_manager:
 	    exec('self.modules.append(' + name + '.' + name + '())')
 	except ImportError:
 	    tkMessageBox.showerror("Import error", "Unable to import module %s!" % name)
+	    traceback.print_exc()
 	    return None
 	except Exception, e:
 	    tkMessageBox.showerror("Instantiation error", "Unable to instantiate module %s: %s" % (name, str(e)))

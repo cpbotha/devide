@@ -127,6 +127,9 @@ class glyph:
 		input_idxs.append(self.inputs.index(i))
 	return input_idxs
     
+    def get_line_on_input(self, idx):
+	return self.inputs[idx]['line']
+    
     def is_connected_on(self, input_idx):
 	return self.inputs[input_idx]['glyph']
     
@@ -334,9 +337,18 @@ class graph_editor:
 		    input_idxs = cur_input_glyph.find_inputs(glyph)
 		    for cur_idx in input_idxs:
 			# "glyph" is the output glyph, disconnect the glyph
-			print "disconnecting %s from %s, index %s" % (glyph.get_module_instance().__class__,
-			cur_input_glyph.get_module_instance().__class__, cur_idx)
 			self.disconnect_glyphs(glyph, cur_input_glyph, cur_idx)
+	    
+	    # find all glyphs which send output to this glyph as well
+	    # and disconnect them (we keep these in two separate loops for clarity, hhhmkay)
+	    for cur_output_glyph in self.glyphs:
+		if cur_output_glyph != glyph:
+		    # indexes on the to be deleted glyph
+		    input_idxs = glyph.find_inputs(cur_output_glyph)
+		    for cur_idx in input_idxs:
+			# disconnect_glyphs(output_glyph, input_glyph, input_idx)
+			self.disconnect_glyphs(cur_output_glyph, glyph, cur_idx)
+	    
 	    # now get dscas3 to delete the actual module
 	    self.dscas3_main.get_module_manager().delete_module(glyph.get_module_instance())
 	    # then de-init the glyph object
