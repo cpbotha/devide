@@ -26,7 +26,7 @@ class mainFrame(wxFrame):
         wxglade_tmp_menu.Append(self.windowPythonShellId , "&Python Shell", "Show the Python Shell interface")
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Window")
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DSCAS3")
+        wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DeVIDE")
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that even the longest of messages eek.")
@@ -39,10 +39,10 @@ class mainFrame(wxFrame):
 
     def __set_properties(self):
         # begin wxGlade: mainFrame.__set_properties
-        self.SetTitle("DSCAS3 main window")
+        self.SetTitle("DeVIDE main window")
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
-        frame_1_statusbar_fields = ["Welcome to DSCAS3"]
+        frame_1_statusbar_fields = ["Welcome to DeVIDE"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         self.progressText.SetFont(wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, 0, ""))

@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.19 2004/01/15 10:39:35 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.20 2004/01/15 10:46:21 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -190,7 +190,7 @@ def createStandardObjectAndPipelineIntrospection(d3module,
                                                  viewFrame, viewFramePanel,
                                                  objectDict, renderWindow):
        
-    """Given a dscas3 module and its viewframe, this will create a
+    """Given a devide module and its viewframe, this will create a
     standard wxChoice and wxButton (+ labels) UI for object and
     pipeline introspection.  In addition, it'll call
     setupObjectAndPipelineIntrospection in order to bind events to these

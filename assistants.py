@@ -1,5 +1,5 @@
 # assistants.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: assistants.py,v 1.2 2002/04/26 21:01:58 cpbotha Exp $
+# $Id: assistants.py,v 1.3 2004/01/15 10:46:21 cpbotha Exp $
 # code for keeping track of the big buttoned simple interface
 
 import os
@@ -38,7 +38,7 @@ class load_data_assistant:
 class assistants:
     """Class for keeping track of all data pertinent to the assistants.
 
-    When dscas3 is started, the user is faced with the super-easy assistants
+    When devide is started, the user is faced with the super-easy assistants
     interface.  These are big friendly buttons with which the user can do her
     thing.
     """

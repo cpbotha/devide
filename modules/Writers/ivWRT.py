@@ -1,4 +1,4 @@
-# $Id: ivWRT.py,v 1.4 2003/09/29 22:59:01 cpbotha Exp $
+# $Id: ivWRT.py,v 1.5 2004/01/15 10:46:31 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -6,7 +6,7 @@ from wxPython.wx import *
 import vtk
 
 class ivWRT(moduleBase, filenameViewModuleMixin):
-    """ivWRT is an Inventor Viewer polygonal data writer dscas3 module.
+    """ivWRT is an Inventor Viewer polygonal data writer devide module.
     """
     def __init__(self, moduleManager):
 
@@ -20,7 +20,7 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
         # in ASCII - I'll make this a gui option later.
         #self._writer.SetFileTypeToBinary()
 
-        # following is the standard way of connecting up the dscas3 progress
+        # following is the standard way of connecting up the devide progress
         # callback to a VTK object; you should do this for all objects in
         mm = self._moduleManager
         moduleUtils.setupVTKObjectProgress(

@@ -1,6 +1,6 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.10 2003/12/18 16:11:40 cpbotha Exp $
-# next-generation of the slicing and dicing dscas3 module
+# $Id: slice3dVWR.py,v 1.11 2004/01/15 10:46:30 cpbotha Exp $
+# next-generation of the slicing and dicing devide module
 
 import cPickle
 from external.SwitchColourDialog import ColourDialog
@@ -40,7 +40,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     
     """Slicing, dicing slice viewing class.
 
-    This class is used as a dscas3 module.  Given vtkImageData-like input data,
+    This class is used as a devide module.  Given vtkImageData-like input data,
     it will show 3 slices and 3 planes in a 3d scene.  PolyData objects can
     also be added.  One can interact with the 3d slices to change the slice
     orientation and position.

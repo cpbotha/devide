@@ -2,9 +2,9 @@ import os
 import sys
 
 if sys.platform.startswith('win'):
-    sys.path.insert(0, 'c:/work/code/dscas3/')
+    sys.path.insert(0, 'c:/work/code/devide/')
 else:
-    sys.path.insert(0, '/home/cpbotha/work/code/dscas3/')
+    sys.path.insert(0, '/home/cpbotha/work/code/devide/')
 
 import modules
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.73 2004/01/15 10:39:35 cpbotha Exp $
+# $Id: dscas3.py,v 1.74 2004/01/15 10:46:21 cpbotha Exp $
 
 DEVIDE_VERSION = '20031218'
 
@@ -58,8 +58,8 @@ class mainConfigClass(object):
                 self.useInsight = False
 
 # ---------------------------------------------------------------------------
-class dscas3_app_t(wx.App):
-    """Main dscas3 application class.
+class devide_app_t(wx.App):
+    """Main devide application class.
 
     Class that's used as communication hub for most other components of the
     platform.  We've derived from wxApp but this is not a requirement... we
@@ -366,8 +366,8 @@ def postWxInitImports():
 
 
 def main():
-    dscas3_app = dscas3_app_t()
-    dscas3_app.MainLoop()
+    devide_app = devide_app_t()
+    devide_app.MainLoop()
 
 if __name__ == '__main__':
     main()

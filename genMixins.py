@@ -1,5 +1,5 @@
 # genMixins copyright 2003 by Charl P. Botha <http://cpbotha.net/>
-# $Id: genMixins.py,v 1.4 2003/09/06 18:47:53 cpbotha Exp $
+# $Id: genMixins.py,v 1.5 2004/01/15 10:46:21 cpbotha Exp $
 
 class subjectMixin(object):
 
@@ -31,7 +31,7 @@ class subjectMixin(object):
             self._observers.remove(observer)
 
 class updateCallsExecuteModuleMixin(object):
-    """The DSCAS3 API requires that calling Update on outputData should
+    """The DeVIDE API requires that calling Update on outputData should
     ensure that that data is current.  This mixin does that by calling
     executeModule on the generating module when Update is invoked.
     """

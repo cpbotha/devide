@@ -157,7 +157,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         except:
             # this means the user did something stupid, so we revert
             # to what's in the config - this will also turn up back
-            # in the input box, as the DSCAS3 arch automatically syncs
+            # in the input box, as the DeVIDE arch automatically syncs
             # view with logic after having applied changes
             threshold = self._config.threshold
 
@@ -285,7 +285,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         mm.importReload(
             'modules.Filters.resources.python.shellSplatSimpleFLTViewFrame')
         # this line is harmless due to Python's import caching, but we NEED
-        # to do it so that the Installer knows that this dscas3 module
+        # to do it so that the Installer knows that this devide module
         # requires it and so that it's available in this namespace.
         import modules.Filters.resources.python.shellSplatSimpleFLTViewFrame
 

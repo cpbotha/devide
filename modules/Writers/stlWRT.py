@@ -1,4 +1,4 @@
-# $Id: stlWRT.py,v 1.4 2003/09/29 20:13:21 cpbotha Exp $
+# $Id: stlWRT.py,v 1.5 2004/01/15 10:46:31 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -24,7 +24,7 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         # in ASCII - I'll make this a gui option later.
         #self._writer.SetFileTypeToBinary()
 
-        # following is the standard way of connecting up the dscas3 progress
+        # following is the standard way of connecting up the devide progress
         # callback to a VTK object; you should do this for all objects in
         mm = self._moduleManager        
         for textobj in (('Cleaning data', self._cleaner),

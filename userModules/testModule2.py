@@ -26,7 +26,7 @@ class testModule2(moduleBase, noConfigModuleMixin):
         self._testObject0.SetAxisMagnificationFactor(0, 2)
         self._testObject0.SetAxisMagnificationFactor(1, 2)
         self._testObject0.SetAxisMagnificationFactor(2, 2)
-        # following is the standard way of connecting up the dscas3 progress
+        # following is the standard way of connecting up the devide progress
         # callback to a VTK object; you should do this for all objects in
         # your module
         self._testObject0.SetProgressText('doing stuff...')

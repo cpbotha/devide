@@ -1,4 +1,4 @@
-# $Id: register2D.py,v 1.11 2003/12/18 14:27:46 cpbotha Exp $
+# $Id: register2D.py,v 1.12 2004/01/15 10:46:28 cpbotha Exp $
 
 # TODO:
 # * if the input imageStackRDR is reconfigured to read a different stack
@@ -22,7 +22,7 @@ import wx
 class register2D(moduleBase):
     """Registers a stack of 2D images and generates a list of transforms.
 
-    This is BAD-ASSED CODE(tm) and can crash the whole of DSCAS3 without
+    This is BAD-ASSED CODE(tm) and can crash the whole of DeVIDE without
     even saying sorry afterwards.  You have been warned.
     """
 

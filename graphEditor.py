@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.49 2003/10/15 21:58:00 cpbotha Exp $
+# $Id: graphEditor.py,v 1.50 2004/01/15 10:46:21 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -83,16 +83,16 @@ class glyphSelection:
 # ----------------------------------------------------------------------------
 
 class graphEditor:
-    def __init__(self, dscas3_app):
+    def __init__(self, devide_app):
         # initialise vars
-        self._dscas3_app = dscas3_app
+        self._devide_app = devide_app
 
         import resources.python.graphEditorFrame
         self._graphFrame = resources.python.graphEditorFrame.graphEditorFrame(
-            self._dscas3_app.get_main_window(),
+            self._devide_app.get_main_window(),
             -1, title='dummy', wxpcCanvas=wxpc.canvas)
 
-        self._graphFrame.SetIcon(self._dscas3_app.getApplicationIcon())
+        self._graphFrame.SetIcon(self._devide_app.getApplicationIcon())
 
         self._appendEditCommands(self._graphFrame.editMenu, self._graphFrame,
                                  (0,0), False)
@@ -175,7 +175,7 @@ class graphEditor:
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
         module:modules.Readers.dicomRDR or
-        segment:/home/cpbotha/work/code/dscas3/networkSegments/blaat.d3n
+        segment:/home/cpbotha/work/code/devide/networkSegments/blaat.d3n
         """
 
         modp = 'module:'
@@ -288,7 +288,7 @@ class graphEditor:
         return co
     
     def createModuleAndGlyph(self, x, y, moduleName):
-        """Create a DSCAS3 and a corresponding glyph at window event
+        """Create a DeVIDE and a corresponding glyph at window event
         position x,y.  x, y will be converted to real (canvavs-absolute)
         coordinates internally.
         """
@@ -296,7 +296,7 @@ class graphEditor:
         # check that it's a valid module name
         if moduleName in self._availableModuleList:
             # we have a valid module, we should try and instantiate
-            mm = self._dscas3_app.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             temp_module = mm.createModule(moduleName)
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
@@ -308,11 +308,11 @@ class graphEditor:
                 self._routeAllLines()
 
     def _executeModule(self, moduleInstance):
-        """Ask the moduleManager to execute the dscas3 module represented by
+        """Ask the moduleManager to execute the devide module represented by
         the parameter moduleInstance.
         """
         
-        mm = self._dscas3_app.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.executeModule(moduleInstance)
 	
     def _helpModule(self, moduleInstance):
@@ -334,7 +334,7 @@ class graphEditor:
         except KeyError:
             import resources.python.htmlWindowFrame
             htmlWindowFrame = resources.python.htmlWindowFrame.htmlWindowFrame(
-                self._dscas3_app._mainFrame, id=-1,
+                self._devide_app._mainFrame, id=-1,
                 title='dummy')
 
             # store it in the dict for later use
@@ -390,12 +390,12 @@ class graphEditor:
         rootDict = {'modules' : coreNode,
                     'userModules' : userNode}
 
-        mm = self._dscas3_app.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.scanModules()
         self._availableModuleList = mm.getAvailableModuleList()
         catDict = {}
         for moduleName in self._availableModuleList:
-            # we're getting the complete module spec relative to dscas3
+            # we're getting the complete module spec relative to devide
             # itself, e.g. modules.Filters.doubleThreshold
             mParts = moduleName.split('.')
             if len(mParts) == 2:
@@ -436,9 +436,9 @@ class graphEditor:
 
     def _handlerFileOpenSegment(self, event):
         filename = wxFileSelector(
-            "Choose DSCAS3 network to load into copy buffer",
+            "Choose DeVIDE network to load into copy buffer",
             "", "", "d3n",
-            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+            "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
             wxOPEN)
         
         if filename:
@@ -448,9 +448,9 @@ class graphEditor:
         glyphs = self._glyphSelection.getSelectedGlyphs()
         if glyphs:
             filename = wxFileSelector(
-                "Choose filename for DSCAS3 network",
+                "Choose filename for DeVIDE network",
                 "", "", "d3n",
-                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+                "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
                 wxSAVE)
                     
             if filename:
@@ -558,7 +558,7 @@ class graphEditor:
 
         try:
             # first disconnect the actual modules
-            mm = self._dscas3_app.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             mm.disconnectModules(glyph.moduleInstance, inputIdx)
 
             deadLine = glyph.inputLines[inputIdx]
@@ -676,7 +676,7 @@ class graphEditor:
     def clearAllGlyphsFromCanvas(self):
         allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
 
-        mm = self._dscas3_app.getModuleManager()
+        mm = self._devide_app.getModuleManager()
 
         # we take care of the "difficult" modules first
         safeGlyphs = []
@@ -712,7 +712,7 @@ class graphEditor:
 
         try:
             # connect the actual modules
-            mm = self._dscas3_app.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             mm.connectModules(fromObject.moduleInstance, fromOutputIdx,
                               toObject.moduleInstance, toInputIdx)
 
@@ -748,7 +748,7 @@ class graphEditor:
         """
         
         # get the module manager to deserialise
-        mm = self._dscas3_app.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         newModulesDict, newConnections = mm.deserialiseModuleInstances(
             pmsDict, connectionList)
             
@@ -849,7 +849,7 @@ class graphEditor:
             
 
         if magic != 'D3N' or (major,minor,patch) != (1,0,0):
-            raise RuntimeError, '%s is not a valid DSCAS3 network file.' % \
+            raise RuntimeError, '%s is not a valid DeVIDE network file.' % \
                   (filename,)
 
         return (pmsDict, connectionList, glyphPosDict)
@@ -884,7 +884,7 @@ class graphEditor:
         """
 
         moduleInstances = [glyph.moduleInstance for glyph in glyphs]
-        mm = self._dscas3_app.getModuleManager()
+        mm = self._devide_app.getModuleManager()
 
         # let the moduleManager serialise what it can
         pmsDict, connectionList = mm.serialiseModuleInstances(
@@ -939,16 +939,16 @@ class graphEditor:
         self._graphFrame.GetStatusBar().SetStatusText(msg)            
                                    
     def _fileExitCallback(self, event):
-        self._dscas3_app.quit()
+        self._devide_app.quit()
 
     def _fileNewCallback(self, event):
         self.clearAllGlyphsFromCanvas()
 
     def _fileOpenCallback(self, event):
         filename = wxFileSelector(
-            "Choose DSCAS3 network to load",
+            "Choose DeVIDE network to load",
             "", "", "d3n",
-            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+            "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
             wxOPEN)
         
         if filename:
@@ -960,9 +960,9 @@ class graphEditor:
         allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
         if allGlyphs:
             filename = wxFileSelector(
-                "Choose filename for DSCAS3 network",
+                "Choose filename for DeVIDE network",
                 "", "", "d3n",
-                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+                "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
                 wxSAVE)
         
             if filename:
@@ -1340,7 +1340,7 @@ class graphEditor:
 
 
     def _viewConfModule(self, module):
-        mm = self._dscas3_app.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.viewModule(module)
 
     def _deleteModule(self, glyph, refreshCanvas=True):
@@ -1363,7 +1363,7 @@ class graphEditor:
                 self._disconnect(glyph, inputIdx)
             
             # then get the module manager to NUKE the module itself
-            mm = self._dscas3_app.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
             mm.deleteModule(glyph.moduleInstance)

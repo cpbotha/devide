@@ -118,7 +118,7 @@ class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         mm.importReload(
             'modules.Filters.resources.python.wsMeshSmoothFLTViewFrame')
         # this line is harmless due to Python's import caching, but we NEED
-        # to do it so that the Installer knows that this dscas3 module
+        # to do it so that the Installer knows that this devide module
         # requires it and so that it's available in this namespace.
         import modules.Filters.resources.python.wsMeshSmoothFLTViewFrame
 

@@ -1,6 +1,6 @@
-# $Id: moduleBase.py,v 1.14 2003/09/06 16:14:01 cpbotha Exp $
+# $Id: moduleBase.py,v 1.15 2004/01/15 10:46:21 cpbotha Exp $
 
-"""Module containing base class for dscas3 modules.
+"""Module containing base class for devide modules.
 
 author: Charl P. Botha <cpbotha@ieee.org>
 """
@@ -16,7 +16,7 @@ class defaultConfigClass(object):
 class moduleBase(object):
     """Base class for all modules.
 
-    Any module wishing to take part in the dscas3 party will have to offer all
+    Any module wishing to take part in the devide party will have to offer all
     of these methods.
     """
     

@@ -52,16 +52,16 @@ class moduleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program."""
     
-    def __init__(self, dscas3_app):
-	"""Initialise module manager by fishing .py dscas3 modules from
+    def __init__(self, devide_app):
+	"""Initialise module manager by fishing .py devide modules from
 	all pertinent directories."""
 	
-        self._dscas3_app = dscas3_app
+        self._devide_app = devide_app
         # module dictionary, keyed on instance... cool.
         # values are metaModules
 	self._moduleDict = {}
 
-        appdir = self._dscas3_app.get_appdir()
+        appdir = self._devide_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
         self._userModules_dir = os.path.join(appdir, 'userModules')
         
@@ -81,7 +81,7 @@ class moduleManager:
     def close(self):
         """Iterates through each module and closes it.
 
-        This is only called during dscas3 application shutdown.
+        This is only called during devide application shutdown.
         """
 
         # this is fine because .items() makes a copy of the dict
@@ -137,7 +137,7 @@ class moduleManager:
                     else:
                         mnList.append(completeName)
 
-        appDir = self._dscas3_app.get_appdir()
+        appDir = self._devide_app.get_appdir()
         userModuleList = []
         recursiveDirectoryD3MNSearch(os.path.join(appDir,
                                                     'userModules'),
@@ -146,7 +146,7 @@ class moduleManager:
 
         # first add the core modules to our central list
         for mn in modules.moduleList:
-            if self._dscas3_app.mainConfig.useInsight or \
+            if self._devide_app.mainConfig.useInsight or \
                not mn.startswith('Insight'):
                 self._availableModuleList.append('modules.%s' % (mn,))
 
@@ -162,7 +162,7 @@ class moduleManager:
         self.availableSegmentsList = segmentList
 
     def get_app_dir(self):
-        return self._dscas3_app.get_appdir()
+        return self._devide_app.get_appdir()
 	
     def getAvailableModuleList(self):
 	return self._availableModuleList
@@ -186,7 +186,7 @@ class moduleManager:
         return self.getModuleViewParentWindow()
 
     def getModuleViewParentWindow(self):
-        return self._dscas3_app.get_main_window()
+        return self._devide_app.get_main_window()
     
     def createModule(self, fullName, instanceName=None):
         """Try and create module fullName.  fullName is the complete module
@@ -205,7 +205,7 @@ class moduleManager:
             # importReload requires this afterwards for safety reasons
             exec('import %s' % fullName)
             # in THIS case, there is a McMillan hook which'll tell the
-            # installer about all the dscas3 modules. :)
+            # installer about all the devide modules. :)
             print "imported: " + str(id(sys.modules[fullName]))
 
 	    # then instantiate the requested class
@@ -290,9 +290,9 @@ class moduleManager:
         # somewhere else in the module)
 
     def isInstalled(self):
-        """Returns True if dscas3 is running from an Installed state.
+        """Returns True if devide is running from an Installed state.
         Installed of course refers to being installed with Gordon McMillan's
-        Installer.  This can be used by dscas3 modules to determine whether
+        Installer.  This can be used by devide modules to determine whether
         they should use reload or not.
         """
         return hasattr(modules, '__importsub__')
@@ -558,7 +558,7 @@ class moduleManager:
             
     def vtk_poll_error(self):
         """This method should be called whenever VTK processing might have
-        taken place, e.g. in the execute() method of a dscas3 module.
+        taken place, e.g. in the execute() method of a devide module.
 
         update() will be called on the central vtk_log_window.  This will
         only show if the filesize of the vtk log file has changed since the
@@ -569,7 +569,7 @@ class moduleManager:
     def setProgress(self, progress, message):
         """Progress is in percent.
         """
-        self._dscas3_app.setProgress(progress, message)
+        self._devide_app.setProgress(progress, message)
 
     def _makeUniqueInstanceName(self, instanceName=None):
         """Ensure that instanceName is unique or create a new unique

@@ -1,9 +1,9 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesign.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
-# dscas3 module that designs glenoid moulds by making use of insertion
+# $Id: glenoidMouldDesign.py,v 1.3 2004/01/15 10:46:27 cpbotha Exp $
+# devide module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
-# this module doesn't satisfy the event handling requirements of DSCAS3 yet
+# this module doesn't satisfy the event handling requirements of DeVIDE yet
 # if you call update on the output PolyData, this module won't know to
 # execute, because at the moment main processing takes place in Python-land
 # this will be so at least until we convert the processing to a vtkSource

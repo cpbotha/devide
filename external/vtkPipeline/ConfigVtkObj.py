@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.13 2003/10/16 09:43:59 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.14 2004/01/15 10:46:25 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -46,7 +46,7 @@ except ImportError:
     sys.exit (1)
 
 try:
-    # if we're being run from dscas3, this should work
+    # if we're being run from devide, this should work
     from external.SwitchColourDialog import ColourDialog
 except ImportError:
     # if not, fall back to old behaviour (but DO print a warning)

@@ -31,11 +31,11 @@ class graphEditorFrame(wxFrame):
         wxglade_tmp_menu = wxMenu()
         wxglade_tmp_menu.Append(self.fileNewId , "&New\tCtrl-N", "Create new network.", wxITEM_NORMAL)
         wxglade_tmp_menu.Append(self.fileOpenId , "&Open\tCtrl-O", "Open and load existing network.", wxITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.fileOpenSegmentId , "Open as Se&gment\tCtrl-G", "Open a DSCAS3 network as a segment in the copy buffer.", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.fileOpenSegmentId , "Open as Se&gment\tCtrl-G", "Open a DeVIDE network as a segment in the copy buffer.", wxITEM_NORMAL)
         wxglade_tmp_menu.Append(self.fileSaveId , "&Save\tCtrl-S", "Save the current network.", wxITEM_NORMAL)
         wxglade_tmp_menu.Append(self.fileSaveSelectedId , "Save se&lected Glyphs\tCtrl-L", "Save the selected glyphs as a network.", wxITEM_NORMAL)
         wxglade_tmp_menu.AppendSeparator()
-        wxglade_tmp_menu.Append(self.fileExitId , "E&xit\tCtrl-Q", "Exit DSCAS3!", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.fileExitId , "E&xit\tCtrl-Q", "Exit DeVIDE!", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
         self.editMenu = wxMenu()
         self.frame_1_menubar.Append(self.editMenu, "&Edit")
@@ -56,10 +56,10 @@ class graphEditorFrame(wxFrame):
 
     def __set_properties(self):
         # begin wxGlade: graphEditorFrame.__set_properties
-        self.SetTitle("DSCAS3 Graph Editor")
+        self.SetTitle("DeVIDE Graph Editor")
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
-        frame_1_statusbar_fields = ["Welcome to the DSCAS3 Graph Editor"]
+        frame_1_statusbar_fields = ["Welcome to the DeVIDE Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         self.treeCtrl.SetSize((174, 447))
