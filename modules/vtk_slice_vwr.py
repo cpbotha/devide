@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.37 2002/06/06 22:21:48 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.38 2002/06/07 09:48:05 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -401,13 +401,18 @@ class vtk_slice_vwr(module_base):
                 self._InitialResliceAxes[ortho_idx]['axes'])
             overlay_pipe['vtkImageReslice'].SetResliceAxesOrigin(
                 self._InitialResliceAxes[ortho_idx]['origin'])
-            #some_trans = vtk.vtkTransform()
-            #some_trans.RotateWXYZ(-50,1,1,1)
-            #new_matrix = vtk.vtkMatrix4x4()
-            #vtk.vtkMatrix4x4.Multiply4x4(some_trans.GetMatrix(),
-            #                             overlay_pipe['vtkImageReslice'].
-            #                             GetResliceAxes(), new_matrix)
-            #overlay_pipe['vtkImageReslice'].SetResliceAxes(new_matrix)
+            
+            # let's configure LUT for the first layer
+            overlay_pipe['vtkImageReslice'].Update() # this doesn't always work
+            input_d = overlay_pipe['vtkImageReslice'].GetInput()
+            (dmin, dmax) = input_d.GetScalarRange()
+            w = (dmax - dmin) / 2
+            l = dmin + w
+            overlay_pipe['vtkLookupTable'].SetWindow(w)
+            overlay_pipe['vtkLookupTable'].SetLevel(l)
+            overlay_pipe['vtkLookupTable'].Build()
+            
+
         else:
             # if this is NOT the first layer, it  must copy the slicer
             # config of the first ortho
@@ -513,6 +518,7 @@ class vtk_slice_vwr(module_base):
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
             if input_stream.GetClassName() == 'vtkPolyData':
+               
 		mapper = vtk.vtkPolyDataMapper()
 		mapper.SetInput(input_stream)
 		self._inputs[idx]['vtkActor'] = vtk.vtkActor()
@@ -521,7 +527,8 @@ class vtk_slice_vwr(module_base):
 		self._inputs[idx]['Connected'] = 'vtkPolyData'
                 self._renderers[0].ResetCamera()                
                 self._rwis[0].Render()
-            elif input_stream.GetClassName() == 'vtkStructuredPoints':
+            elif input_stream.GetClassName() == 'vtkStructuredPoints' or \
+                 input_stream.GetClassName() == 'vtkImageData':
                 # if we already have a vtkStructuredPoints (or similar,
                 # we might want to use the IsA() method later) we must check
                 # the new dataset for certain requirements

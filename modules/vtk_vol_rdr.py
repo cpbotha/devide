@@ -22,6 +22,8 @@ class vtk_vol_rdr(module_base,
         # with this call we make sure that the vtkImageReader doesn't try
         # to calculate header size by itself
         self._reader.SetHeaderSize(0)
+        #
+        self._reader.SetFileDimensionality(3)
 
         # declare this var here out of good habit
         self._view_frame = None
