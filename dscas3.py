@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.7 2002/05/20 01:17:38 cpbotha Exp $
+# $Id: dscas3.py,v 1.8 2002/05/21 22:23:02 cpbotha Exp $
 
 import os
 import stat
@@ -248,18 +248,18 @@ class dscas3_app_t(wxApp):
         self._stde_lw = dscas3_log_window('Standard Error Log',
                                           self.main_window)
         self._old_stderr = sys.stderr
-        sys.stderr = self._stde_lw
+        #sys.stderr = self._stde_lw
 
         self._stdo_lw = dscas3_log_window('Standard Output Log',
                                           self.main_window)
         self._old_stdout = sys.stdout
-        sys.stdout = self._stdo_lw
+        #sys.stdout = self._stdo_lw
         
         # now make sure that VTK will always send error to vtk.log logfile
         temp = vtk.vtkFileOutputWindow()
         vtk_logfn = os.path.join(self.get_appdir(), 'vtk.log')
         temp.SetFileName(vtk_logfn)
-        temp.SetInstance(temp)
+        #temp.SetInstance(temp)
         del temp
 
         self._vtk_lw = dscas3_log_window('VTK error log',

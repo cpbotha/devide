@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.34 2002/05/20 21:29:53 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.35 2002/05/21 22:23:02 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -163,7 +163,7 @@ class vtk_slice_vwr(module_base):
         # now calculate normalised y vector
         ya = map(operator.sub, point2, origin)
         yam = reduce(operator.add, map(operator.mul, ya, ya)) ** .5
-        yan = map(lambda e, m=yam: 1.0 * e / m, ya)        
+        yan = map(lambda e, m=yam: 1.0 * e / m, ya)
 
         # do this for ALL layers! (we have it only on 0 for testing)
         ir = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
@@ -179,7 +179,20 @@ class vtk_slice_vwr(module_base):
         ispacing = ir.GetInput().GetSpacing()
         ra = ir.GetResliceAxes()
         ospacing = ra.MultiplyPoint(ispacing + (0,))
-        ir.SetOutputExtent((0,xam / ospacing[0],0,yam / ospacing[1],0,0))
+
+        # the slice viewer always has the ImageReslice agreeing with the plane
+        # widget planesource geometry... so, if we translate xa and ya of the
+        # planewidget to the output, we should get the orthogonal outputbounds
+        # x and y; note that we are translating VECTORS (and not points) with
+        # fourth coord 0... by definition, these are going to be parallel to
+        # the reslice axes.  With points, their respective origins will have
+        # to be subtracted after transformation
+        #output_xa = ra.MultiplyPoint(xa + [0])
+        #output_ya = ra.MultiplyPoint(ya + [0])
+        #ir.SetOutputExtent(0,round(1.0 * output_xa[0] / ospacing[0]),
+        #                   0,round(1.0 * output_ya[1] / ospacing[1]),
+        #                   0,0)
+        #ir.SetOutputSpacing(ospacing[0:3])
 
         ir.Update()
 
@@ -302,20 +315,8 @@ class vtk_slice_vwr(module_base):
         reslice.Update()
 
 	output_bounds = reslice.GetOutput().GetBounds()
-
-        # invert the ResliceAxes
-        ra = reslice.GetResliceAxes()        
-        rm = vtk.vtkMatrix4x4()
-        vtk.vtkMatrix4x4.Invert(ra, rm)
-
         origin = reslice.GetResliceAxesOrigin()
 
-        output_origin = ra.MultiplyPoint(origin + (1,))
-        input_origin = rm.MultiplyPoint((output_bounds[0], output_bounds[2],
-                                         output_origin[2], 1))[0:3]
-        #print input_origin
-        #input_origin = list(input_origin)
-        
         p1mag = output_bounds[1] - output_bounds[0]
         p2mag = output_bounds[3] - output_bounds[2]
         radc = reslice.GetResliceAxesDirectionCosines()
@@ -423,12 +424,11 @@ class vtk_slice_vwr(module_base):
         # the fact that we pack it in the order of addition should yield
         # precisely what the user expects (I think)
         self._update_3d_plane(overlay_pipe, 0)
-        
 
         # set up the vtkPlaneWidgets if this is the first layer
         if len(self._ortho_pipes[ortho_idx]) == 1:
-            
             self._pws[ortho_idx].SetProp3D(overlay_pipe['vtkActor3'])
+
             if ortho_idx == 0:
                 self._pws[ortho_idx].NormalToZAxisOn()
             elif ortho_idx == 1:
@@ -438,11 +438,31 @@ class vtk_slice_vwr(module_base):
             self._pws[ortho_idx].SetResolution(20)
             self._pws[ortho_idx].SetRepresentationToOutline()
             self._pws[ortho_idx].SetPlaceFactor(1)
+            # we have to call placewidget, as that adjusts cone and
+            # sphere size
             self._pws[ortho_idx].PlaceWidget()
+
+            reslice = overlay_pipe['vtkImageReslice']
+            reslice.Update()
+            output_bounds = reslice.GetOutput().GetBounds()
+            origin = reslice.GetResliceAxesOrigin()
+            p1mag = output_bounds[1] - output_bounds[0]
+            p2mag = output_bounds[3] - output_bounds[2]
+            radc = reslice.GetResliceAxesDirectionCosines()
+            p1vn = radc[0:3]
+            p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
+            p2vn = radc[3:6]
+            p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
+            
+            self._pws[ortho_idx].SetOrigin(origin)
+            self._pws[ortho_idx].SetPoint1(p1v)
+            self._pws[ortho_idx].SetPoint2(p2v)
+            self._pws[ortho_idx].RealiseGeometry()
+            
             rwi = self._rwis[0]
             self._pws[ortho_idx].SetInteractor(rwi)
             self._pws[ortho_idx].On()
-                                 
+
         # setup the orthogonal camera if this is the first layer
         if len(self._ortho_pipes[ortho_idx]) == 1:
             self._setup_ortho_cam(overlay_pipe, self._renderers[ortho_idx+1])
@@ -556,6 +576,7 @@ class vtk_slice_vwr(module_base):
                     cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
                     # connect up input
                     cur_pipe['vtkImageReslice'].SetInput(input_stream)
+                    #cur_pipe['vtkImageReslice'].SetAutoCropOutput(1)
                     # switch on texture interpolation
                     cur_pipe['vtkTexture'].SetInterpolate(1)
                     # connect LUT with texture
