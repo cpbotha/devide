@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.5 2003/02/17 22:45:16 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.6 2003/02/25 14:34:52 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -192,7 +192,10 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                          browseMsg="Select a filename",
                          fileWildcard=
                          "VTK data (*.vtk)|*.vtk|All files (*)|*",
-                         objectDict={}):
+                         objectDict=None):
+
+        if objectDict == None:
+            objectDict = {}
 
         parent_window = self._moduleManager.get_module_view_parent_window()
         self._viewFrame = resources.python.filenameViewModuleMixinFrame.\
@@ -240,6 +243,75 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
         if path != None:
             self._viewFrame.filenameText.SetValue(path)
         
+
+    def objectChoiceCallback(self, objectDict):
+        objectName = self._viewFrame.objectChoice.GetStringSelection()
+        if objectDict.has_key(objectName):
+            if hasattr(objectDict[objectName], "GetClassName"):
+                self.vtkObjectConfigure(self._viewFrame, None,
+                                          objectDict[objectName])
+        
+    def pipelineCallback(self, objectDict):
+        # check that all objects are VTK objects (probably not necessary)
+        objects1 = objectDict.values()
+        objects = tuple([object for object in objects1
+                         if hasattr(object, 'GetClassName')])
+
+        self.vtkPipelineConfigure(self._viewFrame, None, objects)
+
+import resources.python.noConfigModuleMixinViewFrame
+
+class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
+    """Mixin class for those modules that don't make use of any user-config
+    views.
+
+    Please call __init__() and close() at the appropriate times from your
+    module class.  Call _createViewFrame() at the end of your __init__ and
+    Show(1) the resulting frame.
+
+    As with most Mixins, remember to call the close() method of this one at
+    the end of your object.
+    """
+
+    def __init__(self):
+        self._viewFrame = None
+
+    def close(self):
+        vtkPipelineConfigModuleMixin.close(self)
+        self._viewFrame.Destroy()
+        del self._viewFrame
+
+    def _createViewFrame(self, frameTitle,
+                         objectDict=None):
+
+        if objectDict == None:
+            objectDict = {}
+
+        parent_window = self._moduleManager.get_module_view_parent_window()
+        self._viewFrame = resources.python.noConfigModuleMixinViewFrame.\
+                          noConfigModuleMixinViewFrame(parent_window, -1,
+                                                       'dummy')
+
+        self._viewFrame.SetTitle(frameTitle)
+
+        # make sure that a close of that window does the right thing
+        EVT_CLOSE(self._viewFrame,
+                  lambda e, s=self: s._viewFrame.Show(false))
+
+        self._viewFrame.objectChoice.Clear()
+	for objectName in objectDict.keys():
+            self._viewFrame.objectChoice.Append(objectName)
+
+	self._viewFrame.objectChoice.SetSelection(0)
+            
+        EVT_CHOICE(self._viewFrame, self._viewFrame.objectChoiceId,
+                   lambda e: self.objectChoiceCallback(objectDict))
+        
+        EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
+                   lambda e: self.pipelineCallback(objectDict))
+
+        # bind events to the standard cancel, sync, apply, execute, ok buttons
+        moduleUtils.bindCSAEO(self, self._viewFrame)
 
     def objectChoiceCallback(self, objectDict):
         objectName = self._viewFrame.objectChoice.GetStringSelection()
