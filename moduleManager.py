@@ -2,6 +2,7 @@ import sys, os, fnmatch
 import string
 import genUtils
 import modules
+import mutex
 from whrandom import choice
 
 class metaModule:
@@ -48,6 +49,10 @@ class moduleManager:
         
 	# make first scan of available modules
 	self.scanModules()
+
+        # we'll use this to perform mutex-based locking on the progress
+        # callback... (there SHOULD only be ONE moduleManager instance)
+        self._inVTKProgressCallback = mutex.mutex()
 
     def close(self):
         """Iterates through each module and closes it.
@@ -302,14 +307,18 @@ class moduleManager:
         vtk_plydta_rdr.py for a simple example.
         """
 
-        vtk_progress = process_object.GetProgress() * 100.0
-        progressText = process_object.GetClassName() + ': ' + \
-                       process_object.GetProgressText()
-        if vtk_progress >= 100.0:
-            progressText += ' [DONE]'
+        # if this is called while still in progress, we do nothing...
+        # it means multi-threaded VTK objects are calling back into us (yuck)
+        if self._inVTKProgressCallback.testandset():
+            vtk_progress = process_object.GetProgress() * 100.0
+            progressText = process_object.GetClassName() + ': ' + \
+                           process_object.GetProgressText()
+            if vtk_progress >= 100.0:
+                progressText += ' [DONE]'
 
-        self.setProgress(vtk_progress, progressText)
-
+            self.setProgress(vtk_progress, progressText)
+            self._inVTKProgressCallback.unlock()
+            
     def vtk_poll_error(self):
         """This method should be called whenever VTK processing might have
         taken place, e.g. in the execute() method of a dscas3 module.

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.33 2003/05/16 22:31:17 cpbotha Exp $
+# $Id: dscas3.py,v 1.34 2003/05/19 12:26:48 cpbotha Exp $
 
-DSCAS3_VERSION = '20030516 T1'
+DSCAS3_VERSION = '20030519 T1'
 
 import os
+import mutex
 import stat
 import string
 import sys
@@ -133,7 +134,7 @@ class dscas3_app_t(wxApp):
     """
     
     def __init__(self):
-        self._inProgress = 0
+        self._inProgress = mutex.mutex()
         self._previousProgressTime = 0
         self._currentProgress = -1
         self._currentProgressMsg = ''
@@ -249,50 +250,48 @@ class dscas3_app_t(wxApp):
         self._vtk_lw.update()
 
     def setProgress(self, progress, message):
-
-        
         # 1. we shouldn't call setProgress whilst busy with setProgress
         # 2. only do something if the message or the progress has changed
         # 3. we only perform an update if a second or more has passed
         #    since the previous update, unless this is the final
         #    (i.e. 100% update)
-        if not self._inProgress and \
-           message != self._currentProgressMsg or \
+
+        # the testandset() method of mutex.mutex is atomic... this will grab
+        # the lock and set it if it isn't locked alread and then return true.
+        # returns false otherwise
+        if self._inProgress.testandset():
+            if message != self._currentProgressMsg or \
                    progress != self._currentProgress:
-               if progress >= 100 or \
-                  time.time() - self._previousProgressTime >= 1:
-                   #print "IN " + message
-                   self._previousProgressTime = time.time()
-                   self._inProgress = 1
-                   self._currentProgressMsg = message
-                   self._currentProgress = progress
-                   self._mainFrame.progressGauge.SetValue(progress)
-                   self._mainFrame.progressText.SetLabel(message)
+                if progress >= 100 or \
+                       time.time() - self._previousProgressTime >= 1:
+                    self._previousProgressTime = time.time()
+                    self._currentProgressMsg = message
+                    self._currentProgress = progress
+                    self._mainFrame.progressGauge.SetValue(progress)
+                    self._mainFrame.progressText.SetLabel(message)
 
-                   # activate the busy cursor
-                   if progress < 100.0:
-                       if not wxIsBusy():
-                           wxBeginBusyCursor()
-                   # or switch it off
-                   else:
-                       if wxIsBusy():
-                           wxEndBusyCursor()
+                    print "Main thread: %d" % (wxThread_IsMain(),)
+
+                    # activate the busy cursor
+                    if progress < 100.0:
+                        if not wxIsBusy():
+                            wxBeginBusyCursor()
+                            
+                    # or switch it off
+                    else:
+                        if wxIsBusy():
+                            wxEndBusyCursor()
                    
-                   # bring this window to the top if the user wants it
-                   if self._mainFrame.progressRaiseCheckBox.GetValue():
-                       self._mainFrame.Raise()
+                    # bring this window to the top if the user wants it
+                    if self._mainFrame.progressRaiseCheckBox.GetValue():
+                        self._mainFrame.Raise()
 
-                   # we want wx to update its UI, but it shouldn't accept any
-                   # user input, else things can get really crazy.
-                   #print "calling yield"
-                   #wxSafeYield(None, 1)
-                   wxSafeYield()
-                   # the following two calls don't seem to do the trick
-                   #self._mainFrame.Refresh()
-                   #self._mainFrame.Update()
-                   #print "done calling yield"
-                   self._inProgress = 0
-                   #print "OUT " + message
+                    # we want wx to update its UI, but it shouldn't accept any
+                    # user input, else things can get really crazy.
+                    wxSafeYield()
+
+            # unset the mutex thingy
+            self._inProgress.unlock()
 
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog

@@ -15,16 +15,8 @@ class doubleThresholdFLT(moduleBase,
 
         self._imageThreshold = vtk.vtkImageThreshold()
 
-        # following is the standard way of connecting up the dscas3 progress
-        # callback to a VTK object; you should do this for all objects in
-        # your module - you could do this in __init__ as well, it seems
-        # neater here though
-#         self._imageThreshold.SetProgressText('Thresholding data')
-#         mm = self._moduleManager
-#         self._imageThreshold.SetProgressMethod(lambda s=self, mm=mm:
-#                                                mm.vtk_progress_cb(
-#             s._imageThreshold))
-        
+        moduleUtils.setupVTKObjectProgress(self, self._imageThreshold,
+                                           'Thresholding data')
 
         self._outputTypes = {'Double': 'VTK_DOUBLE',
                              'Float' : 'VTK_FLOAT',
