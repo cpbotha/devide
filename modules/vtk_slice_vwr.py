@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.17 2002/05/07 14:25:22 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.18 2002/05/08 12:04:03 cpbotha Exp $
 
 from module_base import module_base
 import vtk
@@ -40,17 +40,17 @@ class vtk_slice_vwr(module_base):
 	self._create_window()
 	
     def close(self):
-        for idx in range(self.num_inputs):
+        for idx in range(self._num_inputs):
             self.set_input(idx, None)
-	if hasattr(self, 'renderers'):
-	    del self.renderers
-	if hasattr(self, 'rws'):
-	    del self.rws
-	if hasattr(self,'rw_window'):
-	    self.rw_window.destroy()
-	    del self.rw_window
-        if hasattr(self,'ortho_pipes'):
-            del self.ortho_pipes
+	if hasattr(self, '_renderers'):
+	    del self._renderers
+	if hasattr(self, '_rws'):
+	    del self._rws
+	if hasattr(self,'_view_frame'):
+	    self._view_frame.Destroy()
+	    del self._view_frame
+        if hasattr(self,'_ortho_pipes'):
+            del self._ortho_pipes
 	
     def _create_window(self):
         # create main frame, make sure that when it's closed, it merely hides
