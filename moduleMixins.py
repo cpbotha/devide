@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.9 2003/05/04 19:08:51 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.10 2003/05/04 20:56:33 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -123,6 +123,10 @@ class vtkPipelineConfigModuleMixin:
         self.vtkPipelineConfigure(viewFrame, renderWin, objects)
 
 
+    # we could make a _createObjectAndPipelineIntrospection method as well,
+    # something in the style of moduleUtils.createECASButtons that does the
+    # whole shebang of also creating the UI bits.  This would mean that the
+    # module author only has to do his own UI bits.
     def _setupObjectAndPipelineIntrospection(self, viewFrame, objectDict,
                                              renderWindow,
                                              objectChoice, objectChoiceId,
