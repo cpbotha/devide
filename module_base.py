@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.19 2002/08/16 13:05:41 cpbotha Exp $
+# $Id: module_base.py,v 1.20 2002/09/18 15:42:59 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ class module_mixin_vtk_pipeline_config:
 
     def vtk_pipeline_configure(self, parent, renwin, objects=None):
         """This will instantiate and show only one pipeline config per
-        module instance.
+        specified renwin and objects.
 
         parent: parent wxWindow derivative.  It's important to pass a parent,
         else the here-created window might never be destroy()ed.
@@ -145,9 +145,23 @@ class module_mixin_vtk_pipeline_config:
 
         NOTE: renwin and objects can't BOTH be None/empty.
         """
-        if not hasattr(self, '_pipeline') or self._pipeline == None:
-            self._pipeline = vtkPipelineBrowser(parent, renwin, objects)
-        self._pipeline.show()
+        if not hasattr(self, '_vtk_pipeline_cfs'):
+            self._vtk_pipeline_cfs = {}
+            
+        # create a dictionary key: a tuple containing renwin + objects
+        # (if objects != None)
+        this_key = (renwin,)
+        if objects:
+            this_key = this_key + objects
+            
+        # see if we have this pipeline lying around or not
+        # if not, create it and store
+        if not self._vtk_pipeline_cfs.has_key(this_key):
+            self._vtk_pipeline_cfs[this_key] = vtkPipelineBrowser(
+                parent, renwin, objects)
+
+        # yay display
+        self._vtk_pipeline_cfs[this_key].show()
 
     def close_pipeline_configure(self):
         """Explicitly close() the pipeline browser of this module.
@@ -157,9 +171,11 @@ class module_mixin_vtk_pipeline_config:
         browser will die too.  However, you can use this method to take
         care of it explicitly.
         """
-        if hasattr(self, '_pipeline'):
-            self._pipeline.close()
-        self._pipeline = None
+        if hasattr(self, '_vtk_pipeline_cfs'):
+            for key in self._vtk_pipeline_cfs:
+                self._vtk_pipeline_cfs[key].close()
+
+        self._vtk_pipeline_cfs.clear()
         
 
             
