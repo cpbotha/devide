@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.64 2003/08/04 16:53:35 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.65 2003/08/04 23:16:17 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -189,30 +189,33 @@ class selectedPoints(object):
             # toggle the selection for this point in our list
             self._grid.SelectRow(idx)
 
-            # if this is lockToSurface, lock it!
-            if self._pointsList[idx]['lockToSurface']:
+            # if this is lockToSurface, lock it! (and we can only lock
+            # to something if there're some pickable objects as reported
+            # by the tdObjects class)
+            pp = self.slice3dVWR._tdObjects.getPickableProps()            
+            if self._pointsList[idx]['lockToSurface'] and pp:
                 tdren = self.slice3dVWR._threedRenderer
-                # convert the actual pointwidget position back to display coord
+                # convert the actual pointwidget position back to
+                # display coord
                 tdren.SetWorldPoint(pw.GetPosition() + (1,))
                 tdren.WorldToDisplay()
                 ex,ey,ez = tdren.GetDisplayPoint()
-                # we use a vtkPropPicker - this is supposed to make use of
-                # the graphics hardware to pick rapidly
-#                 picker = vtk.vtkPropPicker()
-#                 if picker.PickProp(ex, ey, tdren):
-#                     xyz = picker.GetPickPosition()
-#                     pw.SetPosition(xyz)
+                # we make use of a CellPicker (for the same reasons we
+                # use it during the initial placement of a surface point)
                 picker = vtk.vtkCellPicker()
-
-                # FIXME: continue here!
-                pp = self.slice3dVWR._tdObjects.getPickableProps()
+                # this is quite important
+                picker.SetTolerance(0.005)
+                
+                # tell the picker which props it's allowed to pick from
                 for p in pp:
                     picker.AddPickList(p)
 
                 picker.PickFromListOn()
-                    
+                # and go!
                 picker.Pick(ex, ey, 0.0, tdren)
                 if picker.GetActor():
+                    # correct the pointWidget's position so it sticks to
+                    # the surface
                     pw.SetPosition(picker.GetPickPosition())
 
             # get its position and transfer it to the sphere actor that
@@ -1223,33 +1226,47 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
     def _rwiLeftButtonCallback(self, obj, event):
 
-        def findPickedProp(obj):
-            (x,y) = obj.GetEventPosition()
+        def findPickedProp(obj, onlyTdObjects=False):
             # we use a cell picker, because we don't want the point
             # to fall through the polygons, if you know what I mean
             picker = vtk.vtkCellPicker()
+            # very important to set this, else we pick the weirdest things
             picker.SetTolerance(0.005)
-            print "%d %d" % (x,y)
+
+            if onlyTdObjects:
+                pp = self._tdObjects.getPickableProps()
+                if not pp:
+                    return (None, (0,0,0))
+                
+                else:
+                    # tell the picker which props it's allowed to pick from
+                    for p in pp:
+                        picker.AddPickList(p)
+
+                    picker.PickFromListOn()
+                    
+                
+            (x,y) = obj.GetEventPosition()
             picker.Pick(x,y,0.0,self._threedRenderer)
             return (picker.GetActor(), picker.GetPickPosition())
             
         pickAction = self.controlFrame.surfacePickActionChoice.GetSelection()
         if pickAction == 1:
             # Place point on surface
-            actor, pickPosition = findPickedProp(obj)
+            actor, pickPosition = findPickedProp(obj, True)
             if actor:
                 self._storeSurfacePoint(actor, pickPosition)
                 
         elif pickAction == 2:
             # configure picked object
-            prop, pointId = findPickedProp(obj)
+            prop, unusedPickPosition = findPickedProp(obj)
             if prop:
                 self.vtkPipelineConfigure(self.threedFrame,
                                           self.threedFrame.threedRWI, (prop,))
 
         elif pickAction == 3:
             # show scalarbar for picked object
-            prop, pointId = findPickedProp(obj)
+            prop, unusedPickPosition = findPickedProp(obj)
             self._showScalarBarForProp(prop)
 
         elif pickAction == 4:
