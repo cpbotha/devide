@@ -112,11 +112,20 @@ class module_manager:
 	
     def connect_modules(self, output_module, output_idx,
                         input_module, input_idx):
+        """Connect output_idx'th output of provider output_module to
+        input_idx'th input of consumer input_module.
+        """
 
 	input_module.setInput(input_idx, output_module.getOutput(output_idx))
 	
     def disconnect_modules(self, input_module, input_idx):
-	print "disconnecting input %d of module %s" % (input_idx, input_module)
+        """Disconnect a consumer module from its provider.
+
+        This method will disconnect input_module from its provider by
+        disconnecting the link between the provider and input_module at
+        the input_idx'th input port of input_module.
+        """
+
 	input_module.setInput(input_idx, None)
     
     def vtk_progress_cb(self, process_object):
