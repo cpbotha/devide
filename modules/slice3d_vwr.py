@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.39 2003/03/07 01:07:21 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.40 2003/03/07 16:10:38 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -407,8 +407,8 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         #
         # method 2 doesn't alway work, so we use WindowRemap
 
-	# hide it so long
-	#self._viewFrame.Show(0)
+        # hide it so long
+        #self._viewFrame.Show(0)
 
         #self._viewFrame.threedRWI.GetRenderWindow().SetSize(10,10)
         self._viewFrame.threedRWI.GetRenderWindow().WindowRemap()        
@@ -416,9 +416,9 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         # all the RenderWindow()s are now reparented, so we can destroy
         # the containing frame
         self._viewFrame.Destroy()
-	# unbind the _view_frame binding
-	del self._viewFrame
-	
+        # unbind the _view_frame binding
+        del self._viewFrame
+
     def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
         return self._numDataInputs * \
@@ -549,10 +549,12 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         self._moduleManager.vtk_poll_error()
 
         
+
     def getOutputDescriptions(self):
         return ('Selected points',
                 'Volume of Interest (vtkStructuredPoints)')
         
+
     def getOutput(self, idx):
         if idx == 0:
             return self._outputSelectedPoints
@@ -566,6 +568,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
     #################################################################
     # miscellaneous public methods
     #################################################################
+
     def getIPWPicker(self):
         return self._ipwPicker
 
@@ -711,6 +714,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                    pointsRemoveCallback)
 
         # event logic for the voi panel
+
         def widgetEnabledCBoxCallback(event):
             if self._voi_widget.GetInput():
                 if event.Checked():
@@ -730,6 +734,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                    self._sliceNameChoiceCallback)
 
         # first a callback for turning an IPW on or off
+
         def _eb_cb():
             sliceDirection = self._getCurrentSliceDirection()
             if sliceDirection:
@@ -848,6 +853,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         else:
            return None
         
+
     def _getCurrentSliceDirection(self):
         return self._currentSliceDirection
 
@@ -881,6 +887,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                 self._viewFrame.sliceInteractionCheckBox.SetValue(
                     sliceDirection.getInteractionEnabled())
         
+
     def _remove_cursors(self, idxs):
 
         # we have to delete one by one from back to front
@@ -912,6 +919,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             # and sync up output points
             self._syncOutputSelectedPoints()
         
+
     def _resetAll(self):
         """Arrange everything for a single overlay in a single ortho view.
 
@@ -988,6 +996,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         icam.ParallelProjectionOn()
         
         
+
     def _storeSurfacePoint(self, pointId, actor):
         polyData = actor.GetMapper().GetInput()
         if polyData:
@@ -1117,7 +1126,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
 
         
         self._viewFrame.spointsGrid.AppendRows()
-	self._viewFrame.spointsGrid.AdjustScrollbars()        
+        self._viewFrame.spointsGrid.AdjustScrollbars()        
         row = self._viewFrame.spointsGrid.GetNumberRows() - 1
         self._syncGridRowToSelPoints(row)
         
@@ -1205,6 +1214,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             # once we've done this, we have to redraw
             self._viewFrame.threedRWI.Render()
     
+
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
         pwidgets = map(lambda i: i['point_widget'], self._selectedPoints)
@@ -1250,6 +1260,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             
 
     # DEPRECATED CODE
+
     def _rw_ortho_pick_cb(self, wxvtkrwi):
         (cx,cy) = wxvtkrwi.GetEventPosition()
         r_idx = self._rwis.index(wxvtkrwi)
@@ -1295,6 +1306,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
                     self._rwis[r_idx].Render()
     
     # DEPRECATED CODE
+
     def _rw_slice_cb(self, wxvtkrwi):
         delta = wxvtkrwi.GetEventPosition()[1] - \
                 wxvtkrwi.GetLastEventPosition()[1]
@@ -1323,6 +1335,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             self._rwis[0].Render()
 
     # DEPRECATED CODE
+
     def _rw_windowlevel_cb(self, wxvtkrwi):
         deltax = wxvtkrwi.GetEventPosition()[0] - \
                  wxvtkrwi.GetLastEventPosition()[0]     
@@ -1348,6 +1361,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         """
         self._storeCursor(self._currentCursor)
         
+
     def voiWidgetInteractionCallback(self, o, e):
         planes = vtk.vtkPlanes()
         o.GetPlanes(planes)
