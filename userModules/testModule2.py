@@ -21,13 +21,11 @@ class testModule2(moduleBase, noConfigModuleMixin):
 
         # we'll be playing around with some vtk objects, this could
         # be anything
-        self._testObject0 = vtk.vtkImageReslice()
+        self._testObject0 = vtk.vtkImageResample()
         self._testObject0.SetInterpolationModeToCubic()
-        self._testObject0.SetResliceAxesDirectionCosines(
-            0.5, 0, 0,
-            0, 0.5, 0,
-            0, 0, 0.5)
-
+        self._testObject0.SetAxisMagnificationFactor(0, 2)
+        self._testObject0.SetAxisMagnificationFactor(1, 2)
+        self._testObject0.SetAxisMagnificationFactor(2, 2)
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
         # your module

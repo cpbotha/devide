@@ -16,6 +16,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         # be anything
         self._testObject0 = vtk.vtkTriangleFilter()
         self._testObject0b = vtk.vtkWindowedSincPolyDataFilter()
+        self._testObject0b.SetNumberOfIterations(20)
         self._testObject0b.SetInput(self._testObject0.GetOutput())
         self._testObject1 = vtk.vtkCurvatures()
         self._testObject1.SetCurvatureTypeToMean()
@@ -54,7 +55,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         return (self._testObject1.GetOutput().GetClassName(),)
 
     def getOutput(self, idx):
-        return self._testObject1.GetOutput()
+        return self._testObject0b.GetOutput()
 
     def logicToConfig(self):
         pass
@@ -71,7 +72,7 @@ class testModule(moduleBase, noConfigModuleMixin):
     
 
     def executeModule(self):
-        self._testObject1.Update()
+        self._testObject0b.Update()
 
 
     def view(self, parent_window=None):
