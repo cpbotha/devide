@@ -4,6 +4,7 @@ import genUtils
 import modules
 import mutex
 from random import choice
+from moduleBase import defaultConfigClass
 
 class metaModule:
     """Class used to store module-related information.
@@ -418,12 +419,12 @@ class moduleManager:
                     # thing and load it: note that the two readers are now
                     # reading the same file!
                     configCopy = copy.deepcopy(pmsTuple[1].moduleConfig)
-                    print "DESERIALISE: %s" % \
-                          (str(configCopy),)
                     newModule.setConfig(configCopy)
-                except:
+                except Exception, e:
                     # it could be a module with no defined config logic
-                    pass
+                    genUtils.logWarning(
+                        'Could not restore state/config to module %s: %s' %
+                        (newModule.__class__.__name__, e))
                 
                 # and record that it's been recreated
                 newModulesDict[pmsTuple[1].instanceName] = newModule
@@ -482,8 +483,13 @@ class moduleManager:
                           (str(moduleInstance),
                            str(moduleInstance.getConfig()))
                     pms.moduleConfig = moduleInstance.getConfig()
-                except:
-                    pms.moduleConfig = None
+                except AttributeError, e:
+                    genUtils.logWarning(
+                        'Could not extract state (config) from module %s: %s' \
+                        % (moduleInstance.__class__.__name__, str(e)))
+
+                    # if we can't get a config, we pickle a default
+                    pms.moduleConfig = defaultConfigClass()
                     
                 #pms.moduleName = moduleInstance.__class__.__name__
                 # we need to store the complete module name
