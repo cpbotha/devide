@@ -1,8 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.1 2003/02/13 12:54:00 cpbotha Exp $
-
-# TODO:
-# * rename this module to vtkPolyDataRDR
-# * remove vtk_plydta_rdr.py and vtk_plydta_rdr.xml from the repository
+# $Id: vtkPolyDataRDR.py,v 1.2 2003/02/13 12:55:02 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -12,7 +8,7 @@ import vtk
 import os
 import module_utils
 
-class vtk_plydta_rdr(moduleBase, filenameViewModuleMixin):
+class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
