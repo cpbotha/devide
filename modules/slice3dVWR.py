@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.34 2003/06/17 15:34:19 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.35 2003/06/18 16:13:01 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -514,6 +514,7 @@ class tdObjects:
     _gridNameCol = 0
     _gridColourCol = 1
     _gridVisibleCol = 2
+    _gridContourCol = 3
 
     def __init__(self, slice3dVWRThingy, grid):
         self._tdObjectsDict = {}
@@ -541,6 +542,9 @@ class tdObjects:
         EVT_BUTTON(svViewFrame, svViewFrame.objectShowHideButtonId,
                    self._handlerObjectShowHide)
 
+        EVT_BUTTON(svViewFrame, svViewFrame.objectContourButtonId,
+                   self._handlerObjectContour)
+
     def _getSelectedObjects(self):
         objectNames = []        
         selectedRows = self._grid.GetSelectedRows()
@@ -551,7 +555,16 @@ class tdObjects:
 
         objs = self.findObjectsByNames(objectNames)
         return objs
-        
+
+    def _handlerObjectContour(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            contour = self._tdObjectsDict[obj]['contour']
+            self._setObjectContouring(obj, not contour)
+
+        if objs:
+            self._slice3dVWR.render3D()
 
     def _handlerObjectSetColour(self, event):
         objs = self._getSelectedObjects()
@@ -589,6 +602,7 @@ class tdObjects:
         self._grid.SetColSize(self._gridNameCol, 100)
         self._grid.SetColSize(self._gridColourCol, 150)
         self._grid.SetColSize(self._gridVisibleCol, 50)
+        self._grid.SetColSize(self._gridContourCol, 50)        
 
     def addObject(self, tdObject):
         """Takes care of all the administration of adding a new 3-d object
@@ -680,6 +694,8 @@ class tdObjects:
             self._setObjectColour(tdObject, nColour)
             # and the visibility
             self._setObjectVisibility(tdObject, True)
+            # and the contouring
+            self._setObjectContouring(tdObject, False)
 
             self._slice3dVWR._threedRenderer.ResetCamera()
             self._slice3dVWR.render3D()
@@ -842,7 +858,17 @@ class tdObjects:
                                         ['No', 'Yes'][bool(visible)])
 
     def _setObjectContouring(self, tdObject, contour):
-        pass
+        if self._tdObjectsDict.has_key(tdObject):
+            objectDict = self._tdObjectsDict[tdObject]
+
+            # in our own dict
+            objectDict['contour'] = bool(contour)
+
+            # in the grid
+            gridRow = self.findGridRowByName(objectDict['objectName'])
+            if gridRow >= 0:
+                self._grid.SetCellValue(gridRow, self._gridContourCol,
+                                        ['No', 'Yes'][bool(contour)])
                     
 
     def _tdObjectModifiedCallback(self, o, e):

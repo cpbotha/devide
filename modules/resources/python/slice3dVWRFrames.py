@@ -77,6 +77,8 @@ class MainFrame(wxFrame):
         self.button_2 = wxButton(self.notebook_1_copy_pane_7, self.objectSetColourButtonId , "Set Colour")
         self.objectShowHideButtonId  =  wxNewId()
         self.button_3 = wxButton(self.notebook_1_copy_pane_7, self.objectShowHideButtonId , "Show/Hide")
+        self.objectContourButtonId  =  wxNewId()
+        self.button_4 = wxButton(self.notebook_1_copy_pane_7, self.objectContourButtonId , "Contour")
 
         self.__set_properties()
         self.__do_layout()
@@ -85,7 +87,7 @@ class MainFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: MainFrame.__set_properties
         self.SetTitle("Slice3D Viewer")
-        self.panel_3.SetSize((718, 429))
+        self.panel_3.SetSize((729, 496))
         self.sliceCursorNameCombo.SetSelection(0)
         self.spointsGrid.CreateGrid(0, 3)
         self.spointsGrid.SetRowLabelSize(30)
@@ -95,19 +97,20 @@ class MainFrame(wxFrame):
         self.spointsGrid.SetColSize(0, 200)
         self.spointsGrid.SetColLabelValue(1, "Discrete")
         self.spointsGrid.SetColLabelValue(2, "Value")
-        self.spointsGrid.SetSize((709, 197))
+        self.spointsGrid.SetSize((720, 111))
         self.sliceNameChoice.SetSelection(0)
         self.sliceEnabledCheckBox.SetValue(1)
         self.sliceInteractionCheckBox.SetValue(1)
         self.acsChoice.SetSelection(0)
         self.surfacePickActionRB.SetSelection(0)
-        self.objectsListGrid.CreateGrid(2, 3)
+        self.objectsListGrid.CreateGrid(2, 4)
         self.objectsListGrid.EnableEditing(0)
         self.objectsListGrid.EnableDragRowSize(0)
         self.objectsListGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
         self.objectsListGrid.SetColLabelValue(0, "Object Name")
         self.objectsListGrid.SetColLabelValue(1, "Colour")
         self.objectsListGrid.SetColLabelValue(2, "Visible")
+        self.objectsListGrid.SetColLabelValue(3, "Contour")
         # end wxGlade
 
     def __do_layout(self):
@@ -191,7 +194,8 @@ class MainFrame(wxFrame):
         sizer_10.Add(self.surfacePickActionRB, 0, wxALL|wxEXPAND, 4)
         sizer_3.Add(self.objectsListGrid, 1, wxEXPAND, 0)
         sizer_11.Add(self.button_2, 0, wxRIGHT, 4)
-        sizer_11.Add(self.button_3, 0, 0, 0)
+        sizer_11.Add(self.button_3, 0, wxRIGHT, 4)
+        sizer_11.Add(self.button_4, 0, wxRIGHT, 4)
         sizer_3.Add(sizer_11, 0, wxTOP|wxBOTTOM|wxEXPAND, 4)
         sizer_10.Add(sizer_3, 1, wxALL|wxEXPAND, 4)
         self.notebook_1_copy_pane_7.SetAutoLayout(1)
