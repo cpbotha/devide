@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.12 2004/11/01 12:58:39 cpbotha Exp $
+# $Id: tdObjects.py,v 1.13 2004/11/19 17:38:00 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -120,7 +120,7 @@ class tdObjects(s3dcGridMixin):
                     if sname:
                         mapper.SetScalarRange(tdObject.GetScalarRange())
 
-                    mapper.ScalarVisibilityOff()
+                    #mapper.ScalarVisibilityOff()
                 
 #                     if sname and sname.lower().find("curvature") >= 0:
 #                         # if the active scalars have "curvature" somewhere in
@@ -173,7 +173,10 @@ class tdObjects(s3dcGridMixin):
             # and the motion
             self._setObjectMotion(tdObject, False)
             # scalar visibility
-            self._setObjectScalarVisibility(tdObject, False)
+            if sname:
+                self._setObjectScalarVisibility(tdObject, True)
+            else:
+                self._setObjectScalarVisibility(tdObject, False)
 
             self.slice3dVWR._threedRenderer.ResetCamera()
             self.slice3dVWR.render3D()
