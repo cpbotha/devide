@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.14 2003/04/17 23:04:33 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.15 2003/04/23 21:19:11 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -859,6 +859,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                                                                _threedRenderer)
 
         # add possible point names
+        self._viewFrame.sliceCursorNameCombo.Clear()
+        self._viewFrame.sliceCursorNameCombo.Append('Point 1')
         self._viewFrame.sliceCursorNameCombo.Append('GIA Glenoid')
         self._viewFrame.sliceCursorNameCombo.Append('GIA Humerus')
         self._viewFrame.sliceCursorNameCombo.Append('FBZ Superior')
