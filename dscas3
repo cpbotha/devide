@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3,v 1.20 2002/04/24 12:38:55 cpbotha Exp $
+# $Id: dscas3,v 1.21 2002/04/24 16:09:58 cpbotha Exp $
 
 import os
 import sys
@@ -36,6 +36,7 @@ class main_window(wxFrame):
         # get menubar from it
         menubar = res.LoadMenuBar('MBAR_MAIN_WINDOW')
         EVT_MENU(self, XMLID('ID_EXIT_MI'), self.exit_cb)
+        EVT_MENU(self, XMLID('ID_GRAPH_EDITOR_MI'), self.graph_editor_cb)
         EVT_MENU(self, XMLID('ID_PYTHON_SHELL_MI'), self.python_shell_cb)
         # add the menubar to this frame
         self.SetMenuBar(menubar)
@@ -88,6 +89,9 @@ class main_window(wxFrame):
     def load_data_cb(self, event):
         self.dscas3_app.get_assistants().load_data()
 
+    def graph_editor_cb(self, event):
+        self.dscas3_app.start_graph_editor()
+
     def python_shell_cb(self, event):
         self.dscas3_app.start_python_shell()
         
@@ -106,12 +110,13 @@ class dscas3_app_t(wxApp):
         wxApp.__init__(self, 0)
 
         self._assistants = assistants(self)
+        self._graph_editor = None
         self._python_shell = None
 	
 	# this will instantiate the module manager and get a list of plugins
 	self.module_manager = module_manager()
 	# then start up a default graph_editor
-#	self.graph_editor = graph_editor(self)
+        #self.graph_editor = graph_editor(self)
 
     def OnInit(self):
         self.main_window = main_window(self)
@@ -138,6 +143,12 @@ class dscas3_app_t(wxApp):
             self._python_shell = python_shell(self)
         else:
             self._python_shell.show()
+
+    def start_graph_editor(self):
+        if self._graph_editor == None:
+            self._graph_editor = graph_editor(self)
+        else:
+            self._graph_editor.show()
 	
 
 def main():
