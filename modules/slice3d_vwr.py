@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.37 2003/03/06 18:05:06 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.38 2003/03/06 23:11:11 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -850,6 +850,23 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
     def _getCurrentSliceDirection(self):
         return self._currentSliceDirection
 
+    def _getPrimaryInput(self):
+        """Get primary input data, i.e. bottom layer.
+
+        If there is no primary input data, this will return None.
+        """
+        
+        inputs = [i for i in self._inputs if i['Connected'] ==
+                  'vtkImageDataPrimary']
+
+        if inputs:
+            inputData = inputs[0]['inputData']
+        else:
+            inputData = None
+
+        return inputData
+        
+
     def setCurrentSliceDirection(self, sliceDirection):
         if sliceDirection != self._currentSliceDirection:
             self._currentSliceDirection = sliceDirection
@@ -982,10 +999,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         if xyz in worlds:
             return
 
-        if self._ipws[0]:
-            inputData = self._ipws[0][0].GetInput()
-        else:
-            inputData = None
+        inputData = self._getPrimaryInput()
             
         if inputData:
             # get the discrete coords of this point
@@ -1208,13 +1222,7 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             if ta:
                 ta.SetPosition(pos)
 
-
-            inputs = [i for i in self._inputs if i['Connected'] ==
-                      'vtkImageDataPrimary']
-            if inputs:
-                inputData = inputs[0]['inputData']
-            else:
-                inputData = None
+            inputData = self._getPrimaryInput()
 
             if inputData:
                 # then we have to update our internal record of this point
@@ -1370,7 +1378,6 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
             self._viewFrame.sliceNameChoice.GetStringSelection())
         
         self.setCurrentSliceDirection(sliceDirection)
-
 
     def voiWidgetEndInteractionCallback(self, o, e):
         # adjust the vtkExtractVOI with the latest coords
