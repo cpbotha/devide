@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.2 2002/04/29 11:25:12 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.3 2002/04/30 01:25:17 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
 #
 # Copyright (C) 2000 Prabhu Ramachandran
+# Conversion to wxPython copyright (c) 2002 Charl P. Botha
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -25,6 +26,10 @@
 # Author contact information:
 #   Prabhu Ramachandran <prabhu_r@users.sf.net>
 #   http://www.aero.iitm.ernet.in/~prabhu/
+#
+#   Charl P. Botha <cpbotha@ieee.org>
+#   http://cpbotha.net/
+
 
 """  This python program/module creates a graphical VTK pipeline
 browser.   The pipeline tree is made using the TreeWidget from IDLE.
@@ -32,8 +37,8 @@ The objects in the pipeline can be configured.  The configuration is
 done by using the ConfigVtkObj class.
 """
 
-import string, re, types, Tkinter
-import TreeWidget
+from wxPython.wx import *
+import string, re, types
 import ConfigVtkObj
 
 # set this to 1 if you want to see debugging messages - very useful if
@@ -46,53 +51,12 @@ def debug (msg):
 # A hack to prevent vtkTransform.GetInverse() infinite loops
 last_transform = 0
 
-class vtkTreeNode (TreeWidget.TreeNode):
-
-    """Overloaded TreeNode to do somethings I want.  Can do it better,
-    but this works."""
-
-    def __del__ (self):
-        debug ("vtkTreeNode.__del__")
-
-    def flip(self, event=None):
-        if self.state == 'expanded':
-	    # changed by prabhu to stop unnecessary collapses
-	    #self.collapse()
-	    pass
-        else:
-            self.expand()
-        self.item.OnDoubleClick()
-        return "break"
-
-    def get_all_children (self):
-	"Recursively gets all the children of all nodes."
-	self.get_children ()	
-	for child in self.children:
-	    child.get_all_children ()
-
-    def get_children (self):
-	"This is used to get all the children to expand the tree."
-	if not self.children:
-	    sublist = self.item._GetSubList ()
-	    if not sublist:
-		return None
-	    for item in sublist:
-		child = vtkTreeNode (self.canvas, self, item)
-		self.children.append (child)	
-
-    def expand_all (self):
-	"This is used to expand all the children nodes."
-	self.expand ()
-	for child in self.children:
-	    child.expand_all ()
-
-
 icon_map = {'RenderWindow': 'renwin', 'Renderer': 'ren',
             'Actor': 'actor', 'Light': 'light', 'Camera': 'camera',
             'Mapper': 'process', 'Property': 'file',
 	    'Coordinate': 'coord', 'Source': 'data', 
             'LookupTable': 'colormap', 'Reader': 'data',
-            'Assembly': 'actor'}
+            'Assembly': 'actor', 'Python': 'python', 'Dummy1': 'question'}
 
 def get_icon (vtk_obj):
     strng = vtk_obj.GetClassName ()[3:]
@@ -241,236 +205,151 @@ def get_vtk_objs (vtk_obj):
     
     return vtk_objs
 
+def recursively_add_children(tree_ctrl, parent_node):
+    """Utility function to fill out wxTreeCtrl.
 
-class vtkTreeItem (TreeWidget.TreeItem):
-
-    """A general VTK Tree item.  The parent TreeItem class is defined
-    in TreeWidget.py"""
-
-    def __init__ (self, name, obj, icon="question", renwin=None):
-	"The icon variable corresponds to a file in the Icons dir."
-	# renwin arg is to enable Render calls while doing config
-	self.renwin = renwin
-	self.icon = icon
-	self.obj = obj	
-	if obj:
-	    if name:
-		self.name = "%s (%s)"%(name, obj.GetClassName ())
-	    else:
-		self.name = "%s"%obj.GetClassName ()
-	    self.expandable = 1
-	else:
-	    self.name = name
-	    self.expandable = 0
-
-    def __del__ (self):
-        debug ("vtkTreeItem.__del__")
-
-    def GetText (self):
-	return self.name
-
-    def IsEditable (self):
-	return 0
-
-    def GetIconName (self):
-	return self.icon
-
-    def IsExpandable (self):
-	return self.expandable
-
-    def GetSubList (self):
-	items = get_vtk_objs (self.obj)
-	children = []
-	for item in items:
-	    item.append (self.renwin)
-	    children.append (apply (vtkTreeItem, item))
-	return children
-
-    def OnDoubleClick (self):
-	conf = ConfigVtkObj.ConfigVtkObj (self.renwin)
-	conf.configure (None, self.obj)
-
-
-class DummyTreeItem (TreeWidget.TreeItem):
-    
-    """ This is a dummy tree item that is used only for the
-    vtkPipelineSegmentBrowser.  It is used so that you can visualize a
-    segment of the pipeline starting from anywhere in the actual
-    pipeline."""
-
-    def __init__ (self, objs, renwin=None):
-	# renwin arg is to enable Render calls while doing config
-	self.renwin = renwin
-	self.icon = "tk"
-	self.objs = objs	
-
-    def __del__ (self):
-        debug ("DummyTreeItem.__del__")
-
-    def GetText (self):
-	return "..."
-
-    def IsEditable (self):
-	return 0
-
-    def GetIconName (self):
-	return self.icon
-
-    def IsExpandable (self):
-	return 1
-
-    def GetSubList (self):
-        children = []
-        if (type (self.objs) is types.ListType) or \
-           (type (self.objs) == types.TupleType):
-            for obj in self.objs:
-                l = get_icon (obj)
-                l.append (self.renwin)
-                children.append (apply (vtkTreeItem, l))
+    Pass this function a wxTreeCtrl and _a_ node, and it will fill out
+    everything below it by using Prabhu's code.
+    """
+    children = get_vtk_objs(tree_ctrl.GetPyData(parent_node))
+    for i in children:
+        # get_vtk_objs() conveniently calls get_icon as well
+        img_idx = icon_map.values().index(i[2])
+        if i[0]:
+            text = i[0] + " (" + i[1].GetClassName() + ")"
         else:
-            l = get_icon (self.objs)
-            l.append (self.renwin)
-            children.append (apply (vtkTreeItem, l))
-	return children
+            text = i[1].GetClassName()
+        # now add the node with image index
+        ai = tree_ctrl.AppendItem(parent_node, text, img_idx)
+        # and set the data to be the actual vtk object
+        tree_ctrl.SetPyData(ai, i[1])
+        
+        # and we get to call ourselves!
+        recursively_add_children(tree_ctrl, ai)
 
-    def OnDoubleClick (self):
-        pass
+def item_activate_cb(parent_window, renwin, tree_ctrl, tree_event):
+    """Callback for activation (double clicking) of tree node.
+
+    parent_window is the window of which the configuration window will be a
+    child.  renwin is the render window that will be updated.
+    """
+    obj = tree_ctrl.GetPyData(tree_event.GetItem())
+    if hasattr(obj, 'GetClassName'):
+        conf = ConfigVtkObj.ConfigVtkObj(renwin)
+        conf.configure(parent_window, obj)
+        
 
 
 class vtkPipelineBrowser:
     "Browses the VTK pipleline given a vtkRenderWindow."
 
-    def __init__ (self, master, renwin):
-	"renwin is an instance of some vtkRenderWindow."
-	self.renwin = renwin
-	self.root = Tkinter.Toplevel (master)
-	self.root.title ("VTK Pipeline Browser")
-	self.root.focus_set ()
-        self.root.protocol ("WM_DELETE_WINDOW", self.destroy)
-	frame = Tkinter.Frame (self.root)
-	frame.pack (side='top', expand=1, fill='both')
-	self.sc = TreeWidget.ScrolledCanvas (frame, bg="white", 
-                                             highlightthickness=0,
-                                             takefocus=1)
-	self.sc.frame.pack (expand=1, fill='both')
-	f = Tkinter.Frame (self.root)
-	f.pack (side='bottom')
-	refr = Tkinter.Button (f, text="Refresh", underline=2, 
-                               command=self.refresh)
-	refr.grid (row=0, column=0, sticky='ew')
-	ex_all = Tkinter.Button (f, text="Expand all", underline=0, 
-                                 command=self.expand_all)
-	ex_all.grid (row=0, column=1, sticky='ew')
-	quit = Tkinter.Button (f, text="Close", underline=0,
-                               command=self.quit)
-	quit.grid (row=0, column=2, sticky='ew')
-	
-	self.root.bind ("<Alt-f>", self.refresh)
-	self.root.bind ("<Alt-e>", self.expand_all)
-	self.root.bind ("<Alt-c>", self.quit)
+    def __init__ (self, parent, renwin, objs=None):
+        """Constructor of the vtkPipelineBrowser.
 
-        self.root_node = None
+        If objs == None, this class assumes that you want a full pipeline
+        which it will extract starting at the renwin.  If you have some
+        vtk objects however, this class will act as a segment browser with
+        those objects as the root nodes.
+        """
+        
+	self.renwin = renwin
+        self._objs = objs
+
+        self._frame = wxFrame(parent=parent, id=-1,
+                              title="VTK Pipeline Browser")
+        EVT_CLOSE(self._frame, self.close)
+
+        panel = wxPanel(parent=self._frame, id=-1)
+
+        tree_id = wxNewId()
+        self._tree_ctrl = wxTreeCtrl(parent=panel,
+                                     id=tree_id,
+                                     size=wxSize(300,400),
+                                     style=wxTR_HAS_BUTTONS)
+        EVT_TREE_ITEM_ACTIVATED(panel, tree_id,
+                                lambda e, pw=self._frame, rw=self.renwin,
+                                tc=self._tree_ctrl:
+                                item_activate_cb(pw, rw, tc, e))
+
+        button_sizer = wxBoxSizer(wxHORIZONTAL)
+
+        refr_id = wxNewId()
+        refr = wxButton(parent=panel, id=refr_id, label="Refresh")
+        EVT_BUTTON(panel, refr_id, self.refresh)
+        button_sizer.Add(refr)
+
+        q_id = wxNewId()
+        q = wxButton(parent=panel, id=q_id, label="Close")
+        EVT_BUTTON(panel, q_id, self.close)
+        button_sizer.Add(q)
+
+        top_sizer = wxBoxSizer(wxVERTICAL)
+
+        top_sizer.Add(self._tree_ctrl, option=1, flag=wxEXPAND)
+        top_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTER_HORIZONTAL)
+
+        panel.SetAutoLayout(true)
+        panel.SetSizer(top_sizer)
+        top_sizer.Fit(self._frame)
+        top_sizer.SetSizeHints(self._frame)
+
+        self._frame.Show(true)
+
+        self._image_list = wxImageList(16,16)
+        for i in icon_map.keys():
+            self._image_list.Add(wxBitmap("Icons/" + icon_map[i] + ".xpm",
+                                          wxBITMAP_TYPE_XPM))
+        self._tree_ctrl.SetImageList(self._image_list)
 
     def browse (self):
 	"Display the tree and interact with the user."
-        self.clear ()
-	self.root_item = vtkTreeItem ("RenderWindow", self.renwin, 
-				      "renwin", self.renwin)
-	self.root_node = vtkTreeNode (self.sc.canvas, None, self.root_item)
-	self.root_node.get_all_children ()
-	self.root_node.expand ()
+        self.clear()
 
+        if self._objs == None:
+            rw_idx = icon_map.keys().index("RenderWindow")
+            self._root = self._tree_ctrl.AddRoot(text="RenderWindow",
+                                                 image=rw_idx)
+            self._tree_ctrl.SetPyData(self._root, self.renwin)
+            recursively_add_children(self._tree_ctrl, self._root)
+        else:
+            im_idx = icon_map.keys().index("Python")
+            self._root = self._tree_ctrl.AddRoot(text="Root",
+                                                 image=im_idx)
+            self._tree_ctrl.SetPyData(self._root, None)
+            
+            for i in self._objs:
+                # we should probably do a stricter check
+                if hasattr(i, 'GetClassName'):
+                    icon = get_icon(i)
+                    img_idx = icon_map.values().index(icon[2])
+                    if icon[0]:
+                        text = "%s (%s)" % (icon[0],i.GetClassName())
+                    else:
+                        text = i.GetClassName()
+                    ai = self._tree_ctrl.AppendItem(self._root, text, img_idx)
+                    self._tree_ctrl.SetPyData(ai, i)
+                    recursively_add_children(self._tree_ctrl, ai)
+                
+        
+        self._tree_ctrl.Expand(self._root)
+        
     def refresh (self, event=None):
-        self.browse ()
-
-    def expand_all (self, event=None):
-	"Expand all nodes from the root down."
-	self.root_node.expand_all ()
+        self.browse()
 
     def clear (self):
-        if self.root_node:
-            self.root_node.destroy ()        
+        self._tree_ctrl.DeleteAllItems()
 
-    def destroy (self, event=None):
-        self.quit (event)
-
-    def quit (self, event=None):
+    def close(self, event=None):
 	"Exit the browser."
-        self.clear ()
-        self.sc.canvas.destroy ()
-	del self.sc
-	del self.root_item
-	del self.root_node
-	self.root.destroy ()
+        self.clear()
+        self._frame.Destroy()
         
-    def isdestroyed ( self ):
-        return not 'sc' in dir ( self );
-
-
-class vtkPipelineSegmentBrowser (Tkinter.Frame):
-
-    """Creates a frame containing a segment of the VTK pipleline given
-    a set of VTK objects."""
-
-    def __init__ (self, master, objs, renwin=None):
-	"renwin is an instance of some vtkRenderWindow."
-        Tkinter.Frame.__init__ (self, master)
-	self.renwin = renwin
-	self.frame = Tkinter.Frame (self)
-	self.frame.pack (side='top', expand=1, fill='both')
-	self.sc = TreeWidget.ScrolledCanvas (self.frame, bg="white", 
-                                             highlightthickness=0,
-                                             takefocus=1,
-                                             width=200, height=150)
-	self.sc.frame.pack (side='top', expand=1, fill='both')
-	f = Tkinter.Frame (self.frame)
-	f.pack (side='bottom' )
-	refr = Tkinter.Button (f, text="Refresh", underline=2, 
-                               command=self.browse)
-	refr.grid (row=0, column=0, sticky='ew')
-	ex_all = Tkinter.Button (f, text="Expand all", underline=0, 
-                                 command=self.expand_all)
-	ex_all.grid (row=0, column=1, sticky='ew')
-	
-	self.sc.canvas.bind ("<Alt-f>", self.browse)
-	self.sc.canvas.bind ("<Alt-e>", self.expand_all)
-
-        self.root_node = None
-        self.root_item = None
-        self.objs = objs
-        self.browse ()
-
-    def browse (self, event=None):
-	"Display the tree and interact with the user."
-        self.clear ()
-        self.root_item = DummyTreeItem (self.objs, self.renwin)
-        self.root_node = vtkTreeNode (self.sc.canvas, None, self.root_item)
-        self.root_node.get_all_children ()
-        self.root_node.expand ()
-
-    def expand_all (self, event=None):
-	"Expand all nodes from the root down."
-	self.root_node.expand_all ()
-
-    def clear (self):
-        if self.root_node:
-            self.root_node.destroy ()
-        
-    def destroy (self, event=None):
-	"Close the browser."
-        self.clear ()
-        self.sc.canvas.destroy ()
-	del self.sc
-	del self.root_item
-	del self.root_node
-	self.frame.destroy ()
-
-    def isdestroyed ( self ):
-        return not 'sc' in dir (self)
 
 
 def main ():
-    import vtkpython, vtkRenderWidget
+    import vtkpython
+    from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+    
     cone = vtkpython.vtkConeSource()
     cone.SetResolution(8)
     transform = vtkpython.vtkTransformFilter ()
@@ -484,11 +363,9 @@ def main ():
     coneActor.SetMapper(coneMapper)    
     axes = vtkpython.vtkCubeAxesActor2D ()
 
-    root = Tkinter.Tk ()
-    wid = vtkRenderWidget.vtkTkRenderWidget (root, width=500, height=500)
-    wid.pack (expand='true', fill='both')
-    wid.bind ("<KeyPress-q>",
-              lambda e=None: e.widget.winfo_toplevel().destroy())
+    app = wxPySimpleApp()
+    frame = wxFrame(None, -1, "wxRenderWindow", size=wxSize(400,400))
+    wid = wxVTKRenderWindow(frame, -1)
 
     ren = vtkpython.vtkRenderer()
     renWin = wid.GetRenderWindow()
@@ -500,16 +377,13 @@ def main ():
     renWin.Render ()
 
     debug ("Starting VTK Pipeline Browser...")
-    pipe = vtkPipelineBrowser (root, renWin)
+    pipe = vtkPipelineBrowser (frame, renWin)
     pipe.browse ()
 
-    top = Tkinter.Toplevel (root)
-    top.title ("VTK Pipeline Segment Browser")
-    pipe_segment = vtkPipelineSegmentBrowser (top, (coneActor, axes),
-                                              renWin)
-    pipe_segment.pack (side='top', expand = 1, fill = 'both' )
-    top.protocol ("WM_DELETE_WINDOW", top.destroy)
-    root.mainloop ()
+    pipe_segment = vtkPipelineBrowser(frame, renWin, (coneActor, axes))
+    pipe_segment.browse()
+
+    app.MainLoop()
 
 if __name__ == "__main__":
     main ()

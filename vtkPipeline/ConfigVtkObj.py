@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.3 2002/04/29 16:57:42 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.4 2002/04/30 01:25:17 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -39,18 +39,21 @@ so I've actually nuked the tk bits instead of nicely adding the
 wxPython as option.  I think that the author (ha ha) could perhaps
 get wonders done with a contextual diff. :)
 
+A good idea would be to abstract non ui-specific code into a
+base class.
+
 """
 
 import vtkMethodParser
-import types, string, re
+import types, string, re, traceback
 
 try:
     from wxPython.wx import *
+    from wxPython.html import *
 except ImportError:
-    print "Cannot import the wxPython.wx module. Install it and try again."
+    print "Cannot import the wxPython.{wx,html} modules. "\
+          "Install it and try again."
     sys.exit (1)
-
-#print_info = tkMessageBox.showinfo
 
 def print_err (msg):
     # create nice formatted string with tracebacks and all
@@ -65,12 +68,6 @@ def print_err (msg):
 # use this to print stuff for the user command run from the GUI
 def prn (x):
     print x
-
-def tk_2_vtk_color (tk_col):
-    "Converts a Tk RGB color to a VTK RGB color."
-    ONE_255 = 1.0/255.0
-    return (tk_col[0]*ONE_255, tk_col[1]*ONE_255, tk_col[2]*ONE_255)
-
 
 class VtkShowDoc:
     
@@ -116,10 +113,12 @@ class VtkShowDoc:
         panel = wxPanel(parent=self._frame, id=-1)
 
         # then the html window
-        self._html_window = wxHtmlWindow(parent=panel, id=-1)
+        self._html_window = wxHtmlWindow(parent=panel, id=-1,
+                                         size=wxSize(640,480))
 
         close_id = wxNewId()
         close_button = wxButton(parent=panel, id=close_id, label="Close")
+        EVT_BUTTON(self._frame, close_id, lambda e, s=self: s.quit())
 
         top_sizer = wxBoxSizer(wxVERTICAL)
         top_sizer.Add(self._html_window, option=1, flag=wxEXPAND)
@@ -138,6 +137,8 @@ class VtkShowDoc:
         #                     underline=1, justify='left')
         #self.txt.tag_config ("item", underline=1, justify='left')
         #self.txt.tag_config ("data", wrap='word')
+
+        self._frame.Show(true)
     
     def add_doc (self):
         data_ = self.obj.GetClassName ()
@@ -160,9 +161,11 @@ class VtkShowDoc:
                 pass
             else:
                 the_html = the_html + \
-                           "<h3>%s</h3><br>" + \
-                           string.join(string.split(data_,'\n'),'<br') + \
+                           "<h3>" + i + ":</h3><br>" + \
+                           string.join(string.split(data_,'\n'),'<br>') + \
                            "<br><br>"
+
+        self._html_window.SetPage(the_html)
 
     def quit (self, event=None):
         self._frame.Destroy()
@@ -246,20 +249,13 @@ class ConfigVtkObj:
 
         top_sizer.Add(nbsizer, option=1, flag=wxEXPAND)
 
-	#frame = Tkinter.Frame (self.root)
-	#frame.pack (side='top', expand=1, fill='both')
-	#left = Tkinter.Frame (frame)
-	#left.grid (row=0, column=0, sticky='nw')
-	#right = Tkinter.Frame (frame)
-	#right.grid (row=0, column=1, sticky='nw')
-
 	self.make_gui_vars ()
 
 	top_sizer.Add(self.make_control_gui(panel), option=0, flag=wxEXPAND)
         
 	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
         self._notebook.AddPage(self.make_state_gui(self._notebook), 'States')
-        #self._notebook.AddPage(self.make_get_gui(self._notebook), 'Gets')
+        self._notebook.AddPage(self.make_get_gui(self._notebook), 'Gets')
         self._notebook.AddPage(self.make_get_set_gui(self._notebook),
                                'Get-Set')
 
@@ -273,20 +269,17 @@ class ConfigVtkObj:
     def make_gui_vars (self):
 	"Create the various variables used for the GUI."
 	#self.user_command = Tkinter.StringVar ()
+
 	self.toggle_var = [-1 for i in self.toggle_meths]
+        self.toggle_checkboxes = [None for i in self.toggle_var]
+        
         self.state_var = [-1 for i in self.state_meths]
+        self.state_radioboxes = [None for i in self.state_var]
+        
         self.get_set_var = ["" for i in self.get_set_meths]
         self.get_set_texts = [None for i in self.get_set_var]
-
-
-	#self.get_set_var = []
-	#for i in range (0, len (self.get_set_meths)):
-	#    self.get_set_var.append (Tkinter.StringVar ())
-	#    self.get_set_var[i].set ("")
-
-	#self.get_lab = []
-	#for i in range (0, len (self.get_meths)):
-	#    self.get_lab.append (None)
+        
+        self.get_texts = [None for i in self.get_meths]
 
     def make_control_gui (self, parent):
         """Makes all the control GUI elements.
@@ -300,7 +293,7 @@ class ConfigVtkObj:
         command_sizer = wxBoxSizer(wxHORIZONTAL)
         button_sizer = wxBoxSizer(wxHORIZONTAL)
         vert_sizer.Add(command_sizer, option=0, flag=wxEXPAND)
-        vert_sizer.Add(button_sizer, option=0, flag=wxEXPAND)
+        vert_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTRE_HORIZONTAL)
 
         # the button that will show a little help dialog...
         command_help_id = wxNewId()
@@ -311,10 +304,11 @@ class ConfigVtkObj:
 
         
         command_entry_id = wxNewId()
-        command_entry = wxTextCtrl(parent, id=command_entry_id)
+        command_entry = wxTextCtrl(parent, id=command_entry_id,
+                                   style=wxTE_PROCESS_ENTER)
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
-        EVT_TEXT_ENTER(parent, command_entry_id,
-                       lambda e, s=self: s.run_command())
+        EVT_TEXT_ENTER(parent, command_entry_id, 
+                       lambda e, s=self: s.run_command(e))
 
         classdoc_id = wxNewId()
         classdoc_button = wxButton(parent, id=classdoc_id,
@@ -367,6 +361,7 @@ class ConfigVtkObj:
             EVT_CHECKBOX(panel, cb_id,
                          lambda event, s=self, i=i: s.toggle_cb(event, i))
             vert_sizer.Add(cb, option=0, flag=wxEXPAND)
+            self.toggle_checkboxes[i] = cb
 
         return panel
 
@@ -403,6 +398,7 @@ class ConfigVtkObj:
             EVT_RADIOBOX(panel, rb_id,
                          lambda event, s=self, i=i: s.radiobox_cb(event, i))
             vert_sizer.Add(rb, flag=wxEXPAND)
+            self.state_radioboxes[i] = rb
 
         return panel
 
@@ -413,7 +409,8 @@ class ConfigVtkObj:
 	"Create the Get/Set methods"
 
         panel = wxPanel(parent, id=-1)
-        grid_sizer = wxGridSizer(cols=2)
+        grid_sizer = wxFlexGridSizer(cols=2)
+        grid_sizer.AddGrowableCol(1)
         panel.SetAutoLayout(true)
         panel.SetSizer(grid_sizer)
         
@@ -435,23 +432,38 @@ class ConfigVtkObj:
                 st = wxStaticText(parent=panel, id=-1, label="Set"+m[3:])
                 grid_sizer.Add(st)
 
-            self.get_set_texts[i] = wxTextCtrl(parent=panel, id=-1,
+            gst_id = wxNewId()
+            self.get_set_texts[i] = wxTextCtrl(parent=panel, id=gst_id,
                                                value=str(self.get_set_var[i]))
+            EVT_TEXT(parent, gst_id,
+                     lambda event, s=self, i=i: s.get_set_cb(event, i))
             grid_sizer.Add(self.get_set_texts[i], flag=wxEXPAND)
 
         return panel
 
-    def make_get_gui (self, master):
+    def get_set_cb(self, event, i):
+        self.get_set_var[i] = event.GetEventObject().GetValue()
+
+    def make_get_gui (self, parent):
 	"Create the Get methods that have no Set equivalent."
-	frame = Tkinter.Frame (master, relief='ridge', bd=2)
-	frame.pack (side='top', expand=1, fill='both')
+        panel = wxPanel(parent, id=-1)
+        grid_sizer = wxFlexGridSizer(cols=2)
+        grid_sizer.AddGrowableCol(1)
+        panel.SetAutoLayout(true)
+        panel.SetSizer(grid_sizer)
+        
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
 	    res = eval ("self.vtk_obj.%s ()"% self.get_meths[i])
-	    lab = Tkinter.Label (frame, text=self.get_meths[i]+": ")
-	    lab.grid (row=i, column=0, sticky='w')
-	    self.get_lab[i] = Tkinter.Label (frame, text=res)
-	    self.get_lab[i].grid (row=i, column=1, sticky='w')
+            st = wxStaticText(parent=panel, id=-1, label=self.get_meths[i]+":")
+            grid_sizer.Add(st)
+
+            st2 = wxStaticText(parent=panel, id=-1, label=str(res))
+            grid_sizer.Add(st2, flag=wxEXPAND)
+
+            self.get_texts[i] = st2
+
+        return panel
 
     def update_gui (self, event=None):
 	"Update the values if anything has changed outside."
@@ -461,20 +473,25 @@ class ConfigVtkObj:
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.toggle_meths[i][:-2]
-	    self.toggle_var[i].set (eval ("self.vtk_obj.%s ()"%m))
+	    self.toggle_var[i] = eval ("self.vtk_obj.%s ()"%m)
+            # set value does NOT invoke the callback
+            self.toggle_checkboxes[i].SetValue(self.toggle_var[i])
 
 	for i in range (len (self.state_meths)):
 	    m = self.state_meths[i]
-	    self.state_var[i].set (self.get_state (m))
+	    self.state_var[i] = self.get_state (m)
+            self.state_radioboxes[i].SetSelection(self.state_var[i])
 
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.get_set_meths[i]
-	    self.get_set_var[i].set (eval ("self.vtk_obj.%s ()"%m))
+	    self.get_set_var[i] = eval("self.vtk_obj.%s ()"%m)
+            self.get_set_texts[i].SetLabel(str(self.get_set_var[i]))
+            
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
 	    res = eval ("self.vtk_obj.%s ()"% self.get_meths[i])
-	    self.get_lab[i].config (text=res)
+	    self.get_texts[i].SetLabel(str(res))
 
         if self.vtk_warn > -1:
             self.vtk_obj.GlobalWarningDisplayOn ()
@@ -504,9 +521,9 @@ class ConfigVtkObj:
 
         dlg.Destroy()
 
-    def run_command (self, event=None):
+    def run_command (self, event):
 	"Run the command entered by the user."
-	st = self.user_command.get ()
+	st = event.GetEventObject().GetValue()
 	if len (st) == 0:
 	    return self.help_user ()
 	obj = self.vtk_obj
@@ -529,16 +546,16 @@ class ConfigVtkObj:
 
     def help_user (self, event=None):
 	"Provide help when user clicks the command button."
-	msg = "Enter a valid python command.  Please note the "\
-	      "following: The name \'obj\' refers to the vtkObject "\
-	      "being configured.  Use the function prn(arguments) "\
-	      "to print anything.  Use the enter key to run the "\
+	msg = "Enter a valid python command.  Please note the\n"\
+	      "following: The name \'obj\' refers to the vtkObject\n"\
+	      "being configured.  Use the function prn(arguments)\n"\
+	      "to print anything.  Use the enter key to run the\n"\
 	      "command.  Example: obj.SetColor(0.1,0.2,0.3)"
-	print_info  ("Help", msg)
+	wxMessageBox(parent=self._frame, message=msg, caption="Help")
 
     def show_doc (self, event=None):
         "Show the class documentation."
-        d = VtkShowDoc (self.root)
+        d = VtkShowDoc (self._frame)
         d.show_doc (self.vtk_obj)
 
     def apply_changes (self, event=None):
@@ -548,7 +565,7 @@ class ConfigVtkObj:
 
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
-	    val = self.toggle_var[i].get ()
+	    val = self.toggle_var[i]
 	    m = self.toggle_meths[i][:-2]
 	    if val == 1:
 		eval ("self.vtk_obj.%sOn ()"%m)
@@ -557,14 +574,14 @@ class ConfigVtkObj:
 
 	n_meth = len (self.state_meths)
 	for i in range (0, n_meth):
-	    val = self.state_var[i].get ()
+	    val = self.state_var[i]
 	    m = self.state_meths[i][val]
 	    if val != -1:
 		eval ("self.vtk_obj.%s ()"%m)
 	
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
-	    val = self.get_set_var[i].get ()
+	    val = str(self.get_set_var[i])
 	    if string.find (val, "(") == 0:
 		val = val[1:-1]
 	    st = 0
@@ -580,7 +597,7 @@ class ConfigVtkObj:
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
 	    res = eval ("self.vtk_obj.%s ()"% self.get_meths[i])
-	    self.get_lab[i].config (text=res)
+	    self.get_texts[i].SetLabel(str(res))
 
 	self.render ()
         if self.vtk_warn > -1:
@@ -588,14 +605,17 @@ class ConfigVtkObj:
 		
     def ok_done (self, event=None):
 	"Ok button clicked."
-	self.apply_changes ()
-	self.root.destroy ()
+	self.apply_changes()
+	self._frame.Destroy()
 
     def cancel (self, event=None):
 	"Cancel button clicked."
-	self.root.destroy ()
+	self._frame.Destroy()
 
-    def render (self):
+    def close(self):
+        self.cancel()
+
+    def render(self):
 	"Render scene and update anything that needs updating."
         if self.update_meth and callable (self.update_meth):
             self.update_meth ()
