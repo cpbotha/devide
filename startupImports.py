@@ -1,17 +1,19 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.3 2003/10/06 23:35:19 cpbotha Exp $
+# $Id: startupImports.py,v 1.4 2003/10/06 23:39:52 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
 # NB: also see installer/hooks/hook-startupImports.py !
 
 # we also pre-import as much as possible of wxPython to make sure that the
-# weird-assed wx renamer doesn't get to us!
+# weird-assed wx renamer doesn't get to us.  The hook for this module also
+# goes to some trouble to prevent the wx-renamer from biting our ass later.
 from wxPython.wx import *
 from wxPython.html import *
 from wxPython.lib import *
 from wxPython.py import *
 
+# we're safe now due to all that crazy importing.  I hope.
 import wx
 
 import os
