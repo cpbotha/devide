@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.35 2003/06/18 16:13:01 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.36 2003/06/19 16:25:52 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -42,6 +42,69 @@ class sliceDirection:
 
         # list of vtkImagePlaneWidgets (first is "primary", rest are overlays)
         self._ipws = []
+
+        # list of objects that want to be contoured by this slice
+        self._contourObjectsDict = {}
+
+    def addContourObject(self, contourObject):
+        if self._contourObjectsDict.has_key(contourObject):
+            # we already have this, thanks
+            return
+
+        try:
+            contourable = contourObject.IsA('vtkPolyData')
+        except:
+            contourable = False
+
+        if contourable:
+            # we need a cutter to calculate the contours and then a stripper
+            # to string them all together
+            cutter = vtk.vtkCutter()
+            plane = vtk.vtkPlane()
+            cutter.SetCutFunction(plane)
+            cutter.SetInput(contourObject)
+            stripper = vtk.vtkStripper()
+            stripper.SetInput(cutter.GetOutput())
+
+            # and create the overlay at least for the 3d renderer
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInput(stripper.GetOutput())
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+
+            # add it to the renderer
+            self._slice3dViewer._threedRenderer.AddActor(actor)
+            
+            # add all necessary metadata to our dict
+            contourDict = {'contourObject' : contourObject,
+                           'cutter' : cutter,
+                           'tdActor' : actor}
+                           
+            self._contourObjectsDict[contourObject] = contourDict
+
+            # now sync the bugger
+            self.syncContourToObject(contourObject)
+
+    def removeContourObject(self, contourObject):
+        if self._contourObjectsDict.has_key(contourObject):
+            del self._contourObjectsDict[contourObject]
+
+    def syncContourToObject(self, contourObject):
+        """Update the contour for the given contourObject.
+        """
+
+        # yes, in and not in work on dicts, doh
+        if contourObject not in self._contourObjectsDict:
+            return
+
+        # get the contourObject metadata
+        contourDict = self._contourObjectsDict[contourObject]
+        cutter = contourObject['cutter']
+        plane = cutter.GetCutFunction()
+
+        # FIXME continue here
+
+        
 
     def addData(self, inputData):
         """Add inputData as a new layer.
