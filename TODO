@@ -1,4 +1,6 @@
-$Id: TODO,v 1.5 2003/05/09 22:12:58 cpbotha Exp $
+$Id: TODO,v 1.6 2003/05/17 16:46:57 cpbotha Exp $
+
+* object menu for sliceVWR
 
 - ideas for TF editor:
   * opacity curve overlaid on histogram of data
@@ -7,11 +9,17 @@ $Id: TODO,v 1.5 2003/05/09 22:12:58 cpbotha Exp $
     straight line)
   * gradient tf?
 
-- compare our vtkPipelineWX with the latest vtkPipeline from Prabhu's CVS
-
 BUGS:
 
-* connect doubleThreshold and seedConnect to slice3dVWR without any input file
-  (i.e. no reader) and watch the application become unresponsive
 
 FIXED:
+
+* connect doubleThreshold and seedConnect to slice3dVWR without any input file
+  (i.e. no reader) and watch the application become unresponsive - FIXED and
+  submitted patch to vtkImagePlaneWidget: 
+  vtkImagePlaneWidget-planeSizeSanityCheck2.diff
+
+
+DONE:
+
+* compare our vtkPipelineWX with the latest vtkPipeline from Prabhu's CVS
