@@ -41,6 +41,9 @@ class module_manager:
     def get_modules_dir(self):
 	return self.modules_dir
     
+    def get_modules(self):
+	return self.modules
+    
     def create_module(self, name):
 	# it seems that objects instantiated in the try get destroyed in except(?)
 	try:

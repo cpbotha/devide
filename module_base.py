@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.6 2002/03/09 00:28:38 cpbotha Exp $
+# $Id: module_base.py,v 1.7 2002/03/10 01:27:56 cpbotha Exp $
 import vtkpython
 import Tix
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
@@ -23,7 +23,7 @@ class module_base:
 	raise NotImplementedError
 	
     def get_input_descriptions(self):
-	"""Returns list of input descriptions, mostly used by the graph editor
+	"""Returns tuple of input descriptions, mostly used by the graph editor
 	to make a nice glyph for this module."""
 	raise NotImplementedError
     
@@ -33,7 +33,7 @@ class module_base:
 	raise NotImplementedError
     
     def get_output_descriptions(self):
-	"""Returns a list of output descriptions, mostly used by the graph editor
+	"""Returns a tuple of output descriptions, mostly used by the graph editor
 	to make a nice glyph for this module.  These are also clues to the
 	user as to which glyphs can be connected."""
 	raise NotImplementedError
@@ -43,7 +43,7 @@ class module_base:
 	the input of another module."""
 	raise NotImplementedError
     
-    def configure(self):
+    def view(self):
 	"""Pop up a dialog with all config possibilities, including optional use
 	of the pipeline browser."""
 	raise NotImplementedError
@@ -59,6 +59,9 @@ class module_base:
 	pipeline_browser.pack (side='top', expand = 1, fill = 'both' )
     
     def configure_vtk_object(self, vtk_object, parent_window=None):
+	"""Helper method for all derived classes.  They can call this method from
+	their view methods to start Prabhu's vtk object configurator on an internal
+	vtk object."""
 	# we don't have access to a renderwindow now
 	conf = ConfigVtkObj(None)
 	conf.set_update_method(vtk_object)

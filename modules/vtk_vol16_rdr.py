@@ -56,7 +56,7 @@ class vtk_vol16_rdr(module_base):
     def execute_module(self):
 	self.reader.Update()
     
-    def configure(self, parent_window=None):
+    def view(self, parent_window=None):
 	# first make sure that our variable agree with the stuff that we're configuring
 	self.sync_config()
 	

@@ -157,8 +157,8 @@ class glyph:
     def b1click_cb(self, event):
 	if self.graph_editor.get_mode() == 'delete':
 	    self.graph_editor.delete_glyph(self)
-	elif self.graph_editor.get_mode() == 'configure':
-	    self.graph_editor.configure_glyph(self)
+	elif self.graph_editor.get_mode() == 'view':
+	    self.graph_editor.view_glyph(self)
 	
     def output_drag_cb(self, event, item):
 	if not self.cur_output_line:
@@ -237,7 +237,7 @@ class graph_editor:
 	
 	# apparently we can do cool stuff like this too
 	self.module_tree = Tix.Tree(self.window, scrollbar=Tix.AUTO)
-	self.module_tree.pack(side=Tix.LEFT, expand=1, fill=Tix.BOTH)
+	self.module_tree.pack(side=Tix.LEFT, fill=Tix.BOTH)
 
 	hlist = self.module_tree.subwidget_list['hlist']
 	hlist['drawbranch'] = 1
@@ -277,7 +277,7 @@ class graph_editor:
 	self.command_frame.mode_select = Tix.Select(self.command_frame, radio=1, allowzero=0, orientation=Tix.VERTICAL)
 	self.command_frame.mode_select.add('edit', text='Edit')
 	self.command_frame.mode_select.add('delete', text='Delete')
-	self.command_frame.mode_select.add('configure', text='Configure')
+	self.command_frame.mode_select.add('view', text='View')
 	
 	self.command_frame.mode_select['value'] = 'edit'
 	self.command_frame.mode_select.pack(side=Tix.TOP)
@@ -318,9 +318,9 @@ class graph_editor:
 	    tkMessageBox.showerror("Destruction error", "Unable to destroy object: %s" % str(e))
 	    print sys.exc_info()
 	    
-    def configure_glyph(self, glyph):
+    def view_glyph(self, glyph):
 	# we should probably thunk this through to dscas3_main?
-	glyph.get_module_instance().configure()
+	glyph.get_module_instance().view()
 	
     def canvas_b1click_cb(self, event):
 	if self.get_mode() == 'edit':
@@ -355,6 +355,7 @@ class graph_editor:
 	    self.conn_ip['glyph0'] = None
 	except Exception, e:
 	    tkMessageBox.showerror("Connect error", "Could not connect modules: %s" % (str(e)))
+	    print sys.exc_info()	    
 	
     def disconnect_glyphs(self, output_glyph, input_glyph, input_idx):
 	"""This will ask the main module whether the glyphs in question

@@ -30,7 +30,7 @@ class vtk_mc_flt(module_base):
     def get_output(self, idx):
 	return self.mc.GetOutput()
     
-    def configure(self, parent_window=None):
+    def view(self, parent_window=None):
 	# also show some intance name for this, or index into the module list
 	config_window = Tix.Toplevel(parent_window)
 	config_window.title("vtk_mc_flt.py configuration")

@@ -33,6 +33,7 @@ class dscas3_main:
 	return self.module_manager
 	
     def pyco_exec(self, py_command):
+	modules = self.module_manager.get_modules()
 	exec(py_command)
   	
     def quit(self):
