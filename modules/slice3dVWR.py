@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.61 2003/07/31 15:50:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.62 2003/07/31 21:46:49 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -181,9 +181,11 @@ class selectedPoints(object):
                     lockToSurface=False, boundsForPoints=None):
 
         # FIXME: continue here
+        tdren = self.slice3dVWR._threedRenderer
+        tdrwi = self.slice3dVWR.threedFrame.threedRWI
 
         if not boundsForPoints:
-            bounds = self._threedRenderer.ComputeVisiblePropBounds()
+            bounds = tdren.ComputeVisiblePropBounds()
         else:
             bounds = boundsForPoints
         
@@ -196,10 +198,9 @@ class selectedPoints(object):
         # make priority higher than the default of vtk3DWidget so
         # that imageplanes behind us don't get selected the whole time
         pw.SetPriority(0.6)
-        pw.SetInteractor(self.threedFrame.threedRWI)
+        pw.SetInteractor(tdrwi)
         pw.AllOff()
         pw.On()
-
 
         ss = vtk.vtkSphereSource()
         #bounds = inputData.GetBounds()
@@ -211,7 +212,7 @@ class selectedPoints(object):
         sa.SetMapper(sm)
         sa.SetPosition(world)
         sa.GetProperty().SetColor(1.0,0.0,0.0)
-        self._threedRenderer.AddActor(sa)
+        tdren.AddActor(sa)
         sa.SetPickable(0)
 
         if len(pointName) > 0:
