@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.8 2003/03/18 15:47:44 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.9 2003/04/09 22:38:50 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -239,11 +239,11 @@ class ConfigVtkObj:
                                     size=(640,480))
         nbsizer = wxNotebookSizer(self._notebook)
 
-        top_sizer.Add(nbsizer, option=1, flag=wxEXPAND)
+        top_sizer.Add(nbsizer, option=0, flag=wxEXPAND)
 
 	self.make_gui_vars ()
 
-	top_sizer.Add(self.make_control_gui(panel), option=0, flag=wxEXPAND)
+	top_sizer.Add(self.make_control_gui(panel), option=1, flag=wxEXPAND)
         
 	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
         self._notebook.AddPage(self.make_state_gui(self._notebook), 'States')
@@ -322,11 +322,11 @@ class ConfigVtkObj:
         vert_sizer = wxBoxSizer(wxVERTICAL)
         command_sizer = wxBoxSizer(wxHORIZONTAL)
         button_sizer = wxBoxSizer(wxHORIZONTAL)
-        vert_sizer.Add(command_sizer, option=0, flag=wxEXPAND)
+        vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND)
         vert_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTRE_HORIZONTAL)
 
-        command_entry = shell.Shell(parent=parent, id=-1, introText="La la",
-                                    size=(400,100), style=0,
+        command_entry = shell.Shell(parent=parent, id=-1, introText="Bish.",
+                                    size=(400,200), style=0,
                                     locals={'obj' : self._vtk_obj})
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
 
