@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.4 2002/05/02 11:48:28 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.5 2002/05/02 15:27:51 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -228,16 +228,6 @@ def recursively_add_children(tree_ctrl, parent_node):
         # and we get to call ourselves!
         recursively_add_children(tree_ctrl, ai)
 
-def item_activate_cb(parent_window, renwin, tree_ctrl, tree_event):
-    """Callback for activation (double clicking) of tree node.
-
-    parent_window is the window of which the configuration window will be a
-    child.  renwin is the render window that will be updated.
-    """
-    obj = tree_ctrl.GetPyData(tree_event.GetItem())
-    if hasattr(obj, 'GetClassName'):
-        conf = ConfigVtkObj.ConfigVtkObj(renwin)
-        conf.configure(parent_window, obj)
 
 class vtkPipelineBrowser:
     "Browses the VTK pipleline given a vtkRenderWindow."
@@ -254,6 +244,11 @@ class vtkPipelineBrowser:
 	self.renwin = renwin
         self._objs = objs
 
+        # this will be a dictionary of already existing ConfigVtkObj's using
+        # the vtk_obj as key... this is to enable us to lookup already running
+        # instances and just reactivate them
+        self._config_vtk_objs = {}
+
         self._frame = wxFrame(parent=parent, id=-1,
                               title="VTK Pipeline Browser")
         EVT_CLOSE(self._frame, self.close)
@@ -266,10 +261,7 @@ class vtkPipelineBrowser:
                                      size=wxSize(300,400),
                                      style=wxTR_HAS_BUTTONS)
         
-        EVT_TREE_ITEM_ACTIVATED(panel, tree_id,
-                                lambda e, pw=self._frame, rw=self.renwin,
-                                tc=self._tree_ctrl:
-                                item_activate_cb(pw, rw, tc, e))
+        EVT_TREE_ITEM_ACTIVATED(panel, tree_id, self.item_activate_cb)
 
         button_sizer = wxBoxSizer(wxHORIZONTAL)
 
@@ -280,7 +272,7 @@ class vtkPipelineBrowser:
 
         q_id = wxNewId()
         q = wxButton(parent=panel, id=q_id, label="Close")
-        EVT_BUTTON(panel, q_id, self.close)
+        EVT_BUTTON(panel, q_id, lambda e, s=self: s.hide())
         button_sizer.Add(q)
 
         top_sizer = wxBoxSizer(wxVERTICAL)
@@ -321,8 +313,10 @@ class vtkPipelineBrowser:
                                           wxBITMAP_TYPE_XPM))
         self._tree_ctrl.SetImageList(self._image_list)
 
-    def browse (self):
-	"Display the tree and interact with the user."
+        # do initial population of tree
+        self.refresh()
+
+    def refresh (self, event=None):
         self.clear()
 
         if self._objs == None:
@@ -353,20 +347,39 @@ class vtkPipelineBrowser:
                 
         self._tree_ctrl.Expand(self._root)
 
+    def show(self):
         self._frame.Show(true)
-        
-    def refresh (self, event=None):
-        self.browse()
+        # make sure the window comes to the top; this is usually not
+        # needed right after creation, but show() often gets called because
+        # the window was hidden and  needs to appear
+        self._frame.Raise()
+
+    def hide(self):
+        self._frame.Show(false)
 
     def clear (self):
         self._tree_ctrl.DeleteAllItems()
 
     def close(self, event=None):
-	"Exit the browser."
         self.clear()
         self._frame.Destroy()
-        
 
+    def item_activate_cb(self, tree_event):
+        """Callback for activation (double clicking) of tree node.
+        
+        parent_window is the window of which the configuration window will
+        be a child.  renwin is the render window that will be updated.
+        """
+        obj = self._tree_ctrl.GetPyData(tree_event.GetItem())
+        if hasattr(obj, 'GetClassName'):
+            if not self._config_vtk_objs.has_key(obj):
+                temp_dict = {obj: ConfigVtkObj.ConfigVtkObj(self._frame,
+                                                            self.renwin, obj)}
+                # we know by definition that the key in temp_dict doesn't
+                # exist in self._config_vtk_objs, so we can add it
+                self._config_vtk_objs.update(temp_dict)
+
+            self._config_vtk_objs[obj].show()
 
 def main ():
     import vtkpython
@@ -400,10 +413,10 @@ def main ():
 
     debug ("Starting VTK Pipeline Browser...")
     pipe = vtkPipelineBrowser (frame, renWin)
-    pipe.browse ()
+    pipe.show()
 
     pipe_segment = vtkPipelineBrowser(frame, renWin, (coneActor, axes))
-    pipe_segment.browse()
+    pipe_segment.show()
 
     app.MainLoop()
 

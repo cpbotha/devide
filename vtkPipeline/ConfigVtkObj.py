@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.4 2002/04/30 01:25:17 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.5 2002/05/02 15:27:51 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -72,21 +72,31 @@ def prn (x):
 class VtkShowDoc:
     
     """ This class displays the documentation included in the __doc__
-    attribute of the VTK object and its methods."""
+    attribute of the VTK object and its methods.
 
-    def __init__ (self, parent_frame=None):
+    Instantiate the class with a parent_frame and the vtk object which
+    it should examine.  Then call show().  The display can be hidden with
+    hide().  The window can be destroyed with close().  A normal window
+    close will only hide() the window."""
+
+    def __init__ (self, parent_frame, vtk_obj):
         self._parent_frame = parent_frame
+        self._vtk_obj = vtk_obj
+
+        if self._check_obj():
+            self._create_ui()
+            self._add_doc()
         
-    def check_obj (self):
+    def _check_obj (self):
         try:
-            self.obj.GetClassName ()
+            self._vtk_obj.GetClassName ()
         except AttributeError:            
             msg = "Sorry! The object passed does not seem to be a "\
                   "VTK object!!"
             print_err (msg)
             return 0
         try:
-            doc_ = self.obj.__doc__
+            doc_ = self._vtk_obj.__doc__
         except AttributeError:
             msg = "Sorry! This particular version of the VTK-Python "\
                   "bindings does not feature embedded documentation "\
@@ -97,17 +107,11 @@ class VtkShowDoc:
         else:
             return 1
 
-    def show_doc (self, vtk_obj):
-        self.obj = vtk_obj
-        if self.check_obj ():
-            self.setup ()
-            self.add_doc ()
-
-    def setup (self):
+    def _create_ui(self):
         self._frame = wxFrame(parent = self._parent_frame, id=-1,
                               title='Class Documentation for %s' %
-                              self.obj.GetClassName ())
-        EVT_CLOSE(self._frame, lambda e, s=self: s.quit)
+                              self._vtk_obj.GetClassName ())
+        EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
 
         # make panel that will contain htmlwindow and close button
         panel = wxPanel(parent=self._frame, id=-1)
@@ -118,7 +122,7 @@ class VtkShowDoc:
 
         close_id = wxNewId()
         close_button = wxButton(parent=panel, id=close_id, label="Close")
-        EVT_BUTTON(self._frame, close_id, lambda e, s=self: s.quit())
+        EVT_BUTTON(self._frame, close_id, lambda e, s=self: s.hide())
 
         top_sizer = wxBoxSizer(wxVERTICAL)
         top_sizer.Add(self._html_window, option=1, flag=wxEXPAND)
@@ -138,25 +142,25 @@ class VtkShowDoc:
         #self.txt.tag_config ("item", underline=1, justify='left')
         #self.txt.tag_config ("data", wrap='word')
 
-        self._frame.Show(true)
     
-    def add_doc (self):
-        data_ = self.obj.GetClassName ()
+    def _add_doc (self):
+        data_ = self._vtk_obj.GetClassName ()
 
         the_html = "<h1>Class Documentation for %s</h1><br><br>" % data_
 
         the_html = the_html + \
-                   string.join(string.split(self.obj.__doc__, '\n'), '<br>')
+                   string.join(string.split(self._vtk_obj.__doc__, '\n'),
+                               '<br>')
         the_html = the_html + '<br><br>' + \
                    "Please note that all the documented methods are not "\
                    "configurable using the GUI provided.<br><br><br>"\
                    "<h2>Class method documentation</h2><br><br>"
 
-        for i in dir (self.obj):
+        for i in dir (self._vtk_obj):
             if i == '__class__':
                 continue
             try:
-                data_ = eval ("self.obj.%s.__doc__"%i)
+                data_ = eval ("self._vtk_obj.%s.__doc__"%i)
             except AttributeError:
                 pass
             else:
@@ -167,74 +171,70 @@ class VtkShowDoc:
 
         self._html_window.SetPage(the_html)
 
-    def quit (self, event=None):
+    def show(self):
+        "Make the show doc frame visible."
+        self._frame.Show(true)
+        self._frame.Raise()
+
+    def hide(self):
+        "Make the show doc frame invisible."
+        self._frame.Show(false)
+
+    def close(self, event=None):
+        """Destroy the frame completely.
+
+        You can check if the frame has been destroyed by checking for
+        ._frame == None.
+        """
         self._frame.Destroy()
+        self._frame = None
 
 
 class ConfigVtkObj:
-
     """ This class finds the methods for a given vtkObject and creates
-    a GUI to configure the object.  It uses the output from the
-    VtkMethodParser class. """
+    a GUI to configure the object.
 
-    def __init__ (self, renwin=None):
+    It uses the output from the VtkMethodParser class.  In order to use it,
+    construct an instance, then call show().  If the user closes the window,
+    it will only be hidden, not destroyed.  To destroy, you have to call
+    close().
+    """
+    def __init__ (self, parent, renwin, vtk_obj):
+        """This initialiser will setup everything and construct the ui.
+
+        You have to call show() to make it appear, however.
+        """
 	# This variable is used to do a redraw on changing the objects
 	# properties.
-	self.renwin = renwin
+        self._parent = parent
+	self._renwin = renwin
+        self._vtk_obj = vtk_obj
 	self.parser = vtkMethodParser.VtkMethodParser ()
 	self.state_patn = re.compile ("To[A-Z0-9]")
         self.update_meth = None
+        # create that ui
+        self.create_ui()
 
-    def set_render_window (self, renwin):
-	self.renwin = renwin
-
-    def set_update_method (self, method):
-        """ This sets a method that the instance will call when any
-        changes are made."""
-        self.update_meth = method
-
-    def parse_methods (self, vtk_obj):
-	self.parser.parse_methods (vtk_obj)
-	self.toggle_meths = self.parser.toggle_methods ()
-	self.state_meths = self.parser.state_methods ()
-	self.get_set_meths = self.parser.get_set_methods ()
-	self.get_meths = self.parser.get_methods ()
-
-    def get_state (self, meths):
-        end = self.state_patn.search (meths[0]).start ()
-        get_m = 'G'+meths[0][1:end]
-        orig = eval ("self.vtk_obj.%s()"%get_m)
-        for i in range (len(meths)):
-            m = meths[i]
-            eval ("self.vtk_obj.%s()"%m)
-            val = eval ("self.vtk_obj.%s()"%get_m)
-            if val == orig:
-                break
-        return i
-
-    def configure(self, parent_frame, vtk_obj):
-	"Configure the vtk_object passed."
-	self.vtk_obj = vtk_obj
+    def create_ui(self):
         self.vtk_warn = -1
         try:
-            self.vtk_warn = vtk_obj.GetGlobalWarningDisplay ()
+            self.vtk_warn = self._vtk_obj.GetGlobalWarningDisplay ()
         except AttributeError:
             pass
         else:
-            vtk_obj.GlobalWarningDisplayOff ()
-	self.parse_methods (vtk_obj)
-	self.make_gui (parent_frame)
-        if self.vtk_warn > -1:
-            self.vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
+            self._vtk_obj.GlobalWarningDisplayOff ()
 
-    def make_gui (self, parent_window):
-	"Makes the configuration GUI."
+        # make lists of all the methods available in the vtk_object
+	self.parse_methods (self._vtk_obj)
 
-        # the top level frame
-        self._frame = wxFrame(parent=parent_window, id=-1,
+        # ################################################################
+        # now create all the actual widget/ui elements
+        # ################################################################
+        self._frame = wxFrame(parent=self._parent, id=-1,
                               title="Configure %s"%
-                              self.vtk_obj.GetClassName ())
-        EVT_CLOSE(self._frame, lambda e, s=self: s.cancel)
+                              self._vtk_obj.GetClassName ())
+        # if the user closes the frame, we just hide ourselves (tee hee)
+        EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
 
         # then the panel which we'll populate
         panel = wxPanel(parent=self._frame, id=-1)
@@ -264,7 +264,45 @@ class ConfigVtkObj:
         top_sizer.Fit(self._frame)
         top_sizer.SetSizeHints(self._frame)
 
+        if self.vtk_warn > -1:
+            self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
+
+        # now some variables we'll need for transient parts of the gui
+        self._vtk_obj_doc_view = None
+
+    def configure(self, parent_frame, vtk_obj):
+        print "ConfigVtkObj() is now deprecated!"
+
+    def set_update_method (self, method):
+        """ This sets a method that the instance will call when any
+        changes are made."""
+        self.update_meth = method
+
+    def parse_methods (self, vtk_obj):
+	self.parser.parse_methods (vtk_obj)
+	self.toggle_meths = self.parser.toggle_methods ()
+	self.state_meths = self.parser.state_methods ()
+	self.get_set_meths = self.parser.get_set_methods ()
+	self.get_meths = self.parser.get_methods ()
+
+    def get_state (self, meths):
+        end = self.state_patn.search (meths[0]).start ()
+        get_m = 'G'+meths[0][1:end]
+        orig = eval ("self._vtk_obj.%s()"%get_m)
+        for i in range (len(meths)):
+            m = meths[i]
+            eval ("self._vtk_obj.%s()"%m)
+            val = eval ("self._vtk_obj.%s()"%get_m)
+            if val == orig:
+                break
+        return i
+
+    def show(self):
         self._frame.Show(true)
+        self._frame.Raise()
+
+    def hide(self):
+        self._frame.Show(false)
 
     def make_gui_vars (self):
 	"Create the various variables used for the GUI."
@@ -354,7 +392,7 @@ class ConfigVtkObj:
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.toggle_meths[i][:-2]
-	    self.toggle_var[i] = eval ("self.vtk_obj.%s ()"%m)
+	    self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
             cb_id = wxNewId()
             cb = wxCheckBox(parent=panel, id=cb_id, label=self.toggle_meths[i])
             cb.SetValue(self.toggle_var[i])
@@ -417,7 +455,7 @@ class ConfigVtkObj:
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.get_set_meths[i]
-	    self.get_set_var[i] = eval("self.vtk_obj.%s ()"%m)
+	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
 
 	    # if the method requires a color make a button so the user
 	    # can choose the color!
@@ -454,7 +492,7 @@ class ConfigVtkObj:
         
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
-	    res = eval ("self.vtk_obj.%s ()"% self.get_meths[i])
+	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
             st = wxStaticText(parent=panel, id=-1, label=self.get_meths[i]+":")
             grid_sizer.Add(st)
 
@@ -468,12 +506,12 @@ class ConfigVtkObj:
     def update_gui (self, event=None):
 	"Update the values if anything has changed outside."
         if self.vtk_warn > -1:
-            self.vtk_obj.GlobalWarningDisplayOff ()
+            self._vtk_obj.GlobalWarningDisplayOff ()
 
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.toggle_meths[i][:-2]
-	    self.toggle_var[i] = eval ("self.vtk_obj.%s ()"%m)
+	    self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
             # set value does NOT invoke the callback
             self.toggle_checkboxes[i].SetValue(self.toggle_var[i])
 
@@ -485,16 +523,16 @@ class ConfigVtkObj:
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.get_set_meths[i]
-	    self.get_set_var[i] = eval("self.vtk_obj.%s ()"%m)
+	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
             self.get_set_texts[i].SetLabel(str(self.get_set_var[i]))
             
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
-	    res = eval ("self.vtk_obj.%s ()"% self.get_meths[i])
+	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
 	    self.get_texts[i].SetLabel(str(res))
 
         if self.vtk_warn > -1:
-            self.vtk_obj.GlobalWarningDisplayOn ()
+            self._vtk_obj.GlobalWarningDisplayOn ()
 	    
     def set_color (self, event, i, parent):
 	"Choose and set a color from a GUI color chooser."
@@ -526,7 +564,7 @@ class ConfigVtkObj:
 	st = event.GetEventObject().GetValue()
 	if len (st) == 0:
 	    return self.help_user ()
-	obj = self.vtk_obj
+	obj = self._vtk_obj
 	try:
 	    eval (st)
 	except AttributeError, msg:
@@ -555,29 +593,30 @@ class ConfigVtkObj:
 
     def show_doc (self, event=None):
         "Show the class documentation."
-        d = VtkShowDoc (self._frame)
-        d.show_doc (self.vtk_obj)
+        if self._vtk_obj_doc_view == None:
+            self._vtk_obj_doc_view = VtkShowDoc(self._frame, self._vtk_obj)
+        self._vtk_obj_doc_view.show()
 
     def apply_changes (self, event=None):
 	"Apply the changes made to configuration."
         if self.vtk_warn > -1:
-            self.vtk_obj.GlobalWarningDisplayOff ()
+            self._vtk_obj.GlobalWarningDisplayOff ()
 
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
 	    val = self.toggle_var[i]
 	    m = self.toggle_meths[i][:-2]
 	    if val == 1:
-		eval ("self.vtk_obj.%sOn ()"%m)
+		eval ("self._vtk_obj.%sOn ()"%m)
 	    else:
-		eval ("self.vtk_obj.%sOff ()"%m)		
+		eval ("self._vtk_obj.%sOff ()"%m)		
 
 	n_meth = len (self.state_meths)
 	for i in range (0, n_meth):
 	    val = self.state_var[i]
 	    m = self.state_meths[i][val]
 	    if val != -1:
-		eval ("self.vtk_obj.%s ()"%m)
+		eval ("self._vtk_obj.%s ()"%m)
 	
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
@@ -585,53 +624,52 @@ class ConfigVtkObj:
 	    if string.find (val, "(") == 0:
 		val = val[1:-1]
 	    st = 0
-	    val_tst = eval ("self.vtk_obj.Get%s ()"% self.get_set_meths[i])
+	    val_tst = eval ("self._vtk_obj.Get%s ()"% self.get_set_meths[i])
 	    if type (val_tst) is types.StringType:
 		st = 1
 	    m = "Set"+self.get_set_meths[i]
 	    if st is 0:
-		eval ("self.vtk_obj.%s (%s)"%(m, val))
+		eval ("self._vtk_obj.%s (%s)"%(m, val))
 	    else:
-		eval ("self.vtk_obj.%s (\"%s\")"%(m, val))
+		eval ("self._vtk_obj.%s (\"%s\")"%(m, val))
 
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
-	    res = eval ("self.vtk_obj.%s ()"% self.get_meths[i])
+	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
 	    self.get_texts[i].SetLabel(str(res))
 
 	self.render ()
         if self.vtk_warn > -1:
-            self.vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
+            self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
 		
     def ok_done (self, event=None):
 	"Ok button clicked."
 	self.apply_changes()
-	self._frame.Destroy()
+        self.hide()
 
     def cancel (self, event=None):
 	"Cancel button clicked."
-	self._frame.Destroy()
+        self.hide()
 
     def close(self):
-        self.cancel()
+        self._frame.Destroy()
 
     def render(self):
 	"Render scene and update anything that needs updating."
         if self.update_meth and callable (self.update_meth):
             self.update_meth ()
-	if self.renwin is not None:
+	if self._renwin is not None:
 	    try:
-		self.renwin.Render ()
+		self._renwin.Render ()
 	    except:
 		pass
 
-    def show (self):
+    def show_vtkobject_methods(self):
 	"Print the various methods of the vtkobject."
 	print "Toggle Methods\n", self.toggle_meths
 	print "State Methods\n", self.state_meths
 	print "Get/Set methods\n", self.get_set_meths
 	print "Get methods\n", self.get_meths
-
 
 
 if __name__ == "__main__":  
@@ -663,7 +701,7 @@ if __name__ == "__main__":
     for obj in (renWin, ren, cone, coneMapper, coneActor,
                 coneActor.GetProperty(), axes):
 	print "Configuring", obj.GetClassName (), "..."
-	conf = ConfigVtkObj (renWin)
-	conf.configure (frame, obj)
+	conf = ConfigVtkObj(frame, renWin, obj)
+        conf.show()
 
     app.MainLoop ()
