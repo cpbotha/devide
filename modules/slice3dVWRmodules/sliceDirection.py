@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.8 2003/07/22 16:26:51 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.9 2003/08/09 20:30:40 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -40,6 +40,10 @@ class sliceDirection:
         self._contourObjectsDict = {}
 
     def addContourObject(self, contourObject, prop3D):
+        """Activate contouring for the contourObject.  The contourObject
+        is usually a tdObject and specifically a vtkPolyData.  We also
+        need the prop3D that represents this polydata in the 3d scene.
+        """
         if self._contourObjectsDict.has_key(contourObject):
             # we already have this, thanks
             return
@@ -93,7 +97,11 @@ class sliceDirection:
     def addAllContourObjects(self):
         cos = self.sliceDirections.slice3dVWR._tdObjects.getContourObjects()
         for co in cos:
-            self.addContourObject(co)
+            prop = self.sliceDirections.slice3dVWR._tdObjects.\
+                   findPropByObject(co)
+            # addContourObject is clever enough not to try and add contours
+            # for objects which aren't contourable
+            self.addContourObject(co, prop)
 
     def removeAllContourObjects(self):
         contourObjects = self._contourObjectsDict.keys()

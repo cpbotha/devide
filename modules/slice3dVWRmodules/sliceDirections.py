@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.5 2003/08/07 22:50:03 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.6 2003/08/09 20:30:40 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -55,6 +55,10 @@ class sliceDirections(object):
             raise Exception, msg
 
     def addContourObject(self, tdObject, prop3D):
+        """Activate contouring for tdObject on all sliceDirections.  prop3D
+        is the actor/prop representing the tdObject (which is most often a
+        vtkPolyData) in the 3d scene.
+        """
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection.addContourObject(tdObject, prop3D)
 
