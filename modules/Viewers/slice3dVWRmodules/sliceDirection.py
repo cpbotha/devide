@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.13 2004/05/17 16:15:06 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.14 2004/11/11 12:44:37 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -23,7 +23,8 @@ class sliceDirection:
                     'Green Opacity Range' : 'greenOpacityRange',
                     'Red Opacity Range' : 'redOpacityRange',
                     'Blue Opacity Range' : 'blueOpacityRange',
-                    'Hue Opacity Range' : 'hueOpacityRange'}
+                    'Hue Opacity Range' : 'hueOpacityRange',
+                    'Primary LUT fusion' : 'primaryLUTFusion'}
 
     def __init__(self, name, sliceDirections, defaultPlaneOrientation=2):
         self.sliceDirections = sliceDirections
@@ -700,6 +701,17 @@ class sliceDirection:
             lut.SetAlphaRange((0.0, 1.0))
             lut.SetValueRange((1.0, 1.0))
             lut.SetSaturationRange((1.0, 1.0))
+
+        elif mode == 'primaryLUTFusion':
+            # we can only be called if there are more IPWs
+            # get lut of primary ipw
+            primaryIPW = self._ipws[0]
+            primaryLUT = primaryIPW.GetLookupTable()
+            lut.SetHueRange(primaryLUT.GetHueRange())
+            lut.SetAlphaRange((srcAlpha, srcAlpha))
+            lut.SetValueRange(primaryLUT.GetValueRange())
+            lut.SetSaturationRange(primaryLUT.GetSaturationRange())
+            lut.SetTableRange(primaryLUT.GetTableRange())
 
         lut.Build()
         
