@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.69 2003/08/27 15:54:07 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.70 2003/09/02 15:37:01 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -549,8 +549,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
     #################################################################
 
     def close(self):
-        print "starting close"
-
         # take care of scalarbar
         self._showScalarBarForProp(None)
         
@@ -583,7 +581,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         del self._extractVOI
 
         del self._cInteractorStyle
-        
+
+        # make SURE there are no props in the Renderer
+        self._threedRenderer.RemoveAllProps()
         # take care of all our bindings to renderers
         del self._threedRenderer
 
