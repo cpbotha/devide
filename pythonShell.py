@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.9 2004/06/22 15:11:40 cpbotha Exp $
+# $Id: pythonShell.py,v 1.10 2004/06/23 09:30:06 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -77,14 +77,29 @@ class pythonShell:
 
     def loadSnippet(self, path):
         try:
+            # redirect std thingies so that output appears in the shell win
+            self._psFrame.pyShell.redirectStdout()
+            self._psFrame.pyShell.redirectStderr()
+            self._psFrame.pyShell.redirectStdin()
+            
             # runfile also generates an IOError if it can't load the file
-            self._psFrame.pyShell.runfile(path)
+            execfile(path, globals(), self._psFrame.pyShell.interp.locals)
+
+            #
+            self._psFrame.pyShell.push('')
+            
         except IOError,e:
             md = wx.MessageDialog(
                 self._psFrame,
                 'Could not open file %s: %s' % (path, str(e)), 'Error',
                 wx.OK|wx.ICON_ERROR)
             md.ShowModal()
+
+        # redirect thingies back
+        self._psFrame.pyShell.redirectStdout(False)
+        self._psFrame.pyShell.redirectStderr(False)
+        self._psFrame.pyShell.redirectStdin(False)
+        
 
     def setStatusBarMessage(self, message):
         self._psFrame.statusBar.SetStatusText(message)
