@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.39 2002/06/07 11:49:03 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.40 2002/06/07 14:33:18 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -42,6 +42,13 @@ class vtk_slice_vwr(module_base):
         # the renderers corresponding to the render windows
 	self._renderers = []
 
+        self._outline_source = vtk.vtkOutlineSource()
+        om = vtk.vtkPolyDataMapper()
+        om.SetInput(self._outline_source.GetOutput())
+        self._outline_actor = vtk.vtkActor()
+        self._outline_actor.SetMapper(om)
+        self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
+
         # list of lists of dictionaries
         # 3 element list (one per direction) of n-element lists of
         # ortho_pipelines, where n is the number of overlays,
@@ -64,6 +71,11 @@ class vtk_slice_vwr(module_base):
     def close(self):
         for idx in range(self._num_inputs):
             self.set_input(idx, None)
+        
+        del self._outline_source
+        del self._outline_actor
+        del self._cube_axes_actor2d
+        
         if hasattr(self, '_pws'):
             del self._pws
 	if hasattr(self, '_renderers'):
@@ -75,6 +87,320 @@ class vtk_slice_vwr(module_base):
 	    del self._view_frame
         if hasattr(self,'_ortho_pipes'):
             del self._ortho_pipes
+
+
+#################################################################
+# module API methods
+#################################################################
+
+    def get_input_descriptions(self):
+	# concatenate it num_inputs times (but these are shallow copies!)
+	return self._num_inputs * \
+               ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
+
+    def set_input(self, idx, input_stream):
+        if input_stream == None:
+
+            if self._inputs[idx]['Connected'] == 'vtkPolyData':
+                self._inputs[idx]['Connected'] = None
+                if self._inputs[idx]['vtkActor'] != None:
+                    self._renderers[0].RemoveActor(self._inputs[idx]['vtkActor'])
+                    self._inputs[idx]['vtkActor'] = None
+
+            elif self._inputs[idx]['Connected'] == 'vtkImageData':
+                self._inputs[idx]['Connected'] = None
+                # check the three ortho pipelines (each consists of mult lyrs)
+                for ortidx in range(len(self._ortho_pipes)):
+                    # each ortidx can (by definition) only contain ONE
+                    # layer with input_idx == idx; find that layer
+                    pls = filter(lambda pl, idx=idx: pl['input_idx'] == idx,
+                                 self._ortho_pipes[ortidx])
+                    # if we find more than one, something is awfully wrong,
+                    # complain...
+                    if len(pls) > 1:
+                        wxLogError('More than one pipeline for this ortho with'
+                                   ' the same input index!  Please report.')
+                        wxLog_FlushActive()
+                        
+                    if len(pls) > 0:
+                        pl = pls[0]
+                        # remove corresponding actors from renderers
+                        self._renderers[0].RemoveActor(pl['vtkActor3'])
+                        self._renderers[ortidx+1].RemoveActor(pl['vtkActorO'])
+                        # disconnect the input (no refs hanging around)
+                        pl['vtkImageReslice'].SetInput(None)
+
+                        if len(self._ortho_pipes[ortidx]) == 1:
+                            # this means this is the last pipeline, and
+                            # it's going to be removed;
+                            # switch off the 3DWidget, it will be
+                            # reactivated if something gets added again
+                            pw = self._pws[ortidx]
+                            pw.Off()
+                            pw.SetInteractor(None)
+                            # FIXME: at removal, the planewidget sometimes
+                            # leaves 3 plane actors behind (its code
+                            # seems to be fine)
+
+                        pl_idx = self._ortho_pipes[ortidx].index(pl)
+                        del self._ortho_pipes[ortidx][pl_idx]
+
+                        print "%d layers left in ortho %d" % \
+                              (len(self._ortho_pipes[ortidx]), ortidx)
+
+                if len(self._ortho_pipes[0]) == 0:
+                    # this means the last of the inputs was removed
+                    self._renderers[0].RemoveActor(self._outline_actor)
+                    self._renderers[0].RemoveActor(self._cube_axes_actor2d)
+
+        elif hasattr(input_stream, 'GetClassName') and \
+             callable(input_stream.GetClassName):
+            if input_stream.GetClassName() == 'vtkPolyData':
+               
+		mapper = vtk.vtkPolyDataMapper()
+		mapper.SetInput(input_stream)
+		self._inputs[idx]['vtkActor'] = vtk.vtkActor()
+		self._inputs[idx]['vtkActor'].SetMapper(mapper)
+		self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
+		self._inputs[idx]['Connected'] = 'vtkPolyData'
+                self._renderers[0].ResetCamera()                
+                self._rwis[0].Render()
+            elif input_stream.IsA('vtkImageData'):
+                # if we already have a vtkStructuredPoints (or similar,
+                # we might want to use the IsA() method later) we must check
+                # the new dataset for certain requirements
+
+                # if newly added data has the same bounds as already added
+                # data, then it may be overlayed; we should make an exception
+                # with single slice overlays (ouch)
+                validInput = 0
+                if len(self._ortho_pipes[0]) == 0:
+                    # there's nothing in the first pipeline, so the data
+                    # that's being added is the first
+                    validInput = 1
+                else:
+                    ois = self._ortho_pipes[0][0]['vtkImageReslice'].GetInput()
+                    input_stream.Update()
+                    input_stream.ComputeBounds()
+                    if input_stream.GetBounds() == ois.GetBounds():
+                        validInput = 1
+                    
+                if not validInput:
+                    raise TypeError, "You have tried to add volume data to " \
+                          "the Slice Viewer which does not have the same " \
+                          "dimensions as already added volume data."
+                
+                for i in range(self._num_orthos):
+                    self._ortho_pipes[i].append(
+                        {'input_idx' : idx,
+                         'vtkImageReslice' : vtk.vtkImageReslice(),
+                         'vtkPlaneSourceO' : vtk.vtkPlaneSource(), 
+                         'vtkPlaneSource3' : vtk.vtkPlaneSource(),
+                         'vtkTexture' : vtk.vtkTexture(),
+                         'vtkLookupTable' : vtk.vtkWindowLevelLookupTable(),
+                         'vtkActorO' : vtk.vtkActor(),
+                         'vtkActor3' : vtk.vtkActor()})
+                    
+                    # get just added pipeline
+                    cur_pipe = self._ortho_pipes[i][-1]
+                    # if this is the first layer in this channel/ortho, then
+                    # we have to do some initial setup stuff
+
+                    # more setup
+                    cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
+                    # connect up input
+                    cur_pipe['vtkImageReslice'].SetInput(input_stream)
+                    #cur_pipe['vtkImageReslice'].SetAutoCropOutput(1)
+                    # switch on texture interpolation
+                    cur_pipe['vtkTexture'].SetInterpolate(1)
+                    # connect LUT with texture
+                    cur_pipe['vtkLookupTable'].SetWindow(1000)
+                    cur_pipe['vtkLookupTable'].SetLevel(1000)
+                    cur_pipe['vtkLookupTable'].Build()
+                    cur_pipe['vtkTexture'].SetLookupTable(cur_pipe['vtkLookupTable'])
+                    # connect output of reslicer to texture
+                    cur_pipe['vtkTexture'].SetInput(cur_pipe['vtkImageReslice'].GetOutput())
+                    # make sure the LUT is  going to be used
+                    cur_pipe['vtkTexture'].MapColorScalarsThroughLookupTableOn()
+
+                    # set up a plane source
+                    cur_pipe['vtkPlaneSourceO'].SetXResolution(1)
+                    cur_pipe['vtkPlaneSourceO'].SetYResolution(1)
+                    # and connect it to a polydatamapper
+                    mapper = vtk.vtkPolyDataMapper()
+                    mapper.SetInput(cur_pipe['vtkPlaneSourceO'].GetOutput())
+                    cur_pipe['vtkActorO'].SetMapper(mapper)
+                    cur_pipe['vtkActorO'].SetTexture(cur_pipe['vtkTexture'])
+                    self._renderers[i + 1].AddActor(cur_pipe['vtkActorO'])
+
+                    cur_pipe['vtkPlaneSource3'].SetXResolution(1)
+                    cur_pipe['vtkPlaneSource3'].SetYResolution(1)
+                    mapper = vtk.vtkPolyDataMapper()
+                    mapper.SetInput(cur_pipe['vtkPlaneSource3'].GetOutput())
+                    #cur_pipe['vtkActor3'] = vtk.vtkActor()
+                    cur_pipe['vtkActor3'].SetMapper(mapper)
+                    cur_pipe['vtkActor3'].SetTexture(cur_pipe['vtkTexture'])
+                    self._renderers[0].AddActor(cur_pipe['vtkActor3'])
+		    
+                    # we've connected the pipeline, now we get to do all
+                    # the bells and whistles
+                    self._reset_ortho_overlay(i, cur_pipe)
+
+                # if this is the first input, create outline and cubeaxes
+                if len(self._ortho_pipes[0]) == 1:
+                    reslice = self._ortho_pipes[0][0]['vtkImageReslice']
+                    input = reslice.GetInput()
+                    input.Update()
+                    ren = self._renderers[0]
+                    
+                    self._outline_source.SetBounds(input.GetBounds())
+                    ren.AddActor(self._outline_actor)
+
+                    self._cube_axes_actor2d.SetBounds(input.GetBounds())
+                    self._cube_axes_actor2d.SetCamera(ren.GetActiveCamera())
+                    ren.AddActor(self._cube_axes_actor2d)
+
+                # after we've done all the orthos (and their corresponding
+                # plains in 3d), we should probably tell the 3d renderer
+                # that something is going on :)
+                self._renderers[0].ResetCamera()
+                self._rwis[0].Render()
+                self._inputs[idx]['Connected'] = 'vtkImageData'
+
+	    else:
+		raise TypeError, "Wrong input type!"
+
+        # make sure we catch any errors!
+        self._module_manager.vtk_poll_error()
+
+	
+    def get_output_descriptions(self):
+	# return empty tuple
+	return ()
+	
+    def get_output(self, idx):
+	raise Exception
+
+    def view(self):
+	self._view_frame.Show(true)
+
+#################################################################
+# utility methods
+#################################################################
+
+    def _create_ortho_panel(self, parent):
+        panel = wxPanel(parent, id=-1)
+
+        # first create RenderWindowInteractor and pertinent elements
+        self._rwis.append(wxVTKRenderWindowInteractor(panel, -1))
+        self._pws.append(vtk.vtkPlaneWidget())
+        o_idx = len(self._pws) - 1
+        self._pws[-1].AddObserver('InteractionEvent',
+                                  lambda vtk_obj, evtname, oi=o_idx, s=self:
+                                  s._pw_cb(vtk_obj, oi))
+        self._renderers.append(vtk.vtkRenderer())
+        #self._renderers[-1].SetBackground(1,1,1)
+        self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        istyle = vtk.vtkInteractorStyleImage()
+        istyle.AddObserver('LeftButtonPressEvent', self._istyle_img_cb)        
+        istyle.AddObserver('MouseMoveEvent', self._istyle_img_cb)
+        istyle.AddObserver('LeftButtonReleaseEvent', self._istyle_img_cb)
+        istyle.AddObserver('LeaveEvent', self._istyle_img_cb)
+        self._rwis[-1].SetInteractorStyle(istyle)
+
+
+        # then controls
+        iid = wxNewId()
+        ib = wxToggleButton(panel, iid, '3D Interact')
+
+        def _ib_cb(e, ib=ib, pw=self._pws[-1]):
+            pw.SetEnabled(ib.GetValue())
+        
+        EVT_TOGGLEBUTTON(parent, iid, _ib_cb)
+
+        rid = wxNewId()
+        rb = wxButton(panel, rid, 'Reset')
+
+        def _rb_cb(e, s=self, o_idx=o_idx):
+            for overlay_pipe in s._ortho_pipes[o_idx]:
+                s._reset_ortho_overlay(o_idx, overlay_pipe )
+                #s._reset_ortho_overlay(o_idx, overlay_pipe )                
+            s._rwis[0].Render()
+
+        EVT_BUTTON(parent, rid, _rb_cb)
+
+        button_sizer = wxBoxSizer(wxHORIZONTAL)
+        button_sizer.Add(ib)
+        button_sizer.Add(rb)
+        
+        panel_sizer = wxBoxSizer(wxVERTICAL)
+        panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
+        panel_sizer.Add(button_sizer, flag=wxEXPAND)
+                        
+        panel.SetAutoLayout(true)
+        panel.SetSizer(panel_sizer)
+        return panel
+	
+    def _create_window(self):
+        # create main frame, make sure that when it's closed, it merely hides
+        parent_window = self._module_manager.get_module_view_parent_window()
+        self._view_frame = wxFrame(parent=parent_window, id=-1,
+                                   title='slice viewer')
+        EVT_CLOSE(self._view_frame,
+                  lambda e, s=self: s._view_frame.Show(false))
+
+
+        # panel inside the frame
+        panel = wxPanel(self._view_frame, id=-1)
+
+        # top level split window
+        tl_splitwin = wxSplitterWindow(parent=panel, id=-1, size=(640,480))
+        
+        # top split window with 3d and ortho view
+        #########################################
+        top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
+        # 3d view
+        td_panel = wxPanel(top_splitwin, id=-1)
+        self._rwis.append(wxVTKRenderWindowInteractor(td_panel, -1))
+        self._renderers.append(vtk.vtkRenderer())
+        self._renderers[-1].SetBackground(0.5,0.5,0.5)
+        self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
+        td_panel_sizer = wxBoxSizer(wxVERTICAL)
+        td_panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
+        td_panel.SetAutoLayout(true)
+        td_panel.SetSizer(td_panel_sizer)
+        # ortho view
+        o0_panel = self._create_ortho_panel(top_splitwin)
+
+        top_splitwin.SplitVertically(td_panel, o0_panel, 320)
+
+        # bottom split window with two (2) ortho views
+        ##############################################
+        bottom_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
+        # second ortho
+        o1_panel = self._create_ortho_panel(bottom_splitwin)
+        # third ortho
+        o2_panel = self._create_ortho_panel(bottom_splitwin)
+        # then split the splitwin
+        bottom_splitwin.SplitVertically(o1_panel, o2_panel, 320)
+
+        # finally split the top level split win
+        #######################################
+        tl_splitwin.SplitHorizontally(top_splitwin, bottom_splitwin, 240)
+
+
+        # then make a top-level sizer
+        #############################
+        tl_sizer = wxBoxSizer(wxVERTICAL)
+        tl_sizer.Add(tl_splitwin, option=1, flag=wxEXPAND)
+        # the panel will make use of the sizer to calculate layout
+        panel.SetAutoLayout(true)
+        panel.SetSizer(tl_sizer)
+        # tell the frame to size itself around us
+        tl_sizer.Fit(self._view_frame)
+        tl_sizer.SetSizeHints(self._view_frame)
+        
+        self._view_frame.Show(true)
 
     def _find_wxvtkrwi_by_istyle(self, istyle):
         """Find the wxVTKRenderWindowInteractor (out of self._rwis) that owns
@@ -91,6 +417,193 @@ class vtk_slice_vwr(module_base):
             return frwis[0]
         else:
             return None
+
+    def _reset_ortho_overlay(self, ortho_idx, overlay_pipe):
+        """Arrange everything for a single overlay in a single ortho view.
+
+        This method is to be called AFTER the pertinent VTK pipeline has been
+        setup.  This is here, because one often connects modules together
+        before source modules have been configured, i.e. the success of this
+        method is dependent on whether the source modules have been configged.
+        HOWEVER: it won't die if it hasn't, just complain.
+
+        It will configure all 3d widgets and textures and thingies, but it
+        won't CREATE anything.
+        """
+
+        reslice = overlay_pipe['vtkImageReslice']
+
+        if len(self._ortho_pipes[ortho_idx]) == 1:
+            reslice.SetResliceAxesDirectionCosines(
+                self._InitialResliceAxes[ortho_idx]['axes'])
+            reslice.SetResliceAxesOrigin(
+                self._InitialResliceAxes[ortho_idx]['origin'])
+            
+            # let's configure LUT for the first layer
+            reslice.Update() # this doesn't always work
+            # we need to do the following, else things fall apart with
+            # resetting after some oblique goodness... I believe there
+            # is still some whackiness in vtkImageReslice
+            reslice.GetOutput().SetUpdateExtentToWholeExtent()
+
+            input_d = reslice.GetInput()
+            (dmin, dmax) = input_d.GetScalarRange()
+            w = (dmax - dmin) / 2
+            l = dmin + w
+            overlay_pipe['vtkLookupTable'].SetWindow(w)
+            overlay_pipe['vtkLookupTable'].SetLevel(l)
+            overlay_pipe['vtkLookupTable'].Build()
+            
+
+        else:
+            # if this is NOT the first layer, it  must copy the slicer
+            # config of the first ortho
+            ir = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
+            rad = ir.GetResliceAxesDirectionCosines()
+            rao = ir.GetResliceAxesOrigin()
+            reslice.SetResliceAxesDirectionCosines(rad)
+            reslice.SetResliceAxesOrigin(rao)
+
+        # create and texture map the plane for ortho viewing
+        self._sync_ortho_plane_with_reslice(overlay_pipe['vtkPlaneSourceO'],
+                                            reslice)
+
+        # hmmm, we'll have to see if this makes overlays work, tee hee
+        # the fact that we pack it in the order of addition should yield
+        # precisely what the user expects (I think)
+        self._sync_3d_plane_with_reslice(overlay_pipe['vtkPlaneSource3'],
+                                         reslice)
+
+        # set up the vtkPlaneWidgets if this is the first layer
+        if len(self._ortho_pipes[ortho_idx]) == 1:
+            self._pws[ortho_idx].SetResolution(20)
+            self._pws[ortho_idx].SetRepresentationToOutline()
+            self._pws[ortho_idx].SetPlaceFactor(1)
+
+            # we know that the reslicer has been configured, so just let
+            # the planewidget follow suit
+            #reslice = overlay_pipe['vtkImageReslice']
+
+            # we pass the 0 so that UpdatePlacement() isn't called.
+            self._sync_pw_with_reslice(self._pws[ortho_idx], reslice, 0)
+            
+            # we have to call placewidget, as that adjusts cone and
+            # sphere size
+            self._pws[ortho_idx].PlaceWidget()
+
+            rwi = self._rwis[0]
+            self._pws[ortho_idx].SetInteractor(rwi)
+
+        # setup the orthogonal camera if this is the first layer
+        if len(self._ortho_pipes[ortho_idx]) == 1:
+            self._setup_ortho_cam(overlay_pipe, self._renderers[ortho_idx+1])
+
+        # whee, thaaaar she goes.
+        self._rwis[ortho_idx+1].Render()
+
+    def _setup_ortho_cam(self, cur_pipe, renderer):
+	# now we're going to manipulate the camera in order to achieve some
+        # gluOrtho2D() goodness
+	icam = renderer.GetActiveCamera()
+	# set to orthographic projection
+	#icam.SetParallelProjection(1);
+	# set camera 10 units away, right in the centre
+	icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0],
+                         cur_pipe['vtkPlaneSourceO'].GetCenter()[1], 10);
+	icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
+        #icam.OrthogonalizeViewUp()
+	# make sure it's the right way up
+	icam.SetViewUp(0,1,0);
+	#icam.SetClippingRange(1, 11);
+	# we're assuming icam->WindowCenter is (0,0), then  we're effectively
+        # doing this:
+	# glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
+	#output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
+        we = cur_pipe['vtkImageReslice'].GetOutput().GetWholeExtent()
+        icam.SetParallelScale((we[1] - we[0]) / 2.0)
+        icam.ParallelProjectionOn()
+
+	#icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
+
+    def _sync_3d_plane_with_reslice(self, plane_source, reslice):
+        """Modify 3d slice plane source to agree with reslice output.
+
+        If you've made changes to the reslicer, call this method to make sure
+        the 3d slice plane source follows suit.
+        """
+        
+        reslice.Update()
+
+	output_bounds = reslice.GetOutput().GetBounds()
+        origin = reslice.GetResliceAxesOrigin()
+
+        p1mag = output_bounds[1] - output_bounds[0]
+        p2mag = output_bounds[3] - output_bounds[2]
+        radc = reslice.GetResliceAxesDirectionCosines()
+        p1vn = radc[0:3]
+        p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
+        p2vn = radc[3:6]
+        p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
+
+	plane_source.SetOrigin(origin)
+	plane_source.SetPoint1(p1v)
+	plane_source.SetPoint2(p2v)
+
+        print origin
+        print reslice.GetResliceAxes().MultiplyPoint(origin + (1.0,))
+
+        # end test code
+
+
+    def _sync_ortho_plane_with_reslice(self, plane_source, reslice):
+	# try and pull the data through
+	reslice.Update()
+	# make the plane that the texture is mapped on
+	output_bounds = reslice.GetOutput().GetBounds()
+	plane_source.SetOrigin(output_bounds[0],
+                               output_bounds[2],
+                               0)
+	plane_source.SetPoint1(output_bounds[1],
+                               output_bounds[2],
+                               0)
+	plane_source.SetPoint2(output_bounds[0],
+                               output_bounds[3],
+                               0)
+
+
+    def _sync_pw_with_reslice(self, pw, reslice, update_placement=1):
+        """Change plane-widget to be in sync with current reslice output.
+
+        If you've made changes to the a vtkImageReslice, you can have the
+        accompanying planewidget follow suit by calling this method.  If
+        update_placement is 0, PlaneWidget.UpdatePlacement() won't be called.
+        Do this if you're calling _sync_pw_with_reslice BEFORE PlaceWidget().
+        """
+        
+        reslice.Update()
+        output_bounds = reslice.GetOutput().GetBounds()
+        origin = reslice.GetResliceAxesOrigin()
+        p1mag = output_bounds[1] - output_bounds[0]
+        p2mag = output_bounds[3] - output_bounds[2]
+        radc = reslice.GetResliceAxesDirectionCosines()
+        p1vn = radc[0:3]
+        p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
+        p2vn = radc[3:6]
+        p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
+            
+        ps = pw.GetPolyDataSource()
+        ps.SetOrigin(origin)
+        ps.SetPoint1(p1v)
+        ps.SetPoint2(p2v)
+        
+        if (update_placement):
+            pw.UpdatePlacement()
+
+        
+	
+#################################################################
+# callbacks
+#################################################################
 
     def _istyle_img_cb(self, istyle, command_name):
         """Call-back (observer) for InteractorStyleImage.
@@ -184,6 +697,8 @@ class vtk_slice_vwr(module_base):
 
             ir.Update()
 
+            #ir.GetOutput().SetUpdateExtentToWholeExtent()
+
             # make sure the 3d plane moves along with us
             self._sync_3d_plane_with_reslice(cur_pipe['vtkPlaneSource3'], ir)
 
@@ -194,487 +709,8 @@ class vtk_slice_vwr(module_base):
         # we have updated all layers, so we can now call this
         self._rwis[ortho_idx + 1].Render()
 
-    def _create_ortho_panel(self, parent):
-        panel = wxPanel(parent, id=-1)
 
-        # first create RenderWindowInteractor and pertinent elements
-        self._rwis.append(wxVTKRenderWindowInteractor(panel, -1))
-        self._pws.append(vtk.vtkPlaneWidget())
-        o_idx = len(self._pws) - 1
-        self._pws[-1].AddObserver('InteractionEvent',
-                                  lambda vtk_obj, evtname, oi=o_idx, s=self:
-                                  s._pw_cb(vtk_obj, oi))
-        self._renderers.append(vtk.vtkRenderer())
-        self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        istyle = vtk.vtkInteractorStyleImage()
-        istyle.AddObserver('LeftButtonPressEvent', self._istyle_img_cb)        
-        istyle.AddObserver('MouseMoveEvent', self._istyle_img_cb)
-        istyle.AddObserver('LeftButtonReleaseEvent', self._istyle_img_cb)
-        istyle.AddObserver('LeaveEvent', self._istyle_img_cb)
-        self._rwis[-1].SetInteractorStyle(istyle)
-
-        # then controls
-        #iid = wxNewId()
-        #wxButton(panel, iid, '3D Interact')
-
-        #button_sizer = wxBoxSizer(wxHORIZONTAL)
-        
-        panel_sizer = wxBoxSizer(wxVERTICAL)
-        panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
-        panel.SetAutoLayout(true)
-        panel.SetSizer(panel_sizer)
-        return panel
-	
-    def _create_window(self):
-        # create main frame, make sure that when it's closed, it merely hides
-        parent_window = self._module_manager.get_module_view_parent_window()
-        self._view_frame = wxFrame(parent=parent_window, id=-1,
-                                   title='slice viewer')
-        EVT_CLOSE(self._view_frame,
-                  lambda e, s=self: s._view_frame.Show(false))
-
-
-        # panel inside the frame
-        panel = wxPanel(self._view_frame, id=-1)
-
-        # top level split window
-        tl_splitwin = wxSplitterWindow(parent=panel, id=-1, size=(640,480))
-        
-        # top split window with 3d and ortho view
-        #########################################
-        top_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
-        # 3d view
-        td_panel = wxPanel(top_splitwin, id=-1)
-        self._rwis.append(wxVTKRenderWindowInteractor(td_panel, -1))
-        self._renderers.append(vtk.vtkRenderer())
-        self._rwis[-1].GetRenderWindow().AddRenderer(self._renderers[-1])
-        td_panel_sizer = wxBoxSizer(wxVERTICAL)
-        td_panel_sizer.Add(self._rwis[-1], option=1, flag=wxEXPAND)
-        td_panel.SetAutoLayout(true)
-        td_panel.SetSizer(td_panel_sizer)
-        # ortho view
-        o0_panel = self._create_ortho_panel(top_splitwin)
-
-        top_splitwin.SplitVertically(td_panel, o0_panel, 320)
-
-        # bottom split window with two (2) ortho views
-        ##############################################
-        bottom_splitwin = wxSplitterWindow(parent=tl_splitwin, id=-1)
-        # second ortho
-        o1_panel = self._create_ortho_panel(bottom_splitwin)
-        # third ortho
-        o2_panel = self._create_ortho_panel(bottom_splitwin)
-        # then split the splitwin
-        bottom_splitwin.SplitVertically(o1_panel, o2_panel, 320)
-
-        # finally split the top level split win
-        #######################################
-        tl_splitwin.SplitHorizontally(top_splitwin, bottom_splitwin, 240)
-
-
-        # then make a top-level sizer
-        #############################
-        tl_sizer = wxBoxSizer(wxVERTICAL)
-        tl_sizer.Add(tl_splitwin, option=1, flag=wxEXPAND)
-        # the panel will make use of the sizer to calculate layout
-        panel.SetAutoLayout(true)
-        panel.SetSizer(tl_sizer)
-        # tell the frame to size itself around us
-        tl_sizer.Fit(self._view_frame)
-        tl_sizer.SetSizeHints(self._view_frame)
-        
-        self._view_frame.Show(true)
-	
-
-    def get_input_descriptions(self):
-	# concatenate it num_inputs times (but these are shallow copies!)
-	return self._num_inputs * \
-               ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
     
-    def _sync_ortho_plane_with_reslice(self, plane_source, reslice):
-	# try and pull the data through
-	reslice.Update()
-	# make the plane that the texture is mapped on
-	output_bounds = reslice.GetOutput().GetBounds()
-	plane_source.SetOrigin(output_bounds[0],
-                               output_bounds[2],
-                               0)
-	plane_source.SetPoint1(output_bounds[1],
-                               output_bounds[2],
-                               0)
-	plane_source.SetPoint2(output_bounds[0],
-                               output_bounds[3],
-                               0)
-
-    def _sync_3d_plane_with_reslice(self, plane_source, reslice):
-        """Modify 3d slice plane source to agree with reslice output.
-
-        If you've made changes to the reslicer, call this method to make sure
-        the 3d slice plane source follows suit.
-        """
-        
-        reslice.Update()
-
-	output_bounds = reslice.GetOutput().GetBounds()
-        origin = reslice.GetResliceAxesOrigin()
-
-        p1mag = output_bounds[1] - output_bounds[0]
-        p2mag = output_bounds[3] - output_bounds[2]
-        radc = reslice.GetResliceAxesDirectionCosines()
-        p1vn = radc[0:3]
-        p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
-        p2vn = radc[3:6]
-        p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
-
-	plane_source.SetOrigin(origin)
-	plane_source.SetPoint1(p1v)
-	plane_source.SetPoint2(p2v)
-
-        print origin
-        print reslice.GetResliceAxes().MultiplyPoint(origin + (1.0,))
-
-        # end test code
-
-    def _setup_ortho_cam(self, cur_pipe, renderer):
-	# now we're going to manipulate the camera in order to achieve some
-        # gluOrtho2D() goodness
-	icam = renderer.GetActiveCamera()
-	# set to orthographic projection
-	#icam.SetParallelProjection(1);
-	# set camera 10 units away, right in the centre
-	icam.SetPosition(cur_pipe['vtkPlaneSourceO'].GetCenter()[0],
-                         cur_pipe['vtkPlaneSourceO'].GetCenter()[1], 10);
-	icam.SetFocalPoint(cur_pipe['vtkPlaneSourceO'].GetCenter());
-        #icam.OrthogonalizeViewUp()
-	# make sure it's the right way up
-	icam.SetViewUp(0,1,0);
-	#icam.SetClippingRange(1, 11);
-	# we're assuming icam->WindowCenter is (0,0), then  we're effectively
-        # doing this:
-	# glOrtho(-aspect*height/2, aspect*height/2, -height/2, height/2, 0,11)
-	#output_bounds = cur_pipe['vtkImageReslice'].GetOutput().GetBounds()
-        we = cur_pipe['vtkImageReslice'].GetOutput().GetWholeExtent()
-        icam.SetParallelScale((we[1] - we[0]) / 2.0)
-        icam.ParallelProjectionOn()
-
-	#icam.SetParallelScale((output_bounds[3] - output_bounds[2])/2);
-
-    def _sync_pw_with_reslice(self, pw, reslice, update_placement=1):
-        """Change plane-widget to be in sync with current reslice output.
-
-        If you've made changes to the a vtkImageReslice, you can have the
-        accompanying planewidget follow suit by calling this method.  If
-        update_placement is 0, PlaneWidget.UpdatePlacement() won't be called.
-        Do this if you're calling _sync_pw_with_reslice BEFORE PlaceWidget().
-        """
-        
-        reslice.Update()
-        output_bounds = reslice.GetOutput().GetBounds()
-        origin = reslice.GetResliceAxesOrigin()
-        p1mag = output_bounds[1] - output_bounds[0]
-        p2mag = output_bounds[3] - output_bounds[2]
-        radc = reslice.GetResliceAxesDirectionCosines()
-        p1vn = radc[0:3]
-        p1v = map(lambda x, o, m=p1mag: x*m + o, p1vn, origin)
-        p2vn = radc[3:6]
-        p2v = map(lambda x, o, m=p2mag: x*m + o, p2vn, origin)
-            
-        ps = pw.GetPolyDataSource()
-        ps.SetOrigin(origin)
-        ps.SetPoint1(p1v)
-        ps.SetPoint2(p2v)
-        
-        if (update_placement):
-            pw.UpdatePlacement()
-
-    def _reset_ortho_overlay(self, ortho_idx, overlay_pipe):
-        """Arrange everything for a single overlay in a single ortho view.
-
-        This method is to be called AFTER the pertinent VTK pipeline has been
-        setup.  This is here, because one often connects modules together
-        before source modules have been configured, i.e. the success of this
-        method is dependent on whether the source modules have been configged.
-        HOWEVER: it won't die if it hasn't, just complain.
-
-        It will configure all 3d widgets and textures and thingies, but it
-        won't CREATE anything.
-        """
-
-
-        if len(self._ortho_pipes[ortho_idx]) == 1:
-            overlay_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(
-                self._InitialResliceAxes[ortho_idx]['axes'])
-            overlay_pipe['vtkImageReslice'].SetResliceAxesOrigin(
-                self._InitialResliceAxes[ortho_idx]['origin'])
-            
-            # let's configure LUT for the first layer
-            overlay_pipe['vtkImageReslice'].Update() # this doesn't always work
-            input_d = overlay_pipe['vtkImageReslice'].GetInput()
-            (dmin, dmax) = input_d.GetScalarRange()
-            w = (dmax - dmin) / 2
-            l = dmin + w
-            overlay_pipe['vtkLookupTable'].SetWindow(w)
-            overlay_pipe['vtkLookupTable'].SetLevel(l)
-            overlay_pipe['vtkLookupTable'].Build()
-            
-
-        else:
-            # if this is NOT the first layer, it  must copy the slicer
-            # config of the first ortho
-            ir = self._ortho_pipes[ortho_idx][0]['vtkImageReslice']
-            rad = ir.GetResliceAxesDirectionCosines()
-            rao = ir.GetResliceAxesOrigin()
-            overlay_pipe['vtkImageReslice'].SetResliceAxesDirectionCosines(rad)
-            overlay_pipe['vtkImageReslice'].SetResliceAxesOrigin(rao)
-
-        # create and texture map the plane for ortho viewing
-        self._sync_ortho_plane_with_reslice(overlay_pipe['vtkPlaneSourceO'],
-                                            overlay_pipe['vtkImageReslice'])
-
-        # hmmm, we'll have to see if this makes overlays work, tee hee
-        # the fact that we pack it in the order of addition should yield
-        # precisely what the user expects (I think)
-        self._sync_3d_plane_with_reslice(overlay_pipe['vtkPlaneSource3'],
-                                         overlay_pipe['vtkImageReslice'])
-
-        # set up the vtkPlaneWidgets if this is the first layer
-        if len(self._ortho_pipes[ortho_idx]) == 1:
-            #self._pws[ortho_idx].SetProp3D(overlay_pipe['vtkActor3'])
-
-            #if ortho_idx == 0:
-            #    self._pws[ortho_idx].NormalToZAxisOn()
-            #elif ortho_idx == 1:
-            #    self._pws[ortho_idx].NormalToXAxisOn()
-            #else:
-            #    self._pws[ortho_idx].NormalToYAxisOn()
-
-            self._pws[ortho_idx].SetResolution(20)
-            self._pws[ortho_idx].SetRepresentationToOutline()
-            self._pws[ortho_idx].SetPlaceFactor(1)
-
-            # we know that the reslicer has been configured, so just let
-            # the planewidget follow suit
-            reslice = overlay_pipe['vtkImageReslice']
-
-            # we pass the 0 so that UpdatePlacement() isn't called.
-            self._sync_pw_with_reslice(self._pws[ortho_idx], reslice, 0)
-            
-            # we have to call placewidget, as that adjusts cone and
-            # sphere size
-            self._pws[ortho_idx].PlaceWidget()
-
-            rwi = self._rwis[0]
-            self._pws[ortho_idx].SetInteractor(rwi)
-            self._pws[ortho_idx].On()
-
-        # setup the orthogonal camera if this is the first layer
-        if len(self._ortho_pipes[ortho_idx]) == 1:
-            self._setup_ortho_cam(overlay_pipe, self._renderers[ortho_idx+1])
-
-        # whee, thaaaar she goes.
-        self._rwis[ortho_idx+1].Render()
-    
-    def set_input(self, idx, input_stream):
-        if input_stream == None:
-
-            if self._inputs[idx]['Connected'] == 'vtkPolyData':
-                self._inputs[idx]['Connected'] = None
-                if self._inputs[idx]['vtkActor'] != None:
-                    self._renderers[0].RemoveActor(self._inputs[idx]['vtkActor'])
-                    self._inputs[idx]['vtkActor'] = None
-
-            elif self._inputs[idx]['Connected'] == 'vtkStructuredPoints':
-                self._inputs[idx]['Connected'] = None
-                # check the three ortho pipelines (each consists of mult lyrs)
-                for ortidx in range(len(self._ortho_pipes)):
-                    # each ortidx can (by definition) only contain ONE
-                    # layer with input_idx == idx; find that layer
-                    pls = filter(lambda pl, idx=idx: pl['input_idx'] == idx,
-                                 self._ortho_pipes[ortidx])
-                    # if we find more than one, something is awfully wrong,
-                    # complain...
-                    if len(pls) > 1:
-                        wxLogError('More than one pipeline for this ortho with'
-                                   ' the same input index!  Please report.')
-                        wxLog_FlushActive()
-                        
-                    if len(pls) > 0:
-                        pl = pls[0]
-                        # remove corresponding actors from renderers
-                        self._renderers[0].RemoveActor(pl['vtkActor3'])
-                        self._renderers[ortidx+1].RemoveActor(pl['vtkActorO'])
-                        # disconnect the input (no refs hanging around)
-                        pl['vtkImageReslice'].SetInput(None)
-
-                        if len(self._ortho_pipes[ortidx]) == 1:
-                            # this means this is the last pipeline, and
-                            # it's going to be removed;
-                            # switch off the 3DWidget, it will be
-                            # reactivated if something gets added again
-                            pw = self._pws[ortidx]
-                            pw.Off()
-                            pw.SetInteractor(None)
-                            # FIXME: at removal, the planewidget sometimes
-                            # leaves 3 plane actors behind (its code
-                            # seems to be fine)
-
-                        pl_idx = self._ortho_pipes[ortidx].index(pl)
-                        del self._ortho_pipes[ortidx][pl_idx]
-
-                        print "%d layers left in ortho %d" % \
-                              (len(self._ortho_pipes[ortidx]), ortidx)
-
-        elif hasattr(input_stream, 'GetClassName') and \
-             callable(input_stream.GetClassName):
-            if input_stream.GetClassName() == 'vtkPolyData':
-               
-		mapper = vtk.vtkPolyDataMapper()
-		mapper.SetInput(input_stream)
-		self._inputs[idx]['vtkActor'] = vtk.vtkActor()
-		self._inputs[idx]['vtkActor'].SetMapper(mapper)
-		self._renderers[0].AddActor(self._inputs[idx]['vtkActor'])
-		self._inputs[idx]['Connected'] = 'vtkPolyData'
-                self._renderers[0].ResetCamera()                
-                self._rwis[0].Render()
-            elif input_stream.GetClassName() == 'vtkStructuredPoints' or \
-                 input_stream.GetClassName() == 'vtkImageData':
-                # if we already have a vtkStructuredPoints (or similar,
-                # we might want to use the IsA() method later) we must check
-                # the new dataset for certain requirements
-
-                # if newly added data has the same bounds as already added
-                # data, then it may be overlayed; we should make an exception
-                # with single slice overlays (ouch)
-                validInput = 0
-                if len(self._ortho_pipes[0]) == 0:
-                    # there's nothing in the first pipeline, so the data
-                    # that's being added is the first
-                    validInput = 1
-                else:
-                    ois = self._ortho_pipes[0][0]['vtkImageReslice'].GetInput()
-                    input_stream.Update()
-                    input_stream.ComputeBounds()
-                    if input_stream.GetBounds() == ois.GetBounds():
-                        validInput = 1
-                    
-                if not validInput:
-                    raise TypeError, "You have tried to add volume data to " \
-                          "the Slice Viewer which does not have the same " \
-                          "dimensions as already added volume data."
-                
-                for i in range(self._num_orthos):
-                    self._ortho_pipes[i].append(
-                        {'input_idx' : idx,
-                         'vtkImageReslice' : vtk.vtkImageReslice(),
-                         'vtkPlaneSourceO' : vtk.vtkPlaneSource(), 
-                         'vtkPlaneSource3' : vtk.vtkPlaneSource(),
-                         'vtkTexture' : vtk.vtkTexture(),
-                         'vtkLookupTable' : vtk.vtkWindowLevelLookupTable(),
-                         'vtkActorO' : vtk.vtkActor(),
-                         'vtkActor3' : vtk.vtkActor()})
-                    
-                    # get just added pipeline
-                    cur_pipe = self._ortho_pipes[i][-1]
-                    # if this is the first layer in this channel/ortho, then
-                    # we have to do some initial setup stuff
-
-                    # more setup
-                    cur_pipe['vtkImageReslice'].SetOutputDimensionality(2)
-                    # connect up input
-                    cur_pipe['vtkImageReslice'].SetInput(input_stream)
-                    #cur_pipe['vtkImageReslice'].SetAutoCropOutput(1)
-                    # switch on texture interpolation
-                    cur_pipe['vtkTexture'].SetInterpolate(1)
-                    # connect LUT with texture
-                    cur_pipe['vtkLookupTable'].SetWindow(1000)
-                    cur_pipe['vtkLookupTable'].SetLevel(1000)
-                    cur_pipe['vtkLookupTable'].Build()
-                    cur_pipe['vtkTexture'].SetLookupTable(cur_pipe['vtkLookupTable'])
-                    # connect output of reslicer to texture
-                    cur_pipe['vtkTexture'].SetInput(cur_pipe['vtkImageReslice'].GetOutput())
-                    # make sure the LUT is  going to be used
-                    cur_pipe['vtkTexture'].MapColorScalarsThroughLookupTableOn()
-
-                    # set up a plane source
-                    cur_pipe['vtkPlaneSourceO'].SetXResolution(1)
-                    cur_pipe['vtkPlaneSourceO'].SetYResolution(1)
-                    # and connect it to a polydatamapper
-                    mapper = vtk.vtkPolyDataMapper()
-                    mapper.SetInput(cur_pipe['vtkPlaneSourceO'].GetOutput())
-                    cur_pipe['vtkActorO'].SetMapper(mapper)
-                    cur_pipe['vtkActorO'].SetTexture(cur_pipe['vtkTexture'])
-                    self._renderers[i + 1].AddActor(cur_pipe['vtkActorO'])
-
-                    cur_pipe['vtkPlaneSource3'].SetXResolution(1)
-                    cur_pipe['vtkPlaneSource3'].SetYResolution(1)
-                    mapper = vtk.vtkPolyDataMapper()
-                    mapper.SetInput(cur_pipe['vtkPlaneSource3'].GetOutput())
-                    #cur_pipe['vtkActor3'] = vtk.vtkActor()
-                    cur_pipe['vtkActor3'].SetMapper(mapper)
-                    cur_pipe['vtkActor3'].SetTexture(cur_pipe['vtkTexture'])
-                    self._renderers[0].AddActor(cur_pipe['vtkActor3'])
-		    
-                    # we've connected the pipeline, now we get to do all
-                    # the bells and whistles
-                    self._reset_ortho_overlay(i, cur_pipe)
-
-                # after we've done all the orthos (and their corresponding
-                # plains in 3d), we should probably tell the 3d renderer
-                # that something is going on :)
-                self._renderers[0].ResetCamera()
-                self._rwis[0].Render()
-                self._inputs[idx]['Connected'] = 'vtkStructuredPoints'
-
-	    else:
-		raise TypeError, "Wrong input type!"
-
-        # make sure we catch any errors!
-        self._module_manager.vtk_poll_error()
-
-	
-    def get_output_descriptions(self):
-	# return empty tuple
-	return ()
-	
-    def get_output(self, idx):
-	raise Exception
-
-    def view(self):
-	self._view_frame.Show(true)
-    
-    def rw_starti_cb(self, x, y, rw):
-	rw.StartMotion(x,y)
-	self.rw_lastxys[self.rws.index(rw)] = {'x' : x, 'y' : y}
-	
-    def rw_endi_cb(self, x, y, rw):
-	rw.EndMotion(x,y)
-	self.rw_lastxys[self.rws.index(rw)] = {'x' : x, 'y' : y}
-
-    def _rw_slice_cb_2(self, wxvtkrwi):
-        delta = wxvtkrwi.GetEventPosition()[1] - \
-                wxvtkrwi.GetLastEventPosition()[1]
-
-        r_idx = self._rwis.index(wxvtkrwi)
-
-        # we just move the plane widget and then call the _pw_cb
-        if len(self._ortho_pipes):
-            reslice = self._ortho_pipes[r_idx - 1][0]['vtkImageReslice']
-            ra = reslice.GetResliceAxes()
-            
-            # translate current position to output of reslice plane
-            origin = reslice.GetResliceAxesOrigin()
-            output_origin = ra.MultiplyPoint(ra_origin + (0.0,))
-            # translate input spacing to output spacing, the z-component
-            # will by definition be the spacing orthogonal to the current
-            # slice plane
-            input_spacing = reslice.GetInput().GetSpacing()
-            output_spacing = ra.MultiplyPoint(input_spacing + (0.0,))
-
-            #self._pws[r_idx - 1].
-            #output_spacing[2] * delta;
-            
-        
-	
     def _rw_slice_cb(self, wxvtkrwi):
         delta = wxvtkrwi.GetEventPosition()[1] - \
                 wxvtkrwi.GetLastEventPosition()[1]
