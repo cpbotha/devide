@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.10 2003/01/24 10:45:54 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.11 2003/01/29 12:09:27 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 # TODO:
@@ -7,7 +7,8 @@
 # * 
 
 from gen_utils import log_error
-from module_base import module_base, module_mixin_vtk_pipeline_config
+from moduleBase import moduleBase
+from moduleMixins import vtkPipelineConfigModuleMixin
 import vtk
 from wxPython.wx import *
 from wxPython.grid import *
@@ -23,8 +24,8 @@ except NameError:
     else:
         WX_USE_X_CAPTURE = 0
 
-class slice3d_vwr(module_base,
-                  module_mixin_vtk_pipeline_config):
+class slice3d_vwr(moduleBase,
+                  vtkPipelineConfigModuleMixin):
     
     """Slicing, dicing slice viewing class.
 
@@ -34,9 +35,9 @@ class slice3d_vwr(module_base,
     orientation and position.
     """
 
-    def __init__(self, module_manager):
+    def __init__(self, moduleManager):
         # call base constructor
-        module_base.__init__(self, module_manager)
+        moduleBase.__init__(self, moduleManager)
         self._num_inputs = 5
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'vtkActor' : None}
@@ -52,8 +53,6 @@ class slice3d_vwr(module_base,
         self._threedRenderer = None
         self._ortho1Renderer = None
         self._ortho2Renderer = None
-
-        self.deathCounter = 3
 
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
@@ -104,7 +103,7 @@ class slice3d_vwr(module_base,
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
         for idx in range(self._num_inputs):
-            self.set_input(idx, None)
+            self.setInput(idx, None)
         
         # unbind everything that we bound in our __init__
         del self._outline_source
@@ -151,12 +150,12 @@ class slice3d_vwr(module_base,
 	# unbind the _view_frame binding
 	del self._view_frame
 	
-    def get_input_descriptions(self):
+    def getInputDescriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
         return self._num_inputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
-    def set_input(self, idx, input_stream):
+    def setInput(self, idx, input_stream):
         if input_stream == None:
 
             if self._inputs[idx]['Connected'] == 'vtkPolyData':
@@ -265,14 +264,14 @@ class slice3d_vwr(module_base,
                 raise TypeError, "Wrong input type!"
 
         # make sure we catch any errors!
-        self._module_manager.vtk_poll_error()
+        self._moduleManager.vtk_poll_error()
 
         
-    def get_output_descriptions(self):
+    def getOutputDescriptions(self):
         return ('Selected points (vtkPoints)', 'Selected points names (list)',
                 'Volume of Interest (vtkStructuredPoints)')
         
-    def get_output(self, idx):
+    def getOutput(self, idx):
         if idx == 0:
             return self._vtk_points
         elif idx == 1:
@@ -281,7 +280,8 @@ class slice3d_vwr(module_base,
             return self._extractVOI.GetOutput()
 
     def view(self):
-        self._view_frame.Show(true)
+        if not self._view_frame.Show(true):
+            self._view_frame.Raise()
 
 #################################################################
 # utility methods
@@ -292,7 +292,7 @@ class slice3d_vwr(module_base,
         reload(modules.resources.python.slice3d_vwr_frame)
 
         # create main frame, make sure that when it's closed, it merely hides
-        parent_window = self._module_manager.get_module_view_parent_window()
+        parent_window = self._moduleManager.get_module_view_parent_window()
         slice3d_vwr_frame = modules.resources.python.slice3d_vwr_frame.\
                             slice3d_vwr_frame
         self._view_frame = slice3d_vwr_frame(parent_window, id=-1,
