@@ -48,9 +48,14 @@ class module_manager:
 	# it seems that objects instantiated in the try get destroyed in except(?)
 	try:
 	    # import the correct module
-	    exec('from ' + name + ' import ' + name)
+	    #exec('from ' + name + ' import ' + name)
+	    exec('import ' + name)
+	    # and do this reload call as well (it's only double work on the very first import)
+	    # (but we should probably check if name exists in our dictionary, and only use reload
+	    #  then.)
+	    exec('reload(' + name + ')')
 	    # then instantiate the requested class
-	    exec('self.modules.append(' + name + '())')
+	    exec('self.modules.append(' + name + '.' + name + '())')
 	except ImportError:
 	    tkMessageBox.showerror("Import error", "Unable to import module %s!" % name)
 	    return None
