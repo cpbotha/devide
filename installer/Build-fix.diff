@@ -1,0 +1,13 @@
+--- Build.py~	Mon Nov  8 13:48:54 2004
++++ Build.py	Mon Nov  8 14:01:25 2004
+@@ -170,8 +170,8 @@
+             lib, pth, typ = binaries[i]
+             if typ == 'EXTENSION':
+                 lib = fixextension(lib, pth)
+-            if bpths.has_key(pth):
+-                binaries[i] = (lib, bpths[pth], 'LINK')
++            #if bpths.has_key(pth):
++            #    binaries[i] = (lib, bpths[pth], 'LINK')
+             else:
+                 bpths[pth] = lib
+         scripts[1:1] = rthooks
