@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.4 2003/10/15 20:18:30 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.5 2003/10/15 22:06:27 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -74,6 +74,7 @@ class selectedPoints(object, s3dcGridMixin):
             ('I&nteraction OFF',
              'Deactivate interaction for the selected points',
              self._handlerPointsInteractionOff, True),
+            ('---',), # important!  one-element tuple...
             ('&Rename',
              'Rename selected points',
              self._handlerPointsRename, True),
