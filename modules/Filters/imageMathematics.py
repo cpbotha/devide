@@ -11,7 +11,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
     The underlying logic can do far more than the UI shows at this moment.
     Please let me know if you require more options.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     _operations = {'Add' : 0,
@@ -23,6 +23,8 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
 
 
         self._imageMath = vtk.vtkImageMathematics()
+        self._imageMath.SetInput1(None)
+        self._imageMath.SetInput2(None)
         
         moduleUtils.setupVTKObjectProgress(self, self._imageMath,
                                            'Performing image math')
@@ -94,7 +96,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
         self._imageMath.SetOperation(idx)
     
     def executeModule(self):
-        self._imageDilate.Update()
+        self._imageMath.Update()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
