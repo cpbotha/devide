@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.98 2004/11/28 15:16:03 cpbotha Exp $
+# $Id: graphEditor.py,v 1.99 2004/11/28 20:07:55 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -143,7 +143,7 @@ class graphEditor:
         # then the module palette frame -------------------------------
         self._modulePaletteFrame = resources.python.graphEditorFrame.\
                                    modulePaletteFrame(
-            self._devideApp.get_main_window(),
+            self._canvasFrame,
             -1, title='dummy', name='DeVIDE')
 
         # we have to make this call, else the user can unsplit the window
@@ -151,9 +151,11 @@ class graphEditor:
         self._modulePaletteFrame.modCatsListSplitterWindow.SetMinimumPaneSize(
             20)
                                                              
-
+        # set the modulePaletteFrame icon
         self._modulePaletteFrame.SetIcon(self._devideApp.getApplicationIcon())
-        EVT_CLOSE(self._canvasFrame, self._handlerGraphFrameClose)
+
+        # and add some close event handler
+        EVT_CLOSE(self._modulePaletteFrame, self._handlerGraphFrameClose)
 
 
         EVT_BUTTON(self._modulePaletteFrame,
@@ -256,8 +258,10 @@ class graphEditor:
         
         # now display the shebang
         self.show()
-        # if we don't show twice, the stupid ListCtrls don't completely
-        # draw on startup!
+        # get it to actually display by calling into the wx event loop
+        wxSafeYield()
+        # now refresh it... we have a work around in the showModulePalette
+        # method that will shift the SashPosition and thus cause a redraw
         self.show()
 
     def modulesListCtrlBeginDragHandler(self, event):
@@ -645,9 +649,14 @@ class graphEditor:
         self._modulePaletteFrame.Iconize(False)
         self._modulePaletteFrame.Raise()
 
+        # this is a workaround for a bug in the ListCtrl of 2.4.2.4 which
+        # sometimes just forgets to draw itself...
+        self._modulePaletteFrame.modulesListCtrl.Refresh()
+        self._modulePaletteFrame.modulesListCtrl.Update()
+
     def show(self):
+        self.showModulePalette()        
         self.showCanvasFrame()
-        self.showModulePalette()
 
     def _handlerFileExportAsDOT(self, event):
         # make a list of all glyphs
