@@ -1,5 +1,5 @@
 # ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocRDR.py,v 1.2 2003/09/28 22:18:52 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.3 2003/09/30 17:03:17 cpbotha Exp $
 # module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
@@ -42,12 +42,13 @@ class mData(subjectMixin, updateCallsExecuteModuleMixin):
 
 # -------------------------------------------------------------------------
 class ifdocRDR(moduleBase, filenameViewModuleMixin):
+    """Module that reads and parses ifdoc output.
 
-    """Module that reads ifdoc m-file, ifdoc dsp-file and dscas3-specific
-    config file listing surfaces for all bones that are to be visualised as
-    well as the bony landmarks that define the LCSs.
+    This module will read the ifdoc .m file output after an ifdoc or
+    ifdoc forward simulation.  Its output is an mData object that can
+    be used by e.g. the ifdocVWR module.
     """
-
+    
     def __init__(self, moduleManager):
         # do the base class
         moduleBase.__init__(self, moduleManager)

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.46 2003/09/30 10:06:59 cpbotha Exp $
+# $Id: graphEditor.py,v 1.47 2003/09/30 17:03:17 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -7,6 +7,8 @@ from wxPython.wx import *
 from internal.wxPyCanvas import wxpc
 import genUtils
 import moduleUtils # for getModuleIcon
+import re
+import string
 import sys
 
 # ----------------------------------------------------------------------------
@@ -332,11 +334,23 @@ class graphEditor:
             EVT_BUTTON(htmlWindowFrame, htmlWindowFrame.closeButtonId,
                        handlerModuleHelpDestroy)
             EVT_CLOSE(htmlWindowFrame, handlerModuleHelpDestroy)
-            
-            
-        htmlWindowFrame.htmlWindow.SetPage(
-            '<html><body>%s</body></html>' % (moduleInstance.__doc__,))
 
+        # do rudimentary __doc__ -> html conversion
+        docLines = string.split(moduleInstance.__doc__.strip(), '\n')
+        for idx in range(len(docLines)):
+            docLine = docLines[idx].strip()
+            if docLine == '':
+                docLines[idx] = '<br><br>'
+
+        # add pretty heading
+        htmlDoc = '<center><b>%s</b></center><br><br>' % (fullModuleName,) + \
+                  string.join(docLines, '\n')
+
+        # finally change the contents of the new/existing module help window
+        htmlWindowFrame.htmlWindow.SetPage(
+            '<html><body>%s</body></html>' % (htmlDoc,))
+
+        # if it's already visible, just raise it
         if not htmlWindowFrame.Show(True):
             htmlWindowFrame.Raise()
 
