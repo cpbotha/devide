@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.5 2003/05/19 20:56:32 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.6 2003/06/16 15:22:01 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -23,3 +23,24 @@ has details about the spacing between controls.  Everything should be
 7 pixels from the edge of the dialogue box.  Non-related controls
 should be 7 pixels apart, related controls 4 pixels apart and
 text-labels and their associated controls should be 3 pixels apart.
+
+Since it makes things with sizers much easier, you can do 8 instead of 7.
+You'll see why. :)
+
+NAMING CONVENTION
+-----------------
+
+1. "Protected" methods start with an underscore (_), e.g. _utilityFunction()
+
+2. All names (methods, variables) have first word starting with lower-case
+   letter, all other constituent words and phrases starting with capital, e.g.
+   segmentObjectsFromImage()
+   
+3. wxPython event handlers will mostly take the following form:
+   _handlerShowHideObject() (this is so that they're all grouped together
+   when methods are alphabetically sorted)
+   
+4. VTK event observers will mostly take the following form:
+   _observerWidgetInteraction()
+   
+5. Methods in a class should be alphabetically sorted as far as possible.
