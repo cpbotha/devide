@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.1 2003/07/04 16:14:04 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.2 2003/07/04 16:52:08 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -155,7 +155,7 @@ class sliceDirections(object):
 
     def _handlerCreateSlice(self, event):
         self._createSlice(
-            self.slice3dVWR._viewFrame.createSliceText.GetValue())
+            self.slice3dVWR._viewFrame.createSliceComboBox.GetValue())
 
     def _handlerSliceSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
