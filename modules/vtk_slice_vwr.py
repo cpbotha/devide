@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.27 2002/05/15 14:06:47 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.28 2002/05/15 16:56:22 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base
@@ -89,7 +89,7 @@ class vtk_slice_vwr(module_base):
 
         We keep track of left mouse button status.  If the user drags with
         the left mouse button, we change the current slice.  Because mouse
-        capturing is broken in wxGTK 2.3.2.1, we can't do that.
+        capturing is broken in wxGTK 2.3.2.1, we can't do that...
         """
 
         if command_name == 'LeftButtonPressEvent':
@@ -319,13 +319,15 @@ class vtk_slice_vwr(module_base):
         # create and texture map the plane for ortho viewing
         self._setup_ortho_plane(overlay_pipe)
 
-        # FIXME:
-        # we probably only want to do this for the first layer...(i.e. we
-        # DON'T do overlays in 3D?)
+        # hmmm, we'll have to see if this makes overlays work, tee hee
+        # the fact that we pack it in the order of addition should yield
+        # precisely what the user expects (I think)
         self._update_3d_plane(overlay_pipe, 0)
+        
 
         # set up the vtkPlaneWidgets if this is the first layer
         if len(self._ortho_pipes[ortho_idx]) == 1:
+            
             self._pws[ortho_idx].SetProp3D(overlay_pipe['vtkActor3'])
             if ortho_idx == 0:
                 self._pws[ortho_idx].NormalToZAxisOn()
@@ -569,9 +571,19 @@ class vtk_slice_vwr(module_base):
             # and set it up!
             reslice.SetResliceAxesOrigin(new_ResliceAxesOrigin)
 
-        # render the pertinent orth
-	wxvtkrwi.Render()
-        # render the 3d viewer
-        self._rwis[0].Render()
+        if len(self._ortho_pipes[r_idx - 1]) > 0:
+            #
+            pw = self._pws[r_idx - 1]
+            ps3 = self._ortho_pipes[r_idx - 1][0]['vtkPlaneSource3']
+            pw.SetOrigin(ps3.GetOrigin())
+            pw.SetPoint1(ps3.GetPoint1())
+            pw.SetPoint2(ps3.GetPoint2())
+            # FIXME: we need some kind of call here to realise planesource geom
+
+            
+            # render the pertinent orth
+            wxvtkrwi.Render()
+            # render the 3d viewer
+            self._rwis[0].Render()
 
 	
