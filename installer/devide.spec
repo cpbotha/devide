@@ -4,38 +4,38 @@ import sys
 
 if sys.platform.startswith('win'):
     INSTALLER_DIR = 'c:\\build\\Installer'
-    D3_DIR = 'c:\\work\\code\\devide'
+    APP_DIR = 'c:\\work\\code\\devide'
     exeName = 'builddevide/devide.exe'    
 else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
-    D3_DIR = '/home/cpbotha/work/code/devide'
+    APP_DIR = '/home/cpbotha/work/code/devide'
     exeName = 'builddevide/devide'
 
-print "[*] D3_DIR == %s" % (D3_DIR)
+print "[*] APP_DIR == %s" % (APP_DIR)
 print "[*] exeName == %s" % (exeName)
-mainScript = os.path.join(D3_DIR, 'devide.py')
+mainScript = os.path.join(APP_DIR, 'devide.py')
 print "[*] mainScript == %s" % (mainScript)
 
 # segments
-segTree = Tree(os.path.join(D3_DIR, 'segments'), 'segments', ['CVS'])
+segTree = Tree(os.path.join(APP_DIR, 'segments'), 'segments', ['CVS'])
 # arb data
-dataTree = Tree(os.path.join(D3_DIR, 'data'), 'data', ['CVS'])
+dataTree = Tree(os.path.join(APP_DIR, 'data'), 'data', ['CVS'])
 # documents and help, exclude help source
-docsTree = Tree(os.path.join(D3_DIR, 'docs'), 'docs', ['CVS', 'source'])
+docsTree = Tree(os.path.join(APP_DIR, 'docs'), 'docs', ['CVS', 'source'])
 
 # USER MODULES
-userModulesTree = Tree(os.path.join(D3_DIR, 'userModules'), 'userModules',
+userModulesTree = Tree(os.path.join(APP_DIR, 'userModules'), 'userModules',
                        ['CVS', '*~'])
 
 # the extra modulePacks
-modulePacksTree = Tree(os.path.join(D3_DIR, 'modulePacks'), 'modulePacks',
+modulePacksTree = Tree(os.path.join(APP_DIR, 'modulePacks'), 'modulePacks',
                        ['CVS', '*~'])
 
 # VTKPIPELINE ICONS
 
 # unfortunately, due to the vtkPipeline design, these want to live one
 # down from the main dir
-vpli_dir = os.path.join(D3_DIR, 'external/vtkPipeline/Icons')
+vpli_dir = os.path.join(APP_DIR, 'external/vtkPipeline/Icons')
 vpli = [(os.path.join('Icons', i),
          os.path.join(vpli_dir, i), 'DATA')
         for i in os.listdir(vpli_dir) if fnmatch.fnmatch(i, '*.xpm')]
@@ -67,17 +67,18 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
               os.path.join(SUPPORT_DIR, 'useUnicode.py'),
               mainScript],
              pathex=[],
-             hookspath=[os.path.join(D3_DIR, 'installer/hooks/')])
+             hookspath=[os.path.join(APP_DIR, 'installer/hooks/')])
 
 pyz = PYZ(a.pure)
 
 
-    
+options = [('f','','OPTION')] #+ [('v', '', 'OPTION')], # Python is ran with -v
+
 exe = EXE(pyz,
-          a.scripts, #+ [('v', '', 'OPTION')], # Python is ran with -v
+          a.scripts + options,
           exclude_binaries=1,
           name=exeName,
-          icon=os.path.join(D3_DIR, 'resources/graphics/devidelogo64x64.ico'),
+          icon=os.path.join(APP_DIR, 'resources/graphics/devidelogo64x64.ico'),
           debug=0,
           strip=0,
           console=1 )
