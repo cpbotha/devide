@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.11 2003/06/05 15:59:41 cpbotha Exp $
+# $Id: moduleBase.py,v 1.12 2003/08/20 13:25:39 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
@@ -8,7 +8,7 @@ author: Charl P. Botha <cpbotha@ieee.org>
 class defaultConfigClass:
     pass
 
-class moduleBase:
+class moduleBase(object):
     """Base class for all modules.
 
     Any module wishing to take part in the dscas3 party will have to offer all
