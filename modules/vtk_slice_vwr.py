@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.61 2002/09/05 14:21:26 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.62 2002/09/09 15:40:34 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -7,7 +7,6 @@ from module_base import module_base, module_mixin_vtk_pipeline_config
 import vtk
 import vtkcpbothapython
 from wxPython.wx import *
-from wxPython.xrc import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
@@ -50,6 +49,7 @@ class vtk_slice_vwr(module_base,
 
         # list of selected points (we can make this grow or be overwritten)
         self._sel_points = []
+        self._vtk_points = vtk.vtkPoints()
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -66,6 +66,10 @@ class vtk_slice_vwr(module_base,
         
         # set the whole UI up!
         self._create_window()
+
+#################################################################
+# module API methods
+#################################################################
         
     def close(self):
         for idx in range(self._num_inputs):
@@ -84,10 +88,6 @@ class vtk_slice_vwr(module_base,
         if hasattr(self,'_view_frame'):
             self._view_frame.Destroy()
             del self._view_frame
-
-#################################################################
-# module API methods
-#################################################################
 
     def get_input_descriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
@@ -164,11 +164,10 @@ class vtk_slice_vwr(module_base,
 
         
     def get_output_descriptions(self):
-        # return empty tuple
-        return ()
+        return ('Selected points (vtkPoints)',)
         
     def get_output(self, idx):
-        raise Exception
+        return self._vtk_points
 
     def view(self):
         self._view_frame.Show(true)
@@ -373,7 +372,9 @@ class vtk_slice_vwr(module_base,
         # then remove it from our internal list
         del self._sel_points[idx]
 
-        
+        # and sync up vtk_points
+        self._sync_vtk_points()
+
 
     def _reset(self):
         """Arrange everything for a single overlay in a single ortho view.
@@ -524,8 +525,24 @@ class vtk_slice_vwr(module_base,
         # this adds a line to our list of points (for later manip)
         self._spoint_listctrl.SetStringItem(idx, 1, str(cursor[3]))
 
+        # make sure self._vtk_points is up to date
+        self._sync_vtk_points()
+
         self._rwi.Render()
+
+    def _sync_vtk_points(self):
+        """Sync up the vtkPoints to _sel_points.
         
+        We play it safe, as the number of points in this list is usually
+        VERY low.
+        """
+        
+        # first make sure it's empty
+        self._vtk_points.SetNumberOfPoints(0)
+        # then transfer everything
+        for i in self._sel_points:
+            x,y,z,v = i['cursor']
+            self._vtk_points.InsertNextPoint(x,y,z)
         
 #################################################################
 # callbacks
@@ -640,5 +657,9 @@ class vtk_slice_vwr(module_base,
         self._rwis[0].GetRenderWindow().Render()
 
     def _store_cursor_cb(self, i):
+        """Call back for the store cursor button.
+
+        Calls store cursor method on [x,y,z,v].
+        """
         self._store_cursor(self._current_cursors[i])
         
