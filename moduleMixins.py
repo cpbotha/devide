@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.34 2004/04/15 12:50:49 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.35 2004/04/20 14:01:26 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -411,6 +411,18 @@ class noConfigModuleMixin(introspectModuleMixin):
     def view(self):
         self._viewFrame.Show(True)
         self._viewFrame.Raise()
+
+    def configToLogic(self):
+        pass
+
+    def logicToConfig(self):
+        pass
+
+    def configToView(self):
+        pass
+
+    def viewToConfig(self):
+        pass
     
         
 # ----------------------------------------------------------------------------
