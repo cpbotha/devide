@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.28 2002/05/17 11:49:18 cpbotha Exp $
+# $Id: graph_editor.py,v 1.29 2002/05/19 14:55:29 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -270,9 +270,26 @@ class graph_editor:
         # put a splitter window in it
         split_win = wxSplitterWindow(parent=panel, id=-1,
                                      size=(640,480))
+
+        # make a panel on the left, so we can populate with tree and other
+        # controls
+        left_panel = wxPanel(split_win, -1)
         # tree thingy on the one size
-        self._tree_ctrl = wxTreeCtrl(parent=split_win,
+        self._tree_ctrl = wxTreeCtrl(parent=left_panel,
                                      style=wxTR_HAS_BUTTONS|wxTR_HIDE_ROOT)
+        # then make a button
+        rsid = wxNewId()
+        rsb = wxButton(left_panel, rsid, 'Rescan')
+        EVT_BUTTON(self._graph_frame, rsid, lambda e, s=self: s.fill_module_tree())
+
+        # stuff the button and tree into a sizer
+        left_sizer = wxBoxSizer(wxVERTICAL)
+        left_sizer.Add(self._tree_ctrl, option=1, flag=wxEXPAND)
+        left_sizer.Add(rsb)
+
+        # tell the left panel that it should use the sizer
+        left_panel.SetAutoLayout(true)
+        left_panel.SetSizer(left_sizer)
 
         # the shape canvas on the right side
         self._shape_canvas = ge_shape_canvas(split_win, self)
@@ -281,7 +298,7 @@ class graph_editor:
         self._diagram.SetCanvas(self._shape_canvas)
         
         # then split the window, giving the tree thingy 120 pixels
-        split_win.SplitVertically(self._tree_ctrl, self._shape_canvas, 120)
+        split_win.SplitVertically(left_panel, self._shape_canvas, 120)
 
         # add a top level sizer and give it the splitter window to play with
         top_sizer = wxBoxSizer(wxVERTICAL)
@@ -297,7 +314,9 @@ class graph_editor:
         self.show()
 
     def fill_module_tree(self):
+        print "filling module tree"
         self._tree_ctrl.DeleteAllItems()
+
         tree_root = self._tree_ctrl.AddRoot('Modules')
         rdrn = self._tree_ctrl.AppendItem(tree_root, 'Readers')
         wrtn = self._tree_ctrl.AppendItem(tree_root, 'Writers')

@@ -18,18 +18,16 @@ class module_manager:
 	# add it to the python path so imports work
 	sys.path.insert(0, self._modules_dir)
 	# make first scan of available modules
-	self.module_list = self.scan_modules()
+	self.scan_modules()
 
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files."""
 	files = os.listdir(self._modules_dir)
-	self.module_files = []
+	self.module_list = []
 	for i in files:
 	    if fnmatch.fnmatch(i, "*.py") and not fnmatch.fnmatch(i, "_*"):
-		self.module_files.append(os.path.splitext(i)[0])
-
-	return self.module_files
+		self.module_list.append(os.path.splitext(i)[0])
 	
     def get_module_list(self):
 	return self.module_list
