@@ -1,3 +1,6 @@
+# IDEA:
+# use vtkPolyDataConnectivityFilter with minima as seed points
+
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 from wxPython.wx import *
@@ -270,10 +273,13 @@ class testModule3(moduleBase, noConfigModuleMixin):
                     # for the next iteration
                     seedPdScalars.SetTuple1(i, c)
 
-                self._moduleManager.setProgress(i / 500.0 * 100.0,
+                self._moduleManager.setProgress(iteration / 500.0 * 100.0,
                                                 "Homotopic modification")
                 print "iteration %d done" % (iteration)
                 iteration += 1
+
+                #if iteration == 2:
+                #    stable = True
 
             # seedPd is the output of the homotopic modification
             # END of erosion + supremum
@@ -312,14 +318,15 @@ class testModule3(moduleBase, noConfigModuleMixin):
                         nbhC = [seedPdScalars.GetTuple1(pi)
                                 for pi in nbh]
 
-                        cmi = 0 # contour minimum index cmi
+                        cmi = 0 # curvature minimum index cmi
                         # remember that in the neighbourhood map
                         # the "centre" point is always first
-                        c0 = nbhC[cmi]
+                        cms = nbhC[cmi]
 
                         for ci in range(len(nbhC)): # contour index ci
-                            if nbhC[ci] < c0:
+                            if nbhC[ci] < cms:
                                 cmi = ci
+                                cms = nbhC[ci]
 
                         if cmi != 0:
                             # this means we found a point we can move on to
@@ -330,7 +337,8 @@ class testModule3(moduleBase, noConfigModuleMixin):
                                 for newLabelPtId in thePath:
                                     pointLabels[newLabelPtId] = theLabel
 
-                                print "found new path: %d" % (theLabel)
+                                print "found new path: %d (%d)" % \
+                                      (theLabel, len(thePath))
                                 # and our loop is done
                                 pathDone = True
 
@@ -339,10 +347,64 @@ class testModule3(moduleBase, noConfigModuleMixin):
                                 # we just add it to our path
                                 thePath.append(nbh[cmi])
 
+                        # END if cmi != 0
                         else:
-                            # this means no points around us have lower value!
-                            pathDone = True
-                            print "eeeeke!  I'm stuck! %s" % (nbhC)
+                            # we couldn't find any point lower than us!
+
+                            # let's eat as many plateau points as we can,
+                            # until we reach a lower-labeled point
+
+                            # c0 is the "current" curvature
+
+                            plateau, plateauNeighbours = self._getPlateau(
+                                nbh[0], neighbourMap, seedPdScalars)
+
+                            # now look for the lowest neighbour
+                            # (c0 is the plateau scalar)
+                            minScalar = cms
+                            minId = -1
+                            for nId in plateauNeighbours:
+                                si = seedPdScalars.GetTuple1(nId)
+                                if si < minScalar:
+                                    minId = nId
+                                    minScalar = si
+
+                            if not plateauNeighbours:
+                                # i.e. we have a single point or a floating
+                                # plateau...
+                                print "floating plateau!"
+                                pathDone = True
+                                
+                            elif minId != -1:
+                                # this means we found the smallest neighbour
+
+                                # everything on the plateau gets added to
+                                # the path
+                                for i in plateau:
+                                    thePath.append(i)
+
+                                if pointLabels[minId] != -1:
+                                    # if this is a labeled point, we know which
+                                    # basin thePath belongs to
+                                    theLabel = pointLabels[minId]
+                                    for newLabelPtId in thePath:
+                                        pointLabels[newLabelPtId] = theLabel
+
+                                    print "found new path: %d (%d)" % \
+                                          (theLabel, len(thePath))
+                                    # and our loop is done
+                                    pathDone = True
+
+                                else:
+                                    # this is not a labeled point, which means
+                                    # we just add it to our path
+                                    thePath.append(minId)
+                                    
+                            else:
+                                print "HELP! - we found a minimum plateau!"
+                                
+                                
+                                    
 
             # we're done with our little path walking... now we have to assign
             # our watershedded thingy to the output data
@@ -354,11 +416,61 @@ class testModule3(moduleBase, noConfigModuleMixin):
                     ptId,
                     pointLabels[ptId])
 
+    def _getPlateau(self, initPt, neighbourMap, scalars):
+
+        """Grow outwards from ptId nbh[0] and include all points with the
+        same scalar value.
+
+        return 2 lists: one with plateau ptIds and one with ALL the neighbour
+        Ids.
+        """
+
+        # by definition, the plateau will contain at least the initial point
+        plateau = [initPt]
+        plateauNeighbours = []
+        # we're going to use this to check VERY quickly whether we've
+        # already stored a point
+        donePoints = [False for i in xrange(len(neighbourMap))]
+        donePoints[initPt] = True
+        # and this is the scalar value of the plateau
+        initScalar = scalars.GetTuple1(initPt)
+        # setup for loop
+        currentNeighbourPts = neighbourMap[initPt]
+        
+        # everything in currentNeighbourPts that has equal scalar
+        # gets added to plateau
+        
+
+        while currentNeighbourPts:
+            newNeighbourPts = []
+            for npt in currentNeighbourPts:
+                if not donePoints[npt]:
+                    ns = scalars.GetTuple1(npt)
+                    if ns == initScalar:
+                        plateau.append(npt)
+                    else:
+                        plateauNeighbours.append(npt)
+
+                    donePoints[npt] = True
+
+                    # we've added a new point, now we need to get
+                    # its neighbours as well
+                    for i in neighbourMap[npt]:
+                        newNeighbourPts.append(i)
+
+            currentNeighbourPts = newNeighbourPts
+
+        print plateau
+        print plateauNeighbours
+        print "hi mom"
+        return (plateau, plateauNeighbours)
+
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
     
+
     def _inputPointsObserver(self, obj):
         # extract a list from the input points
         if self._inputPoints:
