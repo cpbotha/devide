@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.6 2003/02/06 16:22:58 cpbotha Exp $
+# $Id: moduleBase.py,v 1.7 2003/02/10 15:31:25 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
@@ -97,9 +97,17 @@ class moduleBase:
 
     def applyViewToLogic(self):
         """Utility method that is used by the default CSAEO buttons.
+
+        By default, applying changes to the underlying logic is followed
+        by a synch of the view (via the config) to the underlying logic.
+        The reason for this is to enable real-time display of other logic-
+        dependent variables in the view.
         """
+        
         self.viewToConfig()
         self.configToLogic()
+        # this brings everything up to the surface again
+        self.syncViewWithLogic()
 
     def syncViewWithLogic(self):
         """Utility method that is used by the default CSAEO buttons.
