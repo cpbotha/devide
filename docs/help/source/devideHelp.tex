@@ -210,9 +210,14 @@ documentation, available by right clicking on the module glyph and
 selecting ``Help on Module'' or by querying the doc-string of the main
 module class.
 
-\section{The slice3dVWR}
+\section{The slice3dVWR}\label{secslice3dVWR}
 
-\subsection{Slices}
+\subsection{Slices}\label{secSlices}
+When a volume has been connected to an input of the slice3dVWR, the
+volume can be examined by ``slicing'' through it.  By default, an
+axial slice is created automatically, but any number of additional
+slices can be activated.
+
 \subsubsection{Overlay modes}
 The slice3dVWR has several overlay modes.  These modes make it
 possible to visualise the correspondence between multiple inputs, for
@@ -260,10 +265,40 @@ amount of the image correspondence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Useful patterns}
-This chapter shows some useful patterns, i.e. networks that solve
-specific problems.
+This chapter contains a selection of howtos, i.e. very short
+descriptions of how to perform some action with the DeVIDE software.
 
-\section{Basic volume data loading and visualisation}
+\section{Loading and viewing DICOM data}
+The easiest way to load a DICOM dataset is to select the relevant
+DICOM files (often with a .dcm extension) in your file browser
+(e.g. Explorer in Windows and Konqueror in KDE) and to drag and drop
+the selected files on the Graph Editor Canvas.  A ``dicomRDR'' module
+will be automatically created with the selected filenames added.
+
+Alternatively, you can create a ``dicomRDR'' module in the normal way,
+i.e. by dragging and dropping the module from the Module Palette onto
+the canvas.  Double click on the module to open its View/Config
+window.  Click on the ``Add'' button to add any number of DICOM
+filenames.  Remember to click on ``Apply'' after having added the
+relevant filenames.
+
+A DICOM dataset (or study) can consist of a number of series, where
+each series is a coherent volume and consists of a number of stacked
+images.  The ``dicomRDR'' module will automatically sort and group the
+different series after the ``Apply'' button has been clicked.  A
+different series can be chosen by modifying the ``Series Instance
+Index'' input in the ``dicomRDR'' View/Config window and clicking on
+the ``Apply'' button again.  At this time, the other information in
+the window, such as the study description and the dimensions, will be
+updated to reflect the new series.
+
+To start visualising the volume that you have just loaded, create a
+``slice3dVWR'' module and then connect the output of the ``dicomRDR''
+module to any input of the ``slice3dVWR'' module.  The module
+interface will automatically appear with the default axial slice.  To
+read more about interacting with this slice, see the \helpref{slices
+section}{secSlices} of the \helpref{slice3dVWR
+documentation}{secslice3dVWR}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Creating new modules}
