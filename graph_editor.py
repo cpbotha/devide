@@ -1,5 +1,6 @@
+
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.35 2003/01/29 12:09:22 cpbotha Exp $
+# $Id: graph_editor.py,v 1.36 2003/01/29 18:01:27 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -422,23 +423,34 @@ class graph_editor:
             if temp_module:
                 ge_glyph(self._graph_frame.shapeCanvas, mod_name, temp_module, x, y)
 
-    def updatePortInfoStatusbar(self, from_io_shape, to_io_shape):
-        from_msg = 'N/A'
-        to_msg = ''
+    def updatePortInfoStatusbar(self, from_io_shape, to_io_shape=None):
 
-        for io_shape in (from_io_shape, to_io_shape):
-            glyph = io_shape.get_parent_glyph()
-            if io_shape.get_inout():
-                idx = glyph.get_main_shape().find_input_idx(io_shape)
-                msg = glyph.get_module_instance().getInputDescriptions()[idx]
-            else:
-                idx = glyph.get_main_shape().find_output_idx(io_shape)
-                msg = glyph.get_module_instance().getOutputDescriptions()[idx]
+        msgs = ['N/A', 'N/A']
+        i = 0
+        for i in range(2):
+            io_shape = (from_io_shape, to_io_shape)[i]
+            if not io_shape is None:
+                glyph = io_shape.get_parent_glyph()
+                if io_shape.get_inout():
+                    idx = glyph.get_main_shape().find_input_idx(io_shape)
+                    msgs[i] = glyph.get_module_instance().\
+                              getInputDescriptions()[idx]
+                else:
+                    idx = glyph.get_main_shape().find_output_idx(io_shape)
+                    msgs[i] = glyph.get_module_instance().\
+                              getOutputDescriptions()[idx]
 
-        self._graph_frame.GetStatusBar().SetStatusText(msg)
+
+        if to_io_shape is None:
+            stxt = msgs[0]
+        else:
+            stxt = 'From %s to %s' % tuple(msgs)
+            
+        self._graph_frame.GetStatusBar().SetStatusText(stxt)
         
     def inout_leftclick_cb(self, parent_glyph, io_shape,
                            x, y, keys, attachment):
+        # single click, just display the shape type
         self.updatePortInfoStatusbar(io_shape)
                 
     def inout_begindragleft_cb(self, parent_glyph, io_shape,
@@ -454,9 +466,7 @@ class graph_editor:
                 # by definition, this can be only one line
                 ltn = io_shape.GetLines()[0]
                 self.draw_preview_line(ltn.GetFrom(), x, y)
-
-        # make sure the user knows which ports we're dealing with
-        self.updatePortInfoStatusbar(io_shape)
+                self.updatePortInfoStatusbar(io_shape)
 
         # after doing our setup, we capture the mouse so things don't
         # get confused when the user waves his wand outside the canvas
@@ -527,10 +537,8 @@ class graph_editor:
         # find shape that we're close to (we will need this in both cases)
         f_ret = self._graph_frame.shapeCanvas.FindShape(x, y, None)
 
-        # if it's not the originating io_shape but it is another io_shape,
-        # and that other shape is an input shape, we can consider playing
         if f_ret and hasattr(f_ret[0], 'get_inout'):
-            self.updatePortInfoStatusbar(f_ret[0])
+            self.updatePortInfoStatusbar(io_shape, f_ret[0])
 
     def mshape_rightclick_cb(self, x, y, keys, attachment, glyph):
         pmenu = wxMenu(glyph.get_name())
