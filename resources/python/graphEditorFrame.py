@@ -20,6 +20,7 @@ class graphEditorFrame(wxFrame):
         self.rescanButtonId  =  wxNewId()
         self.rescanButton = wxButton(self.window_1_pane_1, self.rescanButtonId , "Rescan")
         self.shapeCanvas = geShapeCanvas(self.window_1_pane_2)
+        self.frame_1_statusbar = self.CreateStatusBar(1)
 
         self.__set_properties()
         self.__do_layout()
@@ -28,16 +29,21 @@ class graphEditorFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: graphEditorFrame.__set_properties
         self.SetTitle("DSCAS3 Graph Editor")
-        self.treeCtrl.SetSize((141, 449))
-        self.shapeCanvas.SetSize((483, 476))
-        self.window_1.SetSize((640, 480))
-        self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 143)
+        self.treeCtrl.SetSize((149, 424))
+        self.shapeCanvas.SetSize((480, 446))
+        self.window_1.SetSize((640, 455))
+        self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 151)
+        self.frame_1_statusbar.SetStatusWidths([-1])
+        # statusbar fields
+        frame_1_statusbar_fields = ["Welcome to the DSCAS3 Graph Editor"]
+        for i in range(len(frame_1_statusbar_fields)):
+            self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: graphEditorFrame.__do_layout
         sizer_1 = wxBoxSizer(wxVERTICAL)
-        sizer_2 = wxBoxSizer(wxHORIZONTAL)
+        sizer_2 = wxBoxSizer(wxVERTICAL)
         sizer_3 = wxBoxSizer(wxVERTICAL)
         sizer_3.Add(self.treeCtrl, 1, wxEXPAND, 0)
         sizer_3.Add(self.rescanButton, 0, 0, 0)
