@@ -147,7 +147,7 @@ def textToFloat(text, defaultFloat):
     """
 
     try:
-        returnFloat = float(eval(text))
+        returnFloat = float(text)
     except Exception:
         returnFloat = defaultFloat
 
@@ -159,7 +159,7 @@ def textToInt(text, defaultInt):
     """
 
     try:
-        returnInt = int(eval(text))
+        returnInt = int(text)
     except Exception:
         returnInt = defaultInt
 
