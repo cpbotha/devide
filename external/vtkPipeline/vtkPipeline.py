@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.5 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.6 2004/07/08 12:46:03 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -215,7 +215,14 @@ def recursively_add_children(tree_ctrl, parent_node):
     
     children = get_vtk_objs(tree_ctrl.GetPyData(parent_node))
     for i in children:
-        if not i[1].IsA("vtkRenderWindowInteractor"):
+        # vtkExecutive causes infinite recursion: each vtkAlgorithm (all
+        # ProcessObjects, amongst others) is managed by a vtkExecutive,
+        # so we get the Executive as a child object (via GetExecutive()),
+        # and then the ProcessObject as its child (via GetAlgorithm()), and
+        # then ping pong into flaming death.
+        if not i[1].IsA("vtkRenderWindowInteractor") and \
+               not i[1].IsA("vtkExecutive"):
+
             # get_vtk_objs() conveniently calls get_icon as well
             img_idx = icon_map.values().index(i[2])
             if i[0]:
