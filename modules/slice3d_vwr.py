@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.24 2003/02/27 18:00:43 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.25 2003/02/27 23:31:50 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -677,8 +677,32 @@ class slice3d_vwr(moduleBase,
 
             self._syncOverlays()
         
-    def _storePoint(self, pointId, actor):
-        pass
+    def _storeSurfacePoint(self, pointId, actor):
+        polyData = actor.GetMapper().GetInput()
+        if polyData:
+            xyz = polyData.GetPoint(pointId)
+        else:
+            # something really weird went wrong
+            return
+
+        worlds = [i['world'] for i in self._selectedPoints]
+        if xyz in worlds:
+            return
+
+        inputData = self._ipws[0].GetInput()
+        if inputData:
+            # get the discrete coords of this point
+            ispacing = inputData.GetSpacing()
+            iorigin = inputData.GetOrigin()
+            discrete = map(round,
+                           map(operator.div,
+                               map(operator.sub, pos, iorigin), ispacing))
+            val = inputData.GetScalarComponentAsFloat(x,y,z, 0)
+        else:
+            discrete = (0, 0, 0)
+            val = 0
+            
+        self._storePoint(discrete, xyz, val)
 
     def _storeCursor(self, cursor):
         """Store the point represented by the cursor parameter.
@@ -687,7 +711,7 @@ class slice3d_vwr(moduleBase,
         the value at that point.
         """
         
-        # do we have data?
+        # do we have volume data?
         if self._ipws[0].GetInput() is None:
             return
 
@@ -703,14 +727,17 @@ class slice3d_vwr(moduleBase,
         world = map(operator.add, iorigin,
                     map(operator.mul, ispacing, cursor[0:3]))
 
-        self._storePoint(tuple(cursor[0:3]), world, cursor[3])
+        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3])
 
     def _storePoint(self, discrete, world, value):
+
+        bounds = self._threedRenderer.ComputeVisiblePropBounds()        
         
         # we use a pointwidget
         pw = vtk.vtkPointWidget()
-        pw.SetInput(inputData)
-        pw.PlaceWidget()
+        #pw.SetInput(inputData)
+        pw.PlaceWidget(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4],
+                       bounds[5])
         pw.SetPosition(world)
         # make priority higher than the default of vtk3DWidget so
         # that imageplanes behind us don't get selected the whole time
@@ -720,7 +747,8 @@ class slice3d_vwr(moduleBase,
         pw.On()
 
         ss = vtk.vtkSphereSource()
-        bounds = inputData.GetBounds()
+        #bounds = inputData.GetBounds()
+
         ss.SetRadius((bounds[1] - bounds[0]) / 50.0)
         sm = vtk.vtkPolyDataMapper()
         sm.SetInput(ss.GetOutput())
@@ -758,11 +786,11 @@ class slice3d_vwr(moduleBase,
             self._syncOutputSelectedPoints()
 
         pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
-                       inputData=inputData, s=self:
-                       s.pointwidget_interaction_cb(pw, evt_name, inputData))
+                       s=self:
+                       s._pointWidgetInteractionCallback(pw, evt_name))
         pw.AddObserver('InteractionEvent', lambda pw, evt_name,
-                       inputData=inputData, s=self:
-                       s.pointwidget_interaction_cb(pw, evt_name, inputData))
+                       s=self:
+                       s._pointWidgetInteractionCallback(pw, evt_name))
         pw.AddObserver('EndInteractionEvent', pw_ei_cb)
         
         # store the cursor (discrete coords) the coords and the actor
@@ -788,10 +816,14 @@ class slice3d_vwr(moduleBase,
         # *sniff* *sob* It's unreadable, but why's it so pretty?
         # this just formats the real point
         discrete = self._selectedPoints[row]['discrete']
+        world = self._selectedPoints[row]['world']
         value = self._selectedPoints[row]['value']
-        pos_str = "%s, %s, %s" % discrete
-        self._viewFrame.spointsGrid.SetCellValue(row, 0, pos_str)
-        self._viewFrame.spointsGrid.SetCellValue(row, 1, str(value))
+        discreteStr = "%.0f, %.0f, %.0f" % discrete
+        worldStr = "%.2f, %.2f, %.2f" % world
+        self._viewFrame.spointsGrid.SetCellValue(row, 0, worldStr)
+        self._viewFrame.spointsGrid.SetCellValue(row, 1, discreteStr)
+
+        self._viewFrame.spointsGrid.SetCellValue(row, 2, str(value))
 
     def _syncOverlay(self, i):
         if len(self._overlay_ipws) > i:
@@ -819,11 +851,10 @@ class slice3d_vwr(moduleBase,
 
         # then transfer everything
         for i in self._selectedPoints:
-            x,y,z,v = i['discrete']
             self._outputSelectedPoints.append({'name' : i['name'],
-                                               'discrete' : (x,y,z),
+                                               'discrete' : i['discrete'],
                                                'world' : i['world'],
-                                               'value' : v})
+                                               'value' : i['value']})
 
         # then make sure this structure knows that it has been modified
         self._outputSelectedPoints.notify()
@@ -856,7 +887,7 @@ class slice3d_vwr(moduleBase,
     def _ipwEndInteractionCallback(self, i):
         self._syncOverlay(i)
 
-    def pointwidget_interaction_cb(self, pw, evt_name, inputData):
+    def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
         pwidgets = map(lambda i: i['point_widget'], self._selectedPoints)
         if pw in pwidgets:
@@ -874,17 +905,27 @@ class slice3d_vwr(moduleBase,
             if ta:
                 ta.SetPosition(pos)
 
-            # then we have to update our internal record of this point
-            ispacing = inputData.GetSpacing()
-            iorigin = inputData.GetOrigin()
-            x,y,z = map(round,
-                        map(operator.div,
-                        map(operator.sub, pos, iorigin), ispacing))
-            val = inputData.GetScalarComponentAsFloat(x,y,z, 0)
+            inputData = self._ipws[0].GetInput()
+            if inputData:
+                # then we have to update our internal record of this point
+                ispacing = inputData.GetSpacing()
+                iorigin = inputData.GetOrigin()
+                discrete = map(round,
+                            map(operator.div,
+                                map(operator.sub, pos, iorigin), ispacing))
+                val = inputData.GetScalarComponentAsFloat(discrete[0],
+                                                          discrete[1],
+                                                          discrete[2], 0)
+            else:
+                discrete = (0, 0, 0)
+                val = 0
+                
             # the cursor is a tuple with discrete position and value
-            self._selectedPoints[idx]['discrete'] = (x,y,z,val)
+            self._selectedPoints[idx]['discrete'] = discrete
             # 'world' is the world coordinates
             self._selectedPoints[idx]['world'] = pos
+            # and the value
+            self._selectedPoints[idx]['value'] = val
 
             self._syncGridRowToSelPoints(idx)
             
@@ -1035,8 +1076,10 @@ class slice3d_vwr(moduleBase,
         pickAction = self._viewFrame.surfacePickActionRB.GetSelection()
         if pickAction == 1:
             # Place point on surface
-            print findPickedProp(obj)
-            pass
+            actor, pointId = findPickedProp(obj)
+            if pointId >= 0 and actor:
+                self._storeSurfacePoint(pointId, actor)
+                
         elif pickAction == 2:
             # configure picked object
             prop, pointId = findPickedProp(obj)
