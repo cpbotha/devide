@@ -11,6 +11,12 @@ class vtk_3d_vwr(module_base):
 	for i in range(5):
 	    self.inputs.append({'Connected' : 0, 'vtkActor' : None})
 
+	# class variables we'll use alter
+	self.renderer = None
+	self.rw = None
+	self.rw_window = None
+	
+	# start up that gui
 	self.create_window()
 	
     def __del__(self):
