@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.20 2002/09/18 15:42:59 cpbotha Exp $
+# $Id: module_base.py,v 1.21 2002/09/30 15:30:30 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -58,7 +58,10 @@ class module_base:
 	"""Get the n-th output.
 
         This will be used for connecting this output to the input of another
-        module.
+        module.  Whatever is returned by this object MUST have an Update()
+        method.  However you choose to implement it, the Update() should make
+        sure that the whole chain of logic resulting in the data object has
+        executed so that the data object is up to date.
         """
 	raise NotImplementedError
     
@@ -74,6 +77,22 @@ class module_base:
 	raise NotImplementedError
     
     def execute_module(self):
+        """This should make the model do whatever processing it was designed
+        to do.
+
+        It's important that when this method is called, the module should be
+        able to cause ALL of the modules preceding it in a glyph chain to
+        execute (if necessary).  If the whole chain consists of VTK objects,
+        this is easy.
+
+        If not, extra measures need to be taken.  According to API,
+        each output/input data object MUST have an Update() method
+        that can ensure that the logic responsible for that object has
+        executed thus making the data object current.
+
+        In short, execute_module() should call Update() on all of this modules
+        input objects, directly or indirectly.
+        """
 	raise NotImplementedError
     
     def view(self):
