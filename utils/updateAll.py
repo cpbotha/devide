@@ -1,9 +1,10 @@
 # updates all DeVIDE dependencies except ITK and VTK
 # i.e. do a cvs update, a cmake and a build of:
 # vtkdevide, vtktud, wrapitk and, depending on ITK: wrapitk, ConnectVTKITK
-# $Id: updateAll.py,v 1.3 2005/01/11 22:42:06 cpbotha Exp $
+# $Id: updateAll.py,v 1.4 2005/01/11 22:51:30 cpbotha Exp $
 # authored by Charl P. Botha http://cpbotha.net/
 
+import getopt
 import os
 import sys
 
@@ -34,11 +35,6 @@ else:
 
 cvsUpdateCommand = 'cvs -z3 update -dAP'
 
-def updatedevide():
-    print 'CVS updating %s' % (defaults.devideTopLevel,)
-    os.chdir(defaults.devideTopLevel)
-    os.system(cvsUpdateCommand)
-
 def standardUpdate(source):
     print '\nCVS updating %s\n' % (source,)
     os.chdir(source)
@@ -58,17 +54,6 @@ def standardBuild(binary, slnFile):
 
     os.system(theBuildCommand)
     
-def updatevtkdevide():
-    standardUpdateAndBuild(defaults.vtkdevideSource, defaults.vtkdevideBinary,
-                           'vtkdevide.sln')
-
-def updatevtktud():
-    standardUpdateAndBuild(defaults.vtktudSource, defaults.vtktudBinary,
-                           'vtktud.sln')
-    
-def updatewrapitk():
-    standardUpdateAndBuild(defaults.wrapitkSource, defaults.wrapitkBinary,
-                           'wrapitk.sln')
 
 def doUpdates():
     standardUpdate(defaults.devideTopLevel)
@@ -78,12 +63,44 @@ def doUpdates():
 
 def doBuilds():
     standardBuild(defaults.vtkdevideBinary, 'vtkdevide.sln')
-    standardBuild(defaults.vtktudBinary, 'vtutud.sln')
+    standardBuild(defaults.vtktudBinary, 'vtktud.sln')
     standardBuild(defaults.wrapitkBinary, 'wrapitk.sln')
 
+def dispUsage():
+    print "-h or --help               : Display this message."
+    print "--noUpdates                : Do not do any CVS updates."
+    print "--noBuilds                 : Do not do any builds."
+
 def main():
-    doUpdates()
-    doBuilds()
+    updatesRequested = True
+    buildsRequested = True
+    
+    try:
+        # 'p:' means -p with something after
+        optlist, args = getopt.getopt(
+            sys.argv[1:], 'h',
+            ['help', 'noUpdates', 'noBuilds'])
+
+    except getopt.GetoptError,e:
+        dispUsage()
+        sys.exit(1)
+
+    for o, a in optlist:
+        if o in ('-h', '--help'):
+            dispUsage()
+            sys.exit(1)
+
+        elif o in ('--noUpdates'):
+            updatesRequested = False
+            
+        elif o in ('--noBuilds'):
+            buildsRequested = False
+
+    if updatesRequested:
+        doUpdates()
+
+    if buildsRequested:
+        doBuilds()
 
 if __name__ == '__main__':
     main()
