@@ -1,4 +1,5 @@
 from module_base import module_base
+import module_utils
 from wxPython.wx import *
 import vtk
 
@@ -8,6 +9,8 @@ class doubleThresholdFLT(module_base):
 
         # call parent constructor
         module_base.__init__(self, module_manager)
+
+        self._config = None
 
         self._imageThreshold = vtk.vtkImageThreshold()
 
@@ -20,7 +23,8 @@ class doubleThresholdFLT(module_base):
                              'Short' : 'VTK_SHORT',
                              'Unsigned Short' : 'VTK_UNSIGNED_SHORT',
                              'Char' : 'VTK_CHAR',
-                             'Unsigned Char' : 'VTK_UNSIGNED_CHAR'}
+                             'Unsigned Char' : 'VTK_UNSIGNED_CHAR',
+                             'Same as input' : -1}
 
         self._viewFrame = None
         self._createViewFrame()
@@ -30,6 +34,8 @@ class doubleThresholdFLT(module_base):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
         self.set_input(0, None)
+        # take out our view interface
+        self._viewFrame.Destroy()
         # get rid of our reference
         del self._imageThreshold
 
@@ -47,13 +53,13 @@ class doubleThresholdFLT(module_base):
     
     def sync_config(self):
         
-        self._imageThreshold.GetLowerThreshold()
-        self._imageThreshold.GetUpperThreshold()
-        self._imageThreshold.GetReplaceIn()
-        self._imageThreshold.GetInValue()
-        self._imageThreshold.GetReplaceOut()
-        self._imageThreshold.GetOutValue()
-        self._imageThreshold.GetOutputScalarType()
+        self._config.lt = self._imageThreshold.GetLowerThreshold()
+        self._config.up = self._imageThreshold.GetUpperThreshold()
+        self._config.ri = self._imageThreshold.GetReplaceIn()
+        self._config.iv = self._imageThreshold.GetInValue()
+        self._config.ro = self._imageThreshold.GetReplaceOut()
+        self._config.ov = self._imageThreshold.GetOutValue()
+        self._config.os = self._imageThreshold.GetOutputScalarType()
         
         filename = self._writer.GetFileName()
         if filename == None:
@@ -93,11 +99,26 @@ class doubleThresholdFLT(module_base):
         self._viewFrame.Show(true)
 
     def _createViewFrame(self):
+
+        # import the viewFrame (created with wxGlade)
         import modules.resources.python.doubleThresholdFLTFrame
         reload(modules.resources.python.doubleThresholdFLTFrame)
-        pw = self._module_manager.get_module_view_parent_window()
 
+        # find our parent window and instantiate the frame
+        pw = self._module_manager.get_module_view_parent_window()
         self._viewFrame = modules.resources.python.doubleThresholdFLTFrame.\
                           doubleThresholdFLTFrame(pw, -1, 'dummy')
 
-        
+        # make sure that a close of that window does the right thing
+        EVT_CLOSE(self._viewFrame,
+                  lambda e, s=self: s._viewFrame.Show(false))
+
+        # default binding for the buttons at the bottom
+        module_utils.bind_CSAEO2(self, self._viewFrame)        
+
+        # finish setting up the output datatype choice
+        self._viewFrame.outputDataTypeChoice.Clear()
+        for aType in self._outputTypes.keys():
+            self._viewFrame.outputDataTypeChoice.Append(aType)
+
+

@@ -28,7 +28,11 @@ class module_manager:
         This is only called during dscas3 application shutdown.
         """
         for module in self.modules:
-            self.delete_module(module)
+            try:
+                self.delete_module(module)
+            except:
+                # we can't allow a module to stop us
+                pass
 
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
