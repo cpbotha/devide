@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.92 2004/11/26 15:37:40 cpbotha Exp $
+# $Id: graphEditor.py,v 1.93 2004/11/26 15:44:37 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -122,18 +122,18 @@ class glyphSelection:
 # ----------------------------------------------------------------------------
 
 class graphEditor:
-    def __init__(self, devide_app):
+    def __init__(self, devideApp):
         # initialise vars
-        self._devide_app = devide_app
+        self._devideApp = devideApp
 
         import resources.python.graphEditorFrame
 
         # first the main canvasframe -----------------------------------
         self._canvasFrame = resources.python.graphEditorFrame.canvasFrame(
-            self._devide_app.get_main_window(),
+            self._devideApp.get_main_window(),
             -1, title='dummy', name='DeVIDE', wxpcCanvas=wxpc.canvas)
 
-        self._canvasFrame.SetIcon(self._devide_app.getApplicationIcon())
+        self._canvasFrame.SetIcon(self._devideApp.getApplicationIcon())
 
         self._appendEditCommands(self._canvasFrame.editMenu, self._canvasFrame,
                                  (0,0), False)
@@ -143,10 +143,10 @@ class graphEditor:
         # then the module palette frame -------------------------------
         self._modulePaletteFrame = resources.python.graphEditorFrame.\
                                    modulePaletteFrame(
-            self._devide_app.get_main_window(),
+            self._devideApp.get_main_window(),
             -1, title='dummy', name='DeVIDE')
 
-        self._modulePaletteFrame.SetIcon(self._devide_app.getApplicationIcon())
+        self._modulePaletteFrame.SetIcon(self._devideApp.getApplicationIcon())
         EVT_CLOSE(self._canvasFrame, self._handlerGraphFrameClose)
 
 
@@ -489,7 +489,7 @@ class graphEditor:
         # check that it's a valid module name
         if moduleName in self._availableModuleList:
             # we have a valid module, we should try and instantiate
-            mm = self._devide_app.getModuleManager()
+            mm = self._devideApp.getModuleManager()
             temp_module = mm.createModule(moduleName)
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
@@ -511,7 +511,7 @@ class graphEditor:
         the parameter moduleInstance.
         """
         
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
         mm.executeModule(moduleInstance)
 	
     def _helpModule(self, moduleInstance):
@@ -533,7 +533,7 @@ class graphEditor:
         except KeyError:
             import resources.python.htmlWindowFrame
             htmlWindowFrame = resources.python.htmlWindowFrame.htmlWindowFrame(
-                self._devide_app._mainFrame, id=-1,
+                self._devideApp._mainFrame, id=-1,
                 title='dummy')
 
             # store it in the dict for later use
@@ -579,7 +579,7 @@ class graphEditor:
         everything will still work.
         """
 
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
         mm.scanModules()
         self._availableModuleList = mm.getAvailableModuleList()
 
@@ -740,7 +740,7 @@ class graphEditor:
             instance.__class__.__name__)
 
         if markedModuleName:
-            self._devide_app.getModuleManager().markModule(
+            self._devideApp.getModuleManager().markModule(
                 instance, markedModuleName)
                 
 
@@ -861,7 +861,7 @@ class graphEditor:
 
             
     def _handlerHelpShowHelp(self, event):
-        self._devide_app.showHelp()
+        self._devideApp.showHelp()
             
     def _handlerCopySelected(self, event):
         if self._glyphSelection.getSelectedGlyphs():
@@ -943,7 +943,7 @@ class graphEditor:
 
         try:
             # first disconnect the actual modules
-            mm = self._devide_app.getModuleManager()
+            mm = self._devideApp.getModuleManager()
             mm.disconnectModules(glyph.moduleInstance, inputIdx)
 
         except Exception, e:
@@ -1043,7 +1043,7 @@ class graphEditor:
     def clearAllGlyphsFromCanvas(self):
         allGlyphs = self._canvasFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
 
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
 
         # we take care of the "difficult" modules first, so sort module
         # types from high to low
@@ -1107,7 +1107,7 @@ class graphEditor:
         success = True
         try:
             # connect the actual modules
-            mm = self._devide_app.getModuleManager()
+            mm = self._devideApp.getModuleManager()
             mm.connectModules(fromObject.moduleInstance, fromOutputIdx,
                               toObject.moduleInstance, toInputIdx)
 
@@ -1146,7 +1146,7 @@ class graphEditor:
         """
         
         # get the module manager to deserialise
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
         newModulesDict, newConnections = mm.deserialiseModuleInstances(
             pmsDict, connectionList)
             
@@ -1314,7 +1314,7 @@ class graphEditor:
         # connectionList is a list of pickledConnections
 
         connectionLines = []
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
         
         for connection in connectionList:
 
@@ -1361,7 +1361,7 @@ class graphEditor:
         """
 
         moduleInstances = [glyph.moduleInstance for glyph in glyphs]
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
 
         # let the moduleManager serialise what it can
         pmsDict, connectionList = mm.serialiseModuleInstances(
@@ -1416,7 +1416,7 @@ class graphEditor:
         self._canvasFrame.GetStatusBar().SetStatusText(msg)            
                                    
     def _fileExitCallback(self, event):
-        self._devide_app.quit()
+        self._devideApp.quit()
 
     def _fileNewCallback(self, event):
         self.clearAllGlyphsFromCanvas()
@@ -1846,7 +1846,7 @@ class graphEditor:
 
 
     def _viewConfModule(self, module):
-        mm = self._devide_app.getModuleManager()
+        mm = self._devideApp.getModuleManager()
         mm.viewModule(module)
 
     def _deleteModule(self, glyph, refreshCanvas=True):
@@ -1870,7 +1870,7 @@ class graphEditor:
                 self._disconnect(glyph, inputIdx)
             
             # then get the module manager to NUKE the module itself
-            mm = self._devide_app.getModuleManager()
+            mm = self._devideApp.getModuleManager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
             mm.deleteModule(glyph.moduleInstance)

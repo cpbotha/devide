@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.6 2004/04/20 08:39:48 cpbotha Exp $
+# $Id: __init__.py,v 1.7 2004/11/26 15:44:39 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -70,7 +70,7 @@ class graphEditorVolumeTestBase(graphEditorTestBase):
         ret = _devideApp._graphEditor._connect(ivglyph, 0, dtglyph, 0)
 
         # redraw
-        _devideApp._graphEditor._graphFrame.canvas.redraw()
+        _devideApp._graphEditor._canvasFrame.canvas.redraw()
 
         # run the network
         dtmod.executeModule()
@@ -89,7 +89,9 @@ class graphEditorBasic(graphEditorTestBase):
     def testStartup(self):
         """graphEditor startup.
         """
-        self.failUnless(_devideApp._graphEditor._graphFrame.IsShown())
+        self.failUnless(
+           _devideApp._graphEditor._canvasFrame.IsShown() and 
+           _devideApp._graphEditor._modulePaletteFrame.IsShown())
 
     def testModuleCreationDeletion(self):
         """Creation of simple module and glyph.
@@ -113,7 +115,7 @@ class graphEditorBasic(graphEditorTestBase):
             10, 70, 'modules.Viewers.slice3dVWR')
 
         ret = _devideApp._graphEditor._connect(sqglyph, 1, svglyph, 0)
-        _devideApp._graphEditor._graphFrame.canvas.redraw()
+        _devideApp._graphEditor._canvasFrame.canvas.redraw()
         
         self.failUnless(ret)
 
@@ -175,7 +177,7 @@ class testITKBasic(graphEditorVolumeTestBase):
         self.failUnless(ret)        
         
         # redraw the canvas
-        _devideApp._graphEditor._graphFrame.canvas.redraw()
+        _devideApp._graphEditor._canvasFrame.canvas.redraw()
 
         
 
