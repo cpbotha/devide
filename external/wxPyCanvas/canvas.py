@@ -1,68 +1,12 @@
 from wxPython import wx
 
-class wxPyCanvasObject(wx.wxObject):
-    
-    def __init__(self, position):
-        # call parent ctor
-        wx.wxObject(self)
-
-        self._position = position
-        self._canvas = None
-
-    def draw(self, dc):
-        pass
-
-    def hitTest(self, x, y):
-        return False
-
-    def setCanvas(self, canvas):
-        self._canvas = canvas
-
-    def OnEnter(self, event):
-        pass
-
-    def OnExit(self, event):
-        pass
-
-    def OnDrag(self, event):
-        pass
-
-    def OnButtonDown(self, event):
-        pass
-
-    def OnButtonUp(self, event):
-        pass
-
-class wxpcRectangle(wxPyCanvasObject):
-
-    def __init__(self, position, size):
-        wxPyCanvasObject.__init__(self, position)
-        self._size = size
-
-    def draw(self, dc):
-        # drawing rectangle!
-        dc.DrawRectangle(self._position[0], self._position[1],
-                         self._size[0], self._size[1])
-
-    def hitTest(self, x, y):
-        return x >= self._position[0] and \
-               x <= self._position[0] + self._size[0] and \
-               y >= self._position[1] and \
-               y <= self._position[1] + self._size[1]
-
-    def OnEnter(self, event):
-        print "entering!"
-
-    def OnExit(self, event):
-        print "exiting!"
-    
-
-class wxPyCanvas(wx.wxScrolledWindow):
+class canvas(wx.wxScrolledWindow):
     def __init__(self, parent, id = -1, size = wx.wxDefaultSize):
         wx.wxScrolledWindow.__init__(self, parent, id, wx.wxPoint(0, 0), size,
                                      wx.wxSUNKEN_BORDER)
 
         self._cobjects = []
+        self._previousRealCoords = None
 
         self.SetBackgroundColour("WHITE")
 
@@ -72,26 +16,47 @@ class wxPyCanvas(wx.wxScrolledWindow):
     def OnMouseEvent(self, event):
         # these coordinates are relative to the visible part of the canvas
         ex, ey = event.GetX(), event.GetY()
+
+        # get canvas parameters
+        vsx, vsy = self.GetViewStart()
+        dx, dy = self.GetScrollPixelsPerUnit()
+
+        # calculate REAL coords
+        rx = ex + vsx * dx
+        ry = ey + vsy * dy
+
+        mouseOnObject = False
         
         for cobject in self._cobjects:
-            if cobject.hitTest(ex, ey):
+            if cobject.hitTest(rx, ry):
+                mouseOnObject = True
+
+                # we modify what's in the event structure to REAL coords
+                event.m_x = rx
+                event.m_y = ry
+                
                 if not cobject.__hasMouse:
                     cobject.__hasMouse = True
-                    cobject.OnEnter(event)
+                    cobject.notifyObservers('enter', event)
 
                 if event.Dragging():
-                    cobject.OnDrag(event)
+                    cobject.notifyObservers('drag', event)
 
                 elif event.ButtonUp():
-                    cobject.OnButtonUp(event)
+                    cobject.notifyObservers('buttonUp', event)
 
                 elif event.ButtonDown():
-                    cobject.OnButtonDown(event)
+                    cobject.notifyObservers('buttonDown', event)
 
+            # ends if cobject.hitTest(ex, ey)
             else:
                 if cobject.__hasMouse:
-                    cobject.__hasMouse = False
-                    cobject.OnExit(event)
+                    if not event.Dragging():
+                        cobject.__hasMouse = False
+                        cobject.notifyObservers('exit', event)
+
+        self._previousRealCoords = (rx, ry)
+                    
 
     def OnPaint(self, event):
         # make a dc
@@ -116,20 +81,32 @@ class wxPyCanvas(wx.wxScrolledWindow):
             self._cobjects.append(cobj)
             cobj.__hasMouse = False
             #cobj.draw()
+
+    def getPreviousRealCoords(self):
+        return self._previousRealCoords
+
+    def moveObject(self, cobj, delta):
+        cpos = cobj.getPosition()
+        npos = (cpos[0] + delta[0], cpos[1] + delta[1])
+        cobj.setPosition(npos)
+        self.Refresh()
         
-
-
 def main():
+
+    from canvasObject import coRectangle
 
     class App(wx.wxApp):
         def OnInit(self):
             frame = wx.wxFrame(None, -1, 'wxPyCanvasTest')
-            pc = wxPyCanvas(frame, -1)
+            pc = canvas(frame, -1)
             pc.SetVirtualSize((1024, 1024))
             pc.SetScrollRate(20,20)
 
-            r1 = wxpcRectangle((20, 20), (50, 20))
-            pc.addObject(r1)
+            for i in range(7):
+                r1 = coRectangle((i * 60, 20), (50, 20))
+                r1.addObserver('enter', enterObserver)
+                r1.addObserver('drag', dragObserver)
+                pc.addObject(r1)
 
             tlSizer = wx.wxBoxSizer(wx.wxVERTICAL)
             tlSizer.Add(pc, 1, wx.wxEXPAND)
@@ -146,8 +123,18 @@ def main():
 
             return True
 
+    def enterObserver(cobject, eventName, event, userData):
+        print eventName
+
+    def dragObserver(cobject, eventName, event, userData):
+        pr = cobject.getCanvas().getPreviousRealCoords()
+        if pr:
+            cobject.getCanvas().moveObject(cobject,
+                                           (event.GetX() - pr[0],
+                                            event.GetY() - pr[1]))
             
-    app = App()
+    # the 0 will make it use the existing stdout
+    app = App(0)
     app.MainLoop()
     
 if __name__ == '__main__':
