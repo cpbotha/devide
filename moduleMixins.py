@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.46 2004/05/24 12:46:45 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.47 2004/05/24 12:59:15 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -551,6 +551,7 @@ class pickleVTKObjectsModuleMixin(object):
 # should be chosen over that of noConfig
 
 class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
+                               introspectModuleMixin,
                                moduleBase):
     """Use this base to make a DeVIDE module that wraps a single VTK
     object.  The state of the VTK object will be saved when the network
@@ -581,7 +582,14 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
 
         self._theFilter = vtkObjectBinding
         if replaceDoc:
-            self.__doc__ = self._theFilter.__doc__
+            myMessage = "<em>"\
+                        "This is a special DeVIDE module that very simply " \
+                        "wraps a single VTK class.  In general, the " \
+                        "complete state of the class will be saved along " \
+                        "with the rest of the network.  The documentation " \
+                        "below is that of the wrapped VTK class:</em>"
+            
+            self.__doc__ = '%s\n\n%s' % (myMessage, self._theFilter.__doc__)
         
         # now that we have the object, init the pickle mixin so
         # that the state of this object will be saved
@@ -636,6 +644,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
             self.setInput(inputIdx, None)
         
         pickleVTKObjectsModuleMixin.close(self)
+        introspectModuleMixin.close(self)
         self._configVtkObj.close()
         self._viewFrame.Destroy()
         #noConfigModuleMixin.close(self)

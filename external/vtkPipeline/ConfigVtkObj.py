@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.20 2004/05/24 12:35:00 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.21 2004/05/24 12:59:17 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -207,7 +207,8 @@ class ConfigVtkObj:
     into the given frame and panel.  The panel that you pass HAS to have
     a top-level sizer.
     """
-    def __init__ (self, parent, renwin, vtk_obj, frame=None, panel=None):
+    def __init__ (self, parent, renwin, vtk_obj,
+                  frame=None, panel=None):
         """This initialiser will setup everything and construct the ui.
 
         You have to call show() to make it appear, however.
@@ -365,7 +366,8 @@ class ConfigVtkObj:
         vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND)
 
         command_entry = py.shell.Shell(parent=parent, id=-1,
-                                       introText="Bish.",
+                                       introText="'obj' is bound to the " \
+                                       "introspected object.",
                                        size=(400,200), style=0,
                                        locals={'obj' : self._vtk_obj})
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
