@@ -64,7 +64,7 @@ pyz = PYZ(a.pure)
 
     
 exe = EXE(pyz,
-          a.scripts + [('v', '', 'OPTION')],
+          a.scripts, # + [('v', '', 'OPTION')],
           exclude_binaries=1,
           name=exeName,
           debug=0,

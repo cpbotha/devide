@@ -20,7 +20,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         self._testObject0b.SetInput(self._testObject0.GetOutput())
         self._testObject1 = vtk.vtkCurvatures()
         self._testObject1.SetCurvatureTypeToMean()
-        self._testObject1.SetInput(self._testObject0.GetOutput())
+        self._testObject1.SetInput(self._testObject0b.GetOutput())
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
@@ -55,7 +55,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         return (self._testObject1.GetOutput().GetClassName(),)
 
     def getOutput(self, idx):
-        return self._testObject0b.GetOutput()
+        return self._testObject1.GetOutput()
 
     def logicToConfig(self):
         pass
@@ -72,7 +72,7 @@ class testModule(moduleBase, noConfigModuleMixin):
     
 
     def executeModule(self):
-        self._testObject0b.Update()
+        self._testObject1.Update()
 
 
     def view(self, parent_window=None):
