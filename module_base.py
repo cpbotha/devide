@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.3 2002/02/17 20:57:38 cpbotha Exp $
+# $Id: module_base.py,v 1.4 2002/02/19 13:47:00 cpbotha Exp $
 import vtkpython
 import Tix
 from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
@@ -26,7 +26,7 @@ class module_base:
 	to make a nice glyph for this module."""
 	raise NotImplementedError
     
-    def set_input(self, input_stream, idx):
+    def set_input(self, idx, input_stream):
 	"""Attaches input_stream (which is e.g. the output of a previous module)
 	to this module's input at position idx."""
 	raise NotImplementedError

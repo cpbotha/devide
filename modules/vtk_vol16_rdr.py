@@ -21,7 +21,7 @@ class vtk_vol16_rdr(module_base):
     def get_input_descriptions(self):
 	return ()
     
-    def set_input(self, input_stream, idx):
+    def set_input(self, idx, input_stream):
 	raise Exception
     
     def get_output_descriptions(self):

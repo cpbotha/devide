@@ -21,7 +21,7 @@ class vtk_mc_flt(module_base):
     def get_input_descriptions(self):
 	return ('vtkStructuredPoints',)
     
-    def set_input(self, input_stream, idx):
+    def set_input(self, idx, input_stream):
 	self.mc.SetInput(input_stream)
     
     def get_output_descriptions(self):
