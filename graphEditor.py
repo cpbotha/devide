@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.97 2004/11/28 15:01:20 cpbotha Exp $
+# $Id: graphEditor.py,v 1.98 2004/11/28 15:16:03 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -183,6 +183,11 @@ class graphEditor:
 
         EVT_MENU(self._canvasFrame, self._canvasFrame.fileExportSelectedAsDOTId,
                  self._handlerFileExportSelectedAsDOT)
+
+        EVT_MENU(self._canvasFrame, self._canvasFrame.windowMainID,
+                 self._handlerWindowMain)
+        EVT_MENU(self._canvasFrame, self._canvasFrame.windowModulePaletteID,
+                 self._handlerWindowModulePalette)
 
         EVT_MENU(self._canvasFrame, self._canvasFrame.helpShowHelpId,
                  self._handlerHelpShowHelp)
@@ -576,9 +581,9 @@ class graphEditor:
         htmlWindowFrame.htmlWindow.SetPage(
             '<html><body>%s</body></html>' % (htmlDoc,))
 
-        # if it's already visible, just raise it
-        if not htmlWindowFrame.Show(True):
-            htmlWindowFrame.Raise()
+        # Show and Raise
+        htmlWindowFrame.Show(True)
+        htmlWindowFrame.Raise()
 
 
     def fillModuleLists(self):
@@ -630,14 +635,19 @@ class graphEditor:
     def _handlerGraphFrameClose(self, event):
         self.hide()
 
-    def show(self):
+    def showCanvasFrame(self):
         self._canvasFrame.Show(True)
         self._canvasFrame.Iconize(False)        
         self._canvasFrame.Raise()
-        
+
+    def showModulePalette(self):
         self._modulePaletteFrame.Show(True)
         self._modulePaletteFrame.Iconize(False)
         self._modulePaletteFrame.Raise()
+
+    def show(self):
+        self.showCanvasFrame()
+        self.showModulePalette()
 
     def _handlerFileExportAsDOT(self, event):
         # make a list of all glyphs
@@ -882,6 +892,14 @@ class graphEditor:
                 self._glyphSelection.getSelectedGlyphs())
         
             self._deleteSelectedGlyphs()
+
+    def _handlerWindowMain(self, event):
+        # show and raise the main window
+        self._devideApp.showMainWindow()
+
+    def _handlerWindowModulePalette(self, event):
+        # show and raise the module palette
+        self.showModulePalette()
 
     def hide(self):
         self._canvasFrame.Show(False)

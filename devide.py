@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.66 2004/11/27 14:27:38 cpbotha Exp $
+# $Id: devide.py,v 1.67 2004/11/28 15:16:03 cpbotha Exp $
 
 DEVIDE_VERSION = '20041125'
 
@@ -458,6 +458,13 @@ class devide_app_t(wx.App):
 
     def _handlerMenuPythonShell(self, event):
         self.startPythonShell()
+
+    def showMainWindow(self):
+        """Make the main window visible and bring it to the front.
+        """
+
+        self._mainFrame.Show(True)
+        self._mainFrame.Raise()
 
     def _windowIconizeAllChildren(self):
         children = self._mainFrame.GetChildren()
