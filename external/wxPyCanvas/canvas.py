@@ -38,6 +38,12 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         else:
             self._mouseDelta = (0,0)
 
+
+        # FIXME: store binding to object which "has" the mouse
+        # on subsequent tries, we DON'T have to check all objects, only the
+        # one which had the mouse on the previous try... only if it "loses"
+        # the mouse, do we enter the mean loop again.
+
         mouseOnObject = False
         
         for cobject in self._cobjects:
@@ -162,7 +168,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
 #############################################################################
 def main():
 
-    from canvasObject import coRectangle, coLine
+    from canvasObject import coRectangle, coLine, coGlyph
 
     class App(wx.wxApp):
         def OnInit(self):
@@ -179,6 +185,13 @@ def main():
 
             l1 = coLine(((60, 50), (70, 60), (100, 50)))
             pc.addObject(l1)
+
+            g1 = coGlyph((60, 100), 7, 3,
+                         'shellSplatSimpleFLT')
+            g1.addObserver('drag', dragObserver)
+            g1.setPortConnected(1, True, True)
+            g1.setPortConnected(0, False, True)
+            pc.addObject(g1)
                         
 
             tlSizer = wx.wxBoxSizer(wx.wxVERTICAL)
