@@ -1,0 +1,582 @@
+# sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
+# $Id: sliceDirection.py,v 1.1 2003/06/28 15:29:14 cpbotha Exp $
+# does all the actual work for a single slice in the slice3dVWR
+
+class sliceDirection:
+    """Class encapsulating all logic behind a single direction.
+
+    This class contains the IPWs and related paraphernalia for all layers
+    (primary + overlays) representing a single view direction.  It optionally
+    has its own window with an orthogonal view.
+    """
+
+    def __init__(self, name, slice3dViewer, defaultPlaneOrientation=2):
+        self._name = name
+        self._slice3dViewer = slice3dViewer
+        self._defaultPlaneOrientation = 2
+
+        # orthoPipeline is a list of dictionaries.  each dictionary is:
+        # {'planeSource' : vtkPlaneSource, 'planeActor' : vtkActor,
+        #  'textureMapToPlane' : vtkTextureMapToPlane,
+        #  '
+        self._orthoPipeline = []
+        # this is the frame that we will use to display our slice pipeline
+        self._orthoViewFrame = None
+        #
+        self._renderer = None
+
+        # list of vtkImagePlaneWidgets (first is "primary", rest are overlays)
+        self._ipws = []
+
+        # list of objects that want to be contoured by this slice
+        self._contourObjectsDict = {}
+
+    def addContourObject(self, contourObject):
+        if self._contourObjectsDict.has_key(contourObject):
+            # we already have this, thanks
+            return
+
+        try:
+            contourable = contourObject.IsA('vtkPolyData')
+        except:
+            contourable = False
+
+        if contourable:
+            # we need a cutter to calculate the contours and then a stripper
+            # to string them all together
+            cutter = vtk.vtkCutter()
+            plane = vtk.vtkPlane()
+            cutter.SetCutFunction(plane)
+            cutter.SetInput(contourObject)
+            stripper = vtk.vtkStripper()
+            stripper.SetInput(cutter.GetOutput())
+
+            # and create the overlay at least for the 3d renderer
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInput(stripper.GetOutput())
+            mapper.ScalarVisibilityOff()
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+            c = self._slice3dViewer._tdObjects.getObjectColour(contourObject)
+            actor.GetProperty().SetColor(c)
+            actor.GetProperty().SetInterpolationToFlat()
+
+            # add it to the renderer
+            self._slice3dViewer._threedRenderer.AddActor(actor)
+            
+            # add all necessary metadata to our dict
+            contourDict = {'contourObject' : contourObject,
+                           'cutter' : cutter,
+                           'tdActor' : actor}
+                           
+            self._contourObjectsDict[contourObject] = contourDict
+
+            # now sync the bugger
+            self.syncContourToObject(contourObject)
+
+    def addAllContourObjects(self):
+        cos = self._slice3dViewer._tdObjects.getContourObjects()
+        for co in cos:
+            self.addContourObject(co)
+
+    def removeAllContourObjects(self):
+        contourObjects = self._contourObjectsDict.keys()
+        for co in contourObjects:
+            self.removeContourObject(co)
+
+    def removeContourObject(self, contourObject):
+        if contourObject in self._contourObjectsDict:
+            # let's remove it from the renderer
+            actor  = self._contourObjectsDict[contourObject]['tdActor']
+            self._slice3dViewer._threedRenderer.RemoveActor(actor)
+            # and remove it from the dict
+            del self._contourObjectsDict[contourObject]
+
+    def syncContourToObject(self, contourObject):
+        """Update the contour for the given contourObject.
+        """
+
+        # yes, in and not in work on dicts, doh
+        if contourObject not in self._contourObjectsDict:
+            return
+
+        # if there are no ipws, we have no planes!
+        if not self._ipws:
+            return
+
+        # get the contourObject metadata
+        contourDict = self._contourObjectsDict[contourObject]
+        cutter = contourDict['cutter']
+        plane = cutter.GetCutFunction()
+
+        # adjust the implicit plane (if we got this far (i.e.
+        normal = self._ipws[0].GetNormal()
+        origin = self._ipws[0].GetOrigin()
+        plane.SetNormal(normal)
+        plane.SetOrigin(origin)
+
+        # calculate it
+        cutter.Update()
+        
+    def addData(self, inputData):
+        """Add inputData as a new layer.
+        """
+        
+        if inputData is None:
+            raise Exception, "Hallo, the inputData is none.  Doing nothing."
+
+        # make sure it's vtkImageData
+        if hasattr(inputData, 'IsA') and inputData.IsA('vtkImageData'):
+        
+            # if we already have this data as input, we can't take it
+            for ipw in self._ipws:
+                if inputData is ipw.GetInput():
+                    raise Exception,\
+                          "This inputData already exists in this slice."
+
+            # make sure it's all up to date
+            inputData.Update()
+
+            if self._ipws:
+                # this means we already have data and what's added now can
+                # only be allowed as overlay
+
+                # now check if the new data classifies as overlay
+                mainInput = self._ipws[0].GetInput()
+
+                if inputData.GetWholeExtent() == \
+                   mainInput.GetWholeExtent() and \
+                   inputData.GetSpacing() == mainInput.GetSpacing():
+
+                    self._ipws.append(vtk.vtkImagePlaneWidget())
+                    self._ipws[-1].SetInput(inputData)
+                    self._ipws[-1].UserControlledLookupTableOn()
+                    self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
+
+                # now make sure they have the right lut and are synched
+                # with the main IPW
+                self._resetOverlays()
+
+                if self._orthoViewFrame:
+                    # also update our orthoView
+                    self._createOrthoPipelineForNewIPW(self._ipws[-1])
+                    self._syncOrthoView()
+                    self._orthoViewFrame.RWI.Render()
+                
+            # if self._ipws ...
+            else:
+                # this means primary data!
+                self._ipws.append(vtk.vtkImagePlaneWidget())
+                self._ipws[-1].SetInput(inputData)
+                self._ipws[-1].SetPicker(self._slice3dViewer.getIPWPicker())
+                self._ipws[-1].GetImageMapToColors().SetOutputFormatToRGB()
+
+                # now make callback for the ipw
+                self._ipws[-1].AddObserver('StartInteractionEvent',
+                                lambda e, o:
+                                self._ipwStartInteractionCallback())
+                self._ipws[-1].AddObserver('InteractionEvent',
+                                lambda e, o:
+                                self._ipwInteractionCallback())
+                self._ipws[-1].AddObserver('EndInteractionEvent',
+                                lambda e, o:
+                                self._ipwEndInteractionCallback())
+
+                self._resetPrimary()
+
+                # now let's update our orthoView as well (if applicable)
+                if self._orthoViewFrame:
+                    self._createOrthoPipelineForNewIPW(self._ipws[-1])
+                    # and because it's a primary, we have to reset as well
+                    # self._resetOrthoView() also calls self.SyncOrthoView()
+                    self._resetOrthoView()
+                    self._orthoViewFrame.Render()
+
+                # also check for contourObjects (primary data is being added)
+                self.addAllContourObjects()
+
+    def close(self):
+        """Shut down everything."""
+
+        # take out all the contours
+        self.removeAllContourObjects()
+        
+        # take out the orthoView
+        self.destroyOrthoView()
+
+        # first take care of all our ipws
+        inputDatas = [i.GetInput() for i in self._ipws]
+        for inputData in inputDatas:
+            self.removeData(inputData)
+
+        # kill the whole list
+        del self._ipws
+
+        # make sure we don't point to the sliceviewer
+        del self._slice3dViewer
+        
+
+    def createOrthoView(self):
+        """Create an accompanying orthographic view of the sliceDirection
+        encapsulated by this object.
+        """
+
+        # there can be only one orthoPipeline
+        if not self._orthoPipeline:
+
+            import modules.resources.python.slice3dVWRFrames            
+            # import our wxGlade-generated frame
+            ovf = modules.resources.python.slice3dVWRFrames.orthoViewFrame
+            self._orthoViewFrame = ovf(self._slice3dViewer._viewFrame, id=-1,
+                                  title='dummy')
+
+            self._orthoViewFrame.SetIcon(moduleUtils.getModuleIcon())
+
+            self._renderer = vtk.vtkRenderer()
+            self._renderer.SetBackground(0.5, 0.5, 0.5)
+            self._orthoViewFrame.RWI.GetRenderWindow().AddRenderer(
+                self._renderer)
+            istyle = vtk.vtkInteractorStyleImage()
+            self._orthoViewFrame.RWI.SetInteractorStyle(istyle)
+
+            EVT_CLOSE(self._orthoViewFrame,
+                      lambda e, s=self: s.destroyOrthoView)
+
+            EVT_BUTTON(self._orthoViewFrame,
+                       self._orthoViewFrame.closeButtonId,
+                       lambda e, s=self: s.destroyOrthoView)
+
+            for ipw in self._ipws:
+                self._createOrthoPipelineForNewIPW(ipw)
+
+            if self._ipws:
+                self._resetOrthoView()
+
+            self._orthoViewFrame.Show(True)
+
+    def destroyOrthoView(self):
+        """Destroy the orthoView and disconnect everything associated
+        with it.
+        """
+
+        if self._orthoViewFrame:
+            for layer in self._orthoPipeline:
+                self._renderer.RemoveActor(layer['planeActor'])
+                # this will disconnect the texture (it will destruct shortly)
+                layer['planeActor'].SetTexture(None)
+
+                # this should take care of all references
+                layer = []
+
+            self._orthoPipeline = []
+
+            # remove our binding to the renderer
+            self._renderer = None
+            # remap the RenderWindow (it will create its own new window and
+            # disappear when we remove our binding to the viewFrame)
+            self._orthoViewFrame.RWI.GetRenderWindow().WindowRemap()
+
+            # finally take care of the GUI
+            self._orthoViewFrame.Destroy()
+            # and take care to remove our viewFrame binding
+            self._orthoViewFrame = None
+        
+
+    def enable(self):
+        """Switch this sliceDirection on."""
+        for ipw in self._ipws:
+            ipw.On()
+
+    def enableInteraction(self):
+        if self._ipws:
+            self._ipws[0].SetInteraction(1)
+
+    def disable(self):
+        """Switch this sliceDirection off."""
+        for ipw in self._ipws:
+            ipw.Off()
+
+    def disableInteraction(self):
+        if self._ipws:
+            self._ipws[0].SetInteraction(0)
+
+    def getEnabled(self):
+        if self._ipws:
+            return self._ipws[0].GetEnabled()
+        else:
+            # if we have no ipws yet, we are enabled (because the first ipw
+            # will be)
+            return 1
+
+    def getInteractionEnabled(self):
+        if self._ipws:
+            return self._ipws[0].GetInteraction()
+        else:
+            # if we have no ipws yet, we are interaction enabled
+            return 1
+
+    def getOrthoViewEnabled(self):
+        return self._orthoViewFrame is not None
+
+    def getName(self):
+        return self._name
+
+    def getNumberOfLayers(self):
+        return len(self._ipws)
+
+    def pushSlice(self, val):
+        if self._ipws:
+            self._ipws[0].GetPolyDataSource().Push(val)
+            self._ipws[0].UpdatePlacement()
+            self._ipwEndInteractionCallback()
+
+    def removeData(self, inputData):
+        # search for the ipw with this inputData
+        ipwL = [i for i in self._ipws if i.GetInput() is inputData]
+        if ipwL:
+            # there can be only one!
+            ipw = ipwL[0]
+            # switch it off
+            ipw.Off()
+            # disconnect it from the RWI
+            ipw.SetInteractor(None)
+            # disconnect the input
+            ipw.SetInput(None)
+            # finally delete our reference
+            idx = self._ipws.index(ipw)
+            del self._ipws[idx]
+
+        # if there is no data left, we also have to remove all contours
+        if not self._ipws:
+            self.removeAllContourObjects()
+
+    def resetToACS(self, acs):
+        """Reset the current sliceDirection to Axial, Coronal or Sagittal.
+        """
+
+        # colours of imageplanes; we will use these as keys
+        ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
+
+        orientation = 2 - acs
+        for ipw in self._ipws:
+            # this becomes the new default for resets as well
+            self._defaultPlaneOrientation = orientation 
+            ipw.SetPlaneOrientation(orientation)
+            ipw.GetPlaneProperty().SetColor(ipw_cols[orientation])
+
+
+    def _createOrthoPipelineForNewIPW(self, ipw):
+        """This will create and append all the necessary constructs for a
+        single new layer (ipw) to the self._orthoPipeline.
+
+        Make sure you only call this method if the orthoView exists!
+        After having done this, you still need to call _syncOrthoView() or
+        _resetOrthoView() if you've added a new primary.
+        """
+
+        _ps = vtk.vtkPlaneSource()
+        _pa = vtk.vtkActor()
+        _tm2p = vtk.vtkTextureMapToPlane()
+        self._orthoPipeline.append(
+            {'planeSource' : _ps,
+             'planeActor' : _pa,
+             'textureMapToPlane': _tm2p})
+
+        _tm2p.AutomaticPlaneGenerationOff()
+        _tm2p.SetInput(_ps.GetOutput())
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInput(_tm2p.GetOutput())
+        _pa.SetMapper(mapper)
+
+        otherTexture = ipw.GetTexture()
+
+        # we don't just use the texture, else VTK goes mad re-uploading
+        # the same texture unnecessarily... let's just make use of the
+        # same input, we get much more effective use of the
+        # host->GPU bus
+        texture = vtk.vtkTexture()
+        texture.SetInterpolate(otherTexture.GetInterpolate())
+        texture.SetQuality(otherTexture.GetQuality())
+        texture.MapColorScalarsThroughLookupTableOff()
+        texture.RepeatOff()
+        texture.SetInput(otherTexture.GetInput())
+
+        _pa.SetTexture(texture)
+
+        self._renderer.AddActor(_pa)
+        
+
+    def _resetOverlays(self):
+        """Rest all overlays with default LUT, plane orientation and
+        start position."""
+
+        if len(self._ipws) > 1:
+            # iterate through overlay layers
+            for ipw in self._ipws[1:]:
+                lut = vtk.vtkLookupTable()            
+                inputStream = ipw.GetInput()
+                minv, maxv = inputStream.GetScalarRange()
+                lut.SetTableRange((minv,maxv))
+                lut.SetAlphaRange((0.0, 1.0))
+                lut.SetValueRange((1.0, 1.0))
+                lut.SetSaturationRange((1.0, 1.0))
+                lut.Build()
+
+                ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
+                # default axial orientation
+                ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
+                ipw.SetSliceIndex(0)
+                
+                ipw.SetLookupTable(lut)
+                ipw.On()
+                ipw.InteractionOff()
+
+        self._syncOverlays()
+
+    def _resetOrthoView(self):
+        """Calling this will reset the orthogonal camera and bring us in
+        synchronisation with the primary and overlays.
+        """
+
+        if self._orthoPipeline and self._ipws:
+            self._syncOrthoView()
+            # just get the first planesource
+            planeSource = self._orthoPipeline[0]['planeSource']
+            # let's setup the camera
+            icam = self._renderer.GetActiveCamera()
+            icam.SetPosition(planeSource.GetCenter()[0],
+                             planeSource.GetCenter()[1], 10)
+            icam.SetFocalPoint(planeSource.GetCenter())
+            icam.OrthogonalizeViewUp()
+            icam.SetViewUp(0,1,0)
+            icam.SetClippingRange(1,11)
+            v2 = map(operator.sub, planeSource.GetPoint2(),
+                     planeSource.GetOrigin())
+            n2 = vtk.vtkMath.Normalize(v2)
+            icam.SetParallelScale(n2 / 2.0)
+            icam.ParallelProjectionOn()
+        
+
+    def _resetPrimary(self):
+        """Reset primary layer.
+        """
+
+        if self._ipws:
+            inputData = self._ipws[0].GetInput()
+            
+            # calculate default window/level once
+            (dmin,dmax) = inputData.GetScalarRange()
+            iwindow = (dmax - dmin) / 2
+            ilevel = dmin + iwindow
+
+            inputData_source = inputData.GetSource()
+            if hasattr(inputData_source, 'GetWindowCenter') and \
+                   callable(inputData_source.GetWindowCenter):
+                level = inputData_source.GetWindowCenter()
+                print "Retrieved level of %f" % level
+            else:
+                level = ilevel
+
+            if hasattr(inputData_source, 'GetWindowWidth') and \
+                   callable(inputData_source.GetWindowWidth):
+                window = inputData_source.GetWindowWidth()
+                print "Retrieved window of %f" % window
+            else:
+                window = iwindow
+
+            lut = vtk.vtkWindowLevelLookupTable()
+            lut.SetWindow(window)
+            lut.SetLevel(level)
+            lut.Build()
+
+            # colours of imageplanes; we will use these as keys
+            ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
+
+            ipw = self._ipws[0]
+            ipw.DisplayTextOn()
+            ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
+            ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
+            ipw.SetSliceIndex(0)
+            ipw.GetPlaneProperty().SetColor(
+                ipw_cols[ipw.GetPlaneOrientation()])
+            # this is not working yet, because the IPWs handling of
+            # luts is somewhat broken at the moment
+            ipw.SetLookupTable(lut)
+            ipw.On()
+
+    def _syncContours(self):
+        """Synchronise all contours to current primary plane.
+        """
+        for contourObject in self._contourObjectsDict.keys():
+            self.syncContourToObject(contourObject)
+
+    def _syncOverlays(self):
+        """Synchronise overlays to current main IPW.
+        """
+        
+        # check that we do have overlays for this direction
+        if len(self._ipws) > 1:
+            # we know this is a vtkPlaneSource
+            pds1 = self._ipws[0].GetPolyDataSource()
+
+            for ipw in self._ipws[1:]:
+                pds2 = ipw.GetPolyDataSource()
+                pds2.SetOrigin(pds1.GetOrigin())
+                pds2.SetPoint1(pds1.GetPoint1())
+                pds2.SetPoint2(pds1.GetPoint2())
+            
+                ipw.UpdatePlacement()
+
+    def _syncOrthoView(self):
+        """Synchronise all layers of orthoView with what's happening
+        with our primary and overlays.
+        """
+
+        if self._orthoPipeline and self._ipws:
+            # vectorN is pointN - origin
+            v1 = [0,0,0]
+            self._ipws[0].GetVector1(v1)
+            n1 = vtk.vtkMath.Normalize(v1)
+            v2 = [0,0,0]
+            self._ipws[0].GetVector2(v2)
+            n2 = vtk.vtkMath.Normalize(v2)
+
+            roBounds = self._ipws[0].GetResliceOutput().GetBounds()
+
+            for layer in range(len(self._orthoPipeline)):
+                planeSource = self._orthoPipeline[layer]['planeSource']
+                planeSource.SetOrigin(0,0,0)
+                planeSource.SetPoint1(n1, 0, 0)
+                planeSource.SetPoint2(0, n2, 0)
+
+                tm2p = self._orthoPipeline[layer]['textureMapToPlane']
+                tm2p.SetOrigin(0,0,0)
+                tm2p.SetPoint1(roBounds[1] - roBounds[0], 0, 0)
+                tm2p.SetPoint2(0, roBounds[3] - roBounds[2], 0)
+
+    def _ipwStartInteractionCallback(self):
+        self._slice3dViewer.setCurrentSliceDirection(self)
+        self._ipwInteractionCallback()
+
+    def _ipwInteractionCallback(self):
+        cd = 4 * [0.0]
+        if self._ipws[0].GetCursorData(cd):
+            self._slice3dViewer.setCurrentCursor(cd)
+
+        # find the orthoView (if any) which tracks this IPW
+        #directionL = [v['direction'] for v in self._orthoViews
+        #              if v['direction'] == direction]
+        
+        #if directionL:
+        #    self._syncOrthoViewWithIPW(directionL[0])
+        #    [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]\
+        #                                [directionL[0]].Render()
+
+    def _ipwEndInteractionCallback(self):
+        self._syncOverlays()
+        self._syncOrthoView()
+        self._syncContours()
+        if self._orthoViewFrame:
+            self._orthoViewFrame.RWI.Render()
+                
+        
