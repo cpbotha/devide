@@ -30,14 +30,14 @@ class glyph:
 	self.output_lines = []
 
 	self.inputs = [] # list consisting of tuples (triangle_item, connecting line, connecting glyph)
-	for cur_input_type in module_instance.get_input_types():
+	for cur_input_type in module_instance.get_input_descriptions():
 	    self.inputs.append({'item': canvas.create_polygon(coords_to_ltriangle(self.rcoords[0], self.rcoords[1] + len(self.inputs)*7)),
 	    'line': None, 'glyph': None})
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Enter>", self.input_enter_cb)
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Button-1>", self.input_click_cb)
 	    
 	self.outputs = []
-	for cur_output_type in module_instance.get_output_types():
+	for cur_output_type in module_instance.get_output_descriptions():
 	    self.outputs.append(canvas.create_polygon(coords_to_rtriangle(self.rcoords[2], self.rcoords[1])))
 	    canvas.tag_bind(self.outputs[-1], "<Enter>", self.output_enter_cb)
 	    canvas.tag_bind(self.outputs[-1], "<Button-1>", self.output_click_cb)
@@ -215,6 +215,9 @@ class graph_editor:
     
 	# create window for the glyph editor
 	self.window = Tix.Toplevel()
+	# FIXME: we need to set some better close method
+	self.window.title("dscas3 graph editor")
+	self.window.protocol ("WM_DELETE_WINDOW", self.window.destroy)
 	
 	# sunken label with border width 1
         self.status = Tix.Label(self.window, relief=Tix.SUNKEN, bd=1, anchor=Tix.W)
@@ -263,6 +266,9 @@ class graph_editor:
 	self.command_frame.mode_select = Tix.Select(self.command_frame, radio=1, allowzero=0, orientation=Tix.VERTICAL)
 	self.command_frame.mode_select.add('edit', text='Edit')
 	self.command_frame.mode_select.add('delete', text='Delete')
+	self.command_frame.mode_select.add('config1', text='Configure 1')
+	self.command_frame.mode_select.add('config2', text='Configure 2')
+	
 	self.command_frame.mode_select['value'] = 'edit'
 	self.command_frame.mode_select.pack(side=Tix.TOP)
 	

@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.1 2002/02/15 14:45:41 cpbotha Exp $
+# $Id: module_base.py,v 1.2 2002/02/15 17:18:22 cpbotha Exp $
 
 class module_base:
     """Base class for all modules.  Any module wishing to take part in the dscas3
@@ -37,6 +37,11 @@ class module_base:
     def get_output(self, idx):
 	"""Get the n-th output.  This will be used for connecting this output to
 	the input of another module."""
+	raise NotImplementedError
+    
+    def configure(self):
+	"""Pop up a dialog with all config possibilities, including optional use
+	of the pipeline browser."""
 	raise NotImplementedError
 
 

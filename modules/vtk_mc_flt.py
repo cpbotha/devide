@@ -1,29 +1,30 @@
+from module_base import module_base
 import vtkpython
 
-class vtk_mc_flt:
+class vtk_mc_flt(module_base):
     def __init__(self):
-	#self.reader = vtkpython.vtkVolume16Reader()
-	print "__init__()"
+	self.mc = vtkpython.vtkMarchingCubes()
 	
     def __del__(self):
 	# do some cleanup
 	print "vtk_mc_flt.__del__()"
+	self.close()
 	
     def close(self):
 	print "close()"
+	# check that self.mc isn't deleted yet
+        if dir(self).count('mc'):
+	    del self.mc
 	
-    # BASE
-    def get_input_types(self):
+    def get_input_descriptions(self):
 	return ('vtkStructuredPoints',)
     
-    # BASE
-    def get_output_types(self):
+    def set_input(self, input_stream, idx):
+	raise NotImplementedError
+    
+    def get_output_descriptions(self):
 	return ('vtkPolyData',)
 
-    # BASE
     def get_output(self, idx):
 	return None
     
-    # BASE
-    def get_input(self, idx):
-	return None
