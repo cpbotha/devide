@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.50 2004/01/15 10:46:21 cpbotha Exp $
+# $Id: graphEditor.py,v 1.51 2004/01/15 11:05:09 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -175,7 +175,7 @@ class graphEditor:
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
         module:modules.Readers.dicomRDR or
-        segment:/home/cpbotha/work/code/devide/networkSegments/blaat.d3n
+        segment:/home/cpbotha/work/code/devide/networkSegments/blaat.dvn
         """
 
         modp = 'module:'
@@ -437,8 +437,8 @@ class graphEditor:
     def _handlerFileOpenSegment(self, event):
         filename = wxFileSelector(
             "Choose DeVIDE network to load into copy buffer",
-            "", "", "d3n",
-            "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+            "", "", "dvn",
+            "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
             wxOPEN)
         
         if filename:
@@ -449,8 +449,8 @@ class graphEditor:
         if glyphs:
             filename = wxFileSelector(
                 "Choose filename for DeVIDE network",
-                "", "", "d3n",
-                "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+                "", "", "dvn",
+                "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
                 wxSAVE)
                     
             if filename:
@@ -791,7 +791,7 @@ class graphEditor:
 
     def _loadAndRealiseNetwork(self, filename, position=(0,0),
                                reposition=False):
-        """Attempt to load (i.e. unpickle) a D3N network file and recreate
+        """Attempt to load (i.e. unpickle) a DVN network file and recreate
         this network on the canvas.
 
         The position has to be real (i.e. canvas-absolute and NOT event)
@@ -806,7 +806,7 @@ class graphEditor:
             genUtils.logError(str(e))
 
     def _loadNetworkIntoCopyBuffer(self, filename):
-        """Attempt to load (i.e. unpickle) a D3N network and bind the
+        """Attempt to load (i.e. unpickle) a DVN network and bind the
         tuple to self._copyBuffer.  When the user pastes, the network will
         be recreated.  DANG!
         """
@@ -819,7 +819,7 @@ class graphEditor:
             genUtils.logError(str(e))
 
     def _loadNetwork(self, filename):
-        """Given a filename, read it as a D3N file and return a tuple with
+        """Given a filename, read it as a DVN file and return a tuple with
         (pmsDict, connectionList, glyphPosDict) if successful.  If not
         successful, an exception will be raised.
         """
@@ -848,7 +848,7 @@ class graphEditor:
                   (filename,str(e))
             
 
-        if magic != 'D3N' or (major,minor,patch) != (1,0,0):
+        if magic != 'DVN' or (major,minor,patch) != (1,0,0):
             raise RuntimeError, '%s is not a valid DeVIDE network file.' % \
                   (filename,)
 
@@ -861,7 +861,7 @@ class graphEditor:
                   self._serialiseNetwork(glyphs)
 
         # change the serialised moduleInstances to a pickled stream
-        headerAndData = (('D3N', 1, 0, 0), \
+        headerAndData = (('DVN', 1, 0, 0), \
                         (pmsDict, connectionList, glyphPosDict))
         stream = cPickle.dumps(headerAndData, True)
             
@@ -947,8 +947,8 @@ class graphEditor:
     def _fileOpenCallback(self, event):
         filename = wxFileSelector(
             "Choose DeVIDE network to load",
-            "", "", "d3n",
-            "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+            "", "", "dvn",
+            "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
             wxOPEN)
         
         if filename:
@@ -961,8 +961,8 @@ class graphEditor:
         if allGlyphs:
             filename = wxFileSelector(
                 "Choose filename for DeVIDE network",
-                "", "", "d3n",
-                "DeVIDE networks (*.d3n)|*.d3n|All files (*.*)|*.*",
+                "", "", "dvn",
+                "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
                 wxSAVE)
         
             if filename:

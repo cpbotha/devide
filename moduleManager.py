@@ -106,7 +106,7 @@ class moduleManager:
             if curModulePath:
                 wildCard = "*.py"
             else:
-                wildCard = "*.d3n"
+                wildCard = "*.dvn"
                 
             fileNames = os.listdir(adir)
             for fileName in fileNames:
