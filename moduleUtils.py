@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.9 2003/05/13 09:51:08 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.10 2003/05/13 10:33:16 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -203,11 +203,11 @@ def createStandardObjectAndPipelineIntrospection(d3module,
 
     hSizer = wxBoxSizer(wxHORIZONTAL)
     hSizer.Add(ocLabel, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-    hSizer.Add(objectChoice, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+    hSizer.Add(objectChoice, 1, wxALIGN_CENTER_VERTICAL, 0)
     hSizer.Add(pbLabel, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
     hSizer.Add(pipelineButton, 0, wxALIGN_CENTER_VERTICAL, 0)
 
-    viewFramePanel.GetSizer().Add(hSizer, 1, wxALL|wxEXPAND, 5)
+    viewFramePanel.GetSizer().Add(hSizer, 0, wxALL|wxEXPAND, 5)
 
     # force the sizer to calculate new layout with all children (because
     # we've just added something)
@@ -272,3 +272,12 @@ def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
         viewFrame, renderWindow, objectDict))
 
 
+
+def setupVTKObjectProgress(d3module, obj, progressText):
+    # following is the standard way of connecting up the dscas3 progress
+    # callback to a VTK object; you should do this for all objects in
+    # your module - you could do this in __init__ as well, it seems
+    # neater here though
+    obj.SetProgressText(progressText)
+    mm = d3module._moduleManager
+    obj.SetProgressMethod(lambda: mm.vtk_progress_cb(obj))

@@ -19,3 +19,27 @@ def logError(msg):
     # detail message
     wxLog_FlushActive()
 
+def textToFloat(text, defaultFloat):
+    """Converts text to a float by using an eval and returns the float.
+    If something goes wrong, returns defaultFloat.
+    """
+
+    try:
+        returnFloat = float(eval(text))
+    except Exception:
+        returnFloat = defaultFloat
+
+    return returnFloat
+
+def textToInt(text, defaultInt):
+    """Converts text to an integer by using an eval and returns the integer.
+    If something goes wrong, returns default Int.
+    """
+
+    try:
+        returnInt = int(eval(text))
+    except Exception:
+        returnInt = defaultInt
+
+    return returnInt
+
