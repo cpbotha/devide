@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.6 2003/08/09 20:30:40 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.7 2003/08/11 15:59:26 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -193,15 +193,13 @@ class sliceDirections(object):
         self._grid.ClearSelection()
 
     def _handlerSliceLockToPoints(self, event):
-        selRows = self.slice3dVWR.controlFrame.spointsGrid.GetSelectedRows()
-        if len(selRows) >= 3:
-            tp = [self.slice3dVWR._selectedPoints[idx]['world']
-                  for idx in selRows]
-            
+        worldPoints = self.slice3dVWR.selectedPoints.getSelectedWorldPoints()
+        if len(worldPoints) >= 3:
             selectedSliceDirections = self.getSelectedSliceDirections()
 
             for sliceDirection in selectedSliceDirections:
-                sliceDirection.lockToPoints(tp[0], tp[1], tp[2])
+                sliceDirection.lockToPoints(
+                    worldPoints[0], worldPoints[1], worldPoints[2])
                 
             if selectedSliceDirections:
                 self.slice3dVWR.render3D()

@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.9 2003/08/09 20:30:40 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.10 2003/08/11 15:59:26 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -523,10 +523,11 @@ class sliceDirection:
         if self._ipws:
             inputData = self._ipws[0].GetInput()
             
-            # calculate default window/level once
+            # calculate default window/level once (same as used
+            # by vtkImagePlaneWidget)
             (dmin,dmax) = inputData.GetScalarRange()
-            iwindow = (dmax - dmin) / 2
-            ilevel = dmin + iwindow
+            iwindow = dmax - dmin
+            ilevel = 0.5 * (dmin + dmax)
 
             inputData_source = inputData.GetSource()
             if hasattr(inputData_source, 'GetWindowCenter') and \
