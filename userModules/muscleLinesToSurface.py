@@ -1,17 +1,21 @@
+# muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
+# $Id: muscleLinesToSurface.py,v 1.2 2004/01/27 15:12:37 cpbotha Exp $
+
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
-    """Given a binary volume, fit a surface through the marked points.
+class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
+    """Given muscle centre lines marked with 0-valued voxels, calculate a
+    continuous surface through these marked lines.
 
-    A doubleThreshold could be used to extract points of interest from
-    a volume.  By passing it through this module, a surface will be fit
-    through those points of interest.
-
-    This is not to be confused with traditional iso-surface extraction.
+    Make sure that ONLY the desired voxels have 0 value.  You can do this
+    with for instance the doubleThreshold DeVIDE module.  This module
+    calculates a 3D distance field, processes this field to yield a signed
+    distance field, extracts an isosurface and then clips off extraneous
+    surfaces.
     """
     
 
@@ -22,23 +26,10 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
         noConfigModuleMixin.__init__(self)
 
 
-        # we'll be playing around with some vtk objects, this could
-        # be anything
-
-#         self._thresh = vtk.vtkThresholdPoints()
-#         self._thresh.ThresholdByUpper(1)
-#         self._del2d = vtk.vtkDelaunay2D()
-#         self._del2d.SetInput(self._thresh.GetOutput())
-#         self._geom = vtk.vtkGeometryFilter()
-#         self._geom.SetInput(self._del2d.GetOutput())
-
-        #self._cast = vtk.vtkImageCast()
-        #self._cast.SetOutputScalarType(vtk.VTK_SHORT)
-        #self._distance = vtk.vtkImageCityBlockDistance()
-        #self._distance.SetInput(self._cast.GetOutput())        
-
         self._distance = vtk.vtkImageEuclideanDistance()
-        #self._distance.ConsiderAnisotropyOn()
+        # this seems to yield more accurate results in this case
+        # it would probably be better to calculate only 2d distance fields
+        self._distance.ConsiderAnisotropyOff()
 
         self._xEndPoints = []
         self._pf1 = vtk.vtkProgrammableFilter() # yeah
@@ -245,6 +236,7 @@ class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
         del self._iv
         del self._cpd
         del self._pf1
+        del self._pf2
         del self._iObj
         del self._oObj
 
