@@ -10,6 +10,7 @@
 
 import os
 import tempfile
+import vtk
 import wx
 
 # get the slice3dVWR marked by the user

@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.13 2004/06/23 11:51:32 cpbotha Exp $
+# $Id: pythonShell.py,v 1.14 2004/06/23 12:57:31 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -83,8 +83,11 @@ class pythonShell:
             self._psFrame.pyShell.redirectStdin()
 
             # runfile also generates an IOError if it can't load the file
-            execfile(path, globals(), self._psFrame.pyShell.interp.locals)
+            #execfile(path, globals(), self._psFrame.pyShell.interp.locals)
 
+            # this is quite sneaky, but yields better results especially
+            # if there's an exception.
+            self._psFrame.pyShell.run('execfile("%s")' % (path,))
             
         except IOError,e:
             md = wx.MessageDialog(
