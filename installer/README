@@ -1,0 +1,8 @@
+$Id: README,v 1.1 2003/05/02 23:36:33 cpbotha Exp $
+
+* At the time of this writing, your Installer (currently 5b4) has to have my
+  patch iu.reload-fix-v2.diff applied, else things will go very wrong with the
+  reloading of modules from Installer-ified dscas3 installations.
+  
+  See this: http://trixie.triqs.com/pipermail/installer/2003-May/000303.html
+  for somewhat more detail.
