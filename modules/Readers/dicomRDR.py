@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.6 2003/10/07 17:07:52 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.7 2003/10/16 10:12:34 cpbotha Exp $
 
 import genUtils
 import os
@@ -33,7 +33,7 @@ class dicomRDR(moduleBase,
         # setup some defaults
         self._config.dicomDirname = ""
         self._config.dicomFilenames = []
-        self._config.seriesInstanceIdx = -1
+        self._config.seriesInstanceIdx = 0
 
         # do the normal thang (down to logic, up again)
         self.configToLogic()
