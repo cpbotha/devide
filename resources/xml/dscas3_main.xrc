@@ -51,7 +51,7 @@
           <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
             <object class="sizeritem">
-              <object class="wxStaticText" name="ID_STATUS_STXT">
+              <object class="wxStaticText" name="ID_PROGRESS_STXT">
                 <label>Some status message...</label>
               </object>
               <flag>wxTOP|wxLEFT|wxRIGHT</flag>

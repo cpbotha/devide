@@ -1,4 +1,4 @@
-# $Id: vtk_plydta_rdr.py,v 1.5 2002/05/03 23:31:50 cpbotha Exp $
+# $Id: vtk_plydta_rdr.py,v 1.6 2002/05/19 14:22:32 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -17,6 +17,8 @@ class vtk_plydta_rdr(module_base,
     def __init__(self, module_manager):
         module_base.__init__(self, module_manager)
 	self._reader = vtk.vtkPolyDataReader()
+        self._reader.SetProgressText('Reading VTK polydata')
+        self._reader.SetProgressMethod(lambda s=self: s._module_manager.vtk_progress_cb(s._reader))
 	
         self._view_frame = None
         self.create_view_window()
@@ -51,7 +53,12 @@ class vtk_plydta_rdr(module_base,
         self._reader.SetFileName(fn_text.GetValue())
 
     def execute_module(self):
+        # get the vtkPolyDataReader to try and execute
 	self._reader.Update()
+        # tell the vtk log file window to poll the file; if the file has
+        # changed, i.e. vtk has written some errors, the log window will
+        # pop up
+        self._module_manager.vtk_poll_error()
 
     def create_view_window(self):
         parent_window = self._module_manager.get_module_view_parent_window()

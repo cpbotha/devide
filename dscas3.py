@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.5 2002/05/19 13:35:59 cpbotha Exp $
+# $Id: dscas3.py,v 1.6 2002/05/19 14:22:32 cpbotha Exp $
 
 import os
 import stat
@@ -68,11 +68,10 @@ class main_window(wxFrame):
         top_sizer.SetSizeHints(self)
 
         # get out status statictext and progress gauge so we can use these
-        self._status_stxt = XMLCTRL(self, 'ID_STATUS_STXT')
+        self._progress_stxt = XMLCTRL(self, 'ID_PROGRESS_STXT')
         self._progress_gauge = XMLCTRL(self, 'ID_PROGRESS_GAUGE')
         # set them up to some sane values
-        self.set_status_message('Started up.')
-        self.set_progress_gauge(100)
+        self.set_progress(100, 'Started up.')
 
         # attach events to assistant buttons
         EVT_BUTTON(self, XMLID('ID_LOAD_DATA_BTN'), self.load_data_cb)
@@ -80,14 +79,12 @@ class main_window(wxFrame):
         # display ourselves
         self.Show(true)
 
-    def set_status_message(self, message):
-        self._status_stxt.SetLabel(message)
-
-    def set_progress_gauge(self, progress):
+    def set_progress(self, progress, message):
+        self._progress_stxt.SetLabel(message)
         # you might want to use wxPyTypeCast on _progress_gauge, until the
         # OOR is done for wxGauge as well
         self._progress_gauge.SetValue(progress)
-        pass
+        wxYield()
 
     def exit_cb(self, event):
         self._dscas3_app.quit()
@@ -105,11 +102,28 @@ class main_window(wxFrame):
 class dscas3_log_window:
     """Log window that can display file or can be used as destination file
     object.
+
+    If instantiated with a filename as parameter, one can regularly call
+    update() for this class to check whether the filesize has changed since
+    the last poll.  If the filesize has changed, it will display the contents
+    in the text control.
+
+    If instantiated without filename, this can be used as an output pipe,
+    for instance to replace stdout and stderr with.  Neato.
     """
     
     def __init__(self, title, parent_frame=None, filename=None):
         self._filename = filename
-        self._previous_fsize = -1
+        # get initial filesize so our update() polling thing works
+        if self._filename:
+            try:
+                self._previous_fsize = os.stat(self._filename)[stat.ST_SIZE]
+            except:
+                # if we couldn't get it, just set it to -1
+                # this means ANY new valid filesize will be different,
+                # thus guaranteeing correct behaviour of update()
+                self._previous_fsize = -1
+            
         self._create_window(title, parent_frame)
         #
 
@@ -167,7 +181,10 @@ class dscas3_log_window:
 
         if self._filename:
             try:
+                # if we can't get fsize, the file is borked, and we
+                # should just leave it alone in anycase
                 fsize = os.stat(self._filename)[stat.ST_SIZE]
+                # first see if filesize has changed
                 if not fsize == self._previous_fsize:
                     # try to open the log file
                     f = open(self._filename)
@@ -181,8 +198,8 @@ class dscas3_log_window:
                     # and update the previous size
                     self._previous_fsize = fsize
             except:
-                gen_utils.log_error("Could not stat/open log file %s!" %
-                                    self._filename)
+                # we let this go, silently
+                pass
     
 # ---------------------------------------------------------------------------
 class dscas3_app_t(wxApp):
@@ -269,7 +286,6 @@ class dscas3_app_t(wxApp):
         return self._appdir
 	
     def quit(self):
-	print "quit called!"
 	# take care of main window
 	self.main_window.Close()
 
@@ -287,6 +303,9 @@ class dscas3_app_t(wxApp):
 
     def update_vtk_log_window(self):
         self._vtk_lw.update()
+
+    def set_progress(self, progress, message):
+        self.main_window.set_progress(progress, message)
 	
 # ---------------------------------------------------------------------------
 
