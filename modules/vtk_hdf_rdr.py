@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.15 2002/05/17 23:24:20 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.16 2002/05/18 00:38:26 cpbotha Exp $
 
 from module_base import \
      module_base, \
@@ -21,14 +21,9 @@ class vtk_hdf_rdr(module_base,
     """
     
     def __init__(self, module_manager):
-        #self.blah = vtk.vtkFileOutputWindow()
-        #self.blah.SetFileName(sys.stdout)
-        #self.blah.SetInstance(self.blah)
-        
         # call the base class __init__ (atm it just stores module_manager)
         module_base.__init__(self, module_manager)
 	self._reader = vtkcpbothapython.vtkHDFVolumeReader()
-        self._reader.AddObserver('ErrorEvent', self.test_cb)
 
         # declare this var here out of good habit
         self._view_frame = None
@@ -37,10 +32,6 @@ class vtk_hdf_rdr(module_base,
         # make sure it's reflecting what it should
 	self.sync_config()
 
-    def test_cb(self, obj, evt):
-        print obj.GetClassName()
-        print evt
-    
     def close(self):
         self._view_frame.Destroy()
 	if hasattr(self, 'reader'):

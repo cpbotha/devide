@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.2 2002/05/07 14:25:20 cpbotha Exp $
+# $Id: dscas3.py,v 1.3 2002/05/18 00:38:26 cpbotha Exp $
 
 import os
 import sys
@@ -40,7 +40,6 @@ class main_window(wxFrame):
         EVT_MENU(self, XMLID('ID_PYTHON_SHELL_MI'), self.python_shell_cb)
         # add the menubar to this frame
         self.SetMenuBar(menubar)
-        
         
         # then get the panel out
         panel = res.LoadPanel(self, 'PNL_MAIN_WINDOW')
@@ -97,6 +96,10 @@ class main_window(wxFrame):
 
     def python_shell_cb(self, event):
         self.dscas3_app.start_python_shell()
+
+class wx_output_pipe:
+    def write(self, data):
+        print "SOMETHING ELSE! %s" % (data)
         
 class dscas3_app_t(wxApp):
     """Main dscas3 application class.
@@ -108,6 +111,9 @@ class dscas3_app_t(wxApp):
     """
     
     def __init__(self):
+        self._old_stderr = None
+        self._old_stdout = None
+        
         self.main_window = None
         
         wxApp.__init__(self, 0)
@@ -118,14 +124,25 @@ class dscas3_app_t(wxApp):
 	
 	# this will instantiate the module manager and get a list of plugins
 	self.module_manager = module_manager(self)
-	# then start up a default graph_editor
-        #self.graph_editor = graph_editor(self)
 
     def OnInit(self):
         self.main_window = main_window(self)
         self.SetTopWindow(self.main_window)
+
+        # after we have the gui going, we can redirect
+        _output_pipe = wx_output_pipe()
+        self._old_stderr = sys.stderr
+        sys.stderr = _output_pipe
+#        self._old_stdout = sys.stdout
+#        sys.stdout = _output_pipe
+        
         # "true" is defined in wxPython.wx
         return true
+
+    def OnExit(self):
+        sys.stderr = self._old_stderr
+#        sys.stdout = self._old_stdout
+#        return true
 	
     def get_main_window(self):
         return self.main_window

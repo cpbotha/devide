@@ -1,6 +1,7 @@
 import sys, os, fnmatch
 import string
 import gen_utils
+import vtk
 
 class module_manager:
     """This class in responsible for picking up new modules in the modules 
@@ -20,17 +21,15 @@ class module_manager:
             mdir = os.path.join(home, 'modules')
         self._modules_dir = mdir
         
-	# find out the module directory
-	#dirname = os.path.dirname(sys.argv[0])
-	#if dirname and dirname != os.curdir:
-	#    self._modules_dir = dirname + "/modules"
-	#else:
-	#    self._modules_dir = os.getcwd() + "/modules"
-	    
 	# add it to the python path so imports work
 	sys.path.insert(0, self._modules_dir)
 	# make first scan of available modules
 	self.module_list = self.scan_modules()
+
+        # now make sure that VTK will always send error to stderr
+        temp = vtk.vtkOutputWindow()
+        temp.SetInstance(temp)
+        del temp
 
     def scan_modules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
