@@ -1,4 +1,4 @@
-# $Id: stlWRT.py,v 1.1 2003/04/28 11:26:21 cpbotha Exp $
+# $Id: stlWRT.py,v 1.2 2003/04/28 13:15:38 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -14,22 +14,27 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
+        # need to make sure that we're all happy triangles and stuff
+        self._cleaner = vtk.vtkCleanPolyData()
+        self._tf = vtk.vtkTriangleFilter()
+        self._tf.SetInput(self._cleaner.GetOutput())
         self._writer = vtk.vtkSTLWriter()
+        self._writer.SetInput(self._tf.GetOutput())
         # sorry about this, but the files get REALLY big if we write them
         # in ASCII - I'll make this a gui option later.
         self._writer.SetFileTypeToBinary()
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
-        self._writer.SetProgressText('Writing STL data')
-        mm = self._moduleManager
-        self._writer.SetProgressMethod(lambda s=self, mm=mm:
-                                       mm.vtk_progress_cb(s._writer))
+        mm = self._moduleManager        
+        for textobj in (('Cleaning data', self._cleaner),
+                        ('Converting to triangles', self._tf),
+                        ('Writing STL data', self._writer)):
+            print textobj[1].GetClassName()
+            textobj[1].SetProgressText(textobj[0])
+            textobj[1].SetProgressMethod(lambda textobj=textobj, mm=mm:
+                                         mm.vtk_progress_cb(textobj[1]))
         
-        # we do this to save space - if you're going to be transporting files
-        # to other architectures, change this to ASCII
-        #self._writer.SetFileTypeToBinary()
-
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('STL Writer',
                               'Select a filename',

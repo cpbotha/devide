@@ -1,5 +1,5 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimateFLT.py,v 1.4 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: decimateFLT.py,v 1.5 2003/04/28 13:15:38 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils
@@ -19,7 +19,7 @@ class decimateFLT(moduleBase, vtkPipelineConfigModuleMixin):
         # the decimator only works on triangle data, so we make sure
         # that it only gets triangle data
         self._triFilter = vtk.vtkTriangleFilter()
-        self._decimate = vtk.vtkDecimatePro()
+        self._decimate = vtk.vtkDecimate()
         self._decimate.PreserveTopologyOn()
         self._decimate.SetInput(self._triFilter.GetOutput())
 
