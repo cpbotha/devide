@@ -12,7 +12,7 @@ class pythonShellFrame(wx.Frame):
         self.panel_1 = wx.Panel(self, -1)
         self.statusBar = self.CreateStatusBar(1)
         self.pyShell = py.shell.Shell(self.panel_1, -1)
-        self.loadSnippetButton = wx.Button(self.panel_1, -1, "Load Snippet")
+        self.loadSnippetButton = wx.Button(self.panel_1, -1, "Run Snippet")
         self.closeButton = wx.Button(self.panel_1, -1, "Close")
 
         self.__set_properties()
