@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.8 2004/07/08 13:05:49 cpbotha Exp $
+# $Id: tdObjects.py,v 1.9 2004/10/07 16:07:49 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -1323,7 +1323,7 @@ class tdObjects(s3dcGridMixin):
                 self._setupMotionConstraints(bw, tdObject)
                 
 
-            else:
+            else: # if NOT motion
                 if 'motionBoxWidget' in objectDict and \
                    objectDict['motionBoxWidget']:
                     try:
