@@ -1,10 +1,11 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.33 2003/09/04 22:35:20 cpbotha Exp $
+# $Id: tdObjects.py,v 1.34 2003/09/15 16:56:44 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
 reload(genUtils)
 import math
+from modules.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
 import vtkdscas
@@ -12,7 +13,7 @@ import wx
 import wx.grid
 from wx.lib import colourdb
 
-class tdObjects:
+class tdObjects(object, s3dcGridMixin):
     """Class for keeping track and controlling everything to do with
     3d objects in a slice viewer.  A so-called tdObject can be a vtkPolyData
     or a vtkVolume at this stage.  The internal dict is keyed on the
@@ -40,6 +41,11 @@ class tdObjects:
         self._grid = grid
         self._initialiseGrid()
         self._bindEvents()
+
+        # fill out our drop-down menu
+        self._disableMenuItems = self._appendGridCommandsToMenu(
+            self.slice3dVWR.controlFrame.objectsMenu,
+            self.slice3dVWR.controlFrame, disable=True)
 
         # this will fix up wxTheColourDatabase
         colourdb.updateColourDB()
@@ -157,6 +163,53 @@ class tdObjects:
         # ends 
         else:
             raise Exception, 'Attempt to add same object twice.'
+
+    def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
+        """Appends the points grid commands to a menu.  This can be used
+        to build up the context menu or the drop-down one.
+        """
+
+        commandsTuple = [
+            ('Select All', 'Select all objects',
+             self._handlerObjectSelectAll, False),
+            ('DEselect All', 'Deselect all objects',
+             self._handlerObjectDeselectAll, False),
+            ('---',),
+            ('Show', 'Show all selected objects',
+             self._handlerObjectShow, True),
+            ('Hide', 'Hide all selected objects',
+             self._handlerObjectHide, True),
+            ('Motion On +', 'Enable motion for selected objects',
+             self._handlerObjectMotionOn, True),
+            ('Motion Off', 'Disable motion for selected objects',
+             self._handlerObjectMotionOff, True),
+            ('Set Colour',
+             'Change colour of selected objects',
+             self._handlerObjectSetColour, True),
+            ('Contouring On +',
+             'Activate contouring for all selected objects',
+             self._handlerObjectContourOn, True),
+            ('Contouring Off',
+             'Deactivate contouring for all selected objects',
+             self._handlerObjectContourOff, True),
+            ('---',), # important!  one-element tuple...
+            ('Attach Axis',
+             'Attach axis to all selected objects',
+             self._handlerObjectAttachAxis, True),
+            ('Move Axis to Slice',
+             'Move the object (via its axis) to the selected slices',
+             self._handlerObjectAxisToSlice, True),
+            ('Constrain Motion',
+             'Constrain the motion of selected objects to the selected slices',
+             self._handlerObjectPlaneLock, True),
+            ('---',), # important!  one-element tuple...
+            ('Delete', 'Delete selected slices',
+             self._handlerObjectDelete, True)]
+
+        disableList = self._appendGridCommandsTupleToMenu(
+            menu, eventWidget, commandsTuple, disable)
+        
+        return disableList
 
     def _attachAxis(self, sObject, twoPoints):
         """Associate the axis defined by the two world points with the
@@ -426,34 +479,18 @@ class tdObjects:
             self._setObjectMotion(tdObject, True)
 
     def _bindEvents(self):
-        controlFrame = self.slice3dVWR.controlFrame
+        #controlFrame = self.slice3dVWR.controlFrame
 
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectSelectAllButtonId,
-                      self._handlerObjectSelectAll)
+        wx.grid.EVT_GRID_CELL_RIGHT_CLICK(
+            self._grid, self._handlerGridRightClick)
+        wx.grid.EVT_GRID_LABEL_RIGHT_CLICK(
+            self._grid, self._handlerGridRightClick)
 
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectDeselectAllButtonId,
-                      self._handlerObjectDeselectAll)
+        wx.grid.EVT_GRID_RANGE_SELECT(
+            self._grid, self._handlerGridRangeSelect)
         
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectSetColourButtonId,
-                      self._handlerObjectSetColour)
         
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectShowHideButtonId,
-                      self._handlerObjectShowHide)
 
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectContourButtonId,
-                      self._handlerObjectContour)
-
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectMotionButtonId,
-                      self._handlerObjectMotion)
-
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectAttachAxisButtonId,
-                      self._handlerObjectAttachAxis)
-
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectAxisToSliceButtonId,
-                      self._handlerObjectAxisToSlice)
-
-        wx.EVT_BUTTON(controlFrame, controlFrame.objectPlaneLockButtonId,
-                      self._handlerObjectPlaneLock)
 
     def _detachAxis(self, tdObject):
         """Remove any object axis-related metadata and actors if tdObject
@@ -600,6 +637,16 @@ class tdObjects:
         """
         return self._tdObjectsDict[tdObject]['motion']
 
+    def _handlerGridRightClick(self, gridEvent):
+        """This will popup a context menu when the user right-clicks on the
+        grid.
+        """
+
+        pmenu = wx.Menu('Objects Context Menu')
+
+        self._appendGridCommandsToMenu(pmenu, self._grid)
+        self._grid.PopupMenu(pmenu, gridEvent.GetPosition())
+
     def _handlerObjectSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
             self._grid.SelectRow(row, True)
@@ -607,12 +654,26 @@ class tdObjects:
     def _handlerObjectDeselectAll(self, event):
         self._grid.ClearSelection()
 
-    def _handlerObjectContour(self, event):
+    def _handlerObjectContourOn(self, event):
         objs = self._getSelectedObjects()
-
         for obj in objs:
-            contour = self._tdObjectsDict[obj]['contour']
-            self._setObjectContouring(obj, not contour)
+            self._setObjectContouring(obj, True)
+
+        if objs:
+            self.slice3dVWR.render3D()
+
+    def _handlerObjectContourOff(self, event):
+        objs = self._getSelectedObjects()
+        for obj in objs:
+            self._setObjectContouring(obj, False)
+
+        if objs:
+            self.slice3dVWR.render3D()
+
+    def _handlerObjectDelete(self, event):
+        objs = self._getSelectedObjects()
+        for obj in objs:
+            self.removeObject(obj)
 
         if objs:
             self.slice3dVWR.render3D()
@@ -632,23 +693,38 @@ class tdObjects:
         if objs:
             self.slice3dVWR.render3D()
                     
-
-    def _handlerObjectShowHide(self, event):
+    def _handlerObjectHide(self, event):
         objs = self._getSelectedObjects()
 
         for obj in objs:
-            visible = self._tdObjectsDict[obj]['visible']
-            self._setObjectVisibility(obj, not visible)
+            self._setObjectVisibility(obj, False)
 
         if objs:
             self.slice3dVWR.render3D()
 
-    def _handlerObjectMotion(self, event):
+    def _handlerObjectShow(self, event):
         objs = self._getSelectedObjects()
 
         for obj in objs:
-            motion = self._tdObjectsDict[obj]['motion']
-            self._setObjectMotion(obj, not motion)
+            self._setObjectVisibility(obj, True)
+
+        if objs:
+            self.slice3dVWR.render3D()
+
+    def _handlerObjectMotionOff(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            self._setObjectMotion(obj, False)
+
+        if objs:
+            self.slice3dVWR.render3D()
+
+    def _handlerObjectMotionOn(self, event):
+        objs = self._getSelectedObjects()
+
+        for obj in objs:
+            self._setObjectMotion(obj, True)
 
         if objs:
             self.slice3dVWR.render3D()
@@ -1029,7 +1105,7 @@ class tdObjects:
     def _setObjectContouring(self, tdObject, contour):
         if self._tdObjectsDict.has_key(tdObject):
             objectDict = self._tdObjectsDict[tdObject]
-
+            
             # in our own dict
             objectDict['contour'] = bool(contour)
 
