@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.10 2003/01/19 23:13:37 cpbotha Exp $
+# $Id: dscas3.py,v 1.11 2003/01/23 15:40:12 cpbotha Exp $
 
 import os
 import stat
@@ -12,91 +12,8 @@ from python_shell import python_shell
 import gen_utils
 
 from wxPython.wx import *
-from wxPython.xrc import *
 
 import vtk
-
-# ---------------------------------------------------------------------------
-class main_window(wxFrame):
-    """Main dscas3 application window.
-
-    This is class representing the main dscas3 window.  As is the convention
-    with dscas3, the UI derivatives (like this window) will handle all UI
-    and hand over to other code as soon as the transaction becomes UI
-    independent.
-    """
-
-    def __init__(self, dscas3_app):
-        # bind the app name so we can get to it for events
-        self._dscas3_app = dscas3_app
-        
-        wxFrame.__init__(self, None, -1, "dscas3")
-
-        # attempt to open the resource file
-        res_path = os.path.join(sys.path[0], 'resources/xml/dscas3_main.xrc')
-        # res is local, will go out of scope (and make wxXmlResource destruct)
-        res = wxXmlResource(res_path)
-
-        # get menubar from it
-        menubar = res.LoadMenuBar('MBAR_MAIN_WINDOW')
-        EVT_MENU(self, XMLID('ID_EXIT_MI'), self.exit_cb)
-        EVT_MENU(self, XMLID('ID_GRAPH_EDITOR_MI'), self.graph_editor_cb)
-        EVT_MENU(self, XMLID('ID_PYTHON_SHELL_MI'), self.python_shell_cb)
-        # add the menubar to this frame
-        self.SetMenuBar(menubar)
-        
-        # then get the panel out
-        panel = res.LoadPanel(self, 'PNL_MAIN_WINDOW')
-
-        # now make a status bar
-        self.CreateStatusBar()
-        self.GetStatusBar().SetStatusText('Welcome to DSCAS3.')
-        self.GetStatusBar().SetMinHeight(10)
-
-        # we do NOT add the status bar to the slicer, since it is mysteriously
-        # added to the frame already, almost like the menubar
-        top_sizer = wxBoxSizer(wxVERTICAL)
-        top_sizer.Add(panel, option=1, flag=wxEXPAND)
-
-        # make sure our frame makes use of the top level sizer
-        self.SetAutoLayout(true)
-        self.SetSizer(top_sizer)
-        # resize our frame so it fits around the top level sizer (which
-        # fits around the frame, which fits around its contained sizers, etc)
-        top_sizer.Fit(self)
-        # make sure the frame will have this as minimum size
-        top_sizer.SetSizeHints(self)
-
-        # get out status statictext and progress gauge so we can use these
-        self._progress_stxt = XMLCTRL(self, 'ID_PROGRESS_STXT')
-        self._progress_gauge = XMLCTRL(self, 'ID_PROGRESS_GAUGE')
-        # set them up to some sane values
-        self.set_progress(100, 'Started up.')
-
-        # attach events to assistant buttons
-        EVT_BUTTON(self, XMLID('ID_LOAD_DATA_BTN'), self.load_data_cb)
-
-        # display ourselves
-        self.Show(true)
-
-    def set_progress(self, progress, message):
-        self._progress_stxt.SetLabel(message)
-        # you might want to use wxPyTypeCast on _progress_gauge, until the
-        # OOR is done for wxGauge as well
-        self._progress_gauge.SetValue(progress)
-        wxYield()
-
-    def exit_cb(self, event):
-        self._dscas3_app.quit()
-
-    def load_data_cb(self, event):
-        self._dscas3_app.get_assistants().load_data()
-
-    def graph_editor_cb(self, event):
-        self._dscas3_app.start_graph_editor()
-
-    def python_shell_cb(self, event):
-        self._dscas3_app.start_python_shell()
 
 # ---------------------------------------------------------------------------
 class dscas3_log_window:
@@ -215,7 +132,7 @@ class dscas3_app_t(wxApp):
         self._old_stderr = None
         self._old_stdout = None
         
-        self.main_window = None
+        self._mainFrame = None
 
         self._stdo_lw = None
         self._stde_lw = None
@@ -241,18 +158,31 @@ class dscas3_app_t(wxApp):
 	self.module_manager = module_manager(self)
 
     def OnInit(self):
-        self.main_window = main_window(self)
-        self.SetTopWindow(self.main_window)
+        import resources.python.mainFrame
+
+        self._mainFrame = resources.python.mainFrame.mainFrame(None, -1,
+                                                               "dummy")
+
+        EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
+                 self.exitCallback)
+        EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
+                 self.graphEditorCallback)
+        EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
+                 self.pythonShellCallback)
+
+        self._mainFrame.Show(1)
+        self.SetTopWindow(self._mainFrame)
+        self.setProgress(100, 'Started up')
 
         
         # after we get the gui going, we can redirect
         self._stde_lw = dscas3_log_window('Standard Error Log',
-                                          self.main_window)
+                                          self._mainFrame)
         self._old_stderr = sys.stderr
         #sys.stderr = self._stde_lw
 
         self._stdo_lw = dscas3_log_window('Standard Output Log',
-                                          self.main_window)
+                                          self._mainFrame)
         self._old_stdout = sys.stdout
         #sys.stdout = self._stdo_lw
         
@@ -264,7 +194,7 @@ class dscas3_app_t(wxApp):
         del temp
 
         self._vtk_lw = dscas3_log_window('VTK error log',
-                                         self.main_window,
+                                         self._mainFrame,
                                          vtk_logfn)
         
         return true
@@ -274,7 +204,7 @@ class dscas3_app_t(wxApp):
         sys.stdout = self._old_stdout
 	
     def get_main_window(self):
-        return self.main_window
+        return self._mainFrame
 
     def get_module_manager(self):
 	return self.module_manager
@@ -289,7 +219,7 @@ class dscas3_app_t(wxApp):
         # shutdown all modules gracefully
         self.module_manager.close()
 	# take care of main window
-	self.main_window.Close()
+	self._mainFrame.Close()
 
     def start_python_shell(self):
         if self._python_shell == None:
@@ -306,8 +236,21 @@ class dscas3_app_t(wxApp):
     def update_vtk_log_window(self):
         self._vtk_lw.update()
 
-    def set_progress(self, progress, message):
-        self.main_window.set_progress(progress, message)
+    def setProgress(self, progress, message):
+        self._mainFrame.progressGauge.SetValue(progress)
+        self._mainFrame.progressText.SetLabel(message)
+        # give wx some time to realise the changes
+        wxYield()
+
+    def exitCallback(self, event):
+        self.quit()
+
+    def graphEditorCallback(self, event):
+        self.start_graph_editor()
+
+    def pythonShellCallback(self, event):
+        self.start_python_shell()
+
 	
 # ---------------------------------------------------------------------------
 
