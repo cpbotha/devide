@@ -1,4 +1,4 @@
-# $Id: vtk_dicom_rdr.py,v 1.5 2002/08/19 15:38:42 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.6 2002/08/20 09:52:14 cpbotha Exp $
 
 import gen_utils
 import os
@@ -23,7 +23,7 @@ class vtk_dicom_rdr(module_base,
 
         # setup necessary VTK objects
 	self._reader = vtkcpbothapython.vtkDICOMVolumeReader()
-        self._reader.DebugOn()
+        #self._reader.DebugOn()
 
         # this part of the config is stored in this module, and not in
         # the reader.
@@ -60,10 +60,26 @@ class vtk_dicom_rdr(module_base,
 	return self._reader.GetOutput()
     
     def sync_config(self):
+        # get our internal dirname (what use is this; it'll never change...
+        # we also probably can't query the dirname from the DICOM reader
         if self._dicom_dirname:
             self._view_frame.dirname_text.SetValue(self._dicom_dirname)
         else:
             self._view_frame.dirname_text.SetValue("")
+
+        # get current SeriesInstanceIdx from the DICOMReader
+        # FIXME: the frikking SpinCtrl does not want to update when we call
+        # SetValue()... we've now hard-coded it in wxGlade.
+        self._view_frame.si_idx_spin.SetValue(
+            int(self._reader.GetSeriesInstanceIdx()))
+
+        # try to get current SeriesInstanceIdx (this will run at least
+        # UpdateInfo)
+        si_uid = self._reader.GetSeriesInstanceUID()
+        if si_uid == None:
+            si_uid = "NONE"
+        
+        self._view_frame.si_uid_text.SetValue(si_uid)
 	
     def apply_config(self):
         # get a list of files in the indicated directory, stuff them all
@@ -105,6 +121,14 @@ class vtk_dicom_rdr(module_base,
         # if we've added the same list as we added at the previous exec
         # of apply_config(), the dicomreader is clever enough to know that
         # it doesn't require an update.  Yay me.
+
+        # also apply the SeriesInstanceIDX
+        self._reader.SetSeriesInstanceIdx(
+            self._view_frame.si_idx_spin.GetValue())
+
+        # we perform this call, as it will result in an ExecuteInfo of the
+        # DICOMReader, thus yielding bunches of interesting information
+        self.sync_config()
 
     def execute_module(self):
         # get the vtkDICOMVolumeReader to try and execute
@@ -185,11 +209,11 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.VTK_OBJECT_CHOICE_ID  =  wxNewId()
         self.object_choice = wxChoice(self, self.VTK_OBJECT_CHOICE_ID , choices=['vtkDICOMVolumeReader'], size=(-1, -1), style=0)
         self.label_2 = wxStaticText(self, -1, "Examine the", size=(-1, -1), style=0)
-        self.grid_sizer_1 = wxGridSizer(1, 2, 0, 0)
-        self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_6_copy = wxStaticText(self, -1, "Dimensions", size=(-1, -1), style=0)
-        self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
-        self.label_6_copy = wxStaticText(self, -1, "Modality", size=(-1, -1), style=0)
+        self.grid_sizer_1 = wxGridSizer(5, 2, 0, 0)
+        self.text_ctrl_2_copyc = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_6_copyc = wxStaticText(self, -1, "Dimensions", size=(-1, -1), style=0)
+        self.text_ctrl_2_copyb = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.label_6_copyb = wxStaticText(self, -1, "Modality", size=(-1, -1), style=0)
         self.text_ctrl_2_copy = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
         self.label_6_copy = wxStaticText(self, -1, "Patient Name", size=(-1, -1), style=0)
         self.text_ctrl_3 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
@@ -197,9 +221,10 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.text_ctrl_2 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
         self.label_6 = wxStaticText(self, -1, "Study Description", size=(-1, -1), style=0)
         self.sizer_5 = wxBoxSizer(wxHORIZONTAL)
-        self.text_ctrl_1 = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY)
+        self.si_uid_text = wxTextCtrl(self, -1, "", size=(-1, -1), style=wxTE_READONLY|wxHSCROLL)
         self.label_5 = wxStaticText(self, -1, "UID", size=(-1, -1), style=0)
-        self.spin_ctrl_1 = wxSpinCtrl(self, -1, min=0, max=100, initial=0, size=(-1, -1), style=0)
+        self.SI_IDX_ID  =  wxNewId()
+        self.si_idx_spin = wxSpinCtrl(self, self.SI_IDX_ID , min=0, max=100, initial=0, size=(-1, -1), style=wxSP_ARROW_KEYS)
         self.label_4 = wxStaticText(self, -1, "Series Instance Index", size=(-1, -1), style=0)
         self.sizer_3 = wxBoxSizer(wxHORIZONTAL)
         self.BROWSE_BUTTON_ID  =  wxNewId()
@@ -215,12 +240,12 @@ class vtk_dicom_rdr_view_frame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: __set_properties
         self.SetTitle("vtk_dicom_rdr configuration")
-        self.text_ctrl_1.SetBackgroundColour(wxColour(192, 192, 192))
+        self.si_uid_text.SetBackgroundColour(wxColour(192, 192, 192))
         self.text_ctrl_2.SetBackgroundColour(wxColour(192, 192, 192))
         self.text_ctrl_3.SetBackgroundColour(wxColour(192, 192, 192))
         self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
-        self.text_ctrl_2_copy.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_2_copyb.SetBackgroundColour(wxColour(192, 192, 192))
+        self.text_ctrl_2_copyc.SetBackgroundColour(wxColour(192, 192, 192))
         self.object_choice.SetSelection(0)
         # end wxGlade
 
@@ -231,20 +256,20 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.sizer_3.Add(self.browse_button, 0, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_1.Add(self.sizer_3, 1, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
         self.sizer_5.Add(self.label_4, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
-        self.sizer_5.Add(self.spin_ctrl_1, 0, wxALIGN_CENTER_VERTICAL, 0)
+        self.sizer_5.Add(self.si_idx_spin, 0, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_5.Add(self.label_5, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.sizer_5.Add(self.text_ctrl_1, 1, wxALIGN_CENTER_VERTICAL, 0)
+        self.sizer_5.Add(self.si_uid_text, 1, wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_1.Add(self.sizer_5, 1, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
         self.grid_sizer_1.Add(self.label_6, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
         self.grid_sizer_1.Add(self.text_ctrl_2, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
         self.grid_sizer_1.Add(self.label_7, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_3, 1, wxEXPAND, 0)
+        self.grid_sizer_1.Add(self.text_ctrl_3, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
         self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
         self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
-        self.grid_sizer_1.Add(self.label_6_copy, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
-        self.grid_sizer_1.Add(self.text_ctrl_2_copy, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        self.grid_sizer_1.Add(self.label_6_copyb, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_2_copyb, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
+        self.grid_sizer_1.Add(self.label_6_copyc, 0, wxRIGHT|wxLEFT|wxALIGN_CENTER_VERTICAL, 2)
+        self.grid_sizer_1.Add(self.text_ctrl_2_copyc, 1, wxEXPAND|wxALIGN_CENTER_VERTICAL, 0)
         self.sizer_1.Add(self.grid_sizer_1, 0, wxBOTTOM|wxRIGHT|wxEXPAND|wxTOP|wxLEFT, 5)
         self.sizer_4.Add(self.label_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 2)
         self.sizer_4.Add(self.object_choice, 0, wxALIGN_CENTER_VERTICAL, 0)
