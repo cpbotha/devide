@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.11 2003/03/25 23:58:09 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.12 2003/04/16 16:30:09 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -685,14 +685,25 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
             if input_stream.GetClassName() == 'vtkPolyData':
                 mapper = vtk.vtkPolyDataMapper()
-                # the user can switch this back on if she really wants it
-                # we switch it off as we mostly work with isosurfaces
-                mapper.ScalarVisibilityOff()
                 mapper.SetInput(input_stream)
                 self._inputs[idx]['vtkActor'] = vtk.vtkActor()
                 self._inputs[idx]['vtkActor'].SetMapper(mapper)
                 self._threedRenderer.AddActor(self._inputs[idx]['vtkActor'])
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
+                
+                # now some special case handling
+                sname = input_stream.GetPointData().GetScalars().GetName()
+                if sname.lower().find("curvature"):
+                    # if the active scalars have "curvature" somewhere in
+                    # their name, activate flat shading and scalar vis
+                    property = self._inputs[idx]['vtkActor'].GetProperty()
+                    property.SetInterpolationToFlat()
+                    mapper.ScalarVisibilityOn()
+                else:
+                    # the user can switch this back on if she really wants it
+                    # we switch it off as we mostly work with isosurfaces
+                    mapper.ScalarVisibilityOff()
+                
                 self._threedRenderer.ResetCamera()
                 self._viewFrame.threedRWI.Render()
 
