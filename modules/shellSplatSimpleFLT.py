@@ -265,8 +265,12 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
 
         mm = self._moduleManager
         # import/reload the viewFrame (created with wxGlade)
-        modules = mm.importReload(
+        mm.importReload(
             'modules.resources.python.shellSplatSimpleFLTViewFrame')
+        # this line is harmless due to Python's import caching, but we NEED
+        # to do it so that the Installer knows that this dscas3 module
+        # requires it and so that it's available in this namespace.
+        import modules.resources.python.shellSplatSimpleFLTViewFrame
 
         # find our parent window and instantiate the frame
         pw = mm.get_module_view_parent_window()

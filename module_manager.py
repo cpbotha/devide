@@ -77,16 +77,12 @@ class module_manager:
                           [bool(name in modules.module_list)]
             fullName = mtypePrefix + '.' + name
 
-            if mtypePrefix == 'userModules':
-                # the name userModules doesn't exist yet, so we have to
-                # do this assignment, emulating what an import would have
-                # done
-                userModules = self.importReload(fullName)
-            else:
-                # the name 'modules' does (as this module does an import
-                # modules), so we don't have bind the result of the
-                # importReload call, it's available via the existing binding
-                self.importReload(fullName)
+            # perform the conditional import/reload
+            self.importReload(fullName)
+            # importReload requires this afterwards for safety reasons
+            exec('import %s' % fullName)
+            # in THIS case, there is a McMillan hook which'll tell the
+            # installer about all the dscas3 modules. :)
                 
             print "imported: " + str(id(sys.modules[fullName]))
 	    # then instantiate the requested class
@@ -118,8 +114,13 @@ class module_manager:
         This is one of the reasons we try to avoid unnecessary reloads.
 
         You should use this as follows:
-        full = moduleManager.importReloadModule('full.path.to.my.module')
+        moduleManager.importReloadModule('full.path.to.my.module')
+        import full.path.to.my.module
         so that the module is actually brought into the calling namespace.
+
+        importReload used to return the modulePrefix object, but this has
+        been changed to force module writers to use a conventional import
+        afterwards so that the McMillan installer will know about dependencies.
         """
 
         # this should yield modules or userModules
@@ -149,7 +150,10 @@ class module_manager:
         # we need to inject the import into the calling dictionary...
         # importing my.module results in "my" in the dictionary, so we
         # split at '.' and return the object bound to that name
-        return locals()[modulePrefix]
+        # return locals()[modulePrefix]
+        # we DON'T do this anymore, so that module writers are forced to
+        # use an import statement straight after calling importReload (or
+        # somewhere else in the module)
 
     def isInstalled(self):
         """Returns True if dscas3 is running from an Installed state.
