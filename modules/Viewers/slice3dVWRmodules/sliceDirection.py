@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.15 2004/11/20 20:31:13 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.16 2004/11/20 20:43:11 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -227,22 +227,6 @@ class sliceDirection:
                 self._ipws[-1].UserControlledLookupTableOn()
                 self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
                 
-                    
-                    
-#                 if inputData.GetWholeExtent() == \
-#                    mainInput.GetWholeExtent() and \
-#                    inputData.GetSpacing() == mainInput.GetSpacing():
-
-#                     self._ipws.append(vtk.vtkImagePlaneWidget())
-#                     self._ipws[-1].SetInput(inputData)
-#                     self._ipws[-1].UserControlledLookupTableOn()
-#                     self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
-
-#                 else:
-#                     raise Exception, \
-#                           "This inputData can't be used as an " \
-#                           "overlay.  It doesn't match the primary."
-
                 # now make sure they have the right lut and are synched
                 # with the main IPW
                 self._resetOverlays()
