@@ -1,17 +1,22 @@
-# $Id: pngWRT.py,v 1.1 2004/03/30 11:07:35 cpbotha Exp $
+# $Id: pngWRT.py,v 1.2 2004/10/25 15:43:22 cpbotha Exp $
 
 from moduleBase import moduleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
+import wx
 
-class pngWRT(moduleBase, filenameViewModuleMixin):
-    """Writes a single PNG image to disk.
+class pngWRT(scriptedConfigModuleMixin, moduleBase):
+    """Writes a volume as a series of PNG images.
 
-    TODO: add series writing.
+    Set the file pattern by making use of the file browsing dialog.  Replace
+    the increasing index by a %d format specifier.  %3d can be used for
+    example, in which case %d will be replaced by an integer zero padded to 3
+    digits, i.e. 000, 001, 002 etc.  %d starts from 0.
 
-    $Revision: 1.1 $
+    Module by Joris van Zwieten.
+
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -19,33 +24,49 @@ class pngWRT(moduleBase, filenameViewModuleMixin):
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
-
-        self._shiftScale = vtk.vtkImageShiftScale()
-        self._shiftScale.SetOutputScalarTypeToUnsignedChar()
-        self._writer = vtk.vtkPNGWriter()
+        # filenameViewModuleMixin.__init__(self)
+	
+	self._shiftScale = vtk.vtkImageShiftScale()
+        self._shiftScale.SetOutputScalarTypeToUnsignedShort()
+	
+	self._writer = vtk.vtkPNGWriter()
+	self._writer.SetFileDimensionality(3)
         self._writer.SetInput(self._shiftScale.GetOutput())
+        
+	moduleUtils.setupVTKObjectProgress(self, self._writer, 'Writing PNG file(s)')
+       
+        self._config.filePattern = '%d.png'
 
-        moduleUtils.setupVTKObjectProgress(
-            self, self._writer,
-            'Writing PNG file(s)')
+        configList = [
+            ('File pattern:', 'filePattern', 'base:str', 'filebrowser',
+             'Filenames will be built with this.  See module help.',
+             {'fileMode' : wx.OPEN,
+              'fileMask' :
+              'PNG files (*.png)|*.png|All files (*.*)|*.*'})]
 
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              'PNG files (*.png)|*.png|All files (*)|*',
-                              {'vtkPNGWriter': self._writer})
+        scriptedConfigModuleMixin.__init__(self, configList)
 
-        # set up some defaults
-        self._config.filename = ''
+        self._viewFrame = self._createViewFrame(
+            {'Module (self)' : self,
+             'vtkPNGWriter' : self._writer})
+
         self.configToLogic()
-        # make sure these filter through from the bottom up
         self.syncViewWithLogic()
 
     def close(self):
-        # we should disconnect all inputs
-        self.setInput(0, None)
+	# we play it safe... (the graph_editor/module_manager should have
+        # disconnected us by now)
+        for inputIdx in range(len(self.getInputDescriptions())):
+            self.setInput(inputIdx, None)
+
+        # this will take care of all display thingies
+        scriptedConfigModuleMixin.close(self)
+
+        moduleBase.close(self)
+        
+        # get rid of our reference
         del self._writer
-        filenameViewModuleMixin.close(self)
+
 
     def getInputDescriptions(self):
 	return ('vtkImageData',)
@@ -57,33 +78,22 @@ class pngWRT(moduleBase, filenameViewModuleMixin):
 	return ()
     
     def getOutput(self, idx):
-        raise Exception
-    
-    def logicToConfig(self):
-        filename = self._writer.GetFileName()
-        if filename == None:
-            filename = ''
+       	raise Exception
 
-        self._config.filename = filename
+    def logicToConfig(self):
+        self._config.filePattern = self._writer.GetFilePattern()
 
     def configToLogic(self):
-        self._writer.SetFileName(self._config.filename)
-
-    def viewToConfig(self):
-        self._config.filename = self._getViewFrameFilename()
-
-    def configToView(self):
-        self._setViewFrameFilename(self._config.filename)
-
+        self._writer.SetFilePattern(self._config.filePattern)
+    
     def executeModule(self):
-        if len(self._writer.GetFileName()) and self._shiftScale.GetInput():
+        if len(self._writer.GetFilePattern()) and self._shiftScale.GetInput():
             inp = self._shiftScale.GetInput()
             inp.Update()
             minv,maxv = inp.GetScalarRange()
             self._shiftScale.SetShift(-minv)
-            self._shiftScale.SetScale(255 / (maxv - minv))
-            self._writer.Write()
+            self._shiftScale.SetScale(65535 / (maxv - minv))
+	    self._writer.Write()
+            self._moduleManager.setProgress(
+                100.0, "vtkPNGWriter: Writing PNG file(s). [DONE]")
 
-    def view(self, parent_window=None):
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
