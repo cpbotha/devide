@@ -20,7 +20,8 @@ class glyph:
     def __init__(self, graph_editor, canvas, coords, module_instance):
 	self.module_instance = module_instance
 
-	# extract the module name from the __class__ attribute of the passed instance
+	# extract the module name from the __class__ attribute of the
+        # passed instance
 	sres = re.search(".*\.(.*)", str(module_instance.__class__))
 	if sres.group(1):
 	    self.module_name = sres.group(1)
@@ -34,17 +35,24 @@ class glyph:
 	
 	self.output_lines = []
 
-	self.inputs = [] # list consisting of tuples (triangle_item, connecting line, connecting glyph)
+        # list consisting of tuples (triangle_item, connecting line,
+        # connecting glyph)
+	self.inputs = [] 
 	for cur_input_type in module_instance.get_input_descriptions():
 	    self.inputs.append({'item': canvas.create_polygon(coords_to_ltriangle(self.rcoords[0], self.rcoords[1] + len(self.inputs)*7)),
 	    'line': None, 'glyph': None})
-	    canvas.tag_bind(self.inputs[-1]['item'], "<Enter>", self.input_enter_cb)
+	    canvas.tag_bind(self.inputs[-1]['item'], "<Enter>",
+                            self.input_enter_cb)
+            canvas.tag_bind(self.inputs[-1]['item'], "<Leave>",
+                            self.input_output_leave_cb)
 	    canvas.tag_bind(self.inputs[-1]['item'], "<Button-1>", self.input_click_cb)
 	    
 	self.outputs = []
 	for cur_output_type in module_instance.get_output_descriptions():
 	    self.outputs.append(canvas.create_polygon(coords_to_rtriangle(self.rcoords[2], self.rcoords[1])))
 	    canvas.tag_bind(self.outputs[-1], "<Enter>", self.output_enter_cb)
+            canvas.tag_bind(self.outputs[-1], "<Leave>",
+                            self.input_output_leave_cb)
 	    canvas.tag_bind(self.outputs[-1], "<Button-1>", self.output_click_cb)
 	    
 	self.rectangle = canvas.create_rectangle(self.rcoords, fill="gray80")
@@ -177,9 +185,15 @@ class glyph:
     def input_enter_cb(self, event):
 	item = self.canvas.find_withtag(CURRENT)
 	if len(item) == 1:
+            self.canvas.itemconfig(item[0], fill='red')
 	    idx = self.find_input_idx(item[0])
 	    if (idx > -1):
 		self.graph_editor.set_status("Input " + self.get_module_instance().get_input_descriptions()[idx])
+
+    def input_output_leave_cb(self, event):
+        item = self.canvas.find_withtag(CURRENT)
+        if len(item) == 1:
+            self.canvas.itemconfig(item[0], fill='black')
 	
     def input_click_cb(self, event):
 	item = self.canvas.find_withtag(CURRENT)
@@ -196,6 +210,7 @@ class glyph:
     def output_enter_cb(self, event):
 	item = self.canvas.find_withtag(CURRENT)
 	if len(item) == 1:
+            self.canvas.itemconfig(item[0], fill='red')
 	    idx = self.outputs.index(item[0])
 	    if (idx > -1):
 		self.graph_editor.set_status("Output " + self.get_module_instance().get_output_descriptions()[idx])
