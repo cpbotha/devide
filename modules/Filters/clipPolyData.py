@@ -37,19 +37,23 @@ class clipPolyData(moduleBase, noConfigModuleMixin):
         noConfigModuleMixin.close(self)
         
         # get rid of our reference
-        del self._pdNormals
+        del self._clipPolyData
 
     def getInputDescriptions(self):
-        return ('vtkPolyData',)
+        return ('PolyData', 'Implicit Function')
 
     def setInput(self, idx, inputStream):
-        self._pdNormals.SetInput(inputStream)
+        if idx == 0:
+            self._clipPolyData.SetInput(inputStream)
+        else:
+            self._clipPolyData.SetClipFunction(inputStream)
+            
 
     def getOutputDescriptions(self):
-        return (self._pdNormals.GetOutput().GetClassName(), )
+        return (self._clipPolyData.GetOutput().GetClassName(), )
 
     def getOutput(self, idx):
-        return self._pdNormals.GetOutput()
+        return self._clipPolyData.GetOutput()
 
     def logicToConfig(self):
         pass
@@ -64,7 +68,7 @@ class clipPolyData(moduleBase, noConfigModuleMixin):
         pass
     
     def executeModule(self):
-        self._pdNormals.Update()
+        self._clipPolyData.Update()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
