@@ -12,7 +12,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
     equal to the 'Input Connected Value'.  This module casts all input to
     unsigned char.  The output is also unsigned char.
 
-    $Revision: 1.7 $
+    $Revision: 1.8 $
     """
 
     def __init__(self, moduleManager):
@@ -175,7 +175,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
             # we need to call Modified() explicitly as RemoveAllSeeds()
             # doesn't.  AddSeed() does, but sometimes the list is empty at
             # this stage and AddSeed() isn't called.
-            self._selectccs.Modified()
+            self._seedConnect.Modified()
             
             for seedPoint in self._seedPoints:
                 self._seedConnect.AddSeed(seedPoint[0], seedPoint[1],
