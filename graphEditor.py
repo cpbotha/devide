@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.88 2004/08/23 09:49:59 cpbotha Exp $
+# $Id: graphEditor.py,v 1.89 2004/10/12 23:24:59 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -295,6 +295,8 @@ class graphEditor:
         
         actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
                       'vtp' : ('modules.Readers.vtpRDR', 'filename'),
+                      'mha' : ('modules.Readers.metaImageRDR', 'filename'),
+                      'mhd' : ('modules.Readers.metaImageRDR', 'filename'),
                       'stl' : ('modules.Readers.stlRDR', 'filename')}
 
         # list of tuples: (filename, errormessage)
