@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.48 2004/07/14 15:52:58 cpbotha Exp $
+# $Id: devide.py,v 1.49 2004/07/16 12:15:54 cpbotha Exp $
 
 DEVIDE_VERSION = '20040714'
 
@@ -277,7 +277,7 @@ class devide_app_t(wx.App):
         if self._helpClass == None:
             self._helpClass = helpClass(self)
 
-    def start_graph_editor(self):
+    def startGraphEditor(self):
         if self._graphEditor == None:
             self._graphEditor = graphEditor(self)
         else:
@@ -402,7 +402,7 @@ class devide_app_t(wx.App):
         self.quit()
 
     def _handlerMenuGraphEditor(self, event):
-        self.start_graph_editor()
+        self.startGraphEditor()
 
     def _handlerMenuPythonShell(self, event):
         self.startPythonShell()
