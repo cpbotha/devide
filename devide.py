@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.57 2004/10/25 11:51:16 cpbotha Exp $
+# $Id: devide.py,v 1.58 2004/11/01 11:08:33 cpbotha Exp $
 
 DEVIDE_VERSION = '20041025'
 
@@ -184,23 +184,28 @@ class devide_app_t(wx.App):
             
             if textType == 0:
                 # Text
-                wx.LogMessage(text)
-                
+                #wx.LogMessage(text)
+                self.logMessage(text)
+
             elif textType == 1:
-                # ErrorText
+                # ErrorText - shown and logged
                 wx.LogError(text)
+                self.logMessage(text)
                 
             elif textType == 2:
                 # WarningText
-                wx.LogWarning(text)
+                #wx.LogWarning(text)
+                self.logMessage(text)
                 
             elif textType == 3:
                 # GenericWarningText
-                wx.LogWarning(text)
+                #wx.LogWarning(text)
+                self.logMessage(text)
                 
             else:
                 # DebugText
-                wx.LogDebug(text)
+                #wx.LogDebug(text)
+                self.logMessage(text)
 
         temp.AddObserver('ErrorEvent', observerEOW)
         temp.AddObserver('WarningEvent', observerEOW)        
@@ -289,6 +294,17 @@ class devide_app_t(wx.App):
             self._graphEditor = graphEditor(self)
         else:
             self._graphEditor.show()
+
+    def logMessage(self, message, timeStamp=True):
+        if timeStamp:
+            msg = "%s: %s" % (
+                time.strftime("%X", time.localtime(time.time())),
+                message)
+        else:
+            msg = message
+                              
+        self._mainFrame.messageLogTextCtrl.AppendText(
+            msg + '\n')
 
     def setProgress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress
