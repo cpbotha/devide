@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.5 2003/02/17 22:45:16 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.6 2003/02/17 23:16:38 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -507,7 +507,7 @@ class ConfigVtkObj:
 	for i in range (0, n_meth):
 	    m = "Get"+self.get_set_meths[i]
 	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
-            self.get_set_texts[i].SetLabel(str(self.get_set_var[i]))
+            self.get_set_texts[i].SetValue(str(self.get_set_var[i]))
             
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
