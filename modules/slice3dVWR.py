@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.8 2003/03/20 09:24:22 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.9 2003/03/20 18:42:24 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -748,6 +748,8 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                     self._outline_actor.PickableOff()
                     self._threedRenderer.AddActor(self._cube_axes_actor2d)
                     self._cube_axes_actor2d.PickableOff()
+                    # FIXME: make this toggle-able
+                    self._cube_axes_actor2d.VisibilityOff()
 
                     # reset everything, including ortho camera
                     self._resetAll()

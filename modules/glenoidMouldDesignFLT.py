@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.4 2003/03/20 16:48:03 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.5 2003/03/20 18:42:24 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -142,18 +142,16 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                 pl.BuildLocator()
                 startPtId = pl.FindClosestPoint(self._giaProximal)
 
-                # we need to find out which cells belong to which points
-                contour.BuildLinks()
-                
                 cellIds = vtk.vtkIdList()
                 contour.GetPointCells(startPtId, cellIds)
-
 
                 twoLineIds = cellIds.GetId(0), cellIds.GetId(1)
 
                 ptIds = vtk.vtkIdList()
                 cellIds = vtk.vtkIdList()
                 newCellArray = vtk.vtkCellArray()
+                newPoints = vtk.vtkPoints()
+                newPoints.SetDataType(contour.GetPoints().GetDataType())
                 
                 for startLineId in twoLineIds:
 
@@ -162,8 +160,9 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                     curLineId = startLineId
                     
 
-                    for i in range(50):
+                    for i in range(20):
                         contour.GetCellPoints(curLineId, ptIds)
+                        print ptIds.GetNumberOfIds()
                         ptId0 = ptIds.GetId(0)
                         ptId1 = ptIds.GetId(1)
                         nextPointId = [ptId0, ptId1]\
@@ -176,8 +175,15 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                                      [bool(cId0 == curLineId)]
 
                         # stop criterion here, if not, then store
-                        print "inserting %d\n" % (curLineId,)
-                        newCellArray.InsertNextCell(contour.GetCell(curLineId))
+                        pt0 = contour.GetPoints().GetPoint(curStartPtId)
+                        pt1 = contour.GetPoints().GetPoint(nextPointId)
+                        id0 = newPoints.InsertNextPoint(pt0)
+                        id1 = newPoints.InsertNextPoint(pt1)
+                        idList = vtk.vtkIdList()
+                        idList.InsertNextId(id0)
+                        idList.InsertNextId(id1)
+
+                        newCellArray.InsertNextCell(idList)
 
 
                         # get ready for next iteration
@@ -187,7 +193,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
                 newPolyData = vtk.vtkPolyData()
                 newPolyData.SetLines(newCellArray)
-                newPolyData.SetPoints(contour.GetPoints())
+                newPolyData.SetPoints(newPoints)
                 #tf = vtk.vtkRibbonFilter()
                 #tf.SetInput(contour)
                 #tf.Update()
@@ -197,7 +203,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
             ap = vtk.vtkAppendPolyData()
             # copy everything to output (for testing)
-            for thing in stuff[:1]:
+            for thing in stuff:
                 ap.AddInput(thing)
 
             ap.Update()
