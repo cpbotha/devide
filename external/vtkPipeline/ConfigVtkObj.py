@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.1 2002/06/10 16:00:28 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.2 2003/02/17 17:18:30 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
 #
 # Copyright (C) 2000 Prabhu Ramachandran
-# Conversion to wxPython copyright (c) 2002 Charl P. Botha
+# Conversion to wxPython copyright (c) 2002,2003 Charl P. Botha
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
