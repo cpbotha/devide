@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.15 2003/07/07 22:16:51 cpbotha Exp $
+# $Id: tdObjects.py,v 1.16 2003/08/04 16:53:36 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -66,6 +66,10 @@ class tdObjects:
 
         wx.EVT_BUTTON(controlFrame, controlFrame.objectAxisToSliceButtonId,
                       self._handlerObjectAxisToSlice)
+
+    def getPickableProps(self):
+        return [o['vtkActor'] for o in self._tdObjectsDict.values()
+                if 'vtkActor' in o]
 
     def _getSelectedObjects(self):
         objectNames = []        

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.63 2003/08/01 15:13:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.64 2003/08/04 16:53:35 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -191,16 +191,29 @@ class selectedPoints(object):
 
             # if this is lockToSurface, lock it!
             if self._pointsList[idx]['lockToSurface']:
+                tdren = self.slice3dVWR._threedRenderer
                 # convert the actual pointwidget position back to display coord
-                self._threedRenderer.SetWorldPoint(pw.GetPosition() + (1,))
-                self._threedRenderer.WorldToDisplay()
-                ex,ey,ez = self._threedRenderer.GetDisplayPoint()
+                tdren.SetWorldPoint(pw.GetPosition() + (1,))
+                tdren.WorldToDisplay()
+                ex,ey,ez = tdren.GetDisplayPoint()
                 # we use a vtkPropPicker - this is supposed to make use of
                 # the graphics hardware to pick rapidly
-                picker = vtk.vtkPropPicker()
-                if picker.PickProp(ex, ey, self._threedRenderer):
-                    xyz = picker.GetPickPosition()
-                    pw.SetPosition(xyz)
+#                 picker = vtk.vtkPropPicker()
+#                 if picker.PickProp(ex, ey, tdren):
+#                     xyz = picker.GetPickPosition()
+#                     pw.SetPosition(xyz)
+                picker = vtk.vtkCellPicker()
+
+                # FIXME: continue here!
+                pp = self.slice3dVWR._tdObjects.getPickableProps()
+                for p in pp:
+                    picker.AddPickList(p)
+
+                picker.PickFromListOn()
+                    
+                picker.Pick(ex, ey, 0.0, tdren)
+                if picker.GetActor():
+                    pw.SetPosition(picker.GetPickPosition())
 
             # get its position and transfer it to the sphere actor that
             # we use
@@ -212,15 +225,15 @@ class selectedPoints(object):
             if ta:
                 ta.SetPosition(pos)
 
-            inputData = self._getPrimaryInput()
+            inputData = self.slice3dVWR.getPrimaryInput()
 
             if inputData:
                 # then we have to update our internal record of this point
                 ispacing = inputData.GetSpacing()
                 iorigin = inputData.GetOrigin()
                 discrete = map(round,
-                            map(operator.div,
-                                map(operator.sub, pos, iorigin), ispacing))
+                               map(operator.div,
+                                   map(operator.sub, pos, iorigin), ispacing))
                 val = inputData.GetScalarComponentAsFloat(discrete[0],
                                                           discrete[1],
                                                           discrete[2], 0)
@@ -890,7 +903,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         self.threedFrame.Show(True)
         self.controlFrame.Show(True)
 
-    def _getPrimaryInput(self):
+    def getPrimaryInput(self):
         """Get primary input data, i.e. bottom layer.
 
         If there is no primary input data, this will return None.
@@ -998,10 +1011,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             del self._pdScalarBarActor
         
 
-    def _storeSurfacePoint(self, pointId, actor):
+    def _storeSurfacePoint(self, actor, pickPosition):
         polyData = actor.GetMapper().GetInput()
         if polyData:
-            xyz = polyData.GetPoint(pointId)
+            xyz = pickPosition
         else:
             # something really weird went wrong
             return
@@ -1009,7 +1022,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         if self.selectedPoints.hasWorldPoint(xyz):
             return
 
-        inputData = self._getPrimaryInput()
+        inputData = self.getPrimaryInput()
             
         if inputData:
             # get the discrete coords of this point
@@ -1212,17 +1225,20 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         def findPickedProp(obj):
             (x,y) = obj.GetEventPosition()
-            picker = vtk.vtkPointPicker()
+            # we use a cell picker, because we don't want the point
+            # to fall through the polygons, if you know what I mean
+            picker = vtk.vtkCellPicker()
             picker.SetTolerance(0.005)
+            print "%d %d" % (x,y)
             picker.Pick(x,y,0.0,self._threedRenderer)
-            return (picker.GetActor(), picker.GetPointId())
+            return (picker.GetActor(), picker.GetPickPosition())
             
         pickAction = self.controlFrame.surfacePickActionChoice.GetSelection()
         if pickAction == 1:
             # Place point on surface
-            actor, pointId = findPickedProp(obj)
-            if pointId >= 0 and actor:
-                self._storeSurfacePoint(pointId, actor)
+            actor, pickPosition = findPickedProp(obj)
+            if actor:
+                self._storeSurfacePoint(actor, pickPosition)
                 
         elif pickAction == 2:
             # configure picked object
