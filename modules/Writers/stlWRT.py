@@ -1,4 +1,4 @@
-# $Id: stlWRT.py,v 1.2 2003/09/23 14:53:48 cpbotha Exp $
+# $Id: stlWRT.py,v 1.3 2003/09/29 13:13:51 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -22,7 +22,7 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         self._writer.SetInput(self._tf.GetOutput())
         # sorry about this, but the files get REALLY big if we write them
         # in ASCII - I'll make this a gui option later.
-        self._writer.SetFileTypeToBinary()
+        #self._writer.SetFileTypeToBinary()
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
