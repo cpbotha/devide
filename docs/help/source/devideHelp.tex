@@ -188,7 +188,52 @@ your changes in the slice3dVWR window.
 \setfooter{\thepage}{}{}{}{}{\thepage}%
 
 \section{The slice3dVWR}
-TBD.
+
+\subsection{Slices}
+\subsubsection{Overlay modes}
+The slice3dVWR has several overlay modes.  These modes make it
+possible to visualise the correspondence between multiple inputs, for
+e.g. original CT data and a segmentation.  If a second volume input is
+connected, the slice3dVWR checks if the dimensions of the already
+connected volume.  If this is the case, the connection is allowed and
+the second volume is overlayed (superimposed) on the first.
+
+There are several ways to perform this overlay.  This setting is
+user-configurable and its user interface can be found on the ``Main''
+tab of the slice3dVWR ``Controls'' window, in the ``Slices'' section.
+The user interface consists of an Overlay Mode choice box and an Alpha
+slider.  The alpha slider determines the alpha parameter used for the
+fusion-based overlay modes.
+
+\begin{itemize}
+\item {\bf Green Fusion:} The overlay is composited with the
+  user-defined alpha parameter.  The value (i.e. brightness) is
+  directly related to the image intensity of the overlay, so we see
+  shades of green (reflecting the overlay intensity) alpha blended with
+  the primary input.
+\item {\bf Red Fusion:} Same as above, except with shades of red.
+\item {\bf Blue Fusion:} Same as above, except with shades of blue.
+\item {\bf Hue Fusion:} The value is kept constant, but the hue is
+  directly related to the overlay image intensity.  The overlay is
+  alpha blended with the user-supplied alpha parameter.
+\item {\bf Hue/Value Fusion:} Hue {\em and} brightness are directly
+  related to the overlay image intensity.  The overlay is
+  alpha-blended with the user-supplied alpha parameter.
+\item {\bf Green Opacity Range:} The opacity of the overlay is
+  directly related to its image intensity.  The hue is constant green
+  and the brightness is constant unity.
+\item {\bf Blue Opacity Range:} The same as above, except the hue is
+  constant red.
+\item {\bf Blue Opacity Range:} The same as above, except the hue is
+  constant blue.
+\item {\bf Hue Opacity Range:} The hue and the opacity of the overlay
+  are directly related to the overlay image intensity.
+\end{itemize}
+
+Adjusting the alpha slider whilst one of the ``fusion'' overlay modes
+is active will result in real-time changes.  The idea is to adjust it
+up and down its complete range in order to get a better idea of the
+amount of the image correspondence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Useful patterns}
