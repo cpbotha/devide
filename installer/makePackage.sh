@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makePackage.sh,v 1.1 2003/03/13 11:06:19 cpbotha Exp $
+# $Id: makePackage.sh,v 1.2 2003/04/28 20:55:22 cpbotha Exp $
 
 # go to the directory that contains makePackage.sh (i.e. dscas3/installer)
 cd `dirname $0`
@@ -25,6 +25,11 @@ mv dscas3 distdscas3
 
 else
 
-INSTALLER='python somethingElse';
+INSTALLER='python c:/build/Installer/Build.py'
+$INSTALLER dscas3.spec
+# make an archive
+mv distdscas3 dscas3
+zip -rp "dscas3-win32-`date +%Y%m%d`.zip" dscas3
+mv dscas3 distdscas3
 
 fi
