@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.22 2004/05/24 21:24:01 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.23 2004/05/24 21:39:29 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -31,6 +31,7 @@ converted the code to wxPython and made some other changes, primarily
 related to making the GUI persistent.
 """
 
+import os # need this for os.path.normpath
 import vtkMethodParser
 import types, string, re, traceback
 
@@ -760,7 +761,9 @@ class ConfigVtkObj:
 	    if st is 0:
 		eval ("self._vtk_obj.%s (%s)"%(m, val))
 	    else:
-		eval ("self._vtk_obj.%s (\"%s\")"%(m, val))
+                # we have to use raw strings here, so things like \r
+                # don't throw it... mmmkay?
+		eval ("self._vtk_obj.%s (r\"%s\")"%(m, val))
 
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
