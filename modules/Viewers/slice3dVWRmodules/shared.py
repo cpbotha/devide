@@ -1,5 +1,5 @@
 # shared.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: shared.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
+# $Id: shared.py,v 1.2 2003/10/17 15:59:10 cpbotha Exp $
 #
 
 import wx
@@ -23,10 +23,20 @@ class s3dcGridMixin(object):
         rows.  This is not a problem, as then the GetSelectedRows()
         does return the correct information.
         """
-            
+
         # both of these are lists of (row, column) tuples
         tl = self._grid.GetSelectionBlockTopLeft()
         br = self._grid.GetSelectionBlockBottomRight()
+
+        # this means that the user has most probably clicked on the little
+        # block at the top-left corner of the grid... in this case,
+        # SelectRow has no frikking effect (up to wxPython 2.4.2.4) so we
+        # detect this situation and clear the selection (we're going to be
+        # selecting the whole grid in anycase.
+        if tl == [(0,0)] and br == [(self._grid.GetNumberRows() - 1,
+                                     self._grid.GetNumberCols() - 1)]:
+            self._grid.ClearSelection()
+
         for (tlrow, tlcolumn), (brrow, brcolumn) in zip(tl, br):
             for row in range(tlrow,brrow + 1):
                 self._grid.SelectRow(row, True)
