@@ -1,4 +1,4 @@
-# $Id: transform2D.py,v 1.6 2004/03/30 14:03:23 cpbotha Exp $
+# $Id: transform2D.py,v 1.7 2004/11/11 12:51:00 joris Exp $
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should
@@ -23,8 +23,8 @@ class transform2D(noConfigModuleMixin, moduleBase):
     vtkImageData, ready for using in your friendly neighbourhood
     visualisation pipeline.
 
-    NOTE: this module is currently kludged to transform 1:N images (and not
-    0:N).
+    NOTE: this module was currently kludged to transform 1:N images (and not
+    0:N). 11/11/2004 (joris): kludge removed.
     """
 
     def __init__(self, moduleManager):
@@ -173,7 +173,8 @@ class transform2D(noConfigModuleMixin, moduleBase):
         # take care of all inputs
         self._imageAppend.RemoveAllInputs()
 
-        totalTrfm = itk.itkEuler2DTransform_New()
+        #totalTrfm = itk.itkEuler2DTransform_New()
+        totalTrfm = itk.itkCenteredRigid2DTransform_New()
         totalTrfm.SetIdentity()
         
         prevImage = self._imageStack[0]
@@ -185,7 +186,9 @@ class transform2D(noConfigModuleMixin, moduleBase):
             # make a copy of the totalTransform that we can use on
             # THIS image
 
-            copyTotalTrfm = itk.itkEuler2DTransform_New()
+	    # copyTotalTrfm = itk.itkEuler2DTransform_New()
+	    copyTotalTrfm = itk.itkCenteredRigid2DTransform_New()
+	    
             # this is a really kludge way to copy the total transform,
             # as concatenation doesn't update the Parameters member, so
             # getting and setting parameters is not the way to go
@@ -226,8 +229,8 @@ class transform2D(noConfigModuleMixin, moduleBase):
                                      vtkImporter)
 
             # FIXME KLUDGE: we ignore image 0 (this is for joris)
-            if i > 0:
-                self._imageAppend.AddInput(vtkImporter.GetOutput())
+            # if i > 0:
+            #    self._imageAppend.AddInput(vtkImporter.GetOutput())
 
             # setup the previous Image for the next loop
             prevImage = img
