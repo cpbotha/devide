@@ -2,10 +2,18 @@ import sys, os, fnmatch
 import string
 import genUtils
 import modules
+from whrandom import choice
 
 class metaModule:
-    def __init__(self, instance):
-        self.instance = instance
+    """Class used to store module-related information.
+    """
+    
+    def __init__(self, instance, instanceName):
+        """Instance is the actual class instance and instanceName is a unique
+        name that has been chosen by the user or automatically.
+        """
+        self.instance = instance        
+        self.instanceName = instanceName
         self.resetInputsOutputs()
 
     def close(self):
@@ -83,7 +91,7 @@ class moduleManager:
         # this could change
         return self._dscas3_app.get_main_window()
     
-    def createModule(self, name):
+    def createModule(self, name, instanceName=None):
 	try:
             # find out whether it's built-in or user
             mtypePrefix = ['userModules', 'modules']\
@@ -103,7 +111,32 @@ class moduleManager:
 	    #exec('self.modules.append(' + fullName + '.' + name + '(self))')
             numIns = len(moduleInstance.getInputDescriptions())
             numOuts = len(moduleInstance.getOutputDescriptions())
-            self._moduleDict[moduleInstance] = metaModule(moduleInstance)
+
+            if not instanceName:
+                instanceName = "d3m%d" % (len(self._moduleDict),)
+
+            # now make sure that instanceName is unique
+            uniqueName = False
+            while not uniqueName:
+                # first check that this doesn't exist in the module dictionary
+                uniqueName = True
+                for mmt in self._moduleDict.items():
+                    if mmt[1].instanceName == instanceName:
+                        uniqueName = False
+                        break
+
+                if not uniqueName:
+                    # this means that this exists already!
+                    # create a random 3 character string
+                    chars = string.letters
+                    tl = ""
+                    for i in range(3):
+                        tl += choice(chars)
+                    instanceName == "%s%s%d" (instanceName, tl,
+                                              len(self._moduleDict))
+                
+            self._moduleDict[moduleInstance] = metaModule(moduleInstance,
+                                                          instanceName)
 
 	except ImportError:
 	    genUtils.logError("Unable to import module %s!" % name)

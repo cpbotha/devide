@@ -19,11 +19,11 @@ class doubleThresholdFLT(moduleBase,
         # callback to a VTK object; you should do this for all objects in
         # your module - you could do this in __init__ as well, it seems
         # neater here though
-        self._imageThreshold.SetProgressText('Thresholding data')
-        mm = self._moduleManager
-        self._imageThreshold.SetProgressMethod(lambda s=self, mm=mm:
-                                               mm.vtk_progress_cb(
-            s._imageThreshold))
+#         self._imageThreshold.SetProgressText('Thresholding data')
+#         mm = self._moduleManager
+#         self._imageThreshold.SetProgressMethod(lambda s=self, mm=mm:
+#                                                mm.vtk_progress_cb(
+#             s._imageThreshold))
         
 
         self._outputTypes = {'Double': 'VTK_DOUBLE',
