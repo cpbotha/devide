@@ -1,9 +1,12 @@
-# $Id: moduleBase.py,v 1.10 2003/05/20 17:24:41 cpbotha Exp $
+# $Id: moduleBase.py,v 1.11 2003/06/05 15:59:41 cpbotha Exp $
 
 """Module containing base class for dscas3 modules.
 
 author: Charl P. Botha <cpbotha@ieee.org>
 """
+
+class defaultConfigClass:
+    pass
 
 class moduleBase:
     """Base class for all modules.
@@ -22,8 +25,6 @@ class moduleBase:
         """
         self._moduleManager = moduleManager
 
-        class defaultConfigClass:
-            pass
         
         self._config = defaultConfigClass()
 
@@ -165,7 +166,12 @@ class moduleBase:
         when get_config() was called.  The default sets the default
         self._config and applies it to the underlying logic.
         """
+        
         self._config = aConfig
-        self.applyConfigToLogic()
+        # apply the config to the underlying logic
+        self.configToLogic()
+        # bring it back all the way up to the view
+        self.logicToConfig()
+        self.configToView()
 
         

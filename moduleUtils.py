@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.15 2003/05/20 23:04:43 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.16 2003/06/05 15:59:41 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -241,7 +241,7 @@ def getModuleIcon():
 
 def createModuleViewFrameTitle(d3module):
     return '%s View: %s' % \
-           (str(d3module.__class__).split('.')[-1],
+           (d3module.__class__.__name__,
             d3module._moduleManager.getInstanceName(d3module))
 
 def instantiateModuleViewFrame(d3module, moduleManager, frameClass):

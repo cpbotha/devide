@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.21 2003/06/04 21:58:46 cpbotha Exp $
+# $Id: graphEditor.py,v 1.22 2003/06/05 15:59:41 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -37,6 +37,12 @@ class graphEditor:
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
                    lambda e, s=self: s.fill_module_tree())
 
+        EVT_MENU(self._graphFrame, self._graphFrame.fileExitId,
+                 self._fileExitCallback)
+
+        EVT_MENU(self._graphFrame, self._graphFrame.fileSaveId,
+                 self._fileSaveCallback)
+
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
         self._availableModuleList = None
@@ -72,6 +78,13 @@ class graphEditor:
     def canvasDropText(self, x, y, text):
         self.createModule(x, y, text)
         # check if the text is in our module list (then we should create it)
+
+    def close(self):
+        """This gracefull takes care of all graphEditor shutdown and is mostly
+        called at application shutdown.
+        """
+        # FIXME: clean the canvas!
+        pass
 
     def createModule(self, x, y, moduleName):
         # check that it's a valid module name
@@ -308,7 +321,16 @@ class graphEditor:
 
         self._graphFrame.GetStatusBar().SetStatusText(msg)            
                                    
-            
+    def _fileExitCallback(self, event):
+        self._dscas3_app.quit()
+
+    def _fileSaveCallback(self, event):
+        # make a list of all module instances
+        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        moduleInstances = [glyph.moduleInstance for glyph in allGlyphs]
+        mm = self._dscas3_app.getModuleManager()
+        stream = mm.serialiseModuleInstances(moduleInstances)
+        mm.deserialiseModuleInstances(stream)
 
     def _glyphDrag(self, glyph, eventName, event, module):
 

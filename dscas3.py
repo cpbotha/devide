@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3.py,v 1.38 2003/05/22 10:13:43 cpbotha Exp $
+# $Id: dscas3.py,v 1.39 2003/06/05 15:59:41 cpbotha Exp $
 
 DSCAS3_VERSION = '20030522'
 
@@ -249,8 +249,13 @@ class dscas3_app_t(wxApp):
         return self._appdir
 	
     def quit(self):
+        # take care of the graphEditor if it exists
+        if self._graphEditor:
+            self._graphEditor.close()
+            
         # shutdown all modules gracefully
         self.moduleManager.close()
+        
 	# take care of main window
 	self._mainFrame.Close()
 

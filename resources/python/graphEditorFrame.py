@@ -22,6 +22,22 @@ class graphEditorFrame(wxFrame):
         self.rescanButtonId  =  wxNewId()
         self.rescanButton = wxButton(self.window_1_pane_1, self.rescanButtonId , "Rescan")
         self.canvas = wxpcCanvas(self.window_1_pane_2)
+        
+        # Menu Bar
+        self.frame_1_menubar = wxMenuBar()
+        self.SetMenuBar(self.frame_1_menubar)
+        self.fileNewId  =  wxNewId()
+        self.fileOpenId  =  wxNewId()
+        self.fileSaveId  =  wxNewId()
+        self.fileExitId  =  wxNewId()
+        wxglade_tmp_menu = wxMenu()
+        wxglade_tmp_menu.Append(self.fileNewId , "&New", "Create new network.")
+        wxglade_tmp_menu.Append(self.fileOpenId , "&Open", "Open and load existing network.")
+        wxglade_tmp_menu.Append(self.fileSaveId , "&Save", "Save the current network.")
+        wxglade_tmp_menu.AppendSeparator()
+        wxglade_tmp_menu.Append(self.fileExitId , "E&xit", "Exit DSCAS3!")
+        self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
+        # Menu Bar end
 
         self.__set_properties()
         self.__do_layout()
@@ -36,9 +52,9 @@ class graphEditorFrame(wxFrame):
         frame_1_statusbar_fields = ["Welcome to the DSCAS3 Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
-        self.treeCtrl.SetSize((167, 389))
-        self.canvas.SetSize((494, 417))
-        self.window_1.SetSize((672, 426))
+        self.treeCtrl.SetSize((167, 400))
+        self.canvas.SetSize((502, 422))
+        self.window_1.SetSize((680, 431))
         self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 169)
         # end wxGlade
 

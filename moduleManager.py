@@ -1,3 +1,4 @@
+import cPickle
 import sys, os, fnmatch
 import string
 import genUtils
@@ -30,7 +31,9 @@ class metaModule:
         self.inputs = [None for i in range(numIns)]
         # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
         self.outputs = [[] for i in range(numOuts)]
-        
+
+class pickledModuleState:
+    pass
 
 class moduleManager:
     """This class in responsible for picking up new modules in the modules 
@@ -42,6 +45,7 @@ class moduleManager:
 	
         self._dscas3_app = dscas3_app
         # module dictionary, keyed on instance... cool.
+        # values are metaModules
 	self._moduleDict = {}
 
         appdir = self._dscas3_app.get_appdir()
@@ -61,9 +65,7 @@ class moduleManager:
         This is only called during dscas3 application shutdown.
         """
 
-        # FIXME: rework this code!  you can't walk down the list and delete
-        # each module, because delete actually removes the module from the
-        # list!
+        # this is fine because .items() makes a copy of the dict
         for mModule in self._moduleDict.items():
             try:
                 self.deleteModule(mModule.instance)
@@ -292,7 +294,70 @@ class moduleManager:
         # indicate to the meta data that this module doesn't have an input
         # anymore
         self._moduleDict[input_module].inputs[input_idx] = None
+
+    def deserialiseModuleInstances(self, stream):
+        """Given a pickled stream, this method will recreate all modules,
+        configure them and connect them up.  It returns a list of
+        successfully instantiated modules.
+        """
         
+        pmsList = cPickle.loads(stream)
+        newModules = []
+        for pms in pmsList:
+            newModule = self.createModule(pms.moduleName)
+            if newModule:
+                newModules.append(newModule)
+
+    def serialiseModuleInstances(self, moduleInstances):
+        """Given 
+        """
+        
+        pmsList = []
+        pickledModuleInstances = []
+        
+        for moduleInstance in moduleInstances:
+            if self._moduleDict.has_key(moduleInstance):
+
+                # first get the metaModule
+                mModule = self._moduleDict[moduleInstance]
+                
+                # create a picklable thingy
+                pms = pickledModuleState()
+                
+                try:
+                    pms.moduleConfig = moduleInstance.getConfig()
+                except:
+                    pms.moduleConfig = None
+                    
+                pms.moduleName = moduleInstance.__class__.__name__
+                # this will only be used for uniqueness purposes
+                pms.instanceName = mModule.instanceName
+
+                pmsList.append(pms)
+                pickledModuleInstances.append(moduleInstance)
+
+        # now iterate through all the actually pickled module instances
+        # and store all connections in a connections list
+        # three different types of connections:
+        # 1. connections with source modules with no inputs
+        # 2. normal connections
+        # 3. connections with targets that are exceptions, e.g. sliceViewer
+        connectionList = []
+        for moduleInstance in pickledModuleInstances:
+            mModule = self._moduleDict[moduleInstance]
+            # we only have to iterate through all outputs
+            for outputConnections in mModule.outputs:
+                # each output can of course have multiple outputConnections
+                # each outputConnection is a tuple:
+                # (consumerModule, consumerInputIdx)
+                for outputConnection in outputConnections:
+                    if outputConnection[0] in pickledModuleInstances:
+                        connection = (mModule.instanceName, blaat, blaat, blaat)
+                        # FIXME: continue here
+                        
+                
+
+        return cPickle.dumps(pmsList, True)
     
     def vtk_progress_cb(self, process_object):
         """Default callback that can be used for VTK ProcessObject callbacks.
