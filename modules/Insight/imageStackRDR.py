@@ -44,7 +44,12 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
         self.syncViewWithLogic()
 
     def close(self):
-        # take care of our refs to all the loaded images
+
+        # we took out explicit ITK references, let them go!
+        for img in self._imageStack:
+            img.UnRegister()
+            
+        # take care of other refs to all the loaded images            
         self._imageStack.close()
         self._imageStack = []
         # destroy GUI
@@ -111,6 +116,9 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
                 reader.SetFileName(imageFileName)
                 reader.Update()
                 self._imageStack.append(reader.GetOutput())
+                # velly important; with ITK wrappings, ref count doesn't
+                # increase if there's a coincidental python binding
+                self._imageStack[-1].Register()
 
             self._moduleManager.setProgress(100.0, "Done loading images.")
             # make sure all observers know about the changes
