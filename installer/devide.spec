@@ -3,8 +3,8 @@ import fnmatch
 import sys
 
 if sys.platform.startswith('win'):
-    INSTALLER_DIR = 'g:\\build\\Installer'
-    D3_DIR = 'g:\\work\\code\\devide'
+    INSTALLER_DIR = 'c:\\build\\Installer'
+    D3_DIR = 'c:\\work\\code\\devide'
     exeName = 'builddevide/devide.exe'    
 else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
@@ -42,6 +42,10 @@ vpli = [(os.path.join('Icons', i),
 
 if sys.platform.startswith('win'):
     extraLibs = []
+    # we can keep msvcr71.dll and msvcp71.dll, in fact they should just
+    # go in the installation directory with the other DLLs, see:
+    # http://msdn.microsoft.com/library/default.asp?url=/library/en-us/
+    # vclib/html/_crt_c_run.2d.time_libraries.asp
     removeNames = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
                    'netapi32.dll', 'opengl32.dll']
 else:

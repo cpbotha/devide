@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makePackage.sh,v 1.11 2004/05/25 08:44:36 cpbotha Exp $
+# $Id: makePackage.sh,v 1.12 2004/06/05 21:21:00 cpbotha Exp $
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
@@ -31,7 +31,7 @@ mv devide distdevide
 
 else
 
-INSTALLER='python g:/build/Installer/Build.py'
+INSTALLER='python c:/build/Installer/Build.py'
 $INSTALLER devide.spec
 # optionally make an archive
 # mv distdevide devide
