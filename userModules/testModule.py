@@ -17,7 +17,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         # be anything
         self._triangleFilter = vtk.vtkTriangleFilter()
         self._curvatures = vtk.vtkCurvatures()
-        self._curvatures.SetCurvatureTypeToMean()
+        self._curvatures.SetCurvatureTypeToGaussian()
         self._curvatures.SetInput(self._triangleFilter.GetOutput())
 
         moduleUtils.setupVTKObjectProgress(self, self._triangleFilter,

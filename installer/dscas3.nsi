@@ -1,5 +1,5 @@
 ; dscas3.nsi - based on example2.nsi
-; $Id: dscas3.nsi,v 1.2 2003/05/01 22:47:29 cpbotha Exp $
+; $Id: dscas3.nsi,v 1.3 2003/11/30 22:44:19 cpbotha Exp $
 
 ;--------------------------------
 
