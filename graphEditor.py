@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.101 2004/12/06 21:27:01 cpbotha Exp $
+# $Id: graphEditor.py,v 1.102 2005/01/04 14:32:31 joris Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -762,6 +762,17 @@ class graphEditor:
             self._devideApp.getModuleManager().markModule(
                 instance, markedModuleName)
                 
+    def _handlerRenameModule(self, module, glyph):
+        newModuleName = wxGetTextFromUser(
+            'Enter a new name for this module.',
+            'Rename Module',
+            self._devideApp.getModuleManager().getInstanceName(module))
+
+        # try to rename the module...
+        if( self._devideApp.getModuleManager().renameModule(module,newModuleName) ):
+            # if no conflict, set label and redraw
+            glyph.setLabelList( [module.__class__.__name__,newModuleName] )
+            self._canvasFrame.canvas.redraw()
 
     def _handlerModulesListBoxSelected(self, event):
         mlb = self._modulePaletteFrame.modulesListBox
@@ -1572,6 +1583,11 @@ class graphEditor:
             pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete Module'))
             EVT_MENU(self._canvasFrame.canvas, del_id,
                      lambda e: self._deleteModule(glyph))
+
+            renameModuleId = wxNewId()
+            pmenu.AppendItem(wxMenuItem(pmenu, renameModuleId, 'Rename Module'))
+            EVT_MENU(self._canvasFrame.canvas, renameModuleId,
+                     lambda e: self._handlerRenameModule(module,glyph))
 
             markModuleId = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, markModuleId, 'Mark Module'))

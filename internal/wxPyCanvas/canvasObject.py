@@ -371,9 +371,6 @@ class coGlyph(coRectangle):
     def getLabel(self):
         return ' '.join(self._labelList)
         
-
-
+    def setLabelList(self,labelList):
+        self._labelList = labelList
         
-
-        
-    

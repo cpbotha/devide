@@ -1,4 +1,4 @@
-# $Id: pngRDR.py,v 1.2 2004/10/08 21:36:35 cpbotha Exp $
+# $Id: pngRDR.py,v 1.3 2005/01/04 14:32:31 joris Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -15,7 +15,7 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
     digits, i.e. 000, 001, 002 etc.  %d counts from the 'First slice' to the
     'Last slice'.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -27,7 +27,7 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading PNG images.')
 
-        self._config.filePattern = 'SomeName%d.png'
+        self._config.filePattern = '%03d.png'
         self._config.firstSlice = 0
         self._config.lastSlice = 1
         self._config.spacing = (1,1,1)

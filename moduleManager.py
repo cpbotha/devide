@@ -376,7 +376,7 @@ class moduleManager:
             # installer about all the devide modules. :)
             print "imported: " + str(id(sys.modules[fullName]))
 
-	    # then instantiate the requested class
+    	    # then instantiate the requested class
             moduleInstance = None
             exec('moduleInstance = %s.%s(self)' % (fullName,
                                                    fullName.split('.')[-1]))
@@ -613,6 +613,11 @@ class moduleManager:
                     genUtils.logWarning(
                         'Could not restore state/config to module %s: %s' %
                         (newModule.__class__.__name__, e))
+                
+                # try to rename the module to the pickled unique instance name
+                # if this name is already taken, use the generated unique instance
+                # name
+                self.renameModule(newModule,pmsTuple[1].instanceName)
                 
                 # and record that it's been recreated (once again keyed
                 # on the OLD unique instance name)
@@ -892,3 +897,22 @@ class moduleManager:
             return self._markedModules[name]
         else:
             return None
+
+    def renameModule(self, instance, name):
+        """Rename a module in the module dictionary
+        """
+
+        # check for duplicate names
+        if( self.getInstance( name ) != None ):
+            return False
+        else:
+            try:
+                # get the metaModule and rename it.
+                self._moduleDict[instance].instanceName = name
+            except Exception:
+                return False
+
+            # everything proceeded according to plan.        
+            return True
+
+        
