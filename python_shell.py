@@ -1,10 +1,10 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.5 2003/05/20 22:04:17 cpbotha Exp $
+# $Id: python_shell.py,v 1.6 2003/06/20 11:07:03 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
 from wxPython.xrc import *
-from wxPython.lib.PyCrust import shell, version, filling
+from wx import py # shell, version, filling
 
 class python_shell:
 
@@ -26,11 +26,11 @@ class python_shell:
                                      size=(640,480))
         # initialise shell window (derived from wxStyledTextCtrl)
         # create locals dictionary with only the application instance in it
-        shell_win = shell.Shell(parent=split_win,
+        shell_win = py.shell.Shell(parent=split_win,
                                 locals={'dscas3_app' : self._app})
         # and the filling of course (derived from wxSplitterWindow)
         # make it use the same root namespace is the shell
-        filling_win = filling.Filling(parent=split_win,
+        filling_win = py.filling.Filling(parent=split_win,
                                       rootObject=shell_win.interp.locals,
                                       rootIsNamespace=1,
                                       size=(640,480))

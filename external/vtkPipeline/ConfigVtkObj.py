@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.10 2003/05/03 23:37:36 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.11 2003/06/20 11:07:05 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -37,7 +37,7 @@ import types, string, re, traceback
 try:
     from wxPython.wx import *
     from wxPython.html import *
-    from wxPython.lib.PyCrust import shell, version
+    from wx import py # shell, version
 except ImportError:
     print "Cannot import the wxPython.{wx,html} modules. "\
           "Install it and try again."
@@ -333,7 +333,7 @@ class ConfigVtkObj:
         vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND)
         vert_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTRE_HORIZONTAL)
 
-        command_entry = shell.Shell(parent=parent, id=-1, introText="Bish.",
+        command_entry = py.shell.Shell(parent=parent, id=-1, introText="Bish.",
                                     size=(400,200), style=0,
                                     locals={'obj' : self._vtk_obj})
         command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
