@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: nbCurvesLevelSet.py,v 1.1 2004/04/15 12:51:22 cpbotha Exp $
+# $Id: nbCurvesLevelSet.py,v 1.2 2004/04/20 11:57:17 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,8 +12,7 @@ import ConnectVTKITKPython as CVIPy
 
 class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
 
-    """Module for performing Geodesic Active Contour-based segmentation on
-    3D data.
+    """Narrow band level set implementation.
 
     The input feature image is an edge potential map with values close to 0 in
     regions close to the edges and values close to 1 otherwise.  The level set
@@ -24,9 +23,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
     The initial level set is a volume with the initial surface embedded as the
     0 level set, i.e. the 0-value iso-contour (more or less).
 
-    Also see figure 9.18 in the ITK Software Guide.
-
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -37,6 +34,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         self._config.propagationScaling = 1.0
         self._config.advectionScaling = 1.0
         self._config.curvatureScaling = 1.0
+        self._config.numberOfIterations = 500
         
         configList = [
             ('Propagation scaling:', 'propagationScaling', 'base:float',
@@ -44,7 +42,10 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
             ('Advection scaling:', 'advectionScaling', 'base:float',
              'text', 'Weight factor for the advection term'),
             ('Curvature scaling:', 'curvatureScaling', 'base:float',
-             'text', 'Weight factor for the curvature term')]
+             'text', 'Weight factor for the curvature term'),
+            ('Number of iterations:', 'numberOfIterations', 'base:int',
+             'text',
+             'Number of iterations that the algorithm should be run for')]
         
         scriptedConfigModuleMixin.__init__(self, configList)
 
@@ -81,7 +82,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         return ('Image Data (ITK)',)
 
     def getOutput(self, idx):
-        return self._thresholder.GetOutput()
+        return self._nbcLS.GetOutput()
 
     def configToLogic(self):
         self._nbcLS.SetPropagationScaling(
@@ -118,22 +119,10 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
             'NarrowBandCurvesLevelSetImageFilter',
             'Evolving level set')
 
-        thresholder = itk.itkBinaryThresholdImageFilterF3US3_New()
-        thresholder.SetLowerThreshold( -65535.0 );
-        thresholder.SetUpperThreshold( 0.0 );
-        thresholder.SetOutsideValue( 0  );
-        thresholder.SetInsideValue( 65535 );
-        thresholder.SetInput(self._nbcLS.GetOutput() );
-        self._thresholder = thresholder
-        moduleUtilsITK.setupITKObjectProgress(
-            self, thresholder,
-            'itkBinaryThresholdImageFilter',
-            'Thresholding segmented areas')
         
     def _destroyITKPipeline(self):
         """Delete all bindings to components of the ITK pipeline.
         """
 
         del self._nbcLS
-        del self._thresholder
         
