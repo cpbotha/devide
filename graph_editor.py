@@ -345,17 +345,22 @@ class graph_editor:
 	"""This will ask the main module whether the glyphs setup in 
 	self.conn_ip can be connected. If so, it will connect them graphically
 	and also the objects which they actually represent."""
-	# do the actual connection
-	self.dscas3_main.
-	# tell the glyphs to connect to each other (and store the line handles, aaaaaai!)
-	self.conn_ip['glyph0'].connect_to(self.conn_ip['out_idx'], self.conn_ip['glyph1'], self.conn_ip['in_idx'])
-	# we only have to do this bit for new connections to work again
-	self.conn_ip['glyph0'] = None
+	try:
+	    # do the actual connection (this should actually go to the module_manager)
+	    self.dscas3_main.connect_modules(self.conn_ip['glyph0'].get_module_instance(), self.conn_ip['out_idx'],
+	    self.conn_ip['glyph1'].get_module_instance(), self.conn_ip['out_idx'])
+	    # tell the glyphs to connect to each other (and store the line handles, aaaaaai!)
+	    self.conn_ip['glyph0'].connect_to(self.conn_ip['out_idx'], self.conn_ip['glyph1'], self.conn_ip['in_idx'])
+	    # we only have to do this bit for new connections to work again
+	    self.conn_ip['glyph0'] = None
+	except Exception, e:
+	    tkMessageBox.showerror("Connect error", "Could not connect modules: %s" % (str(e)))
 	
     def disconnect_glyphs(self, output_glyph, input_glyph, input_idx):
 	"""This will ask the main module whether the glyphs in question
 	may disconnect the requested inputs/outputs.  If allowed, the
 	situation in the graph editor will be adapted."""
+	self.dscas3_main.disconnect_modules(input_glyph.get_module_instance(), input_idx)
 	input_glyph.disconnect_from(output_glyph, input_idx)
 	
     def get_mode(self):

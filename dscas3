@@ -52,6 +52,12 @@ class dscas3_main:
 	# take away the reference AND remove (neat huh?)
 	del self.modules[self.modules.index(instance)]
 	
+    def connect_modules(self, output_module, output_idx, input_module, input_idx):
+	input_module.set_input(output_module.get_output(output_idx), input_idx)
+	
+    def disconnect_modules(self, input_module, input_idx):
+	input_module.set_input(input_idx, None)
+	
     def get_module_list(self):
 	return self.module_manager.get_module_list()
 	

@@ -40,12 +40,6 @@ class vtk_vol16_rdr(module_base):
 	# button box
 	box = Tix.ButtonBox(config_window, orientation=Tix.HORIZONTAL)
 	box.add('pipeline', text='Pipeline', underline=0, width=6,
-	command=lambda self=self, pw=parent_window: self.browse_pipeline(pw))
+	command=lambda self=self, pw=parent_window, vtk_objs=(self.reader): self.browse_vtk_pipeline(vtk_objs, pw))
 	box.pack(side=Tix.TOP, fill=Tix.X, expand=1)
 	
-    def browse_pipeline(self, parent_window=None):
-	pipeline_browser_window = Tix.Toplevel(parent_window)
-	# we don't have access to a renderer right now
-	pipeline_browser = vtkPipelineSegmentBrowser(pipeline_browser_window, self.reader)
-	# pack it
-	pipeline_browser.pack (side='top', expand = 1, fill = 'both' )

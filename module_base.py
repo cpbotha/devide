@@ -1,4 +1,7 @@
-# $Id: module_base.py,v 1.2 2002/02/15 17:18:22 cpbotha Exp $
+# $Id: module_base.py,v 1.3 2002/02/17 20:57:38 cpbotha Exp $
+import vtkpython
+import Tix
+from vtkPipeline.vtkPipeline import vtkPipelineBrowser, vtkPipelineSegmentBrowser
 
 class module_base:
     """Base class for all modules.  Any module wishing to take part in the dscas3
@@ -43,5 +46,13 @@ class module_base:
 	"""Pop up a dialog with all config possibilities, including optional use
 	of the pipeline browser."""
 	raise NotImplementedError
-
-
+    
+    def browse_vtk_pipeline(self, vtk_objects, parent_window=None):
+	"""Helper function for all derived classes.  They can call this method from
+	their configure methods to start a vtk pipeline browsers on their internal
+	VTK objects."""
+	pipeline_browser_window = Tix.Toplevel(parent_window)
+	# we don't have access to a renderer right now
+	pipeline_browser = vtkPipelineSegmentBrowser(pipeline_browser_window, vtk_objects)
+	# pack it
+	pipeline_browser.pack (side='top', expand = 1, fill = 'both' )
