@@ -1,5 +1,5 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: landmarkTransform.py,v 1.3 2003/10/15 15:19:47 cpbotha Exp $
+# $Id: landmarkTransform.py,v 1.4 2004/04/13 13:45:00 cpbotha Exp $
 # see module documentation
 
 # TODO:
@@ -7,12 +7,12 @@
 
 import genUtils
 from moduleBase import moduleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
 
-class landmarkTransform(moduleBase, noConfigModuleMixin):
+class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
     """The landmarkTransform will calculate a 4x4 linear transform that maps
     from a set of source landmarks to a set of target landmarks.
 
@@ -28,19 +28,26 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
 
         self._inputPoints = None
-        self._inputPointsOID = -1
         self._sourceLandmarks = None
         self._targetLandmarks = None
 
-        self._landmarkTransform = vtk.vtkLandmarkTransform()
-        # make this configurable!
-        self._landmarkTransform.SetModeToRigidBody()
+        self._config.mode = 'Rigid'
 
-        self._viewFrame = self._createViewFrame(
-            {'vtkLandmarkTransform': self._landmarkTransform})
+        configList = [('Transformation mode:', 'mode', 'base:str', 'choice',
+                       'Rigid: rotation + translation;\n'
+                       'Similarity: rigid + isotropic scaling\n'
+                       'Affine: rigid + scaling + shear',
+                       ('Rigid', 'Similarity', 'Affine'))]
+
+        scriptedConfigModuleMixin.__init__(self, configList)
+
+        self._landmarkTransform = vtk.vtkLandmarkTransform()
+
+        self._createWindow(
+            {'Module (self)' : self,
+             'vtkLandmarkTransform': self._landmarkTransform})
 
         self.configToLogic()
         self.syncViewWithLogic()
@@ -52,7 +59,7 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
             self.setInput(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        scriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._landmarkTransform
@@ -63,17 +70,28 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
     def setInput(self, idx, inputStream):
         if inputStream is not self._inputPoints:
 
-            if self._inputPoints:
-                self._inputPoints.removeObserver(self._inputPointsOID)
+            if inputStream == None:
+                # disconnect
+                if self._inputPoints:
+                    self._inputPoints.removeObserver(
+                        self._observerInputPoints)
+                    
+                self._inputPoints = None
 
-            if inputStream:
-                self._inputPointsOID = inputStream.addObserver(
+            elif hasattr(inputStream, 'devideType') and \
+                 inputStream.devideType == 'namedPoints':
+                # correct type... first disconnect the old
+                self._inputPoints.removeObserver(
                     self._observerInputPoints)
 
-            self._inputPoints = inputStream
+                self._inputPoints = inputStream
+                self._inputPoints.addObserver(self._observerInputPoints)
 
-            # initial update
-            self._observerInputPoints(None)
+                # initial update
+                self._observerInputPoints(None)
+
+            else:
+                raise TypeError, 'This input requires a named points type.'
 
     def getOutputDescriptions(self):
         return ('vtkTransform',)
@@ -82,24 +100,26 @@ class landmarkTransform(moduleBase, noConfigModuleMixin):
             return self._landmarkTransform
 
     def logicToConfig(self):
-        pass
+        mas = self._landmarkTransform.GetModeAsString()
+        if mas == 'RigidBody':
+            mas = 'Rigid'
+        self._config.mode = mas
     
     def configToLogic(self):
-        pass
-    
-    def viewToConfig(self):
-        pass
-
-    def configToView(self):
-        pass
+        if self._config.mode == 'Rigid':
+            self._landmarkTransform.SetModeToRigidBody()
+        elif self._config.mode == 'Similarity':
+            self._landmarkTransform.SetModeToSimilarity()
+        else:
+            self._landmarkTransform.SetModeToAffine()
     
     def executeModule(self):
         self._landmarkTransform.Update()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        self._viewFrame.Show(True)
+        self._viewFrame.Raise()
 
     def _observerInputPoints(self, obj):
         # the points have changed, let's see if they really have
