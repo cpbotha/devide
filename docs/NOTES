@@ -22,3 +22,8 @@ and uncomment/comment lines 79-82.
 2) then go to
 Insight/Code/BasicFilters/itkVTKImageExportBase.h
 and uncomment/comment lines 52-55. 
+
+*****
+As of 20031215:
+We're going to make use of the VTK4 tree for a while (i.e. we're back to
+FLOAT) whilst it goes through the worst of its growing pains.
