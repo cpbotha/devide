@@ -16,7 +16,7 @@ glyphScaleModeTexts = ['Scale by scalar attribute',
                        'Use only scale factor']
 
 # colour by scale (magnitude of scaled vector), by scalar or by vector
-# default: COLOUR_BY_SCALAR = 1
+# default: COLOUR_BY_VECTOR = 1
 glyphColourMode = ['COLOUR_BY_SCALE', 'COLOUR_BY_SCALAR', 'COLOUR_BY_VECTOR']
 
 glyphColourModeTexts = ['Colour by scale', 'Colour by scalar attribute',
@@ -37,7 +37,7 @@ glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 class glyphs(scriptedConfigModuleMixin, moduleBase):
     """Visualise vector field with glyphs.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -46,7 +46,7 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         self._config.scaling = True
         self._config.scaleFactor = 1
         self._config.scaleMode = glyphScaleMode.index('SCALE_BY_VECTOR')
-        self._config.colourMode = glyphColourMode.index('COLOUR_BY_SCALAR')
+        self._config.colourMode = glyphColourMode.index('COLOUR_BY_VECTOR')
         self._config.vectorMode = glyphVectorMode.index('USE_VECTOR')
         self._config.maskPoints = True
         self._config.maskMax = 5000
