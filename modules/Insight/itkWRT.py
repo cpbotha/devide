@@ -1,4 +1,4 @@
-# $Id: itkWRT.py,v 1.2 2004/05/13 16:23:13 cpbotha Exp $
+# $Id: itkWRT.py,v 1.3 2004/09/28 17:31:45 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -19,7 +19,7 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
     <li>.hdr or .img: Analyze .hdr header and .img data</li>
     </ul>
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
 
@@ -103,20 +103,40 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
         
         if len(self._config.filename) and self._input:
             # g will be e.g. ('float', '3')
-            g = re.search('.*itk__ImageT(.*)_([0-9]+)_t',
+            # note that we use the NON-greedy version so it doesn't break
+            # on vectors
+            g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
                           self._input.this).groups()
+
+            # see if it's a vector
+            if g[0].startswith('itk__VectorT'):
+                vectorString = 'V'
+                # it's a vector, so let's remove the 'itk__VectorT' bit
+                g = list(g)
+                g[0] = g[0][len('itk__VectorT'):]
+                g = tuple(g)
+                print g
+                
+            else:
+                vectorString = ''
+                
             # this turns 'unsigned_char' into 'UC' and 'float' into 'F'
             itkTypeC = ''.join([i.upper()[0] for i in g[0].split('_')])
             
-            itkClassName = 'itkImageFileWriter%s%s_New' % (itkTypeC, g[1])
+            itkClassName = 'itkImageFileWriter%s%s%s_New' % \
+                           (vectorString, itkTypeC, g[1])
+            
             print itkClassName
             itkWClass = getattr(itk, itkClassName)
             
             try:
                 self._writer = itkWClass()
             except Exception, e:
-                raise RuntimeError, 'Unable to instantiate ITK writer with ' \
-                      'type %s and dimensions %s.' % (g[0], g[1])
+                if vectorString == 'V':
+                    vType = 'vector'
+                         
+                raise RuntimeError, 'Unable to instantiate ITK writer with' \
+                      '%s type %s and dimensions %s.' % (vType, g[0], g[1])
             else:
                 self._input.UpdateOutputInformation()
                 self._input.SetBufferedRegion(

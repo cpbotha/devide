@@ -1,4 +1,4 @@
-# $Id: demonsRegistration.py,v 1.1 2004/09/27 17:13:49 cpbotha Exp $
+# $Id: demonsRegistration.py,v 1.2 2004/09/28 17:31:45 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -10,7 +10,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
     """Performs demons registration on fixed and moving input images, returns
     deformation field.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -46,7 +46,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
 
         moduleUtilsITK.setupITKObjectProgress(
             self, self._demons, 'itkDemonsRegistration',
-            'Performing registration, similarity = %f', ('GetMetric()'))
+            'Performing registration, metric = %.2f', ('GetMetric()',))
 
         self._createWindow(
             {'Module (self)' : self,
@@ -72,7 +72,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
         del self._matcher
 
     def executeModule(self):
-        self._demons.Update()
+        self.getOutput(0).Update()
 
     def getInputDescriptions(self):
         return ('Fixed image (ITK 3D Float)', 'Moving image (ITK 3D Float)')

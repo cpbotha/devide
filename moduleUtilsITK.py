@@ -1,4 +1,4 @@
-# $Id: moduleUtilsITK.py,v 1.5 2004/09/27 17:13:45 cpbotha Exp $
+# $Id: moduleUtilsITK.py,v 1.6 2004/09/28 17:31:43 cpbotha Exp $
 
 import fixitk as itk
 
@@ -33,25 +33,29 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
 
     mm = dvModule._moduleManager
 
+    # sanity check objEvals
+    if type(objEvals) != type(()) and objEvals != None:
+        raise TypeError, 'objEvals should be a tuple or None.'
+
     def commandCallable():
         # setup for and get values of all requested objEvals
         values = []
 
         if type(objEvals) == type(()):
             for objEval in objEvals:
-                objEvalValues.append(
-                    eval('%s.%s.%s' % (dvModule, objAttrString, objEval)))
+                values.append(
+                    eval('dvModule.%s.%s' % (objAttrString, objEval)))
 
         values = tuple(values)
+        print values
             
         # do the actual callback
         mm.genericProgressCallback(getattr(dvModule, objAttrString),
             nameOfObject, getattr(dvModule, objAttrString).GetProgress(),
-            progressText % (values,))
+            progressText % values)
 
         # get rid of all bindings
         del values
-        del oeLen
 
     pc = itk.itkPyCommand_New()
     pc.SetCommandCallable(commandCallable)
