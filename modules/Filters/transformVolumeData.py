@@ -4,8 +4,10 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class testModule2(noConfigModuleMixin, moduleBase):
-    """Resample volume according to 4x4 homogeneous transform.
+class transformVolumeData(noConfigModuleMixin, moduleBase):
+    """Transform volume according to 4x4 homogeneous transform.
+
+    $Revision: 1.1 $
     """
 
     def __init__(self, moduleManager):
