@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.20 2003/04/28 11:26:21 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.21 2003/04/29 17:11:32 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -91,6 +91,7 @@ class sliceDirection:
                 self._ipws.append(vtk.vtkImagePlaneWidget())
                 self._ipws[-1].SetInput(inputData)
                 self._ipws[-1].SetPicker(self._slice3dViewer.getIPWPicker())
+                self._ipws[-1].GetImageMapToColors().SetOutputFormatToRGB()
 
                 # now make callback for the ipw
                 self._ipws[-1].AddObserver('StartInteractionEvent',
@@ -406,7 +407,8 @@ class sliceDirection:
             ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
             ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
             ipw.SetSliceIndex(0)
-            ipw.GetPlaneProperty().SetColor(ipw_cols[ipw.GetPlaneOrientation()])
+            ipw.GetPlaneProperty().SetColor(
+                ipw_cols[ipw.GetPlaneOrientation()])
             # this is not working yet, because the IPWs handling of
             # luts is somewhat broken at the moment
             ipw.SetLookupTable(lut)
@@ -630,7 +632,15 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
     def setInput(self, idx, input_stream):
         if input_stream == None:
 
-            if self._inputs[idx]['Connected'] == 'vtkPolyData':
+            if self._inputs[idx]['Connected'] == 'vtkVolume':
+                # this means we were volume rendering!
+                self._inputs[idx]['Connected'] = None
+                volume = self._inputs[idx]['vtkActor']
+                if volume != None:
+                    self._threedRenderer.RemoveVolume(volume)
+                    self._inputs[idx]['vtkActor'] = None
+
+            elif self._inputs[idx]['Connected'] == 'vtkPolyData':
                 self._inputs[idx]['Connected'] = None
                 actor = self._inputs[idx]['vtkActor']
                 if actor != None:
@@ -684,7 +694,15 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         elif hasattr(input_stream, 'GetClassName') and \
              callable(input_stream.GetClassName):
 
-            if input_stream.GetClassName() == 'vtkPolyData':
+            if input_stream.GetClassName() == 'vtkVolume':
+                self._inputs[idx]['vtkActor'] = input_stream
+                self._threedRenderer.AddVolume(input_stream)
+                self._inputs[idx]['Connected'] = 'vtkVolume'
+
+                self._threedRenderer.ResetCamera()
+                self._viewFrame.threedRWI.Render()
+
+            elif input_stream.GetClassName() == 'vtkPolyData':
                 mapper = vtk.vtkPolyDataMapper()
                 mapper.SetInput(input_stream)
                 self._inputs[idx]['vtkActor'] = vtk.vtkActor()
