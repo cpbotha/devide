@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.3 2003/02/17 20:07:01 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.4 2003/03/18 15:47:44 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
@@ -136,8 +136,13 @@ class VtkDirMethodParser:
                 try:
                     eval ("vtk_obj.Get%s"%method[3:])
                 except AttributeError:
-                    self.state_meths.append (method)
-                    self.methods.remove (method)
+                    # SetUpdateExtentToWholeExtent is not a state method, i.e.
+                    # it doesn't set some state to one of a predefined number
+                    # of mutually exclusive values... it's a simple procedural
+                    # call that has been unfortunately named
+                    if method != 'SetUpdateExtentToWholeExtent':
+                        self.state_meths.append (method)
+                        self.methods.remove (method)
             # finding all the On/Off toggle methods
 	    elif string.find (method[-2:], "On") >= 0:
                 try:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.7 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.8 2003/03/18 15:47:44 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -415,6 +415,7 @@ class ConfigVtkObj:
                             choices=meths,
                             majorDimension=2, style=wxRA_SPECIFY_COLS)
             rb.SetSelection(self.state_var[i])
+
             EVT_RADIOBOX(panel, rb_id,
                          lambda event, s=self, i=i: s.radiobox_cb(event, i))
             vert_sizer.Add(rb, flag=wxEXPAND)
