@@ -84,10 +84,13 @@ class shellSplatSimpleFLT(moduleBase, vtkPipelineConfigModuleMixin):
         del self._viewFrame
 
     def getInputDescriptions(self):
-	return ('vtkVolume',)
+	return ('input image data', 'optional gradient image data')
 
     def setInput(self, idx, inputStream):
-        self._splatMapper.SetInput(inputStream)
+        if idx == 0:
+            self._splatMapper.SetInput(inputStream)
+        else:
+            self._splatMapper.SetGradientImageData(inputStream)
 
     def getOutputDescriptions(self):
         return (self._volume.GetClassName(),)
