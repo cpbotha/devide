@@ -1,5 +1,5 @@
 # vtk_slice_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: vtk_slice_vwr.py,v 1.68 2002/09/25 16:07:26 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.69 2002/09/30 15:30:43 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from gen_utils import log_error
@@ -53,7 +53,7 @@ class vtk_slice_vwr(module_base,
         # this will be passed on as input to the next component
         self._vtk_points = vtk.vtkPoints()
         # this is an extra output with text descriptions for each points
-        self._vtk_points_descr = []
+        self._vtk_points_names = []
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -166,7 +166,7 @@ class vtk_slice_vwr(module_base,
                             
                         else:
                             raise TypeError, \
-                                  "You have tried to add volume data to" \
+                                  "You have tried to add volume data to " \
                                   "the slice viewer that already has a " \
                                   "connected volume data set.  Disconnect " \
                                   "the old dataset first or make sure that "\
@@ -345,7 +345,6 @@ class vtk_slice_vwr(module_base,
             path = picker.GetPath()
             if path:
                 prop = path.GetFirstNode().GetProp()
-                print prop.__this__
                 if prop:
                     self.vtk_pipeline_configure(self._view_frame,
                                                 self._rwi.GetRenderWindow(),
@@ -597,42 +596,18 @@ class vtk_slice_vwr(module_base,
         else:
             ta = None
 
-        def pw_si_cb(pw, evt_name):
-            # we have to find pw in our list
-            pwidgets = map(lambda i: i['point_widget'], self._sel_points)
-            if pw in pwidgets:
-                idx = pwidgets.index(pw)
-                # toggle the selection for this point in our list
-                self._spoint_listctrl.SetItemState(idx,
-                                                   wxLIST_STATE_SELECTED,
-                                                   wxLIST_STATE_SELECTED)
-                # get its position and transfer it to the sphere actor that
-                # we use
-                pos = pw.GetPosition()
-                self._sel_points[idx]['sphere_actor'].SetPosition(pos)
 
-                # also update the text_actor (if appropriate)
-                ta = self._sel_points[idx]['text_actor']
-                if ta:
-                    ta.SetPosition(pos)
+        def pw_ei_cb(pw, evt_name):
+            # make sure our output is good
+            self._sync_vtk_points()
 
-                # then we have to update our internal record of this point
-                x,y,z = map(round,
-                            map(operator.div,
-                            map(operator.sub, pos, iorigin), ispacing))
-                val = input_data.GetScalarComponentAsFloat(x,y,z, 0)
-                # the cursor is a tuple with discrete position and value
-                self._sel_points[idx]['cursor'] = (x,y,z,val)
-                # 'coords' is the world coordinates
-                self._sel_points[idx]['coords'] = pos
-                # now update the listctrl as well
-                pos_str = "%s, %s, %s" % (x,y,z)
-                self._spoint_listctrl.SetStringItem(idx, 0, pos_str)
-                self._spoint_listctrl.SetStringItem(idx, 1, str(val))
-                
-
-        pw.AddObserver('StartInteractionEvent', pw_si_cb)
-        pw.AddObserver('InteractionEvent', pw_si_cb)
+        pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
+                       input_data=input_data, s=self:
+                       s.pointwidget_interaction_cb(pw, evt_name, input_data))
+        pw.AddObserver('InteractionEvent', lambda pw, evt_name,
+                       input_data=input_data, s=self:
+                       s.pointwidget_interaction_cb(pw, evt_name, input_data))
+        pw.AddObserver('EndInteractionEvent', pw_ei_cb)
         
         # store the cursor (discrete coords) the coords and the actor
         self._sel_points.append({'cursor' : cursor, 'coords' : coords,
@@ -663,7 +638,9 @@ class vtk_slice_vwr(module_base,
         
         # first make sure it's empty
         self._vtk_points.SetNumberOfPoints(0)
-        self._vtk_points_descr = []
+        # delete all elements, but keep the actual object around
+        # so that all bindings to it (on input modules) remain the same
+        del self._vtk_points_names[:]
         # then transfer everything
         for i in self._sel_points:
             x,y,z,v = i['cursor']
@@ -695,6 +672,42 @@ class vtk_slice_vwr(module_base,
             self._current_cursors[i] = cd
             cstring = str(cd[0:3]) + " = " + str(cd[3])
             cur_panel.cursor_text.SetValue(cstring)
+
+    def pointwidget_interaction_cb(self, pw, evt_name, input_data):
+        # we have to find pw in our list
+        pwidgets = map(lambda i: i['point_widget'], self._sel_points)
+        if pw in pwidgets:
+            idx = pwidgets.index(pw)
+            # toggle the selection for this point in our list
+            self._spoint_listctrl.SetItemState(idx,
+                                               wxLIST_STATE_SELECTED,
+                                               wxLIST_STATE_SELECTED)
+            # get its position and transfer it to the sphere actor that
+            # we use
+            pos = pw.GetPosition()
+            self._sel_points[idx]['sphere_actor'].SetPosition(pos)
+
+            # also update the text_actor (if appropriate)
+            ta = self._sel_points[idx]['text_actor']
+            if ta:
+                ta.SetPosition(pos)
+
+            # then we have to update our internal record of this point
+            ispacing = input_data.GetSpacing()
+            iorigin = input_data.GetOrigin()
+            x,y,z = map(round,
+                        map(operator.div,
+                        map(operator.sub, pos, iorigin), ispacing))
+            val = input_data.GetScalarComponentAsFloat(x,y,z, 0)
+            # the cursor is a tuple with discrete position and value
+            self._sel_points[idx]['cursor'] = (x,y,z,val)
+            # 'coords' is the world coordinates
+            self._sel_points[idx]['coords'] = pos
+            # now update the listctrl as well
+            pos_str = "%s, %s, %s" % (x,y,z)
+            self._spoint_listctrl.SetStringItem(idx, 0, pos_str)
+            self._spoint_listctrl.SetStringItem(idx, 1, str(val))
+            
 
     def _rw_ortho_pick_cb(self, wxvtkrwi):
         (cx,cy) = wxvtkrwi.GetEventPosition()
