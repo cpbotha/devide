@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.11 2003/05/13 09:22:32 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.12 2003/05/13 11:44:49 cpbotha Exp $
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -293,29 +293,36 @@ class noConfigModuleMixin(vtkPipelineConfigModuleMixin):
         the actual corresponding instances as values.
         """
 
+        parent_window = self._moduleManager.get_module_view_parent_window()
+        
+        viewFrame = wxFrame(parent_window, -1, frameTitle)
+        viewFrame.viewFramePanel = wxPanel(viewFrame, -1)
+
+        viewFramePanelSizer = wxBoxSizer(wxVERTICAL)
+        viewFrame.viewFramePanel.SetAutoLayout(True)
+        viewFrame.viewFramePanel.SetSizer(viewFramePanelSizer)
+        
+        
+        viewFrameSizer = wxBoxSizer(wxVERTICAL)
+        viewFrameSizer.Add(viewFrame.viewFramePanel, 1, wxEXPAND, 0)
+        viewFrame.SetAutoLayout(True)
+        viewFrame.SetSizer(viewFrameSizer)
+
         if objectDict == None:
             objectDict = {}
 
-        parent_window = self._moduleManager.get_module_view_parent_window()
-        self._viewFrame = resources.python.noConfigModuleMixinViewFrame.\
-                          noConfigModuleMixinViewFrame(parent_window, -1,
-                                                       'dummy')
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, viewFrame, viewFrame.viewFramePanel, objectDict, None)
 
-        self._viewFrame.SetTitle(frameTitle)
+        moduleUtils.createECASButtons(self, viewFrame,
+                                      viewFrame.viewFramePanel)
 
         # make sure that a close of that window does the right thing
-        EVT_CLOSE(self._viewFrame,
-                  lambda e, s=self: s._viewFrame.Show(false))
+        EVT_CLOSE(viewFrame,
+                  lambda e: viewFrame.Show(false))
 
-        self._setupObjectAndPipelineIntrospection(
-            self._viewFrame, objectDict, None,
-            self._viewFrame.objectChoice, self._viewFrame.objectChoiceId,
-            self._viewFrame.pipelineButtonId)
-
-        # new style standard ECAS buttons
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
-
+        return viewFrame
+        
     def objectChoiceCallback(self, objectDict):
         objectName = self._viewFrame.objectChoice.GetStringSelection()
         if objectDict.has_key(objectName):
