@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.13 2004/02/22 21:15:31 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.14 2004/02/23 22:28:35 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -139,6 +139,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         # take care of the threeD objects
         self._tdObjects.close()
         del self._tdObjects
+
+        # the implicits
+        self._implicits.close()
+        del self._implicits
 
         # don't forget to call the mixin close() methods
         vtkPipelineConfigModuleMixin.close(self)

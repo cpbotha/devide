@@ -1,7 +1,8 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.4 2004/02/23 17:31:43 cpbotha Exp $
+# $Id: implicits.py,v 1.5 2004/02/23 22:28:35 cpbotha Exp $
 #
 
+import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import vtk
 import wx
@@ -9,15 +10,15 @@ import wx
 # -------------------------------------------------------------------------
 class implicitInfo:
     def __init__(self):
-        self.implicitWidget = None
+        self.name = None
+        self.type = None
+        self.widget = None
 
 class implicits(object, s3dcGridMixin):
-    _gridCols = [('Name', 0), ('Type', 0), ('Enabled', 100),
-                 ('Interaction', 0)]
+    _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0)]
     _gridNameCol = 0
     _gridTypeCol = 1
     _gridEnabledCol = 2
-    _gridInteractionCol = 3
 
     _implicitTypes = ['Plane']
 
@@ -48,7 +49,20 @@ class implicits(object, s3dcGridMixin):
             self.slice3dVWR.controlFrame, disable=True)
 
     def close(self):
-        self.removePoints(range(len(self._pointsList)))
+        # delete all implicits, the good way
+        # this shouldn't cause problems, because the whole slice3dVWR module
+        # has been disconnected by this time
+        dNames = self._implicitsDict.keys()
+        for dName in dNames:
+            self._deleteImplicit(dName)
+            
+        # make sure we have no more bindings to any of the implicits data
+        self._implicitsDict.clear()
+
+        # various other thingies
+        self.slice3dVWR = None
+        self._grid.ClearGrid()
+        self._grid = None
 
     def _createImplicit(self, implicitName, implicitType):
         if implicitType in self._implicitTypes:
@@ -102,10 +116,10 @@ class implicits(object, s3dcGridMixin):
             if implicitWidget:
                 # first add to our internal thingy
                 ii = implicitInfo()
-                ii.implicitName = implicitName
-                ii.implicitType = implicitType                
-                ii.implicitWidget = implicitWidget
-
+                ii.name = implicitName
+                ii.type = implicitType                
+                ii.widget = implicitWidget
+                
                 self._implicitsDict[implicitName] = ii
 
                 # now add to the grid
@@ -117,16 +131,31 @@ class implicits(object, s3dcGridMixin):
                                        implicitType)
 
                 # set the relevant cells up for Boolean
-                for col in [self._gridEnabledCol, self._gridInteractionCol]:
+                for col in [self._gridEnabledCol]:
 
                     self._grid.SetCellRenderer(nrGridRows, col,
                                                wx.grid.GridCellBoolRenderer())
                     self._grid.SetCellAlignment(nrGridRows, col,
                                                 wx.ALIGN_CENTRE,
                                                 wx.ALIGN_CENTRE)
-                
 
-                
+                self._setImplicitEnabled(ii.name, True)
+
+    def _deleteImplicit(self, name):
+        dRow = self.findGridRowByName(name)
+        if dRow >= 0:
+            # delete that row
+            self._grid.DeleteRows(dRow)
+
+        # take care of the widget
+        w = self._implicitsDict[name].widget
+        w.Off()
+        w.SetInteractor(None)
+
+        # FIXME: take care of the function
+
+        # finally remove our record of everything
+        del self._implicitsDict[name]
                 
 
     def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
@@ -148,12 +177,6 @@ class implicits(object, s3dcGridMixin):
              self._handlerShowImplicits, True),
             ('&Hide', 'Hide selected implicits',
              self._handlerHideImplicits, True),
-            ('&Interaction ON +',
-             'Activate interaction for the selected implicits',
-             self._handlerImplicitsInteractionOn, True),
-            ('I&nteraction OFF',
-             'Deactivate interaction for the selected implicits',
-             self._handlerImplicitsInteractionOff, True),
             ('---',), # important!  one-element tuple...
             ('&Rename',
              'Rename selected implicits',
@@ -198,7 +221,24 @@ class implicits(object, s3dcGridMixin):
             for selectedPoint in self._pointsList:
                 if selectedPoint['pointWidget']:
                     selectedPoint['pointWidget'].Off()
+
+    def findGridRowByName(self, name):
+        nrGridRows = self._grid.GetNumberRows()
+        rowFound = False
+        row = 0
+
+        while not rowFound and row < nrGridRows:
+            value = self._grid.GetCellValue(row, self._gridNameCol)
+            rowFound = (value == name)
+            row += 1
+
+        if rowFound:
+            # prepare and return the row
+            row -= 1
+            return row
         
+        else:
+            return -1
 
     def getSavePoints(self):
         """Get special list of points that can be easily pickled.
@@ -232,13 +272,45 @@ class implicits(object, s3dcGridMixin):
         self._grid.PopupMenu(imenu, gridEvent.GetPosition())
 
     def _handlerRenameImplicits(self, event):
-        rslt = wx.GetTextFromUser(
-            'Please enter a new name for the selected points.',
-            'Points Rename', '')
+        selRows = self._grid.GetSelectedRows()
+        rNames = []
+        for sRow in selRows:
+            rNames.append(self._grid.GetCellValue(sRow, self._gridNameCol))
 
-        if rslt:
-            selRows = self._grid.GetSelectedRows()
-            self._renameImplitits(selRows, rslt)
+        for rName in rNames:
+            self._renameImplicit(rName)
+
+    def _renameImplicit(self, name):
+        """Pop-up text box asking the user for a new name.
+        """
+
+        if name in self._implicitsDict:
+            newName = wx.GetTextFromUser(
+                'Please enter a new name for "%s".' % (name,),
+                'Implicit Rename', name)
+
+            if newName:
+                if newName in self._implicitsDict:
+                    md = wx.MessageDialog(
+                        self.slice3dVWR.controlFrame,
+                        "You have to enter a unique name. "
+                        "Please try again.",
+                        "Information",
+                        wx.OK | wx.ICON_INFORMATION)
+                    md.ShowModal()
+
+                else:
+                    # first the grid
+                    row = self.findGridRowByName(name)
+                    if row >= 0:
+                        self._grid.SetCellValue(row, self._gridNameCol,
+                                                newName)
+
+                    # do the actual renaming
+                    ii = self._implicitsDict[name]
+                    ii.name = newName
+                    del self._implicitsDict[name]
+                    self._implicitsDict[newName] = ii
 
     def _handlerSelectAllImplicits(self, event):
         # calling SelectAll and then GetSelectedRows() returns nothing
@@ -251,15 +323,27 @@ class implicits(object, s3dcGridMixin):
         
     def _handlerDeleteImplicits(self, event):
         selRows = self._grid.GetSelectedRows()
-        if len(selRows):
-            self.removePoints(selRows)
-            self.slice3dVWR.render3D()
+        # first get a list of names
+        dNames = []
+        for sRow in selRows:
+            name = self._grid.GetCellValue(sRow, self._gridNameCol)
+            dNames.append(name)
+
+        for name in dNames:
+            self._deleteImplicit(name)
+
 
     def _handlerHideImplicits(self, event):
-        pass
+        selectedRows = self._grid.GetSelectedRows()
+        for sRow in selectedRows:
+            name = self._grid.GetCellValue(sRow, self._gridNameCol)
+            self._setImplicitEnabled(name, False)
 
     def _handlerShowImplicits(self, event):
-        pass
+        selectedRows = self._grid.GetSelectedRows()
+        for sRow in selectedRows:
+            name = self._grid.GetCellValue(sRow, self._gridNameCol)
+            self._setImplicitEnabled(name, True)
 
     def _handlerImplicitsInteractionOn(self, event):
         for idx in self._grid.GetSelectedRows():
@@ -410,188 +494,28 @@ class implicits(object, s3dcGridMixin):
             # and sync up output points
             self._syncOutputSelectedPoints()
 
-    def _renameImplicit(self, idx, newName):
-        """Given a point index and a new name, this will take care of all
-        the actions required to rename a point.  This is often called for
-        a series of points, so this function does not refresh the display
-        or resync the output list.  You're responsible for that. :)
-        """
-
-        if newName and newName != self._implicitsList[idx]['name']:
-            # we only do something if this has really changed and if the name
-            # is not blank
-
-            # now record the change in our internal list
-            self._implicitsList[idx]['name'] = newName
 
     def _renameImplicits(self, Idxs, newName):
         for idx in Idxs:
             self._renameImplicit(idx, newName)
 
-    def setSavePoints(self, savedPoints, boundsForPoints):
-        """Re-install the saved points that were returned with getPoints.
-        """
+    def _setImplicitEnabled(self, implicitName, enabled):
+        if implicitName in self._implicitsDict:
+            ii = self._implicitsDict[implicitName]
 
-        for sp in savedPoints:
-            self._storePoint(sp['discrete'], sp['world'], sp['value'],
-                             sp['name'], sp['lockToSurface'],
-                             boundsForPoints)
+            # in our internal list
+            ii.enabled = bool(enabled)
+            # the widget
+            if ii.widget:
+                ii.widget.SetEnabled(ii.enabled)
 
-    def _storeCursor(self, cursor):
-        """Store the point represented by the cursor parameter.
-
-        cursor is a 4-tuple with the discrete (data-relative) xyz coords and
-        the value at that point.
-        """
-
-        inputs = [i for i in self.slice3dVWR._inputs if i['Connected'] ==
-                  'vtkImageDataPrimary']
-
-        if not inputs or not cursor:
-            return
-
-        # we first have to check that we don't have this pos already
-        discretes = [i['discrete'] for i in self._pointsList]
-        if tuple(cursor[0:3]) in discretes:
-            return
-        
-        input_data = inputs[0]['inputData']
-        ispacing = input_data.GetSpacing()
-        iorigin = input_data.GetOrigin()
-        # calculate real coords
-        world = map(operator.add, iorigin,
-                    map(operator.mul, ispacing, cursor[0:3]))
-
-        pointName = self.slice3dVWR.controlFrame.sliceCursorNameCombo.\
-                    GetValue()
-        self._storePoint(tuple(cursor[0:3]), tuple(world), cursor[3],
-                         pointName)
-
-    def _storePoint(self, discrete, world, value, pointName,
-                    lockToSurface=False, boundsForPoints=None):
-
-        tdren = self.slice3dVWR._threedRenderer
-        tdrwi = self.slice3dVWR.threedFrame.threedRWI
-
-        if not boundsForPoints:
-            bounds = tdren.ComputeVisiblePropBounds()
-        else:
-            bounds = boundsForPoints
-        
-        # we use a pointwidget
-        pw = vtk.vtkPointWidget()
-        #pw.SetInput(inputData)
-        pw.PlaceWidget(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4],
-                       bounds[5])
-        pw.SetPosition(world)
-        # make priority higher than the default of vtk3DWidget so
-        # that imageplanes behind us don't get selected the whole time
-        pw.SetPriority(0.6)
-        pw.SetInteractor(tdrwi)
-        pw.AllOff()
-        pw.On()
-
-        ss = vtk.vtkSphereSource()
-        #bounds = inputData.GetBounds()
-
-        ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
-        sm = vtk.vtkPolyDataMapper()
-        sm.SetInput(ss.GetOutput())
-        sa = vtk.vtkActor()
-        sa.SetMapper(sm)
-        sa.SetPosition(world)
-        sa.GetProperty().SetColor(1.0,0.0,0.0)
-        tdren.AddActor(sa)
-        sa.SetPickable(0)
-
-        if len(pointName) > 0:
-            name_text = vtk.vtkVectorText()
-            name_text.SetText(pointName)
-            name_mapper = vtk.vtkPolyDataMapper()
-            name_mapper.SetInput(name_text.GetOutput())
-            ta = vtk.vtkFollower()
-            ta.SetMapper(name_mapper)
-            ta.GetProperty().SetColor(1.0, 1.0, 0.0)
-            ta.SetPosition(world)
-            ta_bounds = ta.GetBounds()
-            ta.SetScale((bounds[1] - bounds[0]) / 7.0 /
-                        (ta_bounds[1] - ta_bounds[0]))
-            tdren.AddActor(ta)
-            ta.SetPickable(0)
-            ta.SetCamera(tdren.GetActiveCamera())
-        else:
-            ta = None
+            # in the grid
+            gridRow = self.findGridRowByName(implicitName)
+            if gridRow >= 0:
+                genUtils.setGridCellYesNo(
+                    self._grid, gridRow, self._gridEnabledCol, ii.enabled)
 
 
-        def pw_ei_cb(pw, evt_name):
-            # make sure our output is good
-            self._syncOutputSelectedPoints()
-
-        pw.AddObserver('StartInteractionEvent', lambda pw, evt_name,
-                       s=self:
-                       s._observerPointWidgetInteraction(pw, evt_name))
-        pw.AddObserver('InteractionEvent', lambda pw, evt_name,
-                       s=self:
-                       s._observerPointWidgetInteraction(pw, evt_name))
-        pw.AddObserver('EndInteractionEvent', pw_ei_cb)
-
-        # we start with it disabled
-        pw.Off()
-
-        # store the cursor (discrete coords) the coords and the actor
-        self._pointsList.append({'discrete' : tuple(discrete),
-                                 'world' : tuple(world),
-                                 'value' : value,
-                                 'name' : pointName,
-                                 'pointWidget' : pw,
-                                 'lockToSurface' : lockToSurface,
-                                 'sphereActor' : sa,
-                                 'textActor' : ta})
-
-
-        self._grid.AppendRows()
-        #self._grid.AdjustScrollBars()
-        row = self._grid.GetNumberRows() - 1
-        self._syncGridRowToSelPoints(row)
-        
-        # make sure self._outputSelectedPoints is up to date
-        self._syncOutputSelectedPoints()
-
-        self.slice3dVWR.render3D()
-
-    def _syncGridRowToSelPoints(self, row):
-        # *sniff* *sob* It's unreadable, but why's it so pretty?
-        # this just formats the real point
-        name = self._pointsList[row]['name']
-        discrete = self._pointsList[row]['discrete']
-        world = self._pointsList[row]['world']
-        value = self._pointsList[row]['value']
-        discreteStr = "%.0f, %.0f, %.0f" % discrete
-        worldStr = "%.2f, %.2f, %.2f" % world
-
-        self._grid.SetCellValue(row, self._gridNameCol, name)
-        self._grid.SetCellValue(row, self._gridWorldCol, worldStr)
-        self._grid.SetCellValue(row, self._gridDiscreteCol, discreteStr)
-        self._grid.SetCellValue(row, self._gridValueCol, str(value))
-
-    def _syncOutputSelectedPoints(self):
-        """Sync up the output vtkPoints and names to _sel_points.
-        
-        We play it safe, as the number of points in this list is usually
-        VERY low.
-        """
-
-        del self.outputSelectedPoints[:]
-
-        # then transfer everything
-        for i in self._pointsList:
-            self.outputSelectedPoints.append({'name' : i['name'],
-                                              'discrete' : i['discrete'],
-                                              'world' : i['world'],
-                                              'value' : i['value']})
-
-        # then make sure this structure knows that it has been modified
-        self.outputSelectedPoints.notify()
             
 
 
