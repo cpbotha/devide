@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.32 2004/03/15 22:28:38 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.33 2004/03/22 13:54:57 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -529,14 +529,43 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             setattr(self._config, configTuple[1], val)
 
     def configToView(self):
+        # we have to do explicit casting for floats with %f, instead of just
+        # using str(), as some filters return parameters as C++ float
+        # (i.e. not doubles), and then str() shows us strings that are far too
+        # long
+        
         for configTuple in self._configList:
             widget = self._widgets[configTuple[0]]
             val = getattr(self._config, configTuple[1])
-            # only supporting 'text' widgets for now
+
+            typeD = configTuple[2]
+
             if configTuple[3] == 'text':
-                widget.SetValue(str(val))
+                if typeD.startswith('base:'):
+
+                    castString = typeD.split(':')[1]
+                    if castString == 'float':
+                        widget.SetValue('%g' % (val,))
+                        
+                    else:
+                        widget.SetValue(str(val))
+
+                else:
+                    # so this is a tuple
+                    # e.g. tuple:float,3
+                    castString, numString = typeD.split(':')[1].split(',')
+                    if castString == 'float':
+                        num = int(numString)
+                        formatString = '(%s)' % ((num - 1) * '%g, ' + '%g')
+                        widget.SetValue(formatString % val)
+
+                    else:
+                        # some other tuple
+                        widget.SetValue(str(val))
+                        
             elif configTuple[3] == 'checkbox': # checkbox
                 widget.SetValue(bool(val))
+
             else: # choice
                 widget.SetStringSelection(str(val))
 
