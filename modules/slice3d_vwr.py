@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.28 2003/03/04 15:25:13 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.29 2003/03/04 18:00:53 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -57,8 +57,7 @@ class slice3d_vwr(moduleBase,
         self._current_cursors = []
         # the renderers corresponding to the render windows
         self._threedRenderer = None
-        self._ortho1Renderer = None
-        self._ortho2Renderer = None
+        self._orthoRenderers = [None for i in range(2)]
 
         # list of selected points (we can make this grow or be overwritten)
         self._selectedPoints = []
@@ -96,9 +95,9 @@ class slice3d_vwr(moduleBase,
 
         self._current_cursors = [[0,0,0,0] for i in self._ipws]
 
-        # create orthoView pipelines
-        self._orthoViews = [{'planeSource' : vtk.vtkPlaneSource(),
-                             'planeActor' : vtk.vtkActor(),
+        # create 2 empty orthoView pipelines
+        self._orthoViews = [{'planeSource' : None,
+                             'planeActor' : None,
                              'overlayPlaneSources' : [],
                              'overlayPlaneActors' :[],
                              'ipwIdx' : -1} for i in range(2)]
@@ -130,8 +129,7 @@ class slice3d_vwr(moduleBase,
 
         # take care of all our bindings to renderers
         del self._threedRenderer
-        del self._ortho1Renderer
-        del self._ortho2Renderer
+        del self._orthoRenderers
 
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
@@ -324,7 +322,9 @@ class slice3d_vwr(moduleBase,
                 oid = input_stream.AddObserver('ModifiedEvent',
                                                self.inputModifiedCallback)
                 self._inputs[idx]['observerID'] = oid
-                
+
+                # create the applicable orthoViews
+                self._createOrthoViews()
 
                 self._reset()
 
@@ -356,6 +356,43 @@ class slice3d_vwr(moduleBase,
 # utility methods
 #################################################################
 
+    def _connectOrthoViewToIPW(self, orthoIdx, ipwIdx):
+        """Connect the orthoIdx'th orthoView to the ipwIdx'th IPW.
+        """
+
+        if self._ipws[ipwIdx].GetInput():
+            orthoView = self._orthoViews[orthoIdx]
+            orthoView['ipwIdx'] = ipwIdx
+            texture = self._ipws[ipwIdx].GetTexture()
+            orthoView['planeActor'].SetTexture(texture)
+        
+    def _createOrthoViews(self):
+        """Create the orthoIdx'th ortho view pipeline and attach it to
+        the applicable renderer.
+
+        This will only do something if there's a corresponding IPW.
+        See also:
+        """
+
+        if not self._ipws[0].GetInput():
+            return
+
+        for orthoIdx in range(len(self._orthoViews)):
+            orthoView = self._orthoViews[orthoIdx]
+            orthoView['planeSource'] = vtk.vtkPlaneSource()
+            orthoView['planeActor'] = vtk.vtkActor()
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInput(orthoView['planeSource'].GetOutput())
+
+            orthoView['planeActor'].SetMapper(mapper)
+
+            if orthoView['ipwIdx'] == -1:
+                orthoView['ipwIdx'] = orthoIdx
+
+            self._connectOrthoViewToIPW(orthoIdx, orthoView['ipwIdx'])
+            
+            self._orthoRenderers[orthoIdx].AddActor(orthoView['planeActor'])
+
     def _create_window(self):
         import modules.resources.python.slice3d_vwr_frame
         reload(modules.resources.python.slice3d_vwr_frame)
@@ -375,15 +412,14 @@ class slice3d_vwr(moduleBase,
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
         self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
-        self._ortho1Renderer = vtk.vtkRenderer()
-        self._ortho1Renderer.SetBackground(0.5, 0.5, 0.5)
-        self._viewFrame.ortho1RWI.GetRenderWindow().AddRenderer(self.
-                                                               _ortho1Renderer)
-        self._ortho2Renderer = vtk.vtkRenderer()
-        self._ortho2Renderer.SetBackground(0.5, 0.5, 0.5)
-        self._viewFrame.ortho2RWI.GetRenderWindow().AddRenderer(self.
-                                                               _ortho2Renderer)
-
+        
+        orthoRWIs = [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]
+        for orthoIdx in range(len(self._orthoRenderers)):
+            self._orthoRenderers[orthoIdx] = vtk.vtkRenderer()
+            self._orthoRenderers[orthoIdx].SetBackground(0.5, 0.5, 0.5)
+            rw = orthoRWIs[orthoIdx].GetRenderWindow()
+            rw.AddRenderer(self._orthoRenderers[orthoIdx])
+        
         # event handlers for the global control buttons
         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
                    lambda e, pw=self._viewFrame, s=self,
@@ -655,12 +691,35 @@ class slice3d_vwr(moduleBase,
         # make sure the overlays follow  suit
         self._reset_overlays()
 
+        # and the orthos
+        self._resetOrthoView(0)
+        self._resetOrthoView(1)        
+
         # whee, thaaaar she goes.
         self._viewFrame.threedRWI.Render()
 
         # now also make sure that the notebook with slice config is updated
         self._acs_nb_page_changed_cb(None)
 
+    def _resetOrthoView(self, orthoIdx):
+        """Once the orthoView has been connected to a particular IPW, this
+        method will make sure that the camera points orthogonally at it.
+        """
+        
+        # now we know the plane geometry is synced with the IPW
+        self._syncOrthoViewWithIPWs(orthoIdx)
+        planeSource = self._orthoViews[orthoIdx]['planeSource']
+        # let's setup the camera
+        icam = self._orthoRenderers[orthoIdx].GetActiveCamera()
+        icam.SetPosition(planeSource.GetCenter()[0],
+                         planeSource.GetCenter()[1], 10)
+        icam.SetFocalPoint(planeSource.GetCenter())
+        icam.OrthogonalizeViewUp()
+        icam.SetViewUp(0,1,0)
+        icam.SetClippingRange(1,11)
+        #icam.SetParallelScale()
+        icam.ParallelProjectionOn()
+        
     def _reset_overlays(self):
         if self._overlay_ipws:
             lut = vtk.vtkLookupTable()            
@@ -686,6 +745,9 @@ class slice3d_vwr(moduleBase,
                 ipw.InteractionOff()
 
             self._syncOverlays()
+
+
+        
         
     def _storeSurfacePoint(self, pointId, actor):
         polyData = actor.GetMapper().GetInput()
