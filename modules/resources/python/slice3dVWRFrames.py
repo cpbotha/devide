@@ -23,6 +23,8 @@ class MainFrame(wxFrame):
         self.pointsDeselectAllButton = wxButton(self.notebook_1_pane_1_copy, self.pointsDeselectAllButtonId , "Deselect all")
         self.pointsRemoveButtonId  =  wxNewId()
         self.pointsRemoveButton = wxButton(self.notebook_1_pane_1_copy, self.pointsRemoveButtonId , "Remove")
+        self.pointInteractionCheckBoxId  =  wxNewId()
+        self.pointInteractionCheckBox = wxCheckBox(self.notebook_1_pane_1_copy, self.pointInteractionCheckBoxId , "3D Point Interaction")
         self.voiPanel.widgetEnabledCboxId  =  wxNewId()
         self.voiPanel.widgetEnabledCbox = wxCheckBox(self.voiPanel, self.voiPanel.widgetEnabledCboxId , "Widget enabled")
         self.label_7_copy_copy = wxStaticText(self.voiPanel, -1, "Absolute bounds")
@@ -72,7 +74,7 @@ class MainFrame(wxFrame):
         self.spointsGrid.SetColLabelValue(0, "World")
         self.spointsGrid.SetColLabelValue(1, "Discrete")
         self.spointsGrid.SetColLabelValue(2, "Value")
-        self.spointsGrid.SetSize((394, 131))
+        self.spointsGrid.SetSize((394, 140))
         self.surfacePickActionRB.SetSelection(0)
         self.sliceNameChoice.SetSelection(0)
         self.sliceEnabledCheckBox.SetValue(1)
@@ -102,9 +104,10 @@ class MainFrame(wxFrame):
         sizer_2.Add(self.threedRWI, 1, wxEXPAND, 0)
         sizer_8.Add(sizer_2, 1, wxEXPAND, 0)
         sizer_10_copy.Add(self.spointsGrid, 1, wxEXPAND, 0)
-        sizer_11_copy.Add(self.pointsSelectAllButton, 0, 0, 0)
-        sizer_11_copy.Add(self.pointsDeselectAllButton, 0, 0, 0)
-        sizer_11_copy.Add(self.pointsRemoveButton, 0, 0, 0)
+        sizer_11_copy.Add(self.pointsSelectAllButton, 0, wxALIGN_CENTER_VERTICAL, 0)
+        sizer_11_copy.Add(self.pointsDeselectAllButton, 0, wxALIGN_CENTER_VERTICAL, 0)
+        sizer_11_copy.Add(self.pointsRemoveButton, 0, wxALIGN_CENTER_VERTICAL, 0)
+        sizer_11_copy.Add(self.pointInteractionCheckBox, 0, wxALIGN_CENTER_VERTICAL, 0)
         sizer_10_copy.Add(sizer_11_copy, 0, wxEXPAND, 0)
         self.notebook_1_pane_1_copy.SetAutoLayout(1)
         self.notebook_1_pane_1_copy.SetSizer(sizer_10_copy)
@@ -187,8 +190,8 @@ class orthoViewFrame(wxFrame):
 
     def __set_properties(self):
         # begin wxGlade: orthoViewFrame.__set_properties
-        self.SetTitle("Orthogonal Slice Viewer")
-        self.RWI.SetSize((479, 359))
+        self.SetTitle("frame_2")
+        self.RWI.SetSize((-1, -1))
         # end wxGlade
 
     def __do_layout(self):

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.4 2003/03/12 22:30:05 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.5 2003/03/13 16:28:01 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -862,6 +862,22 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                    self._viewFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
 
+        def pointInteractionCheckBoxCallback(event):
+            val = self._viewFrame.pointInteractionCheckBox.GetValue()
+            if val:
+                for selectedPoint in self._selectedPoints:
+                    if selectedPoint['point_widget']:
+                        selectedPoint['point_widget'].On()
+                        
+            else:
+                for selectedPoint in self._selectedPoints:
+                    if selectedPoint['point_widget']:
+                        selectedPoint['point_widget'].Off()
+
+        EVT_CHECKBOX(self._viewFrame,
+                     self._viewFrame.pointInteractionCheckBoxId,
+                     pointInteractionCheckBoxCallback)
+
         # event logic for the voi panel
 
         def widgetEnabledCBoxCallback(event):
@@ -1188,6 +1204,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         pw.AllOff()
         pw.On()
 
+
         ss = vtk.vtkSphereSource()
         #bounds = inputData.GetBounds()
 
@@ -1232,6 +1249,15 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                        s=self:
                        s._pointWidgetInteractionCallback(pw, evt_name))
         pw.AddObserver('EndInteractionEvent', pw_ei_cb)
+
+
+        # after we've added observers, we get to switch the widget on or
+        # off; but it HAS to be on when the observers are added
+        if self._viewFrame.pointInteractionCheckBox.GetValue():
+            pw.On()
+        else:
+            pw.Off()
+        
         
         # store the cursor (discrete coords) the coords and the actor
         self._selectedPoints.append({'discrete' : tuple(discrete),
