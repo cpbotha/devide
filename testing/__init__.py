@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.5 2004/03/22 21:57:38 cpbotha Exp $
+# $Id: __init__.py,v 1.6 2004/04/20 08:39:48 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -61,8 +61,8 @@ class graphEditorVolumeTestBase(graphEditorTestBase):
 
         # then configure the doubleThreshold with the correct thresholds
         cfg = dtmod.getConfig()
-        cfg.lt = -99999.00
-        cfg.ut = 0.0
+        cfg.lowerThreshold = -99999.00
+        cfg.upperThreshold = 0.0
         dtmod.setConfig(cfg)
         
         # now connect them all
