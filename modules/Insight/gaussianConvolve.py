@@ -1,4 +1,4 @@
-# $Id: gaussianConvolve.py,v 1.1 2004/03/26 14:30:32 cpbotha Exp $
+# $Id: gaussianConvolve.py,v 1.2 2004/04/13 20:34:24 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -9,9 +9,9 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
     """Convolves input with Gaussian (or first or second derivative of
-    Gaussian.
+    Gaussian.  The convolution is implemented as an IIR filter.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     _orders = ['Zero', 'First', 'Second']

@@ -1,4 +1,4 @@
-# $Id: gradientMagnitudeGaussian.py,v 1.2 2004/03/25 12:32:15 cpbotha Exp $
+# $Id: gradientMagnitudeGaussian.py,v 1.3 2004/04/13 20:34:24 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -9,9 +9,9 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
     """Calculates gradient magnitude of an image by convolving with the
-    derivative of a Guassian.
+    derivative of a Gaussian.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
