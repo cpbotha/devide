@@ -1,7 +1,8 @@
-# $Id: ifdocRDR.py,v 1.1 2003/08/20 13:25:43 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.2 2003/08/20 15:41:50 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
+import re
 import vtk
 
 class ifdocRDR(moduleBase, filenameViewModuleMixin):
@@ -29,7 +30,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         
 
     def close(self):
-        pass
+        filenameViewModuleMixin.close(self)
 
     def getInputDescriptions(self):
         return ()
@@ -72,7 +73,40 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         self._setViewFrameFilename(self._config.dspFilename)
     
     def executeModule(self):
-        pass
+        # read in the dsp file
+        dspFile = open(self._config.dspFilename)
+        dspLines = dspFile.readlines()
+
+        # build up patternObjects for the nodes that we want
+        nodeNumberDict = {44 : 'SC', 45 : 'AC', 47 : 'TS', 48 : 'AI'}
+
+        # build up global node pattern object (we'll check each line with
+        # this first!)
+        poX = re.compile(
+            'X\s+([0-9]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s+([0-9\.\-]+)\s*')
+        
+        # go through the whole list, checking for the various patterns
+        nodeCoords = {}
+        for dspLine in dspLines:
+            mo = poX.match(dspLine)
+            if mo:
+                try:
+                    nodeNumber = int(mo.groups()[0])
+                        
+                    if nodeNumber in nodeNumberDict:
+                        # convert the coords to floats
+                        coords = tuple([float(e) for e in mo.groups()[1:4]])
+                        nodeCoords[nodeNumber] = coords
+                        
+                except ValueError:
+                    # could not cast nodeNumber to int
+                    pass
+                
+        # now we have all the required node numbers in our thingy (tee hee)
+        
+                
+            
+        
             
     def view(self, parent_window=None):
         # if the window is already visible, raise it
