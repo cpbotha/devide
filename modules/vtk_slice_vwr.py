@@ -1,4 +1,7 @@
-# $Id: vtk_slice_vwr.py,v 1.6 2002/03/23 00:52:53 cpbotha Exp $
+# FIXME FIXME: you have to give the reslice origin!!!
+# just use the matrices from dscas1
+
+# $Id: vtk_slice_vwr.py,v 1.7 2002/03/24 20:52:39 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
@@ -25,7 +28,9 @@ class vtk_slice_vwr(module_base):
         self.ortho_pipes = [[] for i in range(self.num_orthos)]
 
         # axial, sagittal, coronal
-        self.IntialResliceAxesDirectionCosines = [(1,0,0, 0,1,0, 0,0,1), (0,1,0, 0,0,1, 1,0,0), (1,0,0, 0,0,1, 0,-1,0)]
+        self.IntialResliceAxes = [(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), # axial
+				  (0,1,0, 0,0,1, 1,0,0),
+				  (1,0,0, 0,0,1, 0,-1,0)]
 	
 	self.create_window()
 	
