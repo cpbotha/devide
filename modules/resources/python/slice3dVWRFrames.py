@@ -196,7 +196,8 @@ class orthoViewFrame(wxFrame):
 
     def __set_properties(self):
         # begin wxGlade: orthoViewFrame.__set_properties
-        self.SetTitle("frame_2")
+        self.SetTitle("Ortho View")
+        self.SetSize((480, 433))
         self.RWI.SetSize((-1, -1))
         # end wxGlade
 
@@ -213,8 +214,6 @@ class orthoViewFrame(wxFrame):
         sizer_4.Add(self.panel_2, 1, wxEXPAND, 0)
         self.SetAutoLayout(1)
         self.SetSizer(sizer_4)
-        sizer_4.Fit(self)
-        sizer_4.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 
