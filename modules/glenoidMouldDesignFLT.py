@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.14 2003/03/25 10:40:09 cpbotha Exp $
+# $Id: glenoidMouldDesignFLT.py,v 1.15 2003/03/25 16:11:12 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -173,14 +173,20 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                     curLineId = startLineId
                     
                     onGlenoid = True
+                    offCount = 0
                     while onGlenoid:
                         contour.GetCellPoints(curLineId, ptIds)
+                        if ptIds.GetNumberOfIds() != 2:
+                            print 'aaaaaaaaaaaaack!'
+                            
                         ptId0 = ptIds.GetId(0)
                         ptId1 = ptIds.GetId(1)
                         nextPointId = [ptId0, ptId1]\
                                       [bool(ptId0 == curStartPtId)]
 
                         contour.GetPointCells(nextPointId, cellIds)
+                        if cellIds.GetNumberOfIds() != 2:
+                            print 'aaaaaaaaaaaaaaaack2!'
                         cId0 = cellIds.GetId(0)
                         cId1 = cellIds.GetId(1)
                         nextLineId = [cId0, cId1]\
@@ -194,29 +200,27 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                         # get the current point
                         pt0 = contour.GetPoints().GetPoint(curStartPtId)
 
-                        # stop criterion here
-                        #if abs(vtk.vtkMath.Dot(giaN, n)) > 0.4:
-                        if vtk.vtkMath.Dot(giaN, n) < -0.5:
-                            # store the real ptid, point coords and normal
-                            lines[lineIdx].append((curStartPtId,
+                        # store the real ptid, point coords and normal
+                        lines[lineIdx].append((curStartPtId,
                                                tuple(pt0), tuple(n)))
-                            
-                            # get ready for next iteration
-                            curStartPtId = nextPointId
-                            curLineId = nextLineId
-                            
-                        else:
-                            # we've fallen off the glenoid, really
-                            # (we should actually only fall off if the last
-                            # 5 points have been invalid...)
 
-                            # seeing that we've fallen off, remove the previous
-                            # 10 points... actually, we should remove the
-                            # previous 5 millimetres, yeah?
-                            del lines[lineIdx][-10:]
-                            onGlenoid = False
+                        
+                        if vtk.vtkMath.Dot(giaN, n) > -0.7:
+                            # this means that this point could be falling off
+                            # the glenoid, let's make a note of the incident
+                            offCount += 1
+                            # if the last N points have been "off" the glenoid,
+                            # it could mean we've really fallen off!
+                            if offCount >= 20:
+                                del lines[lineIdx][-30:]
+                                onGlenoid = False
+
+                        # get ready for next iteration
+                        curStartPtId = nextPointId
+                        curLineId = nextLineId
+
                 
-                    # closes: for i in range(20)
+                    # closes: while onGlenoid
                     lineIdx += 1
 
                 # closes: for startLineId in twoLineIds
@@ -284,7 +288,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
                     capPolyData.SetPoints(capHousePoints)
                     capPolyData.SetPolys(newPolyArray)
                         
-                
+                    # FIXME: put back
                     stuff.append(capPolyData)
             
             # closes: for i in range(4)
@@ -292,6 +296,7 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
             # copy everything to output (for testing)
             for thing in stuff:
                 ap.AddInput(thing)
+            #ap.AddInput(stuff[0])
  
             # seems to be important for vtkAppendPolyData
             ap.Update()
@@ -416,8 +421,8 @@ class glenoidMouldDesignFLT(moduleBase, noConfigModuleMixin):
 
             # we have to transform this fucker as well
             csTrfm = vtk.vtkTransform()
-            # go half the height + 1mm upwards from surface
-            drillGuideCentre = - 1.0 * self.drillGuideHeight / 2.0
+            # go half the height + 2mm upwards from surface
+            drillGuideCentre = - 1.0 * self.drillGuideHeight / 2.0 - 2
             cs1Centre = map(operator.add,
                             self._giaGlenoid,
                             [drillGuideCentre * i for i in giaN])
