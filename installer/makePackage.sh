@@ -1,5 +1,5 @@
-#!/bin/bash
-# $Id: makePackage.sh,v 1.13 2004/06/21 16:21:10 cpbotha Exp $
+#!/bin/sh
+# $Id: makePackage.sh,v 1.14 2005/01/12 22:49:14 cpbotha Exp $
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`

@@ -1,5 +1,5 @@
-#!/bin/bash
-# $Id: makeRelease.sh,v 1.6 2005/01/12 22:32:52 cpbotha Exp $
+#!/bin/sh
+# $Id: makeRelease.sh,v 1.7 2005/01/12 22:49:14 cpbotha Exp $
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -11,8 +11,11 @@
 #    (depending on switch)
 # 5. also run makensis on Windows to build the installer
 
-# requirements: cygwin (we need bash, sed, uname, date)
-# parameter(s): "bash makeRelease noitk" won't build itk binaries.
+# extra requirements: cygwin/mingw (we need sh, sed, uname, date)
+#                     zip (from info-zip)
+#                     NSIS installer 2.0 or later
+# parameter(s): "sh makeRelease noitk" won't build itk binaries.
+
 # TODO: rewrite in Python damnit!
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
@@ -23,9 +26,9 @@ cd `dirname $0`
 cd ../utils
 # then use our python script to make sure all is up to date
 if [ "$1" != noitk ]; then
-python updateAll.py --no-itk
-else
 python updateAll.py
+else
+python updateAll.py --no-itk
 fi
 # go back to the devide dir
 cd ../
@@ -33,7 +36,7 @@ cd ../
 # make documentation
 echo "Building documentation..."
 cd docs/help/source
-bash ./makeHtmlHelp.sh
+sh ./makeHtmlHelp.sh
 cd ../../../
 
 # now make VTK and ITK version
@@ -44,7 +47,7 @@ cat defaults.py | sed -e 's/USE_INSIGHT *= *.*/USE_INSIGHT = False/g' > defaults
 cp defaultsTemp.py defaults.py
 
 cd installer
-bash ./makePackage.sh
+sh ./makePackage.sh
 if [ `uname` != Linux ]; then
 c:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`.exe
@@ -65,7 +68,7 @@ cat defaults.py | sed -e 's/USE_INSIGHT *= *.*/USE_INSIGHT = True/g' > defaultsT
 cp defaultsTemp.py defaults.py
 
 cd installer
-bash ./makePackage.sh
+sh ./makePackage.sh
 if [ `uname` != Linux ]; then
 c:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`itk.exe
