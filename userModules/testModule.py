@@ -19,7 +19,7 @@ class testModule(moduleBase, noConfigModuleMixin):
         self._testObject0b.SetInput(self._testObject0.GetOutput())
         self._testObject1 = vtk.vtkCurvatures()
         self._testObject1.SetCurvatureTypeToMean()
-        self._testObject1.SetInput(self._testObject0b.GetOutput())
+        self._testObject1.SetInput(self._testObject0.GetOutput())
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
