@@ -1,5 +1,5 @@
 from moduleMixins import simpleVTKClassModuleBase
-import vtkLocalPython
+import vtktudImagingPython
 
 class myImageExtendPad(simpleVTKClassModuleBase):
     """This is the minimum you need to wrap a single VTK object.  This
@@ -15,5 +15,5 @@ class myImageExtendPad(simpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         simpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtkLocalPython.vtkMyImageExtendPad(), 'Extend image by clipping.',
+            vtktudImagingPython.vtkMyImageExtendPad(), 'Extend image by clipping.',
             ('vtkImageData',), ('Extended vtkImageData',))

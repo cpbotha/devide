@@ -2,7 +2,7 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import vtkLocalPython
+import vtktudImagingPython
 
 class imageGradientStructureTensor(moduleBase, noConfigModuleMixin):
 
@@ -11,7 +11,7 @@ class imageGradientStructureTensor(moduleBase, noConfigModuleMixin):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
-        self._imageGradientStructureTensor = vtkLocalPython.vtkImageGradientStructureTensor()
+        self._imageGradientStructureTensor = vtktudImagingPython.vtkImageGradientStructureTensor()
         
 #        moduleUtils.setupVTKObjectProgress(self, self._clipPolyData,
 #                                          'Calculating normals')

@@ -1,5 +1,5 @@
 from moduleMixins import simpleVTKClassModuleBase
-import vtkLocalPython
+import vtktudImagingPython
 
 class imageExtentUnionizer(simpleVTKClassModuleBase):
     """This is the minimum you need to wrap a single VTK object.  This
@@ -15,5 +15,5 @@ class imageExtentUnionizer(simpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         simpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtkLocalPython.vtkImageExtentUnionizer(), 'Image Extent Unionizer.',
+            vtktudImagingPython.vtkImageExtentUnionizer(), 'Image Extent Unionizer.',
             ('vtkImageData',), ('vtkImageData',))

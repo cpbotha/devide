@@ -1,14 +1,14 @@
-# $Id: gaussianKernel.py,v 1.1 2005/01/04 14:32:31 joris Exp $
+# $Id: gaussianKernel.py,v 1.2 2005/01/07 12:17:49 joris Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
-import vtkLocalPython
+import vtktudCommonPython
 
 class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
     """First test of a gaussian implicit kernel
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -32,7 +32,7 @@ class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.__init__(self, configList)
         
         # now create the necessary VTK modules
-        self._gaussianKernel = vtkLocalPython.vtkGaussianKernel()
+        self._gaussianKernel = vtktudCommonPython.vtkGaussianKernel()
 
         # setup progress for the processObject
 #        moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,

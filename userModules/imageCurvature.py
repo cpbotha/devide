@@ -2,7 +2,7 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import vtkLocalPython
+import vtktudImagingPython
 
 class imageCurvature(moduleBase, noConfigModuleMixin):
 
@@ -11,7 +11,7 @@ class imageCurvature(moduleBase, noConfigModuleMixin):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
-        self._imageCurvature = vtkLocalPython.vtkImageCurvature()
+        self._imageCurvature = vtktudImagingPython.vtkImageCurvature()
         
 #        moduleUtils.setupVTKObjectProgress(self, self._clipPolyData,
 #                                          'Calculating normals')
@@ -37,7 +37,7 @@ class imageCurvature(moduleBase, noConfigModuleMixin):
         del self._imageCurvature
 
     def getInputDescriptions(self):
-        return ('vtkImageData', 'vtkImageData', 'vtkImageData','vtkImageData', 'vtkImageData', 'vtkImageData','vtkImageData', 'vtkImageData', 'vtkImageData')
+        return ('vtkImageData', 'vtkImageData', 'vtkImageData','vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData')
 
     def setInput(self, idx, inputStream):
         self._imageCurvature.SetInput(idx, inputStream)

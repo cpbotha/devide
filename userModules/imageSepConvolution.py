@@ -1,7 +1,7 @@
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
-import vtkLocalPython
+import vtktudImagingPython
 import wx
 
 class imageSepConvolution(scriptedConfigModuleMixin, moduleBase):
@@ -13,7 +13,7 @@ class imageSepConvolution(scriptedConfigModuleMixin, moduleBase):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
 
-        self._imageSepConvolution = vtkLocalPython.vtkImageSepConvolution()
+        self._imageSepConvolution = vtktudImagingPython.vtkImageSepConvolution()
 
 #        moduleUtils.setupVTKObjectProgress(self, self._clipper,
 #                                           'Reading PNG images.')
