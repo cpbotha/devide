@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.71 2004/03/22 14:20:41 cpbotha Exp $
+# $Id: graphEditor.py,v 1.72 2004/03/22 21:21:04 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -239,7 +239,7 @@ class graphEditor:
         if mlc.GetSelectedItemCount():
             for idx in range(mlc.GetItemCount()):
                 if mlc.GetItemState(
-                    idx, wxLIST_STATE_SELECTED) == wxLIST_STATE_SELECTED:
+                    idx, wxLIST_STATE_SELECTED) & wxLIST_STATE_SELECTED:
                     selectedFound = True
                     break
 
@@ -628,7 +628,8 @@ class graphEditor:
         clc = self._graphFrame.moduleCatsListCtrl
         if clc.GetSelectedItemCount():
             for idx in range(clc.GetItemCount()):
-                if clc.GetItemState(idx, wxLIST_STATE_SELECTED):
+                if clc.GetItemState(idx, wxLIST_STATE_SELECTED) &\
+                       wxLIST_STATE_SELECTED:
                     selectedCats.append(clc.GetItemText(idx))
 
         selectedModuleNames = {}
@@ -743,7 +744,7 @@ class graphEditor:
             if mlc.GetSelectedItemCount():
                 for idx in range(mlc.GetItemCount()):
                     if mlc.GetItemState(
-                        idx, wxLIST_STATE_SELECTED) == wxLIST_STATE_SELECTED:
+                        idx, wxLIST_STATE_SELECTED) & wxLIST_STATE_SELECTED:
                         # place just this one
                         self.canvasDropText(event.GetX(), event.GetY(),
                                             self._selectedModulesList[idx][1])
