@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.21 2003/08/07 16:48:11 cpbotha Exp $
+# $Id: tdObjects.py,v 1.22 2003/08/07 22:42:40 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -91,18 +91,24 @@ class tdObjects:
         if not sliceDirection._ipws:
             # we need a plane definition to latch to!
             return
-        
-        if 'axisPoints' not in self._tdObjectsDict[tdObject]:
+
+        objectDict = self._tdObjectsDict[tdObject]
+        if 'axisPoints' not in objectDict:
             # and we do need an axis
             return
 
-        # FIXME: if motion is active, switch it off here and on
-        # at the end of this method
-
+        # switch off motion as we're going to be moving things around
+        # ourselves and don't want to muck about with the boxwidget
+        # transform... (although we technically could)
+        motionSwitched = False
+        if self.getObjectMotion(tdObject):
+            self._setObjectMotion(tdObject, False)
+            motionSwitched = True
+        
         # set up some convenient bindings
         ipw = sliceDirection._ipws[0]
-        axisLineActor = self._tdObjectsDict[tdObject]['axisLineActor']
-        axisPoints = self._tdObjectsDict[tdObject]['axisPoints']
+        axisLineActor = objectDict['axisLineActor']
+        axisPoints = objectDict['axisPoints']
 
         # 1. okay, first determine the current world coordinates of the
         #    axis end points by transforming the stored axisPoints with
@@ -112,12 +118,12 @@ class tdObjects:
         axisLineActor.GetMatrix(axisMatrix)
 
         twoPoints = []
-        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[0] + (1,)))
-        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[1] + (1,)))
+        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[0] + (1,))[0:3])
+        twoPoints.append(axisMatrix.MultiplyPoint(axisPoints[1] + (1,))[0:3])
         
         # 2. calculate vertical translation between the first axis point
         #    and the plane that we are going to lock to
-        
+
         po = ipw.GetOrigin()
         tpo = map(operator.sub, twoPoints[0], po)
         # "vertical" distance
@@ -167,17 +173,20 @@ class tdObjects:
             -rotAngle, rotAxis[0], rotAxis[1], rotAxis[2])
         newTransform.Translate(tp0n)
 
-        # FIXME: continue here 
+        theProp = self.findPropByObject(tdObject)
         newTransform.Concatenate(
-            objectDict['vtkActor'].GetMatrix())
+            theProp.GetMatrix())
 
-        for prop in (objectDict['vtkActor'], objectDict['axisActor']):
+        for prop in (theProp, objectDict['axisLineActor']):
             prop.SetOrientation(
                 newTransform.GetOrientation())
             prop.SetScale(
                 newTransform.GetScale())
             prop.SetPosition(
                 newTransform.GetPosition())
+
+        if motionSwitched:
+            self._setObjectMotion(tdObject, True)
         
 
     def _bindEvents(self):
@@ -256,6 +265,11 @@ class tdObjects:
             return self._tdObjectsDict[tdObject]['colour']
         except:
             return (0.0, 1.0, 0.0)
+
+    def getObjectMotion(self, tdObject):
+        """Returns true if motion has been activated for the tdObject.
+        """
+        return self._tdObjectsDict[tdObject]['motion']
 
     def _handlerObjectSelectAll(self, event):
         for row in range(self._grid.GetNumberRows()):
@@ -588,6 +602,19 @@ class tdObjects:
             itemsIdx += 1
 
         return foundObjects
+
+    def findPropByObject(self, tdObject):
+        """Given a tdObject, return the corresponding prop, which could
+        be a vtkActor or a vtkVolume.
+        """
+
+        t = self._tdObjectsDict[tdObject]['type']
+        if t == 'vtkVolume':
+            return tdObject
+        if t == 'vtkPolyData':
+            return self._tdObjectsDict[tdObject]['vtkActor']
+        else:
+            return KeyError
 
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
         # make sure the transform is up to date
