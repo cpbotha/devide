@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.6 2003/10/16 13:49:21 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.7 2003/12/11 15:20:09 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -53,7 +53,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         moduleBase.__init__(self, moduleManager)
         colourDialogMixin.__init__(
             self, moduleManager.get_module_view_parent_window())
-        self._numDataInputs = 5
+        self._numDataInputs = 7
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'inputData' : None,
                          'observerID' : -1,
@@ -315,12 +315,15 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
 
         # ends: elif hasattr GetClassName
         elif hasattr(inputStream, 'd3type'):
+            print "has d3type"
             if inputStream.d3type == 'namedWorldPoints':
+                print "d3type correct"
                 # add these to our selected points!
                 self._inputs[idx]['Connected'] = 'namedWorldPoints'
-                for pointName in inputStream:
+                for point in inputStream:
                     self.selectedPoints._storePoint(
-                        (0,0,0), inputStream[pointName], 0.0, pointName)
+                        (0,0,0), point['world'], 0.0,
+                        point['name'])
 
     def getOutputDescriptions(self):
         return ('Selected points',

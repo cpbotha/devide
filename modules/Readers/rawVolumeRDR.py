@@ -17,6 +17,8 @@ class rawVolumeRDR(moduleBase,
 
 	self._reader = vtk.vtkImageReader()
         self._reader.SetFileDimensionality(3)
+        # FIXME: make configurable (or disable)
+        self._reader.SetFileLowerLeft(1)        
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading raw volume data')
