@@ -32,6 +32,8 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         self._config.colour = (1.0, 0.937, 0.859)
         # high quality, doh
         self._config.renderMode = 0
+        # default.  if you don't understand, forget about it. :)
+        self._config.gradientImageIsGradient = 0
 
         # create the gui
         self._viewFrame = None
@@ -104,6 +106,11 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
         # this we can get
         self._config.renderMode = self._splatMapper.GetRenderMode()
+
+        # this too
+        self._config.gradientImageIsGradient = self._splatMapper.\
+                                               GetShellExtractor().\
+                                               GetGradientImageIsGradient()
         
 
     def configToLogic(self):
@@ -139,6 +146,10 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         # set the rendering mode
         self._splatMapper.SetRenderMode(self._config.renderMode)
 
+        # set the gradientImageIsGradient thingy
+        self._splatMapper.GetShellExtractor().SetGradientImageIsGradient(
+            self._config.gradientImageIsGradient)
+
     def viewToConfig(self):
         # get the threshold
         try:
@@ -168,6 +179,11 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         self._config.renderMode = self._viewFrame.\
                                   renderingModeChoice.GetSelection()
 
+        self._config.gradientImageIsGradient = \
+                                             self._viewFrame.\
+                                             gradientImageIsGradientCheckBox.\
+                                             GetValue()
+
     def configToView(self):
         self._viewFrame.thresholdText.SetValue("%.2f" %
                                                (self._config.threshold))
@@ -175,10 +191,11 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
             "(%.3f, %.3f, %.3f)" % self._config.colour)
         self._viewFrame.renderingModeChoice.SetSelection(
             self._config.renderMode)
+        self._viewFrame.gradientImageIsGradientCheckBox.SetValue(
+            self._config.gradientImageIsGradient)
 
     def executeModule(self):
         self._splatMapper.Update()
-
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
