@@ -57,7 +57,7 @@
             <border>2</border>
           </object>
           <object class="sizeritem">
-            <object class="wxButton" name="MV_ID_PIPELINE">
+            <object class="wxButton" name="MV_ID_VTK_PIPELINE">
               <label>Pipeline</label>
               <tooltip>Browse the underlying VTK pipeline.</tooltip>
             </object>

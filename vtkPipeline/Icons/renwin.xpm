@@ -1,7 +1,7 @@
 /* XPM */
 static char *renwin[] = {
 /* columns rows colors chars-per-pixel */
-"17 17 11 1",
+"16 16 11 1",
 "  c black",
 ". c navy",
 "X c blue",
@@ -14,21 +14,20 @@ static char *renwin[] = {
 "% c #c0c0c0",
 "& c white",
 /* pixels */
-"                 ",
-" ++++++++++++++++",
-" +O             o",
-" +O     XXX     o",
-" +O  @% ... @%  o",
-" +O %%%%%%%%%%% o",
-" +O @@@@@@@@@@@ o",
-" +O @$$$$$$$ %& o",
-" +O @$$$$$$$  & o",
-" +O @$$$$$$$ #& o",
-" +O @$$$$$$$ #& o",
-" +O @$$$$$$$  & o",
-" +O @$$$$$$$ @& o",
-" +O &&&&&&&&&&& o",
-" +O             o",
-" +OOOOOOOOOOOOOOo",
-" +ooooooooooooooo"
+"                ",
+" +++++++++++++++",
+" +O            o",
+" +O     XX     o",
+" +O  @% .. @%  o",
+" +O %%%%%%%%%% o",
+" +O @@@@@@@@@@ o",
+" +O @$$$$$$ %& o",
+" +O @$$$$$$ #& o",
+" +O @$$$$$$ #& o",
+" +O @$$$$$$  & o",
+" +O @$$$$$$ @& o",
+" +O &&&&&&&&&& o",
+" +O            o",
+" +OOOOOOOOOOOOOo",
+" +oooooooooooooo"
 };

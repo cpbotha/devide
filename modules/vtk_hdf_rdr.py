@@ -1,4 +1,4 @@
-# $Id: vtk_hdf_rdr.py,v 1.9 2002/04/29 16:57:34 cpbotha Exp $
+# $Id: vtk_hdf_rdr.py,v 1.10 2002/05/02 11:48:23 cpbotha Exp $
 
 from module_base import module_base
 from wxPython.wx import *
@@ -9,6 +9,7 @@ import vtkcpbothapython
 import module_utils
 
 from vtkPipeline.ConfigVtkObj import ConfigVtkObj
+from vtkPipeline.vtkPipeline import vtkPipelineBrowser
 
 class vtk_hdf_rdr(module_base):
     """dscas3 module for reading dscas HDF datasets.
@@ -96,6 +97,8 @@ class vtk_hdf_rdr(module_base):
         EVT_BUTTON(self._view_frame, XMLID('MV_ID_BROWSE'), self.fn_browse_cb)
         EVT_CHOICE(self._view_frame, XMLID('MV_ID_VTK_OBJECT_CHOICE'),
                    self.vtk_object_choice_cb)
+        EVT_BUTTON(self._view_frame, XMLID('MV_ID_VTK_PIPELINE'),
+                   self.vtk_pipeline_cb)
 
         # bind events to the standard cancel, sync, apply, execute, ok buttons
         module_utils.bind_CSAEO(self, self._view_frame)
@@ -127,6 +130,12 @@ class vtk_hdf_rdr(module_base):
 
                 cvo.configure(self._view_frame,
                               self._reader)
+
+    def vtk_pipeline_cb(self, event):
+        self.pipe_segment = vtkPipelineBrowser(self._view_frame, None,
+                                               (self._reader,))
+        self.pipe_segment.browse()
+        
         
 	
     

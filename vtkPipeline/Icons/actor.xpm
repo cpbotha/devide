@@ -1,22 +1,25 @@
 /* XPM */
 static char *actor[] = {
 /* columns rows colors chars-per-pixel */
-"18 13 3 1",
+"16 16 3 1",
 "  c #12151a",
 ". c #8fa7d1",
 "X c white",
 /* pixels */
-"XXXXXXXXXXXXXXXXXX",
-"X                X",
-"X .............. X",
-"X ....... ...... X",
-"X ......  ...... X",
-"X ...... . ..... X",
-"X ..... .. ..... X",
-"X .....    ..... X",
-"X ..... .. ..... X",
-"X .... .... .... X",
-"X .............. X",
-"X                X",
-"XXXXXXXXXXXXXXXXXX"
+"XXXXXXXXXXXXXXXX",
+"X              X",
+"X ............ X",
+"X ............ X",
+"X ...... ..... X",
+"X .....  ..... X",
+"X ..... . .... X",
+"X .... .. .... X",
+"X .... .. .... X",
+"X ....    .... X",
+"X .... .. .... X",
+"X ... .... ... X",
+"X ............ X",
+"X ............ X",
+"X              X",
+"XXXXXXXXXXXXXXXX"
 };

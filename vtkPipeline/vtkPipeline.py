@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.3 2002/04/30 01:25:17 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.4 2002/05/02 11:48:28 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -38,7 +38,7 @@ done by using the ConfigVtkObj class.
 """
 
 from wxPython.wx import *
-import string, re, types
+import os, string, re, types
 import ConfigVtkObj
 
 # set this to 1 if you want to see debugging messages - very useful if
@@ -57,6 +57,7 @@ icon_map = {'RenderWindow': 'renwin', 'Renderer': 'ren',
 	    'Coordinate': 'coord', 'Source': 'data', 
             'LookupTable': 'colormap', 'Reader': 'data',
             'Assembly': 'actor', 'Python': 'python', 'Dummy1': 'question'}
+
 
 def get_icon (vtk_obj):
     strng = vtk_obj.GetClassName ()[3:]
@@ -237,8 +238,6 @@ def item_activate_cb(parent_window, renwin, tree_ctrl, tree_event):
     if hasattr(obj, 'GetClassName'):
         conf = ConfigVtkObj.ConfigVtkObj(renwin)
         conf.configure(parent_window, obj)
-        
-
 
 class vtkPipelineBrowser:
     "Browses the VTK pipleline given a vtkRenderWindow."
@@ -266,6 +265,7 @@ class vtkPipelineBrowser:
                                      id=tree_id,
                                      size=wxSize(300,400),
                                      style=wxTR_HAS_BUTTONS)
+        
         EVT_TREE_ITEM_ACTIVATED(panel, tree_id,
                                 lambda e, pw=self._frame, rw=self.renwin,
                                 tc=self._tree_ctrl:
@@ -293,11 +293,31 @@ class vtkPipelineBrowser:
         top_sizer.Fit(self._frame)
         top_sizer.SetSizeHints(self._frame)
 
-        self._frame.Show(true)
+        #self._frame.Show(true)
+
+        ICONDIR = "Icons"
+
+        # Look for Icons subdirectory in the same directory as this module
+        try:
+            # handling frozen installs.
+            home, exe = os.path.split(sys.executable)
+            if string.lower(exe[:6]) == 'python':
+                _icondir = os.path.join(os.path.dirname(__file__), ICONDIR)
+            else: # frozen (added by Prabhu, I think?)
+                _icondir = os.path.join(home, ICONDIR)
+        except NameError:
+            # this probably means that __file__ didn't exist, and that
+            # we're being run directly, in which case we have to use
+            # argv[0] and ICONDIR to find the real icondir
+            _icondir = os.path.join(os.path.dirname(sys.argv[0]), ICONDIR)
+        if os.path.isdir(_icondir):
+            ICONDIR = _icondir
+        elif not os.path.isdir(ICONDIR):
+            raise RuntimeError, "can't find icon directory (%s)" % `ICONDIR`
 
         self._image_list = wxImageList(16,16)
-        for i in icon_map.keys():
-            self._image_list.Add(wxBitmap("Icons/" + icon_map[i] + ".xpm",
+        for i in icon_map.values():
+            self._image_list.Add(wxBitmap(os.path.join(ICONDIR, i + ".xpm"),
                                           wxBITMAP_TYPE_XPM))
         self._tree_ctrl.SetImageList(self._image_list)
 
@@ -306,13 +326,13 @@ class vtkPipelineBrowser:
         self.clear()
 
         if self._objs == None:
-            rw_idx = icon_map.keys().index("RenderWindow")
+            rw_idx = icon_map.values().index(icon_map['RenderWindow'])
             self._root = self._tree_ctrl.AddRoot(text="RenderWindow",
                                                  image=rw_idx)
             self._tree_ctrl.SetPyData(self._root, self.renwin)
             recursively_add_children(self._tree_ctrl, self._root)
         else:
-            im_idx = icon_map.keys().index("Python")
+            im_idx = icon_map.values().index(icon_map['Python'])
             self._root = self._tree_ctrl.AddRoot(text="Root",
                                                  image=im_idx)
             self._tree_ctrl.SetPyData(self._root, None)
@@ -326,12 +346,14 @@ class vtkPipelineBrowser:
                         text = "%s (%s)" % (icon[0],i.GetClassName())
                     else:
                         text = i.GetClassName()
-                    ai = self._tree_ctrl.AppendItem(self._root, text, img_idx)
+                    ai = self._tree_ctrl.AppendItem(parent=self._root,
+                                                    text=text, image=img_idx)
                     self._tree_ctrl.SetPyData(ai, i)
                     recursively_add_children(self._tree_ctrl, ai)
                 
-        
         self._tree_ctrl.Expand(self._root)
+
+        self._frame.Show(true)
         
     def refresh (self, event=None):
         self.browse()

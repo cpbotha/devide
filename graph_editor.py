@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graph_editor.py,v 1.24 2002/04/27 00:51:56 cpbotha Exp $
+# $Id: graph_editor.py,v 1.25 2002/05/02 11:48:19 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -264,6 +264,7 @@ class graph_editor:
         # tree thingy on the one size
         self._tree_ctrl = wxTreeCtrl(parent=split_win,
                                      style=wxTR_HAS_BUTTONS|wxTR_HIDE_ROOT)
+
         # the shape canvas on the right side
         self._shape_canvas = ge_shape_canvas(split_win, self)
         self._diagram = wxDiagram()
@@ -419,14 +420,6 @@ class graph_editor:
             if temp_module:
                 ge_glyph(self._shape_canvas, mod_name, temp_module, x, y)
                 
-        
-    def create_glyph_cb(self, x, y):
-        # we will first check with the module manager if this can be created
-        # if so, we will actually create the glyph
-        
-        # instantiate the new shape
-        new_shape = ge_glyph(x, y, self._shape_canvas, None)
-        
     def inout_begindragleft_cb(self, parent_glyph, io_shape,
                                x, y, keys, attachment):
         if io_shape.get_inout() == 0:
