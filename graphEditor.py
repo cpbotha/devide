@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.62 2004/03/04 13:50:57 cpbotha Exp $
+# $Id: graphEditor.py,v 1.63 2004/03/04 14:13:22 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -32,6 +32,8 @@ class geCanvasDropTarget(wxPyDropTarget):
         fdo = wxFileDataObject()
         do.Add(tdo)
         do.Add(fdo)
+        self._tdo = tdo
+        self._fdo = fdo
 
         self.SetDataObject(do)
         self._dataObject = do
@@ -43,8 +45,17 @@ class geCanvasDropTarget(wxPyDropTarget):
     def OnData(self, x, y, d):
         
         if self.GetData():
-            print self._dataObject.GetData()
+            text = self._tdo.GetText()
+            filenames = self._fdo.GetFilenames()
+            
+            if len(text) > 0:
+                # set the string to zero so we know what to do when
+                self._tdo.SetText('')
+                self._graphEditor.canvasDropText(x,y,text)
 
+            elif len(filenames) > 0:
+                self._graphEditor.canvasDropFilenames(x,y,filenames)
+                
         return d
         
         
@@ -243,6 +254,15 @@ class graphEditor:
             rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
             self._loadAndRealiseNetwork(itemText[len(segp):], (rx,ry),
                                         reposition=True)
+
+    def canvasDropFilenames(self, x, y, filenames):
+        for filename in filenames:
+            if filename.lower().endswith('.dvn'):
+                # we have to convert the event coords to real coords
+                rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
+                self._loadAndRealiseNetwork(filename, (rx,ry),
+                                            reposition=True)
+                
 
 
     def close(self):
