@@ -1,14 +1,15 @@
-# $Id: moduleMixins.py,v 1.23 2004/02/27 13:35:08 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.24 2004/02/27 17:00:26 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import moduleUtils
-from wxPython.wx import *
+#from wxPython.wx import *
+import wx
 import resources.python.filenameViewModuleMixinFrame
 from pythonShell import pythonShell
 
-class introspectModuleMixin:
+class introspectModuleMixin(object):
     """Mixin to use for modules that want to make use of the vtkPipeline
     functionality.
 
@@ -164,17 +165,18 @@ class introspectModuleMixin:
         objects = tuple([object for object in objects1
                          if hasattr(object, 'GetClassName')])
 
-        self.vtkPipelineConfigure(viewFrame, renderWin, objects)
+        if len(objects) > 0:
+            self.vtkPipelineConfigure(viewFrame, renderWin, objects)
 
 vtkPipelineConfigModuleMixin = introspectModuleMixin
             
 # ----------------------------------------------------------------------------
 
 
-class fileOpenDialogModuleMixin:
+class fileOpenDialogModuleMixin(object):
     """Module mixin to make use of file open dialog."""
     
-    def filenameBrowse(self, parent, message, wildcard, style=wxOPEN):
+    def filenameBrowse(self, parent, message, wildcard, style=wx.OPEN):
         """Utility method to make use of wxFileDialog.
 
         This function will open up exactly one dialog per 'message' and this
@@ -189,11 +191,11 @@ class fileOpenDialogModuleMixin:
         if not hasattr(self, '_fo_dlgs'):
             self._fo_dlgs = {}
         if not self._fo_dlgs.has_key(message):
-            self._fo_dlgs[message] = wxFileDialog(parent,
+            self._fo_dlgs[message] = wx.FileDialog(parent,
                                                   message, "", "",
                                                   wildcard, style)
-        if self._fo_dlgs[message].ShowModal() == wxID_OK:
-            if style & wxMULTIPLE:
+        if self._fo_dlgs[message].ShowModal() == wx.ID_OK:
+            if style & wx.MULTIPLE:
                 return self._fo_dlgs[message].GetPaths()
             else:
                 return self._fo_dlgs[message].GetPath()
@@ -222,9 +224,9 @@ class fileOpenDialogModuleMixin:
             self._do_dlgs = {}
 
         if not self._do_dlgs.has_key(message):
-            self._do_dlgs[message] = wxDirDialog(parent, message, default_path)
+            self._do_dlgs[message] = wx.DirDialog(parent, message, default_path)
 
-        if self._do_dlgs[message].ShowModal() == wxID_OK:
+        if self._do_dlgs[message].ShowModal() == wx.ID_OK:
             return self._do_dlgs[message].GetPath()
         else:
             return None
@@ -265,7 +267,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
             resources.python.filenameViewModuleMixinFrame.\
             filenameViewModuleMixinFrame)
                                                
-        EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
+        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
                    lambda e: self.browseButtonCallback(browseMsg,
                                                        fileWildcard))
         
@@ -295,12 +297,12 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
             self._viewFrame.filenameText.SetValue(path)
 
 # ----------------------------------------------------------------------------
-class colourDialogMixin:
+class colourDialogMixin(object):
 
     def __init__(self, parent):
-        ccd = wxColourData()
+        ccd = wx.ColourData()
         # often-used BONE custom colour
-        ccd.SetCustomColour(0,wxColour(255, 239, 219))
+        ccd.SetCustomColour(0,wx.Colour(255, 239, 219))
         # we want the detailed dialog under windows        
         ccd.SetChooseFull(True)
         # create the dialog
@@ -313,7 +315,7 @@ class colourDialogMixin:
         del self._colourDialog
 
     def getColourDialogColour(self):
-        if self._colourDialog.ShowModal() == wxID_OK:
+        if self._colourDialog.ShowModal() == wx.ID_OK:
             colour = self._colourDialog.GetColourData().GetColour()
             return tuple([c / 255.0 for c in
                           (colour.Red(), colour.Green(), colour.Blue())])
@@ -325,7 +327,7 @@ class colourDialogMixin:
         """
 
         R,G,B = [t * 255.0 for t in normalisedRGBTuple]
-        self._colourDialog.GetColourData().SetColour(wxColour(R, G, B))
+        self._colourDialog.GetColourData().SetColour(wx.Colour(R, G, B))
 
 
 # ----------------------------------------------------------------------------
@@ -361,19 +363,19 @@ class noConfigModuleMixin(introspectModuleMixin):
 
         parent_window = self._moduleManager.get_module_view_parent_window()
 
-        viewFrame = wxFrame(parent_window, -1,
+        viewFrame = wx.Frame(parent_window, -1,
                             moduleUtils.createModuleViewFrameTitle(self))
-        viewFrame.viewFramePanel = wxPanel(viewFrame, -1)
+        viewFrame.viewFramePanel = wx.Panel(viewFrame, -1)
 
-        viewFramePanelSizer = wxBoxSizer(wxVERTICAL)
+        viewFramePanelSizer = wx.BoxSizer(wx.VERTICAL)
         # make sure there's a 7px border at the top
-        viewFramePanelSizer.Add(10, 7, 0, wxEXPAND)
+        viewFramePanelSizer.Add(10, 7, 0, wx.EXPAND)
         viewFrame.viewFramePanel.SetAutoLayout(True)
         viewFrame.viewFramePanel.SetSizer(viewFramePanelSizer)
         
         
-        viewFrameSizer = wxBoxSizer(wxVERTICAL)
-        viewFrameSizer.Add(viewFrame.viewFramePanel, 1, wxEXPAND, 0)
+        viewFrameSizer = wx.BoxSizer(wx.VERTICAL)
+        viewFrameSizer.Add(viewFrame.viewFramePanel, 1, wx.EXPAND, 0)
         viewFrame.SetAutoLayout(True)
         viewFrame.SetSizer(viewFrameSizer)
 
@@ -385,12 +387,134 @@ class noConfigModuleMixin(introspectModuleMixin):
                                       viewFrame.viewFramePanel)
 
         # make sure that a close of that window does the right thing
-        EVT_CLOSE(viewFrame,
+        wx.EVT_CLOSE(viewFrame,
                   lambda e: viewFrame.Show(false))
 
         # set cute icon
         viewFrame.SetIcon(moduleUtils.getModuleIcon())
 
+        self._viewFrame = viewFrame
         return viewFrame
         
 # ----------------------------------------------------------------------------
+
+class scriptedConfigModuleMixin(introspectModuleMixin):
+
+    """
+
+    configList: list of tuples, where each tuple is
+    (name/label, destinationConfigVar, typeDescription, widgetType, toolTip)
+    e.g.
+    ('Initial Distance', 'initialDistance', 'base:float', 'text',
+    'A tooltip for the initial distance text thingy.')
+
+    typeDescription: basetype:subtype
+     basetype: scalar, tuple, list (list not implemented yet)
+     subtype: in the case of scalar, the actual cast, e.g. float or int
+              in the case of tuple, the actual cast followed by a comma
+              and the number of elements
+
+    widgetType: text (more to come)
+
+    NOTE: this mixin assumes that your module is derived from moduleBase,
+    e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
+    It's important that moduleBase comes after due to the new-style method
+    resolution order.
+    """
+
+    def __init__(self, configList):
+        self._viewFrame = None
+        self._configList = configList
+        self._widgets = {}
+
+    def close(self):
+        introspectModuleMixin.close(self)
+        self._viewFrame.Destroy()
+        del self._viewFrame
+
+    def _createWindow(self, objectDict=None):
+        parentWindow = self._moduleManager.getModuleViewParentWindow()
+
+        import resources.python.defaultModuleViewFrame
+        reload(resources.python.defaultModuleViewFrame)
+
+        dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
+        viewFrame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, dMVF)
+
+        # this viewFrame doesn't have the 7-sizer yet
+        sizer7 = wx.BoxSizer(wx.HORIZONTAL)
+        viewFrame.viewFramePanel.GetSizer().Add(sizer7, 1,
+                                                wx.ALL|wx.EXPAND, 7)
+
+        # now let's add the wxGridSizer
+        # as many rows as there are tuples in configList, 2 columns,
+        # 7 pixels vgap, 4 pixels hgap
+        gridSizer = wx.FlexGridSizer(len(self._configList), 2, 7, 4)
+        # maybe after we've added everything?
+        gridSizer.AddGrowableCol(1)
+        panel = viewFrame.viewFramePanel
+        for configTuple in self._configList:
+            label = wx.StaticText(panel, -1, configTuple[0])
+            gridSizer.Add(label, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+            text = wx.TextCtrl(panel, -1, "")
+            text.SetToolTip(wx.ToolTip(configTuple[4]))
+            gridSizer.Add(text, 0, wx.EXPAND, 0)
+            self._widgets[configTuple[0]] = text
+
+        sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
+        
+        if objectDict != None:
+            moduleUtils.createStandardObjectAndPipelineIntrospection(
+                self, viewFrame, viewFrame.viewFramePanel, objectDict, None)
+
+        moduleUtils.createECASButtons(self, viewFrame,
+                                      viewFrame.viewFramePanel)
+            
+        self._viewFrame = viewFrame
+        return viewFrame
+
+    def viewToConfig(self):
+        for configTuple in self._configList:
+            widget = self._widgets[configTuple[0]]
+            typeD = configTuple[2]
+            
+            if typeD.startswith('base:'):
+                # we're only supporting 'text' widget so far
+                wv = widget.GetValue()
+                castString = typeD.split(':')[1]
+                try:
+                    val = eval('%s(wv)' % (castString,))
+                except ValueError:
+                    # revert to default value
+                    val = eval('self._config.%s' % (configTuple[1],))
+                    widget.SetValue(str(val))
+
+            elif typeD.startswith('tuple:'):
+                # e.g. tuple:float,3
+                wv = widget.GetValue()
+
+                castString, numString = typeD.split(':')[1:].split(',')
+                val = genUtils.textToTypeTuple(
+                    wv, eval('self._config.%s' % (configTuple[1],)),
+                    int(numString), eval(castString))
+
+                widget.SetValue(str(val))
+
+            else:
+                raise ValueError, 'Invalid typeDescription.'
+
+            setattr(self._config, configTuple[1], val)
+
+    def configToView(self):
+        for configTuple in self._configList:
+            widget = self._widgets[configTuple[0]]
+            val = getattr(self._config, configTuple[1])
+            # only supporting 'text' widgets for now
+            widget.SetValue(str(val))
+
+    def view(self):
+        self._viewFrame.Show(True)
+        self._viewFrame.Raise()
+    
+                

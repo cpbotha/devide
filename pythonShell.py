@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.5 2004/02/27 13:19:51 cpbotha Exp $
+# $Id: pythonShell.py,v 1.6 2004/02/27 17:00:26 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -32,6 +32,7 @@ class pythonShell:
 
     def show(self):
         self._ps_frame.Show(True)
+        self._ps_frame.Raise()
 
     def hide(self):
         self._ps_frame.Show(false)
