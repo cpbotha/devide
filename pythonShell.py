@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.9 2003/10/06 22:29:28 cpbotha Exp $
+# $Id: pythonShell.py,v 1.1 2003/12/15 09:47:25 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
