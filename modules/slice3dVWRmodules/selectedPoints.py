@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.1 2003/09/15 16:18:34 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.2 2003/09/15 17:10:36 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -60,19 +60,22 @@ class selectedPoints(object, s3dcGridMixin):
         """
 
         commandsTuple = [
-            ('Select All', 'Select all slices',
+            ('&Store Point', 'Store the current cursor as point',
+             self._handlerStoreCursorAsPoint, False),
+            ('---',),
+            ('Select &All', 'Select all slices',
              self._handlerPointsSelectAll, False),
-            ('DEselect All', 'Deselect all slices',
+            ('D&Eselect All', 'Deselect all slices',
              self._handlerPointsDeselectAll, False),
             ('---',),
-            ('Disable 3D Interaction',
-             'Deactivate interaction for the selected points',
-             self._handlerPointsInteractionOff, True),             
-            ('Enable 3D Interaction',
+            ('&Interaction ON +',
              'Activate interaction for the selected points',
              self._handlerPointsInteractionOn, True),
+            ('I&nteraction OFF',
+             'Deactivate interaction for the selected points',
+             self._handlerPointsInteractionOff, True),             
             ('---',), # important!  one-element tuple...
-            ('Delete', 'Delete selected slices',
+            ('&Delete', 'Delete selected slices',
              self._handlerPointsDelete, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(
@@ -85,7 +88,7 @@ class selectedPoints(object, s3dcGridMixin):
         
         # the store button
         wx.EVT_BUTTON(controlFrame, controlFrame.sliceStoreButtonId,
-                      lambda e: self._handlerStoreCursorAsPoint())
+                      self._handlerStoreCursorAsPoint)
 
 
         wx.grid.EVT_GRID_CELL_RIGHT_CLICK(
@@ -167,7 +170,7 @@ class selectedPoints(object, s3dcGridMixin):
         for idx in self._grid.GetSelectedRows():
             self._pointsList[idx]['pointWidget'].Off()
         
-    def _handlerStoreCursorAsPoint(self):
+    def _handlerStoreCursorAsPoint(self, event):
         """Call back for the store cursor button.
 
         Calls store cursor method on [x,y,z,v].

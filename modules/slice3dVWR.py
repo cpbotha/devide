@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.73 2003/09/15 16:18:34 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.74 2003/09/15 17:10:36 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -337,11 +337,11 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
             return self._extractVOI.GetOutput()
 
     def view(self):
-        if not self.threedFrame.Show(True):
-            self.threedFrame.Raise()
-
         if not self.controlFrame.Show(True):
             self.controlFrame.Raise()
+
+        if not self.threedFrame.Show(True):
+            self.threedFrame.Raise()
 
     #################################################################
     # miscellaneous public methods

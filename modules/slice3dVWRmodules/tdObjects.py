@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.34 2003/09/15 16:56:44 cpbotha Exp $
+# $Id: tdObjects.py,v 1.35 2003/09/15 17:10:36 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -170,40 +170,40 @@ class tdObjects(object, s3dcGridMixin):
         """
 
         commandsTuple = [
-            ('Select All', 'Select all objects',
+            ('Select &All', 'Select all objects',
              self._handlerObjectSelectAll, False),
-            ('DEselect All', 'Deselect all objects',
+            ('D&Eselect All', 'Deselect all objects',
              self._handlerObjectDeselectAll, False),
             ('---',),
-            ('Show', 'Show all selected objects',
+            ('&Show', 'Show all selected objects',
              self._handlerObjectShow, True),
-            ('Hide', 'Hide all selected objects',
+            ('&Hide', 'Hide all selected objects',
              self._handlerObjectHide, True),
-            ('Motion On +', 'Enable motion for selected objects',
+            ('&Motion ON +', 'Enable motion for selected objects',
              self._handlerObjectMotionOn, True),
-            ('Motion Off', 'Disable motion for selected objects',
+            ('M&otion OFF', 'Disable motion for selected objects',
              self._handlerObjectMotionOff, True),
-            ('Set Colour',
+            ('Set &Colour',
              'Change colour of selected objects',
              self._handlerObjectSetColour, True),
-            ('Contouring On +',
+            ('Con&touring On +',
              'Activate contouring for all selected objects',
              self._handlerObjectContourOn, True),
-            ('Contouring Off',
+            ('Conto&uring Off',
              'Deactivate contouring for all selected objects',
              self._handlerObjectContourOff, True),
             ('---',), # important!  one-element tuple...
-            ('Attach Axis',
+            ('Attach A&xis',
              'Attach axis to all selected objects',
              self._handlerObjectAttachAxis, True),
-            ('Move Axis to Slice',
+            ('Mo&ve Axis to Slice',
              'Move the object (via its axis) to the selected slices',
              self._handlerObjectAxisToSlice, True),
-            ('Constrain Motion',
+            ('Const&rain Motion',
              'Constrain the motion of selected objects to the selected slices',
              self._handlerObjectPlaneLock, True),
             ('---',), # important!  one-element tuple...
-            ('Delete', 'Delete selected slices',
+            ('&Delete', 'Delete selected slices',
              self._handlerObjectDelete, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(

@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.14 2003/09/15 11:55:30 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.15 2003/09/15 17:10:36 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -75,32 +75,35 @@ class sliceDirections(object, s3dcGridMixin):
         """
 
         commandsTuple = [
-            ('Select All', 'Select all slices',
+            ('C&reate Slice', 'Create a new slice',
+             self._handlerCreateSlice, False),
+            ('---',),
+            ('Select &All', 'Select all slices',
              self._handlerSliceSelectAll, False),
-            ('DEselect All', 'Deselect all slices',
+            ('D&Eselect All', 'Deselect all slices',
              self._handlerSliceDeselectAll, False),
             ('---',),
-            ('Hide', 'Hide selected slices',
+            ('&Show', 'Show selected slices',
+             self._handlerSliceShow, True),
+            ('&Hide', 'Hide selected slices',
              self._handlerSliceHide, True),
-            ('Interaction ON', 'Activate Interaction for all selected slices',
+            ('&Interaction ON', 'Activate Interaction for all selected slices',
              self._handlerSliceInteractionOn, True),
-            ('Interaction OFF',
+            ('I&nteraction OFF',
              'Deactivate Interaction for all selected slices',
              self._handlerSliceInteractionOff, True),
-            ('Show', 'Show selected slices',
-             self._handlerSliceShow, True),
             ('---',),
-            ('Lock to Points', 'Move the selected slices to selected points',
+            ('&Lock to Points', 'Move the selected slices to selected points',
              self._handlerSliceLockToPoints, True),
             ('---',),
-            ('Reset to Axial', 'Reset the selected slices to Axial',
+            ('Reset to A&xial', 'Reset the selected slices to Axial',
             self._handlerSliceResetToAxial, True),
-            ('Reset to Coronal', 'Reset the selected slices to Coronal',
+            ('Reset to &Coronal', 'Reset the selected slices to Coronal',
             self._handlerSliceResetToCoronal, True),
-            ('Reset to Sagittal', 'Reset the selected slices to Sagittal',
+            ('Reset to Sa&gittal', 'Reset the selected slices to Sagittal',
             self._handlerSliceResetToSagittal, True),
             ('---',), # important!  one-element tuple...
-            ('Delete', 'Delete selected slices',
+            ('&Delete', 'Delete selected slices',
              self._handlerSliceDelete, True)]
 
         disableList = self._appendGridCommandsTupleToMenu(
