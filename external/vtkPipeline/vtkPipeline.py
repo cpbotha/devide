@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.10 2002/06/07 16:05:59 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.1 2002/06/10 16:00:28 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.

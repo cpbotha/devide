@@ -1,4 +1,4 @@
-# $Id: vtkMethodParser.py,v 1.2 2002/04/29 11:25:12 cpbotha Exp $
+# $Id: vtkMethodParser.py,v 1.1 2002/06/10 16:00:28 cpbotha Exp $
 #
 # This python program/module provides functionality to parse the
 # methods of a VTK object and the ability to save and reload the
