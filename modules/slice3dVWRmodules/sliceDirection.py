@@ -1,6 +1,10 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.1 2003/06/28 15:29:14 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.2 2003/06/28 15:59:51 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
+
+import moduleUtils
+import vtk
+import wx
 
 class sliceDirection:
     """Class encapsulating all logic behind a single direction.
@@ -239,12 +243,12 @@ class sliceDirection:
             istyle = vtk.vtkInteractorStyleImage()
             self._orthoViewFrame.RWI.SetInteractorStyle(istyle)
 
-            EVT_CLOSE(self._orthoViewFrame,
-                      lambda e, s=self: s.destroyOrthoView)
+            wx.EVT_CLOSE(self._orthoViewFrame,
+                         lambda e, s=self: s.destroyOrthoView)
 
-            EVT_BUTTON(self._orthoViewFrame,
-                       self._orthoViewFrame.closeButtonId,
-                       lambda e, s=self: s.destroyOrthoView)
+            wx.EVT_BUTTON(self._orthoViewFrame,
+                          self._orthoViewFrame.closeButtonId,
+                          lambda e, s=self: s.destroyOrthoView)
 
             for ipw in self._ipws:
                 self._createOrthoPipelineForNewIPW(ipw)

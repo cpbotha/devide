@@ -1,6 +1,10 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.1 2003/06/28 15:29:14 cpbotha Exp $
+# $Id: tdObjects.py,v 1.2 2003/06/28 15:59:51 cpbotha Exp $
 # class that controls the 3-D objects list
+
+import vtk
+import wx
+from wx.lib import colourdb
 
 class tdObjects:
 
@@ -38,20 +42,20 @@ class tdObjects:
     def _bindEvents(self):
         svViewFrame = self._slice3dVWR.getViewFrame()
 
-        EVT_BUTTON(svViewFrame, svViewFrame.objectSelectAllButtonId,
-                   self._handlerObjectSelectAll)
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectSelectAllButtonId,
+                      self._handlerObjectSelectAll)
 
-        EVT_BUTTON(svViewFrame, svViewFrame.objectDeselectAllButtonId,
-                   self._handlerObjectDeselectAll)
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectDeselectAllButtonId,
+                      self._handlerObjectDeselectAll)
         
-        EVT_BUTTON(svViewFrame, svViewFrame.objectSetColourButtonId,
-                   self._handlerObjectSetColour)
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectSetColourButtonId,
+                      self._handlerObjectSetColour)
         
-        EVT_BUTTON(svViewFrame, svViewFrame.objectShowHideButtonId,
-                   self._handlerObjectShowHide)
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectShowHideButtonId,
+                      self._handlerObjectShowHide)
 
-        EVT_BUTTON(svViewFrame, svViewFrame.objectContourButtonId,
-                   self._handlerObjectContour)
+        wx.EVT_BUTTON(svViewFrame, svViewFrame.objectContourButtonId,
+                      self._handlerObjectContour)
 
     def _getSelectedObjects(self):
         objectNames = []        
@@ -167,7 +171,7 @@ class tdObjects:
             self._objectId += 1
 
             # create a colour as well
-            colour = wxTheColourDatabase.FindColour(colourName).asTuple()
+            colour = wx.TheColourDatabase.FindColour(colourName).asTuple()
             # normalise
             nColour = tuple([c / 255.0 for c in colour])
 
@@ -376,12 +380,12 @@ class tdObjects:
                 row = self.findGridRowByName(objectDict['objectName'])
                 if row >= 0:
                     r,g,b = [c * 255.0 for c in dColour]
-                    colour = wxColour(r,g,b)
+                    colour = wx.Colour(r,g,b)
                     self._grid.SetCellBackgroundColour(
                         row, self._gridColourCol, colour)
                     
                     # also search for the name
-                    cName = wxTheColourDatabase.FindName(colour)
+                    cName = wx.TheColourDatabase.FindName(colour)
                     if not cName:
                         cName = 'USER DEFINED'
 

@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.46 2003/06/28 15:31:27 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.47 2003/06/28 15:59:51 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -9,6 +9,17 @@ from genMixins import subjectMixin
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin, colourDialogMixin
 import moduleUtils
+
+from modules.slice3dVWRmodules.sliceDirection import sliceDirection
+from modules.slice3dVWRmodules.tdObjects import tdObjects
+
+# the following four lines are only needed during prototyping of the modules
+# that they import
+import modules.slice3dVWRmodules.sliceDirection
+reload(modules.slice3dVWRmodules.sliceDirection)
+import modules.slice3dVWRmodules.tdObjects
+reload(modules.slice3dVWRmodules.tdObjects)
+
 import time
 import vtk
 import vtkdscas
@@ -474,20 +485,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin, colourDialogMixin):
         EVT_BUTTON(self._viewFrame,
                    self._viewFrame.pointsRemoveButtonId,
                    pointsRemoveCallback)
-
-        def saveListCallback(event):
-            self._syncOutputSelectedPoints()
-            cPickle.Pickler(sys.stdout).dump(self._outputSelectedPoints)
-            pass
-
-        def loadListCallback(event):
-            pass
-
-        EVT_BUTTON(self._viewFrame, self._viewFrame.saveListButtonId,
-                   saveListCallback)
-        EVT_BUTTON(self._viewFrame, self._viewFrame.loadListButtonId,
-                   loadListCallback)
-        
 
         def pointInteractionCheckBoxCallback(event):
             val = self._viewFrame.pointInteractionCheckBox.GetValue()
