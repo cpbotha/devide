@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: dscas3,v 1.17 2002/04/22 21:08:41 cpbotha Exp $
+# $Id: dscas3,v 1.18 2002/04/23 14:09:29 cpbotha Exp $
 
 import sys
 import Tkinter
@@ -10,6 +10,7 @@ import Pmw
 from assistants import assistants
 from graph_editor import graph_editor
 from module_manager import module_manager
+from python_shell import python_shell
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -50,7 +51,7 @@ class main_window(wxFrame):
 
         # and of course the file submenu
         file_menu = wxMenu()
-        exit_id = wxNewId()
+        exit_id = wxNewIdb()
         file_menu.Append(exit_id, 'E&xit', 'Exit DSCAS3')
         # event table associated with self, which id triggers it, what to do
         EVT_MENU(self, exit_id, self.exit_cb)
@@ -59,9 +60,10 @@ class main_window(wxFrame):
         window_menu = wxMenu()
         ge_id = wxNewId()
         window_menu.Append(ge_id, '&Graph Editor', 'Activate the Graph Editor')
-        pyi_id = wxNewId()
-        window_menu.Append(pyi_id, '&Python Interpreter',
+        pys_id = wxNewId()
+        window_menu.Append(pys_id, '&Python Shell',
                            'Activate the built-in Python Interpreter')
+        EVT_MENU(self, pys_id, self.python_shell_cb)
 
         # create the main menu bar to attach all these submenus to
         self.main_menu = wxMenuBar()
@@ -114,6 +116,9 @@ class main_window(wxFrame):
 
     def load_data_cb(self, event):
         self.dscas3_app.get_assistants().load_data()
+
+    def python_shell_cb(self, event):
+        self.dscas3_app.start_python_shell()
         
 class dscas3_app_t(wxApp):
     """Main dscas3 application class.
@@ -131,6 +136,7 @@ class dscas3_app_t(wxApp):
 	self.pyco = pyco_t(self)
 
         self._assistants = assistants(self)
+        self._python_shell = None
 	
 	# interpreter input line
 	#self.pyco_ol = Pmw.ComboBox(self.root, label_text = 'python one-liner',
@@ -180,11 +186,21 @@ class dscas3_app_t(wxApp):
 	print "quit called!"
 	# take care of main window
 	self.main_window.Close()
+
+    def start_python_shell(self):
+        if self._python_shell == None:
+            self._python_shell = python_shell(self)
+        else:
+            self._python_shell.show()
 	
 
-dscas3_app = dscas3_app_t()
-dscas3_app.MainLoop()
+def main():
+    dscas3_app = dscas3_app_t()
+    dscas3_app.MainLoop()
 
+if __name__ == '__main__':
+    main()
+    
 # create main window
 #root = Tkinter.Tk()
 #Pmw.initialise(root, fontScheme = 'pmw1')
