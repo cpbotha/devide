@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.111 2004/11/18 23:08:05 cpbotha Exp $
+# $Id: __init__.py,v 1.112 2004/11/21 22:03:34 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -74,8 +74,9 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Writers.vtkStructPtsWRT' : ('Writers',),
 
               'Misc.cptDistanceField' : ('Misc',),
+              'Misc.pointsToSpheres' : ('Misc', 'Sources'),
               'Misc.superQuadric' : ('Sources',),
-              'Misc.implicitToVolume' : ('Sources',),              
+              'Misc.implicitToVolume' : ('Sources',),
               
               'ifdoc.ifdocRDR' : ('ifdoc',),
               'ifdoc.ifdocVWR' : ('ifdoc',),

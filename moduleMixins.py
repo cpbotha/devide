@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.56 2004/11/02 16:29:12 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.57 2004/11/21 22:03:34 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -28,7 +28,7 @@ class introspectModuleMixin(object):
     In your close() method, MAKE SURE to call the close method of this Mixin.
     """
 
-    def miscObjectConfigure(self, parentWindow, obj):
+    def miscObjectConfigure(self, parentWindow, obj, objDescription=''):
         """This will instantiate and show a pythonShell with the object that
         is being examined.
 
@@ -41,9 +41,12 @@ class introspectModuleMixin(object):
 
         if obj not in self._pythonShells:
             icon = moduleUtils.getModuleIcon()
+
             
             self._pythonShells[obj] = pythonShell(
-                parentWindow, icon,
+                parentWindow,
+                'Introspecting %s' % (objDescription,),
+                icon,
                 self._moduleManager.getAppDir())
             
             self._pythonShells[obj].injectLocals({'obj' : obj})
@@ -153,7 +156,7 @@ class introspectModuleMixin(object):
         self.closeVtkObjectConfigure()
 
     def _defaultObjectChoiceCallback(self, viewFrame, renderWin,
-                                    objectChoice, objectDict):
+                                     objectChoice, objectDict):
         """This callack is required for the
         createStandardObjectAndPipelineIntrospection method in moduleUtils.
         """
@@ -163,7 +166,9 @@ class introspectModuleMixin(object):
                 self.vtkObjectConfigure(viewFrame, renderWin,
                                         objectDict[objectName])
             elif objectDict[objectName]:
-                self.miscObjectConfigure(viewFrame, objectDict[objectName])
+                self.miscObjectConfigure(
+                    viewFrame, objectDict[objectName],
+                    objectDict[objectName].__class__.__name__)
         
     def _defaultPipelineCallback(self, viewFrame, renderWin, objectDict):
         """This callack is required for the

@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: pythonShell.py,v 1.17 2004/08/06 12:42:15 cpbotha Exp $
+# $Id: pythonShell.py,v 1.18 2004/11/21 22:03:34 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 import os
@@ -7,13 +7,16 @@ import wx
 
 class pythonShell:
 
-    def __init__(self, parentWindow, icon, appDir):
+    def __init__(self, parentWindow, title, icon, appDir):
         self._parentWindow = parentWindow
 
         self._psFrame = self._createFrame()
 
         # set icon
         self._psFrame.SetIcon(icon)
+        # and change the title
+        self._psFrame.SetTitle(title)
+        
         # make sure that when the window is closed, we just hide it (teehee)
         wx.EVT_CLOSE(self._psFrame, self.close_ps_frame_cb)
 

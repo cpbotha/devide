@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.29 2004/11/20 20:31:13 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.30 2004/11/21 22:03:34 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.29 $
+    $Revision: 1.30 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -899,7 +899,9 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         """Open Python introspection window with this module as main object.
         """
 
-        self.miscObjectConfigure(self.threedFrame ,self)
+        self.miscObjectConfigure(self.threedFrame, self,
+                                 'slice3dVWR %s' % \
+                                 (self._moduleManager.getInstanceName(self),))
         
 
     def _handlerProjectionChoice(self, event):

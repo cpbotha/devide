@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.63 2004/11/20 20:31:13 cpbotha Exp $
+# $Id: devide.py,v 1.64 2004/11/21 22:03:34 cpbotha Exp $
 
 DEVIDE_VERSION = '20041119'
 
@@ -297,6 +297,7 @@ class devide_app_t(wx.App):
     def startPythonShell(self):
         if self._pythonShell == None:
             self._pythonShell = pythonShell(self.getMainWindow(),
+                                            'Main DeVIDE Python Introspection',
                                             self.getApplicationIcon(),
                                             self.getAppDir())
             self._pythonShell.injectLocals({'devideApp' : self})
