@@ -1,4 +1,4 @@
-# $Id: register2D.py,v 1.12 2004/01/15 10:46:28 cpbotha Exp $
+# $Id: register2D.py,v 1.13 2004/03/29 15:02:11 cpbotha Exp $
 
 # TODO:
 # * if the input imageStackRDR is reconfigured to read a different stack
@@ -462,7 +462,8 @@ class register2D(moduleBase):
         The second image is always green.
         """
 
-        for ipw, col in ((self._ipw1, 0.0), (self._ipw2, 0.3)):
+        #for ipw, col in ((self._ipw1, 0.0), (self._ipw2, 0.3)):
+        for ipw, col in ((self._ipw2, 0.3),):        
             inputData = ipw.GetInput()
             inputData.Update() # make sure the metadata is up to date
             minv, maxv = inputData.GetScalarRange()
