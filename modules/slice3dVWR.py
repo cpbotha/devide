@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.21 2003/04/29 17:11:32 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.22 2003/04/30 21:43:32 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -557,8 +557,6 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._extractVOI = vtk.vtkExtractVOI()
         self._currentVOI = 6 * [0]
 
-        self._left_mouse_button = 0
-
         # set the whole UI up!
         self._create_window()
 
@@ -572,9 +570,14 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
     def close(self):
         print "starting close"
+
+        # take care of scalarbar
+        self._showScalarBarForProp(None)
+        # and the moveWidget thingy
+        self._activatePropMove(None)
+        
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
-
         for idx in range(self._numDataInputs):
             self.setInput(idx, None)
 
@@ -652,6 +655,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                                 self._inputs[idx]['observerID'])
                         # whether we had a source or not, zero this
                         self._inputs[idx]['observerID'] = -1
+
+                    # FIXME: also make sure that the there is no move prop
+                    # 3d widget associated with this prop
 
                     self._threedRenderer.RemoveActor(self._inputs[idx][
                         'vtkActor'])
@@ -881,6 +887,10 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
         self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
 
+        # make sure it's a trackball actor style thingy
+        istyle = vtk.vtkInteractorStyleTrackballCamera()
+        self._viewFrame.threedRWI.SetInteractorStyle(istyle)
+
         # add possible point names
         self._viewFrame.sliceCursorNameCombo.Clear()
         self._viewFrame.sliceCursorNameCombo.Append('Point 1')
@@ -1101,7 +1111,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             inputData = None
 
         return inputData
-        
+
 
     def setCurrentSliceDirection(self, sliceDirection):
         if sliceDirection != self._currentSliceDirection:
@@ -1202,6 +1212,48 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         # whee, thaaaar she goes.
         self._viewFrame.threedRWI.Render()
+
+    def _showScalarBarForProp(self, prop):
+        """Show scalar bar for the data represented by the passed prop.
+        If prop is None, the scalar bar will be removed and destroyed if
+        present.
+        """
+
+        destroyScalarBar = False
+
+        if prop:
+            # activate the scalarbar, connect to mapper of prop
+            if prop.GetMapper() and prop.GetMapper().GetLookupTable():
+                if not hasattr(self, '_pdScalarBarActor'):
+                    self._pdScalarBarActor = vtk.vtkScalarBarActor()
+                    self._threedRenderer.AddProp(self._pdScalarBarActor)
+
+                sname = "Unknown"
+                s = prop.GetMapper().GetInput().GetPointData().GetScalars()
+                if s and s.GetName():
+                    sname = s.GetName()
+
+                self._pdScalarBarActor.SetTitle(sname)
+                    
+                self._pdScalarBarActor.SetLookupTable(
+                    prop.GetMapper().GetLookupTable())
+
+                self._viewFrame.threedRWI.Render()
+                    
+            else:
+                # the prop doesn't have a mapper or the mapper doesn't
+                # have a LUT, either way, we switch off the thingy...
+                destroyScalarBar = True
+
+        else:
+            # the user has clicked "somewhere else", so remove!
+            destroyScalarBar = True
+                
+
+        if destroyScalarBar and hasattr(self, '_pdScalarBarActor'):
+            self._threedRenderer.RemoveProp(self._pdScalarBarActor)
+            del self._pdScalarBarActor
+        
 
     def _storeSurfacePoint(self, pointId, actor):
         polyData = actor.GetMapper().GetInput()
@@ -1628,41 +1680,13 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
 
         elif pickAction == 3:
             # show scalarbar for picked object
-            destroyScalarBar = False
             prop, pointId = findPickedProp(obj)
-            if prop:
-                # activate the scalarbar, connect to mapper of prop
-                if prop.GetMapper() and prop.GetMapper().GetLookupTable():
-                    if not hasattr(self, '_pdScalarBarActor'):
-                        self._pdScalarBarActor = vtk.vtkScalarBarActor()
-                        self._threedRenderer.AddProp(self._pdScalarBarActor)
+            self._showScalarBarForProp(prop)
 
-                    s = prop.GetMapper().GetInput().GetPointData().GetScalars()
-                    if s:
-                        sname = s.GetName()
-                        if not sname:
-                            sname = "Unknown"
-                            
-                    self._pdScalarBarActor.SetTitle(sname)
-                    
-                    self._pdScalarBarActor.SetLookupTable(
-                        prop.GetMapper().GetLookupTable())
-
-                    self._viewFrame.threedRWI.Render()
-                    
-                else:
-                    # the prop doesn't have a mapper or the mapper doesn't
-                    # have a LUT, either way, we switch off the thingy...
-                    destroyScalarBar = True
-
-            else:
-                # the user has clicked "somewhere else", so remove!
-                destroyScalarBar = True
-                
-
-            if destroyScalarBar and hasattr(self, '_pdScalarBarActor'):
-                self._threedRenderer.RemoveProp(self._pdScalarBarActor)
-                del self._pdScalarBarActor
+        elif pickAction == 4:
+            # move the object -- for this we're going to use a special
+            # vtkBoxWidget
+            pass
                     
                     
 
