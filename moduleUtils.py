@@ -1,4 +1,4 @@
-# $Id: module_utils.py,v 1.9 2003/01/28 18:13:31 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.1 2003/01/28 21:24:48 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
