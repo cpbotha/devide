@@ -1,15 +1,16 @@
-# $Id: vtk_dicom_rdr.py,v 1.2 2002/08/16 13:05:43 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.3 2002/08/19 09:58:50 cpbotha Exp $
 
+import gen_utils
 import os
 from module_base import \
      module_base, \
      module_mixin_vtk_pipeline_config, \
      module_mixin_fo_dialog
+import stat
 from wxPython.wx import *
 from wxPython.xrc import *
 import vtk
 import vtkcpbothapython
-import os
 import module_utils
 
 class vtk_dicom_rdr(module_base,
@@ -26,6 +27,7 @@ class vtk_dicom_rdr(module_base,
         # this part of the config is stored in this module, and not in
         # the reader.
         self._dicom_dirname = None
+        self._dicom_filenames = []
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
@@ -58,15 +60,56 @@ class vtk_dicom_rdr(module_base,
     
     def sync_config(self):
         if self._dicom_dirname:
-            self._view_frame.dirname_text.SetValue(self._dicom_dir_name)
+            self._view_frame.dirname_text.SetValue(self._dicom_dirname)
         else:
             self._view_frame.dirname_text.SetValue("")
 	
     def apply_config(self):
-        self._reader.SetFileName(self._view_frame.dirname_text.GetValue())
+        # get a list of files in the indicated directory, stuff them all
+        # into the dicom reader
+        self._dicom_dirname = self._view_frame.dirname_text.GetValue()
+
+        if self._dicom_dirname == None:
+            return
+        try:
+            filenames_init = os.listdir(self._dicom_dirname)
+        except Exception, e:
+            gen_utils.log_error('Could not read DICOM directory: %s' % e)
+
+        # go through list of files in directory, perform trivial tests
+        # and create a new list of files 
+        dicom_fullnames = []
+        for filename in filenames_init:
+            # make full filename
+            fullname = os.path.join(self._dicom_dirname, filename)
+            # at the moment, we check that it's a regular file
+            if stat.S_ISREG(os.stat(fullname)[stat.ST_MODE]):
+                dicom_fullnames.append(fullname)
+
+        if len(dicom_fullnames) == 0:
+            wxLogError('Empty directory specified, not attempting '
+                       'change in config.')
+            return
+
+        # now check if the new list and our existing list differ
+        # only then will the _reader be tickled in all the wrong places
+        # FIXME: continue here
+
+        # filter(lambda x: x in a, b ) <--- list subtraction
+        # it seems that == between lists also works??! (calls __eq__ method)
+        
+        # so, now we have a list of filenames.  let's try to hand them over
+        self._reader.clear_dicom_filenames()
+
+        for fullname in fullnames:
+            self._reader.add_dicom_filename(fullname)
+        
+
+        #self._reader.SetFileName(self._view_frame.dirname_text.GetValue())
 
     def execute_module(self):
-        # get the vtkPolyDataReader to try and execute
+        
+        # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
@@ -142,7 +185,7 @@ class vtk_dicom_rdr_view_frame(wxFrame):
         self.pipeline_button = wxButton(self, self.VTK_PIPELINE_ID , "Pipeline", size=(-1, -1))
         self.label_3 = wxStaticText(self, -1, "or", size=(-1, -1), style=0)
         self.VTK_OBJECT_CHOICE_ID  =  wxNewId()
-        self.object_choice = wxChoice(self, self.VTK_OBJECT_CHOICE_ID , choices=['vtkSTLReader'], size=(-1, -1), style=0)
+        self.object_choice = wxChoice(self, self.VTK_OBJECT_CHOICE_ID , choices=['vtkDICOMVolumeReader'], size=(-1, -1), style=0)
         self.label_2 = wxStaticText(self, -1, "Examine the", size=(-1, -1), style=0)
         self.sizer_3 = wxBoxSizer(wxHORIZONTAL)
         self.BROWSE_BUTTON_ID  =  wxNewId()
