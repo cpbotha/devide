@@ -1,4 +1,4 @@
-# $Id: module_utils.py,v 1.2 2002/04/27 00:51:56 cpbotha Exp $
+# $Id: module_utils.py,v 1.3 2002/04/30 01:55:17 cpbotha Exp $
 
 from wxPython.wx import *
 from wxPython.xrc import *
@@ -6,7 +6,7 @@ import Pmw
 import Tkinter
 import tkFileDialog
 from vtkPipeline.vtkPipeline import \
-     vtkPipelineBrowser, vtkPipelineSegmentBrowser
+     vtkPipelineBrowser
 from vtkPipeline.ConfigVtkObj import ConfigVtkObj
 
 def bind_CSAEO(module, view_frame):
