@@ -1,4 +1,6 @@
 import sys, os, fnmatch
+import Tix
+import tkMessageBox
 
 class module_manager:
     """This class in responsible for picking up new modules in the modules 
@@ -6,6 +8,8 @@ class module_manager:
     def __init__(self):
 	"""Initialise module manager by fishing .py dscas3 modules from
 	all pertinent directories."""
+	
+	self.modules = []
 	
 	# find out the module directory
 	dirname = os.path.dirname(sys.argv[0])
@@ -36,6 +40,35 @@ class module_manager:
     
     def get_modules_dir(self):
 	return self.modules_dir
+    
+    def create_module(self, name):
+	# it seems that objects instantiated in the try get destroyed in except(?)
+	try:
+	    # import the correct module
+	    exec('from ' + name + ' import ' + name)
+	    # then instantiate the requested class
+	    exec('self.modules.append(' + name + '())')
+	except ImportError:
+	    tkMessageBox.showerror("Import error", "Unable to import module %s!" % name)
+	    return None
+	except Exception, e:
+	    tkMessageBox.showerror("Instantiation error", "Unable to instantiate module %s: %s" % (name, str(e)))
+	    print sys.exc_info()
+	    return None
+	# return the instance
+	return self.modules[-1]
+    
+    def delete_module(self, instance):
+	instance.close()
+	# take away the reference AND remove (neat huh?)
+	del self.modules[self.modules.index(instance)]
+	
+    def connect_modules(self, output_module, output_idx, input_module, input_idx):
+	input_module.set_input(input_idx, output_module.get_output(output_idx))
+	
+    def disconnect_modules(self, input_module, input_idx):
+	input_module.set_input(input_idx, None)
+    
 
 	    
 	

@@ -250,7 +250,7 @@ class graph_editor:
 	writer_re = re.compile(".*wrt$", re.I)
 	view_re = re.compile(".*vwr$", re.I)
 	filter_re = re.compile(".*flt$", re.I)	
-	for i in self.dscas3_main.get_module_list():
+	for i in self.dscas3_main.get_module_manager().get_module_list():
 	    if reader_re.search(i):
 		hlist.add("Readers." + i, text=i)
 	    elif writer_re.search(i):
@@ -289,7 +289,7 @@ class graph_editor:
 	if (len(sel_tuple) == 1):
 	    module_search = re.search(".*\.(.*)", sel_tuple[0])
 	    if (module_search and module_search.group(1)):
-		temp_module = self.dscas3_main.create_module(module_search.group(1))
+		temp_module = self.dscas3_main.get_module_manager().create_module(module_search.group(1))
 		if temp_module:
 		    self.glyphs.append(glyph(self, self.canvas, (x,y),
 		    temp_module))
@@ -309,7 +309,7 @@ class graph_editor:
 			cur_input_glyph.get_module_instance().__class__, cur_idx)
 			self.disconnect_glyphs(glyph, cur_input_glyph, cur_idx)
 	    # now get dscas3 to delete the actual module
-	    self.dscas3_main.delete_module(glyph.get_module_instance())
+	    self.dscas3_main.get_module_manager().delete_module(glyph.get_module_instance())
 	    # then de-init the glyph object
 	    glyph.close()
 	    # then remove and delete the reference to it from the glyphs list
@@ -347,7 +347,7 @@ class graph_editor:
 	and also the objects which they actually represent."""
 	try:
 	    # do the actual connection (this should actually go to the module_manager)
-	    self.dscas3_main.connect_modules(self.conn_ip['glyph0'].get_module_instance(), self.conn_ip['out_idx'],
+	    self.dscas3_main.get_module_manager().connect_modules(self.conn_ip['glyph0'].get_module_instance(), self.conn_ip['out_idx'],
 	    self.conn_ip['glyph1'].get_module_instance(), self.conn_ip['out_idx'])
 	    # tell the glyphs to connect to each other (and store the line handles, aaaaaai!)
 	    self.conn_ip['glyph0'].connect_to(self.conn_ip['out_idx'], self.conn_ip['glyph1'], self.conn_ip['in_idx'])
@@ -360,7 +360,7 @@ class graph_editor:
 	"""This will ask the main module whether the glyphs in question
 	may disconnect the requested inputs/outputs.  If allowed, the
 	situation in the graph editor will be adapted."""
-	self.dscas3_main.disconnect_modules(input_glyph.get_module_instance(), input_idx)
+	self.dscas3_main.get_module_manager().disconnect_modules(input_glyph.get_module_instance(), input_idx)
 	input_glyph.disconnect_from(output_glyph, input_idx)
 	
     def get_mode(self):
