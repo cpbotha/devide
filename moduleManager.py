@@ -36,7 +36,9 @@ class metaModule:
 class pickledModuleState:
     def __init__(self):
         self.moduleConfig = None
+        # e.g. modules.Viewers.histogramSegment
         self.moduleName = None
+        # this is the unique name of the module, e.g. dvm15
         self.instanceName = None
 
 class pickledConnection:
@@ -570,7 +572,8 @@ class moduleManager:
                         'Could not restore state/config to module %s: %s' %
                         (newModule.__class__.__name__, e))
                 
-                # and record that it's been recreated
+                # and record that it's been recreated (once again keyed
+                # on the OLD unique instance name)
                 newModulesDict[pmsTuple[1].instanceName] = newModule
 
         # now we're going to connect all of the successfully created
@@ -597,6 +600,26 @@ class moduleManager:
                         pass
                     else:
                         newConnections.append(connection)
+
+        # now do the POST connection module config!
+        for oldInstanceName,newModuleInstance in newModulesDict.items():
+            # retrieve the pickled module state
+            pms = pmsDict[oldInstanceName]
+            # take care to deep copy the config
+            configCopy = copy.deepcopy(pms.moduleConfig)
+
+            # now try to call setConfigPostConnect
+            try:
+                newModuleInstance.setConfigPostConnect(configCopy)
+            except AttributeError:
+                pass
+            except Exception, e:
+                # it could be a module with no defined config logic
+                genUtils.logWarning(
+                    'Could not restore post connect state/config to module '
+                    '%s: %s' % (newModuleInstance.__class__.__name__, e))
+                
+
 
         # we return a dictionary, keyed on OLD pickled name with value
         # the newly created module-instance and a list with the connections
