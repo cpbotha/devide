@@ -1,0 +1,3 @@
+The .xrc files are actualy resources that get loaded at run-time.
+The .xml files are converted to python code that is embedded in the relevant
+modules and are thus not required at run-time.
