@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.26 2003/08/11 15:41:29 cpbotha Exp $
+# $Id: tdObjects.py,v 1.27 2003/08/14 11:45:07 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -855,14 +855,27 @@ class tdObjects:
     def _observerMotionBoxWidgetEndInteraction(self, eventObject, eventType):
         # make sure the transform is up to date
         self._observerMotionBoxWidgetInteraction(eventObject, eventType)
+
+        self._postObjectMotionSync(eventObject.GetProp3D())
+        
+
+    def _observerMotionBoxWidgetInteraction(self, eventObject, eventType):
+        bwTransform = vtk.vtkTransform()
+        eventObject.GetTransform(bwTransform)
+        
+        eventObject.GetProp3D().SetUserTransform(bwTransform)
+
+    def _postObjectMotionSync(self, prop):
+        # FIXME: continue here
         
         # and update the contours after we're done moving things around
-        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(
-            eventObject.GetProp3D())
+        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(prop)
 
+        # THIS IS BROKEN!
+        
         # now make sure that the object axis (if any) is also aligned
         # find the tdObject corresponding to the prop
-        tdObject = self.findObjectByProp(eventObject.GetProp3D())
+        tdObject = self.findObjectByProp(prop)
         try:
             # if there's a line, move it too!
             axisLineActor = self._tdObjectsDict[tdObject]['axisLineActor']
@@ -871,12 +884,8 @@ class tdObjects:
             axisLineActor.SetUserTransform(bwTransform)
         except KeyError:
             pass
-
-    def _observerMotionBoxWidgetInteraction(self, eventObject, eventType):
-        bwTransform = vtk.vtkTransform()
-        eventObject.GetTransform(bwTransform)
         
-        eventObject.GetProp3D().SetUserTransform(bwTransform)
+        
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
