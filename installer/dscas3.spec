@@ -16,11 +16,16 @@ print "[*] exeName == %s" % (exeName)
 mainScript = os.path.join(D3_DIR, 'dscas3.py')
 print "[*] mainScript == %s" % (mainScript)
 
-# USER MODULES
+# segments
+segTree = Tree(os.path.join(D3_DIR, 'segments'), 'segments', ['CVS'])
+# arb data
+dataTree = Tree(os.path.join(D3_DIR, 'data'), 'data', ['CVS'])
+# miscellaneous files
+docsTree = Tree(os.path.join(D3_DIR, 'docs'), 'docs', ['CVS'])
 
-umod_dir = os.path.join(D3_DIR, 'userModules')
-umods = [(os.path.join('userModules', i), os.path.join(umod_dir, i), 'DATA')
-         for i in os.listdir(umod_dir) if fnmatch.fnmatch(i, '*.py')]
+# USER MODULES
+userModulesTree = Tree(os.path.join(D3_DIR, 'userModules'), 'userModules',
+                       ['CVS'])
 
 # VTKPIPELINE ICONS
 
@@ -74,13 +79,15 @@ exe = EXE(pyz,
 
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
-allBinaries = a.binaries + umods + vpli + extraLibs
+allBinaries = a.binaries + userModulesTree + vpli + extraLibs + \
+              segTree + dataTree + docsTree
 # make sure removeNames is lowercase
 removeNames = [i.lower() for i in removeNames]
 # make new list of 3-element tuples of shipable things
 binaries = [i for i in allBinaries if i[0].lower() not in removeNames]
 
-coll = COLLECT( exe,
+coll = COLLECT(exe,
                binaries,
                strip=0,
                name='distdscas3')
+
