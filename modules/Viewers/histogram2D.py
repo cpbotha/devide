@@ -1,4 +1,4 @@
-# $Id: histogram2D.py,v 1.6 2004/03/19 14:25:43 cpbotha Exp $
+# $Id: histogram2D.py,v 1.7 2004/08/03 16:40:20 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -7,8 +7,8 @@ import vtk
 import vtkdevide
 
 class histogram2D(scriptedConfigModuleMixin, moduleBase):
-    """This module takes two inputs and creates a 2D histogram with input 1
-    vs input 2.
+    """This module takes two inputs and creates a 2D histogram with input 2
+    vs input 1, i.e. input 1 on x-axis and input 2 on y-axis.
 
     The inputs have to have identical dimensions.
     """
