@@ -4,13 +4,12 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class reconstructSurface(moduleBase, noConfigModuleMixin):
+class voxelLinesToSurface(moduleBase, noConfigModuleMixin):
     """Given a binary volume, fit a surface through the marked points.
 
     A doubleThreshold could be used to extract points of interest from
-    a volume.  By passing it through this module, a surface will be
-    fit through those points of interest.  The points of interest have
-    to be of value 1 or greater.
+    a volume.  By passing it through this module, a surface will be fit
+    through those points of interest.
 
     This is not to be confused with traditional iso-surface extraction.
     """
@@ -25,31 +24,38 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
 
         # we'll be playing around with some vtk objects, this could
         # be anything
+
         self._thresh = vtk.vtkThresholdPoints()
-        # this is wacked syntax!
         self._thresh.ThresholdByUpper(1)
-        self._reconstructionFilter = vtk.vtkSurfaceReconstructionFilter()
-        self._reconstructionFilter.SetInput(self._thresh.GetOutput())
-        self._mc = vtk.vtkMarchingCubes()
-        self._mc.SetInput(self._reconstructionFilter.GetOutput())
-        self._mc.SetValue(0, 0.0)
+        self._del2d = vtk.vtkDelaunay2D()
+        self._del2d.SetInput(self._thresh.GetOutput())
+        self._geom = vtk.vtkGeometryFilter()
+        self._geom.SetInput(self._del2d.GetOutput())
+
+        #self._cast = vtk.vtkImageCast()
+        #self._cast.SetOutputScalarType(vtk.VTK_SHORT)
+        #self._distance = vtk.vtkImageCityBlockDistance()
+        #self._distance.SetInput(self._cast.GetOutput())        
+        #self._distance = vtk.vtkImageEuclideanDistance()
+        #self._distance.ConsiderAnisotropyOn()
 
         moduleUtils.setupVTKObjectProgress(self, self._thresh,
-                                           'Extracting points...')
-        moduleUtils.setupVTKObjectProgress(self, self._reconstructionFilter,
-                                           'Reconstructing...')
-        moduleUtils.setupVTKObjectProgress(self, self._mc,
-                                           'Extracting surface...')
+                                           'Extracting geometry...')
+        moduleUtils.setupVTKObjectProgress(self, self._del2d,
+                                           'Calculating Delaunay3D...')
+        moduleUtils.setupVTKObjectProgress(self, self._geom,
+                                           'Extracting geometry...')
+        
+        
+        
 
         self._iObj = self._thresh
-        self._oObj = self._mc
+        self._oObj = self._thresh
         
-        self._viewFrame = self._createViewFrame({'threshold' :
+        self._viewFrame = self._createViewFrame({'thresh' :
                                                  self._thresh,
-                                                 'reconstructionFilter' :
-                                                 self._reconstructionFilter,
-                                                 'marchingCubes' :
-                                                 self._mc})
+                                                 'delaunay3d' :
+                                                 self._del2d})
 
 
     def close(self):
@@ -61,8 +67,8 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
         noConfigModuleMixin.close(self)
         # get rid of our reference
         del self._thresh
-        del self._reconstructionFilter
-        del self._mc
+        del self._del2d
+        del self._geom
         del self._iObj
         del self._oObj
 
