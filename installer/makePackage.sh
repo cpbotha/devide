@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makePackage.sh,v 1.6 2004/03/20 18:02:23 cpbotha Exp $
+# $Id: makePackage.sh,v 1.7 2004/03/20 18:14:01 cpbotha Exp $
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
@@ -23,6 +23,7 @@ $INSTALLER devide.spec
 strip distdevide/*.so
 # make a tarball
 mv distdevide devide
+rm -f devide.tar.gz
 tar czvf "devide.tar.gz" devide
 mv devide distdevide
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: makeRelease.sh,v 1.1 2004/03/20 18:02:23 cpbotha Exp $
+# $Id: makeRelease.sh,v 1.2 2004/03/20 18:14:01 cpbotha Exp $
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -28,24 +28,28 @@ cvs update -dAP
 # make sure vtkdevide is up to date, conf and build
 echo "Building vtkdevide..."
 cmake .
+if [ `uname` == Linux ]; then
+make
+else
 ./msBuild.bat
+fi
 cd ../devide
 
 # make documentation
 echo "Building documentation..."
 cd docs/help/source
-./makeHtmlHelp.sh
+bash ./makeHtmlHelp.sh
 cd ../../../
 
 # now make VTK and ITK version
 echo "Building VTK version..."
 
 cp defaults.py defaults.py.backup
-cat defaults.py | sed -e 's/USE_INSIGHT\s*=\s*.*/USE_INSIGHT = False/g' > defaultsTemp.py
+cat defaults.py | sed -e 's/USE_INSIGHT *= *.*/USE_INSIGHT = False/g' > defaultsTemp.py
 cp defaultsTemp.py defaults.py
 
 cd installer
-./makePackage.sh
+bash ./makePackage.sh
 if [ `uname` != Linux ]; then
 f:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`.exe
@@ -62,11 +66,11 @@ if [ "$1" != noitk ]; then
 echo "Building ITK version..."
 
 cp defaults.py defaults.py.backup
-cat defaults.py | sed -e 's/USE_INSIGHT\s*=\s*.*/USE_INSIGHT = True/g' > defaultsTemp.py
+cat defaults.py | sed -e 's/USE_INSIGHT *= *.*/USE_INSIGHT = True/g' > defaultsTemp.py
 cp defaultsTemp.py defaults.py
 
 cd installer
-./makePackage.sh
+bash ./makePackage.sh
 if [ `uname` != Linux ]; then
 f:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`itk.exe
