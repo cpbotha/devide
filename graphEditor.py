@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.18 2003/05/13 13:08:24 cpbotha Exp $
+# $Id: graphEditor.py,v 1.19 2003/05/20 22:04:17 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -21,7 +21,9 @@ class graphEditor:
             self._dscas3_app.get_main_window(),
             -1, title='dummy', wxpcCanvas=wxpc.canvas)
 
-        EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)        
+        self._graphFrame.SetIcon(self._dscas3_app.getApplicationIcon())
+
+        EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)
 
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
                    lambda e, s=self: s.fill_module_tree())

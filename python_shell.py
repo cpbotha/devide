@@ -1,5 +1,5 @@
 # python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: python_shell.py,v 1.4 2003/03/09 23:34:25 cpbotha Exp $
+# $Id: python_shell.py,v 1.5 2003/05/20 22:04:17 cpbotha Exp $
 # window for interacting with the python interpreter during execution
 
 from wxPython.wx import *
@@ -14,6 +14,8 @@ class python_shell:
         # main frame
         self._ps_frame = wxFrame(parent=self._app.get_main_window(), id=-1,
                                  title="Python Interpreter (PyCrust)")
+        # set icon
+        self._ps_frame.SetIcon(self._app.getApplicationIcon())
         # make sure that when the window is closed, we just hide it (teehee)
         EVT_CLOSE(self._ps_frame, self.close_ps_frame_cb)
         
