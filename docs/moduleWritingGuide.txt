@@ -1,4 +1,4 @@
-$Id: moduleWritingGuide.txt,v 1.1 2003/02/19 00:58:36 cpbotha Exp $
+$Id: moduleWritingGuide.txt,v 1.2 2003/02/19 01:07:21 cpbotha Exp $
 
 IMPORTANT NOTES:
 ---------------
@@ -8,7 +8,7 @@ IMPORTANT NOTES:
 
 2. Once you have established that an input that is to be connected constitutes
    valid input data,  call its Update() method BEFORE you do ANYTHING else
-   if this it as all possible.  If you do not do this, the Multi-Threading 
+   if this is as all possible.  If you do not do this, the Multi-Threading 
    Monster could come a knocking.
    
    This instant updating at connection time is not always desirable behaviour
