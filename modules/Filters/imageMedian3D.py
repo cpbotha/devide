@@ -8,7 +8,7 @@ import vtk
 class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
     """Performs 3D morphological median on input data.
     
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     
@@ -66,7 +66,10 @@ class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
         return self._imageMedian3D.GetOutput()
 
     def logicToConfig(self):
-        self._config.kernelSize = self._imageMedian3D.GetKernelSize()
+        # FIXME: as soon as GetKernelSize() is accessible again,
+        # put this back.
+        #self._config.kernelSize = self._imageMedian3D.GetKernelSize()
+        pass
     
     def configToLogic(self):
         ks = self._config.kernelSize
