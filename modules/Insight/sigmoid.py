@@ -1,4 +1,4 @@
-# $Id: sigmoid.py,v 1.1 2004/04/13 20:34:24 cpbotha Exp $
+# $Id: sigmoid.py,v 1.2 2004/08/23 17:07:51 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -10,9 +10,9 @@ from moduleMixins import scriptedConfigModuleMixin
 class sigmoid(scriptedConfigModuleMixin, moduleBase):
     """Perform sigmoid transformation on all input voxels.
 
-    f(x) = (max - min) \frac{1}{1 + \exp(- \frac{x - \beta}{\alpha})} + min
+    f(x) = (max - min) frac{1}{1 + exp(- frac{x - beta}{alpha})} + min
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
