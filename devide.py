@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.52 2004/08/31 13:26:09 cpbotha Exp $
+# $Id: devide.py,v 1.53 2004/09/08 21:59:23 cpbotha Exp $
 
 DEVIDE_VERSION = '20040714'
 
@@ -419,15 +419,18 @@ class devide_app_t(wx.App):
 
         for w in children:
             try:
-                w.Iconize()
-                
+                if w.IsShown() and not w.IsIconized():
+                    try:
+                        w.Iconize()
+
+                    except wx.PyAssertionError:
+                        # we get this if it's not created yet
+                        pass
+
             except AttributeError:
                 # it's a panel for instance
                 pass
             
-            except wx.PyAssertionError:
-                # we get this if it's not created yet
-                pass
 
     def _windowRestoreAllChildren(self):
         children = self._mainFrame.GetChildren()
@@ -440,6 +443,9 @@ class devide_app_t(wx.App):
                     if w.IsShown() and w.IsIconized():
                         try:
                             w.Restore()
+                            # after a restore, we have to do a show,
+                            # or windows go crazy under Weendows.
+                            w.Show()
 
                         except wx.PyAssertionError:
                             # this is usually "not implemented" on gtk, so we
