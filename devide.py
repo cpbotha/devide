@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.67 2004/11/28 15:16:03 cpbotha Exp $
+# $Id: devide.py,v 1.68 2004/11/30 12:18:49 cpbotha Exp $
 
 DEVIDE_VERSION = '20041125'
 
@@ -199,13 +199,14 @@ class devide_app_t(wx.App):
                 self.logMessage(text)
 
             elif textType == 1:
-                # ErrorText - shown and logged
-                wx.LogError(text)
-                self.logMessage(text)
                 # and we disable execution, else the error keeps on getting
                 # triggered...
                 self.moduleManager.disableExecution()
                 self._mainFrame.enableExecutionCheckBox.SetValue(0)
+                
+                # ErrorText - shown and logged
+                wx.LogError(text)
+                self.logMessage(text)
                 
             elif textType == 2:
                 # WarningText

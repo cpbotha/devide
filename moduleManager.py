@@ -223,6 +223,11 @@ class moduleManager:
         modules that are created.
         """
 
+        # already disabled, return... (we get recursing errors if we
+        # don't guard it like this)
+        if self._executionDisabled:
+            return
+        
         for moduleInstance in self._moduleDict:
             if hasattr(moduleInstance, 'disableExecution'):
                 moduleInstance.disableExecution()
