@@ -5,7 +5,22 @@ import vtk
 import vtkdevide
 
 class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
-    
+    """Filter to fill holes.
+
+    In binary images, holes are image regions with 0-value that are completely
+    surrounded by regions of 1-value.  This module can be used to fill these
+    holes.  This filling also works on greyscale images.
+
+    In addition, the definition of a hole can be adapted by 'deactivating'
+    image borders so that 0-value regions that touch these deactivated borders
+    are still considered to be holes and will be filled. 
+
+    This module is based on two DeVIDE-specific filters: a fast greyscale
+    reconstruction filter as per Luc Vincent and a special image border mask
+    generator filter.
+
+    $Revision: 1.2 $
+    """
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
@@ -30,38 +45,14 @@ class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(self, self._imageGreyReconstruct,
                                            'Performing reconstruction.')
 
-        self._config.holesTouchX0 = False
-        self._config.holesTouchX1 = False
-        self._config.holesTouchY0 = False
-        self._config.holesTouchY1 = False
-        self._config.holesTouchZ0 = False
-        self._config.holesTouchZ1 = False
+        self._config.holesTouchEdges = (0,0,0,0,0,0)
 
         configList = [
-            ('Allow holes to touch minimum X-edge:', 'holesTouchX0',
-             'base:bool', 'checkbox',
-             'A hole touching this X-edge will not be considered background, '
-             'i.e. it will be filled.'),
-            ('Allow holes to touch maximum X-edge:', 'holesTouchX1',
-             'base:bool', 'checkbox',
-             'A hole touching this X-edge will not be considered background, '
-             'i.e. it will be filled.'),
-            ('Allow holes to touch minimum Y-edge:', 'holesTouchY0',
-             'base:bool', 'checkbox',
-             'A hole touching this Y-edge will not be considered background, '
-             'i.e. it will be filled.'),
-            ('Allow holes to touch maximum Y-edge:', 'holesTouchY1',
-             'base:bool', 'checkbox',
-             'A hole touching this Y-edge will not be considered background, '
-             'i.e. it will be filled.'),
-            ('Allow holes to touch minimum Z-edge:', 'holesTouchZ0',
-             'base:bool', 'checkbox',
-             'A hole touching this Z-edge will not be considered background, '
-             'i.e. it will be filled.'),
-            ('Allow holes to touch maximum Z-edge:', 'holesTouchZ1',
-             'base:bool', 'checkbox',
-             'A hole touching this Z-edge will not be considered background, '
-             'i.e. it will be filled.')
+            ('Allow holes to touch edges:', 'holesTouchEdges',
+             'tuple:int,6', 'text',
+             'Indicate which edges (minX, maxX, minY, maxY, minZ, maxZ) may\n'
+             'be touched by holes.  In other words, a hole touching such an\n'
+             'edge will not be considered background and will be filled.')
             ]
 
         scriptedConfigModuleMixin.__init__(self, configList)        
@@ -98,31 +89,25 @@ class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
         self._imageGreyReconstruct.SetInput(0, inputStream)
 
     def getOutputDescriptions(self):
-        return ('Filled VTK Image Data',)
+        return ('Filled VTK Image Data', 'Marker')
 
     def getOutput(self, idx):
-        return self._imageBorderMask.GetOutput()
+        if idx == 0:
+            return self._imageGreyReconstruct.GetOutput()
+        else:
+            return self._imageBorderMask.GetOutput()
 
     def logicToConfig(self):
         borders = self._imageBorderMask.GetBorders()
-        self._config.holesTouchX0 = bool(borders[0])
-        self._config.holesTouchX1 = bool(borders[1])        
-        self._config.holesTouchY0 = bool(borders[2])
-        self._config.holesTouchY1 = bool(borders[3])        
-        self._config.holesTouchZ0 = bool(borders[4])
-        self._config.holesTouchZ1 = bool(borders[5])
+        # if there is a border, a hole touching that edge is no hole
+        self._config.holesTouchEdges = [int(not i) for i in borders]
 
     def configToLogic(self):
-        borders = [self._config.holesTouchX0,
-                   self._config.holesTouchX1,
-                   self._config.holesTouchY0,
-                   self._config.holesTouchY1,
-                   self._config.holesTouchZ0,
-                   self._config.holesTouchZ1]
+        borders = [int(not i) for i in self._config.holesTouchEdges]
         self._imageBorderMask.SetBorders(borders)
 
     def executeModule(self):
-        self._imageBorderMask.Update()
+        self._imageGreyReconstruct.Update()
 
 
 
