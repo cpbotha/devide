@@ -29,7 +29,7 @@ class mainFrame(wxFrame):
         wxglade_tmp_menu.Append(self.helpAboutId , "&About", "Get information about DSCAS3")
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
-        self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that eek.")
+        self.progressText = wxStaticText(self.panel_1, -1, "This is quite a long progress message so that even the longest of messages eek.")
         self.progressGauge = wxGauge(self.panel_1, -1, 100)
 
         self.__set_properties()
