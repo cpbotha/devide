@@ -11,7 +11,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
     The underlying logic can do far more than the UI shows at this moment.
     Please let me know if you require more options.
     
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     # get these values from vtkImageMathematics.h
@@ -100,9 +100,5 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
     def executeModule(self):
         self._imageMath.Update()
 
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
 
 
