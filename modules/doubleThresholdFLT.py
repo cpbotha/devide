@@ -39,38 +39,69 @@ class doubleThresholdFLT(module_base):
         # get rid of our reference
         del self._imageThreshold
 
-    def get_input_descriptions(self):
+    def getInputDescriptions(self):
 	return ('vtkImageData',)
     
-    def set_input(self, idx, input_stream):
+    def setInput(self, idx, input_stream):
         self._imageThreshold.SetInput(input_stream)
     
-    def get_output_descriptions(self):
+    def getOutputDescriptions(self):
 	return ('vtkImageData',)
     
-    def get_output(self, idx):
+    def getOutput(self, idx):
         return self._imageThreshold.GetOutput()
-    
-    def sync_config(self):
-        
+
+    def logicToConfig(self):
         self._config.lt = self._imageThreshold.GetLowerThreshold()
-        self._config.up = self._imageThreshold.GetUpperThreshold()
+        self._config.ut = self._imageThreshold.GetUpperThreshold()
         self._config.ri = self._imageThreshold.GetReplaceIn()
         self._config.iv = self._imageThreshold.GetInValue()
         self._config.ro = self._imageThreshold.GetReplaceOut()
         self._config.ov = self._imageThreshold.GetOutValue()
         self._config.os = self._imageThreshold.GetOutputScalarType()
+
+    def configToLogic(self):
+        self._imageThreshold.ThresholdBetween(self._config.lt, self._config.ut)
+        self._imageThreshold.SetReplaceIn(self._config.ri)
+        self._imageThreshold.SetInValue(self._config.iv)
+        self._imageThreshold.SetReplaceOut(self._config.ro)
+        self._imageThreshold.SetOutValue(self._config.ov)
+        self._imageThreshold.SetOutputScalarType(self._config.os)
+
+    def viewToConfig(self):
+        self._config.lt = self._viewFrame.lowerTresholdSlider.GetValue()
+        self._config.ut = self._viewFrame.upperThresholdSlider.GetValue()
+        self._config.ri = self._viewFrame.replaceInCheckBox.GetValue()
+        self._config.iv = self._viewFrame.replaceInText.GetValue()
+        self._config.ro = self._viewFrame.replaceOutCheckBox.GetValue()
+        self._config.ov = self._viewFrame.replaceOutText.GetValue()
+
+        ocString = self._viewFrame.objectChoice.GetStringSelection()
+        if len(ocString) == 0:
+            print "AAAAAAAAACK, this shouldn't HAPPEN!"
+            print "Trouble with outputType choice in doubleThresholdFLT.py"
+            # set to last string in list, should be default
+            ocString = self._outputTypes.keys()[-1]
+
+        try:
+            symbolicOutputType = self._outputTypes[ocString]
+        except KeyError:
+            print "AAAAAAAAACK, this shouldn't HAPPEN!"
+            print "Trouble with ocString in doubleThresholdFLT.py"
+            # set to last string in list, should be default
+            symbolicOutputType = self._outputTypes.values()[-1]
+
+        # fixme: continue here...
         
-        filename = self._writer.GetFileName()
-        if filename == None:
-            filename = ''
+    def sync_config(self):
+        
 
         self._setViewFrameFilename(filename)
 	
     def apply_config(self):
         self._writer.SetFileName(self._getViewFrameFilename())
 
-    def execute_module(self):
+    def executeModule(self):
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
         # your module - you could do this in __init__ as well, it seems
