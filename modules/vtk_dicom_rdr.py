@@ -1,5 +1,6 @@
-# $Id: vtk_dicom_rdr.py,v 1.1 2002/08/16 11:46:31 cpbotha Exp $
+# $Id: vtk_dicom_rdr.py,v 1.2 2002/08/16 13:05:43 cpbotha Exp $
 
+import os
 from module_base import \
      module_base, \
      module_mixin_vtk_pipeline_config, \
@@ -21,6 +22,10 @@ class vtk_dicom_rdr(module_base,
 
         # setup necessary VTK objects
 	self._reader = vtkcpbothapython.vtkDICOMVolumeReader()
+
+        # this part of the config is stored in this module, and not in
+        # the reader.
+        self._dicom_dirname = None
 
         # following is the standard way of connecting up the dscas3 progress
         # callback to a VTK object; you should do this for all objects in
@@ -52,16 +57,13 @@ class vtk_dicom_rdr(module_base,
 	return self._reader.GetOutput()
     
     def sync_config(self):
-        pass
-#         fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')
-#         filename = self._reader.GetFileName()
-#         if filename == None:
-#             filename = ""
-#         fn_text.SetValue(filename)
+        if self._dicom_dirname:
+            self._view_frame.dirname_text.SetValue(self._dicom_dir_name)
+        else:
+            self._view_frame.dirname_text.SetValue("")
 	
     def apply_config(self):
-        fn_text = XMLCTRL(self._view_frame, 'MV_ID_FILENAME')        
-        self._reader.SetFileName(fn_text.GetValue())
+        self._reader.SetFileName(self._view_frame.dirname_text.GetValue())
 
     def execute_module(self):
         # get the vtkPolyDataReader to try and execute
@@ -83,16 +85,17 @@ class vtk_dicom_rdr(module_base,
 
         EVT_BUTTON(self._view_frame, self._view_frame.BROWSE_BUTTON_ID,
                    self.dn_browse_cb)
+        EVT_CHOICE(self._view_frame, self._view_frame.VTK_OBJECT_CHOICE_ID,
+                   self.vtk_object_choice_cb)
+        EVT_BUTTON(self._view_frame, self._view_frame.VTK_PIPELINE_ID,
+                   self.vtk_pipeline_cb)
 
-        # bind events specific to this bitch
-#         EVT_BUTTON(self._view_frame, XMLID('MV_ID_BROWSE'), self.fn_browse_cb)
-#         EVT_CHOICE(self._view_frame, XMLID('MV_ID_VTK_OBJECT_CHOICE'),
-#                    self.vtk_object_choice_cb)
-#         EVT_BUTTON(self._view_frame, XMLID('MV_ID_VTK_PIPELINE'),
-#                    self.vtk_pipeline_cb)
+        module_utils.bind_CSAEO2(self, self._view_frame)
 
         # bind events to the standard cancel, sync, apply, execute, ok buttons
 #        module_utils.bind_CSAEO(self, self._view_frame)
+
+
 
     def view(self, parent_window=None):
 	# first make sure that our variables agree with the stuff that
@@ -109,10 +112,9 @@ class vtk_dicom_rdr(module_base,
             self._view_frame.dirname_text.SetValue(path)
 
     def vtk_object_choice_cb(self, event):
-        choice = XMLCTRL(self._view_frame,'MV_ID_VTK_OBJECT_CHOICE')
-        if choice != None:
-            if choice.GetStringSelection() == 'vtkPolyDataReader':
-                self.vtk_object_configure(self._view_frame, None, self._reader)
+        if self._view_frame.object_choice.GetStringSelection() == \
+           'vtkDICOMVolumeReader':
+            self.vtk_object_configure(self._view_frame, None, self._reader)
 
     def vtk_pipeline_cb(self, event):
         # move this to module utils too, or to base...

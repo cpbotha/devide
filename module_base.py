@@ -1,4 +1,4 @@
-# $Id: module_base.py,v 1.18 2002/08/16 11:46:24 cpbotha Exp $
+# $Id: module_base.py,v 1.19 2002/08/16 13:05:41 cpbotha Exp $
 
 # ----------------------------------------------------------------------------
 
@@ -63,9 +63,14 @@ class module_base:
 	raise NotImplementedError
     
     def sync_config(self):
+        """Synchronise module view with configuration of underlying system.
+        """
 	raise NotImplementedError
     
     def apply_config(self):
+        """Apply changes that have been made to view (dialogue) to the
+        underlying system.
+        """
 	raise NotImplementedError
     
     def execute_module(self):
