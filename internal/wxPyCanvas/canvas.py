@@ -21,10 +21,10 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         wx.EVT_MOUSE_EVENTS(self, self.OnMouseEvent)
         wx.EVT_PAINT(self, self.OnPaint)
 
-    def OnMouseEvent(self, event):
-        # these coordinates are relative to the visible part of the canvas
-        ex, ey = event.GetX(), event.GetY()
-
+    def eventToRealCoords(self, ex, ey):
+        """Convert window event coordinates to canvas relative coordinates.
+        """
+        
         # get canvas parameters
         vsx, vsy = self.GetViewStart()
         dx, dy = self.GetScrollPixelsPerUnit()
@@ -32,6 +32,15 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         # calculate REAL coords
         rx = ex + vsx * dx
         ry = ey + vsy * dy
+
+        return (rx, ry)
+        
+
+    def OnMouseEvent(self, event):
+        # these coordinates are relative to the visible part of the canvas
+        ex, ey = event.GetX(), event.GetY()
+
+        rx, ry = self.eventToRealCoords(ex, ey)
 
         # add the "real" coords to the event structure
         event.realX = rx

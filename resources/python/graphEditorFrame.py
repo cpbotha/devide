@@ -17,7 +17,8 @@ class graphEditorFrame(wxFrame):
         self.window_1_pane_2 = wxPanel(self.window_1, -1)
         self.window_1_pane_1 = wxPanel(self.window_1, -1)
         self.frame_1_statusbar = self.CreateStatusBar(1)
-        self.treeCtrl = wxTreeCtrl(self.window_1_pane_1, -1)
+        self.treeCtrlId  =  wxNewId()
+        self.treeCtrl = wxTreeCtrl(self.window_1_pane_1, self.treeCtrlId , style=wxTR_HAS_BUTTONS|wxSUNKEN_BORDER)
         self.rescanButtonId  =  wxNewId()
         self.rescanButton = wxButton(self.window_1_pane_1, self.rescanButtonId , "Rescan")
         self.canvas = wxpcCanvas(self.window_1_pane_2)
@@ -34,9 +35,8 @@ class graphEditorFrame(wxFrame):
         frame_1_statusbar_fields = ["Welcome to the DSCAS3 Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
-        self.treeCtrl.SetSize((161, 399))
-        self.canvas.SetSize((468, 421))
-        self.window_1.SetSize((640, 430))
+        self.canvas.SetSize((489, 431))
+        self.window_1.SetSize((661, 440))
         self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 163)
         # end wxGlade
 

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.19 2003/05/20 22:04:17 cpbotha Exp $
+# $Id: graphEditor.py,v 1.20 2003/06/04 14:44:41 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -9,6 +9,15 @@ import string
 import sys
 import traceback
 
+# ----------------------------------------------------------------------------
+class geCanvasDropTarget(wxTextDropTarget):
+    
+    def __init__(self, graphEditor):
+        wxTextDropTarget.__init__(self)        
+        self._graphEditor = graphEditor
+
+    def OnDropText(self, x, y, text):
+        self._graphEditor.canvasDropText(x, y, text)
 
 # ----------------------------------------------------------------------------
 class graphEditor:
@@ -28,20 +37,83 @@ class graphEditor:
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
                    lambda e, s=self: s.fill_module_tree())
 
+        # this will be filled in by self.fill_module_tree; it's here for
+        # completeness
+        self._availableModuleList = None
         self.fill_module_tree()
+
+        EVT_TREE_BEGIN_DRAG(self._graphFrame, self._graphFrame.treeCtrlId,
+                            self.treeCtrlBeginDragHandler)
 
         # setup the canvas...
         self._graphFrame.canvas.SetVirtualSize((1024, 1024))
         self._graphFrame.canvas.SetScrollRate(20,20)
-        # bind events on the canvas
-        self._graphFrame.canvas.addObserver('buttonDown',
-                                            self._canvasLeftClick)
 
+        # the canvas is a drop target
+        self._canvasDropTarget = geCanvasDropTarget(self)
+        self._graphFrame.canvas.SetDropTarget(self._canvasDropTarget)
+        
+        # bind events on the canvas
         self._graphFrame.canvas.addObserver('buttonUp',
                                             self._canvasButtonUp)
         
         # now display the shebang
         self.show()
+
+    def treeCtrlBeginDragHandler(self, event):
+        itemText = self._graphFrame.treeCtrl.GetItemText(event.GetItem())
+        dataObject = wxTextDataObject(itemText)
+        
+        dropSource = wxDropSource(self._graphFrame)
+        dropSource.SetData(dataObject)
+        # we don't need the result of the DoDragDrop call (phew)
+        dropSource.DoDragDrop(TRUE)
+
+    def canvasDropText(self, x, y, text):
+        self.createModule(x, y, text)
+        # check if the text is in our module list (then we should create it)
+
+    def createModule(self, x, y, moduleName):
+        # check that it's a valid module name
+        if moduleName in self._availableModuleList:
+            # we have a valid module, we should try and instantiate
+            mm = self._dscas3_app.getModuleManager()
+            temp_module = mm.createModule(moduleName)
+            # if the module_manager did its trick, we can make a glyph
+            if temp_module:
+                rx, ry = self._graphFrame.canvas.eventToRealCoords(x, y)
+                co = wxpc.coGlyph((rx, ry),
+                                  len(temp_module.getInputDescriptions()),
+                                  len(temp_module.getOutputDescriptions()),
+                                  moduleName, temp_module)
+                canvas = self._graphFrame.canvas
+                canvas.addObject(co)
+
+
+                co.addObserver('motion', self._glyphMotion)
+                    
+                co.addObserver('buttonDown',
+                               self._glyphRightClick, temp_module)
+                co.addObserver('buttonUp',
+                               self._glyphButtonUp, temp_module)
+                co.addObserver('drag',
+                               self._glyphDrag, temp_module)
+
+                # first have to draw the just-placed glyph so it has
+                # time to update its (label-dependent) dimensions
+                dc = wxClientDC(self._graphFrame.canvas)
+                self._graphFrame.canvas.PrepareDC(dc)
+                co.draw(dc)
+
+                # THEN reroute all lines
+                allLines = self._graphFrame.canvas.getObjectsOfClass(
+                    wxpc.coLine)
+                    
+                for line in allLines:
+                    self._routeLine(line)
+
+                # redraw all
+                canvas.Refresh()
 
     def fill_module_tree(self):
         self._graphFrame.treeCtrl.DeleteAllItems()
@@ -55,7 +127,8 @@ class graphEditor:
 
         mm = self._dscas3_app.getModuleManager()
         mm.scanModules()
-        for cur_mod in mm.getAvailableModuleList():
+        self._availableModuleList = mm.getAvailableModuleList()
+        for cur_mod in self._availableModuleList:
             mtype = cur_mod[-3:].lower()
             if mtype == 'rdr':
                 self._graphFrame.treeCtrl.AppendItem(rdrn, cur_mod)
@@ -125,56 +198,6 @@ class graphEditor:
             genUtils.logError('Could not disconnect modules: %s' \
                               % (str(e)))
                 
-
-    def _canvasLeftClick(self, canvas, eventName, event, userData):
-        if event.LeftDown():
-            # we are in "create/edit" mode, so let's create some glyph
-            # first get the currently selected tree node
-            sel_item = self._graphFrame.treeCtrl.GetSelection()
-            # then the root node
-            root_item = self._graphFrame.treeCtrl.GetRootItem()
-            if root_item != sel_item and \
-                   self._graphFrame.treeCtrl.GetItemText(sel_item) and \
-                   self._graphFrame.treeCtrl.GetItemParent(sel_item) != root_item:
-                # we have a valid module, we should try and instantiate
-                mod_name = self._graphFrame.treeCtrl.GetItemText(sel_item)
-                mm = self._dscas3_app.getModuleManager()
-                temp_module = mm.createModule(mod_name)
-                # if the module_manager did its trick, we can make a glyph
-                if temp_module:
-                    co = wxpc.coGlyph((event.realX, event.realY),
-                                      len(temp_module.getInputDescriptions()),
-                                      len(temp_module.getOutputDescriptions()),
-                                      mod_name, temp_module)
-                    canvas.addObject(co)
-
-
-                    co.addObserver('motion', self._glyphMotion)
-                    
-                    co.addObserver('buttonDown',
-                                   self._glyphRightClick, temp_module)
-                    co.addObserver('buttonUp',
-                                   self._glyphButtonUp, temp_module)
-                    co.addObserver('drag',
-                                   self._glyphDrag, temp_module)
-
-                    # we've just placed a glyph, reroute all lines
-                    
-                    # first have to draw the just-placed glyph so it has
-                    # time to update its (label-dependent) dimensions
-                    dc = wxClientDC(self._graphFrame.canvas)
-                    self._graphFrame.canvas.PrepareDC(dc)
-                    co.draw(dc)
-
-                    # THEN reroute all lines
-                    allLines = self._graphFrame.canvas.getObjectsOfClass(
-                        wxpc.coLine)
-                    
-                    for line in allLines:
-                        self._routeLine(line)
-
-                    # redraw all
-                    canvas.Refresh()
 
     def _canvasButtonUp(self, canvas, eventName, event, userData):
         if event.LeftUp():
