@@ -1,5 +1,5 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.10 2004/02/25 20:24:10 cpbotha Exp $
+# $Id: implicits.py,v 1.11 2004/02/25 20:50:32 cpbotha Exp $
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -15,12 +15,12 @@ class implicitInfo:
         self.function = None
 
 class implicits(object, s3dcGridMixin):
-    _gridCols = [('Name', 100), ('Type', 0), ('Enabled', 0)]
+    _gridCols = [('Name', 100), ('Type', 75), ('Enabled', 0)]
     _gridNameCol = 0
     _gridTypeCol = 1
     _gridEnabledCol = 2
 
-    _implicitTypes = ['Plane']
+    _implicitTypes = ['Plane', 'Sphere']
 
     _boundsTypes = ['Primary Input', 'Selected object', 'Visible objects',
                     'Manual']
@@ -199,6 +199,50 @@ class implicits(object, s3dcGridMixin):
                 oId = implicitWidget.AddObserver('EndInteractionEvent',
                                                  observerImplicitPlaneWidget)
                     
+            elif implicitType == "Sphere":
+                implicitWidget = vtk.vtkSphereWidget()
+                implicitWidget.SetPlaceFactor(1.25)
+                implicitWidget.TranslationOn()
+                implicitWidget.ScaleOn()
+                #implicitWidget.HandleVisibilityOn()
+                
+                if pi != None:
+                    implicitWidget.SetInput(pi)
+                    implicitWidget.PlaceWidget()
+                    #b = pi.GetBounds()
+                    #implicitWidget.SetOrigin(b[0], b[2], b[4])
+                elif bounds != None:
+                    implicitWidget.PlaceWidget(bounds)
+                    #implicitWidget.SetOrigin(bounds[0], bounds[2], bounds[4])
+                else:
+                    # this can never happen
+                    pass
+
+                implicitWidget.SetInteractor(rwi)
+                implicitWidget.On()
+
+                # create the implicit function
+                implicitFunction = vtk.vtkSphere()
+                # sync it to the initial widget
+                self._syncSphereFunctionToWidget(implicitWidget)
+                # add it to the output
+                self.outputImplicitFunction.AddFunction(implicitFunction)
+
+                # now add an observer to the widget
+                def observerImplicitSphereWidget(widget, eventName):
+                    # sync it to the initial widget
+                    ret = self._syncSphereFunctionToWidget(widget)
+                    # also select the correct grid row
+                    if ret != None:
+                        name, ii = ret
+                        row = self.findGridRowByName(name)
+                        if row >= 0:
+                            self._grid.SelectRow(row)
+
+                oId = implicitWidget.AddObserver('EndInteractionEvent',
+                                                 observerImplicitSphereWidget)
+
+
 
             if implicitWidget:
                 # first add to our internal thingy
@@ -317,6 +361,21 @@ class implicits(object, s3dcGridMixin):
                 if selectedPoint['pointWidget']:
                     selectedPoint['pointWidget'].Off()
 
+
+    def findNameImplicitInfoUsingWidget(self, widget):
+        # let's find widget in our records
+        found = False
+        for name, ii in self._implicitsDict.items():
+            if ii.widget == widget:
+                found  = True
+                break
+
+        if found:
+            return name, ii
+        else:
+            return None
+        
+        
     def findGridRowByName(self, name):
         nrGridRows = self._grid.GetNumberRows()
         rowFound = False
@@ -585,3 +644,18 @@ class implicits(object, s3dcGridMixin):
         else:
             return None
             
+
+    def _syncSphereFunctionToWidget(self, widget):
+
+        r = self.findNameImplicitInfoUsingWidget(widget)
+        if r != None:
+            name, ii = r
+            
+            ii.function.SetCenter(ii.widget.GetCenter())
+            ii.function.SetRadius(ii.widget.GetRadius())
+
+            # as a convenience, we return the name and ii
+            return name, ii
+        
+        else:
+            return None
