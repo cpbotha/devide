@@ -1,6 +1,8 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: implicits.py,v 1.5 2004/02/23 22:28:35 cpbotha Exp $
-#
+# $Id: implicits.py,v 1.6 2004/02/23 22:47:25 cpbotha Exp $
+# TODO:
+# * at creation, there's a radiobox with the choices of placement:
+#   visiblePropBounds, primary input, manual (extent is entered), default
 
 import genUtils
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
