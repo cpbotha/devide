@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.36 2003/08/12 10:24:20 cpbotha Exp $
+# $Id: graphEditor.py,v 1.37 2003/08/12 12:42:58 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -92,6 +92,9 @@ class graphEditor:
 
         self._graphFrame.SetIcon(self._dscas3_app.getApplicationIcon())
 
+        self._appendEditCommands(self._graphFrame.editMenu, self._graphFrame,
+                                 (0,0), False)
+
         EVT_CLOSE(self._graphFrame, self.close_graph_frame_cb)
 
         EVT_BUTTON(self._graphFrame, self._graphFrame.rescanButtonId,
@@ -106,8 +109,14 @@ class graphEditor:
         EVT_MENU(self._graphFrame, self._graphFrame.fileOpenId,
                  self._fileOpenCallback)
 
+        EVT_MENU(self._graphFrame, self._graphFrame.fileOpenSegmentId,
+                 self._handlerFileOpenSegment)
+
         EVT_MENU(self._graphFrame, self._graphFrame.fileSaveId,
                  self._fileSaveCallback)
+
+        EVT_MENU(self._graphFrame, self._graphFrame.fileSaveSelectedId,
+                 self._handlerFileSaveSelected)
 
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
@@ -167,7 +176,7 @@ class graphEditor:
         # this should take care of just about everything!
         self.clearAllGlyphsFromCanvas()
 
-    def _appendEditCommands(self, pmenu, origin):
+    def _appendEditCommands(self, pmenu, eventWidget, origin, disable=True):
         """Append copy/cut/paste/delete commands and the default handlers
         to a given menu.  Origin is used by the paste command, and should be
         the REAL canvas coordinates, i.e. with scroll position taken into
@@ -175,36 +184,45 @@ class graphEditor:
         """
         
         copyId = wxNewId()
-        ni = wxMenuItem(pmenu, copyId, 'Copy Selected')
+        ni = wxMenuItem(pmenu, copyId, 'Copy Selected',
+                        'Copy the selected glyphs into the copy buffer.')
         pmenu.AppendItem(ni)
-        EVT_MENU(self._graphFrame.canvas, copyId,
+        EVT_MENU(eventWidget, copyId,
                  self._handlerCopySelected)
-        if not self._glyphSelection.getSelectedGlyphs():
-            ni.Enable(False)
+        if disable:
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
             
         cutId = wxNewId()
-        ni = wxMenuItem(pmenu, cutId, 'Cut Selected')
+        ni = wxMenuItem(pmenu, cutId, 'Cut Selected',
+                        'Cut the selected glyphs into the copy buffer.')
         pmenu.AppendItem(ni)
-        EVT_MENU(self._graphFrame.canvas, cutId,
+        EVT_MENU(eventWidget, cutId,
                  self._handlerCutSelected)
-        if not self._glyphSelection.getSelectedGlyphs():
-            ni.Enable(False)
+        if disable:
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
             
         pasteId = wxNewId()
-        ni = wxMenuItem(pmenu, pasteId, 'Paste')
+        ni = wxMenuItem(
+            pmenu, pasteId, 'Paste',
+            'Paste the contents of the copy buffer onto the canvas.')
         pmenu.AppendItem(ni)
-        EVT_MENU(self._graphFrame.canvas, pasteId,
+        EVT_MENU(eventWidget, pasteId,
                  lambda e: self._handlerPaste(e, origin))
-        if not self._copyBuffer:
-            ni.Enable(False)
+        if disable:
+            if not self._copyBuffer:
+                ni.Enable(False)
         
         deleteId = wxNewId()
-        ni = wxMenuItem(pmenu, deleteId, 'Delete Selected')
+        ni = wxMenuItem(pmenu, deleteId, 'Delete Selected',
+                        'Delete all selected glyphs.')
         pmenu.AppendItem(ni)
-        EVT_MENU(self._graphFrame.canvas, deleteId,
+        EVT_MENU(eventWidget, deleteId,
                  lambda e: self._deleteSelectedGlyphs())
-        if not self._glyphSelection.getSelectedGlyphs():
-            ni.Enable(False)
+        if disable:
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
         
 
     def createGlyph(self, rx, ry, moduleName, moduleInstance):
@@ -292,21 +310,44 @@ class graphEditor:
     def show(self):
         self._graphFrame.Show(True)
 
+    def _handlerFileOpenSegment(self, event):
+        filename = wxFileSelector(
+            "Choose DSCAS3 network to load into copy buffer",
+            "", "", "d3n",
+            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+        
+        if filename:
+            self._loadNetworkIntoCopyBuffer(filename)
+
+    def _handlerFileSaveSelected(self, event):
+        glyphs = self._glyphSelection.getSelectedGlyphs()
+        if glyphs:
+            filename = wxFileSelector(
+                "Choose filename for DSCAS3 network",
+                "", "", "d3n",
+                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+                    
+            if filename:
+                self._saveNetwork(glyphs, filename)
+
     def _handlerPaste(self, event, position):
         if self._copyBuffer:
             self._realiseNetwork(
+                # when we paste, we want the thing to reposition!
                 self._copyBuffer[0], self._copyBuffer[1], self._copyBuffer[2],
-                position)
+                position, True)
             
     def _handlerCopySelected(self, event):
-        self._copyBuffer = self._serialiseNetwork(
-            self._glyphSelection.getSelectedGlyphs())
+        if self._glyphSelection.getSelectedGlyphs():
+            self._copyBuffer = self._serialiseNetwork(
+                self._glyphSelection.getSelectedGlyphs())
 
     def _handlerCutSelected(self, event):
-        self._copyBuffer = self._serialiseNetwork(
-            self._glyphSelection.getSelectedGlyphs())
+        if self._glyphSelection.getSelectedGlyphs():
+            self._copyBuffer = self._serialiseNetwork(
+                self._glyphSelection.getSelectedGlyphs())
         
-        self._deleteSelectedGlyphs()
+            self._deleteSelectedGlyphs()
 
     def hide(self):
         self._graphFrame.Show(False)
@@ -403,7 +444,8 @@ class graphEditor:
             pmenu = wxMenu('Canvas Menu')
 
             # fill it out with edit (copy, cut, paste, delete) commands
-            self._appendEditCommands(pmenu, (event.realX, event.realY))
+            self._appendEditCommands(pmenu, self._graphFrame.canvas,
+                                     (event.realX, event.realY))
 
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
                                                              event.GetY()))
@@ -557,10 +599,12 @@ class graphEditor:
         self._graphFrame.canvas.Refresh()
 
     def _realiseNetwork(self, pmsDict, connectionList, glyphPosDict,
-                        origin=(0,0)):
+                        origin=(0,0), reposition=False):
         """Given a pmsDict, connectionList and glyphPosDict, recreate
-        the network described by those structures.  The
-        origin of the glyphs will be set.
+        the network described by those structures.  The origin of the glyphs
+        will be set.  If reposition is True, the uppermost and leftmost
+        coordinates of all glyphs in glyphPosDict is subtracted from all
+        stored glyph positions before adding the origin.
         """
         
         # get the module manager to deserialise
@@ -572,6 +616,15 @@ class graphEditor:
         # connections which were _actually_ realised... let's draw
         # glyphs!
 
+        if reposition:
+            coords = glyphPosDict.values()
+            minX = min([coord[0] for coord in coords])
+            minY = min([coord[1] for coord in coords])
+            reposCoords = [minX, minY]
+            
+        else:
+            reposCoords = [0, 0]
+
         # store the new glyphs in a dictionary keyed on OLD pickled
         # instanceName so that we can connect them up in the next step
         newGlyphDict = {} 
@@ -579,7 +632,8 @@ class graphEditor:
             position = glyphPosDict[newModulePickledName]
             moduleInstance = newModulesDict[newModulePickledName]
             newGlyph = self.createGlyph(
-                position[0] + origin[0], position[1] + origin[1],
+                position[0] - reposCoords[0] + origin[0],
+                position[1] - reposCoords[1] + origin[1],
                 moduleInstance.__class__.__name__,
                 moduleInstance)
             newGlyphDict[newModulePickledName] = newGlyph
@@ -590,20 +644,49 @@ class graphEditor:
             tGlyph = newGlyphDict[connection.targetInstanceName]
             self._createLine(sGlyph, connection.outputIdx,
                              tGlyph, connection.inputIdx)
-        
 
-    def loadNetwork(self, filename, position=(0,0)):
+    def _loadAndRealiseNetwork(self, filename):
+        """Attempt to load (i.e. unpickle) a D3N network file and recreate
+        this network on the canvas.
+        """
+
+        try:
+            pmsDict, connectionList, glyphPosDict = self._loadNetwork(filename)
+            self._realiseNetwork(pmsDict, connectionList, glyphPosDict,
+                                 (0,0))
+        except Exception, e:
+            genUtils.logError(str(e))
+
+    def _loadNetworkIntoCopyBuffer(self, filename):
+        """Attempt to load (i.e. unpickle) a D3N network and bind the
+        tuple to self._copyBuffer.  When the user pastes, the network will
+        be recreated.  DANG!
+        """
+
+        try:
+            pmsDict, connectionList, glyphPosDict = self._loadNetwork(filename)
+            self._copyBuffer = (pmsDict, connectionList, glyphPosDict)
+
+        except Exception, e:
+            genUtils.logError(str(e))
+
+    def _loadNetwork(self, filename):
+        """Given a filename, read it as a D3N file and return a tuple with
+        (pmsDict, connectionList, glyphPosDict) if successful.  If not
+        successful, an exception will be raised.
+        """
+        
         f = None
         try:
             # load the fileData
             f = open(filename, 'rb')
             fileData = f.read()
         except Exception, e:
-            genUtils.logError('Could not load network from %s: %s' % \
-                              (filename,str(e)))
             if f:
                 f.close()
-            return
+
+            raise RuntimeError, 'Could not load network from %s:\n%s' % \
+                  (filename,str(e))
 
         f.close()
 
@@ -613,23 +696,21 @@ class graphEditor:
             pmsDict, connectionList, glyphPosDict = dataTuple
             
         except Exception, e:
-            genUtils.logError('Could not interpret network from %s: %s' % \
-                              (filename,str(e)))
-            return
+            raise RuntimeError, 'Could not interpret network from %s:\n%s' % \
+                  (filename,str(e))
+            
 
         if magic != 'D3N' or (major,minor,patch) != (1,0,0):
-            genUtils.logError('%s is not a valid DSCAS3 network file.' % \
-                              (filename,))
+            raise RuntimeError, '%s is not a valid DSCAS3 network file.' % \
+                  (filename,)
 
-        self._realiseNetwork(pmsDict, connectionList, glyphPosDict,
-                             position)
+        return (pmsDict, connectionList, glyphPosDict)
 
-    def saveNetwork(self, filename):
-        # make a list of all module instances
-        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
 
+
+    def _saveNetwork(self, glyphs, filename):
         (pmsDict, connectionList, glyphPosDict) = \
-                  self._serialiseNetwork(allGlyphs)
+                  self._serialiseNetwork(glyphs)
 
         # change the serialised moduleInstances to a pickled stream
         headerAndData = (('D3N', 1, 0, 0), \
@@ -723,17 +804,19 @@ class graphEditor:
         
         if filename:
             self.clearAllGlyphsFromCanvas()
-            self.loadNetwork(filename)
+            self._loadAndRealiseNetwork(filename)
 
     def _fileSaveCallback(self, event):
-        filename = wxFileSelector(
-            "Choose filename for DSCAS3 network",
-            "", "", "d3n",
-            "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
+        # make a list of all glyphs
+        allGlyphs = self._graphFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        if allGlyphs:
+            filename = wxFileSelector(
+                "Choose filename for DSCAS3 network",
+                "", "", "d3n",
+                "DSCAS3 networks (*.d3n)|*.d3n|All files (*.*)|*.*")
         
-        if filename:
-            print "Saving to %s" % (filename)
-            self.saveNetwork(filename)
+            if filename:
+                self._saveNetwork(allGlyphs, filename)
 
     def _glyphDrag(self, glyph, eventName, event, module):
 
@@ -827,7 +910,8 @@ class graphEditor:
             EVT_MENU(self._graphFrame.canvas, del_id,
                      lambda e: self._deleteModule(glyph))
 
-            self._appendEditCommands(pmenu, (event.GetX(), event.GetY()))
+            self._appendEditCommands(pmenu, self._graphFrame.canvas,
+                                     (event.GetX(), event.GetY()))
 
             # popup that menu!
             self._graphFrame.canvas.PopupMenu(pmenu, wxPoint(event.GetX(),
