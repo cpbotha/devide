@@ -1,26 +1,11 @@
-# imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: imageGaussianSmooth.py,v 1.4 2003/11/22 17:16:36 cpbotha Exp $
-# performs image smoothing by convolving with a Gaussian
-
-import genUtils
+import InsightToolkit as itk
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
-import moduleUtils
-from wxPython.wx import *
-import vtk
+import wx
 
-class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
+class imageStackRDR(moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
-
-        self._imageGaussianSmooth = vtk.vtkImageGaussianSmooth()
-
-        moduleUtils.setupVTKObjectProgress(self, self._imageGaussianSmooth,
-                                           'Smoothing image with Gaussian')
-
-        self._config.standardDeviation = (2.0, 2.0, 2.0)
-        self._config.radiusCutoff = (1.5, 1.5, 1.5)
 
         self._viewFrame = None
         self._createViewFrame()
@@ -29,29 +14,20 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         self.syncViewWithLogic()
 
     def close(self):
-        # we play it safe... (the graph_editor/module_manager should have
-        # disconnected us by now)
-        self.setInput(0, None)
-        # don't forget to call the close() method of the vtkPipeline mixin
-        vtkPipelineConfigModuleMixin.close(self)
-        # take out our view interface
         self._viewFrame.Destroy()
-        # get rid of our reference
-        del self._imageGaussianSmooth
-        # and finally call our base dtor
         moduleBase.close(self)
-        
+
     def getInputDescriptions(self):
-        return ('vtkImageData',)
+        return ()
 
     def setInput(self, idx, inputStream):
-        self._imageGaussianSmooth.SetInput(inputStream)
+        raise Exception
 
     def getOutputDescriptions(self):
-        return (self._imageGaussianSmooth.GetOutput().GetClassName(),)
+        return ('ITK Image Stack',)
 
     def getOutput(self, idx):
-        return self._imageGaussianSmooth.GetOutput()
+        return self._imageStack
 
     def logicToConfig(self):
         self._config.standardDeviation = self._imageGaussianSmooth.\
@@ -107,4 +83,6 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
 
         moduleUtils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
+
+        
 
