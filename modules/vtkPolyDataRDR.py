@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataRDR.py,v 1.2 2003/02/13 12:55:02 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.3 2003/02/17 21:22:37 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -6,7 +6,6 @@ from wxPython.wx import *
 from wxPython.xrc import *
 import vtk
 import os
-import module_utils
 
 class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
     
