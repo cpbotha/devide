@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.10 2004/10/20 16:41:04 cpbotha Exp $
+# $Id: tdObjects.py,v 1.11 2004/10/21 14:55:18 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -111,24 +111,26 @@ class tdObjects(s3dcGridMixin):
                     # to get the name of the scalars we need to do this.
                     tdObject.Update()
                 
-                    # now some special case handling
                     if tdObject.GetPointData().GetScalars():
                         sname = tdObject.GetPointData().GetScalars().GetName()
                     else:
                         sname = None
+
+                    if sname:
+                        mapper.SetScalarRange(tdObject.GetScalarRange())
                 
-                    if sname and sname.lower().find("curvature") >= 0:
-                        # if the active scalars have "curvature" somewhere in
-                        # their name, activate flat shading and scalar vis
-                        property = actor.GetProperty()
-                        property.SetInterpolationToFlat()
-                        mapper.ScalarVisibilityOn()
+#                     if sname and sname.lower().find("curvature") >= 0:
+#                         # if the active scalars have "curvature" somewhere in
+#                         # their name, activate flat shading and scalar vis
+#                         property = actor.GetProperty()
+#                         property.SetInterpolationToFlat()
+#                         mapper.ScalarVisibilityOn()
                     
-                    else:
-                        # the user can switch this back on if she really
-                        # wants it
-                        # we switch it off as we mostly work with isosurfaces
-                        mapper.ScalarVisibilityOff()
+#                     else:
+#                         # the user can switch this back on if she really
+#                         # wants it
+#                         # we switch it off as we mostly work with isosurfaces
+#                         mapper.ScalarVisibilityOff()
                 
                     # connect an event handler to the data
                     source = tdObject.GetSource()
