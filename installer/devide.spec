@@ -18,6 +18,8 @@ print "[*] mainScript == %s" % (mainScript)
 
 # segments
 segTree = Tree(os.path.join(APP_DIR, 'segments'), 'segments', ['CVS'])
+# snippets
+snipTree = Tree(os.path.join(APP_DIR, 'snippets'), 'snippets', ['CVS']) 
 # arb data
 dataTree = Tree(os.path.join(APP_DIR, 'data'), 'data', ['CVS'])
 # documents and help, exclude help source
@@ -88,7 +90,7 @@ exe = EXE(pyz,
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
 allBinaries = a.binaries + userModulesTree + modulePacksTree + vpli + \
-              extraLibs + segTree + dataTree + docsTree
+              extraLibs + segTree + snipTree + dataTree + docsTree
 
 # make sure removeNames is lowercase
 removeNames = [i.lower() for i in removeNames]
