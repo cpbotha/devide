@@ -12,7 +12,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
     equal to the 'Input Connected Value'.  This module casts all input to
     unsigned char.  The output is also unsigned char.
 
-    $Revision: 1.6 $
+    $Revision: 1.7 $
     """
 
     def __init__(self, moduleManager):
@@ -32,8 +32,6 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
-        # inputPoints observer ID
-        self._inputPointsOID = None
         # this will be our internal list of points
         self._seedPoints = []
 
@@ -73,12 +71,12 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
             # will work for None and not-None
             self._imageCast.SetInput(inputStream)
         else:
-            if inputStream is not self._inputPoints:
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(self._inputPointsOID)
+            if inputStream != self._inputPoints:
+                if self._inputPoints != None:
+                    self._inputPoints.removeObserver(self._inputPointsObserver)
 
-                if inputStream:
-                    self._inputPointsOID = inputStream.addObserver(
+                if inputStream != None:
+                    inputStream.addObserver(
                         self._inputPointsObserver)
 
                 self._inputPoints = inputStream
@@ -174,10 +172,15 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
         if tempList != self._seedPoints:
             self._seedPoints = tempList
             self._seedConnect.RemoveAllSeeds()
+            # we need to call Modified() explicitly as RemoveAllSeeds()
+            # doesn't.  AddSeed() does, but sometimes the list is empty at
+            # this stage and AddSeed() isn't called.
+            self._selectccs.Modified()
+            
             for seedPoint in self._seedPoints:
                 self._seedConnect.AddSeed(seedPoint[0], seedPoint[1],
                                           seedPoint[2])
-                print "adding %s" % (str(seedPoint))
+
 
 
 
