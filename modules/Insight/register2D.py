@@ -85,6 +85,7 @@ class register2D(moduleBase):
             # let's setup for a new stack!
             try:
                 assert(isinstance(inputStream, imageStackClass))
+                print "about to call update"
                 inputStream.Update()
                 assert(len(inputStream) >= 2)
             except Exception:
