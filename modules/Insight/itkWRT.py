@@ -1,4 +1,4 @@
-# $Id: itkWRT.py,v 1.1 2004/05/11 17:26:12 cpbotha Exp $
+# $Id: itkWRT.py,v 1.2 2004/05/13 16:23:13 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -19,7 +19,7 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
     <li>.hdr or .img: Analyze .hdr header and .img data</li>
     </ul>
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
 
@@ -33,10 +33,15 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
         self._input = None
         self._writer = None
 
+        wildCardString = 'Meta Image all-in-one (*.mha)|*.mha|' \
+                         'Meta Image separate header/data (*.mhd)|*.mhd|' \
+                         'Analyze separate header/data (*.hdr)|*.hdr|' \
+                         'All files (*)|*'
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
-                              'Meta Image (*.mha)|*.mha|All files (*)|*',
-                              {'Module (self)': self})
+                              wildCardString,
+                              {'Module (self)': self},
+                              fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''
