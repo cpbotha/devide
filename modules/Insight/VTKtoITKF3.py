@@ -1,4 +1,4 @@
-# $Id: VTKtoITKF3.py,v 1.1 2004/03/03 11:26:25 cpbotha Exp $
+# $Id: VTKtoITKF3.py,v 1.2 2004/03/16 12:29:00 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -20,7 +20,7 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
         self._imageCast.SetOutputScalarTypeToFloat()
 
         self._vtkExporter = vtk.vtkImageExport()
-        self._vtkExporter.SetInput(self._imageCast.GetOutput())
+        #self._vtkExporter.SetInput(self._imageCast.GetOutput())
 
         # later we can build multiple pipelines with different types
         self._itkImporter = itk.itkVTKImageImportF3_New()
@@ -60,6 +60,13 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
 
     def setInput(self, idx, inputStream):
         self._imageCast.SetInput(inputStream)
+        if inputStream and self._imageCast.GetInput() == inputStream:
+            # a non-NULL input has been connected, so we connect up with
+            # the vtkExporter
+            self._vtkExporter.SetInput(self._imageCast.GetOutput())
+        else:
+            # the connect has been unsuccesful or the input is NULL
+            self._vtkExporter.SetInput(None)
 
     def getOutputDescriptions(self):
         return ('ITK Image (3D, float)',)

@@ -1,4 +1,4 @@
-# $Id: ITKUL3toVTK.py,v 1.1 2004/03/10 17:56:19 cpbotha Exp $
+# $Id: ITKUL3toVTK.py,v 1.2 2004/03/16 12:29:00 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ import ConnectVTKITKPython as CVIPy
 class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
     """Convert ITK 3D unsigned long data to VTK.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -58,6 +58,11 @@ class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
 
     def setInput(self, idx, inputStream):
         self._itkExporter.SetInput(inputStream)
+        if not inputStream:
+            # if the inputStream is NULL, we make sure that the output is empty
+            self._vtkImporter.GetOutput().SetWholeExtent((0,0,0,0,0,0))
+            self._vtkImporter.GetOutput().SetExtent((0,0,0,0,0,0))
+            self._vtkImporter.GetOutput().SetUpdateExtent((0,0,0,0,0,0))            
 
     def getOutputDescriptions(self):
         return ('VTK Image Data',)

@@ -1,4 +1,4 @@
-# $Id: ITKF3toVTK.py,v 1.2 2004/03/09 11:23:51 cpbotha Exp $
+# $Id: ITKF3toVTK.py,v 1.3 2004/03/16 12:29:00 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ import ConnectVTKITKPython as CVIPy
 class ITKF3toVTK(noConfigModuleMixin, moduleBase):
     """Convert ITK 3D float data to VTK.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -58,6 +58,11 @@ class ITKF3toVTK(noConfigModuleMixin, moduleBase):
 
     def setInput(self, idx, inputStream):
         self._itkExporter.SetInput(inputStream)
+        if not inputStream:
+            # if the inputStream is NULL, we make sure that the output is empty
+            self._vtkImporter.GetOutput().SetWholeExtent((0,0,0,0,0,0))
+            self._vtkImporter.GetOutput().SetExtent((0,0,0,0,0,0))
+            self._vtkImporter.GetOutput().SetUpdateExtent((0,0,0,0,0,0))            
 
     def getOutputDescriptions(self):
         return ('VTK Image Data',)
