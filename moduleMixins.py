@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.38 2004/05/19 11:50:32 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.39 2004/05/19 14:23:34 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -561,7 +561,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
     
     def __init__(self, moduleManager, vtkObjectBinding, progressText,
                  inputDescriptions, outputDescriptions,
-                 replaceDoc=True):
+                 replaceDoc=True, inputFunctions=None):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
         pickleVTKObjectsModuleMixin.__init__(self)
@@ -582,6 +582,8 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
 
         self._inputDescriptions = inputDescriptions
         self._outputDescriptions = outputDescriptions
+
+        self._inputFunctions = inputFunctions
 
         # we don't have to call configToLogic or syncViewWithLogic, everything
         # should be in sync
@@ -605,10 +607,18 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
     def setInput(self, idx, inputStream):
         # this will only be called for a certain idx if you've specified that
         # many elements in your getInputDescriptions
-        if idx == 0:
-            self._theFilter.SetInput(inputStream)
+
+        if self._inputFunctions:
+            eval('self._theFilter.%s(inputStream)' %
+                 (self._inputFunctions[idx]))
+
         else:
-            eval('self._theFilter.SetInput%d(inputStream)' % (idx,))
+            # usually, we use SetInput() for the first function,
+            # SetInput2() for the second function, etc.
+            if idx == 0:
+                self._theFilter.SetInput(inputStream)
+            else:
+                eval('self._theFilter.SetInput%d(inputStream)' % (idx+1,))
 
     def executeModule(self):
         for i in range(len(self.getOutputDescriptions())):
