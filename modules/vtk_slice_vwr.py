@@ -1,12 +1,11 @@
-# $Id: vtk_slice_vwr.py,v 1.13 2002/03/28 11:55:48 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.14 2002/03/28 17:16:28 cpbotha Exp $
 from module_base import module_base
 from vtkpython import *
 import Tkinter
 from Tkconstants import *
 import Pmw
-from vtkPipeline.vtkPipeline import vtkPipelineBrowser, \
-     vtkPipelineSegmentBrowser
 from vtkTkRenderWidget import vtkTkRenderWidget
+import module_utils
 
 
 class vtk_slice_vwr(module_base):
