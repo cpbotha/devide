@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.6 2002/05/07 08:31:03 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.7 2002/05/10 22:21:23 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -479,6 +479,7 @@ class ConfigVtkObj:
         return panel
 
     def get_set_cb(self, event, i):
+        # let's be naughty...
         self.get_set_var[i] = event.GetEventObject().GetValue()
 
     def make_get_gui (self, parent):
@@ -537,9 +538,12 @@ class ConfigVtkObj:
 	"Choose and set a color from a GUI color chooser."
 
         # setup current colour
-        cur_colour = wxColour(self.get_set_var[i][0] * 255.0,
-                              self.get_set_var[i][1] * 255.0,
-                              self.get_set_var[i][2] * 255.0)
+        # we need to convert get_set_var[i], which could be string, to
+        # a tuple...
+        exec('colour_tuple = %s' % str(self.get_set_var[i]))
+        cur_colour = wxColour(colour_tuple[0] * 255.0,
+                              colour_tuple[1] * 255.0,
+                              colour_tuple[2] * 255.0)
         ccd = wxColourData()
         ccd.SetColour(cur_colour)
         # we want the detailed dialog under windows        
@@ -553,7 +557,9 @@ class ConfigVtkObj:
             self.get_set_var[i] = (float(new_col.Red()) / 255.0 * 1.0,
                                    float(new_col.Green()) / 255.0 * 1.0,
                                    float(new_col.Blue()) / 255.0 * 1.0)
-            # now we need to update the frigging text input
+            # now we need to update the frigging text input (and this is going
+            # to trigger the callback in anycase, which is going to repeat the
+            # line above, but with text)
             self.get_set_texts[i].SetValue(str(self.get_set_var[i]))
 
         dlg.Destroy()
