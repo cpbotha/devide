@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.25 2004/05/24 21:24:01 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.26 2004/07/06 16:21:25 cpbotha Exp $
 
 from wxPython.wx import *
 from external.vtkPipeline.vtkPipeline import \
@@ -240,9 +240,13 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     ocLabel = wxStaticText(viewFramePanel, -1, "Examine the")
     objectChoiceId = wxNewId()
     objectChoice = wxChoice(viewFramePanel, objectChoiceId, choices=[])
+    objectChoice.SetToolTip(wxToolTip(
+        "Select an object from the drop-down box to introspect it."))
     pbLabel = wxStaticText(viewFramePanel, -1, "or")
     pipelineButtonId = wxNewId()
     pipelineButton = wxButton(viewFramePanel, pipelineButtonId, "Pipeline")
+    pipelineButton.SetToolTip(wxToolTip(
+        "Show the underlying VTK pipeline."))
 
     hSizer = wxBoxSizer(wxHORIZONTAL)
     hSizer.Add(ocLabel, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
