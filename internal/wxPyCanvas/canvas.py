@@ -196,6 +196,17 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
     def getObjectsOfClass(self, classt):
         return [i for i in self._cobjects if isinstance(i, classt)]
 
+    def getObjectWithMouse(self):
+        """Return object currently containing mouse, None if no object has
+        the mouse.
+        """
+
+        for cobject in self._cobjects:
+            if cobject.__hasMouse:
+                return cobject
+
+        return None
+
     def dragObject(self, cobj, delta):
         if abs(delta[0]) > 0 or abs(delta[1]) > 0:
             # calculate new position

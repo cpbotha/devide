@@ -26,6 +26,7 @@ class graphEditorFrame(wxFrame):
         self.fileSaveId  =  wxNewId()
         self.fileSaveSelectedId  =  wxNewId()
         self.fileExitId  =  wxNewId()
+        self.helpContextHelpId  =  wxNewId()
         wxglade_tmp_menu = wxMenu()
         wxglade_tmp_menu.Append(self.fileNewId , "&New\tCtrl-N", "Create new network.", wxITEM_NORMAL)
         wxglade_tmp_menu.Append(self.fileOpenId , "&Open\tCtrl-O", "Open and load existing network.", wxITEM_NORMAL)
@@ -38,7 +39,7 @@ class graphEditorFrame(wxFrame):
         self.editMenu = wxMenu()
         self.frame_1_menubar.Append(self.editMenu, "&Edit")
         wxglade_tmp_menu = wxMenu()
-        wxglade_tmp_menu.Append(wxNewId(), "&Context-sensitive Help\tF1", "", wxITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.helpContextHelpId , "&Context-sensitive Help\tF1", "", wxITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         self.frame_1_statusbar = self.CreateStatusBar(1)
@@ -55,16 +56,14 @@ class graphEditorFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: graphEditorFrame.__set_properties
         self.SetTitle("DSCAS3 Graph Editor")
-        self.SetSize((680, 487))
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
         frame_1_statusbar_fields = ["Welcome to the DSCAS3 Graph Editor"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
-        self.treeCtrl.SetSize((167, 400))
-        self.canvas.SetSize((502, 422))
+        self.treeCtrl.SetSize((182, 400))
         self.window_1.SetSize((680, 431))
-        self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 169)
+        self.window_1.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 184)
         # end wxGlade
 
     def __do_layout(self):
@@ -73,7 +72,7 @@ class graphEditorFrame(wxFrame):
         sizer_2 = wxBoxSizer(wxVERTICAL)
         sizer_3 = wxBoxSizer(wxVERTICAL)
         sizer_3.Add(self.treeCtrl, 1, wxEXPAND, 0)
-        sizer_3.Add(self.rescanButton, 0, 0, 0)
+        sizer_3.Add(self.rescanButton, 0, wxALIGN_CENTER_HORIZONTAL, 0)
         self.window_1_pane_1.SetAutoLayout(1)
         self.window_1_pane_1.SetSizer(sizer_3)
         sizer_3.Fit(self.window_1_pane_1)
@@ -83,9 +82,11 @@ class graphEditorFrame(wxFrame):
         self.window_1_pane_2.SetSizer(sizer_2)
         sizer_2.Fit(self.window_1_pane_2)
         sizer_2.SetSizeHints(self.window_1_pane_2)
-        sizer_1.Add(self.window_1, 1, wxEXPAND, 0)
+        sizer_1.Add(self.window_1, 1, wxALL|wxEXPAND, 7)
         self.SetAutoLayout(1)
         self.SetSizer(sizer_1)
+        sizer_1.Fit(self)
+        sizer_1.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 

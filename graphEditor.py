@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.44 2003/09/29 22:59:01 cpbotha Exp $
+# $Id: graphEditor.py,v 1.45 2003/09/30 09:54:55 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -116,6 +116,9 @@ class graphEditor:
 
         EVT_MENU(self._graphFrame, self._graphFrame.fileSaveSelectedId,
                  self._handlerFileSaveSelected)
+
+        EVT_MENU(self._graphFrame, self._graphFrame.helpContextHelpId,
+                 self._handlerHelpContextHelp)
 
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
@@ -413,6 +416,14 @@ class graphEditor:
                 # when we paste, we want the thing to reposition!
                 self._copyBuffer[0], self._copyBuffer[1], self._copyBuffer[2],
                 position, True)
+
+    def _handlerHelpContextHelp(self, event):
+        owm = self._graphFrame.canvas.getObjectWithMouse()
+        if owm and hasattr(owm, 'moduleInstance'):
+            self._helpModule(owm.moduleInstance)
+
+        # if there's no module under the cursor, we should popup "normal"
+        # context sensitive help
             
     def _handlerCopySelected(self, event):
         if self._glyphSelection.getSelectedGlyphs():
