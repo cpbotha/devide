@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.14 2004/11/20 22:01:23 cpbotha Exp $
+# $Id: tdObjects.py,v 1.15 2004/12/06 16:20:17 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -236,6 +236,10 @@ class tdObjects(s3dcGridMixin):
             ('Const&rain Motion',
              'Constrain the motion of selected objects to the selected slices',
              self._handlerObjectPlaneLock, True),
+            ('Rotate around object axis',
+             'Rotate selected objects a specified number of degrees around '
+             'their attached axes.', self._handlerObjectAxisRotate,
+             True),
             ('---',), # important!  one-element tuple...
             ('Animate Objects',
              'Animate all present objects by controlling exclusive visibility',
@@ -277,6 +281,8 @@ class tdObjects(s3dcGridMixin):
 
         tubeFilter = vtk.vtkTubeFilter()
         tubeFilter.SetNumberOfSides(8)
+        # 100 times thinner than it is long
+        tubeFilter.SetRadius(d / 100.0)
         tubeFilter.SetInput(lineSource.GetOutput())
 
         lineMapper = vtk.vtkPolyDataMapper()
@@ -1022,6 +1028,89 @@ class tdObjects(s3dcGridMixin):
                 wx.OK | wx.ICON_INFORMATION)
             
             md.ShowModal()
+
+    def _handlerObjectAxisRotate(self, event):
+        #
+        sObjects = self._getSelectedObjects()
+
+        if not sObjects:
+            md = wx.MessageDialog(self.slice3dVWR.controlFrame,
+                                  "Select at least one object before "
+                                  "using AxisToSlice.",
+                                  "Information",
+                                  wx.OK | wx.ICON_INFORMATION)
+            md.ShowModal()
+            return
+
+        for sObject in sObjects:
+            objectDict = self._tdObjectsDict[sObject]
+            if 'axisPoints' not in objectDict:
+                md = wx.MessageDialog(self.slice3dVWR.controlFrame,
+                                      "Object %s has no attached axis "
+                                      "around which it can be rotated. "
+                                      "Please attach an axis." \
+                                      % (objectDict['objectName'],),
+                                      "Information",
+                                      wx.OK | wx.ICON_INFORMATION)
+
+            else:
+            
+                # we have to check for an axis first
+                angleText = wx.GetTextFromUser(
+                    'Enter the number of degrees to rotate the selected '
+                    'objects around their attached axes.')
+
+                if angleText:
+                    try:
+                        angle = float(angleText)
+                    except ValueError:
+                        pass
+                    else:
+                        # first switch of the motion widget (else things
+                        # get really confusing)
+                        motionSwitched = False
+                        if self.getObjectMotion(sObject):
+                            self._setObjectMotion(sObject, False)
+                            motionSwitched = True
+
+                        # the stored axis points represent the ORIGINAL
+                        # location of the axis defining points...
+                        # we have to transform these with the current
+                        # transform of the axisactor
+                        axisMatrix = vtk.vtkMatrix4x4()
+                        axisLineActor = objectDict['axisLineActor']
+                        axisLineActor.GetMatrix(axisMatrix)
+                        axisPoints = objectDict['axisPoints']
+                        
+                        twoPoints = []
+                        twoPoints.append(axisMatrix.MultiplyPoint(
+                            axisPoints[0] + (1,))[0:3])
+                        twoPoints.append(axisMatrix.MultiplyPoint(
+                            axisPoints[1] + (1,))[0:3])
+                            
+
+                        # do the actual rotation
+                        # calculate the axis vector
+                        v = map(operator.sub, twoPoints[1], twoPoints[0])
+                        vtk.vtkMath.Normalize(v)
+                        # create a transform with the requested rotation
+                        newTransform = vtk.vtkTransform()
+                        newTransform.Identity()
+                        newTransform.RotateWXYZ(angle, v)
+                        self._transformObjectProps(sObject, newTransform)
+                        
+                        # make sure everything dependent on this tdObject
+                        # is updated
+                        self._postObjectMotionSync(sObject)
+
+                        # switch motion back on if it was switched off
+                        if motionSwitched:
+                            self._setObjectMotion(sObject, True)
+            
+        
+        if sObjects:
+            self.slice3dVWR.render3D()
+            
 
     def _initialiseGrid(self):
         """Setup the object listCtrl from scratch, mmmkay?
