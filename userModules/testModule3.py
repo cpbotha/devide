@@ -89,7 +89,8 @@ class testModule3(moduleBase, noConfigModuleMixin):
     
 
     def executeModule(self):
-        if self._tf.GetInput():
+        if self._tf.GetInput() and self._outsidePoint and self._giaGlenoid:
+            
             self._curvatures.Update()
             # vtkCurvatures has added a mean curvature array to the
             # pointData of the output polydata
@@ -131,9 +132,31 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
             # DONE BUILDING NEIGBOUR MAP ################################
 
-            print tempPd1.GetScalarRange()
-            # the curvature data is unsigned, let's try and change that
-            tempPd1.GetPointData().GetArray("Mean_Curvature")
+            # BUILDING SEED IMAGE #######################################
+
+            # now let's build the seed image
+            # wherever we want to enforce minima, the seed image
+            # should be equal to the lowest value of the mask image
+            # everywhere else it should be the maximum value of the mask
+            # image
+            cMin, cMax = tempPd1.GetScalarRange()            
+            seedPd = vtk.vtkPolyData()
+            # first make a copy of the complete PolyData
+            seedPd.DeepCopy(tempPd1)
+            # now change EVERYTHING to the maximum value
+            print seedPd.GetPointData().GetScalars().GetName()
+            # we know that the active scalars thingy has only one component,
+            # namely Mean_Curvature - set it all to MAX
+            seedPd.GetPointData().GetScalars().FillComponent(0, cMax)
+
+            # now find the minima and set them too
+            pl = vtk.vtkPointLocator()
+            pl.SetDataSet(seedPd)
+            pl.BuildLocator()
+            gPtId = pl.FindClosestPoint(self._giaGlenoid)
+            oPtId = pl.FindClosestPoint(self._outsidePoint)
+
+            # DONE BUILDING SEED IMAGE ###################################
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

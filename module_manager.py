@@ -9,6 +9,7 @@ import modules
 class module_manager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program."""
+    
     def __init__(self, dscas3_app):
 	"""Initialise module manager by fishing .py dscas3 modules from
 	all pertinent directories."""
