@@ -151,10 +151,13 @@ class moduleManager:
         # then all the user modules
         self._availableModuleList += userModuleList
 
-        networkSegmentList = []
-        recursiveDirectoryD3MNSearch(os.path.join(appDir, 'networkSegments'),
-                                     None, networkSegmentList)
-        self.availableSegmentsList = networkSegmentList
+        # we should move this functionality to the graphEditor.  "segments"
+        # are _probably_ only valid there... alternatively, we should move
+        # the concept here
+        segmentList = []
+        recursiveDirectoryD3MNSearch(os.path.join(appDir, 'segments'),
+                                     None, segmentList)
+        self.availableSegmentsList = segmentList
 
     def get_app_dir(self):
         return self._dscas3_app.get_appdir()
