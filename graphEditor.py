@@ -1,6 +1,6 @@
 
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.2 2003/05/07 16:13:38 cpbotha Exp $
+# $Id: graphEditor.py,v 1.3 2003/05/07 16:40:17 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 from wxPython.wx import *
@@ -18,37 +18,6 @@ except NameError:
         WX_USE_X_CAPTURE = 1
     else:
         WX_USE_X_CAPTURE = 0
-
-# ----------------------------------------------------------------------------
-class ge_glyph:
-    def __init__(self, shape_canvas, name, module_instance, x, y):
-        # some instance variables
-        self._name = name
-        self._module_instance = module_instance
-        input_descrs = self._module_instance.getInputDescriptions()
-        output_descrs = self._module_instance.getOutputDescriptions()
-        self._shape = ge_glyph_shape(shape_canvas, self, x, y,
-                                     len(input_descrs), len(output_descrs))
-
-    def close(self):
-        """This method will remove all traces of the glyph from existence.
-
-        Important note: we did not create the module instance, so we will
-        NOT destroy it.  Also, we're not responsible for the links.  So,
-        destroy the module instance, disconnect all links to and from it,
-        then call this close method.  Okay?
-        """
-        self._shape.close()
-        
-
-    def get_name(self):
-        return self._name
-
-    def get_main_shape(self):
-        return self._shape
-
-    def get_module_instance(self):
-        return self._module_instance
 
 
 # ----------------------------------------------------------------------------
@@ -222,6 +191,8 @@ class graphEditor:
 
                 co.addObserver('buttonDown',
                                self._glyphRightClick, temp_module)
+                co.addObserver('drag',
+                               self._glyphDrag, temp_module)
                 
                 canvas.Refresh()
                 #ge_glyph(self._graphFrame.canvas, mod_name, temp_module, x, y)
@@ -343,6 +314,19 @@ class graphEditor:
         if f_ret and hasattr(f_ret[0], 'get_inout'):
             self.updatePortInfoStatusbar(io_shape, f_ret[0])
 
+    def _glyphDrag(self, glyph, eventName, event, module):
+        # determine whether this drag belongs to one of the ports
+        if glyph.draggingPort():
+            FIXME continue here
+        
+        canvas = glyph.getCanvas()
+        canvas.dragObject(glyph, canvas.getMouseDelta())
+        
+        if not canvas.getDraggedObject():
+            # this means that this drag has JUST been cancelled
+            # neat huh?
+            glyph.setDraggedPort(None)
+            canvas.Refresh()
 
     def _glyphRightClick(self, glyph, eventName, event, module):
         if event.RightDown():
@@ -357,7 +341,7 @@ class graphEditor:
             del_id = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, del_id, 'Delete'))
             EVT_MENU(self._graphFrame.canvas, del_id,
-                     lambda e, s=self, glyph=glyph: s.del_shape_cb(glyph))
+                     lambda e: self._deleteModule(module, glyph))
 
             mcs_id = wxNewId()
             pmenu.AppendItem(wxMenuItem(pmenu, mcs_id,
@@ -375,23 +359,31 @@ class graphEditor:
         mm =self._dscas3_app.getModuleManager()
         mm.viewModule(module)
 
-    def del_shape_cb(self, glyph):
+    def _deleteModule(self, module, glyph):
         try:
             # it is important that we first delete all dependants and
             # then suppliers of the glyph
+
             
-            # delete all outgoing connections
-            for oshape in glyph.get_main_shape().get_output_shapes():
-                self.disconnect_glyphs_by_oshape(oshape)
-            # delete all incoming connections
-            for ishape in glyph.get_main_shape().get_input_shapes():
-                self.disconnect_glyphs_by_ishape(ishape)
-            # we're going to destroy the glyph, make sure we keep tabs
-            module_instance = glyph.get_module_instance()
-            glyph.close()
-            # if all that worked, we can nuke the module
+            
+#             # delete all outgoing connections
+#             for oshape in glyph.get_main_shape().get_output_shapes():
+#                 self.disconnect_glyphs_by_oshape(oshape)
+#             # delete all incoming connections
+#             for ishape in glyph.get_main_shape().get_input_shapes():
+#                 self.disconnect_glyphs_by_ishape(ishape)
+#             # we're going to destroy the glyph, make sure we keep tabs
+#             module_instance = glyph.get_module_instance()
+#             glyph.close()
+
+            
             mm = self._dscas3_app.getModuleManager()
-            mm.deleteModule(module_instance)
+            # this will also perform ALL necessary disconnections
+            mm.deleteModule(module)
+
+            canvas = glyph.getCanvas()
+            canvas.removeObject(glyph)
+            canvas.Refresh()
 
         except Exception, e:
             genUtils.logError('Could not delete module: %s' % (str(e)))

@@ -220,8 +220,7 @@ class moduleManager:
         for inputIdx in range(len(inputs)):
             instance.setInput(inputIdx, None)
             # set supplier to None - so we know it's nuked
-            inputs[inputIdx][0] = None
-            inputs[inputIdx][1] = -1
+            inputs[inputIdx] = None
 
         # we've disconnected completely - let's reset all lists
         self._moduleDict[instance].resetInputsOutputs()
