@@ -17,7 +17,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     This module uses a DeVIDE-specific implementation of Luc Vincent's
     fast greyscale reconstruction algorithm, extended for 3D.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -25,9 +25,15 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
+        # these will be our markers
+        self._inputPoints = None
+        # we keep track of our observer ID so we can remove it
+        self._inputPointsObserverID = None
+
         self._dualGreyReconstruct = vtkdevide.vtkImageGreyscaleReconstruct3D()
         # we'll use this to synthesise a volume according to the seed points
         self._markerSource = vtk.vtkProgrammableSource()
+        self._markerSource.SetExecuteMethod(self._markerSourceExecute)
         # second input is J (the marker)
         self._dualGreyReconstruct.SetInput2(
             self._markerSource.GetStructuredPointsOutput())
@@ -65,10 +71,42 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
 
     def setInput(self, idx, inputStream):
         if idx == 0:
-            self._dualGreyReconstruct.SetInput1(inputStream)
+            if inputStream != self._dualGreyReconstruct.GetInput1():
+                self._dualGreyReconstruct.SetInput1(inputStream)
+                # if we have a different image input, the seeds will have to
+                # be rebuilt!
+                self._markerSource.Modified()
+                
         else:
-            # store the points, take out observer
-            pass
+            if inputStream != self._inputPoints:
+                # check that the inputStream is either None (meaning
+                # disconnect) or a valid type
+
+                try:
+                    if inputStream != None and \
+                       inputStream.devideType != 'namedPoints':
+                        raise TypeError
+
+                except (AttributeError, TypeError):
+                    raise TypeError, 'This input requires a points-type'
+                    
+                
+                if self._inputPoints:
+                    self._inputPoints.removeObserver(
+                        self._inputPointsObserverID)
+                    self._inputPointsObserverID = None
+
+                self._inputPoints = inputStream
+                
+                if self._inputPoints:
+                    self._inputPointsObserverID = self._inputPoints.\
+                                                  addObserver(
+                        self._observerInputPoints)
+
+                # the input points situation has changed, make sure
+                # the marker source knows this...
+                self._markerSource.Modified()
+
 
     def getOutputDescriptions(self):
         return ('VTK Image Data', )
@@ -91,3 +129,33 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
     def executeModule(self):
         self._dualGreyReconstruct.Update()
 
+    def _markerSourceExecute(self):
+        imageI = self._dualGreyReconstruct.GetInput1()
+        if imageI:
+            imageI.Update()
+            
+            # setup and allocate J output
+            outputJ = self._markerSource.GetStructuredPointsOutput()
+            # _dualGreyReconstruct wants inputs the same with regards to
+            # dimensions, origin and type, so this is okay.
+            outputJ.CopyStructure(imageI)
+            outputJ.AllocateScalars()
+
+            # we need this to build up J
+            minI, maxI = imageI.GetScalarRange()
+
+            # initialise all scalars to maxI
+            scalars = outputJ.GetPointData().GetScalars()
+            scalars.FillComponent(0, maxI)
+
+            # now go through all seed points and set those positions in
+            # the scalars to minI
+            for ip in self._inputPoints:
+                x,y,z = ip['discrete']
+                outputJ.SetScalarComponentFromDouble(x, y, z, 0, minI)
+            
+
+    def _observerInputPoints(self, obj):
+        # this will be called if anything happens to the points
+        # simply make sure our markerSource knows that it's now invalid
+        self._markerSource.Modified()
