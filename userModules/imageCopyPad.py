@@ -15,5 +15,5 @@ class imageCopyPad(simpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         simpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtktudImagingPython.vtkImageCopyPad(), 'Extend image by copying border voxels.',
+            vtktudImagingPython.vtkImageCopyPad(), 'Extending image by copying border voxels.',
             ('vtkImageData',), ('vtkImageData',))
