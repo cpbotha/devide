@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.39 2004/05/19 14:23:34 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.40 2004/05/20 01:24:27 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -438,8 +438,11 @@ class pickleVTKObjectsModuleMixin(object):
     Your module has to derive from moduleBase as well so that it has a
     self._config!
 
-    Remember to call the __init__ of this class (and setting _vtkObjectNames)
-    as well as close().  If you override logicToConfig and configToLogic,
+    Remember to call the __init__ of this class (and to set _vtkObjectNames)
+    as well as close().  Also call logicToConfig() as the last call of your
+    __init__ to initialise the _config to the initial state of the logic.
+
+    If you override logicToConfig and configToLogic,
     don't forget to call these versions as well.
     """
 
@@ -488,7 +491,7 @@ class pickleVTKObjectsModuleMixin(object):
                 # we search up to the To
                 end = self.statePattern.search (stateGroup[0]).start ()
                 # so we turn SetBlaatToOne to GetBlaat
-                get_m = 'G'+meths[0][1:end]
+                get_m = 'G'+stateGroup[0][1:end]
                 # we're going to have to be more clever when we setConfig...
                 # use a similar trick to get_state in vtkMethodParser
                 val = eval('vtkObj.%s()' % (get_m,))
@@ -510,7 +513,7 @@ class pickleVTKObjectsModuleMixin(object):
                 vtkObj = getattr(self, vtkObjName)
             except AttributeError:
                 print "pickleVTKObjectsModuleMixin: %s not available " \
-                      "in self._config OR in self.  Skipping."
+                      "in self._config OR in self.  Skipping." % (vtkObjName,)
 
             else:
                 
@@ -525,7 +528,7 @@ class pickleVTKObjectsModuleMixin(object):
                     # keep on calling the methods in stategroup until
                     # the getter returns a value == val.
                     end = self.statePattern.search(stateGroup[0]).start()
-                    getMethod = 'G'+meths[0][1:end]
+                    getMethod = 'G'+stateGroup[0][1:end]
 
                     for i in range(len(stateGroup)):
                         m = stateGroup[i]
@@ -585,13 +588,15 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
 
         self._inputFunctions = inputFunctions
 
-        # we don't have to call configToLogic or syncViewWithLogic, everything
-        # should be in sync
-
+        # make sure that initial _config is in sync with the object
+        self.logicToConfig()
+        
     def close(self):
         pickleVTKObjectsModuleMixin.close(self)
         noConfigModuleMixin.close(self)
         moduleBase.close(self)
+        # get rid of our binding to the vtkObject
+        del self._theFilter
 
     def getOutputDescriptions(self):
         return self._outputDescriptions
