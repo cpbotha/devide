@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.1 2003/08/11 16:49:42 cpbotha Exp $
+# $Id: startupImports.py,v 1.2 2003/08/27 12:34:36 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -32,47 +32,23 @@ def defaultProgressMethod(percentage, message):
     print "%3.2f - %s" % (percentage, message)
 
 def doImports(progressMethod=defaultProgressMethod):
-    steps = 8
-    percentStep = 95.0 / steps
-    currentPercent = 0.0
-
-    importList = [('vtk.common', 'Importing VTK Common'),
-                  ('vtk.filtering', 'Importing VTK Filtering')]
+    importList = [('vtk.common', 'Importing VTK Common.'),
+                  ('vtk.filtering', 'Importing VTK Filtering.'),
+                  ('vtk.io', 'Importing VTK IO.'),
+                  ('vtk.imaging', 'Importing VTK Imaging.'),
+                  ('vtk.graphics', 'Importing VTK Graphics.'),
+                  ('vtk.rendering', 'Importing VTK Rendering.'),
+                  ('vtk.hybrid', 'Importing VTK Hybrid.'),
+                  ('vtk.patented', 'Importing VTK Patented.')]
                   
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK Common.")
-    wx.SafeYield()
-    import vtk.common
-
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK Filtering.")
-    wx.SafeYield()
-    import vtk.filtering
-
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK IO.")
-    wx.SafeYield()
-    import vtk.io
-    
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK Imaging.")
-    wx.SafeYield()
-    import vtk.imaging
-
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK Graphics.")
-    wx.SafeYield()
-    import vtk.graphics
-
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK Rendering.")
-    wx.SafeYield()
-    import vtk.rendering
-
-    currentPercent += percentStep
-    progressMethod(currentPercent, "Importing VTK Hybrid.")
-    wx.SafeYield()
-    import vtk.patented
+    percentStep = 95.0 / len(importList)
+    currentPercent = 0.0
+                  
+    for module, message in importList:
+        currentPercent += percentStep
+        progressMethod(currentPercent, message)
+        wx.SafeYield()
+        exec('import %s' % (module,))
 
     # just to make sure about any other symbols
     import vtk
