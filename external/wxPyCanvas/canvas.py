@@ -120,7 +120,11 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
             cobj.setCanvas(self)
             self._cobjects.append(cobj)
             cobj.__hasMouse = False
-            #cobj.draw()
+
+    def removeObject(self, cobj):
+        if cobj and cobj in self._cobjects:
+            cobj.setCanvas(None)
+            del self._cobjects[self._cobjects.index(cobj)]
 
     def getMouseDelta(self):
         return self._mouseDelta
