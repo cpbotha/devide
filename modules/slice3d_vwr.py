@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.35 2003/03/05 23:04:25 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.36 2003/03/06 16:01:13 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -21,9 +21,10 @@ class sliceDirection:
     has its own window with an orthogonal view.
     """
 
-    def __init__(self, slice3dViewer, defaultPlaneOrientation=-2):
+    def __init__(self, name, slice3dViewer, defaultPlaneOrientation=2):
+        self._name = name
         self._slice3dViewer = slice3dViewer
-        self._defaultPlaneOrientation = -2
+        self._defaultPlaneOrientation = 2
 
         # list of vtkImagePlaneWidgets (first is "primary", rest are overlays)
         self._ipws = []
@@ -71,7 +72,7 @@ class sliceDirection:
                 # this means primary data!
                 self._ipws.append(vtk.vtkImagePlaneWidget())
                 self._ipws[-1].SetInput(inputData)
-                self._ipws[-1].SetInput(self._slice3dViewer.getIPWPicker())
+                self._ipws[-1].SetPicker(self._slice3dViewer.getIPWPicker())
 
                 # now make callback for the ipw
                 self._ipws[-1].AddObserver('StartInteractionEvent',
@@ -84,34 +85,141 @@ class sliceDirection:
                                 lambda e, o:
                                 self._ipwEndInteractionCallback())
 
-                
+                self._resetPrimary()
 
-        def _resetOverlays(self):
-            """Rest all overlays with default LUT, plane orientation and
-            start position."""
+    def close(self):
+        """Shut down everything."""
+
+        # first take care of all our ipws
+        inputDatas = [i.GetInput() for i in self._ipws]
+        for inputData in inputDatas:
+            self.removeData(inputData)
+
+        # kill the whole list
+        del self._ipws
+
+        # make sure we don't point to the sliceviewer
+        del self._slice3dViewer
+        
+
+    def enable(self):
+        """Switch this sliceDirection on."""
+        for ipw in self._ipws:
+            ipw.On()
+
+    def enableInteraction(self):
+        if self._ipws:
+            self._ipws[0].SetInteraction(1)
+
+    def disable(self):
+        """Switch this sliceDirection off."""
+        for ipw in self._ipws:
+            ipw.Off()
+
+    def disableInteraction(self):
+        if self._ipws:
+            self._ipws[0].SetInteraction(0)
+
+    def getName(self):
+        return self._name
+
+    def getNumberOfLayers(self):
+        return len(self._ipws)
+
+    def pushSlice(self):
+        if self._ipws:
+            self._ipws[0].GetPolyDataSource().Push(val)
+            self._ipws[0].UpdatePlacement()
+            self._ipwEndInteractionCallback()
+
+    def removeData(self, inputData):
+        # search for the ipw with this inputData
+        ipwL = [i for i in self._ipws if i.GetInput() is inputData]
+        if ipwL:
+            # there can be only one!
+            ipw = ipwL[0]
+            # switch it off
+            ipw.Off()
+            # disconnect it from the RWI
+            ipw.SetInteractor(None)
+            # disconnect the input
+            ipw.SetInput(None)
+            # finally delete our reference
+            idx = self._ipws.index(ipw)
+            del self._ipws[idx]
+
+    def _resetOverlays(self):
+        """Rest all overlays with default LUT, plane orientation and
+        start position."""
+
+        if len(self._ipws > 1):
+            # iterate through overlay layers
+            for ipw in self._ipws[1:]:
+                lut = vtk.vtkLookupTable()            
+                inputStream = ipw.GetInput()
+                minv, maxv = inputStream.GetScalarRange()
+                lut.SetTableRange((minv,maxv))
+                lut.SetAlphaRange((0.0, 1.0))
+                lut.SetValueRange((1.0, 1.0))
+                lut.SetSaturationRange((1.0, 1.0))
+                lut.Build()
+
+                ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
+                # default axial orientation
+                ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
+                ipw.SetSliceIndex(0)
+                #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
+                ipw.SetLookupTable(lut)
+                ipw.On()
+                ipw.InteractionOff()
+
+        self._syncOverlays()
+
+    def _resetPrimary(self):
+        """Reset primary layer.
+        """
+
+        if self._ipws:
+            inputData = self._ipws[0].GetInput()
             
-            if len(self._ipws > 1):
-                # iterate through overlay layers
-                for ipw in self._ipws[1:]:
-                    lut = vtk.vtkLookupTable()            
-                    inputStream = ipw.GetInput()
-                    minv, maxv = inputStream.GetScalarRange()
-                    lut.SetTableRange((minv,maxv))
-                    lut.SetAlphaRange((0.0, 1.0))
-                    lut.SetValueRange((1.0, 1.0))
-                    lut.SetSaturationRange((1.0, 1.0))
-                    lut.Build()
+            # calculate default window/level once
+            (dmin,dmax) = inputData.GetScalarRange()
+            iwindow = (dmax - dmin) / 2
+            ilevel = dmin + iwindow
 
-                    ipw.SetInteractor(self._viewFrame.threedRWI)
-                    # default axial orientation
-                    ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
-                    ipw.SetSliceIndex(0)
-                    #ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
-                    ipw.SetLookupTable(lut)
-                    ipw.On()
-                    ipw.InteractionOff()
+            inputData_source = inputData.GetSource()
+            if hasattr(inputData_source, 'GetWindowCenter') and \
+                   callable(inputData_source.GetWindowCenter):
+                level = inputData_source.GetWindowCenter()
+                print "Retrieved level of %f" % level
+            else:
+                level = ilevel
 
-            self._syncOverlays()
+            if hasattr(inputData_source, 'GetWindowWidth') and \
+                   callable(inputData_source.GetWindowWidth):
+                window = inputData_source.GetWindowWidth()
+                print "Retrieved window of %f" % window
+            else:
+                window = iwindow
+
+            lut = vtk.vtkWindowLevelLookupTable()
+            lut.SetWindow(window)
+            lut.SetLevel(level)
+            lut.Build()
+
+            # colours of imageplanes; we will use these as keys
+            ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
+
+            ipw = self._ipws[0]
+            ipw.DisplayTextOn()
+            ipw.SetInteractor(self._slice3dViewer._viewFrame.threedRWI)
+            ipw.SetPlaneOrientation(self._defaultPlaneOrientation)
+            ipw.SetSliceIndex(0)
+            ipw.GetPlaneProperty().SetColor(ipw_cols[ipw.GetPlaneOrientation()])
+            # this is not working yet, because the IPWs handling of
+            # luts is somewhat broken at the moment
+            ipw.SetLookupTable(lut)
+            ipw.On()
 
     def _syncOverlays(self):
         """Synchronise overlays to current main IPW.
@@ -129,8 +237,35 @@ class sliceDirection:
                 pds2.SetPoint2(pds1.GetPoint2())
             
                 ipw.UpdatePlacement()
+
+    def _ipwStartInteractionCallback(self):
+        #self._viewFrame.acsNotebook.SetSelection(direction)
+        self._ipwInteractionCallback()
+
+    def _ipwInteractionCallback(self):
+        cd = 4 * [0.0]
+        if self._ipws[0].GetCursorData(cd):
+            pass
+            self._current_cursors[direction] = cd
+            cstring = str(cd[0:3]) + " = " + str(cd[3])
+            #cur_panel.cursorText.SetValue(cstring)
+
+        # find the orthoView (if any) which tracks this IPW
+        directionL = [v['direction'] for v in self._orthoViews
+                      if v['direction'] == direction]
+        
+        if directionL:
+            self._syncOrthoViewWithIPW(directionL[0])
+            [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]\
+                                        [directionL[0]].Render()
+
+    def _ipwEndInteractionCallback(self, direction):
+        self._syncOverlay(direction)
+        self._ipwInteractionCallback(direction)
+                
         
 # -------------------------------------------------------------------------
+
 class outputSelectedPoints(list, subjectMixin):
     """class for passing selected points to an output port.
 
@@ -145,8 +280,8 @@ class outputSelectedPoints(list, subjectMixin):
         subjectMixin.close(self)
 
 # -------------------------------------------------------------------------
-class slice3d_vwr(moduleBase,
-                  vtkPipelineConfigModuleMixin):
+
+class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
     
     """Slicing, dicing slice viewing class.
 
@@ -170,12 +305,10 @@ class slice3d_vwr(moduleBase,
         # the imageplanewidgets: a 3-element (axial, coronal, sagittal) list
         # of lists of IPWs (each direction list contains the primary IPW
         # as well as all overlays)
-        self._ipws = [[] for i in range(3)]
-        # list of current cursors, one cursor for each ipw
-        self._current_cursors = []
+        self._sliceDirections = []
+        self._ipwPicker = vtk.vtkCellPicker()
         # the renderers corresponding to the render windows
         self._threedRenderer = None
-        self._orthoRenderers = [None for i in range(2)]
 
         # list of selected points (we can make this grow or be overwritten)
         self._selectedPoints = []
@@ -204,14 +337,6 @@ class slice3d_vwr(moduleBase,
 
         self._left_mouse_button = 0
 
-        self._current_cursors = [[0,0,0,0] for i in self._ipws]
-
-        # create 2 empty orthoView pipelines
-        self._orthoViews = [{'planeSources' : [],
-                             'planeActors' : [],
-                             'textureMapToPlanes' : [],
-                             'direction' : -1} for i in range(2)]
-        
         # set the whole UI up!
         self._create_window()
 
@@ -226,6 +351,12 @@ class slice3d_vwr(moduleBase,
         for idx in range(self._numDataInputs):
             self.setInput(idx, None)
 
+        # take care of the sliceDirections
+        for sliceDirection in self._sliceDirections:
+            sliceDirection.close()
+
+        del self._sliceDirections
+
         # don't forget to call the mixin close() methods
         vtkPipelineConfigModuleMixin.close(self)
         
@@ -236,11 +367,8 @@ class slice3d_vwr(moduleBase,
         del self._voi_widget
         del self._extractVOI
         
-	del self._ipws
-
         # take care of all our bindings to renderers
         del self._threedRenderer
-        del self._orthoRenderers
 
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
@@ -262,10 +390,6 @@ class slice3d_vwr(moduleBase,
 
         self._viewFrame.threedRWI.GetRenderWindow().SetSize(10,10)
         self._viewFrame.threedRWI.GetRenderWindow().WindowRemap()        
-        self._viewFrame.ortho1RWI.GetRenderWindow().SetSize(10,10)
-        self._viewFrame.ortho1RWI.GetRenderWindow().WindowRemap()        
-        self._viewFrame.ortho2RWI.GetRenderWindow().SetSize(10,10)
-        self._viewFrame.ortho2RWI.GetRenderWindow().WindowRemap()        
         
         # all the RenderWindow()s are now reparented, so we can destroy
         # the containing frame
@@ -295,72 +419,35 @@ class slice3d_vwr(moduleBase,
                         'vtkActor'])
                     self._inputs[idx]['vtkActor'] = None
 
-            elif self._inputs[idx]['Connected'] == 'vtkImageData':
+            elif self._inputs[idx]['Connected'] == 'vtkImageDataPrimary' or \
+                 self._inputs[idx]['Connected'] == 'vtkImageDataOverlay':
 
-                self._inputs[idx]['Connected'] = None
+                for sliceDirection in self._sliceDirections:
+                    sliceDirection.removeData(self._inputs[idx]['inputData'])
 
                 # remove our observer
                 if self._inputs[idx]['observerID'] >= 0:
-                    self._ipws[0][0].GetInput().RemoveObserver(
+                    self._inputs[idx]['inputData'].RemoveObserver(
                         self._inputs[idx]['observerID'])
                     self._inputs[idx]['observerID'] = -1
-                
-                # by definition, this will be the first and only layer of IPWS
-                for ipwDir in self._ipws:
-                    ipwDir[0].Off()
-                    ipwDir[0].SetInput(None)
-                    ipwDir[0].SetInteractor(None)
-                    # remove the binding! - this doesn't exist anymore
-                    del ipwDir[0]
 
-                self._threedRenderer.RemoveActor(self._outline_actor)
-                self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
+                if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
+                    self._threedRenderer.RemoveActor(self._outline_actor)
+                    self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
 
-                # deactivate VOI widget as far as possible
-                self._voi_widget.SetInput(None)
-                self._voi_widget.Off()
-                self._voi_widget.SetInteractor(None)
+                    # deactivate VOI widget as far as possible
+                    self._voi_widget.SetInput(None)
+                    self._voi_widget.Off()
+                    self._voi_widget.SetInteractor(None)
 
-                # and stop vtkExtractVOI from extracting more VOIs
-                # we have to disconnect this, else the input data will
-                # live on...
-                self._extractVOI.SetInput(None)
+                    # and stop vtkExtractVOI from extracting more VOIs
+                    # we have to disconnect this, else the input data will
+                    # live on...
+                    self._extractVOI.SetInput(None)
 
-                # we've disconnected a primary, also destroy orthos
-                self._destroyOrthoView(0)
-                self._destroyOrthoView(1)
-
-            elif self._inputs[idx]['Connected'] == 'Overlay':
                 self._inputs[idx]['Connected'] = None
+                self._inputs[idx]['inputData'] = None
 
-                # we keep track of the axial ipw, because the index of the
-                # overlay can change
-                ipw = self._inputs[idx]['ipw']
-                
-                # remove our observer
-                if self._inputs[idx]['observerID'] >= 0:
-                    ipw.GetInput().RemoveObserver(
-                        self._inputs[idx]['observerID'])
-                    self._inputs[idx]['observerID'] = -1
-
-                # disconnect this overlay
-                # first search for it in the axial direction
-                layerIdx = self._ipws[0].index(ipw)
-
-                for ipwDir in self._ipws:
-                    ipwDir[layerIdx].Off()
-                    ipwDir[layerIdx].SetInput(None)
-                    ipwDir[layerIdx].SetInteractor(None)
-                    del ipwDir[layerIdx]
-
-                # finally take care of the 'ipw' as well!
-                self._inputs[idx]['ipw'] = None
-
-                # we've removed the overlay, the orthos would like to know
-                # about that
-                self._connectOrthoViewToDirection(0)
-                self._connectOrthoViewToDirection(1)                
-                
         # END of if input_stream is None clause -----------------------------
 
         elif hasattr(input_stream, 'GetClassName') and \
@@ -387,45 +474,50 @@ class slice3d_vwr(moduleBase,
                 try:
                     # add this input to all available sliceDirections
                     for sliceDirection in self._sliceDirections:
-                        sliceDirection.addInput(input_stream)
-
-                    # if that goes well, we can record what happened
-                    self._inputs[idx]['inputData'] = input_stream
-                    self._inputs[idx]['Connected'] = 'vtkImageData'
-
-                    # add an observer to this data
-                    oid = input_stream.AddObserver(
-                        'ModifiedEvent',
-                        self.inputModifiedCallback)
-                    self._inputs[idx]['observerID'] = oid
+                        sliceDirection.addData(input_stream)
                     
-                    # update our 3d renderer
-                    self._viewFrame.threedRWI.Render()
-                    
-                except Error, msg:
-                    print msg
+                except Exception, msg:
+                    # if an exception was thrown, clean up and raise again
+                    for sliceDirection in self._sliceDirections:
+                        sliceDirection.removeData(input_stream)
 
+                    raise Exception, msg
 
-                # FIXME: continue here
+                # find out whether this is  primary or an overlay, record it
+                connecteds = [i['Connected'] for i in self._inputs]
+                if 'vtkImageDataPrimary' in connecteds or \
+                       'vtkImageDataOverlay' in connecteds:
+                    # this must be an overlay
+                    self._inputs[idx]['Connected'] = 'vtkImageDataOverlay'
+                else:
+                    # there are no primaries or overlays, this must be
+                    # a primary then
+                    self._inputs[idx]['Connected'] = 'vtkImageDataPrimary'
 
-                self._extractVOI.SetInput(input_stream)
+                # also store binding to the data itself
+                self._inputs[idx]['inputData'] = input_stream
 
-                # add outline actor and cube axes actor to renderer
-                self._threedRenderer.AddActor(self._outline_actor)
-                self._outline_actor.PickableOff()
-                self._threedRenderer.AddActor(self._cube_axes_actor2d)
-                self._cube_axes_actor2d.PickableOff()
-
-                # connect an event handler to the data
-                oid = input_stream.AddObserver('ModifiedEvent',
-                                               self.inputModifiedCallback)
+                # add an observer to this data and store the id
+                oid = input_stream.AddObserver(
+                    'ModifiedEvent',
+                    self.inputModifiedCallback)
                 self._inputs[idx]['observerID'] = oid
+                
+                if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
+                    # things to setup when primary data is added
+                    self._extractVOI.SetInput(input_stream)
 
-                # reset everything, including ortho camera
-                self._reset()
+                    # add outline actor and cube axes actor to renderer
+                    self._threedRenderer.AddActor(self._outline_actor)
+                    self._outline_actor.PickableOff()
+                    self._threedRenderer.AddActor(self._cube_axes_actor2d)
+                    self._cube_axes_actor2d.PickableOff()
 
+                    # reset everything, including ortho camera
+                    self._resetAll()
+
+                # update our 3d renderer
                 self._viewFrame.threedRWI.Render()
-                self._inputs[idx]['Connected'] = 'vtkImageData'
 
             else:
                 raise TypeError, "Wrong input type!"
@@ -449,11 +541,15 @@ class slice3d_vwr(moduleBase,
         if not self._viewFrame.Show(true):
             self._viewFrame.Raise()
 
-#################################################################
-# utility methods
-#################################################################
+    #################################################################
+    # miscellaneous public methods
+    #################################################################
+    def getIPWPicker(self):
+        return self._ipwPicker
 
-
+    #################################################################
+    # internal utility methods
+    #################################################################
 
     def _connectOrthoViewToDirection(self, orthoIdx, direction=-1):
         """Connect the orthoIdx'th orthoView to direction.
@@ -511,6 +607,24 @@ class slice3d_vwr(moduleBase,
             # and of course end with a sync!
             self._syncOrthoViewWithIPW(orthoIdx)
 
+    def _createSlice(self):
+        sliceName = self._viewFrame.createSliceText.GetValue()
+        if sliceName:
+            names = [i.getName() for i in self._sliceDirections]
+            if sliceName in names:
+                wxLogError("A slice with that name already exists.")
+
+            else:
+                self._sliceDirections.append(sliceDirection(sliceName, self))
+                # now attach all inputs to it
+                for i in self._inputs:
+                    if i['Connected'] == 'vtkImageDataPrimary' or \
+                           i['Connected'] == 'vtkImageDataOverlay':
+                        self._sliceDirections[-1].addData(i['inputData'])
+
+                # add it to the GUI choice
+                self._viewFrame.sliceNameChoice.Append(sliceName)
+                self._viewFrame.sliceNameChoice.SetStringSelection(sliceName)
 
     def _create_window(self):
         import modules.resources.python.slice3d_vwr_frame
@@ -525,22 +639,14 @@ class slice3d_vwr(moduleBase,
 
         # fix for the grid
         self._viewFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        # fix for the choice *sigh*
+        self._viewFrame.sliceNameChoice.Clear()
 
-        # add THREE the renderers
+        # add the renderer
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
         self._viewFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
-        
-        orthoRWIs = [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]
-        for orthoIdx in range(len(self._orthoRenderers)):
-            self._orthoRenderers[orthoIdx] = vtk.vtkRenderer()
-            self._orthoRenderers[orthoIdx].SetBackground(0.5, 0.5, 0.5)
-            rw = orthoRWIs[orthoIdx].GetRenderWindow()
-            rw.AddRenderer(self._orthoRenderers[orthoIdx])
-
-            istyle = vtk.vtkInteractorStyleImage()
-            orthoRWIs[orthoIdx].SetInteractorStyle(istyle)
         
         # event handlers for the global control buttons
         EVT_BUTTON(self._viewFrame, self._viewFrame.pipelineButtonId,
@@ -548,23 +654,8 @@ class slice3d_vwr(moduleBase,
                    rw=self._viewFrame.threedRWI.GetRenderWindow():
                    s.vtkPipelineConfigure(pw, rw))
 
-        def confPickedHandler(event):
-            rwi = self._viewFrame.threedRWI
-            picker = rwi.GetPicker()
-            path = picker.GetPath()
-            if path:
-                prop = path.GetFirstNode().GetProp()
-                if prop:
-                    self.vtkPipelineConfigure(self._viewFrame,
-                                              rwi.GetRenderWindow(),
-                                              (prop,))
-
-        #EVT_BUTTON(self._viewFrame, self._viewFrame.confPickedButtonId,
-        #           confPickedHandler)
-
         EVT_BUTTON(self._viewFrame, self._viewFrame.resetButtonId,
-                   lambda e, s=self: s._reset())
-
+                   lambda e, s=self: s._resetAll())
 
         def pointsSelectAllCallback(event):
             self._viewFrame.spointsGrid.SelectAll()
@@ -604,75 +695,61 @@ class slice3d_vwr(moduleBase,
                      self._viewFrame.voiPanel.widgetEnabledCboxId,
                      widgetEnabledCBoxCallback)
 
-        # now the three ortho view pages + all callbacks
-        orthoPanels = [self._viewFrame.nbAxialPanel,
-                       self._viewFrame.nbCoronalPanel,
-                       self._viewFrame.nbSagittalPanel]
-
-        for i in range(len(orthoPanels)):
-
-            # first a callback for turning an IPW on or off
-            def _eb_cb(i):
-                ipw = self._ipws[i][0]
-                if ipw.GetInput():
-                    if orthoPanels[i].enabledCbox.GetValue():
-                        ipw.On()
-                        # and if there are overlays, switch them back on
-                        for overlay_ipw in self._ipws[i][1:]:
-                            overlay_ipw.On()
+        # first a callback for turning an IPW on or off
+        def _eb_cb():
+            sliceDirection = self._getCurrentSliceDirection()
+            if sliceDirection:
+                if self._viewFrame.sliceEnabledCheckBox.GetValue():
+                    sliceDirection.enable()
                                 
-                        orthoPanels[i].interactionCbox.Enable(1)
-                        orthoPanels[i].pushSliceLabel.Enable(1)
-                        orthoPanels[i].pushSliceSpinCtrl.Enable(1)
+                    orthoPanels[i].interactionCbox.Enable(1)
+                    orthoPanels[i].pushSliceLabel.Enable(1)
+                    orthoPanels[i].pushSliceSpinCtrl.Enable(1)
                         
-                    else:
-                        ipw.Off()
-                        # also switch off the overlays...
-                        for overlay_ipw in self._ipws[i][1:]:
-                            overlay_ipw.Off()
+                else:
+                    sliceDirection.disable()
                             
-                        orthoPanels[i].interactionCbox.Enable(0)
-                        orthoPanels[i].pushSliceLabel.Enable(0)
-                        orthoPanels[i].pushSliceSpinCtrl.Enable(0)
+                    orthoPanels[i].interactionCbox.Enable(0)
+                    orthoPanels[i].pushSliceLabel.Enable(0)
+                    orthoPanels[i].pushSliceSpinCtrl.Enable(0)
+
+        EVT_BUTTON(self._viewFrame, self._viewFrame.createSliceButtonId,
+                   lambda e, s=self: s._createSlice())
+
+        EVT_BUTTON(self._viewFrame, self._viewFrame.destroySliceButtonId,
+                   lambda e, s=self: s._destroySlice())
                         
         
-            EVT_CHECKBOX(self._viewFrame, orthoPanels[i].enabledCboxId,
-                         lambda e, i=i:_eb_cb(i))
+        EVT_CHECKBOX(self._viewFrame, self._viewFrame.sliceEnabledCheckBoxId,
+                     lambda e: _eb_cb())
 
-            def _ib_cb(i):
-                ipw = self._ipws[i][0]
-                if ipw.GetInput():
-                    if orthoPanels[i].interactionCbox.GetValue():
-                        ipw.SetInteraction(1)
-                    else:
-                        ipw.SetInteraction(0)
+        def _ib_cb():
+            sliceDirection = self._getCurrentSliceDirection()
+            if sliceDirection:
+                if self._viewFrame.sliceInteractionCheckBox.GetValue():
+                    sliceDirection.enableInteraction()
+                else:
+                    sliceDirection.disableInteraction()
                 
+        EVT_CHECKBOX(self._viewFrame,
+                     self._viewFrame.sliceInteractionCheckBoxId,
+                     lambda e: _ib_cb())
 
-            EVT_CHECKBOX(self._viewFrame, orthoPanels[i].interactionCboxId,
-                         lambda e, i=i: _ib_cb(i))
+        def _ps_cb():
+            sliceDirection  = self._getCurrentSliceDirection()
+            if sliceDirection:
+                val = self._viewFrame.pushSliceSpinCtrl.GetValue()
+                if val:
+                    sliceDirection.pushSlice(val)
+                    orthoPanels[i].pushSliceSpinCtrl.SetValue(0)
 
-            def _ps_cb(i):
-                ipw = self._ipws[i][0]
-                if ipw.GetInput():
-                    val = orthoPanels[i].pushSliceSpinCtrl.GetValue()
-                    if val:
-                        ipw.GetPolyDataSource().Push(val)
-                        ipw.UpdatePlacement()
-                        orthoPanels[i].pushSliceSpinCtrl.SetValue(0)
-                        self._ipwEndInteractionCallback(i)
-                        self._viewFrame.threedRWI.Render()
+        EVT_SPINCTRL(self._viewFrame, self._viewFrame.pushSliceSpinCtrlId,
+                     lambda e: _ps_cb())
 
-            EVT_SPINCTRL(self._viewFrame, orthoPanels[i].pushSliceSpinCtrlId,
-                         lambda e, i=i: _ps_cb(i))
-
-            # the store button
-            EVT_BUTTON(self._viewFrame, orthoPanels[i].storeId,
-                       lambda e, i=i: self._storeCursorCallback(i))
+        # the store button
+        EVT_BUTTON(self._viewFrame, self._viewFrame.sliceStoreButtonId,
+                   lambda e: self._storeCursorCallback())
             
-        EVT_NOTEBOOK_PAGE_CHANGED(self._viewFrame,
-                                  self._viewFrame.acsNotebookId,
-                                  self._acs_nb_page_changed_cb)
-
         # clicks directly in the window for picking
         self._viewFrame.threedRWI.AddObserver('LeftButtonPressEvent',
                                                self._rwiLeftButtonCallback)
@@ -706,6 +783,32 @@ class slice3d_vwr(moduleBase,
                                           'textureMapToPlanes' : [],
                                           'direction' : -1}
 
+    def _destroySlice(self):
+        """Destroy the currently selected slice."""
+
+        sliceDirection = self._getCurrentSliceDirection()
+        if sliceDirection:
+            name = sliceDirection.getName()
+            # this will disconnect all inputs
+            sliceDirection.close()
+            # delete it from our internal list
+            idx = self._sliceDirections.index(sliceDirection)
+            del self._sliceDirections[idx]
+            # remove it from the choice thingy
+            idx = self._viewFrame.sliceNameChoice.FindString(name)
+            self._viewFrame.sliceNameChoice.Delete(idx)
+            self._viewFrame.sliceNameChoice.SetSelection(1)
+
+    def _getCurrentSliceDirection(self):
+        selectedName = self._viewFrame.sliceNameChoice.GetStringSelection()
+        sliceDirectionL = [i for i in self._sliceDirections if
+                           i.getName() == selectedName]
+                           
+        if sliceDirectionL:
+            return sliceDirectionL[0]
+        else:
+            return None
+
     def _remove_cursors(self, idxs):
 
         # we have to delete one by one from back to front
@@ -737,7 +840,7 @@ class slice3d_vwr(moduleBase,
             # and sync up output points
             self._syncOutputSelectedPoints()
         
-    def _reset(self):
+    def _resetAll(self):
         """Arrange everything for a single overlay in a single ortho view.
 
         This method is to be called AFTER the pertinent VTK pipeline has been
@@ -750,72 +853,31 @@ class slice3d_vwr(moduleBase,
         won't CREATE anything.
         """
 
-        # if we don't have any _ipws, it means we haven't been given data
-        # yet, so let's bail
-        if len(self._ipws[0]) <= 0:
+        # we only do something here if we have data
+        inputDataL = [i['inputData'] for i in self._inputs
+                      if i['Connected'] == 'vtkImageDataPrimary']
+        if inputDataL:
+            inputData = inputDataL[0]
+        else:
             return
 
-        input_data = self._ipws[0][0].GetInput()
-
-        # we might have ipws, but no input_data, in which we can't do anything
+        # we might have ipws, but no inputData, in which we can't do anything
         # either, so we bail
-        if input_data is None:
+        if inputData is None:
             return
 
         # make sure this is all nicely up to date
-        input_data.Update()
+        inputData.Update()
 
         # set up helper actors
-        self._outline_source.SetBounds(input_data.GetBounds())
-        self._cube_axes_actor2d.SetBounds(input_data.GetBounds())
-        self._cube_axes_actor2d.SetCamera(self._threedRenderer.GetActiveCamera())
-
-        # calculate default window/level once
-        (dmin,dmax) = input_data.GetScalarRange()
-        iwindow = (dmax - dmin) / 2
-        ilevel = dmin + iwindow
-
-        input_data_source = input_data.GetSource()
-        if hasattr(input_data_source, 'GetWindowCenter') and \
-           callable(input_data_source.GetWindowCenter):
-            level = input_data_source.GetWindowCenter()
-            print "Retrieved level of %f" % level
-        else:
-            level = ilevel
-
-        if hasattr(input_data_source, 'GetWindowWidth') and \
-           callable(input_data_source.GetWindowWidth):
-            window = input_data_source.GetWindowWidth()
-            print "Retrieved window of %f" % window
-        else:
-            window = iwindow
-
-        lut = vtk.vtkWindowLevelLookupTable()
-        lut.SetWindow(window)
-        lut.SetLevel(level)
-        lut.Build()
-
-        # colours of imageplanes; we will use these as keys
-        ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
-
-        # we want to do only the primaries here
-        idx = 2
-        for directionIdx in range(3):
-            ipw = self._ipws[directionIdx][0]
-            ipw.DisplayTextOn()
-            ipw.SetInteractor(self._viewFrame.threedRWI)
-            ipw.SetPlaneOrientation(idx)
-            idx -= 1
-            ipw.SetSliceIndex(0)
-            ipw.GetPlaneProperty().SetColor(ipw_cols[idx])
-            # this is not working yet, because the IPWs handling of
-            # luts is somewhat broken at the moment
-            ipw.SetLookupTable(lut)
-            ipw.On()
+        self._outline_source.SetBounds(inputData.GetBounds())
+        self._cube_axes_actor2d.SetBounds(inputData.GetBounds())
+        self._cube_axes_actor2d.SetCamera(
+            self._threedRenderer.GetActiveCamera())
 
         # reset the VOI widget
         self._voi_widget.SetInteractor(self._viewFrame.threedRWI)
-        self._voi_widget.SetInput(input_data)
+        self._voi_widget.SetInput(inputData)
         self._voi_widget.PlaceWidget()
         self._voi_widget.SetPriority(0.6)
         #self._voi_widget.On()
@@ -823,19 +885,12 @@ class slice3d_vwr(moduleBase,
         self._threedRenderer.ResetCamera()
 
         # make sure the overlays follow  suit
-        self._resetOverlays()
+        for sliceDirection in self._sliceDirections:
+            sliceDirection._resetPrimary()
+            sliceDirection._resetOverlays()
 
         # whee, thaaaar she goes.
         self._viewFrame.threedRWI.Render()
-
-        # and the orthos
-        self._setupOrthoViewCamera(0)
-        self._setupOrthoViewCamera(1)        
-        self._viewFrame.ortho1RWI.Render()
-        self._viewFrame.ortho2RWI.Render()
-
-        # now also make sure that the notebook with slice config is updated
-        #self._acs_nb_page_changed_cb(None)
 
     def _setupOrthoViewCamera(self, orthoIdx):
         """Once the orthoView has been connected to a particular IPW, this
@@ -1071,40 +1126,6 @@ class slice3d_vwr(moduleBase,
 # callbacks
 #################################################################
 
-    def _acs_nb_page_changed_cb(self, event):
-        return 1
-        nb = self._viewFrame.acsNotebook
-        cur_panel = nb.GetPage(nb.GetSelection())
-        if self._ipws[nb.GetSelection()].GetEnabled():
-            cur_panel.enabledCbox.SetValue(true)
-        else:
-            cur_panel.enabledCbox.SetValue(false)
-
-    def _ipwStartInteractionCallback(self, direction):
-        self._viewFrame.acsNotebook.SetSelection(direction)
-        self._ipwInteractionCallback(direction)
-
-    def _ipwInteractionCallback(self, direction):
-        cd = 4 * [0.0]
-        if self._ipws[direction][0].GetCursorData(cd):
-            nb = self._viewFrame.acsNotebook
-            cur_panel = nb.GetPage(nb.GetSelection())
-            self._current_cursors[direction] = cd
-            cstring = str(cd[0:3]) + " = " + str(cd[3])
-            cur_panel.cursorText.SetValue(cstring)
-
-        # find the orthoView (if any) which tracks this IPW
-        directionL = [v['direction'] for v in self._orthoViews
-                      if v['direction'] == direction]
-        
-        if directionL:
-            self._syncOrthoViewWithIPW(directionL[0])
-            [self._viewFrame.ortho1RWI, self._viewFrame.ortho2RWI]\
-                                        [directionL[0]].Render()
-
-    def _ipwEndInteractionCallback(self, direction):
-        self._syncOverlay(direction)
-        self._ipwInteractionCallback(direction)
 
     def _pointWidgetInteractionCallback(self, pw, evt_name):
         # we have to find pw in our list
