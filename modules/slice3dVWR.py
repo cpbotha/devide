@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.16 2003/04/24 09:04:20 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.17 2003/04/24 11:14:33 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle
@@ -690,6 +690,9 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                 self._inputs[idx]['vtkActor'].SetMapper(mapper)
                 self._threedRenderer.AddActor(self._inputs[idx]['vtkActor'])
                 self._inputs[idx]['Connected'] = 'vtkPolyData'
+
+                # to get the name of the scalars we need to do this.
+                input_stream.Update()
                 
                 # now some special case handling
                 if input_stream.GetPointData().GetScalars():
@@ -703,6 +706,7 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
                     property = self._inputs[idx]['vtkActor'].GetProperty()
                     property.SetInterpolationToFlat()
                     mapper.ScalarVisibilityOn()
+                    
                 else:
                     # the user can switch this back on if she really wants it
                     # we switch it off as we mostly work with isosurfaces
@@ -1589,4 +1593,44 @@ class slice3dVWR(moduleBase, vtkPipelineConfigModuleMixin):
             if prop:
                 self.vtkPipelineConfigure(self._viewFrame,
                                           self._viewFrame.threedRWI, (prop,))
+
+        elif pickAction == 3:
+            # show scalarbar for picked object
+            destroyScalarBar = False
+            prop, pointId = findPickedProp(obj)
+            if prop:
+                # activate the scalarbar, connect to mapper of prop
+                if prop.GetMapper() and prop.GetMapper().GetLookupTable():
+                    if not hasattr(self, '_pdScalarBarActor'):
+                        self._pdScalarBarActor = vtk.vtkScalarBarActor()
+                        self._threedRenderer.AddProp(self._pdScalarBarActor)
+
+                    s = prop.GetMapper().GetInput().GetPointData().GetScalars()
+                    if s:
+                        sname = s.GetName()
+                        if not sname:
+                            sname = "Unknown"
+                            
+                    self._pdScalarBarActor.SetTitle(sname)
+                    
+                    self._pdScalarBarActor.SetLookupTable(
+                        prop.GetMapper().GetLookupTable())
+
+                    self._viewFrame.threedRWI.Render()
+                    
+                else:
+                    # the prop doesn't have a mapper or the mapper doesn't
+                    # have a LUT, either way, we switch off the thingy...
+                    destroyScalarBar = True
+
+            else:
+                # the user has clicked "somewhere else", so remove!
+                destroyScalarBar = True
+                
+
+            if destroyScalarBar and hasattr(self, '_pdScalarBarActor'):
+                self._threedRenderer.RemoveProp(self._pdScalarBarActor)
+                del self._pdScalarBarActor
+                    
+                    
 
