@@ -1,4 +1,4 @@
-# $Id: vtk_slice_vwr.py,v 1.47 2002/07/04 15:56:48 cpbotha Exp $
+# $Id: vtk_slice_vwr.py,v 1.48 2002/07/05 16:21:50 cpbotha Exp $
 
 from gen_utils import log_error
 from module_base import module_base, module_mixin_vtk_pipeline_config
@@ -303,14 +303,57 @@ class vtk_slice_vwr(module_base,
 #################################################################
 
     def _add_sel_point(self, point, ortho_idx):
-        self._sel_points.append(point)
         # *sniff* *sob* It's unreadable, but why's it so pretty?
+        # this just formats the real point
         pos_str = "%s, %s, %s" % tuple([str(round(i,1)) for i in point])
-        self._spoint_listctrl.InsertStringItem(0, pos_str)
-        # now find the value(s) at this point
+        idx = self._spoint_listctrl.InsertStringItem(0, pos_str)
+
+        # some handy variables
         cur_pipe = self._ortho_pipes[ortho_idx]
         reslice = cur_pipe[0]['vtkImageReslice']
         input_data = reslice.GetInput()
+
+        # calculate discrete position
+        ispacing = input_data.GetSpacing()
+        dpoint = tuple([int(round(i))
+                        for i in map(operator.div, point, ispacing)])
+
+        dpos_str = "%s, %s, %s" % dpoint
+        self._spoint_listctrl.SetStringItem(idx, 1, dpos_str)
+        
+
+        # now find the value(s) at this point
+        dtype = input_data.GetScalarType()
+        dvalue = input_data.GetScalarComponentAsFloat(dpoint[0], dpoint[1],
+                                                      dpoint[2], 0)
+        self._spoint_listctrl.SetStringItem(idx, 2, str(dvalue))
+
+        # add all this information to self._sel_points
+        self._sel_points.append((point, dpoint, dvalue))
+
+
+        # FIXME: CONTINUE HERE
+        #self._ortho_huds.append({'vtkAxes' : vtk.vtkAxes(),
+        #                         'axes_actor' : vtk.vtkActor()})
+        #self._ortho_huds[-1]['vtkAxes'].SetOrigin(0.0,0.0,0.5)        
+        #self._ortho_huds[-1]['vtkAxes'].SymmetricOn()
+
+        #axes_mapper = vtk.vtkPolyDataMapper()
+        #axes_mapper.SetInput(self._ortho_huds[-1]['vtkAxes'].GetOutput())
+
+        #self._ortho_huds[-1]['axes_actor'].SetMapper(axes_mapper)
+        #self._ortho_huds[-1]['axes_actor'].GetProperty().SetAmbient(1.0)
+        #self._ortho_huds[-1]['axes_actor'].GetProperty().SetDiffuse(0.0)
+        #self._ortho_huds[-1]['axes_actor'].VisibilityOff()
+
+        #self._renderers[-1].AddActor(self._ortho_huds[-1]['axes_actor'])
+
+        
+        # also setup the HUD for this ortho_pipe
+        #ob = reslice.GetOutput().GetBounds()
+        #sf = ob[1] - ob[0]
+        #self._ortho_huds[ortho_idx]['vtkAxes'].SetScaleFactor(sf)
+        #self._ortho_huds[ortho_idx]['vtkAxes'].SetOrigin(0.0,0.0,0.5)
         
 
     def _create_ortho_panel(self, parent):
@@ -333,21 +376,6 @@ class vtk_slice_vwr(module_base,
         istyle.AddObserver('LeaveEvent', self._istyle_img_cb)
         self._rwis[-1].SetInteractorStyle(istyle)
 
-        self._ortho_huds.append({'vtkAxes' : vtk.vtkAxes(),
-                                 'axes_actor' : vtk.vtkActor()})
-        self._ortho_huds[-1]['vtkAxes'].SetOrigin(0.0,0.0,0.5)        
-        self._ortho_huds[-1]['vtkAxes'].SymmetricOn()
-
-        axes_mapper = vtk.vtkPolyDataMapper()
-        axes_mapper.SetInput(self._ortho_huds[-1]['vtkAxes'].GetOutput())
-
-        self._ortho_huds[-1]['axes_actor'].SetMapper(axes_mapper)
-        self._ortho_huds[-1]['axes_actor'].GetProperty().SetAmbient(1.0)
-        self._ortho_huds[-1]['axes_actor'].GetProperty().SetDiffuse(0.0)
-        self._ortho_huds[-1]['axes_actor'].VisibilityOff()
-
-        #self._ortho_huds[-1]['vtkAxes'].SetScaleFactor(200.0)
-        self._renderers[-1].AddActor(self._ortho_huds[-1]['axes_actor'])
 
         # then controls
         iid = wxNewId()
@@ -398,10 +426,14 @@ class vtk_slice_vwr(module_base,
         l_panel = wxPanel(parent=panel, id=-1)
 
         self._spoint_listctrl = wxListCtrl(l_panel, -1, size=(320,100),
-                                           style=wxLC_REPORT|wxSUNKEN_BORDER)
+                                           style=wxLC_REPORT|wxSUNKEN_BORDER|
+                                           wxLC_HRULES|wxLC_VRULES)
         self._spoint_listctrl.InsertColumn(0, 'Position')
-        self._spoint_listctrl.InsertColumn(1, 'Position')
+        self._spoint_listctrl.SetColumnWidth(0, 120)
+        self._spoint_listctrl.InsertColumn(1, 'Discrete')
+        self._spoint_listctrl.SetColumnWidth(1, 120)        
         self._spoint_listctrl.InsertColumn(2, 'Value')
+        self._spoint_listctrl.SetColumnWidth(2, 80)                
         #self._spoint_listctrl.InsertStringItem(0, 'yaa')
         #self._spoint_listctrl.InsertStringItem(1, 'yaa2')        
 
@@ -527,11 +559,6 @@ class vtk_slice_vwr(module_base,
             overlay_pipe['vtkLookupTable'].SetLevel(l)
             overlay_pipe['vtkLookupTable'].Build()
 
-            # also setup the HUD for this ortho_pipe
-            ob = reslice.GetOutput().GetBounds()
-            sf = ob[1] - ob[0]
-            self._ortho_huds[ortho_idx]['vtkAxes'].SetScaleFactor(sf)
-            self._ortho_huds[ortho_idx]['vtkAxes'].SetOrigin(0.0,0.0,0.5)
 
         else:
             # if this is NOT the first layer, it  must copy the slicer
@@ -631,16 +658,17 @@ class vtk_slice_vwr(module_base,
         # end test code
 
     def _sync_hud_with_pwsrc_and_reslice(self, ortho_idx):
-        # check if any of the currently selected points for this
-        # ortho fall on this plane, hmmmm kay?
+        # check if we have moved onto ANY of the selection points
         # the easiest way to do this is to make use of the 3d plane
         # on which we've texture mapped; this has already been adjusted
         # by the call to _pw_cb()
-        if len(self._sel_points[ortho_idx]):
-            selp = self._sel_points[ortho_idx][0]
+        for point in self._sel_points:
+            # point has the position, discrete position, and value
+            # extract only the real position
+            pos = point[0]
             # p - tp
             ps = self._pws[ortho_idx].GetPolyDataSource()
-            pmtp = map(operator.sub, ps.GetOrigin(), selp)
+            pmtp = map(operator.sub, ps.GetOrigin(), pos)
             # then calculate dotproduct of p - tp and Normal
             es = map(operator.mul, pmtp, ps.GetNormal())
             dotp = reduce(operator.add, es)
@@ -659,7 +687,7 @@ class vtk_slice_vwr(module_base,
                 # here we have to project the selected point onto the
                 # slice plane and update the origin of the axes_actor
                 # FIXME!!!
-                self._ortho_huds[ortho_idx]['axes_actor'].VisibilityOn()
+                print str(point) + " visible!"
             else:
                 self._ortho_huds[ortho_idx]['axes_actor'].VisibilityOff()
 
