@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.10 2003/08/11 15:59:26 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.11 2003/08/15 12:46:38 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -127,7 +127,6 @@ class sliceDirection:
     def syncContourToObject(self, contourObject):
         """Update the contour for the given contourObject.
         """
-
         # yes, in and not in work on dicts, doh
         if contourObject not in self._contourObjectsDict:
             return
@@ -150,7 +149,7 @@ class sliceDirection:
         # also make sure the transform knows about the new object position
         contourDict['trfmFilter'].GetTransform().SetMatrix(
             contourDict['contourObjectProp'].GetMatrix())
-
+        
         # calculate it
         cutter.Update()
         
@@ -533,14 +532,12 @@ class sliceDirection:
             if hasattr(inputData_source, 'GetWindowCenter') and \
                    callable(inputData_source.GetWindowCenter):
                 level = inputData_source.GetWindowCenter()
-                print "Retrieved level of %f" % level
             else:
                 level = ilevel
 
             if hasattr(inputData_source, 'GetWindowWidth') and \
                    callable(inputData_source.GetWindowWidth):
                 window = inputData_source.GetWindowWidth()
-                print "Retrieved window of %f" % window
             else:
                 window = iwindow
 

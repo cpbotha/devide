@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.27 2003/08/14 11:45:07 cpbotha Exp $
+# $Id: tdObjects.py,v 1.28 2003/08/15 12:46:38 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -289,6 +289,10 @@ class tdObjects:
             prop.SetPosition(
                 newTransform.GetPosition())
 
+        # perform other post object motion synchronisation, such as
+        # for contours e.g.
+        self._postObjectMotionSync(theProp)
+
         if motionSwitched:
             self._setObjectMotion(tdObject, True)
             
@@ -410,9 +414,12 @@ class tdObjects:
             prop.SetPosition(
                 newTransform.GetPosition())
 
+        # perform other post object motion synchronisation, such as
+        # for contours e.g.
+        self._postObjectMotionSync(theProp)
+
         if motionSwitched:
             self._setObjectMotion(tdObject, True)
-        
 
     def _bindEvents(self):
         controlFrame = self._slice3dVWR.controlFrame
@@ -689,6 +696,7 @@ class tdObjects:
     def _handlerObjectAxisToSlice(self, event):
         #
         sObjects = self._getSelectedObjects()
+        print len(sObjects)
         sSliceDirections = self._slice3dVWR.sliceDirections.\
                            getSelectedSliceDirections()
 
@@ -703,7 +711,7 @@ class tdObjects:
 
         if not sObjects:
             md = wx.MessageDialog(self._slice3dVWR.controlFrame,
-                                  "Select at least on object before "
+                                  "Select at least one object before "
                                   "using AxisToSlice.",
                                   "Information",
                                   wx.OK | wx.ICON_INFORMATION)
@@ -865,27 +873,25 @@ class tdObjects:
         
         eventObject.GetProp3D().SetUserTransform(bwTransform)
 
-    def _postObjectMotionSync(self, prop):
-        # FIXME: continue here
-        
-        # and update the contours after we're done moving things around
-        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(prop)
-
-        # THIS IS BROKEN!
-        
         # now make sure that the object axis (if any) is also aligned
         # find the tdObject corresponding to the prop
-        tdObject = self.findObjectByProp(prop)
+        tdObject = self.findObjectByProp(eventObject.GetProp3D())
         try:
             # if there's a line, move it too!
             axisLineActor = self._tdObjectsDict[tdObject]['axisLineActor']
-            bwTransform = vtk.vtkTransform()
-            eventObject.GetTransform(bwTransform)
             axisLineActor.SetUserTransform(bwTransform)
         except KeyError:
             pass
         
-        
+
+    def _postObjectMotionSync(self, prop):
+        """Perform any post object motion synchronisation, such as
+        recalculating the contours.  This method is called when the user
+        has stopped interacting with an object or if the system has
+        explicitly moved an object.
+        """
+        # and update the contours after we're done moving things around
+        self._slice3dVWR.sliceDirections.syncContoursToObjectViaProp(prop)
 
     def removeObject(self, tdObject):
         if not self._tdObjectsDict.has_key(tdObject):
