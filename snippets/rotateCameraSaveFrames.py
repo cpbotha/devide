@@ -16,7 +16,7 @@ import wx
 
 # get the slice3dVWR marked by the user
 sv = devideApp.moduleManager.getMarkedModule('slice3dVWR')
-sq = devideApp.moduleManager.getMarkedModule('superQuadric')
+#sq = devideApp.moduleManager.getMarkedModule('superQuadric')
 
 if sv and sq:
     # bring the window to the front
