@@ -1,10 +1,17 @@
-# $Id: moduleUtilsITK.py,v 1.4 2004/05/10 12:40:04 cpbotha Exp $
+# $Id: moduleUtilsITK.py,v 1.5 2004/09/27 17:13:45 cpbotha Exp $
 
 import fixitk as itk
 
 
 
-def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText):
+def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
+                           objEvals=None):
+
+    # objEvals is on optional TUPLE of obj attributes that will be called
+    # at each progress callback and filled into progressText via the Python
+    # % operator.  In other words, all string attributes in objEvals will be
+    # eval'ed on the object instance and these values will be filled into
+    # progressText, which has to contain the necessary number of format tokens
 
     # first we have to find the attribute of dvModule that binds
     # to obj.  We _don't_ want to have a binding to obj hanging around
@@ -27,9 +34,24 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText):
     mm = dvModule._moduleManager
 
     def commandCallable():
+        # setup for and get values of all requested objEvals
+        values = []
+
+        if type(objEvals) == type(()):
+            for objEval in objEvals:
+                objEvalValues.append(
+                    eval('%s.%s.%s' % (dvModule, objAttrString, objEval)))
+
+        values = tuple(values)
+            
+        # do the actual callback
         mm.genericProgressCallback(getattr(dvModule, objAttrString),
             nameOfObject, getattr(dvModule, objAttrString).GetProgress(),
-            progressText)
+            progressText % (values,))
+
+        # get rid of all bindings
+        del values
+        del oeLen
 
     pc = itk.itkPyCommand_New()
     pc.SetCommandCallable(commandCallable)
