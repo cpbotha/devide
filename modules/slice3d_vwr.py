@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3d_vwr.py,v 1.41 2003/03/09 23:34:26 cpbotha Exp $
+# $Id: slice3d_vwr.py,v 1.42 2003/03/11 10:37:18 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 from genUtils import logError
@@ -361,9 +361,9 @@ class slice3d_vwr(moduleBase, vtkPipelineConfigModuleMixin):
         # set the whole UI up!
         self._create_window()
 
-#################################################################
-# module API methods
-#################################################################
+    #################################################################
+    # module API methods
+    #################################################################
         
     def close(self):
         print "starting close"

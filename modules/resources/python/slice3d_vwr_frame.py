@@ -5,6 +5,47 @@ from wxPython.wx import *
 from wxPython.grid import *
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
+class orthoViewFrame(wxFrame):
+    def __init__(self, *args, **kwds):
+        # begin wxGlade: orthoViewFrame.__init__
+        kwds["style"] = wxDEFAULT_FRAME_STYLE
+        wxFrame.__init__(self, *args, **kwds)
+        self.panel_2 = wxPanel(self, -1)
+        self.window_1 = wxVTKRenderWindowInteractor(self.panel_2, -1)
+        self.closeButtonId  =  wxNewId()
+        self.button_1 = wxButton(self.panel_2, self.closeButtonId , "Close")
+
+        self.__set_properties()
+        self.__do_layout()
+        # end wxGlade
+
+    def __set_properties(self):
+        # begin wxGlade: orthoViewFrame.__set_properties
+        self.SetTitle("Orthogonal Slice Viewer")
+        self.window_1.SetSize((479, 359))
+        # end wxGlade
+
+    def __do_layout(self):
+        # begin wxGlade: orthoViewFrame.__do_layout
+        sizer_4 = wxBoxSizer(wxVERTICAL)
+        sizer_5 = wxBoxSizer(wxVERTICAL)
+        sizer_5.Add(self.window_1, 1, wxEXPAND, 0)
+        sizer_5.Add(self.button_1, 0, wxALIGN_CENTER_HORIZONTAL, 0)
+        self.panel_2.SetAutoLayout(1)
+        self.panel_2.SetSizer(sizer_5)
+        sizer_5.Fit(self.panel_2)
+        sizer_5.SetSizeHints(self.panel_2)
+        sizer_4.Add(self.panel_2, 1, wxEXPAND, 0)
+        self.SetAutoLayout(1)
+        self.SetSizer(sizer_4)
+        sizer_4.Fit(self)
+        sizer_4.SetSizeHints(self)
+        self.Layout()
+        # end wxGlade
+
+# end of class orthoViewFrame
+
+
 class slice3d_vwr_frame(wxFrame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: slice3d_vwr_frame.__init__
@@ -64,13 +105,13 @@ class slice3d_vwr_frame(wxFrame):
 
     def __set_properties(self):
         # begin wxGlade: slice3d_vwr_frame.__set_properties
-        self.SetTitle("DSCAS3 Slice/3D Viewer")
-        self.SetSize((600, 600))
+        self.SetTitle("frame_1")
+        self.SetSize((-1, -1))
         self.spointsGrid.CreateGrid(0, 3)
         self.spointsGrid.SetColLabelValue(0, "World")
         self.spointsGrid.SetColLabelValue(1, "Discrete")
         self.spointsGrid.SetColLabelValue(2, "Value")
-        self.spointsGrid.SetSize((293, 191))
+        self.spointsGrid.SetSize((-1, -1))
         self.surfacePickActionRB.SetSelection(0)
         self.sliceNameChoice.SetSelection(0)
         self.sliceEnabledCheckBox.SetValue(1)
