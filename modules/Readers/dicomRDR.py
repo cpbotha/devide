@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.12 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 
 import genUtils
 import os

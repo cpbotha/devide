@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.2 2003/09/15 17:10:36 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 #
 
 from genMixins import subjectMixin

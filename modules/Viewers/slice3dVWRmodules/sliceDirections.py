@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.15 2003/09/15 17:10:36 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils

@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.36 2003/09/15 17:19:45 cpbotha Exp $
+# $Id: tdObjects.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils

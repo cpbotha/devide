@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsWRT.py,v 1.9 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: vtkPolyDataWRT.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -6,7 +6,7 @@ import moduleUtils
 from wxPython.wx import *
 import vtk
 
-class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
+class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -15,27 +15,26 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
-        self._writer = vtk.vtkStructuredPointsWriter()
+        self._writer = vtk.vtkPolyDataWriter()
+        # sorry about this, but the files get REALLY big if we write them
+        # in ASCII - I'll make this a gui option later.
+        self._writer.SetFileTypeToBinary()
 
         moduleUtils.setupVTKObjectProgress(
             self, self._writer,
-            'Writing vtk structured points data')
-
-        # we do this to save space - if you're going to be transporting files
-        # to other architectures, change this to ASCII
-        self._writer.SetFileTypeToBinary()
+            'Writing VTK Polygonal data')
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
-                              {'vtkStructuredPointsWriter': self._writer})
+                              {'vtkPolyDataWriter': self._writer})
 
         # set up some defaults
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
-
+        
     def close(self):
         # we should disconnect all inputs
         self.setInput(0, None)

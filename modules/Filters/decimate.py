@@ -1,5 +1,5 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimateFLT.py,v 1.7 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: decimate.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils

@@ -1,5 +1,5 @@
 # shared.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: shared.py,v 1.1 2003/09/15 11:55:30 cpbotha Exp $
+# $Id: shared.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 #
 
 import wx

@@ -1,67 +1,81 @@
-# $Id: vtkPolyDataWRT.py,v 1.4 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 from wxPython.wx import *
 import vtk
+import os
 
-class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
-
+class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
+    
     def __init__(self, moduleManager):
+        """Constructor (initialiser) for the PD reader.
 
-        # call parent constructor
+        This is almost standard code for most of the modules making use of
+        the filenameViewModuleMixin mixin.
+        """
+
+        # call the constructor in the "base"
         moduleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
-        self._writer = vtk.vtkPolyDataWriter()
-        # sorry about this, but the files get REALLY big if we write them
-        # in ASCII - I'll make this a gui option later.
-        self._writer.SetFileTypeToBinary()
+        # setup necessary VTK objects
+	self._reader = vtk.vtkPolyDataReader()
 
         moduleUtils.setupVTKObjectProgress(
-            self, self._writer,
-            'Writing VTK Polygonal data')
+            self, self._reader,
+            'Reading vtk polydata')
 
+#         def errorEventCallback(o, e, msg):
+#             print msg
+
+#         errorEventCallback.callDataType = 'string0'
+            
+#         self._reader.AddObserver('ErrorEvent', errorEventCallback)
+        
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
-                              {'vtkPolyDataWriter': self._writer})
+                              {'vtkPolyDataReader': self._reader})
 
         # set up some defaults
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
         self.syncViewWithLogic()
-        
+
     def close(self):
-        # we should disconnect all inputs
-        self.setInput(0, None)
-        del self._writer
+        del self._reader
+        # call the close method of the mixin
         filenameViewModuleMixin.close(self)
 
     def getInputDescriptions(self):
-	return ('vtkStructuredPoints',)
-    
-    def setInput(self, idx, input_stream):
-        self._writer.SetInput(input_stream)
-    
-    def getOutputDescriptions(self):
 	return ()
     
-    def getOutput(self, idx):
-        raise Exception
+
+    def setInput(self, idx, input_stream):
+	raise Exception
     
+
+    def getOutputDescriptions(self):
+        # equivalent to return ('vtkPolyData',)
+	return (self._reader.GetOutput().GetClassName(),)
+    
+
+    def getOutput(self, idx):
+	return self._reader.GetOutput()
+
     def logicToConfig(self):
-        filename = self._writer.GetFileName()
+        filename = self._reader.GetFileName()
         if filename == None:
             filename = ''
 
         self._config.filename = filename
 
     def configToLogic(self):
-        self._writer.SetFileName(self._config.filename)
+        self._reader.SetFileName(self._config.filename)
 
     def viewToConfig(self):
         self._config.filename = self._getViewFrameFilename()
@@ -70,9 +84,10 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
         self._setViewFrameFilename(self._config.filename)
 
     def executeModule(self):
-        if len(self._writer.GetFileName()):
-            self._writer.Write()
-
+        # get the vtkPolyDataReader to try and execute (if there's a filename)
+        if len(self._reader.GetFileName()):        
+            self._reader.Update()
+            
         # tell the vtk log file window to poll the file; if the file has
         # changed, i.e. vtk has written some errors, the log window will
         # pop up.  you should do this in all your modules right after you
@@ -85,3 +100,8 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
         # it easier for the user to associate a frame with a glyph
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()
+
+        print "blaat"
+        print moduleBase
+        print "blaat 2"
+        

@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.13 2003/09/04 22:35:20 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator

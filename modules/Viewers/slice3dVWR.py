@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.74 2003/09/15 17:10:36 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 # next-generation of the slicing and dicing dscas3 module
 
 import cPickle

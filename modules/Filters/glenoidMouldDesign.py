@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesignFLT.py,v 1.20 2003/05/20 21:57:51 cpbotha Exp $
+# $Id: glenoidMouldDesign.py,v 1.1 2003/09/20 21:23:51 cpbotha Exp $
 # dscas3 module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
