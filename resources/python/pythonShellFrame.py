@@ -10,9 +10,9 @@ class pythonShellFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_1 = wx.Panel(self, -1)
+        self.statusBar = self.CreateStatusBar(1)
         self.pyShell = py.shell.Shell(self.panel_1, -1)
         self.closeButton = wx.Button(self.panel_1, -1, "Close")
-        self.statusBar = self.CreateStatusBar(1)
 
         self.__set_properties()
         self.__do_layout()
@@ -21,13 +21,14 @@ class pythonShellFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: pythonShellFrame.__set_properties
         self.SetTitle("Python Introspection")
-        self.pyShell.SetFocus()
-        self.panel_1.SetSize((654, 533))
+        self.SetSize((670, 623))
         self.statusBar.SetStatusWidths([-1])
         # statusbar fields
         statusBar_fields = ["Welcome to the Python Shell!"]
         for i in range(len(statusBar_fields)):
             self.statusBar.SetStatusText(statusBar_fields[i], i)
+        self.pyShell.SetFocus()
+        self.panel_1.SetSize((662, 562))
         # end wxGlade
 
     def __do_layout(self):
@@ -45,8 +46,6 @@ class pythonShellFrame(wx.Frame):
         topSizer.Add(self.panel_1, 1, wx.EXPAND, 0)
         self.SetAutoLayout(1)
         self.SetSizer(topSizer)
-        topSizer.Fit(self)
-        topSizer.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 
