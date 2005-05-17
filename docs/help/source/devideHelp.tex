@@ -415,6 +415,28 @@ transformed datasets so that a corresponding volume of interest can be
 extracted.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Determining optical flow between two volumes}
+In order to determine the optical flow between two rigidly registered
+datasets, we make use of the demonsRegistration non-rigid registration
+module.  Do this after the rpgid landmark-based pre-registration and
+after having extracted a common sub-volume from all datasets.
+
+This is an ITK module, so you have to use the ITK-enabled version of
+DeVIDE.  For each pair of successive volumes, determine the optical
+flow by making use of a network like the one shown in figure
+\ref{figdemons}.
+
+\begin{figure}
+$$\image{5cm;0cm}{figures/demonsnet}$$
+\caption{Network to perform Demons-based non-rigid registration between two 
+DICOM volumes.}\label{figdemons}
+\end{figure}
+
+% www.ictsale.com
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Probing and warping (interactive advection)}
 Figure \ref{figPAW} shows how to perform interactive probing and
 warping (advection) with DeVIDE.
