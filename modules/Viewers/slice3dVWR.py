@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.35 2005/05/17 15:13:05 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.36 2005/05/17 22:28:57 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.35 $
+    $Revision: 1.36 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -91,7 +91,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self._voi_widget.NeedsPlacement = True
 
         # also create the VTK construct for actually extracting VOI from data
-        self._extractVOI = vtk.vtkExtractVOI()
+        #self._extractVOI = vtk.vtkExtractVOI()
         self._currentVOI = 6 * [0]
 
         # set the whole UI up!
@@ -182,7 +182,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
 
         del self._voi_widget
-        del self._extractVOI
+        #del self._extractVOI
 
         del self._cInteractorStyle
 
@@ -394,7 +394,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                     # and stop vtkExtractVOI from extracting more VOIs
                     # we have to disconnect this, else the input data will
                     # live on...
-                    self._extractVOI.SetInput(None)
+                    #self._extractVOI.SetInput(None)
 
                 self._inputs[idx]['Connected'] = None
                 self._inputs[idx]['inputData'] = None
@@ -463,7 +463,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     # things to setup when primary data is added
-                    self._extractVOI.SetInput(inputStream)
+                    #self._extractVOI.SetInput(inputStream)
 
                     # add outline actor and cube axes actor to renderer
                     self._threedRenderer.AddActor(self._outline_actor)
@@ -499,7 +499,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def getOutputDescriptions(self):
         return ('Selected points',
-                'Volume of Interest (vtkStructuredPoints)',
+                #'Volume of Interest (vtkStructuredPoints)',
                 'Implicit Function')
         
 
@@ -507,8 +507,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         if idx == 0:
             return self.selectedPoints.outputSelectedPoints
         elif idx == 1:
-            return self._extractVOI.GetOutput()
-        else:
             return self._implicits.outputImplicitFunction
 
     def view(self):
@@ -620,6 +618,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         EVT_CHOICE(self.controlFrame,
                    self.controlFrame.voiAutoSizeChoice.GetId(),
                    self._handlerVoiAutoSizeChoice)
+
+        EVT_BUTTON(self.controlFrame,
+                   self.controlFrame.voiFilenameBrowseButton.GetId(),
+                   self._handlerVoiFilenameBrowseButton)
+
+        EVT_BUTTON(self.controlFrame,
+                   self.controlFrame.voiSaveButton.GetId(),
+                   self._handlerVoiSaveButton)
 
         def _ps_cb():
             # FIXME: update to new factoring
@@ -919,7 +925,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                                                          None)
                     
                     self.render3D()
-                    
+
                         
     def _handlerWidgetEnabledCheckBox(self, event=None):
         # event can be None
@@ -932,8 +938,41 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 
             else:
                 self._voi_widget.Off()
+
+    def _handlerVoiFilenameBrowseButton(self, event):
+        dlg = wxFileDialog(self.controlFrame,
+                           "Select VTI filename to write VOI to",
+                           "", "", "*.vti", wxOPEN)
+        
+        if dlg.ShowModal() == wxID_OK:
+            self.controlFrame.voiFilenameText.SetValue(dlg.GetPath())
+                     
+
+    def _handlerVoiSaveButton(self, event):
+        input_data = self.getPrimaryInput()
+        filename = self.controlFrame.voiFilenameText.GetValue()
+        if input_data and self._voi_widget.GetEnabled() and filename:
+            # see if we need to reset to zero origin
+            zor = self.controlFrame.voiResetToOriginCheck.GetValue()
+
+            extractVOI = vtk.vtkExtractVOI()
+            extractVOI.SetInput(input_data)
+            extractVOI.SetVOI(self._currentVOI)
+
+            writer = vtk.vtkXMLImageDataWriter()
+            writer.SetDataModeToBinary()
+            writer.SetFileName(filename)
             
-            
+            if zor:
+                ici = vtk.vtkImageChangeInformation()
+                ici.SetOutputExtentStart(0,0,0)
+                ici.SetInput(extractVOI.GetOutput())
+                writer.SetInput(ici.GetOutput())
+
+            else:
+                writer.SetInput(extractVOI.GetOutput())
+
+            writer.Write()
 
     def _handlerIntrospectButton(self, event):
         """Open Python introspection window with this module as main object.
@@ -1091,25 +1130,27 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             "(%.2f %.2f %.2f %.2f %.2f %.2f) mm" %
             bounds)
 
-        # then set discrete extent (volume relative)
-        input_data = self._extractVOI.GetInput()
-        ispacing = input_data.GetSpacing()
-        iorigin = input_data.GetOrigin()
-        # calculate discrete coords
-        bounds = planes.GetPoints().GetBounds()
-        voi = 6 * [0]
-        # excuse the for loop :)
-        for i in range(6):
-            voi[i] = round((bounds[i] - iorigin[i / 2]) / ispacing[i / 2])
-        # store the VOI (this is a shallow copy)
-        self._currentVOI = voi
-        # display the discrete extent
-        self.controlFrame.voiExtentText.SetValue(
-            "(%d %d %d %d %d %d)" % tuple(voi))
+        input_data = self.getPrimaryInput()
+        if input_data:
+            ispacing = input_data.GetSpacing()
+            iorigin = input_data.GetOrigin()
+            # calculate discrete coords
+            bounds = planes.GetPoints().GetBounds()
+            voi = 6 * [0]
+            # excuse the for loop :)
+            for i in range(6):
+                voi[i] = round((bounds[i] - iorigin[i / 2]) / ispacing[i / 2])
+
+            # store the VOI (this is a shallow copy)
+            self._currentVOI = voi
+            # display the discrete extent
+            self.controlFrame.voiExtentText.SetValue(
+                "(%d %d %d %d %d %d)" % tuple(voi))
 
     def voiWidgetEndInteractionCallback(self, o, e):
         # adjust the vtkExtractVOI with the latest coords
-        self._extractVOI.SetVOI(self._currentVOI)
+        #self._extractVOI.SetVOI(self._currentVOI)
+        pass
 
     def _rwiLeftButtonCallback(self, obj, event):
 
