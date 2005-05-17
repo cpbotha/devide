@@ -1,7 +1,15 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.76 2005/01/28 13:00:01 cpbotha Exp $
+# $Id: devide.py,v 1.77 2005/05/17 21:49:41 cpbotha Exp $
 
-DEVIDE_VERSION = '20050128-T'
+# the current main release version
+DEVIDE_VERSION = '20050517-T'
+
+# VTK and ITK extra version information: here we add the
+# cvs commands necessary to get the versions of VTK and ITK
+# that are required for this release of DeVIDE checked out.
+# If you're not cpbotha, you shouldn't change these.
+VTK_VERSION_EXTRA = 'cvs -z3 update -r ParaView-2-0-2 -dP'
+ITK_VERSION_EXTRA = 'cvs -z3 update -dAP'
 
 # standard Python imports
 import getopt
@@ -411,7 +419,8 @@ class devide_app_t(wx.App):
         </p>
         <p>
         wxPython %s, Python %s<br>
-        VTK %s, ITK %s
+        VTK %s<br>
+        ITK %s
         </p>
         </center>
         </body>
@@ -426,7 +435,8 @@ class devide_app_t(wx.App):
         vsv = vtk.vtkVersion.GetVTKSourceVersion()
         # VTK source nightly date
         vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
-        vvs = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
+        vvs = '%s (%s: %s)' % (vtk.vtkVersion.GetVTKVersion(), vnd,
+                               VTK_VERSION_EXTRA)
 
         # if applicable, let's make an ITK version string
         ivs = ''
@@ -435,7 +445,8 @@ class devide_app_t(wx.App):
             itk = __import__('fixitk')
             isv = itk.itkVersion.GetITKSourceVersion()
             ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
-            ivs = '%s (%s)' % (itk.itkVersion.GetITKVersion(), ind)
+            ivs = '%s (%s: %s)' % (itk.itkVersion.GetITKVersion(), ind,
+                                   ITK_VERSION_EXTRA)
         else:
             ivs = 'N/A'
 
