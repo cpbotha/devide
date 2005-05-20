@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.7 2004/11/20 20:43:11 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.8 2005/05/20 13:28:44 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -49,6 +49,9 @@ class sliceDirections(s3dcGridMixin):
 
         self.overlayMode = 'greenOpacityRange'
         self.fusionAlpha = 0.4
+
+        # make the output PolyData for the planes tracking the slices
+        self.slicesPolyDataSource = vtk.vtkAppendPolyData()
 
         # create the first slice
         self._createSlice('Axial')
@@ -206,6 +209,9 @@ class sliceDirections(s3dcGridMixin):
                 self._setSliceEnabled(sliceName, True)
                 self._setSliceInteraction(sliceName, True)
 
+                # and initialise the output polydata
+                self.slicesPolyDataSource.AddInput(newSD.primaryPolyData)
+
                 return newSD
 
     def _destroySlice(self, sliceName):
@@ -213,6 +219,11 @@ class sliceDirections(s3dcGridMixin):
 
         if sliceName in self._sliceDirectionsDict:
             sliceDirection = self._sliceDirectionsDict[sliceName]
+
+            # remove it from the polydata output
+            self.slicesPolyDataSource.RemoveInput(
+                sliceDirection.primaryPolyData)
+            
             # this will disconnect all inputs
             sliceDirection.close()
 
@@ -581,3 +592,11 @@ class sliceDirections(s3dcGridMixin):
             if val:
                 name = self._grid.GetCellValue(row, self._gridNameCol)
                 self._sliceDirectionsDict[name].disable()
+
+#     def sdUpdatePolyData(self, polyData):
+#         """Called by one of our sliceDirections when it has been updated
+#         by the user.  We're supposed to modify the main sd polydata output.
+#         """
+
+#         self.slicesPolyDataSource.RemoveInput(polyData)
+#         self.slicesPolyDataSource.AddInput(polyData)

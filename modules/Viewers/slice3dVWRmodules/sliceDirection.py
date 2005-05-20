@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.18 2005/01/12 23:03:01 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.19 2005/05/20 13:28:44 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -52,6 +52,9 @@ class sliceDirection:
 
         self.overlayMode = 'greenOpacityRange'
         self.fusionAlpha = 0.4
+
+        # we'll use this to store the polydata of our primary slice
+        self.primaryPolyData = vtk.vtkPolyData()
 
     def addContourObject(self, contourObject, prop3D):
         """Activate contouring for the contourObject.  The contourObject
@@ -796,10 +799,13 @@ class sliceDirection:
         #                                [directionL[0]].Render()
 
     def _ipwEndInteractionCallback(self):
+        # we probably don't have to do all of this, as an interaction
+        # can also be merely the user mousing around with the cursor!
         self._syncOverlays()
         self._syncOrthoView()
         self._syncContours()
         if self._orthoViewFrame:
             self._orthoViewFrame.RWI.Render()
-                
-        
+
+        self._ipws[0].GetPolyData(self.primaryPolyData)
+        #self.sliceDirections.sdUpdatePolyData(self._primaryPolyData)
