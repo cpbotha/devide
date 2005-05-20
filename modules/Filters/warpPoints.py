@@ -8,7 +8,7 @@ import vtk
 class warpPoints(scriptedConfigModuleMixin, moduleBase):
     """Warp input points according to their associated vectors.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     _defaultVectorsSelectionString = 'Default Active Vectors'
@@ -69,7 +69,11 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
         return ('Warped data',)
 
     def getOutput(self, idx):
-        return self._warpVector.GetOutput()
+        # we only return something if we have something
+        if self._warpVector.GetNumberOfInputConnections(0):
+            return self._warpVector.GetOutput()
+        else:
+            return None
 
     def logicToConfig(self):
         self._config.scaleFactor = self._warpVector.GetScaleFactor()
@@ -77,7 +81,9 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
         # the vector choice is the second configTuple
         choice = self._getWidget(1)
 
-        if self._warpVector.GetInput():
+        # this is the new way of checking input connections
+        if self._warpVector.GetNumberOfInputConnections(0):
+        #if self._warpVector.GetInput():
             pd = self._warpVector.GetInput().GetPointData()
             if pd:
                 # get a list of attribute names

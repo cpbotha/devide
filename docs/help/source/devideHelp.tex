@@ -407,6 +407,12 @@ the ``Primary LUT fusion'' overlay mode in the slice3dVWR control
 panel.  The Alpha-parameter can be adjusted to ``fade'' from the
 reference dataset to the registered dataset and back.
 
+Don't forget to save your transformed dataset:  Connect the output of the
+``transformVolume'' module to the input of a ``vtiWRT'' module for
+example.  Double click on the ``vtkWRT'' module and then click on the browse
+button to select a filename.  For all writer modules, you HAVE to click on
+the ``Execute'' button for it to save the file. 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Selecting a common bounding box for multiple volumes}
 After transforming a number of volumes into a common frame of

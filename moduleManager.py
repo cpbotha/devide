@@ -547,6 +547,12 @@ class moduleManager:
             raise Exception, \
                   "%d'th input of module %s already connected." % \
                   (input_idx, input_module.__class__.__name__)
+
+        # if there's nothing there yet, we can't connect!
+        if output_module.getOutput(output_idx) == None:
+            raise Exception, \
+                  "Module %s has no output ready on port %d yet." % \
+                  (output_module.__class__.__name__, output_idx)
             
 	input_module.setInput(input_idx, output_module.getOutput(output_idx))
         
