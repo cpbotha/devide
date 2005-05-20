@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.9 2005/05/20 12:12:35 cpbotha Exp $
+# $Id: startupImports.py,v 1.10 2005/05/20 12:35:22 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -38,12 +38,12 @@ def doImports(progressMethod, mainConfig):
                   ('vtk.rendering', 'Loading VTK Rendering.'),
                   ('vtk.hybrid', 'Loading VTK Hybrid.'),
                   ('vtk.patented', 'Loading VTK Patented.'),
-                  ('VXLNumericsPython', 'Loading VXL Numerics'),
                   # the following list represents the actual sequence
                   # with which fixitk/InsightToolkit loads the low-level libs
                   # we have to call these explicitly, because doing any
                   # imports from fixitk will import them all in one shot,
                   # thus making the user wait very long without any feedback
+                  ('VXLNumericsPython', 'Loading VXL Numerics'),
                   ('ITKCommonAPython', 'Loading ITK Common part A'),
                   ('ITKCommonBPython', 'Loading ITK Common part B'),
                   ('ITKBasicFiltersAPython', 'Loading ITK Basic Filters part A'),
@@ -64,8 +64,8 @@ def doImports(progressMethod, mainConfig):
         # remove ITK things from importList
         importList = [i for i in importList if
                       not i[0].startswith('fixitk') and
-                      not i[0].startswith('itk') and
-                      not i[0].startswith('vxl')]
+                      not i[0].startswith('ITK') and
+                      not i[0].startswith('VXL')]
                   
     percentStep = 95.0 / len(importList)
     currentPercent = 0.0
