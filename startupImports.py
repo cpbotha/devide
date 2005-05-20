@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.8 2004/02/27 10:35:06 cpbotha Exp $
+# $Id: startupImports.py,v 1.9 2005/05/20 12:12:35 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -38,6 +38,20 @@ def doImports(progressMethod, mainConfig):
                   ('vtk.rendering', 'Loading VTK Rendering.'),
                   ('vtk.hybrid', 'Loading VTK Hybrid.'),
                   ('vtk.patented', 'Loading VTK Patented.'),
+                  ('VXLNumericsPython', 'Loading VXL Numerics'),
+                  # the following list represents the actual sequence
+                  # with which fixitk/InsightToolkit loads the low-level libs
+                  # we have to call these explicitly, because doing any
+                  # imports from fixitk will import them all in one shot,
+                  # thus making the user wait very long without any feedback
+                  ('ITKCommonAPython', 'Loading ITK Common part A'),
+                  ('ITKCommonBPython', 'Loading ITK Common part B'),
+                  ('ITKBasicFiltersAPython', 'Loading ITK Basic Filters part A'),
+                  ('ITKBasicFiltersBPython', 'Loading ITK Basic Filters part B'),
+                  ('ITKNumericsPython', 'Loading ITK Numerics'),
+                  ('ITKAlgorithmsPython', 'Loading ITK Algorithms'),
+                  ('ITKIOPython', 'Loading ITK IO Python'),
+                  # we do the following just for completeness
                   ('fixitk.vxlNumericsPythonTopLevel', 'Loading VXL Numerics'),
                   ('fixitk.itkCommonPythonTopLevel', 'Loading ITK Common'),
                   ('fixitk.itkBasicFiltersPythonTopLevel',
