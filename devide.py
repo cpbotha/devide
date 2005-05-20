@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.77 2005/05/17 21:49:41 cpbotha Exp $
+# $Id: devide.py,v 1.78 2005/05/20 10:00:58 cpbotha Exp $
 
 # the current main release version
-DEVIDE_VERSION = '20050517-T'
+DEVIDE_VERSION = '20050520-T'
 
 # VTK and ITK extra version information: here we add the
 # cvs commands necessary to get the versions of VTK and ITK
 # that are required for this release of DeVIDE checked out.
 # If you're not cpbotha, you shouldn't change these.
-VTK_VERSION_EXTRA = 'cvs -z3 update -r ParaView-2-0-2 -dP'
-ITK_VERSION_EXTRA = 'cvs -z3 update -dAP'
+VTK_VERSION_EXTRA = 'update -r ParaView-2-0-2 -dP'
+ITK_VERSION_EXTRA = 'update -dAP'
 
 # standard Python imports
 import getopt
