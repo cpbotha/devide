@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.9 2005/05/21 20:59:32 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.10 2005/05/21 23:20:43 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -49,6 +49,12 @@ class sliceDirections(s3dcGridMixin):
 
         self.overlayMode = 'greenOpacityRange'
         self.fusionAlpha = 0.4
+
+        # this will make all ipw slice polydata available at the output
+        self.ipwAppendPolyData = vtk.vtkAppendPolyData()
+
+        # this append filter will make all slice data available at the output
+        self.ipwAppendFilter = vtk.vtkAppendFilter()
 
         # create the first slice
         self._createSlice('Axial')
@@ -206,6 +212,9 @@ class sliceDirections(s3dcGridMixin):
                 self._setSliceEnabled(sliceName, True)
                 self._setSliceInteraction(sliceName, True)
 
+                # and initialise the output polydata
+                self.ipwAppendPolyData.AddInput(newSD.primaryPolyData)
+
                 return newSD
 
     def _destroySlice(self, sliceName):
@@ -213,6 +222,10 @@ class sliceDirections(s3dcGridMixin):
 
         if sliceName in self._sliceDirectionsDict:
             sliceDirection = self._sliceDirectionsDict[sliceName]
+
+            # remove it from the polydata output
+            self.ipwAppendPolyData.RemoveInput(
+                sliceDirection.primaryPolyData)
 
             # this will disconnect all inputs
             sliceDirection.close()

@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.20 2005/05/21 20:59:32 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.21 2005/05/21 23:20:43 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -52,6 +52,12 @@ class sliceDirection:
 
         self.overlayMode = 'greenOpacityRange'
         self.fusionAlpha = 0.4
+
+        # we'll use this to store the polydata of our primary slice
+        self._primaryCopyPlaneSource = vtk.vtkPlaneSource()
+        self._primaryCopyPlaneSource.SetXResolution(64)
+        self._primaryCopyPlaneSource.SetYResolution(64)
+        self.primaryPolyData = self._primaryCopyPlaneSource.GetOutput()
 
     def addContourObject(self, contourObject, prop3D):
         """Activate contouring for the contourObject.  The contourObject
@@ -242,6 +248,9 @@ class sliceDirection:
                 # this means primary data!
 
                 self._ipws.append(vtk.vtkImagePlaneWidget())
+                #self._ipws[-1].GetPolyDataAlgorithm().SetXResolution(64)
+                #self._ipws[-1].GetPolyDataAlgorithm().SetYResolution(64)
+                
                 self._ipws[-1].SetInput(inputData)
                 self._ipws[-1].SetPicker(self.sliceDirections.ipwPicker)
                 # GetColorMap() -- new VTK CVS
@@ -271,6 +280,22 @@ class sliceDirection:
 
                 # also check for contourObjects (primary data is being added)
                 self.addAllContourObjects()
+
+                # and add ourselves to sliceDirections appendFilter
+
+                # first we name ourselves... (ImageReslice loses the input
+                # scalars name)
+                rsoPD = self._ipws[-1].GetResliceOutput().GetPointData()
+                rsoScalars = rsoPD.GetScalars()
+                                                                   
+                if rsoScalars.GetName():
+                    print "sliceDirection.py: WARNING - ResliceOutput " \
+                          "scalars are named."
+                else:
+                    rsoScalars.SetName('ipw_reslice_output')
+                    
+                self.sliceDirections.ipwAppendFilter.AddInput(
+                    self._ipws[-1].GetResliceOutput())
 
     def close(self):
         """Shut down everything."""
@@ -449,18 +474,26 @@ class sliceDirection:
         if ipwL:
             # there can be only one!
             ipw = ipwL[0]
+
             # switch it off
             ipw.Off()
             # disconnect it from the RWI
             ipw.SetInteractor(None)
+
+            # we always try removing the input from the appendfilter
+            self.sliceDirections.ipwAppendFilter.RemoveInput(
+                ipw.GetResliceOutput())
+            
             # disconnect the input
             ipw.SetInput(None)
+
             # finally delete our reference
-            idx = self._ipws.index(ipw)
+            idx = self._ipws.index(ipw)            
             del self._ipws[idx]
 
-        # if there is no data left, we also have to remove all contours
+
         if not self._ipws:
+            # if there is no data left, we also have to remove all contours
             self.removeAllContourObjects()
 
     def resetToACS(self, acs):
@@ -718,6 +751,8 @@ class sliceDirection:
         self._syncContours()
         if self._orthoViewFrame:
             self._orthoViewFrame.RWI.Render()
+
+        self._syncOutputPolyData()
         
 
     def _syncContours(self):
@@ -725,6 +760,13 @@ class sliceDirection:
         """
         for contourObject in self._contourObjectsDict.keys():
             self.syncContourToObject(contourObject)
+
+    def _syncOutputPolyData(self):
+        if len(self._ipws) > 0:
+            ps = self._ipws[0].GetPolyDataAlgorithm()
+            self._primaryCopyPlaneSource.SetOrigin(ps.GetOrigin())
+            self._primaryCopyPlaneSource.SetPoint1(ps.GetPoint1())
+            self._primaryCopyPlaneSource.SetPoint2(ps.GetPoint2())
 
     def _syncOverlays(self):
         """Synchronise overlays to current main IPW.
@@ -803,4 +845,7 @@ class sliceDirection:
         self._syncContours()
         if self._orthoViewFrame:
             self._orthoViewFrame.RWI.Render()
+
+        self._syncOutputPolyData()
+
 

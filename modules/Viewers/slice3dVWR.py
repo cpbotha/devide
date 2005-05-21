@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.38 2005/05/21 20:59:32 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.39 2005/05/21 23:20:43 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.38 $
+    $Revision: 1.39 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -391,11 +391,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                     self._voi_widget.Off()
                     self._voi_widget.SetInteractor(None)
 
-                    # and stop vtkExtractVOI from extracting more VOIs
-                    # we have to disconnect this, else the input data will
-                    # live on...
-                    #self._extractVOI.SetInput(None)
-
                 self._inputs[idx]['Connected'] = None
                 self._inputs[idx]['inputData'] = None
 
@@ -499,7 +494,9 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def getOutputDescriptions(self):
         return ('Selected points',
-                'Implicit Function')
+                'Implicit Function',
+                'Slices polydata',
+                'Slices unstructured grid')
         
 
     def getOutput(self, idx):
@@ -507,6 +504,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             return self.selectedPoints.outputSelectedPoints
         elif idx == 1:
             return self._implicits.outputImplicitFunction
+        elif idx == 2:
+            return self.sliceDirections.ipwAppendPolyData.GetOutput()
+        else:
+            return self.sliceDirections.ipwAppendFilter.GetOutput()
 
     def view(self):
         if not self.controlFrame.Show(True):
