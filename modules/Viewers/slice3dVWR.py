@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.37 2005/05/20 13:28:40 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.38 2005/05/21 20:59:32 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.37 $
+    $Revision: 1.38 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -499,7 +499,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def getOutputDescriptions(self):
         return ('Selected points',
-                'Slices Poly Data',
                 'Implicit Function')
         
 
@@ -507,8 +506,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         if idx == 0:
             return self.selectedPoints.outputSelectedPoints
         elif idx == 1:
-            return self.sliceDirections.slicesPolyDataSource.GetOutput()
-        else:
             return self._implicits.outputImplicitFunction
 
     def view(self):

@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.19 2005/05/20 13:28:44 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.20 2005/05/21 20:59:32 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -52,9 +52,6 @@ class sliceDirection:
 
         self.overlayMode = 'greenOpacityRange'
         self.fusionAlpha = 0.4
-
-        # we'll use this to store the polydata of our primary slice
-        self.primaryPolyData = vtk.vtkPolyData()
 
     def addContourObject(self, contourObject, prop3D):
         """Activate contouring for the contourObject.  The contourObject
@@ -807,5 +804,3 @@ class sliceDirection:
         if self._orthoViewFrame:
             self._orthoViewFrame.RWI.Render()
 
-        self._ipws[0].GetPolyData(self.primaryPolyData)
-        #self.sliceDirections.sdUpdatePolyData(self._primaryPolyData)
