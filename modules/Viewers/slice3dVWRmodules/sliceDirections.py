@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.10 2005/05/21 23:20:43 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.11 2005/05/21 23:39:15 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -121,6 +121,8 @@ class sliceDirections(s3dcGridMixin):
             ('I&nteraction OFF',
              'Deactivate Interaction for all selected slices',
              self._handlerSliceInteractionOff, True),
+            ('Set &Opacity', 'Change opacity of all selected slices',
+             self._handlerSliceSetOpacity, True),
             ('---',),
             ('&Lock to Points', 'Move the selected slices to selected points',
              self._handlerSliceLockToPoints, True),
@@ -388,6 +390,26 @@ class sliceDirections(s3dcGridMixin):
                 name,
                 False)
 
+    def _handlerSliceSetOpacity(self, event):
+        opacityText = wx.GetTextFromUser(
+            'Enter a new opacity value (0.0 to 1.0) for all selected '
+            'slices.')
+
+        if opacityText:
+            try:
+                opacity = float(opacityText)
+            except ValueError:
+                pass
+            else:
+                if opacity > 1.0:
+                    opacity = 1.0
+                elif opacity < 0.0:
+                    opacity = 0.0
+
+                names = self._getSelectedSliceNames()
+                for name in names:
+                    self._setSliceOpacity(name, opacity)
+
     def _handlerSliceDelete(self, event):
         names = self._getSelectedSliceNames()
         for name in names:
@@ -563,6 +585,12 @@ class sliceDirections(s3dcGridMixin):
             if row >= 0:
                 genUtils.setGridCellYesNo(
                     self._grid, row, self._gridInteractionCol, interaction)
+
+    def _setSliceOpacity(self, sliceName, opacity):
+        if sliceName in self._sliceDirectionsDict:
+            sd = self._sliceDirectionsDict[sliceName]
+            for ipw in sd._ipws:
+                ipw.GetTexturePlaneProperty().SetOpacity(opacity)
 
     def syncContoursToObject(self, tdObject):
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
