@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.21 2005/05/21 23:20:43 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.22 2005/05/21 23:53:24 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -281,7 +281,8 @@ class sliceDirection:
                 # also check for contourObjects (primary data is being added)
                 self.addAllContourObjects()
 
-                # and add ourselves to sliceDirections appendFilter
+                # make sure our output polydata is in sync with the new prim
+                self._syncOutputPolyData()
 
                 # first we name ourselves... (ImageReslice loses the input
                 # scalars name)
@@ -293,7 +294,8 @@ class sliceDirection:
                           "scalars are named."
                 else:
                     rsoScalars.SetName('ipw_reslice_output')
-                    
+                
+                # and add ourselfs to the output unstructured grid pointer
                 self.sliceDirections.ipwAppendFilter.AddInput(
                     self._ipws[-1].GetResliceOutput())
 
