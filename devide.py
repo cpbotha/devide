@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.80 2005/05/23 16:23:58 cpbotha Exp $
+# $Id: devide.py,v 1.81 2005/05/23 16:27:27 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050523-T'
@@ -410,8 +410,8 @@ class devide_app_t(wx.App):
         <body>
         <center>
         <h3>DeVIDE v.%s</h3>
-        <p>DeVIDE is copyright (c) 2003 Charl P. Botha<br>
-        http://cpbotha.net/phd/
+        <p>DeVIDE is copyright (c) 2003-2005 Charl P. Botha<br>
+        http://cpbotha.net/DeVIDE
         </p>
         <p>Unauthorised use or distribution strictly prohibited.
         See LICENSE.txt in the docs directory for detailed terms of
