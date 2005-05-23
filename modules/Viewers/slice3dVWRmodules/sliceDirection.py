@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.22 2005/05/21 23:53:24 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.23 2005/05/23 15:26:49 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -288,14 +288,15 @@ class sliceDirection:
                 # scalars name)
                 rsoPD = self._ipws[-1].GetResliceOutput().GetPointData()
                 rsoScalars = rsoPD.GetScalars()
-                                                                   
-                if rsoScalars.GetName():
-                    print "sliceDirection.py: WARNING - ResliceOutput " \
-                          "scalars are named."
-                else:
-                    rsoScalars.SetName('ipw_reslice_output')
+
+                if rsoScalars:
+                    if rsoScalars.GetName():
+                        print "sliceDirection.py: WARNING - ResliceOutput " \
+                        "scalars are named."
+                    else:
+                        rsoScalars.SetName('ipw_reslice_output')
                 
-                # and add ourselfs to the output unstructured grid pointer
+                # and add ourselvess to the output unstructured grid pointer
                 self.sliceDirections.ipwAppendFilter.AddInput(
                     self._ipws[-1].GetResliceOutput())
 
