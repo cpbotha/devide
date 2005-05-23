@@ -1,4 +1,4 @@
-# $Id: demonsRegistration.py,v 1.4 2004/12/07 01:07:56 cpbotha Exp $
+# $Id: demonsRegistration.py,v 1.5 2005/05/23 09:43:00 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -9,6 +9,11 @@ from moduleMixins import scriptedConfigModuleMixin
 class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
     """Performs demons registration on fixed and moving input images, returns
     deformation field.
+    
+    The intensity difference threshold is absolute, so check the values in 
+    your datasets and adjust it accordingly.  For example, if you find that
+    two regions should match but you see intensity differences of 50 (e.g. 
+    in a CT dataset), the threshold should be approximately 60.
 
     NOTE: remember to update help w.r.t. inverse direction of vectors in
     deformation field.
@@ -16,7 +21,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
     Also read this thread:
     http://public.kitware.com/pipermail/insight-users/2004-November/011002.html
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
     
     def __init__(self, moduleManager):
