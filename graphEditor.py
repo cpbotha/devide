@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.102 2005/01/04 14:32:31 joris Exp $
+# $Id: graphEditor.py,v 1.103 2005/05/23 16:23:30 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -309,11 +309,22 @@ class graphEditor:
         
         if itemText.startswith(modp):
             self.createModuleAndGlyph(x, y, itemText[len(modp):])
+
+            # on GTK we have to raise the canvasFrame, else the palette
+            # keeps the mouse and weird things happen
+            if os.name == 'posix':
+                self._canvasFrame.Raise()
+            
         elif itemText.startswith(segp):
             # we have to convert the event coords to real coords
             rx, ry = self._canvasFrame.canvas.eventToRealCoords(x, y)
             self._loadAndRealiseNetwork(itemText[len(segp):], (rx,ry),
                                         reposition=True)
+
+            # on GTK we have to raise the canvasFrame, else the palette
+            # keeps the mouse and weird things happen
+            if os.name == 'posix':
+                self._canvasFrame.Raise()
 
     def canvasDropFilenames(self, x, y, filenames):
         
