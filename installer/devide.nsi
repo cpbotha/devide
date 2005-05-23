@@ -1,5 +1,5 @@
 ; devide.nsi - based on example2.nsi
-; $Id: devide.nsi,v 1.3 2005/05/23 15:12:34 cpbotha Exp $
+; $Id: devide.nsi,v 1.4 2005/05/23 16:46:19 cpbotha Exp $
 
 ;--------------------------------
 
@@ -58,17 +58,15 @@ SectionEnd
 
 ; optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
-
   CreateDirectory "$SMPROGRAMS\DeVIDE"
-  CreateShortCut "$SMPROGRAMS\DeVIDE\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE.lnk" "$INSTDIR\devide.exe" "" "$INSTDIR\devide.exe" 0
-  CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe --no-itk" "" "$INSTDIR\devide.exe" 0
-  
+  CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe" "--no-itk" "$INSTDIR\devide.exe" 0
+  CreateShortCut "$SMPROGRAMS\DeVIDE\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0  
 SectionEnd
 
 Section "Desktop Shortcut"
    CreateShortCut "$DESKTOP\DeVIDE.lnk" "$INSTDIR\devide.exe"
-   CreateShortCut "$DESKTOP\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe --no-itk"
+   CreateShortCut "$DESKTOP\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe" "--no-itk"
 SectionEnd
 
 ;--------------------------------
@@ -93,6 +91,7 @@ Section "Uninstall"
 
   ; remove desktop shortcut
   Delete "$DESKTOP\DeVIDE.lnk"
+  Delete "$DESKTOP\DeVIDE no-itk.lnk"
 
   ; remove directories used
   RMDir "$SMPROGRAMS\DeVIDE"
