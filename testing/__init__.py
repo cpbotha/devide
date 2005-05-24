@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.7 2004/11/26 15:44:39 cpbotha Exp $
+# $Id: __init__.py,v 1.8 2005/05/24 23:33:22 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -127,6 +127,25 @@ class testReadersWriters(graphEditorVolumeTestBase):
         """
         self.failUnless(1 == 1)
 
+class testCoreModules(graphEditorTestBase):
+    
+    def testCreateDestroy(self):
+        """See if we can create and destroy all core modules.
+        """
+
+        import modules
+        reload(modules)
+
+        coreModulesList = []
+        for mn in modules.moduleList:
+            if _devideApp.mainConfig.useInsight or \
+               not mn.startswith('Insight'):
+                coreModulesList.append('modules.%s' % (mn,))
+
+        print coreModulesList
+
+        self.failUnless(1 == 1)
+
 # ----------------------------------------------------------------------------
 class testITKBasic(graphEditorVolumeTestBase):
 
@@ -195,14 +214,19 @@ class devideTesting:
         self.basicSuite.addTest(graphEditorBasic('testSimpleNetwork'))
         self.basicSuite.addTest(testReadersWriters('testVTI'))
 
+        self.moduleSuite = unittest.TestSuite()
+        self.moduleSuite.addTest(testCoreModules('testCreateDestroy'))
+
         self.itkSuite = unittest.TestSuite()
         self.itkSuite.addTest(testITKBasic('testConfidenceSeedConnect'))
 
+        #suiteList = [self.basicSuite, self.moduleSuite]
+        suiteList = [self.moduleSuite]
+
         if _devideApp.mainConfig.useInsight:
-            self.mainSuite = unittest.TestSuite((self.basicSuite, self.itkSuite))
-        else:
-            self.mainSuite = unittest.TestSuite((self.basicSuite,))
-        
+            suiteList.append(self.itkSuite)
+
+        self.mainSuite = unittest.TestSuite(tuple(suiteList))
         
     def runAllTests(self):
         runner = unittest.TextTestRunner()
