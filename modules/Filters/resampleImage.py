@@ -1,5 +1,5 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: resampleImage.py,v 1.1 2003/10/16 09:44:45 cpbotha Exp $
+# $Id: resampleImage.py,v 1.2 2005/05/27 09:39:43 cpbotha Exp $
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
@@ -67,7 +67,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
 
         
         for i in range(3):
-            mfi = self._imageResample.GetAxisMagnificationFactor(i)
+            mfi = self._imageResample.GetAxisMagnificationFactor(i, None)
             self._config.magFactors[i] = mfi
 
     def configToLogic(self):
