@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.8 2005/05/24 23:33:22 cpbotha Exp $
+# $Id: __init__.py,v 1.9 2005/05/27 09:39:54 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -142,7 +142,16 @@ class testCoreModules(graphEditorTestBase):
                not mn.startswith('Insight'):
                 coreModulesList.append('modules.%s' % (mn,))
 
-        print coreModulesList
+        for coreModuleName in coreModulesList:
+            # create and test
+            print "creating %s" % (coreModuleName,)
+            (cmod, cglyph) = _devideApp._graphEditor.createModuleAndGlyph(
+                10, 10, coreModuleName)
+            self.failUnless(cmod and cglyph)
+
+            # destroy
+            ret = _devideApp._graphEditor._deleteModule(cglyph)
+            self.failUnless(ret)
 
         self.failUnless(1 == 1)
 
