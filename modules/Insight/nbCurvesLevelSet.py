@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: nbCurvesLevelSet.py,v 1.2 2004/04/20 11:57:17 cpbotha Exp $
+# $Id: nbCurvesLevelSet.py,v 1.3 2005/05/27 13:25:27 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -23,7 +23,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
     The initial level set is a volume with the initial surface embedded as the
     0 level set, i.e. the 0-value iso-contour (more or less).
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -111,7 +111,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         # output: thresholder.GetOutput()
 
         self._nbcLS = itk.itkNarrowBandCurvesLevelSetImageFilterF3F3_New()
-        self._nbcLS.SetMaximumRMSError( 0.1 );
+        #self._nbcLS.SetMaximumRMSError( 0.1 );
         self._nbcLS.SetNumberOfIterations( 500 );
 
         moduleUtilsITK.setupITKObjectProgress(

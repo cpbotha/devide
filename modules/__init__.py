@@ -1,5 +1,5 @@
 # __init__.py by Charl P. Botha <cpbotha@ieee.org>
-# $Id: __init__.py,v 1.120 2005/05/27 11:11:28 cpbotha Exp $
+# $Id: __init__.py,v 1.121 2005/05/27 13:25:27 cpbotha Exp $
 # contains list of built-in modules; update when adding new modules
 # the user_modules get listed automatically
 
@@ -95,7 +95,10 @@ moduleList = {'Readers.dicomRDR' : ('Readers',),
               'Insight.curvatureAnisotropicDiffusion' : ('Insight',),
               'Insight.gaussianConvolve' : ('Insight',),
               'Insight.geodesicActiveContour' : ('Insight', 'Level Sets'),
-              'Insight.gvfgac' : ('Insight', 'Level Sets'),
+
+              # temporarily removed because it doesn't work on windows
+              #'Insight.gvfgac' : ('Insight', 'Level Sets'),
+              
               # temporarily removed because ITK has no wrapping for it!
               #'Insight.levelSetMotionRegistration' : ('Insight', 'Level Sets'),
               'Insight.nbCurvesLevelSet' : ('Insight',),
