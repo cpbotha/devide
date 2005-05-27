@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.10 2005/05/27 10:29:06 cpbotha Exp $
+# $Id: __init__.py,v 1.11 2005/05/27 11:11:39 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -232,8 +232,7 @@ class devideTesting:
         self.itkSuite = unittest.TestSuite()
         self.itkSuite.addTest(testITKBasic('testConfidenceSeedConnect'))
 
-        #suiteList = [self.basicSuite, self.moduleSuite]
-        suiteList = [self.moduleSuite]
+        suiteList = [self.basicSuite, self.moduleSuite]
 
         if _devideApp.mainConfig.useInsight:
             suiteList.append(self.itkSuite)
