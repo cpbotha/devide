@@ -10,9 +10,18 @@ import vtk.wx.wxVTKRenderWindowInteractor
 vtk.wx.wxVTKRenderWindowInteractor.WX_USE_X_CAPTURE = 0
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
+# make sure that this variable is defined
+try:
+    S3DV_STEREO
+except NameError:
+    S3DV_STEREO = False
 
 class threedFrame(wxFrame):
     def __init__(self, *args, **kwds):
+
+        # this line will stay: transfer stereo setting to class
+        wxVTKRenderWindowInteractor.USE_STEREO = S3DV_STEREO
+
         # begin wxGlade: threedFrame.__init__
         kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)

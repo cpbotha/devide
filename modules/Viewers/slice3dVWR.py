@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.39 2005/05/21 23:20:43 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.40 2005/05/27 08:39:21 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -46,7 +46,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.39 $
+    $Revision: 1.40 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -543,6 +543,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         import modules.Viewers.resources.python.slice3dVWRFrames
         reload(modules.Viewers.resources.python.slice3dVWRFrames)
 
+        stereo = self._moduleManager.getAppMainConfig().stereo
+        print stereo
+        modules.Viewers.resources.python.slice3dVWRFrames.S3DV_STEREO = stereo
+
         # threedFrame creation and basic setup -------------------
         threedFrame = modules.Viewers.resources.python.slice3dVWRFrames.\
                       threedFrame
@@ -550,7 +554,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             self, self._moduleManager, threedFrame)
             
         # see about stereo
-        self.threedFrame.threedRWI.GetRenderWindow().SetStereoCapableWindow(1)
+        #self.threedFrame.threedRWI.GetRenderWindow().SetStereoCapableWindow(1)
 
         # add the renderer
         self._threedRenderer = vtk.vtkRenderer()

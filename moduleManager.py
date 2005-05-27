@@ -314,9 +314,13 @@ class moduleManager:
 
     def getAppDir(self):
         return self._devide_app.getAppDir()
+
+    def getAppMainConfig(self):
+        return self._devide_app.mainConfig
 	
     def getAvailableModuleList(self):
 	return self._availableModuleList
+
 
     def getInstance(self, instanceName):
         """Given the unique instance name, return the instance itself.

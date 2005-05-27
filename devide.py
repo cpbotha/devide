@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.81 2005/05/23 16:27:27 cpbotha Exp $
+# $Id: devide.py,v 1.82 2005/05/27 08:39:19 cpbotha Exp $
 
 # the current main release version
-DEVIDE_VERSION = '20050523-T'
+DEVIDE_VERSION = '20050527-T'
 
 # VTK and ITK extra version information: here we add the
 # cvs commands necessary to get the versions of VTK and ITK
@@ -37,6 +37,7 @@ class mainConfigClass(object):
         import defaults
         self.useInsight = defaults.USE_INSIGHT
         self.itkPreImport = True
+        self.stereo = False
         
         self._parseCommandLine()
 
@@ -45,6 +46,7 @@ class mainConfigClass(object):
         print "--insight or --itk         : Use ITK-based modules."
         print "--no-insight or --no-itk   : Do not use ITK-based modules."
         print "--no-itk-preimport         : Do not pre-import ITK."
+        print "--stereo                   : Allocate stereo visuals."
 
     def _parseCommandLine(self):
         try:
@@ -52,7 +54,7 @@ class mainConfigClass(object):
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
                 ['help', 'no-itk', 'no-insight', 'itk', 'insight',
-                 'no-itk-preimport'])
+                 'no-itk-preimport', 'stereo'])
         except getopt.GetoptError,e:
             self.dispUsage()
             sys.exit(1)
@@ -70,6 +72,9 @@ class mainConfigClass(object):
 
             elif o in ('--no-itk-preimport',):
                 self.itkPreImport = False
+
+            elif o in ('--stereo',):
+                self.stereo = True
 
 # ---------------------------------------------------------------------------
 class devide_app_t(wx.App):
