@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.103 2005/05/23 16:23:30 cpbotha Exp $
+# $Id: graphEditor.py,v 1.104 2005/05/27 09:39:13 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -298,6 +298,10 @@ class graphEditor:
             # we don't need the result of the DoDragDrop call (phew)
             dropSource.DoDragDrop(TRUE)
 
+        # event processing has to continue, else the listbox keeps listening
+        # to mouse movements after the glyph has been dropped
+        event.Skip()
+
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
         module:modules.Readers.dicomRDR or
@@ -313,7 +317,9 @@ class graphEditor:
             # on GTK we have to raise the canvasFrame, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
+                self._canvasFrame.Show(True)
                 self._canvasFrame.Raise()
+                self._canvasFrame.canvas.SetFocus()
             
         elif itemText.startswith(segp):
             # we have to convert the event coords to real coords
@@ -324,7 +330,9 @@ class graphEditor:
             # on GTK we have to raise the canvasFrame, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
+                self._canvasFrame.Show(True)
                 self._canvasFrame.Raise()
+                self._canvasFrame.canvas.SetFocus()
 
     def canvasDropFilenames(self, x, y, filenames):
         
