@@ -8,7 +8,7 @@ import wx
 class histogramSegment(introspectModuleMixin, moduleBase):
     """Mooooo!  I'm a cow.
 
-    $Revision: 1.8 $
+    $Revision: 1.9 $
     """
 
     _gridCols = [('Type', 0), ('Number of Handles',0)]
@@ -119,9 +119,12 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                 # we HAVE to destroy the overlayipw first (the stencil
                 # logic is NOT well-behaved)
                 self._deactivateOverlayIPW()
-            
+
             self._histogram.SetInput2(input1)
-            self._lookupAppend.SetInput(1, input1)
+            if self._lookupAppend.GetNumberOfInputPorts() < 2:
+                self._lookupAppend.AddInput(input1)
+            else:
+                self._lookupAppend.SetInput(1, input1)
 
         if self._histogram.GetInput(0) and self._histogram.GetInput(1):
             if self._ipw == None:
