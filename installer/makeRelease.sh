@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: makeRelease.sh,v 1.7 2005/01/12 22:49:14 cpbotha Exp $
+# $Id: makeRelease.sh,v 1.8 2005/05/27 14:46:09 cpbotha Exp $
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -49,6 +49,7 @@ cp defaultsTemp.py defaults.py
 cd installer
 sh ./makePackage.sh
 if [ `uname` != Linux ]; then
+touch distdevide/NO_ITK
 c:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`.exe
 else

@@ -1,5 +1,5 @@
 ; devide.nsi - based on example2.nsi
-; $Id: devide.nsi,v 1.4 2005/05/23 16:46:19 cpbotha Exp $
+; $Id: devide.nsi,v 1.5 2005/05/27 14:46:09 cpbotha Exp $
 
 ;--------------------------------
 
@@ -60,13 +60,22 @@ SectionEnd
 Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\DeVIDE"
   CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE.lnk" "$INSTDIR\devide.exe" "" "$INSTDIR\devide.exe" 0
+
+  IfFileExists "$INSTDIR\NO_ITK" PastITKMenu
   CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe" "--no-itk" "$INSTDIR\devide.exe" 0
+  ;Delete "$INSTDIR\NO_ITK"
+PastITKMenu:
   CreateShortCut "$SMPROGRAMS\DeVIDE\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0  
+
 SectionEnd
 
 Section "Desktop Shortcut"
    CreateShortCut "$DESKTOP\DeVIDE.lnk" "$INSTDIR\devide.exe"
+
+   IfFileExists "$INSTDIR\NO_ITK" PastITKShortCut
    CreateShortCut "$DESKTOP\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe" "--no-itk"
+PastITKShortCut:
+
 SectionEnd
 
 ;--------------------------------
