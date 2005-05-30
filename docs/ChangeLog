@@ -1,0 +1,6661 @@
+2005-05-30 14:34  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: ERR: Finally fixed long-standing
+	  bug where slice3dVWR RenderWindow would be smaller that the
+	  containing window on Linux/GTK.
+
+2005-05-30 14:04  cpbotha
+
+	* graphEditor.py: ERR: Finally fixed linux/gtk graphEditor focus on
+	  drop bug.
+
+2005-05-27 16:46  cpbotha
+
+	* defaults.py, installer/devide.nsi, installer/makeRelease.sh: ENH:
+	  Extra devide --no-itk desktop icon and start menu item is only
+	  added in the ITK installer and not in the VTK installer.
+
+2005-05-27 15:25  cpbotha
+
+	* modules/: __init__.py, Insight/nbCurvesLevelSet.py: ERR: Fixed
+	  another bug found by the new unit tests in nbCurvesLevelSet.
+
+2005-05-27 13:11  cpbotha
+
+	* testing/__init__.py: Re-added basic suite.
+
+2005-05-27 13:11  cpbotha
+
+	* modules/__init__.py: Re-added basicSuite.
+
+2005-05-27 12:29  cpbotha
+
+	* testing/__init__.py: ENH: Test feedback added. Thanks Joris.
+
+2005-05-27 12:14  cpbotha
+
+	* modules/Viewers/histogramSegment.py: ERR: Fixed another bug
+	  related to new VTK.  Caught by unit tests.
+
+2005-05-27 11:39  cpbotha
+
+	* testing/__init__.py: ERR: Worked on tests.
+
+2005-05-27 11:39  cpbotha
+
+	* modules/Filters/resampleImage.py: ERR: Change in VTK API.  Caught
+	  by unit tests.
+
+2005-05-27 11:39  cpbotha
+
+	* modules/__init__.py: ERR: Removed module from list; caught by
+	  unit tests.
+
+2005-05-27 11:39  cpbotha
+
+	* graphEditor.py: ERR: Fixed bug where module list box would keep
+	  listening to mouse after module was dropped on canvas.
+
+2005-05-27 10:39  cpbotha
+
+	* devide.py, moduleManager.py, modules/Viewers/slice3dVWR.py,
+	  modules/Viewers/resources/python/slice3dVWRFrames.py: ENH: Now
+	  stereo can be activated with top-level --stereo switch.
+
+2005-05-25 01:33  cpbotha
+
+	* testing/__init__.py: ENH: Busy implementing create/destroy test
+	  for all core modules.
+
+2005-05-23 18:46  cpbotha
+
+	* installer/devide.nsi: ERR: Nullsoft now correctly creates two
+	  shortcuts on the desktop.
+
+2005-05-23 18:27  cpbotha
+
+	* devide.py, docs/LICENSE.txt, docs/ReadMe.txt,
+	  docs/help/source/devideHelp.tex: ENH: Various documentation
+	  updates.
+
+2005-05-23 18:23  cpbotha
+
+	* devide.py: ENH: Upped version for new release.
+
+2005-05-23 18:23  cpbotha
+
+	* graphEditor.py: ERR: Fixed bug on Linux where dragging from
+	  modulePalette, the palette would retain focus and do weird whilst
+	  we play on the canvas.
+
+2005-05-23 17:26  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: ERR: Fixed
+	  bug with naming of resliceoutput pointdata scalars.
+
+2005-05-23 17:12  cpbotha
+
+	* installer/devide.nsi: ENH: Installer will now create two
+	  shortcuts on the desktop and on the start menu: with and without
+	  --no-itk.
+
+2005-05-23 11:43  cpbotha
+
+	* modules/Insight/demonsRegistration.py: Added note about intensity
+	  difference threshold.
+
+2005-05-22 02:01  cpbotha
+
+	* devide.py: ENH: Upped version for new release.
+
+2005-05-22 01:53  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: ERR: Output
+	  polydata is synced when new primary data is added.
+
+2005-05-22 01:48  cpbotha
+
+	* docs/help/source/: devideHelp.tex, figures/probewithslices.png:
+	  ENH: Help updated to document new probing with slices
+	  functionality.
+
+2005-05-22 01:39  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirections.py: More work
+	  on probing with slices.
+
+2005-05-22 01:20  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  slice3dVWRmodules/sliceDirection.py,
+	  slice3dVWRmodules/sliceDirections.py: Output polydata now
+	  working.
+
+2005-05-21 22:59  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  slice3dVWRmodules/sliceDirection.py,
+	  slice3dVWRmodules/sliceDirections.py: Removed slices polydata
+	  output.  We need slices imagedata.
+
+2005-05-20 15:28  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  slice3dVWRmodules/sliceDirection.py,
+	  slice3dVWRmodules/sliceDirections.py: ENH: Busy taking slices
+	  geometry to output for probing and whatnot.
+
+2005-05-20 14:35  cpbotha
+
+	* startupImports.py, fixitk/__init__.py: ERR: Fixed some --itk /
+	  --no-itk problems with new ITK imports.
+
+2005-05-20 14:12  cpbotha
+
+	* startupImports.py, fixitk/__init__.py: ENH: ITK startup imports
+	  now gives better feedback during library loads.
+
+2005-05-20 12:00  cpbotha
+
+	* devide.py: ENH: Version upped for release with working
+	  warpPoints.
+
+2005-05-20 11:52  cpbotha
+
+	* moduleManager.py, docs/help/source/devideHelp.tex,
+	  modules/Filters/warpPoints.py: ENH: Changed some stuff to work
+	  with the new VTK pipeline model.  See the source for warpPoints.
+	  We'll have to rethink the whole DeVIDE abstraction.
+
+2005-05-18 00:28  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg: ENH: VOI saving is now
+	  integrated in the slice3dVWR.  vtkExtractVOI does NOT like to be
+	  re-used!
+
+2005-05-17 23:49  cpbotha
+
+	* devide.py: ERR: Mega-work to get things working for Gordon and
+	  Tessa.
+
+2005-05-17 17:13  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: ERR: Fixed bug where automatically
+	  setting VOI would not get propagated to output.
+
+2005-05-17 14:28  cpbotha
+
+	* docs/help/source/: devideHelp.tex, figures/demonsnet.png: Adding
+	  demons bit.
+
+2005-05-12 18:00  cpbotha
+
+	* utils/updateAll.py: Removed wrapitk from script.
+
+2005-05-12 17:31  cpbotha
+
+	* docs/help/source/devideHelp.tex,
+	  docs/help/source/figures/landmarkvolumenet.png,
+	  fixitk/itkCommonPythonTopLevel.py: Updated: we're now on the
+	  latest VTK and ITK.
+
+2005-03-26 21:50  cpbotha
+
+	* external/vtkPipeline/: ConfigVtkObj.py, vtkMethodParser.py,
+	  vtkPipeline.py: Copyright updates.
+
+2005-03-23 11:01  cpbotha
+
+	* snippets/setSliceOpacity.py: ENH: New snippet to change slice
+	  opacity.
+
+2005-03-14 22:31  cpbotha
+
+	* modules/: __init__.py, Misc/advectionProperties.py: ENH: The
+	  frikking advectionProperties module seems to work. FINALLY.
+
+2005-03-14 13:33  cpbotha
+
+	* modules/Filters/probeFilter.py: Minor changes.
+
+2005-03-13 19:31  cpbotha
+
+	* modules/: __init__.py, Misc/advectionProperties.py: ENH: Initial
+	  import of advectionProperties module.
+
+2005-03-13 18:12  cpbotha
+
+	* modules/Misc/pointsToSpheres.py: ENH: Point ids are now
+	  associated.
+
+2005-02-11 10:09  cpbotha
+
+	* snippets/writeSVSceneAsEPS.py: ENH: Snippet refined.
+
+2005-02-11 09:53  cpbotha
+
+	* snippets/writeSVSceneAsEPS.py: Initial import of this snippet.
+
+2005-01-28 14:20  cpbotha
+
+	* docs/help/source/: devideHelp.tex,
+	  figures/curvatureAnisotropicDiffusionVis.png,
+	  figures/curvatureanisotropicdiffusionvis.png,
+	  figures/probingAndWarping.png, figures/probingandwarping.png:
+	  ERR: Fixed case of images.  They should be all lower case!
+
+2005-01-28 14:00  cpbotha
+
+	* devide.py: ENH: Upped version for release.
+
+2005-01-28 13:59  cpbotha
+
+	* modules/Viewers/slice3dVWR.py, snippets/activateCrystalEyes.py:
+	  ENH: Added code and snippet to enable Crystal Eyes.
+
+2005-01-13 18:35  cpbotha
+
+	* modules/Filters/imageMedian3D.py: ERR: Put GetKernelSize() call
+	  back.
+
+2005-01-13 18:22  cpbotha
+
+	* resources/python/graphEditorFrame.py: ERR: Changed DOS CR/LFs to
+	  LFs.	(these seem to have been added by mingw32 CVS)
+
+2005-01-13 00:05  cpbotha
+
+	* resources/: python/graphEditorFrame.py, xml/graphEditorFrame.wxg:
+	  ERR: Switched modulePalette back to FLOAT_ON_PARENT.	To my mind,
+	  always on top is not an improvement over float on parent.
+
+2005-01-13 00:03  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: ERR: Fixed
+	  nasty bug with overlaying that I introduced whilst converting to
+	  new VTK calls.
+
+2005-01-12 23:49  cpbotha
+
+	* installer/: makePackage.sh, makeRelease.sh: ENH: Fixed to work
+	  with mingw32 as well.
+
+2005-01-12 23:48  cpbotha
+
+	* utils/updateAll.py: ERR: Fixed bug with doBuilds() param.
+
+2005-01-12 23:33  cpbotha
+
+	* devide.py: ENH: Upped version for possible release.
+
+2005-01-12 23:32  cpbotha
+
+	* installer/makeRelease.sh: ENH: Changed to make use of
+	  updateAll.py script.
+
+2005-01-12 23:32  cpbotha
+
+	* utils/updateAll.py: ENH: now supports --no-itk switch.
+
+2005-01-11 23:51  cpbotha
+
+	* utils/updateAll.py: ENH: Now has command-line parameters.
+
+2005-01-11 23:42  cpbotha
+
+	* utils/updateAll.py: ENH: Updates and builds now separately done.
+
+2005-01-11 10:34  joris
+
+	* userModules/imageCopyPad.py: Changed progress message of
+	  imageCopyPad.py.
+
+2005-01-10 10:27  joris
+
+	* userModules/: cubicBCSplineKernel.py, imageCurvatureMagnitude.py,
+	  imageKnutssonMapping.py, myImageClip.py: Added some new modules.
+
+2005-01-07 18:18  joris
+
+	* userModules/: imageCopyPad.py, myImageExtendPad.py: Replaced
+	  myImageExtendPad.py with imageCopyPad.py.
+
+2005-01-07 13:17  joris
+
+	* userModules/: gaussianKernel.py, imageCurvature.py,
+	  imageEigenvectors.py, imageExtentUnionizer.py,
+	  imageGradientStructureTensor.py, imageSepConvolution.py,
+	  myImageExtendPad.py: Updated userModules to use vtktud instead of
+	  vtklocal.
+
+2005-01-06 22:09  cpbotha
+
+	* utils/updateAll.py: This now works for all dependencies except
+	  ConnectVTKITK.
+
+2005-01-06 19:27  cpbotha
+
+	* utils/updateAll.py: Initial import.
+
+2005-01-05 22:13  cpbotha
+
+	* modules/: Insight/register2D.py, Viewers/slice3dVWR.py,
+	  Viewers/slice3dVWRmodules/sliceDirection.py: ERR: Fixes to adapt
+	  to VTK5 changes.
+
+2005-01-04 15:32  joris
+
+	* defaults.py, graphEditor.py, moduleManager.py,
+	  internal/wxPyCanvas/canvasObject.py, modules/Readers/pngRDR.py,
+	  resources/python/graphEditorFrame.py,
+	  snippets/changeObjectsLUT.py, userModules/gaussianKernel.py,
+	  userModules/imageCurvature.py, userModules/imageEigenvectors.py,
+	  userModules/imageExtentUnionizer.py,
+	  userModules/imageGradientStructureTensor.py,
+	  userModules/imageSepConvolution.py,
+	  userModules/myImageExtendPad.py:
+
+	  Added my newly constructed VTK classes as DeVIDE modules, and
+	  some minor modifications. Most important modification is support
+	  for renaming modules on the GraphEditor canvas.
+
+2004-12-08 02:24  cpbotha
+
+	* devide.py: ENH: Upped version for new release.
+
+2004-12-08 02:20  cpbotha
+
+	* docs/help/source/devideHelp.tex: ENH: More tweaks to docs.
+
+2004-12-08 02:18  cpbotha
+
+	* docs/help/source/: devideHelp.tex,
+	  figures/curvatureAnisotropicDiffusionVis.png,
+	  figures/probingAndWarping.png: ENH: Docs improved to explain
+	  smoothing and also probing and warping.
+
+2004-12-08 01:32  cpbotha
+
+	* modules/Filters/imageMedian3D.py: ERR: Temporarily removed
+	  GetKernelSize() call until VTK makes this available again.
+
+2004-12-07 14:43  cpbotha
+
+	* devide.py: Upped version for test release.
+
+2004-12-07 02:07  cpbotha
+
+	* devide.py, modules/Insight/demonsRegistration.py: ENH: Updated
+	  documentation in demons.  ENH: Application progress is now also
+	  output to stdout.
+
+2004-12-06 22:27  cpbotha
+
+	* graphEditor.py: ENH: Graph Editor Canvas now gets the focus when
+	  something is dragged and dropped in its interior.
+
+2004-12-06 22:21  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: ENH: Finished
+	  rotation around axis.
+
+2004-12-06 19:01  cpbotha
+
+	* modules/Insight/: demonsRegistration.py,
+	  symmetricDemonsRegistration.py: ENH: Added deformation field
+	  smoothing parameter.
+
+2004-12-06 17:20  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: ENH: Busy
+	  implementing rotation around axis.
+
+2004-12-05 22:48  cpbotha
+
+	* moduleManager.py: ERR: disableExecution guard variable is now set
+	  BEFORE methods are called in modules.
+
+2004-12-05 22:20  cpbotha
+
+	* modules/Insight/levelSetMotionRegistration.py: ENH: Minor tweaks.
+
+2004-12-05 21:13  cpbotha
+
+	* modules/: __init__.py, Insight/levelSetMotionRegistration.py,
+	  Insight/symmetricDemonsRegistration.py: ENH: Both of these new
+	  modules seem to work.
+
+2004-12-05 17:03  cpbotha
+
+	* devide.py: Hmmm.
+
+2004-12-05 17:01  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: ERR: Changed ListCtrls to
+	  ListBoxes.  FAR less problems with drawing bugs.
+
+2004-12-05 02:55  cpbotha
+
+	* modules/: __init__.py, Insight/levelSetMotionRegistration.py:
+	  ENH: Initial import of levelSetMotionRegistration.
+
+2004-12-05 02:27  cpbotha
+
+	* docs/help/source/devideHelp.tex: ENH: Documentation expanded.
+
+2004-12-05 01:42  cpbotha
+
+	* modules/Insight/register2D.py: Changed rescalers to use float
+	  types.
+
+2004-12-04 22:21  cpbotha
+
+	* docs/help/source/devideHelp.tex: Minor tweaks to help..
+
+2004-11-30 23:29  cpbotha
+
+	* devide.py: ENH: New release version.	We postponed by a day to
+	  get the vtkPiecewiseFunction changes in.
+
+2004-11-30 13:40  cpbotha
+
+	* devide.py: ENH: Upped version for release.
+
+2004-11-30 13:18  cpbotha
+
+	* devide.py, moduleManager.py: ERR: In devide.py, FIRST disable
+	  execution, then show errors.	ERR: In moduleManager.py, guard
+	  disableExecution with variable.
+
+2004-11-28 21:07  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: ENH: modulePaletteFrame comes
+	  to the front when graphEditor does.
+
+2004-11-28 16:16  cpbotha
+
+	* devide.py, graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: ENH: The DeVIDE main window
+	  and the module palette frame can now be raised from the graph
+	  editor Window menu.
+
+2004-11-28 16:01  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: ERR: Fixed problem with
+	  disappearing pane.
+
+2004-11-27 23:42  cpbotha
+
+	* graphEditor.py: ENH: Better (after all) to have the palette get
+	  focus last.
+
+2004-11-27 15:50  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: More refinements to
+	  canvas/modulepalette split.
+
+2004-11-27 15:27  cpbotha
+
+	* devide.py, graphEditor.py: ERR: Work arounds for wxPython
+	  wxListCtrl drawing bugs added.
+
+2004-11-26 16:44  cpbotha
+
+	* graphEditor.py, testing/__init__.py: ENH: Finished integrating
+	  graphEditor modulePalette / Canvas split and updated some of the
+	  regression tests.
+
+2004-11-26 16:37  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Split module palette from
+	  canvas.
+
+2004-11-25 18:03  cpbotha
+
+	* modules/Misc/manualTransform.py: Removed input.
+
+2004-11-25 18:02  cpbotha
+
+	* modules/: __init__.py, Misc/manualTransform.py: Initial import of
+	  manualTransform module.
+
+2004-11-25 14:59  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: Fixed NASTY bug with cached
+	  inputs.
+
+2004-11-25 14:58  cpbotha
+
+	* devide.py: Upped version for new release.
+
+2004-11-25 14:09  cpbotha
+
+	* userModules/extractEdges.py: extractEdges added to userModules.
+
+2004-11-25 14:09  cpbotha
+
+	* defaults.py: I don't know what's default anymore.
+
+2004-11-22 19:24  cpbotha
+
+	* modules/: __init__.py, Filters/warpPoints.py: ENH: warpPoints
+	  integrated.
+
+2004-11-22 19:23  cpbotha
+
+	* modules/Filters/probeFilter.py: ERR: Worked around the fact that
+	  you can't do GetOutput() on a vtkProbeFilter before you've set
+	  the input.
+
+2004-11-22 19:22  cpbotha
+
+	* moduleMixins.py: ENH: Added _getWidget() call to
+	  scriptedConfigModuleMixin.
+
+2004-11-22 19:16  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: ERR: Fixed logic bug with cached
+	  inputs - Nones (disconnections) have to be replayed too!
+
+2004-11-21 23:03  cpbotha
+
+	* modules/Misc/pointsToSpheres.py: Initial import.
+
+2004-11-21 23:03  cpbotha
+
+	* devide.py, moduleMixins.py, pythonShell.py, modules/__init__.py,
+	  modules/Viewers/slice3dVWR.py: ENH: pythonShell (introspection
+	  window) now has more descriptive title.
+
+2004-11-21 23:02  cpbotha
+
+	* graphEditor.py: ERR: Fixed bug where graphEditor would not follow
+	  the correct module destruction order when clearAllGlyphs() was
+	  called.
+
+2004-11-20 23:01  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: ERR: Scalar
+	  visibility test now does not break for non-PolyData tdObjects.
+
+2004-11-20 22:49  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/selectedPoints.py: ERR: Fixed
+	  bug with vtkPointWidgets getting the wrong bounds if they're
+	  created without any other VisibleProps.
+
+2004-11-20 22:42  cpbotha
+
+	* modules/Filters/transformVolumeData.py: ERR: Fixed bug where
+	  transformVolumeData would not pick up changes in its input
+	  transform (due to vtkMatrixTo*Transform).  We're now just using
+	  the GetInverse() method of the input vtkTransform.
+
+2004-11-20 22:30  cpbotha
+
+	* modules/Filters/transformVolumeData.py: Changed from
+	  vtkMatrixToHomogeneousTransform to vtkMatrixToLinearTransform.
+
+2004-11-20 21:43  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/: sliceDirection.py,
+	  sliceDirections.py: More better error handling.
+
+2004-11-20 21:31  cpbotha
+
+	* devide.py, modules/Viewers/slice3dVWR.py,
+	  modules/Viewers/slice3dVWRmodules/sliceDirection.py,
+	  modules/Viewers/slice3dVWRmodules/sliceDirections.py: ENH:
+	  Changes to slice3dVWR module for operation whilst in disabled
+	  execution state.  All inputs are cached to be replayed when the
+	  module is re-enabled.  ENH: slice3dVWR will only accept overlay
+	  imagedatas if they are connected to ports with higher indices
+	  than any already added primary or overlay data.
+
+2004-11-20 21:08  cpbotha
+
+	* moduleManager.py: ENH: moduleManager checks for already connected
+	  module inputs before performing a new connection.  ENH: default
+	  is now for enabled execution.
+
+2004-11-20 16:23  cpbotha
+
+	* defaults.py, devide.py, moduleManager.py,
+	  modules/Viewers/slice3dVWR.py, resources/python/mainFrame.py,
+	  resources/xml/mainFrame.wxg: Started major work on executing
+	  disabling and enabling.
+
+2004-11-19 18:52  cpbotha
+
+	* modules/Filters/landmarkTransform.py: Busy diagnosing
+	  landmarkTransform laziness.
+
+2004-11-19 18:44  cpbotha
+
+	* devide.py: Completion progress messages are sent to the message
+	  log.
+
+2004-11-19 18:38  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: When an object is
+	  added, scalar visibility is by default on if scalars are
+	  available.
+
+2004-11-19 18:37  cpbotha
+
+	* modules/Filters/glyphs.py: Changed default colouring to vector
+	  magnitude.
+
+2004-11-19 18:08  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/selectedPoints.py: Further
+	  fine-tuning to new selected point visualisation.
+
+2004-11-19 16:29  cpbotha
+
+	* devide.py: Upped version for new release.
+
+2004-11-19 16:19  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/selectedPoints.py: Changed
+	  selected points glyphs.
+
+2004-11-19 00:08  cpbotha
+
+	* modules/__init__.py, modules/Filters/transformVolumeData.py,
+	  userModules/testModule2.py: Added transformVolume module.
+
+2004-11-19 00:07  cpbotha
+
+	* defaults.py: Added ITK default.
+
+2004-11-16 16:52  cpbotha
+
+	* snippets/changeObjectsLUT.py: Initial import.
+
+2004-11-11 13:51  joris
+
+	* modules/Insight/transform2D.py, userModules/reconstructionRDR.py:
+
+	  unkludged transform2D and imported reconstructionRDR.
+
+2004-11-11 13:44  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: New fusion
+	  mode added.
+
+2004-11-08 14:06  cpbotha
+
+	* defaults.py, installer/Build-fix.diff: Fixed unexplained
+	  installer error on Linux.
+
+2004-11-08 11:49  cpbotha
+
+	* modules/Filters/glyphs.py: Stuff.
+
+2004-11-04 14:45  cpbotha
+
+	* devide.py: Upped version for release to Paul.
+
+2004-11-02 17:29  cpbotha
+
+	* modules/: __init__.py, Filters/extractImageComponents.py,
+	  Filters/glyphs.py: Added glyphs module.
+
+2004-11-02 17:29  cpbotha
+
+	* moduleMixins.py: Changed semantics of 'choice' widget type.
+
+2004-11-01 14:17  cpbotha
+
+	* moduleMixins.py: Fixed colour dialog problem.
+
+2004-11-01 13:58  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: Scalar visibility
+	  can be easily switched on or off.
+
+2004-11-01 12:08  cpbotha
+
+	* resources/: python/mainFrame.py, xml/mainFrame.wxg: Added message
+	  log text control.
+
+2004-11-01 12:08  cpbotha
+
+	* modules/Filters/extractGrid.py: Err, more fixes?
+
+2004-11-01 12:08  cpbotha
+
+	* devide.py: Added log window for all non-critical things (warnings
+	  and such).
+
+2004-11-01 11:22  cpbotha
+
+	* graphEditor.py, moduleMixins.py, modules/Filters/extractGrid.py:
+	  First cut at tupleText.
+
+2004-10-29 16:25  cpbotha
+
+	* modules/Filters/extractGrid.py: New module.
+
+2004-10-29 16:25  cpbotha
+
+	* moduleMixins.py, modules/__init__.py: Experiments with
+	  maskedTextCtrl - will probably remove, it's not what we want.
+	  (or we could keep it, you never know)
+
+2004-10-27 17:10  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg: The VOI can now resize
+	  automatically to the selected points.
+
+2004-10-25 17:43  cpbotha
+
+	* modules/Writers/pngWRT.py: Module completed by Joris.
+
+2004-10-25 13:51  cpbotha
+
+	* devide.py, moduleManager.py: You can now chuck a live modules
+	  directory into a binary installation, and it should work.
+
+2004-10-22 16:41  cpbotha
+
+	* snippets/changeSVLut.py: LUT table range now adapts to data
+	  scalar range.
+
+2004-10-21 16:56  cpbotha
+
+	* devide.py: Release to Joris.
+
+2004-10-21 16:55  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: New behaviour:
+	  polydatas with scalars are now all colourmapped.
+
+2004-10-21 16:55  cpbotha
+
+	* modules/: __init__.py, Filters/probeFilter.py: New module:
+	  probeFilter.
+
+2004-10-20 18:41  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: Switched scaling
+	  on for objects in motion.  I hope this doesn't break things.
+
+2004-10-20 18:35  cpbotha
+
+	* snippets/savePolyDataObjectsWithMotion.py: Added cool snippet to
+	  save objects with transformations.
+
+2004-10-20 18:16  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg: Improved 3d window controls.
+	  Added introspect button and functionality.
+
+2004-10-13 01:24  cpbotha
+
+	* graphEditor.py, modules/__init__.py,
+	  modules/Readers/metaImageRDR.py: Added vtk-based MetaImage
+	  Reader.
+
+2004-10-09 00:05  cpbotha
+
+	* devide.py: Upped version for new release.
+
+2004-10-09 00:04  cpbotha
+
+	* modules/: __init__.py, Filters/extractImageComponents.py: New
+	  module added.
+
+2004-10-08 23:36  cpbotha
+
+	* moduleMixins.py, modules/__init__.py, modules/Readers/pngRDR.py:
+	  pngRDR works.  YAY!
+
+2004-10-08 16:25  cpbotha
+
+	* modules/Readers/pngRDR.py: Initial import.
+
+2004-10-07 18:07  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: Minor
+	  documentation addition.
+
+2004-09-28 19:39  cpbotha
+
+	* devide.py: Getting ready for new release.
+
+2004-09-28 19:31  cpbotha
+
+	* moduleUtilsITK.py, modules/Insight/demonsRegistration.py,
+	  modules/Insight/itkWRT.py: Demons stuff seems to be working.
+
+2004-09-27 19:13  cpbotha
+
+	* moduleUtilsITK.py, modules/__init__.py,
+	  modules/Insight/demonsRegistration.py,
+	  modules/Misc/superQuadric.py: Integrating DemonsRegistration.
+
+2004-09-16 11:51  cpbotha
+
+	* snippets/: changeSVLut.py, rotateCameraSaveFrames.py: New thingy
+	  added to the thingy.
+
+2004-09-13 22:22  cpbotha
+
+	* modules/Insight/cannyEdgeDetection.py: Changed maximum error to
+	  Canny built-in default, 0.01 (and not 0.1).
+
+2004-09-08 23:59  cpbotha
+
+	* devide.py: Fixed minimise/restore code for Windows.
+
+2004-09-05 19:26  cpbotha
+
+	* modules/Viewers/: histogramSegment.py,
+	  resources/python/histogramSegmentFrames.py,
+	  resources/xml/histogramSegmentFrames.wxg: Presentation changes to
+	  the histogramSegment component.
+
+2004-09-01 17:18  cpbotha
+
+	* modules/: __init__.py, Insight/distanceMap.py: Initial creation
+	  and integration of the distanceMap module.
+
+2004-08-31 15:26  cpbotha
+
+	* devide.py: More fixes to the minimise/restore stuff under linux.
+
+2004-08-31 15:03  cpbotha
+
+	* devide.py, resources/python/mainFrame.py,
+	  resources/xml/mainFrame.wxg: We now have commands to iconize and
+	  restore all child windows.  Still need to test on windows.
+
+2004-08-24 18:44  cpbotha
+
+	* modules/Insight/: gvfgac.py, tpgac.py: Initial import of the
+	  GVFGAC.  Small fixes to TPGAC.
+
+2004-08-24 18:44  cpbotha
+
+	* modules/__init__.py: Integration of the GVFGAC.
+
+2004-08-24 15:08  cpbotha
+
+	* modules/Insight/tpgac.py, userModules/tpgac.py: Moved tpgac from
+	  userModules to modules/Insight.
+
+2004-08-23 19:07  cpbotha
+
+	* modules/Insight/sigmoid.py: Fixed documentation.
+
+2004-08-23 17:30  cpbotha
+
+	* external/wxPyPlot.py: Fixed line-endings.
+
+2004-08-23 11:49  cpbotha
+
+	* graphEditor.py, moduleManager.py: We now have a consumerTypeTable
+	  that determines the order in which networks are broken down and
+	  built up.
+
+2004-08-23 11:00  cpbotha
+
+	* modules/Viewers/histogramSegment.py: Selectors are now reloaded
+	  during the new post-connect setConfig hook.
+
+2004-08-23 11:00  cpbotha
+
+	* moduleManager.py: Implemented hook for a post-connection
+	  setConfig.
+
+2004-08-22 15:19  cpbotha
+
+	* moduleManager.py, modules/Viewers/histogramSegment.py,
+	  modules/Viewers/resources/python/histogramSegmentFrames.py,
+	  modules/Viewers/resources/xml/histogramSegmentFrames.wxg: Save
+	  and restore now work.  We do need a post-connection setConfig as
+	  well.
+
+2004-08-21 01:14  cpbotha
+
+	* modules/Viewers/: histogramSegment.py, slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/selectedPoints.py,
+	  slice3dVWRmodules/sliceDirections.py: * Refactored and cleaned-up
+	  some code in the slice3dVWR family.  * slice3dVWR now shows more
+	  information whilst cursoring.  * histogramSegment seems to work.
+
+2004-08-18 18:50  cpbotha
+
+	* modules/Viewers/histogramSegment.py: Fewer and fewer segfaults!
+
+2004-08-18 18:50  cpbotha
+
+	* modules/Filters/appendPolyData.py: Added comment about filter
+	  being borked.
+
+2004-08-18 10:42  cpbotha
+
+	* modules/Viewers/histogramSegment.py: More better functionality.
+
+2004-08-17 16:41  cpbotha
+
+	* modules/Viewers/: histogramSegment.py,
+	  resources/python/histogramSegmentFrames.py,
+	  resources/xml/histogramSegmentFrames.wxg: Muchos work getting
+	  histogramSegment going.
+
+2004-08-16 00:38  cpbotha
+
+	* modules/: __init__.py, Viewers/histogramSegment.py,
+	  Viewers/resources/python/histogramSegmentFrames.py,
+	  Viewers/resources/xml/histogramSegmentFrames.wxg: Initial import
+	  of histogramSegment.
+
+2004-08-15 02:25  cpbotha
+
+	* modules/: __init__.py, Filters/extractHDomes.py,
+	  Filters/imageMathematics.py: Initial import of extractHDomes.
+	  Addition of more functions to imageMath + a bit of a cleanup.
+
+2004-08-14 03:15  cpbotha
+
+	* modules/Filters/imageFillHoles.py: It works and it's
+	  MEGA-FAST(tm).
+
+2004-08-14 02:49  cpbotha
+
+	* modules/: __init__.py, Filters/imageFillHoles.py: imageFillHoles
+	  integrated.
+
+2004-08-13 18:51  cpbotha
+
+	* userModules/experimental/imageBorderMask.py: Initial import for
+	  testing.
+
+2004-08-12 18:52  cpbotha
+
+	* modules/Filters/seedConnect.py: Fixed bug-fix.
+
+2004-08-12 18:50  cpbotha
+
+	* genMixins.py: More informative warning message added.
+
+2004-08-12 18:48  cpbotha
+
+	* modules/Filters/: seedConnect.py, selectConnectedComponents.py:
+	  Muchos bugs fixed in seedConnect.py.	Integration of
+	  selectConnectedComponents.
+
+2004-08-12 18:48  cpbotha
+
+	* modules/__init__.py: selectConnectedComponents added.
+
+2004-08-12 18:47  cpbotha
+
+	* genMixins.py: Improvements with regards to inconsistency with
+	  observer ID.
+
+2004-08-11 18:17  cpbotha
+
+	* userModules/tpgac.py: Added tpgac module.
+
+2004-08-06 14:42  cpbotha
+
+	* devide.py, graphEditor.py, moduleUtils.py, pythonShell.py: Fixed
+	  WM_CLASS for many windows by setting the 'name' parameter during
+	  frame instantiation to "DeVIDE".
+
+2004-08-04 22:29  cpbotha
+
+	* modules/Viewers/histogram1D.py: Changed so it can work with
+	  numarray or the older Numeric.
+
+2004-08-04 17:27  cpbotha
+
+	* userModules/VTKtoPRTools.py: Some fine-tuning, seems to work.
+
+2004-08-04 16:26  cpbotha
+
+	* moduleMixins.py, userModules/VTKtoPRTools.py: Groovy fixes to
+	  filebrowser code.
+
+2004-08-04 16:12  cpbotha
+
+	* userModules/VTKtoPRTools.py: Initial import.
+
+2004-08-04 16:11  cpbotha
+
+	* modulePacks/vtkObjects/: __init__.py, vtkAVSucdReader.py,
+	  vtkAppendPolyData.py, vtkArcPlotter.py, vtkBMPReader.py,
+	  vtkBMPWriter.py, vtkBYUReader.py, vtkBYUWriter.py,
+	  vtkBandedPolyDataContourFilter.py,
+	  vtkButterflySubdivisionFilter.py, vtkCGMWriter.py,
+	  vtkCleanPolyData.py, vtkClipPolyData.py, vtkCurvatures.py,
+	  vtkDEMReader.py, vtkDICOMImageReader.py, vtkDataObjectReader.py,
+	  vtkDataObjectWriter.py, vtkDataSetReader.py, vtkDataSetWriter.py,
+	  vtkDecimate.py, vtkDecimatePro.py, vtkDepthSortPolyData.py,
+	  vtkEnSight6BinaryReader.py, vtkEnSight6Reader.py,
+	  vtkEnSightGoldBinaryReader.py, vtkEnSightGoldReader.py,
+	  vtkEnSightMasterServerReader.py, vtkExtractPolyDataGeometry.py,
+	  vtkExtractVOI.py, vtkFeatureEdges.py, vtkGAMBITReader.py,
+	  vtkGESignaReader.py, vtkGaussianCubeReader.py,
+	  vtkGenericEnSightReader.py, vtkGraphLayoutFilter.py, vtkHull.py,
+	  vtkIVWriter.py, vtkImageAccumulate.py,
+	  vtkImageAnisotropicDiffusion2D.py,
+	  vtkImageAnisotropicDiffusion3D.py, vtkImageAppend.py,
+	  vtkImageAppendComponents.py, vtkImageBlend.py,
+	  vtkImageButterworthHighPass.py, vtkImageButterworthLowPass.py,
+	  vtkImageCacheFilter.py, vtkImageCast.py,
+	  vtkImageChangeInformation.py, vtkImageCheckerboard.py,
+	  vtkImageCityBlockDistance.py, vtkImageClip.py,
+	  vtkImageConstantPad.py, vtkImageContinuousDilate3D.py,
+	  vtkImageContinuousErode3D.py, vtkImageConvolve.py,
+	  vtkImageCorrelation.py, vtkImageCursor3D.py,
+	  vtkImageDataStreamer.py, vtkImageDifference.py,
+	  vtkImageDilateErode3D.py, vtkImageDivergence.py,
+	  vtkImageDotProduct.py, vtkImageEuclideanDistance.py,
+	  vtkImageEuclideanToPolar.py, vtkImageExtractComponents.py,
+	  vtkImageFFT.py, vtkImageFlip.py, vtkImageFourierCenter.py,
+	  vtkImageGaussianSmooth.py, vtkImageGradient.py,
+	  vtkImageGradientMagnitude.py, vtkImageHSIToRGB.py,
+	  vtkImageHSVToRGB.py, vtkImageHybridMedian2D.py,
+	  vtkImageIdealHighPass.py, vtkImageIdealLowPass.py,
+	  vtkImageIslandRemoval2D.py, vtkImageLaplacian.py,
+	  vtkImageLogarithmicScale.py, vtkImageLogic.py,
+	  vtkImageLuminance.py, vtkImageMagnify.py, vtkImageMagnitude.py,
+	  vtkImageMapToColors.py, vtkImageMapToRGBA.py,
+	  vtkImageMapToWindowLevelColors.py, vtkImageMask.py,
+	  vtkImageMaskBits.py, vtkImageMathematics.py, vtkImageMedian3D.py,
+	  vtkImageMirrorPad.py, vtkImageNonMaximumSuppression.py,
+	  vtkImageNormalize.py, vtkImageOpenClose3D.py,
+	  vtkImagePadFilter.py, vtkImagePermute.py,
+	  vtkImageQuantizeRGBToIndex.py, vtkImageRFFT.py,
+	  vtkImageRGBToHSI.py, vtkImageRGBToHSV.py, vtkImageRange3D.py,
+	  vtkImageReader.py, vtkImageRectilinearWipe.py,
+	  vtkImageResample.py, vtkImageReslice.py,
+	  vtkImageSeedConnectivity.py, vtkImageSeparableConvolution.py,
+	  vtkImageShiftScale.py, vtkImageShrink3D.py,
+	  vtkImageSkeleton2D.py, vtkImageSobel2D.py, vtkImageSobel3D.py,
+	  vtkImageSpatialFilter.py, vtkImageStencil.py,
+	  vtkImageThreshold.py, vtkImageTranslateExtent.py,
+	  vtkImageVariance3D.py, vtkImageWrapPad.py, vtkImageWriter.py,
+	  vtkJPEGReader.py, vtkJPEGWriter.py, vtkLinearExtrusionFilter.py,
+	  vtkLinearSubdivisionFilter.py, vtkLoopSubdivisionFilter.py,
+	  vtkMCubesReader.py, vtkMCubesWriter.py, vtkMaskPolyData.py,
+	  vtkMetaImageReader.py, vtkMetaImageWriter.py, vtkOBJReader.py,
+	  vtkPDBReader.py, vtkPLOT3DReader.py, vtkPLYReader.py,
+	  vtkPLYWriter.py, vtkPNGReader.py, vtkPNGWriter.py,
+	  vtkPNMReader.py, vtkPNMWriter.py, vtkParticleReader.py,
+	  vtkPolyDataConnectivityFilter.py, vtkPolyDataNormals.py,
+	  vtkPolyDataReader.py, vtkPolyDataStreamer.py,
+	  vtkPolyDataWriter.py, vtkPostScriptWriter.py,
+	  vtkPushImageFilterSample.py, vtkPushImageReader.py,
+	  vtkQuadricClustering.py, vtkQuadricDecimation.py,
+	  vtkQuantizePolyDataPoints.py, vtkRectilinearGridReader.py,
+	  vtkRectilinearGridWriter.py, vtkReverseSense.py,
+	  vtkRibbonFilter.py, vtkRotationalExtrusionFilter.py,
+	  vtkRuledSurfaceFilter.py, vtkSLCReader.py, vtkSTLReader.py,
+	  vtkSTLWriter.py, vtkSelectPolyData.py, vtkShrinkPolyData.py,
+	  vtkSmoothPolyDataFilter.py, vtkSplineFilter.py, vtkStripper.py,
+	  vtkStructuredGridReader.py, vtkStructuredGridWriter.py,
+	  vtkStructuredPointsReader.py, vtkStructuredPointsWriter.py,
+	  vtkSubPixelPositionEdgels.py, vtkSweptSurface.py,
+	  vtkTIFFReader.py, vtkTIFFWriter.py,
+	  vtkTransformPolyDataFilter.py, vtkTriangleFilter.py,
+	  vtkTriangularTCoords.py, vtkTubeFilter.py, vtkUGFacetReader.py,
+	  vtkUnstructuredGridReader.py, vtkUnstructuredGridWriter.py,
+	  vtkVolume16Reader.py, vtkVoxelContoursToSurfaceFilter.py,
+	  vtkWindowedSincPolyDataFilter.py, vtkXMLDataSetWriter.py,
+	  vtkXMLImageDataReader.py, vtkXMLImageDataWriter.py,
+	  vtkXMLPDataSetWriter.py, vtkXMLPImageDataReader.py,
+	  vtkXMLPImageDataWriter.py, vtkXMLPPolyDataReader.py,
+	  vtkXMLPPolyDataWriter.py, vtkXMLPRectilinearGridReader.py,
+	  vtkXMLPRectilinearGridWriter.py, vtkXMLPStructuredGridReader.py,
+	  vtkXMLPStructuredGridWriter.py, vtkXMLPUnstructuredGridReader.py,
+	  vtkXMLPUnstructuredGridWriter.py, vtkXMLPolyDataReader.py,
+	  vtkXMLPolyDataWriter.py, vtkXMLRectilinearGridReader.py,
+	  vtkXMLRectilinearGridWriter.py, vtkXMLStructuredGridReader.py,
+	  vtkXMLStructuredGridWriter.py, vtkXMLUnstructuredGridReader.py,
+	  vtkXMLUnstructuredGridWriter.py, vtkXYZMolReader.py: Initial
+	  import of start of vtkObjects pack.
+
+2004-08-04 16:11  cpbotha
+
+	* moduleMixins.py: scriptedConfigModuleMixin now also does
+	  filenames.  Neat huh?
+
+2004-08-03 18:40  cpbotha
+
+	* modules/Viewers/histogram2D.py: Fixed help documentation.
+
+2004-08-03 18:15  cpbotha
+
+	* modules/__init__.py: Blub.
+
+2004-08-03 18:15  cpbotha
+
+	* external/wxPyPlot.py,
+	  modules/Viewers/resources/python/histogram1DFrames.py,
+	  modules/Viewers/resources/xml/histogram1DFrames.wxg,
+	  modules/Viewers/histogram1D.py: Initial import.
+
+2004-08-03 18:15  cpbotha
+
+	* genUtils.py: Fixes to casting code.
+
+2004-07-29 10:33  cpbotha
+
+	* internal/wxPyCanvas/canvasObject.py: Fixed glyph.getLabel bug.
+
+2004-07-26 16:39  cpbotha
+
+	* graphEditor.py, moduleManager.py,
+	  internal/wxPyCanvas/canvasObject.py: Module instance names are
+	  now also shown.
+
+2004-07-22 17:36  cpbotha
+
+	* TODO: Blaap.
+
+2004-07-21 18:39  cpbotha
+
+	* userModules/myTubeFilter.py: Initial import.
+
+2004-07-20 17:06  cpbotha
+
+	* TODO: Added important note about shipping build environments and
+	  stuff.
+
+2004-07-16 18:37  cpbotha
+
+	* docs/patches/wxPython2.4.2.4-introspect.diff: Patch required to
+	  wxPython 2.4.2.4 so that ITK introspection doesn't break.
+
+2004-07-16 14:15  cpbotha
+
+	* devide.py, moduleManager.py: Removed some debug output.
+
+2004-07-16 13:47  cpbotha
+
+	* resources/: python/pythonShellFrame.py, xml/pythonShellFrame.wxg:
+	  Changed title and size of DeVIDE Python Introspection window.
+
+2004-07-14 17:52  cpbotha
+
+	* devide.py: Making test release with latest VTK and ITK CVS.
+
+2004-07-08 18:24  cpbotha
+
+	* devide.py: Upped version for infinite recursion bug fix release.
+
+2004-07-08 15:05  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/tdObjects.py: Added opacity
+	  setting... I'm not too happy with the iface yet.
+
+2004-07-08 14:46  cpbotha
+
+	* external/vtkPipeline/vtkPipeline.py: Fixed nasty new bug with
+	  vtkExecutives and vtkAlgorithms.
+
+2004-07-07 15:16  cpbotha
+
+	* devide.py: Version increase for Jorik's AMC demo.
+
+2004-07-06 18:21  cpbotha
+
+	* moduleUtils.py: Added tooltips to the object introspection
+	  drop-down box and pipeline button.
+
+2004-07-06 14:49  cpbotha
+
+	* graphEditor.py: Fixed scary bug in graphEditor _realiseNetwork:
+	  it was making use of connectionList instead of the moduleManager
+	  filtered newConnections, so if modules failed to instantiate, the
+	  network would be connected up, but the glyph canvas wouldn't
+	  reflect that.
+
+2004-07-06 14:03  cpbotha
+
+	* userModules/experimental/imageBacktracker.py: Integration of
+	  Jorik's imageBacktracker code.
+
+2004-06-24 15:36  cpbotha
+
+	* snippets/rotateCameraIncreaseIsovalue.py: New snippet.
+
+2004-06-23 20:38  cpbotha
+
+	* installer/makeRelease.sh: Added -z3 switch to cvs update commands
+	  in makeRelease.sh.
+
+2004-06-23 20:25  cpbotha
+
+	* devide.py: Progress is rounded and cast to int before passed to
+	  the gauge.  This is due to a waring in Python 2.3.
+
+2004-06-23 20:20  cpbotha
+
+	* devide.py: Third release today.
+
+2004-06-23 18:13  cpbotha
+
+	* utils/genVTKmodulePack.py: Fixed stuff.
+
+2004-06-23 17:34  cpbotha
+
+	* snippets/rotateCameraSaveFrames.py: Improved error message.
+
+2004-06-23 17:15  cpbotha
+
+	* devide.py: Upped version for bugfix release.
+
+2004-06-23 17:15  cpbotha
+
+	* devide.py, moduleManager.py, moduleMixins.py, pythonShell.py:
+	  Fixed bug with pythonShell and changed API.
+
+2004-06-23 17:07  cpbotha
+
+	* snippets/rotateCameraSaveFrames.py: Added sq thingy.
+
+2004-06-23 15:35  cpbotha
+
+	* pythonShell.py: Fixed stupid bug under windows with filename
+	  slashes.
+
+2004-06-23 14:57  cpbotha
+
+	* pythonShell.py, snippets/rotateCameraSaveFrames.py: Small more
+	  better improvements.
+
+2004-06-23 13:51  cpbotha
+
+	* pythonShell.py: Nothing.
+
+2004-06-23 13:48  cpbotha
+
+	* pythonShell.py, snippets/pdSurfaceArea.py: Minor fixes.
+
+2004-06-23 13:46  cpbotha
+
+	* installer/hooks/hook-pythonShell.py: Initial import.	This is so
+	  that we can pull in modules that are used by snippets that we
+	  like to bundle.
+
+2004-06-23 13:01  cpbotha
+
+	* devide.py: First snippet release.
+
+2004-06-23 12:53  cpbotha
+
+	* snippets/rotateCameraSaveFrames.py: Snippet to rotate camera and
+	  save at every frame.
+
+2004-06-23 12:53  cpbotha
+
+	* pythonShell.py: Minor improvement to snippet system.
+
+2004-06-23 11:39  cpbotha
+
+	* resources/: python/pythonShellFrame.py, xml/pythonShellFrame.wxg:
+	  Changed button label.
+
+2004-06-23 11:30  cpbotha
+
+	* snippets/pdSurfaceArea.py: Initial import of new snippet: this
+	  will calculate the surface areas of all selected tdObjects.
+
+2004-06-23 11:30  cpbotha
+
+	* pythonShell.py: Improved snippet system to use execfile.
+
+2004-06-23 10:41  cpbotha
+
+	* graphEditor.py: A suggestion is made for the name of the marked
+	  module.
+
+2004-06-22 17:17  cpbotha
+
+	* installer/devide.spec: Added snippets directory to installer.
+
+2004-06-22 17:11  cpbotha
+
+	* devide.py, pythonShell.py, resources/python/pythonShellFrame.py,
+	  resources/xml/pythonShellFrame.wxg, snippets/simplestExample.py:
+	  The main pythonShell window now supports snippets of Python code.
+
+2004-06-21 18:30  cpbotha
+
+	* devide.py: Upped version for possible release.
+
+2004-06-21 18:30  cpbotha
+
+	* installer/devideInvokingScript.sh: Minor tweaks.
+
+2004-06-21 18:30  cpbotha
+
+	* defaults.py: Changed back to ITK included.
+
+2004-06-21 18:21  cpbotha
+
+	* installer/: devide.spec, devideInvokingScript.sh, makePackage.sh:
+	  McMillan installer 6a2's -f option for explicitly setting
+	  LD_LIBRARY_PATH is resulting in the support dir being deleted
+	  after the first invocation.  We've fixed this by rather making
+	  use of an invoking script.
+
+2004-06-21 18:20  cpbotha
+
+	* defaults.py: Oops, changing default.	Will change it back.
+
+2004-06-10 18:04  cpbotha
+
+	* devide.py, graphEditor.py, moduleManager.py: Modules can now be
+	  marked, so that one can more easily get at them in the main
+	  Python window.
+
+2004-06-08 13:43  cpbotha
+
+	* installer/devide.spec: Added comment about -f in devide.spec.
+
+2004-06-08 13:42  cpbotha
+
+	* installer/devide.spec: Added -f switch to .spec file so that
+	  LD_LIBRARY_PATH is correctly set.
+
+2004-06-05 23:21  cpbotha
+
+	* installer/: devide.spec, makePackage.sh, makeRelease.sh: Adapted
+	  more paths to new laptop.
+
+2004-06-03 00:16  cpbotha
+
+	* docs/help/source/makeHtmlHelp.sh,
+	  modules/Viewers/slice3dVWRmodules/implicits.py,
+	  modules/Viewers/slice3dVWRmodules/selectedPoints.py,
+	  modules/Viewers/slice3dVWRmodules/sliceDirections.py,
+	  modules/Viewers/slice3dVWRmodules/tdObjects.py: * Adapting to
+	  Python 2.3.3.  * htmlHelp adapted to build system on new laptop.
+
+2004-05-27 14:47  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: Added orientation thingy.  Still
+	  need to add UI for all helper thingies: cubeaxesactor,
+	  outlineactor, orientationwidget.
+
+2004-05-25 10:44  cpbotha
+
+	* installer/: makePackage.sh, makeRelease.sh: Changed linux
+	  installs to use bz2.
+
+2004-05-24 23:48  cpbotha
+
+	* devide.py: Upped version for bunches-of-shit-fixed release.
+
+2004-05-24 23:39  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: Fixed some bugs with
+	  regards to \r in filenames.
+
+2004-05-24 23:24  cpbotha
+
+	* moduleMixins.py, moduleUtils.py,
+	  external/vtkPipeline/ConfigVtkObj.py,
+	  external/vtkPipeline/vtkMethodParser.py: * Don't make Execute the
+	  default button (or bind it to enter) when you have   command
+	  windows in a dialogue.  Fixed.  * vtkMethodParser now also
+	  handles other Get/Set*FileName() methods.  * ConfigVtkObj shows
+	  ToolTips as far as possible.
+
+2004-05-24 14:59  cpbotha
+
+	* moduleMixins.py, external/vtkPipeline/ConfigVtkObj.py: More
+	  subtle changes w.r.t. ConfigVtkObj and modulemixins.
+
+2004-05-24 14:46  cpbotha
+
+	* moduleMixins.py, moduleUtils.py: Help button added to default
+	  view/config screen.
+
+2004-05-24 14:35  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: ConfigVtkObj can now embed
+	  its UI in a given frame/panel
+
+2004-05-24 14:34  cpbotha
+
+	* moduleMixins.py: simpleVTKObjects now have the ConfigVtkObj UI
+	  embedded in their frames.
+
+2004-05-24 13:33  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: Fixed buglet in
+	  ConfigVtkObj where filenames wouldn't be refreshed at startup.
+
+2004-05-24 13:32  cpbotha
+
+	* TODO, moduleMixins.py: Added embedding of ConfigVTKObj UI in
+	  simpleVTKObject to TODO.  Fixed buglet in moduleMixins.
+
+2004-05-24 12:11  cpbotha
+
+	* external/: filebrowsebutton.py, vtkPipeline/ConfigVtkObj.py: More
+	  work towards file browsing thingymagoog.
+
+2004-05-24 12:00  cpbotha
+
+	* utils/genVTKmodulePack.py: Exception added.
+
+2004-05-24 12:00  cpbotha
+
+	* external/vtkPipeline/: ConfigVtkObj.py, vtkMethodParser.py:
+	  vtkMethodParser now has special handling for FileName methods.
+	  ConfigVtkObj has a better layout, also special support for
+	  FileName methods.
+
+2004-05-24 12:00  cpbotha
+
+	* external/filebrowsebutton.py: Integrated this from wxPython.lib
+	  so we can make some changes.
+
+2004-05-24 00:38  cpbotha
+
+	* installer/hooks/hook-moduleManager.py: Fixed moduleManager hook
+	  so it's not dependent on a drive-letter anymore.
+
+2004-05-24 00:03  cpbotha
+
+	* installer/hooks/hook-moduleManager.py: Changed one more c: to g:
+
+2004-05-23 23:58  cpbotha
+
+	* installer/devide.spec: Fixed more paths from c: to g:
+
+2004-05-23 23:49  cpbotha
+
+	* installer/makePackage.sh: Changed c: to g: for installer.
+
+2004-05-23 23:47  cpbotha
+
+	* devide.py: Upped version for simple vtkObject release.
+
+2004-05-21 00:23  cpbotha
+
+	* external/vtkPipeline/vtkMethodParser.py: Made sure that the
+	  vtkMethodParser doesn't try and call GetInputMemoryLimit.
+
+2004-05-20 23:51  cpbotha
+
+	* devide.py, installer/devide.spec: Added modulePacks to
+	  installation.  Upped version for the first test after adding the
+	  modulePacks.
+
+2004-05-20 20:18  cpbotha
+
+	* moduleMixins.py, utils/genVTKmodulePack.py: Fixed
+	  inputMethods/outputMethods in simpleVTK thingy.  Changed
+	  pickleVTKObjects ctor.  genVTKmodulePack now does a number of
+	  ImageToImage filters as well.
+
+2004-05-20 03:37  cpbotha
+
+	* moduleMixins.py, utils/genVTKmodulePack.py: Added more notes to
+	  moduleMixins.  Added excludeList to genVTKmodulePack.py
+
+2004-05-20 03:28  cpbotha
+
+	* moduleMixins.py: Added outputFunctions variable to simpleVTK
+	  thingy.
+
+2004-05-20 03:24  cpbotha
+
+	* moduleMixins.py: Fixed bugs with pickleVTKObjectsMixin thingy...
+
+2004-05-20 02:44  cpbotha
+
+	* moduleManager.py, modulePacks/__init__.py,
+	  utils/genVTKmodulePack.py: * modulePacks seem to be fully working
+	  (this rocks), but I haven't tested it   with the Installer yet.
+	  It should be okay.  * genVTKmodulePack generates all vtk Readers
+	  and Writers.
+
+2004-05-19 16:23  cpbotha
+
+	* moduleMixins.py, utils/genVTKmodulePack.py: More changes towards
+	  the integration of a few hundred VTK classes.
+
+2004-05-19 14:27  cpbotha
+
+	* moduleUtils.py, external/vtkPipeline/ConfigVtkObj.py: Improved
+	  layout of buttons in auto-generated dialogues.
+
+2004-05-19 13:50  cpbotha
+
+	* userModules/simplestVTKExample.py: More notes added.
+
+2004-05-19 13:50  cpbotha
+
+	* moduleMixins.py: __doc__ string is now copied from encapsulated
+	  VTK object.
+
+2004-05-19 01:19  cpbotha
+
+	* devide.py: Upped version for first simpleVTKObject release.
+
+2004-05-19 01:18  cpbotha
+
+	* moduleMixins.py, userModules/simplestVTKExample.py: Made even
+	  simpler.
+
+2004-05-19 01:10  cpbotha
+
+	* moduleBase.py, moduleMixins.py,
+	  external/vtkPipeline/vtkMethodParser.py,
+	  userModules/simplestVTKExample.py: Did mega-work to robustify the
+	  vtkMethodParser.  Created mixin with which VTK object can be
+	  wrapped in less than a minute.
+
+2004-05-17 18:45  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  internal/wxPyCanvas/canvasObject.py: Double clicking on a module
+	  opens up its view/config window.
+
+2004-05-17 18:15  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: slice3dVWR
+	  is now more intelligent about comparing the spacing of overlay
+	  input with the spacing of existing input (epsilon = 0.0001).
+
+2004-05-17 13:48  cpbotha
+
+	* installer/makePackage.sh: Find is now used to locate and
+	  strip/chrpath all .so's.
+
+2004-05-14 00:29  cpbotha
+
+	* devide.py: Upped version for CWI talk.
+
+2004-05-13 18:23  cpbotha
+
+	* modules/: __init__.py, Insight/itk3RDR.py, Insight/itkWRT.py:
+	  Initial import and integration of itk3RDR.
+
+2004-05-11 19:26  cpbotha
+
+	* modules/: __init__.py, Insight/itkWRT.py: Initial import and
+	  integration of itkWRT.py.
+
+2004-05-10 14:40  cpbotha
+
+	* devide.py, moduleManager.py, moduleUtils.py, moduleUtilsITK.py,
+	  resources/python/mainFrame.py, resources/xml/mainFrame.wxg:
+	  Implemented initial work for aborting network execution.
+
+2004-05-10 11:12  cpbotha
+
+	* moduleManager.py, moduleUtils.py: VTK objects are now also using
+	  genericProgress callback.
+
+2004-05-09 23:34  cpbotha
+
+	* devide.py, graphEditor.py, internal/wxPyCanvas/canvas.py: We
+	  don't tolerate more than 30 inserts whilst routing.
+
+2004-05-09 00:18  cpbotha
+
+	* modules/: Filters/doubleThreshold.py, Filters/seedConnect.py,
+	  Filters/shellSplatSimple.py, Readers/dicomRDR.py: Gave modules
+	  more meaningful output descriptions.
+
+2004-05-07 16:20  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvasObject.py: Added
+	  super-sexy routing style.  Refactored some variables/methods in
+	  canvasObject.
+
+2004-05-07 15:09  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py: Glyphs are now
+	  always drawn after lines.
+
+2004-05-06 15:02  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvasObject.py: Back to
+	  straight-line routing.
+
+2004-05-06 14:26  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvasObject.py: We're
+	  routing with splines now.  It seems easier to follow the
+	  connections, but I'm not sure whether I like it or not yet.
+
+2004-05-06 00:30  cpbotha
+
+	* devide.py: Upped version for possible release.
+
+2004-04-29 21:37  cpbotha
+
+	* devide.py: Version upped for release.
+
+2004-04-29 15:06  cpbotha
+
+	* modules/Filters/seedConnect.py: Untabified!
+
+2004-04-28 11:38  cpbotha
+
+	* modules/Insight/fastMarching.py: Fixed bad-assed bug with addeing
+	  TrialPoints to the fastMarching filter.
+
+2004-04-27 11:22  cpbotha
+
+	* modules/: __init__.py, Insight/fastMarching.py: fastMarching
+	  module integrated.
+
+2004-04-26 15:35  cpbotha
+
+	* modules/: __init__.py, Filters/greyReconstruct.py: Initial import
+	  and integration of greyReconstruct.py.
+
+2004-04-25 02:18  cpbotha
+
+	* modules/Filters/morphGradient.py: Updated morphGradient to return
+	  inner and outer gradients as well.
+
+2004-04-25 00:35  cpbotha
+
+	* segments/dtscMarchingCubes.dvn: Updated dtscMC segment for new
+	  doubleThreshold module.
+
+2004-04-24 20:11  cpbotha
+
+	* segments/morphSmoothing.dvn: Added morphological smoothing
+	  segment.
+
+2004-04-24 19:59  cpbotha
+
+	* modules/: __init__.py, Filters/closing.py, Filters/opening.py:
+	  Added more morphological filters.  This is fun!
+
+2004-04-24 19:45  cpbotha
+
+	* modules/: __init__.py, Filters/morphGradient.py: Initial import
+	  and integration of morphological gradient.
+
+2004-04-20 16:01  cpbotha
+
+	* moduleMixins.py, modules/__init__.py,
+	  modules/Insight/discreteLaplacian.py: Initial import and
+	  integration of discreteLaplacian module.
+
+2004-04-20 15:05  cpbotha
+
+	* modules/Insight/gaussianConvolve.py: Added direction
+	  configuration switch.  Modified help.
+
+2004-04-20 13:57  cpbotha
+
+	* modules/Insight/nbCurvesLevelSet.py: Code fixups.
+
+2004-04-20 12:15  cpbotha
+
+	* modules/Insight/geodesicActiveContour.py: Removed thresholder at
+	  output.  More parameters in config.
+
+2004-04-20 10:39  cpbotha
+
+	* testing/__init__.py: Fixed doubleThreshold test.
+
+2004-04-20 10:31  cpbotha
+
+	* modules/Filters/imageMathematics.py: Removed redundant view()
+	  method.
+
+2004-04-20 10:31  cpbotha
+
+	* fixitk/itkBasicFiltersPythonTopLevel.py: Compatible with latest
+	  ITK CVS where BasicFilters is now split into an A AND a B.
+
+2004-04-20 00:32  cpbotha
+
+	* defaults.py, devide.py: Now upped the version to the correct
+	  date.  defaults.py has some extra empty lines.
+
+2004-04-20 00:27  cpbotha
+
+	* devide.py: Upped version for new release.
+
+2004-04-20 00:26  cpbotha
+
+	* modules/Filters/doubleThreshold.py: Fixed up names in config
+	  structure.
+
+2004-04-20 00:17  cpbotha
+
+	* graphEditor.py: Some more fixes to the DOT exporting code.
+
+2004-04-19 18:21  cpbotha
+
+	* graphEditor.py: More tweaking on the DOT output.
+
+2004-04-19 17:16  cpbotha
+
+	* resources/: python/graphEditorFrame.py, xml/graphEditorFrame.wxg:
+	  Added menu options for exporting to DOT.
+
+2004-04-19 17:16  cpbotha
+
+	* modules/Writers/vtiWRT.py: Call UpdateInformation() before
+	  SetUpdateExtentToWholeExtent().
+
+2004-04-19 17:16  cpbotha
+
+	* modules/Filters/imageMathematics.py: Added "Maximum" operation.
+
+2004-04-19 17:16  cpbotha
+
+	* graphEditor.py, moduleManager.py: DeVIDE is now able to export
+	  networks as .dot files for further processing by GraphViz.
+
+2004-04-16 00:49  cpbotha
+
+	* modules/Insight/: confidenceSeedConnect.py, nbhSeedConnect.py:
+	  Fixed bug with casting discrete float seed point to int.
+
+2004-04-15 14:51  cpbotha
+
+	* modules/Misc/cptDistanceField.py: Initial import of CPT distance
+	  field module.
+
+2004-04-15 14:51  cpbotha
+
+	* modules/Insight/nbCurvesLevelSet.py: Initial import of narrow
+	  band curves level set image filter.
+
+2004-04-15 14:51  cpbotha
+
+	* modules/__init__.py: Various new modules added.
+
+2004-04-15 14:51  cpbotha
+
+	* installer/makePackage.sh: Use chrpath to remove rpath information
+	  from all libs.
+
+2004-04-15 14:50  cpbotha
+
+	* moduleMixins.py: The fileopen mixin can now be a save or open
+	  dialog.
+
+2004-04-14 17:58  cpbotha
+
+	* modules/Insight/: curvatureAnisotropicDiffusion.py,
+	  geodesicActiveContour.py, gradientAnisotropicDiffusion.py: Small
+	  fixes to diffusion classes with regards to progress indicators.
+	  More work on geodesicActiveContour to try and get the surface
+	  moving.
+
+2004-04-14 00:36  cpbotha
+
+	* devide.py: Upped version for new release.
+
+2004-04-13 22:34  cpbotha
+
+	* modules/: __init__.py, Insight/gaussianConvolve.py,
+	  Insight/geodesicActiveContour.py,
+	  Insight/gradientMagnitudeGaussian.py, Insight/sigmoid.py: Initial
+	  import and integration of sigmoid Insight module.
+	  geodesicActiveContour simplified to take featureImage and initial
+	  level set inputs.  Documentation improved for gaussianConvolve
+	  and gradientMagnitudeGaussian.
+
+2004-04-13 19:03  cpbotha
+
+	* modules/Insight/: ITKUS3toVTK.py, geodesicActiveContour.py:
+	  Initial integration of ITKUS3toVTK module.  Cleaned up
+	  geodesicActiveContour to use an initial distance field.
+
+2004-04-13 19:02  cpbotha
+
+	* modules/__init__.py: Initial integration of ITKUS3toVTK module.
+
+2004-04-13 16:39  cpbotha
+
+	* modules/Filters/landmarkTransform.py: Fixes to input points code.
+
+2004-04-13 16:39  cpbotha
+
+	* fixitk/itkBasicFiltersPythonTopLevel.py: itkBasicFiltersBPython
+	  now supported.
+
+2004-04-13 15:45  cpbotha
+
+	* modules/Filters/landmarkTransform.py: More better.
+
+2004-04-13 14:53  cpbotha
+
+	* modules/: __init__.py, Writers/cptBrepWRT.py: Initial import and
+	  integration of cptBrepWRT module.
+
+2004-04-01 23:08  cpbotha
+
+	* modules/Filters/surfaceToDistanceField.py: Initial import of The
+	  Slowest VTK Filter in The World.
+
+2004-04-01 23:08  cpbotha
+
+	* modules/__init__.py: Added surfaceToDistanceField.
+
+2004-03-30 16:03  cpbotha
+
+	* modules/Insight/transform2D.py: Kludge for Joris.
+
+2004-03-30 15:56  cpbotha
+
+	* modules/Insight/transform2D.py: Worked around nasty bug in ITK to
+	  copy transforms.
+
+2004-03-30 13:07  cpbotha
+
+	* modules/Writers/pngWRT.py: Initial import.
+
+2004-03-30 13:07  cpbotha
+
+	* modules/Insight/transform2D.py: Kludge.
+
+2004-03-30 13:07  cpbotha
+
+	* modules/__init__.py: Initial import of pngWRT.
+
+2004-03-29 17:02  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: Removed
+	  debug output.
+
+2004-03-29 17:02  cpbotha
+
+	* modules/Insight/register2D.py: Changed composition modes.
+
+2004-03-26 18:25  cpbotha
+
+	* graphEditor.py, pythonShell.py: ENH: The graphEditor and
+	  pythonShell TRY to de-iconize when they're activated.
+
+2004-03-26 15:30  cpbotha
+
+	* modules/Insight/gaussianConvolve.py: ENH: New module.
+
+2004-03-26 15:30  cpbotha
+
+	* modules/Filters/imageMedian3D.py: ENH: Added interface using
+	  scriptedConfigModuleMixin.
+
+2004-03-26 15:30  cpbotha
+
+	* modules/__init__.py: ENH: Added ITK gaussianConvolve.py module.
+
+2004-03-25 13:32  cpbotha
+
+	* modules/Insight/gradientMagnitudeGaussian.py: Small spacing
+	  fixes.
+
+2004-03-25 13:32  cpbotha
+
+	* moduleUtilsITK.py: ERR: Fixed setupITKObserver so that the Python
+	  callable won't contain a direct binding to the object which is
+	  being observed.  This would of course keep the object alive,
+	  which would keep the observer alive, which would keep the
+	  callable alive, etc.
+
+2004-03-22 23:44  cpbotha
+
+	* devide.py: Another release, primarily for the graphEditor
+	  GetItemState() fixes.
+
+2004-03-22 22:57  cpbotha
+
+	* devide.py, pythonShell.py, testing/__init__.py: ENH: Added two
+	  more tests to check for the main Python Shell and the Help
+	  Contents.
+
+2004-03-22 22:21  cpbotha
+
+	* graphEditor.py: ERR: I apparently misunderstood the semantics of
+	  wxListCtrl::GetItemState().  This has now been fixed and
+	  everybody is MUCH happier.
+
+2004-03-22 15:20  cpbotha
+
+	* graphEditor.py: ERR: Made drag source selection more robust.
+
+2004-03-22 15:13  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: ERR: Error
+	  is reported when overlay data doesn't match.
+
+2004-03-22 14:56  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: Debugging
+	  weird overlay error.
+
+2004-03-22 14:55  cpbotha
+
+	* modules/: __init__.py, Insight/cannyEdgeDetection.py: Initial
+	  integration of cannyEdgeDetection module.
+
+2004-03-22 14:55  cpbotha
+
+	* external/vtkPipeline/: ConfigVtkObj.py, vtkMethodParser.py: Made
+	  more robust with regards to methods which look like State methods
+	  but aren't.
+
+2004-03-22 14:54  cpbotha
+
+	* moduleMixins.py: More careful formatting of floats by the
+	  scriptedConfigModuleMixin.
+
+2004-03-22 12:28  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/selectedPoints.py: Fixed bug
+	  where points observer would be called after each delete.
+
+2004-03-22 11:36  cpbotha
+
+	* modules/Filters/imageGradientMagnitude.py: Added docstring about
+	  central differences.
+
+2004-03-21 22:05  cpbotha
+
+	* devide.py: Upped version for new release.
+
+2004-03-21 22:02  cpbotha
+
+	* testing/__init__.py: Wrote one more test for the
+	  confidenceSeedConnect.  It's not really checking for failure yet.
+
+2004-03-21 21:24  cpbotha
+
+	* modules/Insight/confidenceSeedConnect.py: Added note about
+	  weirdness of SetSeed/AddSeed in ITK filter.
+
+2004-03-21 21:22  cpbotha
+
+	* modules/: __init__.py, Insight/confidenceSeedConnect.py:
+	  Completed confidenceSeedConnect.py module.
+
+2004-03-21 01:32  cpbotha
+
+	* installer/devide.nsi: Updated NSIS installer script to NSIS 2.0
+	  (from 2.0b3).
+
+2004-03-20 19:14  cpbotha
+
+	* installer/: makePackage.sh, makeRelease.sh: Made some fixes for
+	  this to work in *ix as well.
+
+2004-03-20 19:02  cpbotha
+
+	* installer/: makePackage.sh, makeRelease.sh: Initial import and
+	  integration of makeRelease.sh
+
+2004-03-19 15:25  cpbotha
+
+	* modules/Viewers/histogram2D.py: Fixed bug with the calling of
+	  scriptedConfigModuleMixin.close().
+
+2004-03-19 13:46  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg: ENH: Added save 3D to image
+	  functionality.
+
+2004-03-19 12:21  cpbotha
+
+	* devide.py, graphEditor.py, testing/__init__.py: Added more tests
+	  and better interfaces for testing.
+
+2004-03-19 10:46  cpbotha
+
+	* defaults.py, devide.py: Upped version for new release.
+
+2004-03-18 19:23  cpbotha
+
+	* modules/Insight/confidenceSeedConnect.py: Just began with new
+	  module.
+
+2004-03-18 18:57  cpbotha
+
+	* modules/Insight/nbhSeedConnect.py: Typo fixed.
+
+2004-03-18 18:55  cpbotha
+
+	* modules/: __init__.py, Insight/nbhSeedConnect.py: nbhSeedConnect
+	  added.
+
+2004-03-18 14:13  cpbotha
+
+	* modules/Insight/curvatureFlowDenoising.py: Initial import and
+	  integration.
+
+2004-03-18 14:13  cpbotha
+
+	* modules/__init__.py: New module added.
+
+2004-03-18 14:13  cpbotha
+
+	* devide.py: Misc progress-based changes.
+
+2004-03-18 12:47  cpbotha
+
+	* userModules/experimental/__init__.py: Added so that we can have
+	  more modules in the experimental directory.
+
+2004-03-18 12:46  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Minor changes.
+
+2004-03-18 12:46  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: ERR: More better robustness.  We
+	  don't use an inputObserver anymore.  This causes weird processing
+	  loops that we can do without.
+
+2004-03-17 22:55  cpbotha
+
+	* segments/dtscMarchingCubes.dvn: -kb change.
+
+2004-03-17 22:54  cpbotha
+
+	* segments/: dtscMarchingCubes.d3n, dtscMarchingCubes.dvn: Name
+	  change.
+
+2004-03-17 22:51  cpbotha
+
+	* userModules/glenoidSnake.py: Removed module.	It exists (largely)
+	  as the surface-constrained watershed module in the module attic.
+
+2004-03-17 22:49  cpbotha
+
+	* docs/help/source/devideHelp.tex: Updates to the introduction.
+
+2004-03-17 22:13  cpbotha
+
+	* devide.py, resources/python/mainFrame.py,
+	  resources/xml/mainFrame.wxg, testing/__init__.py: Testing can now
+	  be invoked from the main menu.
+
+2004-03-17 21:57  cpbotha
+
+	* testing/__init__.py: Initial stab at a unit testing framework for
+	  devide.
+
+2004-03-17 21:56  cpbotha
+
+	* devide.py: Changed handler naming according to devide naming
+	  convention.
+
+2004-03-17 13:55  cpbotha
+
+	* devide.py: Upped version for imminent release.
+
+2004-03-17 13:54  cpbotha
+
+	* genUtils.py: ENH: Added logWarning() method.
+
+2004-03-17 13:54  cpbotha
+
+	* moduleManager.py: ENH: Improved error handling during module
+	  getConfig()/setConfig().
+
+2004-03-17 13:52  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: ENH: getConfig/setConfig now makes
+	  use of the implicits state getting and setting calls so that
+	  restored slice3dVWRs also have their implicits restored.
+
+2004-03-17 13:51  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/implicits.py: ENH: Added
+	  getImplicitsState() and setImplicitsState() calls.  implicits can
+	  be completely reconstructed from a correct data structure.
+
+2004-03-16 17:22  cpbotha
+
+	* userModules/experimental/modifyHomotopySlow.py: Initial import
+	  and integration of experimental module to compare results with
+	  "fundamental" implementation.
+
+2004-03-16 15:15  cpbotha
+
+	* docs/help/source/devideHelp.tex: Added note in modules chapter
+	  about module-specific help.
+
+2004-03-16 13:29  cpbotha
+
+	* modules/Insight/: ITKF3toVTK.py, ITKUL3toVTK.py, VTKtoITKF3.py:
+	  More attempts at robustness fixes.
+
+2004-03-16 00:35  cpbotha
+
+	* modules/Filters/imageMathematics.py: More fixes and refinements.
+
+2004-03-15 23:28  cpbotha
+
+	* moduleMixins.py: Removed debug messages.
+
+2004-03-15 23:27  cpbotha
+
+	* moduleMixins.py, modules/__init__.py,
+	  modules/Filters/imageMathematics.py,
+	  modules/Filters/modifyHomotopy.py, modules/Viewers/slice3dVWR.py:
+	  ERR: modifyHomotopy is more better fixed.  Use this as example in
+	  manual.  ENH: initial import and integration of imageMathematics.
+
+2004-03-15 19:16  cpbotha
+
+	* modules/Filters/modifyHomotopy.py: Major work to get this to work
+	  with a mask image as well.  Sheesh.
+
+2004-03-15 13:42  cpbotha
+
+	* modules/Filters/modifyHomotopy.py: Mask image is also modified
+	  initially with min(mask) at all seed points.
+
+2004-03-14 18:48  cpbotha
+
+	* modules/Filters/modifyHomotopy.py: Forgot to call SetDual(1) on
+	  the reconstruction filter.
+
+2004-03-14 18:41  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  slice3dVWRmodules/selectedPoints.py: Small fixes w.r.t. d3type
+	  and devideType.
+
+2004-03-14 18:41  cpbotha
+
+	* modules/Filters/modifyHomotopy.py: First execution.
+	  dualGreyscaleReconstruction isn't working yet...
+
+2004-03-14 17:18  cpbotha
+
+	* moduleMixins.py, modules/__init__.py,
+	  modules/Filters/modifyHomotopy.py: Initial import and
+	  integration.
+
+2004-03-12 13:28  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: ERR: Changed
+	  GetScalarComponentAsFloat to Double (for new VTK).
+
+2004-03-11 15:42  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: Added new
+	  overlay mode.
+
+2004-03-11 15:42  cpbotha
+
+	* docs/help/source/devideHelp.tex: Documented overlay modes.
+
+2004-03-11 13:44  cpbotha
+
+	* modules/: __init__.py, Insight/gradientMagnitudeGaussian.py:
+	  Integration of gradientMagnitudeGaussian.py.
+
+2004-03-11 13:44  cpbotha
+
+	* moduleManager.py: Now also reloads core modules at Rescan.
+
+2004-03-11 11:49  cpbotha
+
+	* modules/Viewers/: resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/sliceDirection.py: Tweaked fusion bits.
+
+2004-03-11 01:00  cpbotha
+
+	* modules/Viewers/: resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/sliceDirection.py,
+	  slice3dVWRmodules/sliceDirections.py: We have working fusion.  It
+	  seems. :)
+
+2004-03-10 23:15  cpbotha
+
+	* modules/: Insight/gradientAnisotropicDiffusion.py,
+	  Viewers/slice3dVWR.py,
+	  Viewers/slice3dVWRmodules/sliceDirection.py: ENH: Added
+	  documentation to gradientAnisotropicDiffusion.  ERR: changed
+	  logic in slice3dVWR w.r.t. the addition of new primaries if only
+	  overlays are present.  ENH: sliceDirection now supports several
+	  different fusion types.
+
+2004-03-10 23:14  cpbotha
+
+	* graphEditor.py: Exceptions thrown during module disconnect or
+	  destroy won't prevent the corresponding link or glyph being
+	  removed from the canvas.
+
+2004-03-10 18:56  cpbotha
+
+	* modules/Insight/ITKUL3toVTK.py: Initial import.
+
+2004-03-09 17:41  cpbotha
+
+	* modules/Insight/watershed.py: Minor fixes.
+
+2004-03-09 17:41  cpbotha
+
+	* modules/Filters/seedConnect.py: Documentation added.
+
+2004-03-09 17:41  cpbotha
+
+	* modules/__init__.py: watershed added.
+
+2004-03-09 17:41  cpbotha
+
+	* genUtils.py: clampFunction added.
+
+2004-03-09 12:23  cpbotha
+
+	* modules/: __init__.py, Insight/ITKF3toVTK.py: Added ITKUL3toVTK
+	  module.
+
+2004-03-09 12:23  cpbotha
+
+	* defaults.py: Back to ITK true.
+
+2004-03-08 11:42  cpbotha
+
+	* docs/help/source/: devideHelp.tex, makeHtmlHelp.sh,
+	  figures/geFirstNetwork.png, figures/gefirstnetwork.png,
+	  figures/superQuadricView.png, figures/superquadricview.png: Fixed
+	  help: it seems the help system does not deal well with capitals.
+	  Make sure all figures are without.
+
+2004-03-07 22:24  cpbotha
+
+	* defaults.py: Whitespace removed.
+
+2004-03-07 21:57  cpbotha
+
+	* graphEditor.py: Improved graphEditor drag and drop handling.	It
+	  now handles STL files, as well as VTK files (by parsing some
+	  lines at the start).	Also refactored little method for
+	  instantiating a single module with a single config var set.
+
+2004-03-07 21:19  cpbotha
+
+	* devide.py: First help file release.  Upped version.
+
+2004-03-07 21:16  cpbotha
+
+	* docs/help/source/makeHtmlHelp.sh: Script updated for Linux.
+
+2004-03-07 21:11  cpbotha
+
+	* docs/help/source/devideHelp.tex,
+	  docs/help/source/figures/superQuadricView.png,
+	  modules/Misc/superQuadric.py: Fixed bug in superQuadricView
+	  module.  Expanded graphEditor tutorial in the user manual.
+
+2004-03-07 20:34  cpbotha
+
+	* docs/help/source/figures/geFirstNetwork.png: Changed to -kb.
+
+2004-03-07 20:32  cpbotha
+
+	* docs/help/source/figures/geFirstNetwork.png: Initial import.
+
+2004-03-07 18:27  cpbotha
+
+	* graphEditor.py: Major improvement with regards to long/short
+	  module name handling in the listctrls.  Fixed selection bug in
+	  the process as well.
+
+2004-03-07 17:07  cpbotha
+
+	* modules/: __init__.py, Misc/implicitToVolume.py: Integration of
+	  implicitToVolume module.
+
+2004-03-07 16:45  cpbotha
+
+	* moduleMixins.py, docs/help/source/devideHelp.ini,
+	  docs/help/source/devideHelp.tex,
+	  docs/help/source/makeHtmlHelp.sh,
+	  docs/help/source/figures/back.gif,
+	  docs/help/source/figures/contents.gif,
+	  docs/help/source/figures/forward.gif,
+	  docs/help/source/figures/up.gif, modules/__init__.py,
+	  modules/Misc/__init__.py, modules/Misc/superQuadric.py: Expanded
+	  help file.  Created superQuadric module for synthesizing polydata
+	  and a superQuadric implicit.
+
+2004-03-07 15:11  cpbotha
+
+	* devide.py, graphEditor.py, helpClass.py,
+	  resources/python/graphEditorFrame.py,
+	  resources/python/mainFrame.py,
+	  resources/xml/graphEditorFrame.wxg, resources/xml/mainFrame.wxg:
+	  Help is now available from graphEditor and the main window by
+	  pressing F1.
+
+2004-03-07 03:34  cpbotha
+
+	* docs/help/source/: devideHelp.ini, devideHelp.tex,
+	  makeHtmlHelp.sh: Further fixes and integration of help.
+
+2004-03-07 03:11  cpbotha
+
+	* docs/help/source/devideHelp.ini, docs/help/source/devideHelp.tex,
+	  docs/help/source/makeHtmlHelp.sh, installer/devide.spec,
+	  resources/python/mainFrame.py, resources/xml/mainFrame.wxg:
+	  Integrating help file.
+
+2004-03-06 16:03  cpbotha
+
+	* devide.py: Upped version for weekend VTK + ITK release.
+
+2004-03-05 15:22  cpbotha
+
+	* modules/Viewers/histogram2D.py: Integrated with
+	  scriptedConfigModuleMixin.
+
+2004-03-05 15:21  cpbotha
+
+	* moduleMixins.py: Tooltips are only used by the scriptedConfig if
+	  they have >0 length.
+
+2004-03-05 11:20  cpbotha
+
+	* modules/Readers/: dicomRDR.py,
+	  resources/python/dicomRDRViewFrame.py,
+	  resources/xml/dicomRDRViewFrame.wxg: Better interaction with
+	  EstimatedSliceThickness.  Improved documentation.
+
+2004-03-04 23:46  cpbotha
+
+	* moduleMixins.py: Removed stupid debug message.
+
+2004-03-04 23:42  cpbotha
+
+	* moduleMixins.py: Fixed bugs in viewToConfig method of
+	  scriptedConfigModuleMixin.
+
+2004-03-04 23:22  cpbotha
+
+	* devide.py: Upped version.  New VTK-only release coming along with
+	  smooooth drag and drop fingies.
+
+2004-03-04 18:35  cpbotha
+
+	* graphEditor.py: Added more slickness: drop some .dcm files on the
+	  canvas, and it's clever enough to make a dicom reader.  Maaaan...
+
+2004-03-04 18:31  cpbotha
+
+	* modules/Readers/: dicomRDR.py,
+	  resources/python/dicomRDRViewFrame.py,
+	  resources/xml/dicomRDRViewFrame.wxg: Upgraded with file-oriented
+	  interface.
+
+2004-03-04 17:36  cpbotha
+
+	* modules/: __init__.py, Filters/imageGreyDilate.py,
+	  Filters/imageGreyDilate3D.py, Filters/imageGreyErode.py: Initial
+	  import and integration of VTK-based greyscale erosion/dilation
+	  filters.
+
+2004-03-04 15:29  cpbotha
+
+	* graphEditor.py: One can now drop files from a filemanager and
+	  devide will do intelligent things.  YAY!
+
+2004-03-04 15:13  cpbotha
+
+	* graphEditor.py: Text and files can now be dragged and dropped.
+
+2004-03-04 14:50  cpbotha
+
+	* graphEditor.py, moduleMixins.py,
+	  modules/Filters/imageGreyDilate3D.py: Initial import of
+	  imageGreyDilate3D.
+
+2004-03-03 13:20  cpbotha
+
+	* modules/: __init__.py, Insight/curvatureAnisotropicDiffusion.py,
+	  Insight/gradientAnisotropicDiffusion.py: Added
+	  gradientAnisotropicDiffusion.
+
+2004-03-03 12:26  cpbotha
+
+	* modules/Insight/: ITKF3toVTK.py, VTKtoITKF3.py,
+	  curvatureAnisotropicDiffusion.py, geodesicActiveContour.py:
+	  Initial import of ITK<->VTK convertors and
+	  curvatureAnistropicDiffusion.  Fixes to geodesicActiveContour.
+
+2004-03-03 12:26  cpbotha
+
+	* modules/Filters/imageGradientMagnitude.py: executeModule fixes.
+
+2004-03-03 12:25  cpbotha
+
+	* modules/__init__.py: Initial import of
+	  curvatureAnisotropicDiffusion, ITK<->VTK converter modules.
+
+2004-03-02 14:33  cpbotha
+
+	* modules/Insight/geodesicActiveContour.py: Routine check-in before
+	  I break stuff again.
+
+2004-03-01 13:30  cpbotha
+
+	* modules/Insight/geodesicActiveContour.py: Experimenting with
+	  exception handling patch to vtkWrapPython.
+
+2004-03-01 11:59  cpbotha
+
+	* modules/Insight/geodesicActiveContour.py: Going to try
+	  ProgrammableFilter instead of ProgrammableSource.
+
+2004-02-29 22:24  cpbotha
+
+	* modules/: Viewers/slice3dVWR.py, Writers/vtiWRT.py: Fixed
+	  extractVOI functionality in slice3dVWR.  vtiWRT now sets update
+	  extent to whole extent.  Discovered VTK bug in
+	  vtkXMLImageDataReader (and Writer).
+
+2004-02-29 18:51  cpbotha
+
+	* moduleUtilsITK.py: I made a fix in itkPyCommand, we don't need
+	  the extra binding to the CommandCallable anymore.
+
+2004-02-29 03:29  cpbotha
+
+	* moduleManager.py, moduleUtilsITK.py,
+	  modules/Insight/geodesicActiveContour.py: Major leaps and bounds
+	  on the geodesicActiveContour module.	Initial import of
+	  moduleUtilsITK: at the moment you can set progress callbacks for
+	  ITK objects.	Bugs in some of my ITK code (itkPyCommand) found.
+	  Will fix later.
+
+2004-02-27 18:57  cpbotha
+
+	* resources/: python/pythonShellFrame.py, xml/pythonShellFrame.wxg:
+	  Fixed display bug on windows.
+
+2004-02-27 18:19  cpbotha
+
+	* modules/Insight/geodesicActiveContour.py: Good progress
+	  (documentation-wise).
+
+2004-02-27 18:02  cpbotha
+
+	* modules/Insight/geodesicActiveContour.py: Start of new ITK-based
+	  module.  This is also the first module to make use of the
+	  scriptable GUI view/config frame logic.
+
+2004-02-27 18:00  cpbotha
+
+	* moduleMixins.py, pythonShell.py,
+	  resources/python/defaultModuleViewFrame.py,
+	  resources/xml/defaultModuleViewFrame.wxg: Radical changes so that
+	  modules can script their own config/view frames.
+
+2004-02-27 14:35  cpbotha
+
+	* moduleMixins.py: Minor fixes to naming.
+
+2004-02-27 14:19  cpbotha
+
+	* devide.py, moduleMixins.py, pythonShell.py,
+	  modules/Filters/imageGradientMagnitude.py: Object introspection
+	  greatly souped up.  You can now introspect anything, even if it
+	  isn't a VTK object.
+
+2004-02-27 13:55  cpbotha
+
+	* resources/: python/pythonShellFrame.py, xml/pythonShellFrame.wxg:
+	  Upgraded.
+
+2004-02-27 13:55  cpbotha
+
+	* modules/__init__.py: geodesicActiveContour added.
+
+2004-02-27 13:55  cpbotha
+
+	* devide.py, moduleMixins.py, pythonShell.py: pythonShell module
+	  upgraded.  Interface now wxGladed.  More control over locals and
+	  things.
+
+2004-02-27 11:35  cpbotha
+
+	* modules/__init__.py: Fixed categorisation of Insight filters.
+
+2004-02-27 11:35  cpbotha
+
+	* devide.py, startupImports.py: Added new switch:
+	  --no-itk-preimport.
+
+2004-02-26 09:38  cpbotha
+
+	* modules/Viewers/resources/: python/slice3dVWRFrames.py,
+	  xml/slice3dVWRFrames.wxg: Fixed display bug with wxChoices not
+	  sizing correctly.
+
+2004-02-26 09:31  cpbotha
+
+	* devide.py: Upped version for implicits release.
+
+2004-02-25 23:47  cpbotha
+
+	* devide.py, moduleManager.py: Solved bug with progress reporting.
+	  Some of the vtkXML writers were reporting 99.99998 at
+	  completion... my check was for 100.0.  It's now checking for a
+	  difference smaller than 0.01.
+
+2004-02-25 23:03  cpbotha
+
+	* docs/NOTES: Added note about how to send an event.
+
+2004-02-25 21:50  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/implicits.py: Spheres hacked
+	  in.
+
+2004-02-25 21:24  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/implicits.py: Refinements
+	  w.r.t. flipping and initial placement of normal vector thingy.
+
+2004-02-25 17:02  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/implicits.py: Flip plane
+	  functionality implemented (I hope).
+
+2004-02-24 15:44  cpbotha
+
+	* modules/: Filters/clipPolyData.py,
+	  Viewers/slice3dVWRmodules/implicits.py: Significant progress.
+
+2004-02-24 12:25  cpbotha
+
+	* modules/: __init__.py, Filters/clipPolyData.py: clipPolyData
+	  almost working.
+
+2004-02-24 12:17  cpbotha
+
+	* modules/Filters/clipPolyData.py: Initial import.
+
+2004-02-24 12:11  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/implicits.py, slice3dVWRmodules/tdObjects.py:
+	  More work on implicits support.
+
+2004-02-24 12:11  cpbotha
+
+	* genUtils.py: Fix with regards to textToTuple function.
+
+2004-02-23 23:47  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/implicits.py: More work towards
+	  implicits.
+
+2004-02-23 23:28  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/implicits.py: Renaming, showing/hiding and more
+	  stuff now works.
+
+2004-02-23 18:31  cpbotha
+
+	* docs/moduleWritingGuide.txt,
+	  modules/Viewers/resources/xml/slice3dVWRFrames.wxg,
+	  modules/Viewers/slice3dVWRmodules/implicits.py: Infernal work on
+	  implicits.
+
+2004-02-23 11:00  cpbotha
+
+	* modules/Viewers/: resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/implicits.py: More work on implicits.  I have
+	  to leave for the LUMC now.
+
+2004-02-22 22:15  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/implicits.py, slice3dVWRmodules/shared.py:
+	  Implicits is making good progress.
+
+2004-02-22 20:09  cpbotha
+
+	* modules/Viewers/resources/: python/slice3dVWRFrames.py,
+	  xml/slice3dVWRFrames.wxg: Implicits work in progress.
+
+2004-02-22 20:09  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/implicits.py: Initial import.
+
+2004-02-21 21:37  cpbotha
+
+	* modules/Viewers/resources/: python/slice3dVWRFrames.py,
+	  xml/slice3dVWRFrames.wxg: Implementing interface part of new
+	  implicits functionality.
+
+2004-02-21 00:43  cpbotha
+
+	* graphEditor.py: The module quick search is nicer and nicer.
+
+2004-02-21 00:38  cpbotha
+
+	* graphEditor.py: Fixed bugs w.r.t. module placement at enter.
+
+2004-02-21 00:19  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Changed layout.
+
+2004-02-20 17:51  cpbotha
+
+	* resources/xml/graphEditorFrame.wxg: Routine checkin.
+
+2004-02-20 17:12  cpbotha
+
+	* graphEditor.py, resources/xml/graphEditorFrame.wxg: Quick module
+	  search implemented.
+
+2004-02-20 15:09  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Changed layout of graphEditor
+	  by throwing out the splitwindow.
+
+2004-02-20 14:38  cpbotha
+
+	* devide.py, graphEditor.py, moduleManager.py, modules/__init__.py,
+	  resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Implemented and integrated
+	  new module categories and selection scheme.
+
+2004-02-19 15:36  cpbotha
+
+	* modules/Viewers/histogram2D.py: Integration of
+	  vtkImageHistogram2D class (from vtkdevide).
+
+2004-02-18 23:32  cpbotha
+
+	* modules/__init__.py: Added histogram2d.
+
+2004-02-18 18:29  cpbotha
+
+	* modules/Viewers/histogram2D.py: Routine commit.  Writing VTK
+	  filter for calculating 2D histogram.
+
+2004-02-18 18:19  cpbotha
+
+	* modules/Viewers/histogram2D.py: setInput progress.
+
+2004-02-18 16:38  cpbotha
+
+	* modules/Viewers/histogram2D.py: Initial import.
+
+2004-02-13 15:36  cpbotha
+
+	* modules/: __init__.py, Filters/imageGradientMagnitude.py: Initial
+	  import of imageGradientMagnitude.
+
+2004-02-12 21:02  cpbotha
+
+	* graphEditor.py: Old-style networks with D3N ID are also read
+	  again.
+
+2004-01-30 13:51  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Added better documentation
+	  about black slices.
+
+2004-01-30 13:47  cpbotha
+
+	* devide.py: Upped version for another release.
+
+2004-01-30 13:47  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Added revision to doc.
+
+2004-01-30 13:46  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Better error handling.
+
+2004-01-30 13:30  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Checks for emptiness of
+	  inputdata.
+
+2004-01-30 13:30  cpbotha
+
+	* TODO: Need better VTK error reporting.
+
+2004-01-29 23:11  cpbotha
+
+	* docs/moduleWritingGuide.txt, userModules/muscleLinesToSurface.py:
+	  Fixed bug where changing rawVolume parameter thingies would make
+	  everything else break.  SetUpdateExtentToWholeExtent() is you
+	  friend.
+
+2004-01-29 16:19  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Fixed case with
+	  multi-segment lines.
+
+2004-01-29 13:50  cpbotha
+
+	* devide.py: Another release that with new VTK libraries to fix an
+	  input disconnect bug in vtkImageEuclideanDistance.
+
+2004-01-29 12:00  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Made sure in the
+	  programmable filter executes that we're working with the complete
+	  data.
+
+2004-01-29 10:30  cpbotha
+
+	* graphEditor.py: Fixed type (it's "redraw" not "redaw").
+
+2004-01-29 00:21  cpbotha
+
+	* devide.py: Upped version for release with double buffered graph
+	  editor and Estimated Thickness enabled DICOM reader.
+
+2004-01-29 00:18  cpbotha
+
+	* graphEditor.py: Fixed rubberbanding when left mouse butten is
+	  released whilst on a glyph.
+
+2004-01-29 00:10  cpbotha
+
+	* defaults.py, graphEditor.py, internal/wxPyCanvas/canvas.py:
+	  Double buffering added for the graph editor canvas.
+
+2004-01-27 16:30  cpbotha
+
+	* devide.py: Upped version, getting ready for new release.
+
+2004-01-27 16:29  cpbotha
+
+	* modules/: __init__.py, Readers/vtpRDR.py, Writers/vtpWRT.py:
+	  Initial import of vtpRDR and vtpWRT.
+
+2004-01-27 16:12  cpbotha
+
+	* userModules/muscleLinesToSurface.py: Deactivated anisotropy.
+
+2004-01-27 15:28  cpbotha
+
+	* userModules/: muscleLinesToSurface.py, voxelLinesToSurface.py:
+	  Name change.
+
+2004-01-27 15:22  cpbotha
+
+	* userModules/voxelLinesToSurface.py: More refinements.
+
+2004-01-27 12:20  cpbotha
+
+	* userModules/voxelLinesToSurface.py: Almost working... still
+	  working on implicit volume generation.
+
+2004-01-26 19:23  cpbotha
+
+	* userModules/voxelLinesToSurface.py: Seems to be working.  Great
+	  example of using a programmableFilter.
+
+2004-01-26 18:03  cpbotha
+
+	* userModules/: reconstructSurface.py, voxelLinesToSurface.py:
+	  Initial import of experimentation for generating surfaces from
+	  single lines.
+
+2004-01-26 12:15  cpbotha
+
+	* modules/Writers/vtiWRT.py: Added doc.
+
+2004-01-26 11:27  cpbotha
+
+	* userModules/reconstructSurface.py: Added documentation.
+
+2004-01-25 12:53  cpbotha
+
+	* userModules/reconstructSurface.py: It's working now.	But it's
+	  not applicable to Stepan's problem.
+
+2004-01-23 13:17  cpbotha
+
+	* userModules/reconstructSurface.py: Playing around.
+
+2004-01-22 18:09  cpbotha
+
+	* userModules/reconstructSurface.py: New user module for surface
+	  reconstruction.
+
+2004-01-15 20:57  cpbotha
+
+	* installer/: devide.nsi, devide.spec, dscas3.nsi, dscas3.spec,
+	  makePackage.sh: Updated installer and nsis thingies to new name.
+	  It seems to work.
+
+2004-01-15 12:05  cpbotha
+
+	* graphEditor.py, moduleManager.py: d3n -> dvn.
+
+2004-01-15 12:01  cpbotha
+
+	* devide.py, modules/Filters/shellSplatSimple.py,
+	  modules/Readers/dicomRDR.py, modules/Viewers/slice3dVWR.py,
+	  modules/Viewers/slice3dVWRmodules/tdObjects.py: More name
+	  changes.
+
+2004-01-15 11:47  cpbotha
+
+	* devide.py, dscas3.py: Name change.
+
+2004-01-15 11:46  cpbotha
+
+	* assistants.py, defaults.py, doPyChecker.py, dscas3.py,
+	  genMixins.py, graphEditor.py, moduleBase.py, moduleManager.py,
+	  moduleUtils.py, pythonShell.py,
+	  external/vtkPipeline/ConfigVtkObj.py,
+	  installer/hooks/hook-moduleManager.py,
+	  modules/Filters/appendPolyData.py,
+	  modules/Filters/glenoidMouldDesign.py,
+	  modules/Filters/shellSplatSimple.py,
+	  modules/Filters/wsMeshSmooth.py,
+	  modules/Filters/resources/xml/contourFLTBase.wxg,
+	  modules/Filters/resources/xml/decimateFLTViewFrame.wxg,
+	  modules/Filters/resources/xml/doubleThresholdFLTFrame.wxg,
+	  modules/Filters/resources/xml/imageGaussianSmoothViewFrame.wxg,
+	  modules/Filters/resources/xml/resampleImageViewFrame.wxg,
+	  modules/Filters/resources/xml/seedConnectFLTViewFrame.wxg,
+	  modules/Filters/resources/xml/shellSplatSimpleFLTViewFrame.wxg,
+	  modules/Filters/resources/xml/wsMeshSmoothFLTViewFrame.wxg,
+	  modules/Insight/register2D.py,
+	  modules/Insight/resources/xml/imageStackRDRViewFrame.wxg,
+	  modules/Insight/resources/xml/register2DViewFrames.wxg,
+	  modules/Readers/resources/xml/dicomRDRViewFrame.wxg,
+	  modules/Readers/resources/xml/rawVolumeRDRViewFrame.wxg,
+	  modules/Viewers/slice3dVWR.py,
+	  modules/Viewers/resources/xml/slice3dVWRFrames.wxg,
+	  modules/Writers/ivWRT.py, modules/Writers/stlWRT.py,
+	  modules/ifdoc/resources/xml/ifdocVWRFrames.wxg,
+	  resources/python/aboutDialog.py,
+	  resources/python/graphEditorFrame.py,
+	  resources/python/mainFrame.py, resources/xml/aboutDialog.wxg,
+	  resources/xml/filenameViewModuleMixinFrame.wxg,
+	  resources/xml/graphEditorFrame.wxg,
+	  resources/xml/htmlWindowFrame.wxg, resources/xml/mainFrame.wxg,
+	  userModules/testModule2.py: First round of rpl dscas3 -> devide
+	  and DSCAS3 -> DeVIDE replacements in all .py and .wxg files.
+
+2004-01-15 11:39  cpbotha
+
+	* dscas3.py, moduleUtils.py: Slow changes over to DeVIDE naming.
+
+2004-01-15 11:36  cpbotha
+
+	* resources/graphics/: embedImages.sh, images.py: Changed all to
+	  DeVIDE.
+
+2004-01-15 11:32  cpbotha
+
+	* resources/graphics/README.txt: Initial import.
+
+2004-01-15 11:31  cpbotha
+
+	* resources/graphics/devidelogo64x64.ico: Initial import of new ico
+	  file.
+
+2004-01-15 11:27  cpbotha
+
+	* resources/graphics/: devidelogo.xcf, devidelogo32x32.png,
+	  devidelogo64x64.png, devidelogom32x32.png, devidelogom64x64.png:
+	  Initial import.
+
+2004-01-09 13:46  cpbotha
+
+	* dscas3.py: Started name-change to dvide.
+
+2003-12-18 17:11  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: Inputs changed to 7.
+
+2003-12-18 17:07  cpbotha
+
+	* dscas3.py: Upped version for first ITK release.
+
+2003-12-18 17:00  cpbotha
+
+	* dscas3.py, fixitk/itkBasePythonTopLevel.py: Hacked fixitk so that
+	  there's no pkgdir involved anymore.
+
+2003-12-18 15:27  cpbotha
+
+	* startupImports.py, modules/Insight/imageStackRDR.py,
+	  modules/Insight/register2D.py, modules/Insight/transform2D.py,
+	  modules/Insight/transformStackRDR.py: Integration of Insight
+	  thunk-layer.
+
+2003-12-18 15:19  cpbotha
+
+	* fixitk/: README.txt, __init__.py, itkAlgorithmsPythonTopLevel.py,
+	  itkBasePythonTopLevel.py, itkBasicFiltersPythonTopLevel.py,
+	  itkCommonPythonTopLevel.py, itkIOPythonTopLevel.py,
+	  itkNumericsPythonTopLevel.py, vxlNumericsPythonTopLevel.py:
+	  Initial import of itk thunk layer to take care of
+	  case-insensitivy on primitive operating systems.
+
+2003-12-18 12:11  cpbotha
+
+	* modules/: __init__.py, Readers/vtiRDR.py, Writers/vtiWRT.py:
+	  Initial import and integration of vtiWRT and vtiRDR.
+
+2003-12-18 11:34  cpbotha
+
+	* modules/Insight/: transformStackRDR.py, transformStackWRT.py:
+	  Converted saving and loading to binary mode.
+
+2003-12-17 17:35  cpbotha
+
+	* modules/Readers/rawVolumeRDR.py: Commented lowerleft back out.
+
+2003-12-17 17:34  cpbotha
+
+	* TODO, modules/Readers/rawVolumeRDR.py,
+	  modules/Viewers/slice3dVWR.py,
+	  modules/Viewers/resources/python/slice3dVWRFrames.py,
+	  modules/Viewers/resources/xml/slice3dVWRFrames.wxg,
+	  modules/Viewers/slice3dVWRmodules/sliceDirection.py,
+	  modules/Viewers/slice3dVWRmodules/tdObjects.py: Much work on the
+	  animation functionality.
+
+2003-12-17 10:16  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: Added
+	  SetUpdateExtentToWholeExtent() when primary data is added.
+
+2003-12-17 00:54  cpbotha
+
+	* installer/dscas3.spec: Removed HDF libs.  Added comment to .spec
+	  file.
+
+2003-12-16 23:01  cpbotha
+
+	* modules/Viewers/resources/: python/slice3dVWRFrames.py,
+	  xml/slice3dVWRFrames.wxg: Worked around some codegen bugs in
+	  wxGlade.
+
+2003-12-16 18:42  cpbotha
+
+	* docs/NOTES: Moved some VTK/ITK config notes over to vtkdscas.
+
+2003-12-16 16:52  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  resources/python/slice3dVWRFrames.py,
+	  resources/xml/slice3dVWRFrames.wxg,
+	  slice3dVWRmodules/tdObjects.py: Object animation added to
+	  slice3dVWR.
+
+2003-12-15 13:24  cpbotha
+
+	* docs/NOTES, modules/Viewers/slice3dVWRmodules/sliceDirection.py:
+	  Re-adapted back to CVS VTK.
+
+2003-12-15 11:59  cpbotha
+
+	* defaults.py, dscas3.py: Fixed problems with --insight.
+
+2003-12-15 11:54  cpbotha
+
+	* defaults.py, dscas3.py, installer/hooks/hook-moduleManager.py:
+	  Installer can now pack without ITK again.
+
+2003-12-15 11:29  cpbotha
+
+	* dscas3.py, fixWxImports.py, moduleManager.py, startupImports.py,
+	  installer/hooks/hook-fixWxImports.py,
+	  installer/hooks/hook-startupImports.py: Cleaned up pre-import and
+	  wx-fixing code.  DSCAS3 now supports --no-itk switch.
+
+2003-12-15 10:48  cpbotha
+
+	* dscas3.py, pythonShell.py: Integration of pythonShell name
+	  change.
+
+2003-12-15 10:47  cpbotha
+
+	* pythonShell.py, python_shell.py: pythonShell.py namechange.
+
+2003-12-15 10:30  cpbotha
+
+	* docs/NOTES: Added note about using VTK4.
+
+2003-12-14 22:45  cpbotha
+
+	* modules/: __init__.py, Filters/imageFlip.py,
+	  Filters/imageGaussianSmooth.py, Filters/imageMask.py: Added some
+	  documentation.
+
+2003-12-14 22:11  cpbotha
+
+	* dscas3.py: Run-in with CVS string substitution.
+
+2003-12-14 22:05  cpbotha
+
+	* dscas3.py, modules/__init__.py: Making itk-less version for Tom
+	  and Friso.
+
+2003-12-14 21:39  cpbotha
+
+	* modules/: __init__.py, Readers/hdfRDR.py: Removed HDF
+	  functionality.
+
+2003-12-13 15:07  cpbotha
+
+	* docs/NOTES: Added note about ITK CVS and VTK CVS compatibility.
+
+2003-12-12 17:37  cpbotha
+
+	* dscas3.py: Busy rescheduling imports.
+
+2003-12-12 14:50  cpbotha
+
+	* dscas3.py: Converted to new wx naming style.
+
+2003-12-11 18:32  cpbotha
+
+	* dscas3.py: Added code to parse command line.	ModuleManager is
+	  now initialised later.
+
+2003-12-11 16:20  cpbotha
+
+	* modules/Readers/rawVolumeRDR.py: SetFileLowerLeft deactivated
+	  again.
+
+2003-12-11 16:20  cpbotha
+
+	* modules/: __init__.py, Filters/imageFlip.py,
+	  Filters/imageMask.py, Readers/rawVolumeRDR.py,
+	  Viewers/slice3dVWR.py,
+	  Viewers/slice3dVWRmodules/selectedPoints.py: Initial import of
+	  imageMask and imageFlip.  Changes to slice3dVWR and
+	  selectedPoints to make copying of points from one slice3dVWR to
+	  another work again.
+
+2003-12-10 11:09  cpbotha
+
+	* modules/Filters/imageMedian3D.py: Initial import of this filter.
+
+2003-12-10 11:09  cpbotha
+
+	* modules/__init__.py: Integration of imageMedian3D.
+
+2003-12-09 18:36  cpbotha
+
+	* TODO: Added bug about SliceThickness vs. SliceLocation in CT.
+
+2003-12-09 17:37  cpbotha
+
+	* modules/Insight/transformStackWRT.py: Fixed dts -> 2ts wildcard.
+
+2003-12-09 17:20  cpbotha
+
+	* modules/: __init__.py, Insight/register2D.py,
+	  Insight/transform2D.py: The whole thingamajig seems to work in a
+	  fashion.
+
+2003-12-09 15:01  cpbotha
+
+	* modules/Insight/: imageStackRDR.py, register2D.py,
+	  transformStackRDR.py, transformStackWRT.py,
+	  typeModules/__init__.py, typeModules/imageStackClass.py,
+	  typeModules/transformStackClass.py: Initial import and
+	  integration of imageStackClass and transformStackClass.  Things
+	  are looking up.
+
+2003-12-09 13:56  cpbotha
+
+	* modules/Insight/transform2D.py: Initial import.
+
+2003-12-09 13:44  cpbotha
+
+	* modules/: __init__.py, Insight/register2D.py,
+	  Insight/transformStackRDR.py, Insight/transformStackWRT.py:
+	  Initial import and integration of transformStackRDR.
+
+2003-12-09 12:18  cpbotha
+
+	* modules/: __init__.py, Insight/register2D.py,
+	  Insight/transformStackWRT.py: Initial import and integration of
+	  transformStackWRT.  It seems to work.
+
+2003-12-08 12:19  cpbotha
+
+	* modules/Insight/: register2D.py,
+	  resources/python/register2DViewFrames.py,
+	  resources/xml/register2DViewFrames.wxg: Progress feedback done.
+
+2003-12-07 23:19  cpbotha
+
+	* modules/Insight/: imageStackRDR.py, register2D.py,
+	  resources/python/register2DViewFrames.py,
+	  resources/xml/register2DViewFrames.wxg: register2D makes manual
+	  registration possible.  Yay!
+
+2003-12-05 15:18  cpbotha
+
+	* modules/Insight/register2D.py: Implementing visualisation with
+	  IPWs.
+
+2003-12-04 19:06  cpbotha
+
+	* modules/Insight/register2D.py: vtkImageViewer sucks bigtime.
+	  We're going to go back to vtkImagePlaneWidget and some
+	  InteractorStyleImage magic thank you.
+
+2003-12-04 18:34  cpbotha
+
+	* modules/Insight/: imageStackRDR.py, register2D.py: Things are
+	  happening.  Less crashes.
+
+2003-12-04 14:16  cpbotha
+
+	* modules/: __init__.py, Insight/register2D.py,
+	  Insight/resources/python/register2DViewFrames.py,
+	  Insight/resources/xml/register2DViewFrames.wxg: Initial import
+	  and integration of register2D.
+
+2003-12-01 15:55  cpbotha
+
+	* docs/NOTES: Added note about VTK/ITK/DICOMParser problem.
+
+2003-12-01 15:52  cpbotha
+
+	* moduleMixins.py, modules/Insight/imageStackRDR.py,
+	  modules/Insight/resources/python/imageStackRDRViewFrame.py,
+	  modules/Insight/resources/xml/imageStackRDRViewFrame.wxg: The
+	  imageStackRDR is working, no thanks to a very rude bug in ITK/VTK
+	  and DICOMParser (curse its soul) interaction.
+
+2003-12-01 12:08  cpbotha
+
+	* modules/: __init__.py, Insight/__init__.py,
+	  Insight/imageStackRDR.py, Insight/resources/__init__.py,
+	  Insight/resources/python/__init__.py,
+	  Insight/resources/python/imageStackRDRViewFrame.py,
+	  Insight/resources/xml/imageStackRDRViewFrame.wxg: Integrating
+	  imageStackRDR.  We can instantiate the module!
+
+2003-11-30 23:44  cpbotha
+
+	* installer/dscas3.nsi, resources/xml/mainFrame.wxg,
+	  userModules/testModule.py: EOL changes.
+
+2003-11-28 17:18  cpbotha
+
+	* modules/Insight/: imageStackRDR.py,
+	  resources/python/imageStackRDRViewFrame.py,
+	  resources/xml/imageStackRDRViewFrame.wxg: Working on the
+	  imageStackRDR.
+
+2003-11-24 18:40  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/sliceDirection.py: Small change
+	  w.r.t. new ImagePlaneWidget.
+
+2003-11-22 18:16  cpbotha
+
+	* modules/: Filters/imageGaussianSmooth.py,
+	  Insight/imageStackRDR.py,
+	  Insight/resources/python/imageStackRDRViewFrame.py,
+	  Insight/resources/xml/imageStackRDRViewFrame.wxg: Initial import
+	  of the imageStackRDR.
+
+2003-10-21 00:21  cpbotha
+
+	* modules/Filters/resources/xml/shellSplatSimpleFLTViewFrame.wxg:
+	  Nothings.
+
+2003-10-21 00:21  cpbotha
+
+	* dscas3.py: Changed version.  Mini-release to benjamin.
+
+2003-10-21 00:19  cpbotha
+
+	* modules/Filters/: shellSplatSimple.py,
+	  resources/python/shellSplatSimpleFLTViewFrame.py,
+	  resources/xml/shellSplatSimpleFLTViewFrame.wxg: Added
+	  GradientImageIsGradient stuff for Benjamin.  Changed
+	  ShellSplatSimple dialogue box to conform to dscas3 standards.
+
+2003-10-17 17:59  cpbotha
+
+	* dscas3.py, modules/Viewers/slice3dVWRmodules/shared.py: Upped
+	  version for new release to Stepan.  Added a work-around for more
+	  shitty row selection behaviour in the wxGrid.
+
+2003-10-16 15:49  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: Fixed bug with selection of points
+	  with no primary data present.
+
+2003-10-16 12:12  cpbotha
+
+	* modules/Readers/dicomRDR.py: Fixed seriesInstanceIdx handling bug
+	  in dicomreader.
+
+2003-10-16 11:44  cpbotha
+
+	* modules/Filters/: resampleImage.py,
+	  resources/python/resampleImageViewFrame.py,
+	  resources/xml/resampleImageViewFrame.wxg: Initial import of
+	  working resampleImage (image interpolation).
+
+2003-10-16 11:43  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py,
+	  external/vtkPipeline/vtkMethodParser.py, modules/__init__.py:
+	  Fixed bug with methods in vtkImageReslice that aren't state
+	  methods but look like state methods.
+
+2003-10-16 00:15  cpbotha
+
+	* TODO: Added TODO note about implementing ORCAD style module and
+	  segment placement.
+
+2003-10-16 00:06  cpbotha
+
+	* modules/Viewers/slice3dVWRmodules/selectedPoints.py: Added
+	  separator in points menu to make it more consistent with other
+	  menus.
+
+2003-10-16 00:02  cpbotha
+
+	* startupImports.py: Changed pre-loading libraries progress
+	  messages.
+
+2003-10-15 23:58  cpbotha
+
+	* graphEditor.py: Bug fixed with repositioning of dropped network
+	  segment.
+
+2003-10-15 23:02  cpbotha
+
+	* TODO: Added bit about no-name points.
+
+2003-10-15 22:24  cpbotha
+
+	* TODO: Added note about testing framework.
+
+2003-10-15 22:18  cpbotha
+
+	* modules/Viewers/: slice3dVWR.py,
+	  slice3dVWRmodules/selectedPoints.py: Fixed problems with selected
+	  points being moved out of bounds of the primary input data.
+
+2003-10-15 21:36  cpbotha
+
+	* dscas3.py, modules/__init__.py: Preparing for Stepan Janda
+	  release.
+
+2003-10-15 17:19  cpbotha
+
+	* modules/Filters/landmarkTransform.py: More touches.
+
+2003-10-15 14:59  cpbotha
+
+	* moduleManager.py, modules/__init__.py,
+	  modules/Filters/landmarkTransform.py,
+	  modules/Filters/transformPolyData.py: Initial import of the
+	  transformPolyData filter.  Fixes to landmarkTransform.py.
+
+2003-10-15 13:25  cpbotha
+
+	* modules/Filters/landmarkTransform.py: Initial import.
+
+2003-10-15 13:23  cpbotha
+
+	* modules/: Filters/isolatedConnect.py,
+	  Viewers/slice3dVWRmodules/selectedPoints.py: Points can now be
+	  renamed.
+
+2003-10-13 18:16  cpbotha
+
+	* modules/: __init__.py, Filters/isolatedConnect.py: First
+	  ITK-based DSCAS3 module.  It even seems to work!
+
+2003-10-12 18:43  cpbotha
+
+	* data/dsemGeometries/l10.d3g, modules/ifdoc/dsemGeometryRDR.py:
+	  Initial import of the dsemGeometryRDR module.  Slow progress on
+	  the dscas3 l10 geometry file.
+
+2003-10-12 15:09  cpbotha
+
+	* dscas3.py: Hacked out ancient and unused log window code.
+
+2003-10-07 23:32  cpbotha
+
+	* dscas3.py: Upped version to reflect DICOM SpacingBetweenSlices
+	  fixes release.
+
+2003-10-07 19:13  cpbotha
+
+	* internal/wxPyCanvas/canvasObject.py: Width of glyph is now
+	  determined according to text AND ports.
+
+2003-10-07 19:07  cpbotha
+
+	* modules/Readers/: dicomRDR.py,
+	  resources/python/dicomRDRViewFrame.py,
+	  resources/xml/dicomRDRViewFrame.wxg: Fixed bugs and enforced SII
+	  max.
+
+2003-10-07 18:59  cpbotha
+
+	* modules/Readers/: dicomRDR.py,
+	  resources/python/dicomRDRViewFrame.py,
+	  resources/xml/dicomRDRViewFrame.wxg: Re-layout of dialogue to
+	  conform with dscas3 spec.  maximum series instance idx is  now
+	  also shown (not enforced yet).
+
+2003-10-07 18:46  cpbotha
+
+	* modules/Readers/dicomRDR.py: Formatting of spacing improved.
+
+2003-10-07 01:48  cpbotha
+
+	* TODO: One more buglet to fix.
+
+2003-10-07 01:42  cpbotha
+
+	* modules/Readers/resources/: python/rawVolumeRDRViewFrame.py,
+	  xml/rawVolumeRDRViewFrame.wxg: Minor fixes to the rawVolumeRDR
+	  GUI.
+
+2003-10-07 01:39  cpbotha
+
+	* startupImports.py: Added more senseless comments.
+
+2003-10-07 01:35  cpbotha
+
+	* dscas3.py, startupImports.py,
+	  installer/hooks/hook-startupImports.py: Upped version.  Fixed
+	  stupid wx problem with another hook.
+
+2003-10-07 00:29  cpbotha
+
+	* dscas3.py, python_shell.py: Added version modifier to signify
+	  downgrade to wxPython 2.4.1.2 on windows.
+
+2003-10-07 00:13  cpbotha
+
+	* python_shell.py, external/vtkPipeline/ConfigVtkObj.py: Trying to
+	  fix Installer vs wxPython 2.4.2.4 problems, in this case w.r.t.
+	  from wxPython import py not getting all members of py.shell!
+
+2003-10-05 23:41  cpbotha
+
+	* installer/makePackage.sh: Refinements to Installer script: *~ and
+	  #*# filen are now deleted before we begin, so that McMillan
+	  Tree() TOC statements don't collect these.
+
+2003-10-05 21:33  cpbotha
+
+	* installer/dscas3.spec: Small attentions to detail.
+
+2003-10-05 21:29  cpbotha
+
+	* dscas3.py: Small correction.
+
+2003-10-05 21:28  cpbotha
+
+	* docs/LICENSE.txt, installer/dscas3.spec: Major work on the
+	  installation system.
+
+2003-10-05 19:39  cpbotha
+
+	* segments/dtscMarchingCubes.d3n: Fixed file after -kb mixup.
+
+2003-10-05 19:31  cpbotha
+
+	* moduleManager.py: Changed directory name from networkSegments to
+	  segments.
+
+2003-10-05 19:30  cpbotha
+
+	* graphEditor.py, moduleManager.py, segments/dtscMarchingCubes.d3n:
+	  Initial import and integration of segments.
+
+2003-10-05 02:08  cpbotha
+
+	* dscas3.py, resources/python/aboutDialog.py,
+	  resources/xml/aboutDialog.wxg: Changes in aboutDialog layout for
+	  Monday (20031006) release.
+
+2003-10-05 01:35  cpbotha
+
+	* resources/: python/graphEditorFrame.py, xml/graphEditorFrame.wxg:
+	  Layout of graphEditor refined.
+
+2003-10-03 12:17  cpbotha
+
+	* data/dsemGeometries/l10.d3g: Starting to define format of config.
+
+2003-10-02 23:16  cpbotha
+
+	* data/dsemGeometries/l10.d3g: Initial import.
+
+2003-09-30 19:03  cpbotha
+
+	* graphEditor.py, modules/ifdoc/ifdocRDR.py: Improved help more
+	  better.
+
+2003-09-30 12:06  cpbotha
+
+	* graphEditor.py: Pressing F1 whilst NOT over a module will explain
+	  what to do.
+
+2003-09-30 11:54  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: We can now press F1 and get
+	  help if the mouse cursor is right over a module.
+
+2003-09-30 00:59  cpbotha
+
+	* genUtils.py, graphEditor.py, moduleManager.py,
+	  modules/Writers/ivWRT.py, resources/python/graphEditorFrame.py,
+	  resources/python/htmlWindowFrame.py,
+	  resources/xml/graphEditorFrame.wxg,
+	  resources/xml/htmlWindowFrame.wxg: We now have working module
+	  help.
+
+2003-09-29 22:20  cpbotha
+
+	* modules/: __init__.py, Readers/objRDR.py, Writers/ivWRT.py:
+	  Initial import of objRDR.py.	Minor bug-fixes in ivWRT.py.
+
+2003-09-29 22:13  cpbotha
+
+	* modules/Writers/: ivWRT.py, stlWRT.py: Finished ivWRT.py module.
+	  Minor fixups in stlWRT.py.
+
+2003-09-29 22:07  cpbotha
+
+	* modules/: __init__.py, Writers/ivWRT.py: Initial import of
+	  ivWRT.py.
+
+2003-09-29 15:13  cpbotha
+
+	* modules/Writers/stlWRT.py: Default ascii.
+
+2003-09-29 00:18  cpbotha
+
+	* modules/ifdoc/ifdocRDR.py: Minor changes on the way to new
+	  functionality.
+
+2003-09-24 23:10  cpbotha
+
+	* modules/Readers/vtkPolyDataRDR.py: Removed more debug output.
+
+2003-09-24 14:03  cpbotha
+
+	* dscas3.py: Removed "main thread" debug output.
+
+2003-09-24 12:45  cpbotha
+
+	* dscas3.py: Small updates to the VTK error reporting.
+
+2003-09-23 17:59  cpbotha
+
+	* dscas3.py: We now have fully functioning global error checking
+	  for all VTK objects.	This rules.
+
+2003-09-23 16:53  cpbotha
+
+	* modules/: Filters/doubleThreshold.py, Filters/polyDataConnect.py,
+	  Filters/seedConnect.py, Filters/sharedModules/contourFLTBase.py,
+	  Readers/dicomRDR.py, Readers/hdfRDR.py, Readers/rawVolumeRDR.py,
+	  Readers/stlRDR.py, Readers/vtkPolyDataRDR.py,
+	  Readers/vtkStructPtsRDR.py, Viewers/slice3dVWR.py,
+	  Writers/stlWRT.py, Writers/vtkPolyDataWRT.py,
+	  Writers/vtkStructPtsWRT.py: Removed all calls to vtk_poll_error.
+
+2003-09-23 16:36  cpbotha
+
+	* dscas3.py, moduleManager.py: Starting to integrate
+	  vtkEventOutputWindow.  It seems to work.
+
+2003-09-22 21:59  cpbotha
+
+	* modules/__init__.py: Removed ifdocRDR and VWR from their old
+	  category.
+
+2003-09-22 18:12  cpbotha
+
+	* modules/: __init__.py, ifdoc/__init__.py, ifdoc/ifdocVWR.py,
+	  ifdoc/resources/__init__.py, ifdoc/resources/python/__init__.py:
+	  Completed move of ifdoc modules to their own module hierarchy.
+
+2003-09-22 17:56  cpbotha
+
+	* modules/: Readers/ifdocRDR.py, Viewers/ifdocVWR.py,
+	  Viewers/resources/python/ifdocVWRFrames.py,
+	  Viewers/resources/xml/ifdocVWRFrames.wxg, ifdoc/ifdocRDR.py,
+	  ifdoc/ifdocVWR.py, ifdoc/resources/python/ifdocVWRFrames.py,
+	  ifdoc/resources/xml/ifdocVWRFrames.wxg: Moved the ifdoc modules
+	  to their own module hierarchy.
+
+2003-09-22 15:15  cpbotha
+
+	* internal/wxPyCanvas/canvasObject.py: Lines now have different
+	  colours depending on the input port that they connect to.  This
+	  makes it easier to distinguish crossings.
+
+2003-09-22 13:27  cpbotha
+
+	* moduleMixins.py: If objectDict is None, the introspection
+	  controls won't get added to a noConfigModuleMixin or a
+	  filenameViewModuleMixin.
+
+2003-09-22 13:21  cpbotha
+
+	* modules/Viewers/slice3dVWR.py: Switched CubeAxesActor2D
+	  temporarily back on.
+
+2003-09-22 11:47  cpbotha
+
+	* moduleMixins.py: Made sure there's a 7px border around the
+	  internal controls of the noConfigModuleMixin.
+
+2003-09-22 11:14  cpbotha
+
+	* genUtils.py, modules/__init__.py,
+	  modules/Filters/imageGaussianSmooth.py,
+	  modules/Filters/resources/python/imageGaussianSmoothViewFrame.py,
+	  modules/Filters/resources/xml/imageGaussianSmoothViewFrame.wxg:
+	  imageGaussianSmooth is now complete and tested.  genUtils.py has
+	  a handy new textToTypeTuple() function.
+
+2003-09-21 23:41  cpbotha
+
+	* modules/Viewers/resources/xml/: ifdocVWRFrames.wxg,
+	  slice3dVWRFrames.wxg: I almost forgot to import these!
+
+2003-09-21 20:56  cpbotha
+
+	* genUtils.py, modules/Filters/imageGaussianSmooth.py: Completing
+	  imageGaussianSmooth module.
+
+2003-09-21 20:05  cpbotha
+
+	* docs/moduleWritingGuide.txt,
+	  resources/python/filenameViewModuleMixinFrame.py,
+	  resources/xml/filenameViewModuleMixinFrame.wxg: Updated
+	  moduleWritingGuide to elaborate on some UI standards.  Also
+	  updated the filenameViewModuleMixinFrame to follow these
+	  standards.
+
+2003-09-21 18:52  cpbotha
+
+	* modules/Filters/imageGaussianSmooth.py: Initial import of
+	  imageGaussianSmooth.	Small fixes to decimate.
+
+2003-09-21 18:38  cpbotha
+
+	* modules/Filters/resources/:
+	  python/imageGaussianSmoothViewFrame.py,
+	  xml/imageGaussianSmoothViewFrame.wxg: Initial import.
+
+2003-09-21 18:37  cpbotha
+
+	* moduleUtils.py,
+	  modules/Filters/resources/python/decimateFLTViewFrame.py,
+	  modules/Filters/resources/xml/decimateFLTViewFrame.wxg: Made this
+	  code compliant with the moduleWritingGuide's guidlines about the
+	  use of sizers in module views.
+
+2003-09-21 01:59  cpbotha
+
+	* installer/hooks/hook-moduleManager.py: Update installer to new
+	  scheme.
+
+2003-09-21 01:37  cpbotha
+
+	* dscas3.py: Upped version to reflect new module organisation.
+
+2003-09-21 00:31  cpbotha
+
+	* moduleManager.py: The sh*t is hitting the fan after the big
+	  module change.  This is all for the better, so I'm grinning and
+	  bearing.  See:  :)=
+
+2003-09-21 00:22  cpbotha
+
+	* modules/: __init__.py, Filters/appendPolyData.py,
+	  Filters/contour.py, Filters/decimate.py,
+	  Filters/doubleThreshold.py, Filters/glenoidMouldDesign.py,
+	  Filters/marchingCubes.py, Filters/polyDataConnect.py,
+	  Filters/polyDataNormals.py, Filters/seedConnect.py,
+	  Filters/shellSplatSimple.py, Filters/wsMeshSmooth.py,
+	  Filters/resources/__init__.py,
+	  Filters/sharedModules/contourFLTBase.py, Readers/dicomRDR.py,
+	  Readers/rawVolumeRDR.py, Readers/resources/__init__.py,
+	  Viewers/ifdocVWR.py, Viewers/slice3dVWR.py,
+	  Viewers/resources/__init__.py,
+	  Viewers/slice3dVWRmodules/selectedPoints.py,
+	  Viewers/slice3dVWRmodules/sliceDirections.py,
+	  Viewers/slice3dVWRmodules/tdObjects.py: More changes to make
+	  everything work with the new module organisation.
+
+2003-09-20 23:50  cpbotha
+
+	* modules/__init__.py: Added all the new-style dscas3 module names.
+
+2003-09-20 23:45  cpbotha
+
+	* modules/: Filters/resources/python/__init__.py,
+	  Readers/resources/python/__init__.py,
+	  Viewers/resources/python/__init__.py: Almost done...
+
+2003-09-20 23:43  cpbotha
+
+	* modules/: Filters/resources/python/contourFLTBaseViewFrame.py,
+	  Filters/resources/python/decimateFLTViewFrame.py,
+	  Filters/resources/python/doubleThresholdFLTFrame.py,
+	  Filters/resources/python/seedConnectFLTViewFrame.py,
+	  Filters/resources/python/shellSplatSimpleFLTViewFrame.py,
+	  Filters/resources/python/wsMeshSmoothFLTViewFrame.py,
+	  Filters/resources/xml/contourFLTBase.wxg,
+	  Filters/resources/xml/decimateFLTViewFrame.wxg,
+	  Filters/resources/xml/doubleThresholdFLTFrame.wxg,
+	  Filters/resources/xml/seedConnectFLTViewFrame.wxg,
+	  Filters/resources/xml/shellSplatSimpleFLTViewFrame.wxg,
+	  Filters/resources/xml/wsMeshSmoothFLTViewFrame.wxg,
+	  Readers/resources/python/dicomRDRViewFrame.py,
+	  Readers/resources/python/rawVolumeRDRViewFrame.py,
+	  Readers/resources/xml/dicomRDRViewFrame.wxg,
+	  Readers/resources/xml/rawVolumeRDRViewFrame.wxg,
+	  Viewers/resources/python/ifdocVWRFrames.py,
+	  Viewers/resources/python/slice3dVWRFrames.py: The massive
+	  reorganisation continues.
+
+2003-09-20 23:32  cpbotha
+
+	* modules/Filters/sharedModules/: __init__.py, contourFLTBase.py:
+	  The big module reorganisation continues.
+
+2003-09-20 23:23  cpbotha
+
+	* modules/: appendPolyDataFLT.py, contourFLT.py, decimateFLT.py,
+	  dicomRDR.py, doubleThresholdFLT.py, glenoidMouldDesignFLT.py,
+	  hdfRDR.py, ifdocRDR.py, ifdocVWR.py, marchingCubesFLT.py,
+	  polyDataConnectFLT.py, polyDataNormalsFLT.py, rawVolumeRDR.py,
+	  seedConnectFLT.py, shellSplatSimpleFLT.py, slice3dVWR.py,
+	  stlRDR.py, stlWRT.py, vtkPolyDataRDR.py, vtkPolyDataWRT.py,
+	  vtkStructPtsRDR.py, vtkStructPtsWRT.py, wsMeshSmoothFLT.py,
+	  Filters/__init__.py, Filters/appendPolyData.py,
+	  Filters/contour.py, Filters/decimate.py,
+	  Filters/doubleThreshold.py, Filters/glenoidMouldDesign.py,
+	  Filters/marchingCubes.py, Filters/polyDataConnect.py,
+	  Filters/polyDataNormals.py, Filters/seedConnect.py,
+	  Filters/shellSplatSimple.py, Filters/wsMeshSmooth.py,
+	  Readers/__init__.py, Readers/dicomRDR.py, Readers/hdfRDR.py,
+	  Readers/ifdocRDR.py, Readers/rawVolumeRDR.py, Readers/stlRDR.py,
+	  Readers/vtkPolyDataRDR.py, Readers/vtkStructPtsRDR.py,
+	  Viewers/__init__.py, Viewers/ifdocVWR.py, Viewers/slice3dVWR.py,
+	  Viewers/slice3dVWRmodules/__init__.py,
+	  Viewers/slice3dVWRmodules/selectedPoints.py,
+	  Viewers/slice3dVWRmodules/shared.py,
+	  Viewers/slice3dVWRmodules/sliceDirection.py,
+	  Viewers/slice3dVWRmodules/sliceDirections.py,
+	  Viewers/slice3dVWRmodules/tdObjects.py, Writers/__init__.py,
+	  Writers/stlWRT.py, Writers/vtkPolyDataWRT.py,
+	  Writers/vtkStructPtsWRT.py: Massive reorganisation of module
+	  hierarchy.
+
+2003-09-20 23:09  cpbotha
+
+	* moduleManager.py: Directories ending with "modules" will not be
+	  recursed into when scanning user directories for modules.
+
+2003-09-20 01:54  cpbotha
+
+	* graphEditor.py, moduleManager.py, modules/__init__.py: First
+	  draft at changing whole module hierarchy.  Modules are now neatly
+	  organised into packages.
+
+2003-09-19 17:13  cpbotha
+
+	* moduleManager.py: Busy breaking dscas3 module management.  Yes,
+	  it's better in the long run.
+
+2003-09-16 18:34  cpbotha
+
+	* modules/: ifdocRDR.py, ifdocVWR.py: Updated to new points and
+	  order in ppos.
+
+2003-09-15 19:10  cpbotha
+
+	* modules/slice3dVWR.py: Added hot-keys to the three grid menus.
+	  Fixed view() method of slice3dVWR so that 3d part is raised last.
+
+2003-09-15 18:18  cpbotha
+
+	* modules/slice3dVWR.py: SelectedPoints has finally been put in its
+	  own file and also converted to the new menu-based UI.
+
+2003-09-15 12:17  cpbotha
+
+	* modules/slice3dVWR.py: Upgrading UI to menu-oriented.
+
+2003-09-10 23:58  cpbotha
+
+	* modules/__init__.py: Removed the old ifdocOldRDR from the modules
+	  list.
+
+2003-09-10 23:52  cpbotha
+
+	* graphEditor.py, moduleManager.py,
+	  internal/wxPyCanvas/canvasObject.py: Fixed really bad-assed list
+	  concatenation bugs.  Be careful Austin!
+
+2003-09-07 21:48  cpbotha
+
+	* modules/: ifdocRDR.py, ifdocVWR.py: Getting ready for HeiSessie.
+	  Also added parsing of PHIN.
+
+2003-09-07 16:38  cpbotha
+
+	* docs/moduleWritingGuide.txt, modules/ifdocRDR.py,
+	  modules/ifdocVWR.py, modules/slice3dVWR.py: Various changes
+	  during use of real bone surfaces for DSEM visualisation.
+
+2003-09-06 20:47  cpbotha
+
+	* genMixins.py, docs/ReadMe.txt, modules/ifdocRDR.py,
+	  modules/ifdocVWR.py: The ifdoc RDR+VWR combo is working again,
+	  except now I can load in the wheelchair dataset with ease... :)
+
+2003-09-06 18:14  cpbotha
+
+	* TODO, genMixins.py, moduleBase.py, moduleManager.py,
+	  moduleUtils.py, modules/ifdocRDR.py: * Fixed code that was
+	  directly calling module.executeModule instead of doing it via the
+	  moduleManager.  * Work on formalising ifdocRDR.
+
+2003-09-05 00:35  cpbotha
+
+	* TODO: * Fixed bug with attaching an axis whilst a motion box is
+	  active.  * Cleaned up all transformation of props and ancillary
+	  objects.  * Fixed bug with aligning axis with intersection of two
+	  planes.
+
+2003-09-04 22:18  cpbotha
+
+	* TODO: * If you attach an axis to an object that already has an
+	  axis, confirmation   is asked.  * Noted bug that adding an axis
+	  while motion is active is not a good thing.
+
+2003-09-02 17:37  cpbotha
+
+	* modules/: ifdocVWR.py, slice3dVWR.py: Much useful work done
+	  during demo-day at LUMC.
+
+2003-09-01 23:58  cpbotha
+
+	* dscas3.py, modules/__init__.py: Made preparations for demo at
+	  LUMC on 20030902.
+
+2003-09-01 23:43  cpbotha
+
+	* moduleBase.py, moduleManager.py, modules/__init__.py,
+	  modules/ifdocRDR.py, modules/ifdocVWR.py: At least ifdocVWR is
+	  showing up!
+
+2003-09-01 22:50  cpbotha
+
+	* docs/moduleWritingGuide.txt: Important tip w.r.t. pseudo
+	  top-level sizer.
+
+2003-09-01 18:39  cpbotha
+
+	* genMixins.py, modules/ifdocRDR.py, modules/ifdocVWR.py: Breaking
+	  ifdoc heavily. :)
+
+2003-09-01 15:53  cpbotha
+
+	* moduleManager.py: Fixed hairy bug with deserialisation and config
+	  shallow copies.
+
+2003-09-01 14:04  cpbotha
+
+	* modules/: __init__.py, appendPolyDataFLT.py: Initial import of
+	  appendPolyData filter.  It's complete.
+
+2003-08-29 18:45  cpbotha
+
+	* dscas3.py, modules/ifdocVWR.py: Sloooow progress.
+
+2003-08-28 13:41  cpbotha
+
+	* modules/ifdocVWR.py: Initial import.
+
+2003-08-27 17:54  cpbotha
+
+	* modules/slice3dVWR.py: Added "introspect" button to Slice3dVWR.
+
+2003-08-27 17:09  cpbotha
+
+	* modules/slice3dVWR.py: Changed and centralised grid selection
+	  background.
+
+2003-08-27 15:48  cpbotha
+
+	* genUtils.py, graphEditor.py, moduleManager.py, python_shell.py,
+	  internal/wxPyCanvas/canvas.py,
+	  internal/wxPyCanvas/canvasObject.py,
+	  internal/wxPyCanvas/canvasSubject.py: Fixed niggling little
+	  problems indicated by PyChecker.
+
+2003-08-27 14:34  cpbotha
+
+	* doPyChecker.py, startupImports.py: More doPyChecker improvements.
+	  Fixes to startupImports.py.
+
+2003-08-27 14:17  cpbotha
+
+	* doPyChecker.py: File added to check the whole of dscas3 with
+	  PyChecker.
+
+2003-08-24 23:35  cpbotha
+
+	* userModules/testModule.py: Removed some whitespace.
+
+2003-08-24 23:28  cpbotha
+
+	* userModules/testModule.py: Fixed this simple user module.
+
+2003-08-24 22:58  cpbotha
+
+	* dscas3.py: The Birthday release: ready for my LKEB talk, thanks.
+
+2003-08-24 21:37  cpbotha
+
+	* modules/ifdocRDR.py: WHOOOHOOO!  I see a moving collection of
+	  tubes that looks like a shoulder!
+
+2003-08-22 14:54  cpbotha
+
+	* graphEditor.py, moduleManager.py, modules/ifdocRDR.py: You can
+	  now execute from the module right-click menu.
+
+2003-08-20 17:41  cpbotha
+
+	* modules/ifdocRDR.py: Slow progress with ifdocRDR.  This is going
+	  to be a long development.
+
+2003-08-20 15:25  cpbotha
+
+	* moduleBase.py, modules/__init__.py, modules/ifdocRDR.py:
+	  moduleBase is now a new-style object.  Initial import of ifdocRDR
+	  module.
+
+2003-08-19 00:22  cpbotha
+
+	* TODO: Some bugs filed. :)
+
+2003-08-15 18:57  cpbotha
+
+	* genUtils.py: Boolean values in the grids are no indicated by cute
+	  little checkboxes.
+
+2003-08-15 17:49  cpbotha
+
+	* TODO: ERR: If a slice is hidden, contours on that slice should
+	  also be hidden.
+
+2003-08-14 00:21  cpbotha
+
+	* TODO: Added fixme w.r.t. size of slice planes.
+
+2003-08-13 22:19  cpbotha
+
+	* TODO: Added various things that need to be done/fixed.
+
+2003-08-12 15:18  cpbotha
+
+	* graphEditor.py: Fixed long-standing refresh bug at network load.
+
+2003-08-12 15:09  cpbotha
+
+	* TODO: Added important notes w.r.t. saving/loading and two-stage
+	  setconfig.
+
+2003-08-12 14:58  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Fixed wxFileSelector save
+	  types.  Added hotkeys to most of the GraphEditor functions.
+
+2003-08-12 14:42  cpbotha
+
+	* dscas3.py, graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Saving and loading network
+	  segments also works nicely now, thanks.
+
+2003-08-12 12:24  cpbotha
+
+	* graphEditor.py: Cutting, copying and pasting works.  WOW!
+
+2003-08-12 11:59  cpbotha
+
+	* graphEditor.py: Refactored some of the saveNetwork stuff so that
+	  we can use it for cutting/copying as well.
+
+2003-08-11 18:49  cpbotha
+
+	* dscas3.py, startupImports.py: Initial import and integration of
+	  startupImports module.
+
+2003-08-11 17:41  cpbotha
+
+	* genUtils.py: Robustified plane-plane intersection calculation.
+
+2003-08-11 17:19  cpbotha
+
+	* genUtils.py: Reworked axisToSlice for two planes: this is now an
+	  explicit axis-to-line operation where the intersection axis
+	  between the two planes is calculated.
+
+2003-08-08 17:05  cpbotha
+
+	* TODO: TODO added. Doh. :)
+
+2003-08-07 18:48  cpbotha
+
+	* modules/slice3dVWR.py: Busy with AxisToSlice functionality.
+
+2003-08-06 18:19  cpbotha
+
+	* modules/slice3dVWR.py: Busy implementing AttachAxis.
+
+2003-08-05 01:16  cpbotha
+
+	* modules/slice3dVWR.py: Fixed/upgraded the picking logic.  We
+	  still have to see if this is going to scale to really large
+	  models.
+
+2003-08-04 18:53  cpbotha
+
+	* modules/slice3dVWR.py: Fixing surface point picking.
+
+2003-08-01 17:13  cpbotha
+
+	* modules/slice3dVWR.py: First working draft with selectedPoints
+	  factored out.
+
+2003-07-31 23:46  cpbotha
+
+	* modules/slice3dVWR.py: Still refactoring.
+
+2003-07-31 17:50  cpbotha
+
+	* modules/slice3dVWR.py: Still refactoring.
+
+2003-07-31 01:00  cpbotha
+
+	* modules/slice3dVWR.py: slice3dVWR is now completely broken due to
+	  the in-progress refactor.  This shouldn't take too long anymore.
+
+2003-07-30 18:04  cpbotha
+
+	* modules/slice3dVWR.py: Starting to factor out the selectedpoints.
+
+2003-07-22 16:46  cpbotha
+
+	* installer/dscas3.spec: Switched debug back off.
+
+2003-07-22 16:45  cpbotha
+
+	* installer/dscas3.spec: Fixed slice3dVWR refactoring bug with
+	  overlays.
+
+2003-07-18 09:27  cpbotha
+
+	* resources/python/graphEditorFrame.py: Minor changes to spec.
+	  Removed \r's from graphEditorFrame.
+
+2003-07-07 18:17  cpbotha
+
+	* modules/slice3dVWR.py: More changes w.r.t. new UI and
+	  refactoring.
+
+2003-07-07 16:45  cpbotha
+
+	* modules/slice3dVWR.py: Major changes to the slice3dVWR UI: we now
+	  have a large 3d rendering window and a controls window.  The
+	  controls window can easily be brought to the front with a button.
+
+2003-07-04 18:14  cpbotha
+
+	* modules/slice3dVWR.py: sliceDirections class now in its own
+	  module.  slice3dVWR is getting cleaner with age!
+
+2003-07-04 16:03  cpbotha
+
+	* genUtils.py, modules/slice3dVWR.py: More refactoring.
+
+2003-07-04 09:32  cpbotha
+
+	* modules/slice3dVWR.py: Factoring out of sliceDirections almost
+	  complete.
+
+2003-07-03 00:24  cpbotha
+
+	* modules/slice3dVWR.py: In the middel of refactoring
+	  sliceDirections out of the slice3dVWR.  Things are a tad broken
+	  at the moment. :)
+
+2003-07-01 22:04  cpbotha
+
+	* genUtils.py: Minor changes.
+
+2003-07-01 18:55  cpbotha
+
+	* genUtils.py: Massive work on vtkBoxWidget thingies.
+
+2003-06-30 14:07  cpbotha
+
+	* TODO: Implementing AxisToSlice functionality.
+
+2003-06-30 09:44  cpbotha
+
+	* modules/slice3dVWR.py: Lock slice to points is working.
+
+2003-06-30 01:59  cpbotha
+
+	* modules/slice3dVWR.py: It seems the vtkBoxWidget is broken with
+	  vtkPolyData that has been translated to be off-centre.  I'm
+	  trying to work around this.
+
+2003-06-29 22:26  cpbotha
+
+	* modules/slice3dVWR.py: Experimenting with box widget.
+
+2003-06-29 20:27  cpbotha
+
+	* modules/slice3dVWR.py: Yay, we can finally move objects and have
+	  their contours move along with them.
+
+2003-06-29 16:38  cpbotha
+
+	* modules/slice3dVWR.py: Time wasted on fixing the slice3dVWR UI.
+
+2003-06-28 20:54  cpbotha
+
+	* dscas3.py: Modified version for Rozing demo on Monday, June 30,
+	  2003.  I am stressed. :)
+
+2003-06-28 17:59  cpbotha
+
+	* modules/slice3dVWR.py: The slice3dVWR seems to be more or less
+	  working again.
+
+2003-06-28 17:31  cpbotha
+
+	* modules/slice3dVWR.py: tdObjects and sliceDirection have been
+	  split out.
+
+2003-06-28 01:45  cpbotha
+
+	* modules/slice3dVWR.py: Object grid is now done in the module and
+	  not in the interface code.
+
+2003-06-27 23:14  cpbotha
+
+	* modules/slice3dVWR.py: Removed automatic stripping: it was
+	  causing significant delays in window switching under XP on the
+	  laptop.
+
+2003-06-27 18:31  cpbotha
+
+	* modules/slice3dVWR.py: Removed the global operations notebook
+	  panel.  Shuffled things around to the consistent global part of
+	  the interface.
+
+2003-06-27 15:37  cpbotha
+
+	* modules/slice3dVWR.py: Added global resetCamera and resetAll
+	  buttons.  Changed surfacePick action control to wxChoice.
+
+2003-06-27 15:08  cpbotha
+
+	* modules/slice3dVWR.py: Colour of contour now matches that of the
+	  object.
+
+2003-06-24 18:51  cpbotha
+
+	* modules/slice3dVWR.py: Working on object-constrained motion.
+
+2003-06-24 17:40  cpbotha
+
+	* modules/slice3dVWR.py: Added more global controls: view
+	  projection choice and mouse move choice.
+
+2003-06-22 02:53  cpbotha
+
+	* modules/slice3dVWR.py: Tightened up some of the contour handling.
+
+2003-06-20 16:50  cpbotha
+
+	* modules/slice3dVWR.py: 3d contours are done.
+
+2003-06-20 13:07  cpbotha
+
+	* python_shell.py, external/vtkPipeline/ConfigVtkObj.py: Some minor
+	  changes to adapt to wxPython 2.4.1.2
+
+2003-06-19 18:25  cpbotha
+
+	* modules/slice3dVWR.py: SLoooooooooooooow progress.  Help!
+
+2003-06-18 18:13  cpbotha
+
+	* modules/slice3dVWR.py: The slowest day in the history of me.	At
+	  least one can toggle the contouring of objects... all the actual
+	  logic for still has to be implemented.
+
+2003-06-17 17:34  cpbotha
+
+	* modules/slice3dVWR.py: Urgh, still implementing contouring.
+
+2003-06-16 18:24  cpbotha
+
+	* modules/slice3dVWR.py: Object visibility can now be toggled.
+
+2003-06-16 17:22  cpbotha
+
+	* modules/slice3dVWR.py: Further work on tdObjects list.  Basic
+	  finding functions also done.
+
+2003-06-16 17:22  cpbotha
+
+	* docs/moduleWritingGuide.txt: Added naming convention.
+
+2003-06-16 17:21  cpbotha
+
+	* moduleMixins.py: Added colourDialogMixin.
+
+2003-06-16 00:36  cpbotha
+
+	* modules/slice3dVWR.py: Changing object list to grid.	The
+	  wxListCtrl can't set colours on individual cells.
+
+2003-06-15 22:56  cpbotha
+
+	* modules/slice3dVWR.py: Objects now get colours.  The listCtrl is
+	  more or less working.
+
+2003-06-15 03:30  cpbotha
+
+	* modules/slice3dVWR.py: tdObjects can now add and remove objects.
+	  This way it's much cleaner.
+
+2003-06-12 17:29  cpbotha
+
+	* modules/slice3dVWR.py: Busy with object list.
+
+2003-06-11 15:43  cpbotha
+
+	* moduleManager.py: No change... was considering swapping the order
+	  of setConfig and reconnection during network deserialisation.
+
+2003-06-11 00:38  cpbotha
+
+	* moduleManager.py: Removed memory allocation/deallocation debug
+	  code.  The wxGetFreeMemory() doesn't work on Linux. :)
+
+2003-06-10 23:24  cpbotha
+
+	* moduleManager.py: Debug code showing difference in free memory
+	  before and after module deletion.
+
+2003-06-10 00:57  cpbotha
+
+	* dscas3.py: Upped version for _possible_ release.
+
+2003-06-10 00:56  cpbotha
+
+	* modules/slice3dVWR.py: WOWA!	Point saving works.  I've also
+	  saved and successfully restored a complete network with a
+	  region-growed segmentation of a scapula and the resultant
+	  shell-rendering with a total of two sliceviewers.
+
+2003-06-10 00:42  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  modules/slice3dVWR.py: Fixed more problems with the event
+	  dispatching logic in graphEditor and the canvas.  This is tricky
+	  business! slice3dVWR is almost correctly pickling its selected
+	  points.
+
+2003-06-09 23:08  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py: Glyph dragging
+	  logic is MUCH improved now.
+
+2003-06-09 22:10  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  modules/slice3dVWR.py: Fixed hairy bug with event handling logic
+	  in canvas.py and graphEditor.  Cleaning up selected points code
+	  in slice3dVWR to prepare them for pickling.
+
+2003-06-09 15:31  cpbotha
+
+	* graphEditor.py: Network saving cleanup.  d3n files now have a
+	  built-in version number (now at 1,0,0).
+
+2003-06-08 02:42  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  internal/wxPyCanvas/canvasObject.py: We have rubberbanding with
+	  full selection abilities.  Man this rocks!
+
+2003-06-07 21:53  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  internal/wxPyCanvas/canvasObject.py: Initial glyph selection
+	  implementation.
+
+2003-06-06 18:25  cpbotha
+
+	* graphEditor.py: Force 'b' mode on all systems, else Windows has
+	  trouble with the binary pickling.
+
+2003-06-06 18:16  cpbotha
+
+	* graphEditor.py: Changed saving of networks to text mode.
+
+2003-06-06 18:10  cpbotha
+
+	* graphEditor.py: Close method (called at system shutdown) deletes
+	  all glyphs from canvas.
+
+2003-06-06 18:08  cpbotha
+
+	* graphEditor.py, moduleManager.py: We can now clear the canvas.
+
+2003-06-06 15:36  cpbotha
+
+	* graphEditor.py, moduleManager.py: First cut at complete network
+	  saving/loading done.
+
+2003-06-06 00:15  cpbotha
+
+	* graphEditor.py, moduleManager.py: Network saving first draft
+	  completed.  Now to get the loading done so we can see if it works
+	  or not. :)
+
+2003-06-05 17:59  cpbotha
+
+	* dscas3.py, graphEditor.py, moduleBase.py, moduleManager.py,
+	  moduleUtils.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Implementing network
+	  saving/loading.
+
+2003-06-04 23:58  cpbotha
+
+	* graphEditor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Fixed graphEditor sizing
+	  under windows.  Tree starts with root node ("modules") expanded.
+
+2003-06-04 16:44  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvas.py,
+	  resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Drag and drop for module
+	  creation.
+
+2003-05-22 20:33  cpbotha
+
+	* TODO: Module saving TODO.
+
+2003-05-22 20:30  cpbotha
+
+	* TODO: More todo, doh.
+
+2003-05-22 12:13  cpbotha
+
+	* dscas3.py: Upped version for single-thread release to Stepan.
+
+2003-05-22 11:47  cpbotha
+
+	* dscas3.py: Global number of threads set to 1.  Aaah well.
+
+2003-05-22 11:23  cpbotha
+
+	* modules/rawVolumeRDR.py: Fixed bug where spacing wasn't being
+	  transferred correctly.
+
+2003-05-22 11:17  cpbotha
+
+	* moduleManager.py: Fixed bug with regards to the generation of
+	  unique new module names.
+
+2003-05-21 01:04  cpbotha
+
+	* moduleUtils.py: White space changes.
+
+2003-05-21 00:50  cpbotha
+
+	* moduleUtils.py: Fixed problem where SetProgressMethod() lambda
+	  callback would maintain a binding to the object being watched,
+	  thereby preventing it from being garbage collected after a module
+	  was close()d.  Changed this to a simple
+	  AddObserver('ProgressEvent'... thingy which gets a fresh object
+	  binding each time so that we don't have to store anything.
+	  Tested and objects get destroyed again.  Hurrah!
+
+2003-05-21 00:23  cpbotha
+
+	* resources/graphics/dscas3logo64x64.ico: Initial import.
+
+2003-05-21 00:08  cpbotha
+
+	* dscas3.py: New version.
+
+2003-05-21 00:08  cpbotha
+
+	* installer/dscas3.spec: Added .ico for windows installer binary.
+
+2003-05-21 00:04  cpbotha
+
+	* graphEditor.py, python_shell.py: Added icons for the graphEditor
+	  and the python shell.
+
+2003-05-20 23:57  cpbotha
+
+	* moduleMixins.py, moduleUtils.py, modules/decimateFLT.py,
+	  modules/dicomRDR.py, modules/doubleThresholdFLT.py,
+	  modules/glenoidMouldDesignFLT.py, modules/hdfRDR.py,
+	  modules/polyDataConnectFLT.py, modules/polyDataNormalsFLT.py,
+	  modules/rawVolumeRDR.py, modules/seedConnectFLT.py,
+	  modules/shellSplatSimpleFLT.py, modules/slice3dVWR.py,
+	  modules/stlRDR.py, modules/stlWRT.py, modules/vtkPolyDataRDR.py,
+	  modules/vtkPolyDataWRT.py, modules/vtkStructPtsRDR.py,
+	  modules/vtkStructPtsWRT.py: Major work on ALL modules to update
+	  them to some of the recently added new utility calls.  All in
+	  all, the code should be more compact now and the module views
+	  should be more consistent.
+
+2003-05-20 22:31  cpbotha
+
+	* moduleManager.py, moduleUtils.py, modules/wsMeshSmoothFLT.py:
+	  instantiateModuleViewFrame now adds title with className and
+	  instanceName.
+
+2003-05-20 19:24  cpbotha
+
+	* moduleBase.py: Removed redundant code.
+
+2003-05-20 19:16  cpbotha
+
+	* dscas3.py, moduleManager.py, moduleUtils.py,
+	  modules/wsMeshSmoothFLT.py, resources/graphics/embedImages.sh,
+	  resources/graphics/images.py: Added methods for setting up a view
+	  frame, connecting close handler and setting default icon.
+
+2003-05-20 18:55  cpbotha
+
+	* resources/graphics/: dscas3logom.xcf, dscas3logom32x32.png:
+	  Initial import.
+
+2003-05-20 18:41  cpbotha
+
+	* resources/graphics/dscas3logom.xcf: Initial import.
+
+2003-05-20 18:36  cpbotha
+
+	* resources/graphics/: dscas3logo32x32.png, dscas3logo64x64.png:
+	  Initial import.
+
+2003-05-20 18:35  cpbotha
+
+	* resources/graphics/: embedImages.sh, images.py: Added 32x32
+	  version.
+
+2003-05-20 18:22  cpbotha
+
+	* resources/graphics/: embedImages.sh, images.py, __init__.py:
+	  Initial import.
+
+2003-05-20 14:17  cpbotha
+
+	* resources/graphics/dscas3logo.xcf: Initial import.
+
+2003-05-19 22:56  cpbotha
+
+	* docs/moduleWritingGuide.txt: Added some UI notes.
+
+2003-05-19 22:09  cpbotha
+
+	* moduleMixins.py, modules/__init__.py,
+	  modules/polyDataNormalsFLT.py: Creation of polyDataNormalsFLT
+	  module.
+
+2003-05-19 14:27  cpbotha
+
+	* installer/makePackage.sh: We don't make a zip file on windows
+	  anymore, as the default is to distribute an NSIS installer
+	  package.
+
+2003-05-19 14:26  cpbotha
+
+	* dscas3.py, moduleManager.py, modules/doubleThresholdFLT.py: Added
+	  mutexes all over the show to protect the progress callbacks from
+	  multi-threaded VTK objects that cause re-entrancy in the
+	  single-threaded progress handlers.  Upped the dscas3 version,
+	  we're shipping another test to Stepan.
+
+2003-05-18 00:47  cpbotha
+
+	* moduleManager.py: Fixed bug in moduleManager with regards to
+	  module instanceName creation.  Reworked some of the slice3dVWR
+	  interface to prepare for object list.
+
+2003-05-17 18:46  cpbotha
+
+	* TODO: Shufflings around.
+
+2003-05-17 00:31  cpbotha
+
+	* dscas3.py, moduleManager.py, modules/doubleThresholdFLT.py: Each
+	  module now has a unique name.  Version of dscas3 incremented:
+	  testing for GUI re-entrancy due to multi- threaded
+	  doubleThreshold.py.
+
+2003-05-16 23:58  cpbotha
+
+	* moduleManager.py: Removed TODO that's now a DONE.
+
+2003-05-14 23:35  cpbotha
+
+	* docs/ReadMe.txt: Initial import.
+
+2003-05-14 14:28  cpbotha
+
+	* installer/README: Installer 5b5 is now fixed.
+
+2003-05-14 00:54  cpbotha
+
+	* dscas3.py: Upped version number: we're chasing a stupid Windows
+	  2000 bug that I can't reproduce on my Windows XP laptop.  Durn!
+
+2003-05-13 23:05  cpbotha
+
+	* userModules/: glenoidSnake.py, testModule.py, testModule2.py:
+	  Adapted userModule examples to new noConfigModuleMixin API.
+
+2003-05-13 22:45  cpbotha
+
+	* installer/README: Added note about Installer 5b5 still being
+	  broken.
+
+2003-05-13 22:00  cpbotha
+
+	* resources/python/mainFrame.py: Removed FRICKING \r's AGAIN.
+
+2003-05-13 15:45  cpbotha
+
+	* installer/hooks/hook-moduleManager.py: Minor changes due to new
+	  name.
+
+2003-05-13 15:44  cpbotha
+
+	* installer/hooks/: hook-moduleManager.py, hook-module_manager.py:
+	  Name change of hook due to name change of moduleManager.
+
+2003-05-13 15:39  cpbotha
+
+	* moduleMixins.py, installer/dscas3.spec,
+	  internal/wxPyCanvas/canvas.py, internal/wxPyCanvas/wxpc.py: Fixed
+	  bugs that were breaking installer.  Lesson learnt: If you're
+	  going to be importing anywhere else than in the global scope (and
+	  right at the top of the module) you better have a very good
+	  excuse.
+
+2003-05-13 15:14  cpbotha
+
+	* moduleMixins.py: Removed import which is now obsolete.
+
+2003-05-13 15:08  cpbotha
+
+	* graphEditor.py: Fixed nasty routing bug in graphEditor.  Removed
+	  oodles of old routing code.
+
+2003-05-13 14:50  cpbotha
+
+	* modules/dicomRDR.py: module shouldn't display view at startup.
+
+2003-05-13 14:48  cpbotha
+
+	* dscas3.py: Upped version for release to Stepan.
+
+2003-05-13 14:47  cpbotha
+
+	* graphEditor.py, graph_editor.py, moduleManager.py,
+	  resources/python/noConfigModuleMixinViewFrame.py,
+	  resources/xml/noConfigModuleMixinViewFrame.wxg: Removal of
+	  obsolete code.
+
+2003-05-13 13:44  cpbotha
+
+	* modules/: decimateFLT.py, doubleThresholdFLT.py,
+	  glenoidMouldDesignFLT.py, hdfRDR.py, polyDataConnectFLT.py,
+	  rawVolumeRDR.py, seedConnectFLT.py, stlRDR.py, stlWRT.py,
+	  vtkPolyDataWRT.py, vtkStructPtsRDR.py, vtkStructPtsWRT.py:
+	  Changes to all modules with regards to showing of view window at
+	  startup.
+
+2003-05-13 13:44  cpbotha
+
+	* moduleMixins.py: No comment.
+
+2003-05-13 13:20  cpbotha
+
+	* modules/wsMeshSmoothFLT.py: Fixed formatting of parameters.
+
+2003-05-13 12:33  cpbotha
+
+	* modules/: __init__.py, vtkPolyDataRDR.py, wsMeshSmoothFLT.py:
+	  Initial import of wsMeshSmoothFLT.  Fixes in vtkPolyDataRDR.
+
+2003-05-13 12:33  cpbotha
+
+	* genUtils.py, moduleUtils.py: Addition of some text->number
+	  conversions.	Refinement of object introspection gui components.
+
+2003-05-13 11:51  cpbotha
+
+	* modules/shellSplatSimpleFLT.py: Converted to new
+	  createStandardObjectAndPipelineIntrospection thingy.
+
+2003-05-13 11:51  cpbotha
+
+	* moduleUtils.py: Added comments.
+
+2003-05-13 11:22  cpbotha
+
+	* moduleMixins.py, moduleUtils.py,
+	  resources/python/filenameViewModuleMixinFrame.py,
+	  resources/xml/filenameViewModuleMixinFrame.wxg: Created new calls
+	  for creating and setting up the object and pipeline introspection
+	  in one go.
+
+2003-05-13 00:15  cpbotha
+
+	* graphEditor.py: Routing improved one more time.  MORE BETTER!
+
+2003-05-12 17:47  cpbotha
+
+	* userModules/testModule.py: Demonstrating.
+
+2003-05-12 17:47  cpbotha
+
+	* graphEditor.py: Improving routing logic.
+
+2003-05-10 04:23  cpbotha
+
+	* dscas3.py: Err, routine changes.
+
+2003-05-10 00:12  cpbotha
+
+	* TODO, graphEditor.py: Yet another router.  Bugs added to TODO
+	  file.
+
+2003-05-09 19:11  cpbotha
+
+	* graphEditor.py: Small routing change... uglier but misses less
+	  blocks.
+
+2003-05-09 11:08  cpbotha
+
+	* graphEditor.py: Fixed bug with placement of a new glyph and
+	  non-routing around that glyph.
+
+2003-05-09 10:58  cpbotha
+
+	* graphEditor.py, internal/wxPyCanvas/canvasObject.py: New routing
+	  algorithm.  More better.
+
+2003-05-08 18:56  cpbotha
+
+	* graphEditor.py, internal/__init__.py,
+	  internal/wxPyCanvas/canvas.py,
+	  internal/wxPyCanvas/canvasObject.py: It's routing (after a
+	  fashion) yaaaay!
+
+2003-05-08 11:37  cpbotha
+
+	* internal/wxPyCanvas/: __init__.py, canvas.py, canvasObject.py,
+	  canvasSubject.py, wxpc.py: Moved from external wxPyCanvas.
+
+2003-05-08 11:21  cpbotha
+
+	* graphEditor.py: Better status message during mouseOvers.
+
+2003-05-08 11:10  cpbotha
+
+	* graphEditor.py: We now have BETTER support for showing the port
+	  names and things...
+
+2003-05-08 01:45  cpbotha
+
+	* graphEditor.py: Added comments about where to do line routing.
+
+2003-05-08 01:34  cpbotha
+
+	* graphEditor.py, moduleManager.py: We more or less have old
+	  functionality back.  I hope.
+
+2003-05-08 00:43  cpbotha
+
+	* graphEditor.py, moduleManager.py: Deletion seems to work again.
+
+2003-05-07 23:24  cpbotha
+
+	* graphEditor.py: HEAVY work continuing...
+
+2003-05-07 18:40  cpbotha
+
+	* graphEditor.py, moduleManager.py: Working towards old
+	  graph_editor and module_manager functionality.
+
+2003-05-07 18:13  cpbotha
+
+	* dscas3.py, graphEditor.py, moduleManager.py: We can create
+	  modules again.  Phew.
+
+2003-05-07 18:06  cpbotha
+
+	* dscas3.py, graphEditor.py, moduleManager.py, module_manager.py,
+	  resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg: Name-change module_manager ->
+	  moduleManager.  Also MAJOR changes w.r.t.  accounting of all
+	  module connections.
+
+	  Major rework of grap_editor (now graphEditor) to use new
+	  wxPyCanvas.
+
+2003-05-07 01:07  cpbotha
+
+	* dscas3.py: Upped the version for yet another point release.
+
+2003-05-06 13:35  cpbotha
+
+	* modules/shellSplatSimpleFLT.py: Support for shellSplatter
+	  functionality to make use of an extra volume for gradient
+	  calculation.
+
+2003-05-05 15:20  cpbotha
+
+	* dscas3.py, module_manager.py, modules/shellSplatSimpleFLT.py:
+	  Changed importReload call so that one now has to do an import
+	  afterwards.  This solves problem with the installer of course not
+	  knowing about the import.
+
+2003-05-05 01:57  cpbotha
+
+	* modules/shellSplatSimpleFLT.py: We don't need to recalculate the
+	  shell data structures if only the renderMode is changed.  Some
+	  convoluted caching required to achieve this.
+
+2003-05-05 00:59  cpbotha
+
+	* resources/: python/mainFrame.py, xml/mainFrame.wxg: More minor,
+	  nitpicking changes to the mainFrame interface.
+
+2003-05-05 00:53  cpbotha
+
+	* dscas3.py, resources/python/mainFrame.py,
+	  resources/xml/mainFrame.wxg: The mainFrame can now optionally be
+	  raised when progress is updated.
+
+2003-05-04 23:24  cpbotha
+
+	* dscas3.py, modules/__init__.py: Removed shellSplatSegmented from
+	  __init__.py dscas3.py busy cursor changes.
+
+2003-05-04 22:59  cpbotha
+
+	* dscas3.py: Incremented version in about box for release to
+	  Edward.
+
+2003-05-04 22:57  cpbotha
+
+	* modules/shellSplatSegmentedFLT.py: Superceded by
+	  shellSplatSimpleFLT.py
+
+2003-05-04 22:56  cpbotha
+
+	* moduleMixins.py, modules/shellSplatSimpleFLT.py: shellSplatSimple
+	  is now functionally complete.
+
+2003-05-04 21:08  cpbotha
+
+	* moduleMixins.py, moduleUtils.py, modules/shellSplatSimpleFLT.py,
+	  resources/python/filenameViewModuleMixinFrame.py,
+	  resources/python/noConfigModuleMixinViewFrame.py,
+	  resources/xml/filenameViewModuleMixinFrame.wxg,
+	  resources/xml/noConfigModuleMixinViewFrame.wxg: Changes of some
+	  of the base modules to the new ECAS style.  Creation and
+	  integration of much easier default interaction setup: see
+	  moduleMixins.vtkPipelineConfigModuleMixin.\
+	  _setupObjectAndPipelineIntrospection
+
+2003-05-04 19:12  cpbotha
+
+	* moduleUtils.py, modules/shellSplatSimpleFLT.py: Major work on
+	  formalising and standardising UI elements in module dialogs.
+
+2003-05-04 04:01  cpbotha
+
+	* moduleUtils.py, module_manager.py, modules/__init__.py,
+	  modules/shellSplatSimpleFLT.py: Initial import of
+	  shellSplatSimple module.  Major work on the module_manager to
+	  refactor conditional importing and reloading.  We have to be
+	  especially careful with this as the reload() functionality of the
+	  McMillan Installer is very limited.  Minor fix to moduleUtils:
+	  enter was hot key for the ok button.	Doh.
+
+2003-05-04 01:46  cpbotha
+
+	* external/: PyColourChooserDialog.py, SwitchColourDialog.py: Fixed
+	  a small typo.
+
+2003-05-04 01:37  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: ConfigVtkObj now makes use
+	  of SwitchColourDialog.
+
+2003-05-04 01:24  cpbotha
+
+	* external/SwitchColourDialog.py: Initial import.
+
+2003-05-03 21:10  cpbotha
+
+	* external/PyColourChooserDialog.py: Routine checkin.
+
+2003-05-03 20:55  cpbotha
+
+	* external/PyColourChooserDialog.py: Initial import.
+
+2003-05-03 01:36  cpbotha
+
+	* installer/: README, iu.reload-fix-v2.diff: Initial import.
+
+2003-05-03 01:33  cpbotha
+
+	* module_manager.py, userModules/testModule.py: Refined
+	  module_manager module importing and reloading.
+
+2003-05-02 18:46  cpbotha
+
+	* module_manager.py, modules/vtkPolyDataRDR.py,
+	  userModules/testModule.py: Experiments with the Installer.
+
+2003-05-02 14:47  cpbotha
+
+	* module_manager.py, modules/vtkPolyDataRDR.py: Routine checkin.
+
+2003-05-02 00:47  cpbotha
+
+	* installer/dscas3.nsi: The installer now creates/removes
+	  (optionally) a desktop shortcut at installation/de-installation.
+
+2003-05-02 00:07  cpbotha
+
+	* installer/dscas3.spec, userModules/testModule.py: Resultant
+	  binary debug deactivated.  Debug output in vtkPolyDataRDR removed
+	  - McMillan Installer bug! Curvature reconnected in testModule.py.
+
+2003-05-02 00:05  cpbotha
+
+	* installer/dscas3.spec: Much smoother removeNames handling.  Now
+	  excludes a bunch of potentially harmful DLLs on Windows.
+
+2003-05-01 18:02  cpbotha
+
+	* resources/python/filenameViewModuleMixinFrame.py: Removed more
+	  frikking \r's.
+
+2003-05-01 17:54  cpbotha
+
+	* installer/dscas3.spec: Fixed \\ for *ix compat.
+
+2003-05-01 01:09  cpbotha
+
+	* dscas3.py: Schmucking around with the aboutBox, but it's much
+	  better now.
+
+2003-05-01 00:57  cpbotha
+
+	* installer/dscas3.nsi: Initial import of NullSoft Installer script
+	  file.  This rules!
+
+2003-05-01 00:15  cpbotha
+
+	* modules/slice3dVWR.py: Mouse capture deactivated for RWI in slice
+	  viewer.
+
+2003-04-30 23:57  cpbotha
+
+	* modules/: __init__.py, ghr_linreg_flt.py: Removed module that'll
+	  probably never get completed.
+
+2003-04-30 23:43  cpbotha
+
+	* modules/slice3dVWR.py: Various cleanups.  Shelved
+	  vtkBoxWidget-oriented move operation due to inherent
+	  difficulties.  Fixed bug (and committed) to vtkBoxWidget.
+
+2003-04-30 01:28  cpbotha
+
+	* modules/shellSplatSegmentedFLT.py: Minute changes.
+
+2003-04-29 22:42  cpbotha
+
+	* modules/shellSplatSegmentedFLT.py: Small fix with regards to
+	  specular.
+
+2003-04-29 19:11  cpbotha
+
+	* modules/: __init__.py, shellSplatSegmentedFLT.py, slice3dVWR.py:
+	  Initial import of the shellSplatSegmentedFLT module.	Changes to
+	  slice3dVWR to be able to handle vtkVolume (i.e. volume rendered)
+	  inputs.
+
+2003-04-28 22:58  cpbotha
+
+	* installer/dscas3.spec: Put extraLibs and removeLibs back again.
+
+2003-04-28 22:55  cpbotha
+
+	* installer/makePackage.sh: Now works on Windows too.
+
+2003-04-28 22:34  cpbotha
+
+	* installer/dscas3.spec: More cross-platform changes.
+
+2003-04-28 22:27  cpbotha
+
+	* installer/dscas3.spec: Fixed CR/LFs.	Doh.
+
+2003-04-28 22:20  cpbotha
+
+	* installer/: dscas3.spec, hooks/hook-module_manager.py: Adapted
+	  for work on Windows too. Yay!
+
+2003-04-28 15:16  cpbotha
+
+	* userModules/: testModule.py, testModule2.py: Miscellaneous
+	  experimentation.
+
+2003-04-28 15:15  cpbotha
+
+	* modules/: __init__.py, decimateFLT.py, stlWRT.py: Initial import
+	  of stlWRT.  Changed decimateFLT to use vtkDecimate instead of
+	  vtkDecimatePro.
+
+2003-04-28 13:26  cpbotha
+
+	* modules/: glenoidMouldDesignFLT.py, slice3dVWR.py, stlWRT.py:
+	  Initial import of stlWRT.py slice3dVWR now uses nearest neighbour
+	  interpolation on overlays.  glenoidMouldDesignFLT: slow painful
+	  progress.
+
+2003-04-25 18:49  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Trying new approach for glenoid
+	  edge.
+
+2003-04-25 13:37  cpbotha
+
+	* modules/slice3dVWR.py: We have some form of surface locked points
+	  going now.
+
+2003-04-25 12:24  cpbotha
+
+	* modules/slice3dVWR.py: Points that were picked on a surface now
+	  lock to that surface.
+
+2003-04-25 09:19  cpbotha
+
+	* userModules/glenoidSnake.py: New module, new idea.  Let's hope
+	  this one gives better results.
+
+2003-04-24 13:14  cpbotha
+
+	* modules/slice3dVWR.py: A scalarbar can be added for any pickable
+	  actor with a lookuptable.
+
+2003-04-24 11:04  cpbotha
+
+	* modules/slice3dVWR.py: Fixed bug in checking of scalar name of
+	  input vtkImageData.
+
+2003-04-23 23:19  cpbotha
+
+	* modules/slice3dVWR.py: Fixed oddness with slice3dVWR and point
+	  name combo box.
+
+2003-04-23 18:42  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: This is a hard nut to crack.
+	  "Image processing" on irregular meshes sucks.
+
+2003-04-23 16:05  cpbotha
+
+	* modules/attic/meshMarkerWatershed.py, userModules/testModule3.py:
+	  Moved watershedding stuff for later use.
+
+2003-04-18 01:04  cpbotha
+
+	* modules/slice3dVWR.py, userModules/testModule3.py: The watershed
+	  implementation seems to be done, but it's not performing up to my
+	  expectations.  Some tests on synthetic data may be in order.
+	  Fixed yet another bug in special-case handling of the slice3dVWR.
+
+2003-04-17 19:35  cpbotha
+
+	* userModules/testModule3.py: Dammit, this is more difficult than I
+	  thought!
+
+2003-04-17 00:48  cpbotha
+
+	* modules/slice3dVWR.py, userModules/testModule3.py: Fixed bug in
+	  curvature scalar detection of the slice3dVWR.  testModule3 now
+	  has a completely broken watershed implementation. :)
+
+2003-04-16 18:30  cpbotha
+
+	* userModules/testModule3.py: Still fricking busy with homotopic
+	  modification and watershedding.
+
+2003-04-16 18:30  cpbotha
+
+	* modules/slice3dVWR.py: If it sees curvature data on a mesh,
+	  ScalarVisibility is set to on and FlatShading is activated.
+
+2003-04-16 11:57  cpbotha
+
+	* userModules/testModule3.py: The homotopic modification
+	  implementation now supports multiple "outside" points.
+
+2003-04-16 11:53  cpbotha
+
+	* modules/vtkPolyDataWRT.py: Changed default write mode to binary.
+	  This obviously has its problems, but seeing that DSCAS3 will
+	  mostly be used on x86 machines, the advantages speak louder.
+
+2003-04-16 01:18  cpbotha
+
+	* userModules/testModule3.py: Hmmm, vtkWindowedSincPolyDataFilter
+	  gets terribly unhappy if its input has been passed through a
+	  vtkCleanPolyData.  This is not good at all.
+
+2003-04-15 19:35  cpbotha
+
+	* dscas3.py, userModules/testModule3.py: Whaaaaaaaaaaaaaaaa!  This
+	  is BLEEDING difficult man!
+
+2003-04-15 00:36  cpbotha
+
+	* module_manager.py, userModules/testModule3.py: Busy creating seed
+	  image.
+
+2003-04-14 17:41  cpbotha
+
+	* userModules/testModule3.py: Making steady progress.  I have to
+	  fix bugs in VTK as I go along as well.
+
+2003-04-10 17:25  cpbotha
+
+	* userModules/testModule3.py: Blaat.
+
+2003-04-10 00:38  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: Made changes so that the
+	  layout of PyCrust is far easier to work with.
+
+2003-04-10 00:12  cpbotha
+
+	* resources/: python/filenameViewModuleMixinFrame.py,
+	  xml/filenameViewModuleMixinFrame.wxg: Fixed alignment problem
+	  with controls in this view.
+
+2003-04-09 21:54  cpbotha
+
+	* userModules/: testModule.py, testModule2.py, testModule3.py:
+	  Initial import of testModule3 (beginning of watershedding games).
+	  Documentation update in existing testModules.
+
+2003-04-08 18:49  cpbotha
+
+	* installer/dscas3.spec: dicom.dic problem solved by integrating it
+	  into vtkdscasIO library.
+
+2003-04-08 18:19  cpbotha
+
+	* installer/dscas3.spec: Removes /usr/X11R6/lib/ libraries that the
+	  installer wants to include.
+
+2003-03-31 17:19  cpbotha
+
+	* installer/dscas3.spec: Notes to self.
+
+2003-03-31 16:14  cpbotha
+
+	* installer/dscas3.spec: The HDF libraries are now included.
+
+2003-03-28 18:50  cpbotha
+
+	* userModules/testModule.py: Added vtkWindowedSincPolyDataFilter to
+	  the mix - it seems the resultant curvature is much smoother and
+	  can possibly be used for surface-constrained deformable contours.
+
+2003-03-28 12:22  cpbotha
+
+	* graph_editor.py: Upgraded to top-bottom instead of left-right.
+
+2003-03-26 18:45  cpbotha
+
+	* userModules/testModule2.py: Initial import: sometimes we need
+	  more than one testModule.
+
+2003-03-26 00:58  cpbotha
+
+	* modules/slice3dVWR.py: Tweaks to sliceVwr: start of
+	  selectedPoints list save and load func.
+
+2003-03-25 23:49  cpbotha
+
+	* module_manager.py: Adapted to user_modules -> userModules change.
+
+2003-03-25 23:48  cpbotha
+
+	* userModules/: __init__.py, testModule.py: Renamed user_modules to
+	  userModules.	Created new testModule.py for playing around with
+	  ideas.
+
+2003-03-25 17:11  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Checkin before implementation
+	  of new stop-criterion for glenoid surface points.
+
+2003-03-25 11:40  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: _capCutPolyData has been
+	  rewritten according to the ClipCow.py example.  Much faster and
+	  cleaner.
+
+2003-03-25 00:51  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: The ridges are now capped on
+	  the outside.
+
+2003-03-24 19:37  cpbotha
+
+	* modules/: glenoidMouldDesignFLT.py, slice3dVWR.py: Trying to
+	  close open ends.
+
+2003-03-24 18:11  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Routine commit. Put disk on
+	  bottom of drill-guid double cylinder.
+
+2003-03-24 17:08  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Routine checkin.  Currently
+	  busy with the drill-guide concentric cylinders.  Ptoooey!
+
+2003-03-24 00:23  cpbotha
+
+	* modules/: doubleThresholdFLT.py, glenoidMouldDesignFLT.py:
+	  Hrrrmmmm... it's starting to look like it could one day be used.
+
+2003-03-23 21:26  cpbotha
+
+	* dscas3: Added switch to disable VTX as well so we don't forget
+	  that one.
+
+2003-03-22 01:56  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Cutting edge creation fixed.
+	  Working on stop criterion for glenoid walking.
+
+2003-03-21 20:04  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Routine checkin: busy
+	  projecting pointNormals onto cutPlane.
+
+2003-03-21 18:49  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: Whoooop!  I have something
+	  that's starting to look like a mould.
+
+2003-03-20 19:42  cpbotha
+
+	* modules/: glenoidMouldDesignFLT.py, slice3dVWR.py: Routine
+	  checkin for glenoidMouldDesignFLT.  Temporarily disabled
+	  vtkCubeAxesActor2D from slice3dVWR.
+
+2003-03-20 17:48  cpbotha
+
+	* modules/glenoidMouldDesignFLT.py: At least we can traverse the
+	  generated contours now.  Sheesh.
+
+2003-03-20 10:24  cpbotha
+
+	* modules/slice3dVWR.py: Sphere and text of placed point shouldn't
+	  be pickable.	Fixed.	Placed point sphere much smaller.
+
+2003-03-19 20:07  cpbotha
+
+	* modules/: glenoidMouldDesignFLT.py, slice3dVWR.py: She is looking
+	  much better now. :)
+
+2003-03-18 18:48  cpbotha
+
+	* modules/: __init__.py, glenoidMouldDesignFLT.py: Work on the
+	  glenoid design thingy is progressing.
+
+2003-03-18 18:48  cpbotha
+
+	* moduleMixins.py: Hmmm, fixed some bugs.
+
+2003-03-18 16:47  cpbotha
+
+	* external/vtkPipeline/: ConfigVtkObj.py, vtkMethodParser.py: Fixed
+	  bug with SetUpdateExtentToWholeExtent being flagged as state
+	  method.
+
+2003-03-18 16:13  cpbotha
+
+	* modules/: __init__.py, glenoidMouldDesignFLT.py,
+	  glenoidMouldDesigner.py, seedConnectFLT.py, slice3dVWR.py: Name
+	  change, dufus.
+
+2003-03-17 17:00  cpbotha
+
+	* modules/glenoidMouldDesigner.py: Initial import.
+
+2003-03-14 21:50  cpbotha
+
+	* modules/vtkPolyDataRDR.py: Temporarily removed ErrorEvent handler
+	  until vtkPythonUtil work gets accepted.
+
+2003-03-14 17:17  cpbotha
+
+	* moduleMixins.py, modules/vtkPolyDataRDR.py: Testing my work on
+	  the VTK Python wrapping.
+
+2003-03-13 18:20  cpbotha
+
+	* modules/: __init__.py, vtkPolyDataWRT.py: Creation and initial
+	  import of the vtkPolyData Writer.
+
+2003-03-13 17:28  cpbotha
+
+	* modules/slice3dVWR.py: PointWidgets are now by default Off().
+	  They can be switched on and off by the user.
+
+2003-03-13 17:03  cpbotha
+
+	* modules/: __init__.py, contourFLT.py, marchingCubesFLT.py:
+	  Refactored functionality into contourFLTBase which is inherited
+	  by both contourFLT and marchingCubesFLT.
+
+2003-03-13 15:56  cpbotha
+
+	* modules/marchingCubesFLT.py: Removed slider in favour of text
+	  entry from module view.
+
+2003-03-13 12:06  cpbotha
+
+	* installer/makePackage.sh: Initial import.
+
+2003-03-12 23:30  cpbotha
+
+	* modules/slice3dVWR.py: The sliceViewer now deactivates
+	  scalarVisibility on input polydata as we mostly use it for
+	  visualising isosurfaces.
+
+2003-03-12 23:20  cpbotha
+
+	* modules/: __init__.py, rawVolumeRDR.py, vtk_vol_rdr.py: From the
+	  ashes of vtk_vol_rdr the new and improved rawVolumeRDR has risen.
+	  From the users perspective there is anticlimactically almost no
+	  difference.
+
+2003-03-11 23:20  cpbotha
+
+	* modules/doubleThresholdFLT.py: Removed the stupid sliders from
+	  doubleThreshold module.  They server no real purpose, and the GTK
+	  ones don't return an end scroll event.  Sheesh.
+
+2003-03-11 18:53  cpbotha
+
+	* modules/: doubleThresholdFLT.py, slice3dVWR.py: slice3dVWR now
+	  observers for the EndEvent event on the source of its inputs.
+	  This is better than observing on ModifiedEvent of the input
+	  itself, as EndEvent is called after a successful UpdateData(), so
+	  we know that the input data must be FRESH!
+
+2003-03-11 15:47  cpbotha
+
+	* modules/: __init__.py, slice3dVWR.py: INFINITE ortho views added,
+	  all nicely factored out in a sliceDirection class.
+
+2003-03-11 11:40  cpbotha
+
+	* modules/: slice3dVWR.py, slice3d_vwr.py: Name change from
+	  slice3d_vwr to slice3dVWR.
+
+2003-03-11 11:37  cpbotha
+
+	* modules/slice3d_vwr.py: Starting with orthoView.
+
+2003-03-10 18:12  cpbotha
+
+	* installer/dscas3.spec: More work on getting McMillan installer to
+	  generate working exes.  The problem this time was with the
+	  hidden_imports of module_manager.
+
+2003-03-10 13:20  cpbotha
+
+	* installer/: dscas3.spec, hooks/hook-module_manager.py: Fixed
+	  problems with the hook-module_manager.py file.
+
+2003-03-10 00:34  cpbotha
+
+	* dscas3.py, graph_editor.py, moduleBase.py, python_shell.py,
+	  external/vtkPipeline/ConfigVtkObj.py,
+	  external/vtkPipeline/vtkPipeline.py, modules/decimateFLT.py,
+	  modules/dicomRDR.py, modules/doubleThresholdFLT.py,
+	  modules/ghr_linreg_flt.py, modules/hdfRDR.py,
+	  modules/marchingCubesFLT.py, modules/polyDataConnectFLT.py,
+	  modules/seedConnectFLT.py, modules/slice3d_vwr.py,
+	  modules/stlRDR.py, modules/vtkPolyDataRDR.py,
+	  modules/vtkStructPtsRDR.py, modules/vtkStructPtsWRT.py,
+	  modules/vtk_vol_rdr.py: Changed all "true"s to "True"s due to new
+	  wxPython 2.4.0.4.
+
+2003-03-09 02:32  cpbotha
+
+	* installer/: dscas3.spec, hooks/hook-module_manager.py: Update our
+	  Installer spec file to the new stuff.  Installer is LEET.
+
+2003-03-07 17:10  cpbotha
+
+	* modules/slice3d_vwr.py: Some whitespace cleanups.
+
+2003-03-07 02:07  cpbotha
+
+	* modules/slice3d_vwr.py: Windows compatibility.
+
+2003-03-07 00:11  cpbotha
+
+	* modules/slice3d_vwr.py: Fixed bug with selecting point on
+	  surface.
+
+2003-03-06 22:06  cpbotha
+
+	* moduleUtils.py, modules/dicomRDR.py, modules/hdfRDR.py,
+	  modules/stlRDR.py, modules/vtkPolyDataRDR.py,
+	  modules/vtk_vol_rdr.py: Removed xrc imports.
+
+2003-03-06 19:05  cpbotha
+
+	* modules/slice3d_vwr.py: This is getting almost up to old
+	  standard.  *sigh*
+
+2003-03-06 17:01  cpbotha
+
+	* modules/slice3d_vwr.py: Things are getting slowly back into
+	  shape.
+
+2003-03-06 00:04  cpbotha
+
+	* modules/slice3d_vwr.py: slice3d_vwr very very broken.  Continuing
+	  to convert to infiniteSliceDirections features.
+
+2003-03-05 18:04  cpbotha
+
+	* modules/slice3d_vwr.py: Committing to tag
+	  beforeInfiniteDirections work.
+
+2003-03-05 17:52  cpbotha
+
+	* modules/slice3d_vwr.py: Beginning with infinite directionView
+	  stuff.
+
+2003-03-05 12:14  cpbotha
+
+	* modules/slice3d_vwr.py: Fixed many many bugs this morning.
+
+2003-03-05 01:15  cpbotha
+
+	* modules/slice3d_vwr.py: Late night white space removal.
+
+2003-03-05 01:07  cpbotha
+
+	* modules/slice3d_vwr.py: Some hardcore hacking on slice3d thingy
+	  wingy.  It now support INFINITE overlays!
+
+2003-03-04 19:00  cpbotha
+
+	* modules/slice3d_vwr.py: orthoViews are shaping up.
+
+2003-03-04 16:25  cpbotha
+
+	* modules/slice3d_vwr.py: Busy adding orthogonal views.
+
+2003-03-04 13:40  cpbotha
+
+	* modules/slice3d_vwr.py: Fixed bug with overlays and
+	  enabling/disabling of slices.  Adapted to vtkImagePlaneWidget bug
+	  fix that I sent to Dean.
+
+2003-03-04 00:58  cpbotha
+
+	* modules/slice3d_vwr.py: Removed whitespace at end.  Yay.
+
+2003-02-28 00:31  cpbotha
+
+	* modules/slice3d_vwr.py: Surface picking now works.  Yay me!
+
+2003-02-27 19:00  cpbotha
+
+	* modules/slice3d_vwr.py: Major changes to code.  More better.
+
+2003-02-26 13:06  cpbotha
+
+	* modules/polyDataConnectFLT.py: Removed inappropriate comment.
+	  hehehehe.
+
+2003-02-25 15:35  cpbotha
+
+	* resources/: python/noConfigModuleMixinViewFrame.py,
+	  xml/noConfigModuleMixinViewFrame.wxg: Resource for new mixin.
+
+2003-02-25 15:35  cpbotha
+
+	* modules/: __init__.py, polyDataConnectFLT.py: New module.
+
+2003-02-25 15:34  cpbotha
+
+	* moduleMixins.py: noConfigModuleMixin added.
+
+2003-02-25 11:46  cpbotha
+
+	* modules/: __init__.py, seedConnectFLT.py, slice3d_vwr.py: Initial
+	  import of genMixins with observer pattern mixin.  Change of
+	  seedConnectFLT.py and slice3d_vwr_py to make use of a new
+	  improved selectedPoints data structure (with observer mixin)
+
+2003-02-25 11:36  cpbotha
+
+	* genMixins.py: Initial import of genMixins with observer pattern
+	  mixin.
+
+2003-02-25 10:36  cpbotha
+
+	* modules/dtsc_seg_flt.py: Deprecated code removed.
+
+2003-02-24 13:04  cpbotha
+
+	* dscas3.py: Small change.
+
+2003-02-24 00:35  cpbotha
+
+	* dscas3.py: Reactivated some debug statements.
+
+2003-02-24 00:16  cpbotha
+
+	* dscas3, modules/__init__.py, modules/seedConnectFLT.py,
+	  modules/slice3d_vwr.py: The seedConnectFLT now works.  (weekend
+	  at Köln)
+
+2003-02-20 18:27  cpbotha
+
+	* modules/seedConnectFLT.py: Initial import.
+
+2003-02-19 23:24  cpbotha
+
+	* docs/moduleWritingGuide.txt, modules/slice3d_vwr.py: We seem to
+	  have fixed the bad decimate -> slice3d bug in VTK.  Let's hope
+	  some bright spark applies it.
+
+2003-02-19 17:49  cpbotha
+
+	* dscas3.py, docs/moduleWritingGuide.txt, modules/slice3d_vwr.py:
+	  Commented out bunches of debug output statements.
+
+2003-02-19 11:52  cpbotha
+
+	* dscas3.py, modules/slice3d_vwr.py: Busy tracking down irritating
+	  bug.
+
+2003-02-19 02:07  cpbotha
+
+	* docs/moduleWritingGuide.txt: Small typo fixed.
+
+2003-02-19 01:58  cpbotha
+
+	* dscas3.py, docs/moduleWritingGuide.txt, modules/decimateFLT.py,
+	  modules/slice3d_vwr.py: Fixed idiot bug when the output of an
+	  un-updated decimateFLT is connected to a slice3d thingy.
+	  Non-blocking/threaded execute calls, and all that.
+
+2003-02-18 19:07  cpbotha
+
+	* modules/: hdfRDR.py, slice3d_vwr.py: Random update.
+
+2003-02-18 15:38  cpbotha
+
+	* resources/: python/mainFrame.py, xml/mainFrame.wxg: Made longer
+	  for progress messages.
+
+2003-02-18 15:38  cpbotha
+
+	* modules/: decimateFLT.py, dicomRDR.py, doubleThresholdFLT.py,
+	  hdfRDR.py, marchingCubesFLT.py, stlRDR.py, vtkPolyDataRDR.py,
+	  vtkStructPtsRDR.py, vtkStructPtsWRT.py: Updated modules to work
+	  with new progress callback.
+
+2003-02-18 15:38  cpbotha
+
+	* module_manager.py: Update vtk object progress callback.
+
+2003-02-18 11:33  cpbotha
+
+	* modules/: __init__.py, decimateFLT.py: Created new module
+	  decimateFLT.
+
+2003-02-18 00:16  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: Fixed bug with updating of
+	  UI.
+
+2003-02-18 00:07  cpbotha
+
+	* modules/: dicomRDR.py, doubleThresholdFLT.py,
+	  marchingCubesFLT.py, slice3d_vwr.py, vtkStructPtsWRT.py: All
+	  these modules had to call the vtkPipelineConfig mixin close().
+	  Some of them didn't support object examination yet.
+
+2003-02-17 23:45  cpbotha
+
+	* graph_editor.py, moduleMixins.py,
+	  external/vtkPipeline/ConfigVtkObj.py,
+	  external/vtkPipeline/vtkPipeline.py: vtkPipeline now makes use of
+	  PyCrust for its interpreter part.  This rocks.  We are also more
+	  careful with destroying references when a vtkPipeline and/or
+	  ConfigVtkObj dies: if we're not, the VTK objects don't seem to
+	  destruct.
+
+2003-02-17 22:22  cpbotha
+
+	* modules/: hdfRDR.py, stlRDR.py, vtkPolyDataRDR.py: module_utils
+	  has changed to moduleUtils.
+
+2003-02-17 22:21  cpbotha
+
+	* graph_editor.py, module_manager.py,
+	  external/vtkPipeline/ConfigVtkObj.py, modules/dicomRDR.py,
+	  modules/slice3d_vwr.py, modules/vtk_vol_rdr.py: Converted
+	  everything to genUtils.logError()
+
+2003-02-17 21:11  cpbotha
+
+	* external/vtkPipeline/: LICENSE.txt, README: Changes to copyright
+	  notices.
+
+2003-02-17 21:07  cpbotha
+
+	* external/vtkPipeline/: ConfigVtkObj.py, LICENSE.txt,
+	  vtkMethodParser.py, vtkPipeline.py: Added license.  Synched up
+	  with current vtkPipeline CVS.  Not much to change.
+
+2003-02-17 18:20  cpbotha
+
+	* dscas3.py, graph_editor.py, module_manager.py: Weird... changed
+	  imports of gen_utils to genUtils.  Why only now?
+
+2003-02-17 18:18  cpbotha
+
+	* external/vtkPipeline/ConfigVtkObj.py: Changed copyright year in
+	  comment.
+
+2003-02-17 11:45  cpbotha
+
+	* modules/: __init__.py, marchingCubesFLT.py, vtk_mc_flt.py:
+	  marchingCubes redone from scratch.
+
+2003-02-13 18:00  cpbotha
+
+	* moduleBase.py, module_manager.py: More politics today than work.
+
+2003-02-13 13:56  cpbotha
+
+	* modules/__init__.py: More modules have changed their names.
+
+2003-02-13 13:55  cpbotha
+
+	* modules/: hdfRDR.py, vtk_hdf_rdr.py: Name change.
+
+2003-02-13 13:55  cpbotha
+
+	* modules/: stlRDR.py, vtkPolyDataRDR.py: Small name changing
+	  related changes.
+
+2003-02-13 13:54  cpbotha
+
+	* modules/: stlRDR.py, vtkPolyDataRDR.py, vtk_plydta_rdr.py,
+	  vtk_stl_rdr.py: Name changes!
+
+2003-02-12 01:24  cpbotha
+
+	* modules/: slice3d_vwr.py, vtk_plydta_rdr.py, vtk_stl_rdr.py: stl
+	  and plydata converted to new API.  bugs fixed in slice3d viewer.
+	  all this whilst waiting at the dentist!
+
+2003-02-10 17:04  cpbotha
+
+	* modules/vtk_hdf_rdr.py: Fixes.
+
+2003-02-10 16:31  cpbotha
+
+	* modules/dicomRDR.py: Yaaay, it works again.  I think.
+
+2003-02-10 16:31  cpbotha
+
+	* moduleBase.py: applyViewToLogic now ends by calling
+	  syncViewWithLogic to enable realtime logic-dependent update of
+	  view.
+
+2003-02-10 13:18  cpbotha
+
+	* modules/dicomRDR.py: Conversion to new API almost done.
+
+2003-02-09 02:02  cpbotha
+
+	* modules/dicomRDR.py: Painfully converting to new API.
+
+2003-02-08 02:02  cpbotha
+
+	* modules/dicomRDR.py: Converting to new API.
+
+2003-02-07 18:35  cpbotha
+
+	* modules/__init__.py: Changed DICOM reader name.
+
+2003-02-07 18:22  cpbotha
+
+	* modules/: dicomRDR.py, vtk_dicom_rdr.py: Name change.
+
+2003-02-06 18:06  cpbotha
+
+	* modules/: vtkStructPtsRDR.py, vtkStructPtsWRT.py: Updated
+	  vtkStructPts{RDR,WRT} to new API.
+
+2003-02-06 17:26  cpbotha
+
+	* resources/: python/filenameViewModuleMixinFrame.py,
+	  xml/filenameViewModuleMixinFrame.wxg: Added more space for
+	  default Execute button.
+
+2003-02-06 17:23  cpbotha
+
+	* modules/: __init__.py, vtk_slice_vwr.py: Removed deprecated code.
+
+2003-02-06 17:22  cpbotha
+
+	* moduleBase.py: Added to comments.
+
+2003-02-06 17:17  cpbotha
+
+	* modules/doubleThresholdFLT.py: Weeee, run-time thresholding now
+	  works.
+
+2003-02-06 17:16  cpbotha
+
+	* moduleUtils.py: Execute button is now the default.
+
+2003-02-05 17:11  cpbotha
+
+	* modules/doubleThresholdFLT.py: Busy with real-time slider
+	  updates.
+
+2003-02-04 17:51  cpbotha
+
+	* modules/slice3d_vwr.py: Blaat.
+
+2003-02-03 11:53  cpbotha
+
+	* moduleBase.py: Huh?
+
+2003-02-01 03:17  cpbotha
+
+	* graph_editor.py, modules/doubleThresholdFLT.py,
+	  modules/slice3d_vwr.py, modules/vtk_hdf_rdr.py: doubleThreshold
+	  is almost done.  The slice3d viewer updates itself when input
+	  data has changed.
+
+2003-02-01 00:25  cpbotha
+
+	* modules/doubleThresholdFLT.py: Routine checkin.
+
+2003-02-01 00:25  cpbotha
+
+	* genUtils.py, gen_utils.py: Name change.
+
+2003-01-30 23:53  cpbotha
+
+	* modules/doubleThresholdFLT.py: Work done on train. :)
+
+2003-01-29 19:01  cpbotha
+
+	* graph_editor.py: More port information on status bar.
+
+2003-01-29 13:09  cpbotha
+
+	* resources/: python/graphEditorFrame.py, xml/graphEditorFrame.wxg:
+	  Status bar.
+
+2003-01-29 13:09  cpbotha
+
+	* modules/slice3d_vwr.py: New API changes.
+
+2003-01-29 13:09  cpbotha
+
+	* graph_editor.py, moduleBase.py: Updates to graph_editor.
+
+2003-01-29 11:10  cpbotha
+
+	* module_manager.py: TODO note.
+
+2003-01-29 00:23  cpbotha
+
+	* moduleMixins.py: Fixed little bug: the viewFrame for the
+	  filenameModuleMixin had no close event handler.
+
+2003-01-28 23:38  cpbotha
+
+	* graph_editor.py, moduleBase.py, moduleMixins.py, moduleUtils.py,
+	  module_manager.py, modules/vtk_hdf_rdr.py: vtk_hdf_rdr converted
+	  to new API.
+
+2003-01-28 22:24  cpbotha
+
+	* moduleUtils.py, module_utils.py: Name change.
+
+2003-01-28 19:13  cpbotha
+
+	* moduleBase.py, moduleMixins.py, module_utils.py,
+	  modules/vtk_hdf_rdr.py: Still API changes.
+
+2003-01-28 18:51  cpbotha
+
+	* moduleBase.py, moduleMixins.py, module_base.py,
+	  module_manager.py, modules/doubleThresholdFLT.py: Huge big API
+	  change for dscas3 modules.  More better flexible goodness with
+	  extra cheese.
+
+2003-01-27 23:47  cpbotha
+
+	* modules/doubleThresholdFLT.py: Yeah, progress!
+
+2003-01-27 21:14  cpbotha
+
+	* modules/: __init__.py, doubleThresholdFLT.py: Damn name change.
+
+2003-01-27 18:42  cpbotha
+
+	* modules/: doubleThresholdFLT.py, vtkStructPtsWRT.py: Initial
+	  import of doubleThresholdFLT
+
+2003-01-26 03:26  cpbotha
+
+	* module_base.py: Fixed bug with vtkMarchingCubes always being in
+	  file mixin.
+
+2003-01-26 03:24  cpbotha
+
+	* resources/: python/filenameViewModuleMixinFrame.py,
+	  xml/filenameViewModuleMixinFrame.wxg: Put panel in background.
+
+2003-01-26 03:17  cpbotha
+
+	* resources/: python/mainFrame.py, xml/mainFrame.wxg: Inserted
+	  panel as background, else colours are bad.
+
+2003-01-26 03:01  cpbotha
+
+	* resources/xml/dscas3_main.xrc: wxGlade takes over, thanks.
+
+2003-01-26 03:00  cpbotha
+
+	* graph_editor.py, resources/python/graphEditorFrame.py,
+	  resources/xml/graphEditorFrame.wxg, resources/xml/mainFrame.wxg:
+	  Changed graph_editor to use wxGlade generated GUI.
+
+2003-01-24 11:45  cpbotha
+
+	* dscas3.py, modules/slice3d_vwr.py: Fixed small bug w.r.t. use of
+	  wxGrid in slice3d.
+
+2003-01-23 18:45  cpbotha
+
+	* modules/slice3d_vwr.py: VOI output is now yielded correctly.
+
+2003-01-23 17:54  cpbotha
+
+	* dscas3.py, module_manager.py, modules/vtkStructPtsRDR.py,
+	  modules/vtkStructPtsWRT.py, modules/vtk_hdf_rdr.py,
+	  resources/python/aboutDialog.py, resources/python/mainFrame.py,
+	  resources/xml/aboutDialog.wxg, resources/xml/mainFrame.wxg: Added
+	  about dialogue.
+
+2003-01-23 16:40  cpbotha
+
+	* dscas3.py, resources/python/mainFrame.py,
+	  resources/xml/mainFrame.wxg: Converted main window to wxGlade.
+
+2003-01-23 14:47  cpbotha
+
+	* modules/: __init__.py, vtkStructPtsRDR.py: Initial import of
+	  vtkStructPtsRDR.py.
+
+2003-01-22 19:24  cpbotha
+
+	* resources/: python/__init__.py,
+	  python/filenameViewModuleMixinFrame.py,
+	  xml/filenameViewModuleMixinFrame.wxg: Resource for the
+	  filenameViewModuleMixinFrame.
+
+2003-01-22 19:24  cpbotha
+
+	* resources/__init__.py: Initial import.
+
+2003-01-22 19:24  cpbotha
+
+	* modules/: __init__.py, slice3d_vwr.py, vtkStructPtsWRT.py:
+	  Initial import of vtkStructPtsWRT.py.
+
+2003-01-22 19:24  cpbotha
+
+	* graph_editor.py, module_base.py, module_manager.py: Changes with
+	  regards to module paths and such.
+
+2003-01-21 17:44  cpbotha
+
+	* modules/slice3d_vwr.py: VOI progress.
+
+2003-01-20 12:05  cpbotha
+
+	* modules/slice3d_vwr.py: VOI selection is starting to look like
+	  something.
+
+2003-01-20 10:09  cpbotha
+
+	* modules/__init__.py: Removal of vtk_3d_vwr.py
+
+2003-01-20 00:13  cpbotha
+
+	* dscas3.py, module_manager.py, modules/slice3d_vwr.py,
+	  modules/vtk_slice_vwr.py: Trying to fix that DAMN bug with the
+	  RenderWindow that doesn't want to go away.
+
+2003-01-19 20:29  cpbotha
+
+	* modules/vtk_3d_vwr.py: Deprecated module.
+
+2003-01-19 20:22  cpbotha
+
+	* modules/: slice3d_vwr.py, vtk_slice_vwr.py: Added some code so
+	  that the _view_frame can be destroyed correctly and the app
+	  doesn't BadWindow fault at the end.
+
+2003-01-18 12:05  cpbotha
+
+	* modules/slice3d_vwr.py: Fix to get scrollbars to adjust after
+	  addition.
+
+2003-01-18 02:19  cpbotha
+
+	* modules/slice3d_vwr.py: Getting up to the functionality of
+	  vtk_slice_vwr.  Surprisingly fast!
+
+2003-01-17 20:01  cpbotha
+
+	* modules/: __init__.py, slice3d_vwr.py, vtk_slice_vwr.py: Initial
+	  import of wxglade based slice viewer.
+
+2003-01-16 16:59  cpbotha
+
+	* modules/vtk_slice_vwr.py: Busy with VOI addition.
+
+2003-01-15 18:45  cpbotha
+
+	* installer/hooks/hook-module_manager.py: Updated to vtkdscas.
+
+2003-01-09 17:35  cpbotha
+
+	* modules/vtk_mc_flt.py: Changes with regards to UI generation.
+
+2003-01-08 17:16  cpbotha
+
+	* modules/: dtsc_seg_flt.py, ghr_linreg_flt.py, vtk_dicom_rdr.py,
+	  vtk_hdf_rdr.py, vtk_mc_flt.py, vtk_slice_vwr.py: Change from
+	  vtkcpbothapython to vtkdscas.
+
+2002-12-04 00:49  cpbotha
+
+	* dscas3: Extra environment variable added to dscas3 with regards
+	  to SSE in MESA.
+
+2002-10-27 17:44  cpbotha
+
+	* dscas3: Initial import.
+
+2002-10-01 15:15  cpbotha
+
+	* modules/: ghr_linreg_flt.py, vtk_dicom_rdr.py, vtk_mc_flt.py:
+	  Debug off on dicom reader.  Getting MC filt in a workable state
+	  again...
+
+2002-09-30 17:30  cpbotha
+
+	* modules/: __init__.py, ghr_linreg_flt.py, vtk_slice_vwr.py:
+	  Initial import of ghr_linreg_flt.py
+
+2002-09-30 17:30  cpbotha
+
+	* module_base.py: Small fixes.
+
+2002-09-25 18:07  cpbotha
+
+	* modules/vtk_slice_vwr.py: Whooohoo, points selection system is
+	  looking really good.
+
+2002-09-24 17:41  cpbotha
+
+	* modules/vtk_slice_vwr.py: Removed debug statement.
+
+2002-09-24 17:37  cpbotha
+
+	* modules/: __init__.py, vtk_slice_vwr.py: Numerous improvements to
+	  slice viewer.
+
+2002-09-18 17:42  cpbotha
+
+	* module_base.py: Fixed bug with pipeline viewer.
+
+2002-09-17 17:35  cpbotha
+
+	* modules/vtk_slice_vwr.py: Misc changes.
+
+2002-09-16 18:03  cpbotha
+
+	* modules/vtk_slice_vwr.py: Adding overlay code.
+
+2002-09-13 17:38  cpbotha
+
+	* modules/: dtsc_seg_flt.py, vtk_slice_vwr.py: dtsc_seg is
+	  complete.  vtk_slice_vwr can now config a picked object.
+
+2002-09-12 20:00  cpbotha
+
+	* modules/dtsc_seg_flt.py: We're getting there, slooooowly.
+
+2002-09-10 18:14  cpbotha
+
+	* modules/dtsc_seg_flt.py: Initial import.
+
+2002-09-10 17:54  cpbotha
+
+	* modules/dtsc_seg_flt.py: Small changes.
+
+2002-09-09 17:40  cpbotha
+
+	* modules/: __init__.py, dtsc_seg_flt.py, vtk_slice_vwr.py: Initial
+	  import of dtsc_seg.  vtk_slice_vwr refinements.
+
+2002-09-06 17:27  cpbotha
+
+	* modules/vtk_stl_rdr.py: Small bug fix.
+
+2002-09-05 16:21  cpbotha
+
+	* modules/vtk_slice_vwr.py: Done done done.
+
+2002-09-05 16:20  cpbotha
+
+	* modules/vtk_slice_vwr.py: Point selection thingies done.
+
+2002-09-04 16:33  cpbotha
+
+	* modules/vtk_slice_vwr.py: Blah.
+
+2002-09-03 17:55  cpbotha
+
+	* modules/vtk_slice_vwr.py: More work on point selection and
+	  feedback.
+
+2002-08-30 17:32  cpbotha
+
+	* modules/vtk_slice_vwr.py: Progress.
+
+2002-08-29 15:19  cpbotha
+
+	* modules/vtk_slice_vwr.py: Small changes.  *sigh*
+
+2002-08-28 17:55  cpbotha
+
+	* modules/vtk_slice_vwr.py: Gobs of code hacked out.
+
+2002-08-28 16:59  cpbotha
+
+	* modules/vtk_slice_vwr.py: Work towards redesign.
+
+2002-08-28 16:59  cpbotha
+
+	* external/vtkPipeline/vtkPipeline.py: Fixed bug.
+
+2002-08-28 16:59  cpbotha
+
+	* TODO: BLip.
+
+2002-08-27 17:16  cpbotha
+
+	* modules/vtk_slice_vwr.py: Simplifying.
+
+2002-08-26 20:48  cpbotha
+
+	* modules/vtk_slice_vwr.py: Ripping out ortho views.
+
+2002-08-26 11:17  cpbotha
+
+	* modules/vtk_slice_vwr.py: Minor updates.
+
+2002-08-22 19:16  cpbotha
+
+	* modules/vtk_dicom_rdr.py: Refining...
+
+2002-08-20 14:37  cpbotha
+
+	* modules/vtk_dicom_rdr.py: Routine commit.
+
+2002-08-20 11:52  cpbotha
+
+	* modules/vtk_dicom_rdr.py: Routine checkin.
+
+2002-08-19 17:38  cpbotha
+
+	* modules/vtk_dicom_rdr.py: Routine commit.
+
+2002-08-19 17:30  cpbotha
+
+	* module_manager.py, modules/vtk_dicom_rdr.py: Routine checkin.
+
+2002-08-19 11:58  cpbotha
+
+	* modules/vtk_dicom_rdr.py: Routine commit.
+
+2002-08-16 15:05  cpbotha
+
+	* module_base.py, module_utils.py, modules/vtk_dicom_rdr.py:
+	  Routine commit.
+
+2002-08-16 13:46  cpbotha
+
+	* modules/: __init__.py, vtk_dicom_rdr.py: Initial import of the
+	  dicom reader.
+
+2002-08-16 13:46  cpbotha
+
+	* module_base.py: Added wxDirDialog functionality.
+
+2002-08-01 22:46  cpbotha
+
+	* modules/vtk_slice_vwr.py: Changed interactor style back to image.
+
+2002-07-30 16:02  cpbotha
+
+	* modules/: __init__.py, vtk_stl_rdr.py: Initial import of
+	  vtk_stl_rdr module.
+
+2002-07-29 19:09  cpbotha
+
+	* modules/vtk_slice_vwr.py: NOP comment.
+
+2002-07-08 13:24  cpbotha
+
+	* external/vtkPipeline/vtkMethodParser.py: Integrated fix by
+	  Prabhu.
+
+2002-07-05 18:21  cpbotha
+
+	* modules/vtk_slice_vwr.py: Minute changes.
+
+2002-07-04 17:56  cpbotha
+
+	* graph_editor.py, module_manager.py, modules/vtk_slice_vwr.py:
+	  Various improvements.
+
+2002-07-03 17:48  cpbotha
+
+	* modules/vtk_slice_vwr.py: Starting with cool multi-point
+	  selection bits.
+
+2002-06-21 09:04  cpbotha
+
+	* modules/vtk_slice_vwr.py: Probing in ortho slices is starting to
+	  take shape.
+
+2002-06-10 18:58  cpbotha
+
+	* module_base.py, module_manager.py, module_utils.py,
+	  installer/dscas3.spec: More small fixes all around.
+
+2002-06-10 18:00  cpbotha
+
+	* installer/dscas3.spec, installer/hooks/hook-module_manager.py,
+	  modules/vtk_slice_vwr.py: Cleanups.
+
+2002-06-10 18:00  cpbotha
+
+	* external/vtkPipeline/: ConfigVtkObj.py, NEWS, README,
+	  __init__.py, copyright, test_parser.py, vtkMethodParser.py,
+	  vtkPipeline.py, Icons/actor.xpm, Icons/camera.xpm,
+	  Icons/colormap.xpm, Icons/coord.xpm, Icons/data.xpm,
+	  Icons/file.xpm, Icons/light.xpm, Icons/process.xpm,
+	  Icons/python.xpm, Icons/question.xpm, Icons/ren.xpm,
+	  Icons/renwin.xpm: Moved vtkPipeline to external.
+
+2002-06-10 17:00  cpbotha
+
+	* dscas3.py, module_manager.py, module_utils.py,
+	  modules/__init__.py, modules/vtk_hdf_rdr.py,
+	  modules/vtk_mc_flt.py, modules/vtk_slice_vwr.py: Various small
+	  fixes.
+
+2002-06-10 17:00  cpbotha
+
+	* installer/: dscas3.spec, hooks/hook-module_manager.py: Initial
+	  imports.
+
+2002-06-09 02:12  cpbotha
+
+	* TODO: We're getting a nice new tf editor.
+
+2002-06-07 22:29  cpbotha
+
+	* modules/vtk_slice_vwr.py: Window/Level adjustment added.
+
+2002-06-07 17:52  cpbotha
+
+	* modules/vtk_slice_vwr.py: Added pipeline.
+
+2002-06-07 17:52  cpbotha
+
+	* module_base.py: Small fix.
+
+2002-06-07 16:33  cpbotha
+
+	* modules/vtk_slice_vwr.py: Sloooow progress.
+
+2002-06-07 13:49  cpbotha
+
+	* modules/vtk_slice_vwr.py: Small change.
+
+2002-06-07 11:48  cpbotha
+
+	* modules/: vtk_slice_vwr.py, vtk_vol_rdr.py: Bug fixes.  Whoop.
+
+2002-06-07 00:21  cpbotha
+
+	* modules/vtk_slice_vwr.py: Some cleanup.
+
+2002-06-06 18:39  cpbotha
+
+	* modules/vtk_slice_vwr.py: Fixing stuff.
+
+2002-05-22 00:23  cpbotha
+
+	* dscas3.py, modules/vtk_slice_vwr.py: We'll get this right one
+	  day... I pwomise.
+
+2002-05-20 23:29  cpbotha
+
+	* modules/vtk_slice_vwr.py: The slicer ALMOST works like I want it
+	  to.
+
+2002-05-20 19:50  cpbotha
+
+	* graph_editor.py, modules/vtk_slice_vwr.py: Optimisations and
+	  small changes.
+
+2002-05-20 03:17  cpbotha
+
+	* dscas3.py, modules/vtk_slice_vwr.py: Arbitrary slice planes is
+	  starting to work.
+
+2002-05-19 17:15  cpbotha
+
+	* TODO: Minor change.
+
+2002-05-19 17:14  cpbotha
+
+	* modules/: vtk_plydta_rdr.py, vtk_slice_vwr.py: Starting with
+	  plane widget stuff.
+
+2002-05-19 16:55  cpbotha
+
+	* graph_editor.py, module_manager.py: Graph editor can now rescan.
+	  Fixed bug in module_manager.
+
+2002-05-19 16:29  cpbotha
+
+	* module_manager.py, modules/vtk_plydta_rdr.py: Miscellaneous
+	  little changes.
+
+2002-05-19 16:22  cpbotha
+
+	* dscas3.py, module_manager.py, modules/vtk_plydta_rdr.py,
+	  resources/xml/dscas3_main.xrc: VTK error logger improved.  VTK
+	  progress callbacks now work!
+
+2002-05-19 15:35  cpbotha
+
+	* dscas3.py, module_manager.py, module_utils.py,
+	  modules/vtk_hdf_rdr.py, modules/vtk_slice_vwr.py: Leet logging
+	  windows added to the mishmash.
+
+2002-05-18 16:10  cpbotha
+
+	* dscas3.py, module_manager.py: Various small changes.
+
+2002-05-18 02:38  cpbotha
+
+	* dscas3.py, module_manager.py, modules/vtk_hdf_rdr.py: Mucking
+	  around with stderr...
+
+2002-05-18 01:24  cpbotha
+
+	* module_manager.py, modules/vtk_hdf_rdr.py: Trying to add error
+	  handling for underlying VTK objects.	*sigh*
+
+2002-05-17 13:49  cpbotha
+
+	* graph_editor.py, module_manager.py, modules/__init__.py,
+	  modules/vtk_slice_vwr.py: Minor updates.
+
+2002-05-15 18:56  cpbotha
+
+	* modules/vtk_slice_vwr.py: Working on PlaneWidgets.
+
+2002-05-15 16:06  cpbotha
+
+	* modules/vtk_slice_vwr.py: We can slice again.
+
+2002-05-14 17:10  cpbotha
+
+	* modules/vtk_slice_vwr.py: work continues.
+
+2002-05-14 17:10  cpbotha
+
+	* graph_editor.py: capturemouse fixes.
+
+2002-05-14 15:40  cpbotha
+
+	* modules/: vtk_hdf_rdr.py, vtk_slice_vwr.py: HDF changed to fit
+	  upgraded C++ class.  Slice viewer code simplified.
+
+2002-05-14 00:19  cpbotha
+
+	* modules/vtk_slice_vwr.py: More bugs fixed...
+
+2002-05-13 20:56  cpbotha
+
+	* modules/vtk_slice_vwr.py: Integrated Prabhu's new class.
+
+2002-05-13 18:55  cpbotha
+
+	* modules/vtk_slice_vwr.py: HACK WACK KACK.
+
+2002-05-13 00:01  cpbotha
+
+	* modules/vtk_slice_vwr.py: fixed stupid bug with
+	  wxVTKRenderWindowInteractor where orthogonal plane would
+	  disappear.
+
+2002-05-12 19:19  cpbotha
+
+	* modules/vtk_slice_vwr.py: Routine checkin.
+
+2002-05-12 03:51  cpbotha
+
+	* modules/vtk_slice_vwr.py: Progress, she is unavoidable.
+
+2002-05-08 14:04  cpbotha
+
+	* modules/vtk_slice_vwr.py: teensy changes.
+
+2002-05-07 16:25  cpbotha
+
+	* dscas3.py, modules/vtk_slice_vwr.py: Slowly converting slice
+	  viewer to wxPython.
+
+2002-05-07 15:16  cpbotha
+
+	* dscas3, dscas3.py: Name change from dscas3 to dscas3.py.
+
+2002-05-06 21:20  cpbotha
+
+	* TODO: neeeew file.
+
+2002-05-04 01:31  cpbotha
+
+	* modules/: vtk_3d_vwr.py, vtk_plydta_rdr.py, vtk_vol_rdr.py:
+	  Converted 3d and plydta modules to new wx structure.
+
+2002-05-03 18:16  cpbotha
+
+	* graph_editor.py: Fixed bug with popup module menu
+
+2002-05-03 18:00  cpbotha
+
+	* modules/: vtk_vol16_rdr.py, vtk_vol_rdr.py: New vtkImageReader
+	  module... probably better than vol16.  At least more robust.
+
+2002-05-03 18:00  cpbotha
+
+	* module_constants.py: Initial import with VTK type constants.
+
+2002-05-03 14:00  cpbotha
+
+	* module_manager.py: Getting ready to start coding modules.
+
+2002-05-03 13:44  cpbotha
+
+	* module_base.py, modules/vtk_hdf_rdr.py: More fixes and tweaks all
+	  round.
+
+2002-05-03 12:03  cpbotha
+
+	* module_base.py, module_utils.py, modules/vtk_hdf_rdr.py:
+	  Miscellaneous cool changes.
+
+2002-05-02 17:38  cpbotha
+
+	* modules/vtk_hdf_rdr.py: Need to change pipeline stuffies.
+
+2002-05-02 13:48  cpbotha
+
+	* graph_editor.py, modules/vtk_hdf_rdr.py: Various little fixes.
+
+2002-04-30 03:55  cpbotha
+
+	* module_utils.py: Fixed small bloopy.
+
+2002-04-29 18:57  cpbotha
+
+	* gen_utils.py, modules/vtk_hdf_rdr.py: Arb changes.
+
+2002-04-29 13:22  cpbotha
+
+	* external/Tree.py: tkinter tree schtuff.
+
+2002-04-27 02:51  cpbotha
+
+	* dscas3, graph_editor.py, module_base.py, module_manager.py,
+	  module_utils.py, modules/vtk_hdf_rdr.py: Makeeng seriouz
+	  progress.
+
+2002-04-27 00:32  cpbotha
+
+	* gen_utils.py, graph_editor.py: Deletes now work.  Popup menus on
+	  canvas, yay! gen_utils for general utility functions.
+
+2002-04-26 23:01  cpbotha
+
+	* assistants.py, graph_editor.py, module_base.py, python_shell.py,
+	  modules/vtk_3d_vwr.py, modules/vtk_hdf_rdr.py,
+	  modules/vtk_mc_flt.py, modules/vtk_plydta_rdr.py,
+	  modules/vtk_slice_vwr.py, modules/vtk_vol16_rdr.py: Removed all
+	  __del__()s.  These can cause mega problems with garbage
+	  collection.
+
+2002-04-26 18:00  cpbotha
+
+	* graph_editor.py, module_manager.py: Muchos work... the
+	  graph_editor is lewking geeeewd!
+
+2002-04-25 16:32  cpbotha
+
+	* graph_editor.py, modules/vtk_hdf_rdr.py, modules/vtk_mc_flt.py:
+	  The graph editor is growing up again.
+
+2002-04-24 18:09  cpbotha
+
+	* dscas3, graph_editor.py: The rewrite of graph_editor.py begins.
+	  *sigh*
+
+2002-04-24 14:38  cpbotha
+
+	* dscas3, resources/xml/dscas3_main.xrc: More layout fun.
+
+2002-04-23 18:53  cpbotha
+
+	* python_shell.py: Muchos comments about Panels and Frames.
+
+2002-04-23 18:28  cpbotha
+
+	* resources/xml/dscas3_main.xrc: Smaaaaall changes.
+
+2002-04-23 18:26  cpbotha
+
+	* dscas3, resources/xml/dscas3_main.xrc: More things in .xrc files.
+
+2002-04-23 17:11  cpbotha
+
+	* resources/xml/dscas3_main.xrc: Imported file before xrcedit
+	  decides to nuke it again.
+
+2002-04-23 16:09  cpbotha
+
+	* dscas3, python_shell.py: Cool new shell thingy!
+
+2002-04-22 23:08  cpbotha
+
+	* assistants.py, dscas3, resources/xml/assistants.xrc: Added the
+	  assistants and resources to the pot.
+
+2002-04-22 16:34  cpbotha
+
+	* dscas3: Beginning the slow conversion to wxpython.
+
+2002-04-13 15:30  cpbotha
+
+	* modules/vtk_slice_vwr.py: bish.
+
+2002-03-28 18:27  cpbotha
+
+	* graph_editor.py: inputs outputs turn red when you touch them.
+	  tee hee.
+
+2002-03-28 18:16  cpbotha
+
+	* modules/: vtk_plydta_rdr.py, vtk_slice_vwr.py, vtk_vol16_rdr.py:
+	  Fixed up vol16 reader.  Minor changes to other modules.
+
+2002-03-28 17:02  cpbotha
+
+	* module_base.py, module_utils.py, modules/vtk_hdf_rdr.py,
+	  modules/vtk_mc_flt.py: Initial import of module_utils.
+	  Adaptation of module_base because child modules make use of
+	  utils.
+
+2002-03-28 12:55  cpbotha
+
+	* modules/: vtk_hdf_rdr.py, vtk_mc_flt.py, vtk_slice_vwr.py:
+	  Updated view thingies.  Slice viewer now almost complete. (basic
+	  func)
+
+2002-03-28 12:55  cpbotha
+
+	* module_base.py: Wrapping changes.
+
+2002-03-27 18:47  cpbotha
+
+	* modules/vtk_slice_vwr.py: Removal almost done.
+
+2002-03-27 17:35  cpbotha
+
+	* dscas3, modules/vtk_hdf_rdr.py, modules/vtk_mc_flt.py,
+	  modules/vtk_slice_vwr.py: More better.
+
+2002-03-26 22:49  cpbotha
+
+	* modules/vtk_slice_vwr.py: Playing around with GUI elements.
+
+2002-03-26 15:29  cpbotha
+
+	* modules/vtk_slice_vwr.py: The 3d slicer thingy works very well.
+
+2002-03-26 13:48  cpbotha
+
+	* graph_editor.py, modules/vtk_slice_vwr.py: Slicing works.
+
+2002-03-24 21:52  cpbotha
+
+	* modules/vtk_slice_vwr.py: Notes for meself.
+
+2002-03-23 01:52  cpbotha
+
+	* modules/vtk_slice_vwr.py: More work on the slicer.
+
+2002-03-23 00:37  cpbotha
+
+	* graph_editor.py, module_manager.py: Fixed bug in disconnections
+	  by graph_editor.
+
+2002-03-22 18:05  cpbotha
+
+	* dscas3, module_manager.py, modules/vtk_3d_vwr.py,
+	  modules/vtk_slice_vwr.py: It's still going to kick even more ass.
+
+2002-03-21 13:18  cpbotha
+
+	* modules/: vtk_3d_vwr.py, vtk_slice_vwr.py: Cleanups.	The slice
+	  viewer can do 3d already.
+
+2002-03-21 13:17  cpbotha
+
+	* graph_editor.py: I have no idea.
+
+2002-03-21 00:01  cpbotha
+
+	* modules/: vtk_3d_vwr.py, vtk_slice_vwr.py: The slice widget is
+	  going to kick ass.
+
+2002-03-19 17:18  cpbotha
+
+	* modules/vtk_slice_vwr.py: We're getting there thank you.
+
+2002-03-19 16:35  cpbotha
+
+	* graph_editor.py, module_manager.py, modules/vtk_3d_vwr.py: Fixes
+	  fixes.
+
+2002-03-19 14:53  cpbotha
+
+	* modules/vtk_hdf_rdr.py: vtk_hdf_rdr works now.
+
+2002-03-19 14:53  cpbotha
+
+	* module_base.py: Added common button box method to module_base.
+
+2002-03-13 12:36  cpbotha
+
+	* module_base.py, module_manager.py, modules/vtk_plydta_rdr.py,
+	  modules/vtk_vol16_rdr.py: Completing move over to Pmw.
+
+2002-03-12 23:51  cpbotha
+
+	* modules/vtk_plydta_rdr.py: Initial import.
+
+2002-03-12 18:55  cpbotha
+
+	* external/: Tree.py, __init__.py: Brought in this tree thingy.
+	  Pmw is missing a good tree widget.
+
+2002-03-12 18:54  cpbotha
+
+	* dscas3, graph_editor.py, modules/vtk_vol16_rdr.py: Moving over to
+	  Pmw.
+
+2002-03-10 22:37  cpbotha
+
+	* modules/: vtk_3d_vwr.py, vtk_slice_vwr.py: Initial import of
+	  vtk_slice_vwr.py.  Random changes.
+
+2002-03-10 02:27  cpbotha
+
+	* dscas3, graph_editor.py, module_base.py, module_manager.py,
+	  modules/vtk_3d_vwr.py, modules/vtk_mc_flt.py,
+	  modules/vtk_vol16_rdr.py: Finks are coming along nicely.
+
+2002-03-09 01:28  cpbotha
+
+	* module_base.py, modules/vtk_3d_vwr.py, modules/vtk_vol16_rdr.py:
+	  Initial import of vtk_3d_vwr.  Misc other changes.
+
+2002-03-08 17:31  cpbotha
+
+	* dscas3, module_base.py, modules/vtk_vol16_rdr.py: Muchos work.
+
+2002-03-08 11:45  cpbotha
+
+	* dscas3, graph_editor.py, module_manager.py: module_manager now
+	  takes care of all (dis)connections, creations and deletions of
+	  modules.
+
+2002-02-19 14:47  cpbotha
+
+	* dscas3, module_base.py, modules/vtk_mc_flt.py,
+	  modules/vtk_vol16_rdr.py: Fixed stupid bug.  We need better
+	  documentation.
+
+2002-02-17 21:57  cpbotha
+
+	* dscas3, graph_editor.py, module_base.py, modules/vtk_mc_flt.py,
+	  modules/vtk_vol16_rdr.py: First networks can now be made!
+
+2002-02-16 02:13  cpbotha
+
+	* graph_editor.py, modules/vtk_vol16_rdr.py: Numerous changes.
+
+2002-02-15 18:18  cpbotha
+
+	* graph_editor.py, module_base.py, modules/vtk_mc_flt.py,
+	  modules/vtk_vol16_rdr.py: Cool updates.
+
+2002-02-15 15:45  cpbotha
+
+	* module_base.py: Initial import.
+
+2002-02-14 22:33  cpbotha
+
+	* dscas3, graph_editor.py, modules/vtk_mc_flt.py,
+	  modules/vtk_vol16_rdr.py: Deletion in the graph editor now works.
+
+2002-02-14 16:59  cpbotha
+
+	* dscas3, graph_editor.py, modules/vtk_vol16_rdr.py: bish
+
+2002-02-14 12:52  cpbotha
+
+	* dscas3, modules/vtk_vol16_rdr.py: Progress.
+
+2002-02-13 23:55  cpbotha
+
+	* dscas3, graph_editor.py, modules/vtk_vol16_rdr.py: Woof, this is
+	  better than RAD!
+
+2002-02-13 20:49  cpbotha
+
+	* dscas3, graph_editor.py, modules/vtk_vol16_rdr.py: She's going
+	  rather fast.
+
+2002-02-13 20:33  cpbotha
+
+	* modules/: vtk_hdf_rdr.py, vtk_hdf_reader.py, vtk_vol16_rdr.py:
+	  Changed some module names.
+
+2002-02-13 19:59  cpbotha
+
+	* modules/vtk_hdf_reader.py: Initial import.
+
+2002-02-13 17:32  cpbotha
+
+	* dscas3, graph_editor.py, module_manager.py: Initial import of
+	  module_manager.py.  Python line interpreter for dscas3
+
+2002-02-12 13:25  cpbotha
+
+	* docs/NOTES: Added install instructions for tix.
+
+2002-02-11 00:11  cpbotha
+
+	* docs/NOTES: More URLs.
+
+2002-02-11 00:09  cpbotha
+
+	* docs/NOTES: Added link for graphviz.
+
+2002-02-11 00:04  cpbotha
+
+	* graph_editor.py: trying to finish this!
+
+2002-02-10 17:59  cpbotha
+
+	* graph_editor.pyc: This shouldn't be checked in dammit.
+
+2002-02-10 17:56  cpbotha
+
+	* dscas3, graph_editor.py, graph_editor.pyc, docs/NOTES: Initial
+	  import
+
+2002-02-10 17:56  cpbotha
+
+	* dscas3, graph_editor.py, graph_editor.pyc, docs/NOTES: Initial
+	  revision
+
