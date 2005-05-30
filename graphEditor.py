@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.105 2005/05/30 12:04:42 cpbotha Exp $
+# $Id: graphEditor.py,v 1.106 2005/05/30 13:11:37 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -295,7 +295,9 @@ class graphEditor:
             dropSource = wxDropSource(self._modulePaletteFrame.modulesListBox)
             dropSource.SetData(dataObject)
             # we don't need the result of the DoDragDrop call (phew)
-            dropSource.DoDragDrop(False)
+            # the param is supposedly the copy vs. move flag; True is move.
+            # on windows, setting it to false disables the drop on the canvas.
+            dropSource.DoDragDrop(True)
 
         # event processing has to continue, else the listbox keeps listening
         # to mouse movements after the glyph has been dropped
