@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.104 2005/05/27 09:39:13 cpbotha Exp $
+# $Id: graphEditor.py,v 1.105 2005/05/30 12:04:42 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -284,7 +284,6 @@ class graphEditor:
         
         mlb = self._modulePaletteFrame.modulesListBox
 
-
         sel = mlb.GetSelection()
         if sel >= 0:
             shortName, moduleName = self._selectedModulesList[sel]
@@ -293,14 +292,14 @@ class graphEditor:
                 return
         
             dataObject = wxTextDataObject(moduleName)
-            dropSource = wxDropSource(self._modulePaletteFrame)
+            dropSource = wxDropSource(self._modulePaletteFrame.modulesListBox)
             dropSource.SetData(dataObject)
             # we don't need the result of the DoDragDrop call (phew)
-            dropSource.DoDragDrop(TRUE)
+            dropSource.DoDragDrop(False)
 
         # event processing has to continue, else the listbox keeps listening
         # to mouse movements after the glyph has been dropped
-        event.Skip()
+        #event.Skip()
 
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
@@ -320,6 +319,8 @@ class graphEditor:
                 self._canvasFrame.Show(True)
                 self._canvasFrame.Raise()
                 self._canvasFrame.canvas.SetFocus()
+                # yield also necessary, else the workaround doesn't
+                wxSafeYield()
             
         elif itemText.startswith(segp):
             # we have to convert the event coords to real coords
@@ -333,6 +334,8 @@ class graphEditor:
                 self._canvasFrame.Show(True)
                 self._canvasFrame.Raise()
                 self._canvasFrame.canvas.SetFocus()
+                # yield also necessary, else the workaround doesn't
+                wxSafeYield()
 
     def canvasDropFilenames(self, x, y, filenames):
         
