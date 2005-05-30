@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.40 2005/05/27 08:39:21 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.41 2005/05/30 12:34:29 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -27,6 +27,7 @@ from modules.Viewers.slice3dVWRmodules.selectedPoints import selectedPoints
 from modules.Viewers.slice3dVWRmodules.tdObjects import tdObjects
 from modules.Viewers.slice3dVWRmodules.implicits import implicits
 
+import os
 import time
 import vtk
 import vtkdevide
@@ -46,7 +47,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.40 $
+    $Revision: 1.41 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -510,11 +511,11 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             return self.sliceDirections.ipwAppendFilter.GetOutput()
 
     def view(self):
-        if not self.controlFrame.Show(True):
-            self.controlFrame.Raise()
+        self.controlFrame.Show(True)
+        self.controlFrame.Raise()
 
-        if not self.threedFrame.Show(True):
-            self.threedFrame.Raise()
+        self.threedFrame.Show(True)
+        self.threedFrame.Raise()
 
     #################################################################
     # miscellaneous public methods
@@ -652,10 +653,21 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self.objectAnimationFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, oaf)
 
-
         # display the windows (but we don't show the oaf yet)
-        self.threedFrame.Show(True)
-        self.controlFrame.Show(True)
+        self.view()
+        
+        if os.name == 'posix':
+            # yet another workaround for GTK1.2 on Linux (Debian 3.0)
+            # if we don't do this, the renderer is far smaller than its
+            # containing window and only corrects once the window is resized
+
+            # also, this shouldn't really fix it, but it does:
+            # then size that we set, is the "small" incorrect size
+            # but somehow tickling GTK in this way makes everything better
+            self.threedFrame.threedRWI.GetRenderWindow().SetSize(
+                self.threedFrame.threedRWI.GetSize())
+            self.threedFrame.threedRWI._Iren.ConfigureEvent()
+            wxSafeYield()
 
     def getPrimaryInput(self):
         """Get primary input data, i.e. bottom layer.
