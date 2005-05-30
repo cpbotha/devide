@@ -1,0 +1,27 @@
+Release 20050530 - Mon May 30 14:42:42 CEST 2005
+
+Changes since 20041201:
+
+ * DeVIDE ITK installer now creates two icons on desktop: one for DeVIDE
+   with ITK and the other for DeVIDE without ITK.
+ * You can now run DeVIDE on your quad-buffered stereo devide (e.g.
+   PowerWall, CrystalEyes): startup with --stereo parameter, press '3' while
+   render window focused.
+ * Main help file extended: see new entries under "Useful patterns".  Other
+   documentation also updated.
+ * Opacity of slices in slice3dVWR can now be changes from slices menu.
+ * More flow visualization: amongst other additions, slice3dVWR now has a
+   slice polydata output; this can be fed through a probe and a glyph back into
+   the slice3dVWR to visualise flow directly on all slices.  See help under
+   "Useful patterns".
+ * Many advanced volume curvature modules coded and added by Joris van
+   Zwieten.  See userModules: imageCurvature, imageCurvatureMagnitude,
+   imageEigenvectors, imageGradientStructureTensor, etc.
+ * Now incorporating VTK ParaView-2-0-2: Cutting, but not bleeding, edge.
+   We're on our way to VTK 5.0.   
+ * Unit tests greatly extended, many bugs killed in the process.
+ * Build system improved.
+ * Fixed long-standing bug in slice3dVWR on Linux where render part would be
+   incorrectly sized at module instantiation.
+ * Fixed graphEditor wrong focus on drop bug.
+ 
