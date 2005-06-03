@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.84 2005/06/03 10:00:52 cpbotha Exp $
+# $Id: devide.py,v 1.85 2005/06/03 13:27:37 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050530'
@@ -108,7 +108,6 @@ class devide_app_t(wx.App):
         
         wx.App.__init__(self, 0)
 
-        self._assistants = assistants(self)
         self._graphEditor = None
         self._pythonShell = None
         self._helpClass = None
@@ -152,7 +151,8 @@ class devide_app_t(wx.App):
         self._mainFrame.Show(1)
         # here we also show twice: in wxPython 2.4.2.4 the TextCtrls sometimes
         # have difficulty completely drawing themselves at startup
-        self._mainFrame.Show(1)        
+        self._mainFrame.Show(1)
+
         self.SetTopWindow(self._mainFrame)
 
         # pre-import VTK and optionally ITK (these are BIG libraries)
@@ -258,9 +258,6 @@ class devide_app_t(wx.App):
 
     def getModuleManager(self):
 	return self.moduleManager
-
-    def get_assistants(self):
-        return self._assistants
 
     def getAppDir(self):
         return self._appdir
@@ -547,10 +544,9 @@ def postWxInitImports():
     their thing.
     """
     
-    global assistants, graphEditor, moduleManager, pythonShell, helpClass
+    global graphEditor, moduleManager, pythonShell, helpClass
     global vtk, vtkdevide
     
-    from assistants import assistants
     from graphEditor import graphEditor
     from moduleManager import moduleManager
     from pythonShell import pythonShell
