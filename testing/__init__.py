@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.11 2005/05/27 11:11:39 cpbotha Exp $
+# $Id: __init__.py,v 1.12 2005/06/03 22:27:39 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -102,6 +102,28 @@ class graphEditorBasic(graphEditorTestBase):
             10, 10, 'modules.Misc.superQuadric')
         self.failUnless(mod and glyph)
 
+        ret = _devideApp._graphEditor._deleteModule(glyph)
+        self.failUnless(ret)
+
+    def testModuleHelp(self):
+        """See if module specific help can be called up for a module.
+        """
+
+        (mod, glyph) = _devideApp._graphEditor.createModuleAndGlyph(
+            10, 10, 'modules.Writers.vtiWRT')
+        self.failUnless(mod and glyph)
+
+        _devideApp._graphEditor._helpModule(mod)
+
+        # find frame that should have appeared by now
+        fullModuleName = mod.__class__.__module__
+        htmlWindowFrame = _devideApp._graphEditor._moduleHelpFrames[
+            fullModuleName]
+
+        # fail if it's not there
+        self.failUnless(htmlWindowFrame.IsShown())
+
+        # take it away
         ret = _devideApp._graphEditor._deleteModule(glyph)
         self.failUnless(ret)
 
@@ -223,6 +245,7 @@ class devideTesting:
         self.basicSuite.addTest(helpContentsTest('testHelpContents'))
         self.basicSuite.addTest(graphEditorBasic('testStartup'))
         self.basicSuite.addTest(graphEditorBasic('testModuleCreationDeletion'))
+        self.basicSuite.addTest(graphEditorBasic('testModuleHelp'))
         self.basicSuite.addTest(graphEditorBasic('testSimpleNetwork'))
         self.basicSuite.addTest(testReadersWriters('testVTI'))
 
