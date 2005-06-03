@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.83 2005/05/30 12:53:14 cpbotha Exp $
+# $Id: devide.py,v 1.84 2005/06/03 10:00:52 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050530'
@@ -23,7 +23,7 @@ import time
 
 # WX imports
 # this HAS to go before we call import wx
-import fixWxImports
+#import fixWxImports
 import wx
 import wx.html
 
