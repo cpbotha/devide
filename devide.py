@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.85 2005/06/03 13:27:37 cpbotha Exp $
+# $Id: devide.py,v 1.86 2005/06/03 22:45:06 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050530'
@@ -152,6 +152,12 @@ class devide_app_t(wx.App):
         # here we also show twice: in wxPython 2.4.2.4 the TextCtrls sometimes
         # have difficulty completely drawing themselves at startup
         self._mainFrame.Show(1)
+
+        # with these calls, we force an immediate draw of the full window
+        # if we don't do this, some of the controls are only drawn when
+        # startup progress is 100% (this is on wxPython 2.6.0.1)
+        self._mainFrame.Refresh()
+        self._mainFrame.Update()
 
         self.SetTopWindow(self._mainFrame)
 
