@@ -17,16 +17,22 @@ def clampVariable(v, min, max):
 def logError(msg):
     # create nice formatted string with tracebacks and all
     ei = sys.exc_info()
-    dmsg = \
-         string.join(traceback.format_exception(ei[0],
-                                                ei[1],
-                                                ei[2]))
+    #dmsg = \
+    #     string.join(traceback.format_exception(ei[0],
+    #                                            ei[1],
+    #                                            ei[2]))
+
+    dmsgs = traceback.format_exception(ei[0], ei[1], ei[2])
+    
     # we can't disable the timestamp yet
     # wxLog_SetTimestamp()
     # set the detail message
-    wx.LogError(dmsg)
+    for dmsg in dmsgs:
+        wx.LogError(dmsg)
+
     # then the most recent
     wx.LogError(msg)
+    print msg
     # and flush... the last message will be the actual error
     # message, what we did before will add to it to become the
     # detail message
@@ -35,14 +41,18 @@ def logError(msg):
 def logWarning(msg):
     # create nice formatted string with tracebacks and all
     ei = sys.exc_info()
-    dmsg = \
-         string.join(traceback.format_exception(ei[0],
-                                                ei[1],
-                                                ei[2]))
+    #dmsg = \
+    #     string.join(traceback.format_exception(ei[0],
+    #                                            ei[1],
+    #                                            ei[2]))
+
+    dmsgs = traceback.format_exception(ei[0], ei[1], ei[2])
+    
     # we can't disable the timestamp yet
     # wxLog_SetTimestamp()
     # set the detail message
-    wx.LogWarning(dmsg)
+    for dmsg in dmsgs:
+        wx.LogWarning(dmsg)
     # then the most recent
     wx.LogWarning(msg)
     # and flush... the last message will be the actual error
