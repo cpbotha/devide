@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.7 2005/03/26 20:50:07 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.8 2005/06/03 09:27:49 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -30,7 +30,7 @@ The objects in the pipeline can be configured.  The configuration is
 done by using the ConfigVtkObj class.
 """
 
-from wxPython.wx import *
+import wx
 import os, string, re, types
 import ConfigVtkObj
 
@@ -207,9 +207,9 @@ def get_vtk_objs (vtk_obj):
     return vtk_objs
 
 def recursively_add_children(tree_ctrl, parent_node):
-    """Utility function to fill out wxTreeCtrl.
+    """Utility function to fill out wx.TreeCtrl.
 
-    Pass this function a wxTreeCtrl and _a_ node, and it will fill out
+    Pass this function a wx.TreeCtrl and _a_ node, and it will fill out
     everything below it by using Prabhu's code.
     """
     
@@ -266,36 +266,36 @@ class vtkPipelineBrowser:
         # instances and just reactivate them
         self._config_vtk_objs = {}
 
-        self._frame = wxFrame(parent=parent, id=-1,
+        self._frame = wx.Frame(parent=parent, id=-1,
                               title="VTK Pipeline Browser")
-        EVT_CLOSE(self._frame, lambda e: self.hide())
+        wx.EVT_CLOSE(self._frame, lambda e: self.hide())
 
-        panel = wxPanel(parent=self._frame, id=-1)
+        panel = wx.Panel(parent=self._frame, id=-1)
 
-        tree_id = wxNewId()
-        self._tree_ctrl = wxTreeCtrl(parent=panel,
+        tree_id = wx.NewId()
+        self._tree_ctrl = wx.TreeCtrl(parent=panel,
                                      id=tree_id,
-                                     size=wxSize(300,400),
-                                     style=wxTR_HAS_BUTTONS)
+                                     size=wx.Size(300,400),
+                                     style=wx.TR_HAS_BUTTONS)
         
-        EVT_TREE_ITEM_ACTIVATED(panel, tree_id, self.item_activate_cb)
+        wx.EVT_TREE_ITEM_ACTIVATED(panel, tree_id, self.item_activate_cb)
 
-        button_sizer = wxBoxSizer(wxHORIZONTAL)
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        refr_id = wxNewId()
-        refr = wxButton(parent=panel, id=refr_id, label="Refresh")
-        EVT_BUTTON(panel, refr_id, self.refresh)
+        refr_id = wx.NewId()
+        refr = wx.Button(parent=panel, id=refr_id, label="Refresh")
+        wx.EVT_BUTTON(panel, refr_id, self.refresh)
         button_sizer.Add(refr)
 
-        q_id = wxNewId()
-        q = wxButton(parent=panel, id=q_id, label="Close")
-        EVT_BUTTON(panel, q_id, lambda e, s=self: s.hide())
+        q_id = wx.NewId()
+        q = wx.Button(parent=panel, id=q_id, label="Close")
+        wx.EVT_BUTTON(panel, q_id, lambda e, s=self: s.hide())
         button_sizer.Add(q)
 
-        top_sizer = wxBoxSizer(wxVERTICAL)
+        top_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        top_sizer.Add(self._tree_ctrl, option=1, flag=wxEXPAND)
-        top_sizer.Add(button_sizer, option=0, flag=wxALIGN_CENTER_HORIZONTAL)
+        top_sizer.Add(self._tree_ctrl, option=1, flag=wx.EXPAND)
+        top_sizer.Add(button_sizer, option=0, flag=wx.ALIGN_CENTER_HORIZONTAL)
 
         panel.SetAutoLayout(True)
         panel.SetSizer(top_sizer)
@@ -324,10 +324,10 @@ class vtkPipelineBrowser:
         elif not os.path.isdir(ICONDIR):
             raise RuntimeError, "can't find icon directory (%s)" % `ICONDIR`
 
-        self._image_list = wxImageList(16,16)
+        self._image_list = wx.ImageList(16,16)
         for i in icon_map.values():
-            self._image_list.Add(wxBitmap(os.path.join(ICONDIR, i + ".xpm"),
-                                          wxBITMAP_TYPE_XPM))
+            self._image_list.Add(wx.Bitmap(os.path.join(ICONDIR, i + ".xpm"),
+                                          wx.BITMAP_TYPE_XPM))
         self._tree_ctrl.SetImageList(self._image_list)
 
         # do initial population of tree
@@ -446,7 +446,7 @@ class vtkPipelineBrowser:
 def main ():
     # example code...
     import vtkpython
-    from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+    from vtk.wx.VTKRenderWindow import VTKRenderWindow
     
     cone = vtkpython.vtkConeSource()
     cone.SetResolution(8)
@@ -461,9 +461,9 @@ def main ():
     coneActor.SetMapper(coneMapper)    
     axes = vtkpython.vtkCubeAxesActor2D ()
 
-    app = wxPySimpleApp()
-    frame = wxFrame(None, -1, "wxRenderWindow", size=wxSize(400,400))
-    wid = wxVTKRenderWindow(frame, -1)
+    app = wx.PySimpleApp()
+    frame = wx.Frame(None, -1, "wx.RenderWindow", size=wx.Size(400,400))
+    wid = wx.VTKRenderWindow(frame, -1)
 
     ren = vtkpython.vtkRenderer()
     renWin = wid.GetRenderWindow()

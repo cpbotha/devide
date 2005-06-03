@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.24 2005/03/26 20:50:07 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.25 2005/06/03 09:27:49 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -37,11 +37,9 @@ import vtkMethodParser
 import types, string, re, traceback
 
 try:
-    from wxPython.wx import *
-    from wxPython.html import *
-    # we have to do it this way, else the installer doesn't see it!
-    # new-style, i.e. from wx import py doesn't do the trick
-    from wxPython import py # shell
+    import wx
+    import wx.html
+    import wx.py
 except ImportError:
     print "Cannot import the wxPython.{wx,html} modules. "\
           "Install it and try again."
@@ -53,7 +51,7 @@ try:
 except ImportError:
     # if not, fall back to old behaviour (but DO print a warning)
     print "ConfigVtkObj WARNING: could not import external.SwitchColourDialog"
-    ColourDialog = wxColourDialog
+    ColourDialog = wx.ColourDialog
 
 from external.filebrowsebutton import FileBrowseButton, \
      FileBrowseButtonWithHistory,DirBrowseButton
@@ -64,9 +62,9 @@ def print_err (msg):
          string.join(traceback.format_exception(sys.exc_type,
                                                 sys.exc_value,
                                                 sys.exc_traceback))
-    wxLogError(dmsg)
-    wxLogError(msg)
-    wxLog_FlushActive()
+    wx.LogError(dmsg)
+    wx.LogError(msg)
+    wx.Log_FlushActive()
 
 # use this to print stuff for the user command run from the GUI
 def prn (x):
@@ -110,25 +108,25 @@ class VtkShowDoc:
             return 1
 
     def _create_ui(self):
-        self._frame = wxFrame(parent = self._parent_frame, id=-1,
+        self._frame = wx.Frame(parent = self._parent_frame, id=-1,
                               title='Class Documentation for %s' %
                               self._vtk_obj.GetClassName ())
-        EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
+        wx.EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
 
         # make panel that will contain htmlwindow and close button
-        panel = wxPanel(parent=self._frame, id=-1)
+        panel = wx.Panel(parent=self._frame, id=-1)
 
         # then the html window
-        self._html_window = wxHtmlWindow(parent=panel, id=-1,
-                                         size=wxSize(640,480))
+        self._html_window = wx.html.HtmlWindow(parent=panel, id=-1,
+                                               size=wx.Size(640,480))
 
-        close_id = wxNewId()
-        close_button = wxButton(parent=panel, id=close_id, label="Close")
-        EVT_BUTTON(self._frame, close_id, lambda e, s=self: s.hide())
+        close_id = wx.NewId()
+        close_button = wx.Button(parent=panel, id=close_id, label="Close")
+        wx.EVT_BUTTON(self._frame, close_id, lambda e, s=self: s.hide())
 
-        top_sizer = wxBoxSizer(wxVERTICAL)
-        top_sizer.Add(self._html_window, option=1, flag=wxEXPAND)
-        top_sizer.Add(close_button, option=0, flag=wxALIGN_CENTER_HORIZONTAL)
+        top_sizer = wx.BoxSizer(wx.VERTICAL)
+        top_sizer.Add(self._html_window, option=1, flag=wx.EXPAND)
+        top_sizer.Add(close_button, option=0, flag=wx.ALIGN_CENTER_HORIZONTAL)
 
         panel.SetAutoLayout(True)
         panel.SetSizer(top_sizer)
@@ -180,7 +178,7 @@ class VtkShowDoc:
 
     def hide(self):
         "Make the show doc frame invisible."
-        self._frame.Show(false)
+        self._frame.Show(False)
 
     def close(self, event=None):
         """Destroy the frame completely.
@@ -253,32 +251,32 @@ class ConfigVtkObj:
         # now create all the actual widget/ui elements
         # ################################################################
         if self._ownFrameAndPanel:
-            self._frame = wxFrame(parent=self._parent, id=-1,
+            self._frame = wx.Frame(parent=self._parent, id=-1,
                                   title="Configure %s"%
                                   self._vtk_obj.GetClassName ())
             # if the user closes the frame, we just hide ourselves (tee hee)
-            EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
+            wx.EVT_CLOSE(self._frame, lambda e, s=self: s.hide())
 
             # then the panel which we'll populate
-            self._panel = wxPanel(parent=self._frame, id=-1)
+            self._panel = wx.Panel(parent=self._frame, id=-1)
 
         # first with a vertical sizer, settings at the top, buttons
         # + controls at the bottom - this sizer7 will have a 7px border
-        sizer7 = wxBoxSizer(wxVERTICAL)
+        sizer7 = wx.BoxSizer(wx.VERTICAL)
 
-        self._notebook = wxNotebook(parent=self._panel, id=-1,
+        self._notebook = wx.Notebook(parent=self._panel, id=-1,
                                     size=(640,480))
-        nbsizer = wxNotebookSizer(self._notebook)
+        nbsizer = wx.NotebookSizer(self._notebook)
 
         sizer7.Add(nbsizer, option=0,
-                   flag=wxEXPAND)
+                   flag=wx.EXPAND)
 
 	self.make_gui_vars ()
 
         # the sizer returned by make_control_gui has no border... we want
         # a border of 7 between the control_gui and the notebook
 	sizer7.Add(self.make_control_gui(self._panel), option=1,
-                   flag=wxEXPAND|wxTOP, border=7)
+                   flag=wx.EXPAND|wx.TOP, border=7)
         
 	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
         self._notebook.AddPage(self.make_state_gui(self._notebook), 'States')
@@ -288,8 +286,8 @@ class ConfigVtkObj:
 
 
         if self._ownFrameAndPanel:
-            topSizer = wxBoxSizer(wxVERTICAL)
-            topSizer.Add(sizer7, 1, wxALL|wxEXPAND, 7)
+            topSizer = wx.BoxSizer(wx.VERTICAL)
+            topSizer.Add(sizer7, 1, wx.ALL|wx.EXPAND, 7)
         
             self._panel.SetAutoLayout(True)
             self._panel.SetSizer(topSizer)
@@ -297,7 +295,7 @@ class ConfigVtkObj:
             topSizer.SetSizeHints(self._frame)
         else:
             # we assume the given panel already has a sizer
-            self._panel.GetSizer().Add(sizer7, 1, wxALL|wxEXPAND, 7)
+            self._panel.GetSizer().Add(sizer7, 1, wx.ALL|wx.EXPAND, 7)
 
         if self.vtk_warn > -1:
             self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
@@ -337,7 +335,7 @@ class ConfigVtkObj:
         self._frame.Raise()
 
     def hide(self):
-        self._frame.Show(false)
+        self._frame.Show(False)
 
     def make_gui_vars (self):
 	"Create the various variables used for the GUI."
@@ -362,32 +360,32 @@ class ConfigVtkObj:
         parent.  This method must return a sizer that can be added to the
         top level sizer.
         """
-        vert_sizer = wxBoxSizer(wxVERTICAL)
-        command_sizer = wxBoxSizer(wxHORIZONTAL)
+        vert_sizer = wx.BoxSizer(wx.VERTICAL)
+        command_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        vert_sizer.Add(command_sizer, option=1, flag=wxEXPAND)
+        vert_sizer.Add(command_sizer, option=1, flag=wx.EXPAND)
 
-        command_entry = py.shell.Shell(parent=parent, id=-1,
-                                       introText="'obj' is bound to the " \
-                                       "introspected object.",
-                                       size=(400,200), style=0,
-                                       locals={'obj' : self._vtk_obj})
-        command_sizer.Add(command_entry, option=1, flag=wxEXPAND)
+        command_entry = wx.py.shell.Shell(parent=parent, id=-1,
+                                          introText="'obj' is bound to the " \
+                                          "introspected object.",
+                                          size=(400,200), style=0,
+                                          locals={'obj' : self._vtk_obj})
+        command_sizer.Add(command_entry, option=1, flag=wx.EXPAND)
 
 
         if self._ownFrameAndPanel:
             # we only make the command buttons if we're NOT being put
             # into someone else's panel
-            button_sizer = wxBoxSizer(wxHORIZONTAL)
-            vert_sizer.Add(button_sizer, 0, wxTOP|wxALIGN_RIGHT,
+            button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            vert_sizer.Add(button_sizer, 0, wx.TOP|wx.ALIGN_RIGHT,
                            7)
             
-            apply_id = wxNewId()
-            apply_button = wxButton(parent, id=apply_id,
+            apply_id = wx.NewId()
+            apply_button = wx.Button(parent, id=apply_id,
                                      label="Apply")
-            button_sizer.Add(apply_button, 0, wxRIGHT, 7)
-            EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
-            apply_button.SetToolTip(wxToolTip(
+            button_sizer.Add(apply_button, 0, wx.RIGHT, 7)
+            wx.EVT_BUTTON(parent, apply_id, lambda e, s=self: s.apply_changes())
+            apply_button.SetToolTip(wx.ToolTip(
                 'Modify configuration of the underlying class as specified ' \
                 'by this dialogue.'))
 
@@ -395,29 +393,29 @@ class ConfigVtkObj:
             # the enter button in the command window, BOOM
             #apply_button.SetDefault()
 
-            closeButtonId = wxNewId()
-            closeButton = wxButton(parent, closeButtonId, label="Close")
-            button_sizer.Add(closeButton, 0, wxRIGHT, 7)
-            EVT_BUTTON(parent, closeButtonId, lambda e, s=self: s.cancel())
-            closeButton.SetToolTip(wxToolTip(
+            closeButtonId = wx.NewId()
+            closeButton = wx.Button(parent, closeButtonId, label="Close")
+            button_sizer.Add(closeButton, 0, wx.RIGHT, 7)
+            wx.EVT_BUTTON(parent, closeButtonId, lambda e, s=self: s.cancel())
+            closeButton.SetToolTip(wx.ToolTip(
                 'Hide this dialogue without applying changes.'))
 
 
-            syncButtonId = wxNewId()
-            syncButton = wxButton(parent, syncButtonId,
+            syncButtonId = wx.NewId()
+            syncButton = wx.Button(parent, syncButtonId,
                                   label="Sync")
-            button_sizer.Add(syncButton, 0, wxRIGHT, 7)
-            EVT_BUTTON(parent, syncButtonId, lambda e, s=self: s.update_gui())
-            syncButton.SetToolTip(wxToolTip(
+            button_sizer.Add(syncButton, 0, wx.RIGHT, 7)
+            wx.EVT_BUTTON(parent, syncButtonId, lambda e, s=self: s.update_gui())
+            syncButton.SetToolTip(wx.ToolTip(
                 'Synchronise this dialogue with the configuration of the ' \
                 'underlying class.'))
 
-            classdoc_id = wxNewId()
-            classdoc_button = wxButton(parent, id=classdoc_id,
+            classdoc_id = wx.NewId()
+            classdoc_button = wx.Button(parent, id=classdoc_id,
                                        label="Class Documentation")
-            button_sizer.Add(classdoc_button, 0, wxRIGHT, 7)
-            EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
-            classdoc_button.SetToolTip(wxToolTip(
+            button_sizer.Add(classdoc_button, 0, wx.RIGHT, 7)
+            wx.EVT_BUTTON(parent, classdoc_id, lambda e, s=self: s.show_doc())
+            classdoc_button.SetToolTip(wx.ToolTip(
                 'Show class documentation for the current class.'))
 
         return vert_sizer
@@ -430,22 +428,22 @@ class ConfigVtkObj:
         notebook, typically the parent.  Remember that the panel should be
         child to the parent.
         """
-        panel = wxPanel(parent, id=-1)
-        vert_sizer = wxBoxSizer(wxVERTICAL)
+        panel = wx.Panel(parent, id=-1)
+        vert_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
 
-        internalSizer = wxBoxSizer(wxVERTICAL)
-        vert_sizer.Add(internalSizer, 1, wxALL, 7)
+        internalSizer = wx.BoxSizer(wx.VERTICAL)
+        vert_sizer.Add(internalSizer, 1, wx.ALL, 7)
         
 	n_meth = len (self.toggle_meths)
 	for i in range (0, n_meth):
 	    m = "Get"+self.toggle_meths[i][:-2]
 	    self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
-            cb_id = wxNewId()
-            cb = wxCheckBox(parent=panel, id=cb_id, label=self.toggle_meths[i])
+            cb_id = wx.NewId()
+            cb = wx.CheckBox(parent=panel, id=cb_id, label=self.toggle_meths[i])
             cb.SetValue(self.toggle_var[i])
-            EVT_CHECKBOX(panel, cb_id,
+            wx.EVT_CHECKBOX(panel, cb_id,
                          lambda event, s=self, i=i: s.toggle_cb(event, i))
 
             # find docstring for GetMethod() and add it as tooltip
@@ -454,9 +452,9 @@ class ConfigVtkObj:
             except AttributeError:
                 pass
             else:
-                cb.SetToolTip(wxToolTip(docString))
+                cb.SetToolTip(wx.ToolTip(docString))
                 
-            internalSizer.Add(cb, option=0, flag=wxEXPAND)
+            internalSizer.Add(cb, option=0, flag=wx.EXPAND)
             self.toggle_checkboxes[i] = cb
 
         return panel
@@ -471,13 +469,13 @@ class ConfigVtkObj:
 	    
     def make_state_gui (self, parent):
 	"Create the state methods.  (SetAToB methods)"
-        panel = wxPanel(parent, id=-1)
-        vert_sizer = wxBoxSizer(wxVERTICAL)
+        panel = wx.Panel(parent, id=-1)
+        vert_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vert_sizer)
 
-        internalSizer = wxBoxSizer(wxVERTICAL)
-        vert_sizer.Add(internalSizer, 1, wxALL, 7)
+        internalSizer = wx.BoxSizer(wx.VERTICAL)
+        vert_sizer.Add(internalSizer, 1, wx.ALL, 7)
 
         # self.state_meths is a list of lists
         # each of the contained lists is the collection of SetBlaToBlaat
@@ -495,10 +493,10 @@ class ConfigVtkObj:
                 end = self.state_patn.search (meths[0]).start ()
                 get_m = 'G'+meths[0][1:end]
             
-                rb_id = wxNewId()
-                rb = wxRadioBox(parent=panel, id=rb_id, label=get_m,
+                rb_id = wx.NewId()
+                rb = wx.RadioBox(parent=panel, id=rb_id, label=get_m,
                                 choices=meths,
-                                majorDimension=2, style=wxRA_SPECIFY_COLS)
+                                majorDimension=2, style=wx.RA_SPECIFY_COLS)
                 rb.SetSelection(self.state_var[i])
 
                 set_m = meths[0][0:end]
@@ -507,12 +505,12 @@ class ConfigVtkObj:
                 except AttributeError:
                     pass
                 else:
-                    rb.SetToolTip(wxToolTip(docString))
+                    rb.SetToolTip(wx.ToolTip(docString))
                     
 
-                EVT_RADIOBOX(panel, rb_id,
+                wx.EVT_RADIOBOX(panel, rb_id,
                              lambda event, s=self, i=i: s.radiobox_cb(event, i))
-                internalSizer.Add(rb, 0, wxEXPAND|wxBOTTOM, 7)
+                internalSizer.Add(rb, 0, wx.EXPAND|wx.BOTTOM, 7)
                 self.state_radioboxes[i] = rb
 
         return panel
@@ -523,15 +521,15 @@ class ConfigVtkObj:
     def make_get_set_gui (self, parent):
 	"Create the Get/Set methods"
 
-        panel = wxPanel(parent, id=-1)
+        panel = wx.Panel(parent, id=-1)
 
-        vertSizer = wxBoxSizer(wxVERTICAL)
+        vertSizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vertSizer)
         
-        grid_sizer = wxFlexGridSizer(cols=2, vgap=7, hgap=3)
+        grid_sizer = wx.FlexGridSizer(cols=2, vgap=7, hgap=3)
         grid_sizer.AddGrowableCol(1)
-        vertSizer.Add(grid_sizer, 1, wxEXPAND|wxALL, 7)
+        vertSizer.Add(grid_sizer, 1, wx.EXPAND|wx.ALL, 7)
         
 	n_meth = len (self.get_set_meths)
 	for i in range (0, n_meth):
@@ -547,22 +545,22 @@ class ConfigVtkObj:
 	    # if the method requires a colour make a button so the user
 	    # can choose the colour!
 	    if string.find (m[-5:], "Color") > -1:
-                cbut_id = wxNewId()
-                cbut = wxButton(parent=panel, id=cbut_id, label="Set"+m[3:])
-                EVT_BUTTON(panel, cbut_id,
+                cbut_id = wx.NewId()
+                cbut = wx.Button(parent=panel, id=cbut_id, label="Set"+m[3:])
+                wx.EVT_BUTTON(panel, cbut_id,
                            lambda e, s=self, i=i, p=parent:
                            s.set_color(e, i, p))
-                grid_sizer.Add(cbut, 0, wxALIGN_CENTER_VERTICAL)
+                grid_sizer.Add(cbut, 0, wx.ALIGN_CENTER_VERTICAL)
 
                 if docString:
-                    cbut.SetToolTip(wxToolTip(docString))
+                    cbut.SetToolTip(wx.ToolTip(docString))
 
 	    else:
-                st = wxStaticText(parent=panel, id=-1, label="Set"+m[3:])
-                grid_sizer.Add(st, 0, wxALIGN_CENTER_VERTICAL)
+                st = wx.StaticText(parent=panel, id=-1, label="Set"+m[3:])
+                grid_sizer.Add(st, 0, wx.ALIGN_CENTER_VERTICAL)
 
                 if docString:
-                    st.SetToolTip(wxToolTip(docString))
+                    st.SetToolTip(wx.ToolTip(docString))
 
             if m.endswith('FileName'):
                 if docString:
@@ -585,22 +583,22 @@ class ConfigVtkObj:
                 
                 # add the thing to the sizer
                 grid_sizer.Add(self.get_set_texts[i], 0,
-                               wxEXPAND|wxALIGN_CENTER_VERTICAL)
+                               wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
                 
                 
             else:
-                gst_id = wxNewId()
-                self.get_set_texts[i] = wxTextCtrl(
+                gst_id = wx.NewId()
+                self.get_set_texts[i] = wx.TextCtrl(
                     parent=panel, id=gst_id,
                     value=str(self.get_set_var[i]))
 
                 if docString:
-                    self.get_set_texts[i].SetToolTip(wxToolTip(docString))
+                    self.get_set_texts[i].SetToolTip(wx.ToolTip(docString))
                 
-                EVT_TEXT(parent, gst_id,
+                wx.EVT_TEXT(parent, gst_id,
                          lambda event, s=self, i=i: s.get_set_cb(event, i))
                 grid_sizer.Add(self.get_set_texts[i],
-                               flag=wxEXPAND|wxALIGN_CENTER_VERTICAL)
+                               flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
 
         return panel
 
@@ -613,24 +611,24 @@ class ConfigVtkObj:
 
     def make_get_gui (self, parent):
 	"Create the Get methods that have no Set equivalent."
-        panel = wxPanel(parent, id=-1)
+        panel = wx.Panel(parent, id=-1)
 
-        vertSizer = wxBoxSizer(wxVERTICAL)
+        vertSizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetAutoLayout(True)
         panel.SetSizer(vertSizer)
         
-        grid_sizer = wxFlexGridSizer(cols=2)
+        grid_sizer = wx.FlexGridSizer(cols=2)
         grid_sizer.AddGrowableCol(1)
-        vertSizer.Add(grid_sizer, 1, wxALL, 7)
+        vertSizer.Add(grid_sizer, 1, wx.ALL, 7)
         
 	n_meth = len (self.get_meths)
 	for i in range (0, n_meth):
 	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
-            st = wxStaticText(parent=panel, id=-1, label=self.get_meths[i]+":")
+            st = wx.StaticText(parent=panel, id=-1, label=self.get_meths[i]+":")
             grid_sizer.Add(st)
 
-            st2 = wxStaticText(parent=panel, id=-1, label=str(res))
-            grid_sizer.Add(st2, flag=wxEXPAND)
+            st2 = wx.StaticText(parent=panel, id=-1, label=str(res))
+            grid_sizer.Add(st2, flag=wx.EXPAND)
 
             self.get_texts[i] = st2
 
@@ -640,8 +638,8 @@ class ConfigVtkObj:
             except AttributeError:
                 pass
             else:
-                st.SetToolTip(wxToolTip(docString))
-                st2.SetToolTip(wxToolTip(docString))
+                st.SetToolTip(wx.ToolTip(docString))
+                st2.SetToolTip(wx.ToolTip(docString))
             
 
         return panel
@@ -684,19 +682,19 @@ class ConfigVtkObj:
         # we need to convert get_set_var[i], which could be string, to
         # a tuple...
         exec('colour_tuple = %s' % str(self.get_set_var[i]))
-        cur_colour = wxColour(colour_tuple[0] * 255.0,
+        cur_colour = wx.Colour(colour_tuple[0] * 255.0,
                               colour_tuple[1] * 255.0,
                               colour_tuple[2] * 255.0)
-        ccd = wxColourData()
+        ccd = wx.ColourData()
         ccd.SetColour(cur_colour)
         # often-used BONE custom colour
-        ccd.SetCustomColour(0,wxColour(255, 239, 219))
+        ccd.SetCustomColour(0,wx.Colour(255, 239, 219))
         # we want the detailed dialog under windows        
         ccd.SetChooseFull(True)
         # do that thang
         dlg = ColourDialog(parent, ccd)
         
-        if dlg.ShowModal() == wxID_OK:
+        if dlg.ShowModal() == wx.ID_OK:
             # the user wants this, we get to update the variables
             new_col = dlg.GetColourData().GetColour()
             self.get_set_var[i] = (float(new_col.Red()) / 255.0 * 1.0,
@@ -823,7 +821,7 @@ class ConfigVtkObj:
 
 if __name__ == "__main__":  
     import vtkpython
-    from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
+    from vtk.wx.VTKRenderWindow import VTKRenderWindow
 
     cone = vtkpython.vtkConeSource()
     cone.SetResolution(8)
@@ -834,9 +832,9 @@ if __name__ == "__main__":
     axes = vtkpython.vtkCubeAxesActor2D ()
 
     
-    app = wxPySimpleApp()
-    frame = wxFrame(None, -1, "wxRenderWindow", size=wxSize(400,400))
-    wid = wxVTKRenderWindow(frame, -1)
+    app = wx.PySimpleApp()
+    frame = wx.Frame(None, -1, "wx.RenderWindow", size=wx.Size(400,400))
+    wid = wx.VTKRenderWindow(frame, -1)
     
     ren = vtkpython.vtkRenderer()
     renWin = wid.GetRenderWindow()
