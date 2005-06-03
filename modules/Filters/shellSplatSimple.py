@@ -305,5 +305,5 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
         
         # now we can finally do our own stuff to
-        EVT_BUTTON(self._viewFrame, self._viewFrame.colourButtonId,
-                   self._colourButtonCallback)
+        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.colourButtonId,
+                      self._colourButtonCallback)

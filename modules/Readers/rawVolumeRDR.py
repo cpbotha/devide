@@ -4,6 +4,7 @@ from moduleMixins import vtkPipelineConfigModuleMixin
 from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
 import vtk
+import wx
 
 class rawVolumeRDR(moduleBase,
                    vtkPipelineConfigModuleMixin,
@@ -186,9 +187,9 @@ class rawVolumeRDR(moduleBase,
             rawVolumeRDRViewFrame)
 
         # bind the file browse button
-        EVT_BUTTON(self._viewFrame,
-                   self._viewFrame.browseButtonId,
-                   self._browseButtonCallback)
+        wx.EVT_BUTTON(self._viewFrame,
+                      self._viewFrame.browseButtonId,
+                      self._browseButtonCallback)
                    
         # setup object introspection
         objectDict = {'vtkImageReader' : self._reader}
