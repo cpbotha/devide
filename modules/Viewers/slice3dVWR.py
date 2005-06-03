@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.41 2005/05/30 12:34:29 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.42 2005/06/03 09:42:27 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -31,9 +31,9 @@ import os
 import time
 import vtk
 import vtkdevide
-from wxPython.wx import *
-from wxPython.grid import *
-from wxPython.lib import colourdb
+
+import wx
+
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
@@ -47,7 +47,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.41 $
+    $Revision: 1.42 $
     """
 
     gridSelectionBackground = (11, 137, 239)
@@ -113,7 +113,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self.selectedPoints = selectedPoints(
             self, self.controlFrame.pointsGrid)
 
-        # we now have a wxListCtrl, let's abuse it
+        # we now have a wx.ListCtrl, let's abuse it
         self._tdObjects = tdObjects(self,
                                     self.controlFrame.objectsListGrid)
 
@@ -570,7 +570,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             self, self._moduleManager, controlFrame)
 
         # fix for the grid
-        #self.controlFrame.spointsGrid.SetSelectionMode(wxGrid.wxGridSelectRows)
+        #self.controlFrame.spointsGrid.SetSelectionMode(wx.Grid.wxGridSelectRows)
         #self.controlFrame.spointsGrid.DeleteRows(
         #   0, self.controlFrame.spointsGrid.GetNumberRows())
 
@@ -584,51 +584,51 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self.controlFrame.sliceCursorNameCombo.Append('FBZ Inferior')
         
         # event handlers for the global control buttons
-        EVT_BUTTON(self.threedFrame, self.threedFrame.showControlsButtonId,
+        wx.EVT_BUTTON(self.threedFrame, self.threedFrame.showControlsButtonId,
                    self._handlerShowControls)
         
-        EVT_BUTTON(self.threedFrame, self.threedFrame.resetCameraButtonId,
+        wx.EVT_BUTTON(self.threedFrame, self.threedFrame.resetCameraButtonId,
                    self._handlerResetCamera)
 
-        EVT_BUTTON(self.threedFrame, self.threedFrame.resetAllButtonId,
+        wx.EVT_BUTTON(self.threedFrame, self.threedFrame.resetAllButtonId,
                    lambda e: (self._resetAll(), self._resetAll()))
 
-        EVT_BUTTON(self.threedFrame, self.threedFrame.saveImageButton.GetId(),
+        wx.EVT_BUTTON(self.threedFrame, self.threedFrame.saveImageButton.GetId(),
                    self._handlerSaveImageButton)
         
-        EVT_CHOICE(self.threedFrame,
+        wx.EVT_CHOICE(self.threedFrame,
                    self.threedFrame.projectionChoiceId,
                    self._handlerProjectionChoice)
 
-        EVT_BUTTON(self.threedFrame,
+        wx.EVT_BUTTON(self.threedFrame,
                    self.threedFrame.introspectButton.GetId(),
                    self._handlerIntrospectButton)
 
-        EVT_BUTTON(self.threedFrame,
+        wx.EVT_BUTTON(self.threedFrame,
                    self.threedFrame.introspectPipelineButtonId,
                    lambda e, pw=self.threedFrame, s=self,
                    rw=self.threedFrame.threedRWI.GetRenderWindow():
                    s.vtkPipelineConfigure(pw, rw))
 
-#         EVT_BUTTON(self.threedFrame, self.threedFrame.resetButtonId,
+#         wx.EVT_BUTTON(self.threedFrame, self.threedFrame.resetButtonId,
 #                    lambda e, s=self: s._resetAll())
 
 
         # event logic for the voi panel
 
-        EVT_CHECKBOX(self.controlFrame,
+        wx.EVT_CHECKBOX(self.controlFrame,
                      self.controlFrame.voiEnabledCheckBoxId,
                      self._handlerWidgetEnabledCheckBox)
 
-        EVT_CHOICE(self.controlFrame,
+        wx.EVT_CHOICE(self.controlFrame,
                    self.controlFrame.voiAutoSizeChoice.GetId(),
                    self._handlerVoiAutoSizeChoice)
 
-        EVT_BUTTON(self.controlFrame,
+        wx.EVT_BUTTON(self.controlFrame,
                    self.controlFrame.voiFilenameBrowseButton.GetId(),
                    self._handlerVoiFilenameBrowseButton)
 
-        EVT_BUTTON(self.controlFrame,
+        wx.EVT_BUTTON(self.controlFrame,
                    self.controlFrame.voiSaveButton.GetId(),
                    self._handlerVoiSaveButton)
 
@@ -667,7 +667,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             self.threedFrame.threedRWI.GetRenderWindow().SetSize(
                 self.threedFrame.threedRWI.GetSize())
             self.threedFrame.threedRWI._Iren.ConfigureEvent()
-            wxSafeYield()
+            wx.SafeYield()
 
     def getPrimaryInput(self):
         """Get primary input data, i.e. bottom layer.
@@ -956,11 +956,11 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 self._voi_widget.Off()
 
     def _handlerVoiFilenameBrowseButton(self, event):
-        dlg = wxFileDialog(self.controlFrame,
+        dlg = wx.FileDialog(self.controlFrame,
                            "Select VTI filename to write VOI to",
-                           "", "", "*.vti", wxOPEN)
+                           "", "", "*.vti", wx.OPEN)
         
-        if dlg.ShowModal() == wxID_OK:
+        if dlg.ShowModal() == wx.ID_OK:
             self.controlFrame.voiFilenameText.SetValue(dlg.GetPath())
                      
 
@@ -1022,11 +1022,11 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def _handlerSaveImageButton(self, event):
         # first get the filename
-        filename = wxFileSelector(
+        filename = wx.FileSelector(
             "Choose filename for PNG image",
             "", "", "png",
             "PNG files (*.png)|*.png|All files (*.*)|*.*",
-            wxSAVE)
+            wx.SAVE)
                     
         if filename:
             self._save3DToImage(filename)
@@ -1034,106 +1034,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     def _handlerShowControls(self, event):
         if not self.controlFrame.Show(True):
             self.controlFrame.Raise()
-
-    # DEPRECATED CODE
-
-    def _rw_ortho_pick_cb(self, wxvtkrwi):
-        (cx,cy) = wxvtkrwi.GetEventPosition()
-        r_idx = self._rwis.index(wxvtkrwi)
-
-        # there has to be data in this pipeline before we can go on
-        if len(self._ortho_pipes[r_idx - 1]):
-        
-            # instantiate WorldPointPicker and use it to get the World Point
-            # that we've selected
-            wpp = vtk.vtkWorldPointPicker()
-            wpp.Pick(cx,cy,0,self._threedRenderers[r_idx])
-            (ppx,ppy,ppz) = wpp.GetPickPosition()
-            # ppz will be zero too
-
-            # now check that it's within bounds of the sliced data
-            reslice = self._ortho_pipes[r_idx - 1][0]['vtkImageReslice']
-            rbounds = reslice.GetOutput().GetBounds()
-
-            if ppx >= rbounds[0] and ppx <= rbounds[1] and \
-               ppy >= rbounds[2] and ppy <= rbounds[3]:
-
-                # this is just the way that the ResliceAxes are constructed
-                # here we do: inpoint = ra * pp
-                ra = reslice.GetResliceAxes()
-                inpoint = ra.MultiplyPoint((ppx,ppy,ppz,1))
-
-                input_bounds = reslice.GetInput().GetBounds()
-                
-                # now put this point in the applicable list
-                # check that the point is in the volume
-                # later we'll have a multi-point mode which is when this
-                # "1" conditional will be used
-                if 1 and \
-                   inpoint[2] >= input_bounds[4] and \
-                   inpoint[2] <= input_bounds[5]:
-
-                    self._add_sel_point(inpoint[0:3], r_idx - 1)
-
-                    #self._ortho_huds[r_idx - 1]['vtkAxes'].SetOrigin(ppx,ppy,
-                    #                                                 0.5)
-                    #self._ortho_huds[r_idx - 1]['axes_actor'].VisibilityOn()
-
-                    self._rwis[r_idx].Render()
-    
-    # DEPRECATED CODE
-
-    def _rw_slice_cb(self, wxvtkrwi):
-        delta = wxvtkrwi.GetEventPosition()[1] - \
-                wxvtkrwi.GetLastEventPosition()[1]
-
-        r_idx = self._rwis.index(wxvtkrwi)
-
-        if len(self._ortho_pipes[r_idx - 1]):
-            # we make use of the spacing of the first layer, so there
-            reslice = self._ortho_pipes[r_idx - 1][0]['vtkImageReslice']
-            reslice.UpdateInformation()
-
-            input_spacing = reslice.GetInput().GetSpacing()
-            rai = vtk.vtkMatrix4x4()
-            vtk.vtkMatrix4x4.Invert(reslice.GetResliceAxes(), rai)
-            output_spacing = rai.MultiplyPoint(input_spacing + (0.0,))
-
-            # modify the underlying polydatasource of the planewidget
-            pw = self._pws[r_idx - 1]
-            try:
-                ps = pw.GetPolyDataAlgorithm()
-            except AttributeError:
-                ps = pw.GetPolyDataSource()
-                
-            ps.Push(delta * output_spacing[2])
-            self._pws[r_idx - 1].UpdatePlacement()
-
-            # then call the pw callback (tee hee)
-            self._pw_cb(self._pws[r_idx - 1], r_idx - 1)
-            
-            # render the 3d viewer
-            self._rwis[0].Render()
-
-    # DEPRECATED CODE
-
-    def _rw_windowlevel_cb(self, wxvtkrwi):
-        deltax = wxvtkrwi.GetEventPosition()[0] - \
-                 wxvtkrwi.GetLastEventPosition()[0]     
-        
-        deltay = wxvtkrwi.GetEventPosition()[1] - \
-                 wxvtkrwi.GetLastEventPosition()[1]
-
-        ortho_idx = self._rwis.index(wxvtkrwi) - 1
-
-        for layer_pl in self._ortho_pipes[ortho_idx]:
-            lut = layer_pl['vtkLookupTable']
-            lut.SetLevel(lut.GetLevel() + deltay * 5.0)
-            lut.SetWindow(lut.GetWindow() + deltax * 5.0)
-            lut.Build()
-
-        wxvtkrwi.GetRenderWindow().Render()
-        self._rwis[0].GetRenderWindow().Render()
 
 
     def voiWidgetInteractionCallback(self, o, e):
