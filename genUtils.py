@@ -1,4 +1,4 @@
-from wxPython.wx import *
+import wx
 import string
 import traceback
 import vtk
@@ -23,13 +23,13 @@ def logError(msg):
     # we can't disable the timestamp yet
     # wxLog_SetTimestamp()
     # set the detail message
-    wxLogError(dmsg)
+    wx.LogError(dmsg)
     # then the most recent
-    wxLogError(msg)
+    wx.LogError(msg)
     # and flush... the last message will be the actual error
     # message, what we did before will add to it to become the
     # detail message
-    wxLog_FlushActive()
+    wx.Log_FlushActive()
 
 def logWarning(msg):
     # create nice formatted string with tracebacks and all
@@ -41,13 +41,13 @@ def logWarning(msg):
     # we can't disable the timestamp yet
     # wxLog_SetTimestamp()
     # set the detail message
-    wxLogWarning(dmsg)
+    wx.LogWarning(dmsg)
     # then the most recent
-    wxLogWarning(msg)
+    wx.LogWarning(msg)
     # and flush... the last message will be the actual error
     # message, what we did before will add to it to become the
     # detail message
-    wxLog_FlushActive()
+    wx.Log_FlushActive()
     
 
 def flattenProp3D(prop3D):
@@ -132,10 +132,10 @@ def planePlaneIntersection(
 
 def setGridCellYesNo(grid, row, col, yes=True):
     if yes:
-        colour = wxColour(0,255,0)
+        colour = wx.Colour(0,255,0)
         text = '1'
     else:
-        colour = wxColour(255,0,0)
+        colour = wx.Colour(255,0,0)
         text = '0'
         
     grid.SetCellValue(row, col, text)
