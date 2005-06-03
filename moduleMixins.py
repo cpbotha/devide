@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.59 2005/06/03 09:12:11 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.60 2005/06/03 10:18:39 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -11,7 +11,8 @@ from moduleBase import moduleBase
 import moduleUtils
 
 import wx
-from wx.lib.maskededit import MaskedTextCtrl
+import wx.lib.masked
+
 import resources.python.filenameViewModuleMixinFrame
 import re
 from pythonShell import pythonShell
@@ -829,7 +830,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     
 
             elif configTuple[3] == 'maskedText':
-                widget = MaskedTextCtrl(panel, -1, '',
+                widget = wx.lib.masked.TextCtrl(panel, -1, '',
                                         **configTuple[5])
                 
             elif configTuple[3] == 'checkbox': # checkbox
