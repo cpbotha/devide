@@ -2,7 +2,6 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class appendPolyData(moduleBase, noConfigModuleMixin):
@@ -11,7 +10,7 @@ class appendPolyData(moduleBase, noConfigModuleMixin):
 
     DANGER WILL ROBINSON: contact the author, this module is BROKEN.
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
 
     _numInputs = 5

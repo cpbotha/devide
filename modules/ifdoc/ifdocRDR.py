@@ -1,5 +1,5 @@
 # ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocRDR.py,v 1.3 2003/09/30 17:03:17 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.4 2005/06/03 09:34:39 cpbotha Exp $
 # module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
@@ -9,7 +9,6 @@ from moduleMixins import filenameViewModuleMixin
 import re
 import time
 import vtk
-from wxPython.wx import *
 
 # -------------------------------------------------------------------------
 class mData(subjectMixin, updateCallsExecuteModuleMixin):

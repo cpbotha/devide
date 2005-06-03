@@ -3,7 +3,6 @@ from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class rawVolumeRDR(moduleBase,

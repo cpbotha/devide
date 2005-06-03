@@ -1,5 +1,5 @@
 # glenoidMouldDesigner.py copyright 2003 Charl P. Botha http://cpbotha.net/
-# $Id: glenoidMouldDesign.py,v 1.3 2004/01/15 10:46:27 cpbotha Exp $
+# $Id: glenoidMouldDesign.py,v 1.4 2005/06/03 09:34:32 cpbotha Exp $
 # devide module that designs glenoid moulds by making use of insertion
 # axis and model of scapula
 
@@ -15,7 +15,6 @@ from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import operator
 import vtk
-from wxPython.wx import *
 
 class glenoidMouldDesign(moduleBase, noConfigModuleMixin):
 

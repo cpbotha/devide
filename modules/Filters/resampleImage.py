@@ -1,12 +1,11 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: resampleImage.py,v 1.2 2005/05/27 09:39:43 cpbotha Exp $
+# $Id: resampleImage.py,v 1.3 2005/06/03 09:34:32 cpbotha Exp $
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):

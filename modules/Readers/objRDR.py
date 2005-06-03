@@ -1,9 +1,8 @@
-# $Id: objRDR.py,v 1.1 2003/09/29 20:20:49 cpbotha Exp $
+# $Id: objRDR.py,v 1.2 2005/06/03 09:34:36 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 import os
 

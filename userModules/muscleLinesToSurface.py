@@ -1,10 +1,9 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.10 2004/03/18 11:46:53 cpbotha Exp $
+# $Id: muscleLinesToSurface.py,v 1.11 2005/06/03 09:34:40 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
@@ -21,7 +20,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
     not allowed.  Handling this graciously would add far too much complexity
     to this code.  We're already handling breaks in the x-y plane.
     
-    $Revision: 1.10 $
+    $Revision: 1.11 $
     """
     
 
@@ -136,7 +135,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
                 x += 1
 
             if not startPointFound:
-                wxLogError("ERROR: startPoint not found on slice %d." % (z,))
+                wx.LogError("ERROR: startPoint not found on slice %d." % (z,))
                 return
 
             x = xdim
@@ -153,7 +152,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
                 x -= 1
 
             if not endPointFound:
-                wxLogError("ERROR: endPoint not found on slice %d." % (z,))
+                wx.LogError("ERROR: endPoint not found on slice %d." % (z,))
                 return
 
             prevFlipy = -1

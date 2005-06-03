@@ -1,9 +1,8 @@
-# $Id: vtkPolyDataWRT.py,v 1.2 2003/09/23 14:53:48 cpbotha Exp $
+# $Id: vtkPolyDataWRT.py,v 1.3 2005/06/03 09:34:37 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):

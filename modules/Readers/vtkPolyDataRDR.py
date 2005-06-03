@@ -1,9 +1,8 @@
-# $Id: vtkPolyDataRDR.py,v 1.3 2003/09/24 21:10:39 cpbotha Exp $
+# $Id: vtkPolyDataRDR.py,v 1.4 2005/06/03 09:34:36 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 import os
 

@@ -1,5 +1,5 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.2 2003/09/22 16:12:04 cpbotha Exp $
+# $Id: ifdocVWR.py,v 1.3 2005/06/03 09:34:39 cpbotha Exp $
 # module to interact with the ifdoc shoulder model
 
 # TODO:
@@ -13,7 +13,7 @@ import moduleUtils
 import os
 import time
 import vtk
-from wxPython.wx import *
+import wx
 
 # named World points TEMPORARY
 class outputPoints(dict, subjectMixin):
@@ -166,26 +166,26 @@ class ifdocVWR(moduleBase):
 
             for timeStep in range(timeSteps):
                 self.updateRender()
-                wxSafeYield()
+                wx.SafeYield()
                 self.doTimeStep(timeStep)
                 time.sleep(0.2)
 
             time.sleep(0.5)
             self.doTimeStep(0)
-            wxSafeYield()
+            wx.SafeYield()
             self.updateRender()
 
     def _bindEvents(self):
         """Bind events to wxPython GUI elements.
         """
 
-        EVT_BUTTON(self.viewerFrame, self.viewerFrame.showControlsButtonId,
+        wx.EVT_BUTTON(self.viewerFrame, self.viewerFrame.showControlsButtonId,
                    self._handlerShowControls)
 
-        EVT_BUTTON(self.controlFrame, self.controlFrame.autoAnimateButtonId,
+        wx.EVT_BUTTON(self.controlFrame, self.controlFrame.autoAnimateButtonId,
                    self._handlerAutoAnimate)
 
-        EVT_COMMAND_SCROLL(
+        wx.EVT_COMMAND_SCROLL(
             self.controlFrame, self.controlFrame.timeStepSliderId,
             self._handlerTimeStepSlider)
     

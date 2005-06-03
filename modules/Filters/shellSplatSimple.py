@@ -3,9 +3,9 @@ import operator
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 import vtkdevide
+import wx
 
 class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
@@ -40,8 +40,8 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         self._createViewFrame()
 
         # some more UI elements that we'll need
-        ccd = wxColourData()
-        ccd.SetCustomColour(0,wxColour(255, 239, 219))
+        ccd = wx.ColourData()
+        ccd.SetCustomColour(0,wx.Colour(255, 239, 219))
         # under windows, we want the complete thing
         ccd.SetChooseFull(True)
         # and create the bugger
@@ -218,7 +218,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
         self._colourDialog.GetColourData().SetColour(colourTuple)
         
-        if self._colourDialog.ShowModal() == wxID_OK:
+        if self._colourDialog.ShowModal() == wx.ID_OK:
             col = self._colourDialog.GetColourData().GetColour()
             self._viewFrame.colourText.SetValue(
                 "(%.2f, %.2f, %.2f)" %  (col.Red() / 255.0,

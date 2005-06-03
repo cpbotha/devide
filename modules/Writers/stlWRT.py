@@ -1,8 +1,7 @@
-# $Id: stlWRT.py,v 1.5 2004/01/15 10:46:31 cpbotha Exp $
+# $Id: stlWRT.py,v 1.6 2005/06/03 09:34:37 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class stlWRT(moduleBase, filenameViewModuleMixin):

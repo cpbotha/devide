@@ -2,7 +2,6 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
@@ -12,7 +11,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
     equal to the 'Input Connected Value'.  This module casts all input to
     unsigned char.  The output is also unsigned char.
 
-    $Revision: 1.8 $
+    $Revision: 1.9 $
     """
 
     def __init__(self, moduleManager):

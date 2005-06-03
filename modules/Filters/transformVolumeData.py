@@ -1,13 +1,12 @@
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class transformVolumeData(noConfigModuleMixin, moduleBase):
     """Transform volume according to 4x4 homogeneous transform.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     def __init__(self, moduleManager):

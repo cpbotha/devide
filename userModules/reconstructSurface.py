@@ -1,7 +1,6 @@
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class reconstructSurface(moduleBase, noConfigModuleMixin):

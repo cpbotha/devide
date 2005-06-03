@@ -1,12 +1,11 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: imageGaussianSmooth.py,v 1.5 2003/12/14 21:45:54 cpbotha Exp $
+# $Id: imageGaussianSmooth.py,v 1.6 2005/06/03 09:34:32 cpbotha Exp $
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):

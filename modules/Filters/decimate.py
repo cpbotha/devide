@@ -1,12 +1,11 @@
 # decimateFLT.py copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: decimate.py,v 1.2 2003/09/20 22:22:34 cpbotha Exp $
+# $Id: decimate.py,v 1.3 2005/06/03 09:34:32 cpbotha Exp $
 # module that triangulates and decimates polygonal input
 
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
-from wxPython.wx import *
 import vtk
 
 class decimate(moduleBase, vtkPipelineConfigModuleMixin):
