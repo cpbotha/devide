@@ -19,7 +19,9 @@ class helpClass(object):
         self._htmlHelpController.AddBook(mainBook, True)
 
     def close(self):
-        self._htmlHelpController.Destroy()
+        # removed temporarily: this segfaults wxPython 2.6.0.1
+        # (reported)
+        #self._htmlHelpController.Destroy()
         del self._htmlHelpController
 
     def show(self):
