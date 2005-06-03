@@ -1,5 +1,6 @@
 import wx
 import string
+import sys
 import traceback
 import vtk
 

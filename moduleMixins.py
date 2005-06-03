@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.58 2004/11/22 18:22:52 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.59 2005/06/03 09:12:11 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -9,7 +9,7 @@ from external.filebrowsebutton import FileBrowseButton, \
 import genUtils
 from moduleBase import moduleBase
 import moduleUtils
-#from wxPython.wx import *
+
 import wx
 from wx.lib.maskededit import MaskedTextCtrl
 import resources.python.filenameViewModuleMixinFrame
