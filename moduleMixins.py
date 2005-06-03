@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.60 2005/06/03 10:18:39 cpbotha Exp $
+# $Id: moduleMixins.py,v 1.61 2005/06/03 19:57:03 cpbotha Exp $
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -398,7 +398,8 @@ class noConfigModuleMixin(introspectModuleMixin):
 
         viewFramePanelSizer = wx.BoxSizer(wx.VERTICAL)
         # make sure there's a 7px border at the top
-        viewFramePanelSizer.Add(10, 7, 0, wx.EXPAND)
+        # FIXME: changed 10, 7 to tuple for wxPython 2.6
+        viewFramePanelSizer.Add((10, 7), 0, wx.EXPAND)
         viewFrame.viewFramePanel.SetAutoLayout(True)
         viewFrame.viewFramePanel.SetSizer(viewFramePanelSizer)
         
