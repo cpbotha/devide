@@ -378,7 +378,6 @@ class moduleManager:
             exec('import %s' % fullName)
             # in THIS case, there is a McMillan hook which'll tell the
             # installer about all the devide modules. :)
-            print "imported: " + str(id(sys.modules[fullName]))
 
     	    # then instantiate the requested class
             moduleInstance = None
