@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.26 2005/06/07 12:52:26 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.27 2005/06/07 13:18:01 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -788,7 +788,7 @@ class ConfigVtkObj:
         call this, it could take a very long while before the Python garbage
         collector gets to us.
         """
-        
+
         # make sure we get rid of our reference to the _vtk_obj, else
         # it may never disappear
         del self._vtk_obj
