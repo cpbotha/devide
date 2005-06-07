@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.12 2005/06/03 22:27:39 cpbotha Exp $
+# $Id: __init__.py,v 1.13 2005/06/07 13:18:10 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -135,12 +135,46 @@ class graphEditorBasic(graphEditorTestBase):
             10, 10, 'modules.Misc.superQuadric')
 
         (svmod, svglyph) = _devideApp._graphEditor.createModuleAndGlyph(
-            10, 70, 'modules.Viewers.slice3dVWR')
+            10, 90, 'modules.Viewers.slice3dVWR')
 
         ret = _devideApp._graphEditor._connect(sqglyph, 1, svglyph, 0)
         _devideApp._graphEditor._canvasFrame.canvas.redraw()
         
         self.failUnless(ret)
+
+    def testConfigVtkObj(self):
+        """See if the ConfigVtkObj is available and working.
+        """
+
+        # first create superQuadric
+        (sqmod, sqglyph) = _devideApp._graphEditor.createModuleAndGlyph(
+            10, 10, 'modules.Misc.superQuadric')
+
+        self.failUnless(sqmod and sqglyph)
+
+        _devideApp._graphEditor._viewConfModule(sqmod)
+
+        # superQuadric is a standard scriptedConfigModuleMixin, so it has
+        # a _viewFrame ivar
+        self.failUnless(sqmod._viewFrame.IsShown())
+
+        # start up the vtkObjectConfigure window for that object
+        sqmod.vtkObjectConfigure(sqmod._viewFrame, None, sqmod._superquadric)
+
+        # check that it's visible
+        # sqmod._vtk_obj_cfs[sqmod._superquadric] is the ConfigVtkObj instance
+        self.failUnless(
+            sqmod._vtk_obj_cfs[sqmod._superquadric]._frame.IsShown())
+
+        # end by closing them all (so now all we're left with is the
+        # module view itself)
+        sqmod.closeVtkObjectConfigure()
+
+        # remove the module as well
+        ret = _devideApp._graphEditor._deleteModule(sqglyph)
+        self.failUnless(ret)
+        
+
 
 # ----------------------------------------------------------------------------
 class testReadersWriters(graphEditorVolumeTestBase):
@@ -247,6 +281,7 @@ class devideTesting:
         self.basicSuite.addTest(graphEditorBasic('testModuleCreationDeletion'))
         self.basicSuite.addTest(graphEditorBasic('testModuleHelp'))
         self.basicSuite.addTest(graphEditorBasic('testSimpleNetwork'))
+        self.basicSuite.addTest(graphEditorBasic('testConfigVtkObj'))
         self.basicSuite.addTest(testReadersWriters('testVTI'))
 
         self.moduleSuite = unittest.TestSuite()
@@ -265,4 +300,11 @@ class devideTesting:
     def runAllTests(self):
         runner = unittest.TextTestRunner()
         runner.run(self.mainSuite)
+
+    def runSomeTest(self):
+        someSuite = unittest.TestSuite()
+        someSuite.addTest(graphEditorBasic('testConfigVtkObj'))
+
+        runner = unittest.TextTestRunner()
+        runner.run(someSuite)
 
