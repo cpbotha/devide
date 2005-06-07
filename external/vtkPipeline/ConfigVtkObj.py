@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.25 2005/06/03 09:27:49 cpbotha Exp $
+# $Id: ConfigVtkObj.py,v 1.26 2005/06/07 12:52:26 cpbotha Exp $
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -268,14 +268,16 @@ class ConfigVtkObj:
                                     size=(640,480))
         nbsizer = wx.NotebookSizer(self._notebook)
 
-        sizer7.Add(nbsizer, option=0,
+        # wxPython 2.6 doesn't have the option keyword anymore, it's now
+        # proportion
+        sizer7.Add(nbsizer, proportion=0,
                    flag=wx.EXPAND)
 
 	self.make_gui_vars ()
 
         # the sizer returned by make_control_gui has no border... we want
         # a border of 7 between the control_gui and the notebook
-	sizer7.Add(self.make_control_gui(self._panel), option=1,
+	sizer7.Add(self.make_control_gui(self._panel), proportion=1,
                    flag=wx.EXPAND|wx.TOP, border=7)
         
 	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
@@ -363,14 +365,14 @@ class ConfigVtkObj:
         vert_sizer = wx.BoxSizer(wx.VERTICAL)
         command_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        vert_sizer.Add(command_sizer, option=1, flag=wx.EXPAND)
+        vert_sizer.Add(command_sizer, proportion=1, flag=wx.EXPAND)
 
         command_entry = wx.py.shell.Shell(parent=parent, id=-1,
                                           introText="'obj' is bound to the " \
                                           "introspected object.",
                                           size=(400,200), style=0,
                                           locals={'obj' : self._vtk_obj})
-        command_sizer.Add(command_entry, option=1, flag=wx.EXPAND)
+        command_sizer.Add(command_entry, proportion=1, flag=wx.EXPAND)
 
 
         if self._ownFrameAndPanel:
@@ -454,7 +456,7 @@ class ConfigVtkObj:
             else:
                 cb.SetToolTip(wx.ToolTip(docString))
                 
-            internalSizer.Add(cb, option=0, flag=wx.EXPAND)
+            internalSizer.Add(cb, proportion=0, flag=wx.EXPAND)
             self.toggle_checkboxes[i] = cb
 
         return panel

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.8 2005/06/03 09:27:49 cpbotha Exp $
+# $Id: vtkPipeline.py,v 1.9 2005/06/07 12:52:26 cpbotha Exp $
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -31,7 +31,7 @@ done by using the ConfigVtkObj class.
 """
 
 import wx
-import os, string, re, types
+import os, string, re, sys, types
 import ConfigVtkObj
 
 # set this to 1 if you want to see debugging messages - very useful if
@@ -294,8 +294,9 @@ class vtkPipelineBrowser:
 
         top_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        top_sizer.Add(self._tree_ctrl, option=1, flag=wx.EXPAND)
-        top_sizer.Add(button_sizer, option=0, flag=wx.ALIGN_CENTER_HORIZONTAL)
+        top_sizer.Add(self._tree_ctrl, proportion=1, flag=wx.EXPAND)
+        top_sizer.Add(button_sizer, proportion=0,
+                      flag=wx.ALIGN_CENTER_HORIZONTAL)
 
         panel.SetAutoLayout(True)
         panel.SetSizer(top_sizer)
@@ -392,7 +393,7 @@ class vtkPipelineBrowser:
 
         This is called when the user closes the window.
         """
-        self._frame.Show(false)
+        self._frame.Show(False)
 
     def clear (self):
         self._tree_ctrl.DeleteAllItems()
