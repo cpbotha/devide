@@ -1,5 +1,14 @@
 Release 20050530 - Mon May 30 14:42:42 CEST 2005
 
+Changes since 20050330 - released on Mon May 30 14:42:42 CEST 2005:
+
+ * Say something about devide.exe.manifest
+ * Upgraded from wxPython 2.4.2.4 to wxPython 2.6.1.0.
+ * Worked around nasty NVIDIA driver bug on Linux (some machines, all 
+   driver versions from 6107 to 7667)
+ * streamTracer module added.
+ * More unit tests added.
+
 Changes since 20041201:
 
  * DeVIDE ITK installer now creates two icons on desktop: one for DeVIDE
@@ -9,7 +18,7 @@ Changes since 20041201:
    render window focused.
  * Main help file extended: see new entries under "Useful patterns".  Other
    documentation also updated.
- * Opacity of slices in slice3dVWR can now be changes from slices menu.
+ * Opacity of slices in slice3dVWR can now be changed from slices menu.
  * More flow visualization: amongst other additions, slice3dVWR now has a
    slice polydata output; this can be fed through a probe and a glyph back into
    the slice3dVWR to visualise flow directly on all slices.  See help under

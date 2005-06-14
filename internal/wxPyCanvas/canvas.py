@@ -30,6 +30,7 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         
         self._buffer = None
         self._buffer = wx.wxEmptyBitmap(self.virtualWidth, self.virtualHeight)
+
         # we're only going to draw into the buffer, so no real client DC
         dc = wx.wxBufferedDC(None, self._buffer)
         dc.SetBackground(wx.wxBrush(self.GetBackgroundColour()))
@@ -181,7 +182,10 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
 
     def OnPaint(self, event):
         # as soon as dc is unbound and destroyed, buffer is blit
-        dc = wx.wxBufferedPaintDC(self, self._buffer)
+        # BUFFER_VIRTUAL_AREA indicates that the buffer bitmap is for the
+        # whole virtual area, not just the client area of the window
+        dc = wx.wxBufferedPaintDC(self, self._buffer,
+                                  style=wx.wxBUFFER_VIRTUAL_AREA)
         
     def doDrawing(self, dc):
         """This function actually draws the complete shebang to the passed
