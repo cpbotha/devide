@@ -1,4 +1,4 @@
-# $Id: ivWRT.py,v 1.6 2005/06/03 09:34:37 cpbotha Exp $
+# $Id: ivWRT.py,v 1.7 2005/06/27 09:30:44 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -29,7 +29,8 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
         self._createViewFrame(
             'Select a filename',
             'InventorViewer data (*.iv)|*.iv|All files (*)|*',
-            {'vtkIVWriter': self._writer})
+            {'vtkIVWriter': self._writer},
+            fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''

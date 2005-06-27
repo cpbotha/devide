@@ -1,4 +1,4 @@
-# $Id: cptBrepWRT.py,v 1.1 2004/04/13 12:53:17 cpbotha Exp $
+# $Id: cptBrepWRT.py,v 1.2 2005/06/27 09:30:44 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -16,7 +16,7 @@ class cptBrepWRT(moduleBase, filenameViewModuleMixin):
     home page</a> for more information about the algorithm and the
     software.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -36,7 +36,8 @@ class cptBrepWRT(moduleBase, filenameViewModuleMixin):
         self._createViewFrame('Select a filename',
                               'brep files (*.brep)|*.brep|All files (*)|*',
                               {'Module (self)' : self,
-                               'vtkTriangleFilter': self._triFilter})
+                               'vtkTriangleFilter': self._triFilter},
+                              fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''

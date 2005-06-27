@@ -1,4 +1,4 @@
-# $Id: vtpWRT.py,v 1.1 2004/01/27 15:29:46 cpbotha Exp $
+# $Id: vtpWRT.py,v 1.2 2005/06/27 09:30:44 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -31,7 +31,8 @@ class vtpWRT(moduleBase, filenameViewModuleMixin):
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
                               'VTK PolyData (*.vtp)|*.vtp|All files (*)|*',
-                              {'vtkXMLPolyDataWriter': self._writer})
+                              {'vtkXMLPolyDataWriter': self._writer},
+                              fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''

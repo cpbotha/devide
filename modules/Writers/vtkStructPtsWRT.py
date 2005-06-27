@@ -1,4 +1,4 @@
-# $Id: vtkStructPtsWRT.py,v 1.3 2005/06/03 09:34:37 cpbotha Exp $
+# $Id: vtkStructPtsWRT.py,v 1.4 2005/06/27 09:30:44 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -27,7 +27,8 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
                               'VTK data (*.vtk)|*.vtk|All files (*)|*',
-                              {'vtkStructuredPointsWriter': self._writer})
+                              {'vtkStructuredPointsWriter': self._writer},
+                              fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''

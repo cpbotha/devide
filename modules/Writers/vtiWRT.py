@@ -1,4 +1,4 @@
-# $Id: vtiWRT.py,v 1.4 2004/04/19 15:16:31 cpbotha Exp $
+# $Id: vtiWRT.py,v 1.5 2005/06/27 09:30:44 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -31,7 +31,8 @@ class vtiWRT(moduleBase, filenameViewModuleMixin):
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
                               'VTK Image Data (*.vti)|*.vti|All files (*)|*',
-                              {'vtkXMLImageDataWriter': self._writer})
+                              {'vtkXMLImageDataWriter': self._writer},
+                              fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''

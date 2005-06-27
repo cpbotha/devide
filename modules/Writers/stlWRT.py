@@ -1,4 +1,4 @@
-# $Id: stlWRT.py,v 1.6 2005/06/03 09:34:37 cpbotha Exp $
+# $Id: stlWRT.py,v 1.7 2005/06/27 09:30:44 cpbotha Exp $
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
@@ -35,7 +35,8 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
                               'STL data (*.stl)|*.stl|All files (*)|*',
-                              {'vtkSTLWriter': self._writer})
+                              {'vtkSTLWriter': self._writer},
+                              fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''
