@@ -2,7 +2,7 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import vtktudImagingPython
+import vtktud
 
 class imageCurvature(moduleBase, noConfigModuleMixin):
 
@@ -11,7 +11,7 @@ class imageCurvature(moduleBase, noConfigModuleMixin):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
-        self._imageCurvature = vtktudImagingPython.vtkImageCurvature()
+        self._imageCurvature = vtktud.vtkImageCurvature()
         
 #        moduleUtils.setupVTKObjectProgress(self, self._clipPolyData,
 #                                          'Calculating normals')

@@ -1,5 +1,5 @@
 from moduleMixins import simpleVTKClassModuleBase
-import vtktudImagingPython
+import vtktud
 
 class imageCopyPad(simpleVTKClassModuleBase):
     """This is the minimum you need to wrap a single VTK object.  This
@@ -15,5 +15,5 @@ class imageCopyPad(simpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         simpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtktudImagingPython.vtkImageCopyPad(), 'Extending image by copying border voxels.',
+            vtktud.vtkImageCopyPad(), 'Extending image by copying border voxels.',
             ('vtkImageData',), ('vtkImageData',))

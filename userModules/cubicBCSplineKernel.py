@@ -1,14 +1,14 @@
-# $Id: cubicBCSplineKernel.py,v 1.1 2005/01/10 09:27:40 joris Exp $
+# $Id: cubicBCSplineKernel.py,v 1.2 2005/06/27 08:55:12 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
-import vtktudCommonPython
+import vtktud
 
 class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
     """First test of a cubic B-Spline implicit kernel
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -35,7 +35,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.__init__(self, configList)
         
         # now create the necessary VTK modules
-        self._cubicBCSplineKernel = vtktudCommonPython.vtkCubicBCSplineKernel()
+        self._cubicBCSplineKernel = vtktud.vtkCubicBCSplineKernel()
 
         # setup progress for the processObject
 #        moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,

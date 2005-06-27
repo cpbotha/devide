@@ -1,5 +1,5 @@
 from moduleMixins import simpleVTKClassModuleBase
-import vtktudImagingPython
+import vtktud
 
 class imageKnutssonMapping(simpleVTKClassModuleBase):
     """This is the minimum you need to wrap a single VTK object.  This
@@ -15,5 +15,5 @@ class imageKnutssonMapping(simpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         simpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtktudImagingPython.vtkImageKnutssonMapping(), 'Image Knutsson Mapping.',
+            vtktud.vtkImageKnutssonMapping(), 'Image Knutsson Mapping.',
             ('vtkImageData',), ('vtkImageData',))
