@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.107 2005/06/03 10:22:44 cpbotha Exp $
+# $Id: graphEditor.py,v 1.108 2005/06/27 15:09:53 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -341,7 +341,8 @@ class graphEditor:
 
     def canvasDropFilenames(self, x, y, filenames):
         
-        def createModuleOneVar(moduleName, configVarName, configVarValue):
+        def createModuleOneVar(moduleName, configVarName, configVarValue,
+                               newModuleName=None):
             """This method creates a moduleName (e.g. modules.Readers.vtiRDR)
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
@@ -351,6 +352,15 @@ class graphEditor:
                 cfg = mod.getConfig()
                 setattr(cfg, configVarName, filename)
                 mod.setConfig(cfg)
+
+                if newModuleName:
+                    r = self._renameModule(mod, glyph, newModuleName)
+                    i = 0
+                    while not r:
+                        i += 1
+                        r = self._renameModule(mod, glyph, '%s (%d)' %
+                                               (newModuleName, i))
+                        
             
         
         actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
@@ -393,12 +403,14 @@ class graphEditor:
                     if fline.endswith('structured_points'):
                         createModuleOneVar(
                             'modules.Readers.vtkStructPtsRDR',
-                            'filename', filename)
+                            'filename', filename,
+                            os.path.basename(filename))
                         
                     elif fline.lower().endswith('polydata'):
                         createModuleOneVar(
                             'modules.Readers.vtkPolyDataRDR',
-                            'filename', filename)
+                            'filename', filename,
+                            os.path.basename(filename))
 
                     else:
                         dropFilenameErrors.append(
@@ -413,7 +425,8 @@ class graphEditor:
                 ext = filename.split('.')[-1].lower()
                 if ext in actionDict:
                     createModuleOneVar(actionDict[ext][0], actionDict[ext][1],
-                                       filename)
+                                       filename,
+                                       os.path.basename(filename))
 
                 else:
                     dropFilenameErrors.append(
@@ -422,7 +435,9 @@ class graphEditor:
         # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
-            (mod,glyph) = self.createModuleAndGlyph(x, y, 'modules.Readers.dicomRDR')
+            (mod,glyph) = self.createModuleAndGlyph(x, y,
+                                                    'modules.Readers.dicomRDR')
+            
             if mod:
                 cfg = mod.getConfig()
                 cfg.dicomFilenames.extend(dcmFilenames)
@@ -544,8 +559,12 @@ class graphEditor:
             if temp_module:
                 # create and draw the actual glyph
                 rx, ry = self._canvasFrame.canvas.eventToRealCoords(x, y)
-                iName = mm.getInstanceName(temp_module)
-                gLabel = [moduleName.split('.')[-1], iName]
+
+                # the modulemanager generates a random module name, which
+                # we can query with mm.getInstanceName(temp_module).  However,
+                # this is a new module, so we don't actually display the name
+                # in the glyph label.
+                gLabel = [moduleName.split('.')[-1]]
                 glyph = self.createGlyph(rx,ry,gLabel,temp_module)
 
                 # route all lines
@@ -785,6 +804,35 @@ class graphEditor:
         if markedModuleName:
             self._devideApp.getModuleManager().markModule(
                 instance, markedModuleName)
+
+    def _renameModule(self, module, glyph, newModuleName):
+        if newModuleName:
+            # try to rename the module...
+            if self._devideApp.getModuleManager().renameModule(
+                module,newModuleName):
+                # if no conflict, set label and redraw
+                glyph.setLabelList( [module.__class__.__name__,newModuleName] )
+                self._canvasFrame.canvas.redraw()
+
+                return True
+            
+            else:
+                # there was a conflict, return false
+                return False
+
+        else:
+            # the user has given us a blank or None modulename... we'll rename
+            # the module with an internal random name and remove its label
+            uin = self._devideApp.getModuleManager()._makeUniqueInstanceName()
+            rr = self._devideApp.getModuleManager().renameModule(module, uin)
+            if rr:
+                glyph.setLabelList([module.__class__.__name__])
+                self._canvasFrame.canvas.redraw()
+                return True
+
+            else:
+                return False
+        
                 
     def _handlerRenameModule(self, module, glyph):
         newModuleName = wx.GetTextFromUser(
@@ -792,11 +840,7 @@ class graphEditor:
             'Rename Module',
             self._devideApp.getModuleManager().getInstanceName(module))
 
-        # try to rename the module...
-        if( self._devideApp.getModuleManager().renameModule(module,newModuleName) ):
-            # if no conflict, set label and redraw
-            glyph.setLabelList( [module.__class__.__name__,newModuleName] )
-            self._canvasFrame.canvas.redraw()
+        self._renameModule(module, glyph, newModuleName)
 
     def _handlerModulesListBoxSelected(self, event):
         mlb = self._modulePaletteFrame.modulesListBox
