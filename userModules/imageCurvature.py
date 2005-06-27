@@ -5,6 +5,17 @@ import moduleUtils
 import vtktud
 
 class imageCurvature(moduleBase, noConfigModuleMixin):
+    """Calculates image curvature with VTKTUD vtkImageCurvature filter.
+    
+    You need 8 inputs, and in the following sequence: dx, dy, dz,
+    dxx, dyy, dzz, dxy, dxz, dyz.
+    
+    This will output some curvature measure.  The underlying filter will
+    be adapted to make the raw curvature data (principal curvatures 
+    and directions of the isophote surface) available as well.
+    
+    All code by Joris van Zwieten.  This bit of documentation by cpbotha.
+    """
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -37,7 +48,7 @@ class imageCurvature(moduleBase, noConfigModuleMixin):
         del self._imageCurvature
 
     def getInputDescriptions(self):
-        return ('vtkImageData', 'vtkImageData', 'vtkImageData','vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData')
+        return ('dx', 'dy', 'dz', 'dxx', 'dyy', 'dzz', 'dxy', 'dxz', 'dyz')
 
     def setInput(self, idx, inputStream):
         self._imageCurvature.SetInput(idx, inputStream)
