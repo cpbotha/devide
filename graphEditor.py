@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.108 2005/06/27 15:09:53 cpbotha Exp $
+# $Id: graphEditor.py,v 1.109 2005/06/27 15:17:33 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -810,8 +810,13 @@ class graphEditor:
             # try to rename the module...
             if self._devideApp.getModuleManager().renameModule(
                 module,newModuleName):
+
                 # if no conflict, set label and redraw
-                glyph.setLabelList( [module.__class__.__name__,newModuleName] )
+                ll = [module.__class__.__name__]
+                if not newModuleName.startswith('dvm'):
+                    ll.append(newModuleName)
+
+                glyph.setLabelList(ll)
                 self._canvasFrame.canvas.redraw()
 
                 return True
@@ -1271,8 +1276,11 @@ class graphEditor:
         for newModulePickledName in newModulesDict.keys():
             position = glyphPosDict[newModulePickledName]
             moduleInstance = newModulesDict[newModulePickledName]
-            gLabel = [moduleInstance.__class__.__name__,
-                      mm.getInstanceName(moduleInstance)]
+            gLabel = [moduleInstance.__class__.__name__]
+            instname = mm.getInstanceName(moduleInstance)
+            if not instname.startswith('dvm'):
+                gLabel.append(instname)
+                
             newGlyph = self.createGlyph(
                 position[0] - reposCoords[0] + origin[0],
                 position[1] - reposCoords[1] + origin[1],
