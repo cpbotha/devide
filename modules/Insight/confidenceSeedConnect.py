@@ -1,4 +1,4 @@
-# $Id: confidenceSeedConnect.py,v 1.4 2004/04/15 22:49:46 cpbotha Exp $
+# $Id: confidenceSeedConnect.py,v 1.5 2005/06/29 13:45:38 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -26,7 +26,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
     won't quite work.  In other words, the output of this module can
     only be trusted if there's at least a single seed point.
     
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
     
     def __init__(self, moduleManager):
@@ -106,8 +106,10 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
                 except (AttributeError, TypeError):
                     raise TypeError, 'This input requires a points-type'
                     
-                
-                if self._inputPoints:
+                # REMEMBER: if _inputPoints is an empty array (which can often
+                # happen) the test "if self._inputPoints" will be false!  So,
+                # check explicitly for != None.
+                if self._inputPoints != None:
                     self._inputPoints.removeObserver(
                         self._observerInputPoints)
 
@@ -145,25 +147,19 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         instance.
         """
 
-        if len(self._inputPoints) > 0:
-            firstSeed = True
-            for ip in self._inputPoints:
-                # bugger, it could be that our input dataset has an extent
-                # that doesn't start at 0,0,0... ITK doesn't understand this
-                x,y,z = [int(i) for i in ip['discrete']]
-                idx = itk.itkIndex3()
-                idx.SetElement(0, x)
-                idx.SetElement(1, y)
-                idx.SetElement(2, z)
-                if firstSeed:
-                    # this will do a clear as well
-                    self._cCIF.SetSeed(idx)
-                else:
-                    self._cCIF.AddSeed(idx)
-                    
-                print "Added %d,%d,%d" % (x,y,z)
-
-                
-                
+        self._cCIF.ClearSeeds()
+        # it seems that ClearSeeds() doesn't call Modified(), so we do this
+        # this is important if the list of inputPoints is empty.
+        self._cCIF.Modified()
+        
+        for ip in self._inputPoints:
+            # bugger, it could be that our input dataset has an extent
+            # that doesn't start at 0,0,0... ITK doesn't understand this
+            x,y,z = [int(i) for i in ip['discrete']]
+            idx = itk.itkIndex3()
+            idx.SetElement(0, x)
+            idx.SetElement(1, y)
+            idx.SetElement(2, z)
+            self._cCIF.AddSeed(idx)
             
-            
+            print "Added %d,%d,%d" % (x,y,z)

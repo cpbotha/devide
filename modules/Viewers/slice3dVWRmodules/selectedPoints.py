@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.13 2004/11/20 21:49:59 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.14 2005/06/29 13:45:38 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -505,6 +505,6 @@ class selectedPoints(s3dcGridMixin):
 
         # then make sure this structure knows that it has been modified
         self.outputSelectedPoints.notify()
-            
+    
 
 
