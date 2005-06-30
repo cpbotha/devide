@@ -18,6 +18,14 @@ Windows:
   hotfixes for your specific operating system.  http://www.windowsupdate.com/
   will do all of this automatically.
 
+Build notes
+-----------
+
+Getting wxPython 2.6.1.0 to build on RHEL3 64 bits:
+../configure --prefix=/home/cpbotha/opt/wx/2.6 --with-gtk --with-opengl \\
+--enable-geometry --disable-display --enable-unicode \\
+--x-libraries=/usr/X11R6/lib64
+
 Architecture note
 -----------------
 
@@ -25,4 +33,4 @@ As is the case with all things Python, this is not absolute, but try
 never to call module methods directly: always work via the
 moduleManager.
 
-$Id: ReadMe.txt,v 1.3 2005/05/23 16:27:29 cpbotha Exp $
+$Id: ReadMe.txt,v 1.4 2005/06/30 15:29:44 cpbotha Exp $
