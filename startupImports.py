@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.10 2005/05/20 12:35:22 cpbotha Exp $
+# $Id: startupImports.py,v 1.11 2005/06/30 17:09:52 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -11,6 +11,10 @@ import wx
 try:
     import dl
 except ImportError:
+    dl = None
+except SystemError:
+    # this covers us on RHEL3 64 for:
+    # SysError: module dl requires sizeof(int) == sizeof(long) == sizeof(char*) 
     dl = None
 
 #import __helper
