@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.86 2005/06/03 22:45:06 cpbotha Exp $
+# $Id: devide.py,v 1.87 2005/06/30 20:31:04 cpbotha Exp $
 
 # the current main release version
-DEVIDE_VERSION = '20050530'
+DEVIDE_VERSION = '20050630'
 
 # VTK and ITK extra version information: here we add the
 # cvs commands necessary to get the versions of VTK and ITK
@@ -357,7 +357,6 @@ class devide_app_t(wx.App):
         # the testandset() method of mutex.mutex is atomic... this will grab
         # the lock and set it if it isn't locked alread and then return true.
         # returns false otherwise
-
         if self._inProgress.testandset():
             if message != self._currentProgressMsg or \
                    progress != self._currentProgress:

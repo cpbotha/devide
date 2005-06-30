@@ -1,4 +1,4 @@
-# $Id: moduleUtilsITK.py,v 1.6 2004/09/28 17:31:43 cpbotha Exp $
+# $Id: moduleUtilsITK.py,v 1.7 2005/06/30 20:31:04 cpbotha Exp $
 
 import fixitk as itk
 
@@ -37,7 +37,7 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
     if type(objEvals) != type(()) and objEvals != None:
         raise TypeError, 'objEvals should be a tuple or None.'
 
-    def commandCallable():
+    def commandCallable2():
         # setup for and get values of all requested objEvals
         values = []
 
@@ -57,10 +57,13 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
         # get rid of all bindings
         del values
 
+    def commandCallable():
+        return
+
     pc = itk.itkPyCommand_New()
     pc.SetCommandCallable(commandCallable)
     obj.AddObserver(itk.itkProgressEvent(), pc.GetPointer())
-    
+
     # we DON'T have to store a binding to the PyCommand; during AddObserver,
     # the ITK object makes its own copy.  The ITK object will also take care
     # of destroying the observer when it (the ITK object) is destroyed
