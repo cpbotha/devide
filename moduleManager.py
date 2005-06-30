@@ -1,4 +1,5 @@
 import sys, os, fnmatch
+import re
 import copy
 import genUtils
 import modules
@@ -911,17 +912,28 @@ class moduleManager:
         """Rename a module in the module dictionary
         """
 
-        # check for duplicate names
-        if( self.getInstance( name ) != None ):
-            return False
+        # if we get a duplicate name, we either add (%d) after, or replace
+        # the existing %d with something that makes it all unique...
+        mo = re.match('(.*)\s+\(([1-9]+)\)', name)
+        if mo:
+            basename = mo.group(1)
+            i = int(mo.group(2)) + 1
         else:
-            try:
-                # get the metaModule and rename it.
-                self._moduleDict[instance].instanceName = name
-            except Exception:
-                return False
+            basename = name
+            i = 1
+        
+        while (self.getInstance(name) != None):
+            # add a number (%d) until the name is unique
+            name = '%s (%d)' % (basename, i)
+            i += 1
 
-            # everything proceeded according to plan.        
-            return True
+        try:
+            # get the metaModule and rename it.
+            self._moduleDict[instance].instanceName = name
+        except Exception:
+            return False
+
+        # everything proceeded according to plan.        
+        return True
 
         

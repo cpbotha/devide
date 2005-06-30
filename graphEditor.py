@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.109 2005/06/27 15:17:33 cpbotha Exp $
+# $Id: graphEditor.py,v 1.110 2005/06/30 10:08:25 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -355,11 +355,11 @@ class graphEditor:
 
                 if newModuleName:
                     r = self._renameModule(mod, glyph, newModuleName)
-                    i = 0
-                    while not r:
-                        i += 1
-                        r = self._renameModule(mod, glyph, '%s (%d)' %
-                                               (newModuleName, i))
+                    #i = 0
+                    #while not r:
+                    #    i += 1
+                    #    r = self._renameModule(mod, glyph, '%s (%d)' %
+                    #                           (newModuleName, i))
                         
             
         
