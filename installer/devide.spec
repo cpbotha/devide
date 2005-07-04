@@ -73,6 +73,8 @@ else:
     removeNames = ['libGLU.so.1', 'libGL.so.1', 'libGLcore.so.1', 
                    'libnvidia-tls.so.1',
                    'ld-linux-x86-64.so.2',
+                   'libXft.so.2', 'libXrandr.so.2', 'libXrender.so.1',
+                   'libm.so.6', 'libpthread.so.0', 'libreadline.so.4',
                    'libICE.so.6',
                    'libSM.so.6', 'libX11.so.6',
                    'libXext.so.6', 'libXi.so.6', 
