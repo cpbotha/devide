@@ -2,7 +2,7 @@
 # i.e. do a cvs update, a cmake and a build of:
 # vtkdevide, vtktud
 # TODO: ConnectVTKITK
-# $Id: updateAll.py,v 1.7 2005/05/12 16:00:09 cpbotha Exp $
+# $Id: updateAll.py,v 1.8 2005/07/04 23:29:06 cpbotha Exp $
 # authored by Charl P. Botha http://cpbotha.net/
 
 import getopt
@@ -97,10 +97,10 @@ def main():
             dispUsage()
             sys.exit(1)
 
-        elif o in ('--noUpdates'):
+        elif o in ('--noUpdates',):
             updatesRequested = False
             
-        elif o in ('--noBuilds'):
+        elif o in ('--noBuilds',):
             buildsRequested = False
 
         elif o in ('--noItk', '--no-itk'):
