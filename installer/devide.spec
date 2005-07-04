@@ -70,7 +70,10 @@ else:
     # RHEL3 64 has a static python library.
     
     # these libs will be removed from the package
-    removeNames = ['libGLU.so.1', 'libICE.so.6',
+    removeNames = ['libGLU.so.1', 'libGL.so.1', 'libGLcore.so.1', 
+                   'libnvidia-tls.so.1',
+                   'ld-linux-x86-64.so.2',
+                   'libICE.so.6',
                    'libSM.so.6', 'libX11.so.6',
                    'libXext.so.6', 'libXi.so.6', 
                    'libXt.so.6']
