@@ -51,10 +51,23 @@ if sys.platform.startswith('win'):
     removeNames = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
                    'netapi32.dll', 'opengl32.dll']
 else:
-    # under linux, libpython is shared -- McMillan installer doesn't know
-    # about this...
-    extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
-                  'BINARY')]
+    # under some linuxes, libpython is shared -- McMillan installer doesn't 
+    # know about this...
+
+    extraLibs = []
+    
+    vi = sys.version_info
+    if (vi[0], vi[1]) == (2,4):
+        # ubuntu hoary
+        extraLibs = [('libpython2.4.so', '/usr/lib/libpython2.4.so', 'BINARY')]
+
+    elif (vi[0], vi[1]) == (2,2) and \
+             os.path.exists('/usr/lib/libpython2.2.so.0.0'):
+        # looks like debian woody
+        extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
+                      'BINARY')]
+
+    # RHEL3 64 has a static python library.
     
     # these libs will be removed from the package
     removeNames = ['libGLU.so.1', 'libICE.so.6',
