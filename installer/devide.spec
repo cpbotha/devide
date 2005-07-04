@@ -2,14 +2,59 @@ import os
 import fnmatch
 import sys
 
+
 if sys.platform.startswith('win'):
     INSTALLER_DIR = 'c:\\build\\Installer'
     APP_DIR = 'c:\\work\\code\\devide'
-    exeName = 'builddevide/devide.exe'    
+    exeName = 'builddevide/devide.exe'
+
+    extraLibs = []
+    # we can keep msvcr71.dll and msvcp71.dll, in fact they should just
+    # go in the installation directory with the other DLLs, see:
+    # http://msdn.microsoft.com/library/default.asp?url=/library/en-us/
+    # vclib/html/_crt_c_run.2d.time_libraries.asp
+    removeNames = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
+                   'netapi32.dll', 'opengl32.dll']
+    
 else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
     APP_DIR = '/home/cpbotha/work/code/devide'
     exeName = 'builddevide/devide'
+
+    # under some linuxes, libpython is shared -- McMillan installer doesn't 
+    # know about this...
+    extraLibs = []
+    
+    vi = sys.version_info
+    if (vi[0], vi[1]) == (2,4):
+        # ubuntu hoary
+        extraLibs = [('libpython2.4.so', '/usr/lib/libpython2.4.so', 'BINARY')]
+
+    elif (vi[0], vi[1]) == (2,2) and \
+             os.path.exists('/usr/lib/libpython2.2.so.0.0'):
+        # looks like debian woody
+        extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
+                      'BINARY')]
+
+    # RHEL3 64 has a static python library.
+    
+    # these libs will be removed from the package
+    removeNames = ['libdl.so.2', 'libutil.so.1', 'libm.so.6', 'libc.so.6',
+                   'libGLU.so.1', 'libGL.so.1', 'libGLcore.so.1', 
+                   'libnvidia-tls.so.1',
+                   'ld-linux-x86-64.so.2',
+                   'libXft.so.2', 'libXrandr.so.2', 'libXrender.so.1',
+                   'libm.so.6', 'libpthread.so.0', 'libreadline.so.4',
+                   'libICE.so.6',
+                   'libSM.so.6', 'libX11.so.6',
+                   'libXext.so.6', 'libXi.so.6', 
+                   'libXt.so.6']
+
+# we have to remove these nasty built-in dependencies EARLY in the game
+dd = config['EXE_dependencies']
+newdd = [i for i in dd if i[0].lower() not in removeNames]
+config['EXE_dependencies'] = newdd
+
 
 print "[*] APP_DIR == %s" % (APP_DIR)
 print "[*] exeName == %s" % (exeName)
@@ -42,44 +87,6 @@ vpli = [(os.path.join('Icons', i),
          os.path.join(vpli_dir, i), 'DATA')
         for i in os.listdir(vpli_dir) if fnmatch.fnmatch(i, '*.xpm')]
 
-if sys.platform.startswith('win'):
-    extraLibs = []
-    # we can keep msvcr71.dll and msvcp71.dll, in fact they should just
-    # go in the installation directory with the other DLLs, see:
-    # http://msdn.microsoft.com/library/default.asp?url=/library/en-us/
-    # vclib/html/_crt_c_run.2d.time_libraries.asp
-    removeNames = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
-                   'netapi32.dll', 'opengl32.dll']
-else:
-    # under some linuxes, libpython is shared -- McMillan installer doesn't 
-    # know about this...
-
-    extraLibs = []
-    
-    vi = sys.version_info
-    if (vi[0], vi[1]) == (2,4):
-        # ubuntu hoary
-        extraLibs = [('libpython2.4.so', '/usr/lib/libpython2.4.so', 'BINARY')]
-
-    elif (vi[0], vi[1]) == (2,2) and \
-             os.path.exists('/usr/lib/libpython2.2.so.0.0'):
-        # looks like debian woody
-        extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
-                      'BINARY')]
-
-    # RHEL3 64 has a static python library.
-    
-    # these libs will be removed from the package
-    removeNames = ['libGLU.so.1', 'libGL.so.1', 'libGLcore.so.1', 
-                   'libnvidia-tls.so.1',
-                   'ld-linux-x86-64.so.2',
-                   'libXft.so.2', 'libXrandr.so.2', 'libXrender.so.1',
-                   'libm.so.6', 'libpthread.so.0', 'libreadline.so.4',
-                   'libICE.so.6',
-                   'libSM.so.6', 'libX11.so.6',
-                   'libXext.so.6', 'libXi.so.6', 
-                   'libXt.so.6']
-
 ##########################################################################
 
 SUPPORT_DIR = os.path.join(INSTALLER_DIR, 'support')
@@ -96,6 +103,8 @@ pyz = PYZ(a.pure)
 #options = [('f','','OPTION')] # LD_LIBRARY_PATH is correctly set on Linux
 #options += [('v', '', 'OPTION')]     # Python is ran with -v
 
+# because we've already modified the config, we won't be pulling in
+# hardcoded dependencies that we don't want.
 exe = EXE(pyz,
           a.scripts, #+ options,
           exclude_binaries=1,
@@ -119,4 +128,5 @@ coll = COLLECT(exe,
                binaries,
                strip=0,
                name='distdevide')
+
 
