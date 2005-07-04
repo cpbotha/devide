@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.90 2005/07/04 15:43:51 cpbotha Exp $
+# $Id: devide.py,v 1.91 2005/07/04 15:47:53 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050704-T'
@@ -464,12 +464,9 @@ class devide_app_t(wx.App):
 
         ir = about.htmlWindow.GetInternalRepresentation()
         ir.SetIndent(0, wx.html.HTML_INDENT_ALL)
-        #about.htmlWindow.SetSize((ir.GetWidth(), ir.GetHeight()))
-        about.SetSize((1.2 * ir.GetWidth(), 1.1 * ir.GetHeight()))
-
-        #about.GetSizer().Fit(about)
-        #about.GetSizer().SetSizeHints(about)
-        #about.Layout()
+        newSize = (int(1.2 * ir.GetWidth()), int(1.025 * ir.GetHeight()))
+        print newSize
+        about.SetSize(newSize)
 
         about.CentreOnParent(wx.BOTH)
         about.ShowModal()
