@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.11 2005/06/30 17:09:52 cpbotha Exp $
+# $Id: startupImports.py,v 1.12 2005/07/04 15:10:16 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -33,52 +33,89 @@ if dl and (os.name == 'posix'):
 def defaultProgressMethod(percentage, message):
     print "%s [%3.2f]" % (message, percentage)
 
-def doImports(progressMethod, mainConfig):
-    importList = [('vtk.common', 'Loading VTK Common.'),
-                  ('vtk.filtering', 'Loading VTK Filtering.'),
-                  ('vtk.io', 'Loading VTK IO.'),
-                  ('vtk.imaging', 'Loading VTK Imaging.'),
-                  ('vtk.graphics', 'Loading VTK Graphics.'),
-                  ('vtk.rendering', 'Loading VTK Rendering.'),
-                  ('vtk.hybrid', 'Loading VTK Hybrid.'),
-                  ('vtk.patented', 'Loading VTK Patented.'),
-                  # the following list represents the actual sequence
-                  # with which fixitk/InsightToolkit loads the low-level libs
-                  # we have to call these explicitly, because doing any
-                  # imports from fixitk will import them all in one shot,
-                  # thus making the user wait very long without any feedback
-                  ('VXLNumericsPython', 'Loading VXL Numerics'),
-                  ('ITKCommonAPython', 'Loading ITK Common part A'),
-                  ('ITKCommonBPython', 'Loading ITK Common part B'),
-                  ('ITKBasicFiltersAPython', 'Loading ITK Basic Filters part A'),
-                  ('ITKBasicFiltersBPython', 'Loading ITK Basic Filters part B'),
-                  ('ITKNumericsPython', 'Loading ITK Numerics'),
-                  ('ITKAlgorithmsPython', 'Loading ITK Algorithms'),
-                  ('ITKIOPython', 'Loading ITK IO Python'),
-                  # we do the following just for completeness
-                  ('fixitk.vxlNumericsPythonTopLevel', 'Loading VXL Numerics'),
-                  ('fixitk.itkCommonPythonTopLevel', 'Loading ITK Common'),
-                  ('fixitk.itkBasicFiltersPythonTopLevel',
-                   'fixitk.Loading ITK BasicFilters'),
-                  ('fixitk.itkNumericsPythonTopLevel', 'Loading ITK Numerics'),
-                  ('fixitk.itkAlgorithmsPythonTopLevel', 'Loading ITK Algorithms'),
-                  ('fixitk.itkIOPythonTopLevel', 'Loading ITK IO')]
 
-    if not mainConfig.useInsight or not mainConfig.itkPreImport:
-        # remove ITK things from importList
-        importList = [i for i in importList if
-                      not i[0].startswith('fixitk') and
-                      not i[0].startswith('ITK') and
-                      not i[0].startswith('VXL')]
+def setDLFlags():
+    # brought over from ITK Wrapping/CSwig/Python
+
+    # Python "help(sys.setdlopenflags)" states:
+    #
+    # setdlopenflags(...)
+    #     setdlopenflags(n) -> None
+    #     
+    #     Set the flags that will be used for dlopen() calls. Among other
+    #     things, this will enable a lazy resolving of symbols when
+    #     importing a module, if called as sys.setdlopenflags(0) To share
+    #     symbols across extension modules, call as
+    #
+    #     sys.setdlopenflags(dl.RTLD_NOW|dl.RTLD_GLOBAL)
+    #
+    # GCC 3.x depends on proper merging of symbols for RTTI:
+    #   http://gcc.gnu.org/faq.html#dso
+    #
+    try:
+        import dl
+        newflags = dl.RTLD_NOW|dl.RTLD_GLOBAL
+    except:
+        newflags = 0x102  # No dl module, so guess (see above).
+        
+    try:
+        oldflags = sys.getdlopenflags()
+        sys.setdlopenflags(newflags)
+    except:
+        oldflags = None
+
+    return oldflags
+
+def resetDLFlags(data):
+    # brought over from ITK Wrapping/CSwig/Python    
+    # Restore the original dlopen flags.
+    try:
+        sys.setdlopenflags(data)
+    except:
+        pass
+    
+
+def doImports(progressMethod, mainConfig):
+    vtkImportList = [('vtk.common', 'Loading VTK Common.'),
+                     ('vtk.filtering', 'Loading VTK Filtering.'),
+                     ('vtk.io', 'Loading VTK IO.'),
+                     ('vtk.imaging', 'Loading VTK Imaging.'),
+                     ('vtk.graphics', 'Loading VTK Graphics.'),
+                     ('vtk.rendering', 'Loading VTK Rendering.'),
+                     ('vtk.hybrid', 'Loading VTK Hybrid.'),
+                     ('vtk.patented', 'Loading VTK Patented.'),
+                     ('vtk', 'Loading other VTK symbols')]
+
+    itkImportList = [('VXLNumericsPython', 'Loading VXL Numerics'),
+                     ('ITKCommonAPython', 'Loading ITK Common part A'),
+                     ('ITKCommonBPython', 'Loading ITK Common part B'),
+                     ('ITKBasicFiltersAPython', 'Loading ITK Basic Filters A'),
+                     ('ITKBasicFiltersBPython', 'Loading ITK Basic Filters B'),
+                     ('ITKNumericsPython', 'Loading ITK Numerics'),
+                     ('ITKAlgorithmsPython', 'Loading ITK Algorithms'),
+                     ('ITKIOPython', 'Loading ITK IO Python'),
+                     ('fixitk', 'Loading other ITK symbols')]
+
+    # set the dynamic loading flags.  If we don't do this, we get strange
+    # errors on 64 bit machines.  To see this happen, comment this statement
+    # and then run the VTK->ITK connection test case.
+    oldflags = setDLFlags()
+
+    # set up list of modules to import
+    importList = vtkImportList
+
+    if mainConfig.useInsight and mainConfig.itkPreImport:
+        importList += itkImportList
                   
     percentStep = 95.0 / len(importList)
     currentPercent = 0.0
 
+    # do the imports
     for module, message in importList:
         currentPercent += percentStep
         progressMethod(currentPercent, message, noTime=True)
         wx.SafeYield()
         exec('import %s' % (module,))
 
-    # just to make sure about any other symbols
-    import vtk
+    # restore previous dynamic loading flags
+    resetDLFlags(oldflags)

@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.13 2005/06/07 13:18:10 cpbotha Exp $
+# $Id: __init__.py,v 1.14 2005/07/04 15:10:16 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -303,7 +303,7 @@ class devideTesting:
 
     def runSomeTest(self):
         someSuite = unittest.TestSuite()
-        someSuite.addTest(graphEditorBasic('testConfigVtkObj'))
+        someSuite.addTest(testITKBasic('testConfidenceSeedConnect'))
 
         runner = unittest.TextTestRunner()
         runner.run(someSuite)

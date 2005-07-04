@@ -22,12 +22,16 @@ def preimport():
   # Save the current dlopen flags and set the ones we need.
   try:
     import dl
-    flags = sys.getdlopenflags()
-    sys.setdlopenflags(dl.RTLD_NOW|dl.RTLD_GLOBAL)
+    newflags = dl.RTLD_NOW|dl.RTLD_GLOBAL
   except:
-    flags = None
+    newflags = 0x102  # No dl module, so guess (see above).
+  try:
+    oldflags = sys.getdlopenflags()
+    sys.setdlopenflags(newflags)
+  except:
+    oldflags = None
 
-  return flags
+  return oldflags
 
 def postimport(data):
   """Called by InsightToolkit packages after loading a C module."""

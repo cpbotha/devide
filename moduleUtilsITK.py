@@ -1,4 +1,4 @@
-# $Id: moduleUtilsITK.py,v 1.7 2005/06/30 20:31:04 cpbotha Exp $
+# $Id: moduleUtilsITK.py,v 1.8 2005/07/04 15:10:16 cpbotha Exp $
 
 import fixitk as itk
 
@@ -37,7 +37,7 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
     if type(objEvals) != type(()) and objEvals != None:
         raise TypeError, 'objEvals should be a tuple or None.'
 
-    def commandCallable2():
+    def commandCallable():
         # setup for and get values of all requested objEvals
         values = []
 
@@ -56,9 +56,6 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
 
         # get rid of all bindings
         del values
-
-    def commandCallable():
-        return
 
     pc = itk.itkPyCommand_New()
     pc.SetCommandCallable(commandCallable)

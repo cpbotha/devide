@@ -1,4 +1,4 @@
-# $Id: VTKtoITKF3.py,v 1.2 2004/03/16 12:29:00 cpbotha Exp $
+# $Id: VTKtoITKF3.py,v 1.3 2005/07/04 15:10:16 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -64,6 +64,7 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
             # a non-NULL input has been connected, so we connect up with
             # the vtkExporter
             self._vtkExporter.SetInput(self._imageCast.GetOutput())
+            
         else:
             # the connect has been unsuccesful or the input is NULL
             self._vtkExporter.SetInput(None)
