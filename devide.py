@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.93 2005/07/05 09:21:35 cpbotha Exp $
+# $Id: devide.py,v 1.94 2005/07/05 13:32:34 cpbotha Exp $
 
 # the current main release version
-DEVIDE_VERSION = '20050704-T'
+DEVIDE_VERSION = '20050705-T'
 
 # VTK and ITK extra version information: here we add the
 # cvs commands necessary to get the versions of VTK and ITK

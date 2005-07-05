@@ -38,7 +38,7 @@ else:
     vi = sys.version_info
     if (vi[0], vi[1]) == (2,4):
         # ubuntu hoary
-        extraLibs = [('libpython2.4.so', '/usr/lib/libpython2.4.so', 'BINARY')]
+        extraLibs = [('libpython2.4.so.1.0', '/usr/lib/libpython2.4.so.1.0', 'BINARY')]
 
     elif (vi[0], vi[1]) == (2,2) and \
              os.path.exists('/usr/lib/libpython2.2.so.0.0'):
