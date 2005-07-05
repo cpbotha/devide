@@ -2,6 +2,7 @@ Release 20050530 - Mon May 30 14:42:42 CEST 2005
 
 Changes since 20050330 - released on Mon May 30 14:42:42 CEST 2005:
 
+ * Updates and fixes for 64 bit Linux build
  * Say something about devide.exe.manifest
  * Upgraded from wxPython 2.4.2.4 to wxPython 2.6.1.0.
  * Worked around nasty NVIDIA driver bug on Linux (some machines, all 

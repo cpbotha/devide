@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.91 2005/07/04 15:47:53 cpbotha Exp $
+# $Id: devide.py,v 1.92 2005/07/05 08:38:07 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050704-T'
@@ -561,6 +561,7 @@ def postWxInitImports():
 def main():
     devide_app = devide_app_t()
     devide_app.MainLoop()
+    
 
 if __name__ == '__main__':
     main()

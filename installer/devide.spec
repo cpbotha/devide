@@ -2,6 +2,16 @@ import os
 import fnmatch
 import sys
 
+def remove(name):
+    """Helper function used to remove libraries from list.
+    """
+    
+    for r in removeNames:
+        if name.startswith(r):
+            return True
+
+    return False
+
 
 if sys.platform.startswith('win'):
     INSTALLER_DIR = 'c:\\build\\Installer'
@@ -39,22 +49,27 @@ else:
     # RHEL3 64 has a static python library.
     
     # these libs will be removed from the package
-    removeNames = ['libdl.so.2', 'libutil.so.1', 'libm.so.6', 'libc.so.6',
-                   'libGLU.so.1', 'libGL.so.1', 'libGLcore.so.1', 
-                   'libnvidia-tls.so.1',
+    removeNames = ['libdl.so', 'libutil.so', 'libm.so', 'libc.so',
+                   'libGLU.so', 'libGL.so', 'libGLcore.so', 
+                   'libnvidia-tls.so',
                    'ld-linux-x86-64.so.2',
-                   'libXft.so.2', 'libXrandr.so.2', 'libXrender.so.1',
-                   'libm.so.6', 'libpthread.so.0', 'libreadline.so.4',
-                   'libICE.so.6',
-                   'libSM.so.6', 'libX11.so.6',
-                   'libXext.so.6', 'libXi.so.6', 
-                   'libXt.so.6',
-                   'libpango-1.0.so.0','libpangox-1.0.so.0',
-                   'libpangoxft-1.0.so.0']
+                   'libXft.so', 'libXrandr.so', 'libXrender.so',
+                   'libpthread.so', 'libreadline.so',
+                   'libICE.so',
+                   'libSM.so', 'libX11.so',
+                   'libXext.so', 'libXi.so', 
+                   'libXt.so',
+                   'libpango']
+
+    # make sure removeNames is lowercase
+    removeNames = [i.lower() for i in removeNames]    
+
 
 # we have to remove these nasty built-in dependencies EARLY in the game
 dd = config['EXE_dependencies']
-newdd = [i for i in dd if i[0].lower() not in removeNames]
+
+    
+newdd = [i for i in dd if not remove(i[0].lower())]
 config['EXE_dependencies'] = newdd
 
 
@@ -121,10 +136,9 @@ exe = EXE(pyz,
 allBinaries = a.binaries + userModulesTree + modulePacksTree + vpli + \
               extraLibs + segTree + snipTree + dataTree + docsTree
 
-# make sure removeNames is lowercase
-removeNames = [i.lower() for i in removeNames]
+
 # make new list of 3-element tuples of shipable things
-binaries = [i for i in allBinaries if i[0].lower() not in removeNames]
+binaries = [i for i in allBinaries if not remove(i[0].lower())]
 
 coll = COLLECT(exe,
                binaries,
