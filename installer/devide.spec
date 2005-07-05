@@ -48,7 +48,9 @@ else:
                    'libICE.so.6',
                    'libSM.so.6', 'libX11.so.6',
                    'libXext.so.6', 'libXi.so.6', 
-                   'libXt.so.6']
+                   'libXt.so.6',
+                   'libpango-1.0.so.0','libpangox-1.0.so.0',
+                   'libpangoxft-1.0.so.0']
 
 # we have to remove these nasty built-in dependencies EARLY in the game
 dd = config['EXE_dependencies']
