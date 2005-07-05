@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: makePackage.sh,v 1.14 2005/01/12 22:49:14 cpbotha Exp $
+# $Id: makePackage.sh,v 1.15 2005/07/05 13:31:49 cpbotha Exp $
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
@@ -37,8 +37,14 @@ mv devide distdevide
 
 else
 
+# run the installer
 INSTALLER='python c:/build/Installer/Build.py'
 $INSTALLER devide.spec
+
+# also copy the manifest file to distdevide
+# (we are in the installer directory)
+cp devide.exe.manifest distdevide/
+
 # optionally make an archive
 # mv distdevide devide
 # zip -rp "devide-win32-`date +%Y%m%d`.zip" devide
