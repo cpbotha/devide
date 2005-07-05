@@ -52,14 +52,18 @@ else:
     removeNames = ['libdl.so', 'libutil.so', 'libm.so', 'libc.so',
                    'libGLU.so', 'libGL.so', 'libGLcore.so', 
                    'libnvidia-tls.so',
-                   'ld-linux-x86-64.so.2',
+                   'ld-linux-x86-64.so.2', 'libgcc_s.so',
+                   'libstdc++.so', 'libtermcap',
                    'libXft.so', 'libXrandr.so', 'libXrender.so',
                    'libpthread.so', 'libreadline.so',
                    'libICE.so',
                    'libSM.so', 'libX11.so',
                    'libXext.so', 'libXi.so', 
                    'libXt.so',
-                   'libpango', 'libgtk']
+                   'libpango', 'libfontconfig', 'libfreetype',
+                   'libatk', 'libgtk', 'libgdk',
+                   'libglib', 'libgmodule', 'libgobject', 'libgthread',
+                   'libjpeg', 'libpng', 'libtiff', 'libz.so', 'libexpat']
 
     # make sure removeNames is lowercase
     removeNames = [i.lower() for i in removeNames]    
