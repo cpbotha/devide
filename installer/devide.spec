@@ -2,7 +2,7 @@ import os
 import fnmatch
 import sys
 
-def remove(name):
+def remove(name, removeNames):
     """Helper function used to remove libraries from list.
     """
     
@@ -59,7 +59,7 @@ else:
                    'libSM.so', 'libX11.so',
                    'libXext.so', 'libXi.so', 
                    'libXt.so',
-                   'libpango']
+                   'libpango', 'libgtk']
 
     # make sure removeNames is lowercase
     removeNames = [i.lower() for i in removeNames]    
@@ -69,7 +69,7 @@ else:
 dd = config['EXE_dependencies']
 
     
-newdd = [i for i in dd if not remove(i[0].lower())]
+newdd = [i for i in dd if not remove(i[0].lower(), removeNames)]
 config['EXE_dependencies'] = newdd
 
 
@@ -138,7 +138,7 @@ allBinaries = a.binaries + userModulesTree + modulePacksTree + vpli + \
 
 
 # make new list of 3-element tuples of shipable things
-binaries = [i for i in allBinaries if not remove(i[0].lower())]
+binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]
 
 coll = COLLECT(exe,
                binaries,
