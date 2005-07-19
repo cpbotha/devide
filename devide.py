@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.94 2005/07/05 13:32:34 cpbotha Exp $
+# $Id: devide.py,v 1.95 2005/07/19 14:45:48 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050705-T'
@@ -8,7 +8,7 @@ DEVIDE_VERSION = '20050705-T'
 # cvs commands necessary to get the versions of VTK and ITK
 # that are required for this release of DeVIDE checked out.
 # If you're not cpbotha, you shouldn't change these.
-VTK_VERSION_EXTRA = 'update -r ParaView-2-0-2 -dP'
+VTK_VERSION_EXTRA = 'update -D 20050719 -dP'
 ITK_VERSION_EXTRA = 'update -dAP'
 
 # standard Python imports
@@ -198,8 +198,10 @@ class devide_app_t(wx.App):
         # machine.  Give me a Windows SMP machine, and I shall fix it.
         # for now we will just make sure that threading doesn't use more
         # than one thread. :)
-        vtk.vtkMultiThreader.SetGlobalMaximumNumberOfThreads(1)
-        vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
+        # UPDATE: 20050719 - made patches to VTK (along with work by Sander
+        # Niemeijer) that should fix all of these re-entrancy problems.
+        #vtk.vtkMultiThreader.SetGlobalMaximumNumberOfThreads(1)
+        #vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
         
         # now make sure that VTK will always send error to vtk.log logfile
         temp = vtkdevide.vtkEventOutputWindow()

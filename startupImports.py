@@ -1,5 +1,5 @@
 # startupImports copyright (c) 2003 by Charl P. Botha http://cpbotha.net/
-# $Id: startupImports.py,v 1.12 2005/07/04 15:10:16 cpbotha Exp $
+# $Id: startupImports.py,v 1.13 2005/07/19 14:45:48 cpbotha Exp $
 # This is called early on to pre-import some of the larger required libraries
 # and give progress messages whilst they are imported.
 
@@ -83,7 +83,7 @@ def doImports(progressMethod, mainConfig):
                      ('vtk.graphics', 'Loading VTK Graphics.'),
                      ('vtk.rendering', 'Loading VTK Rendering.'),
                      ('vtk.hybrid', 'Loading VTK Hybrid.'),
-                     ('vtk.patented', 'Loading VTK Patented.'),
+                     #('vtk.patented', 'Loading VTK Patented.'),
                      ('vtk', 'Loading other VTK symbols')]
 
     itkImportList = [('VXLNumericsPython', 'Loading VXL Numerics'),
