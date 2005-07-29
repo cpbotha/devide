@@ -1,4 +1,4 @@
-# $Id: writeSVSceneAsRIB.py,v 1.1 2005/07/28 16:53:35 cpbotha Exp $
+# $Id: writeSVSceneAsRIB.py,v 1.2 2005/07/29 11:09:23 cpbotha Exp $
 
 # to use a shader on an actor, do this first before export:
 # a = vtk.vtkRIBProperty()
@@ -20,6 +20,7 @@ if className == 'slice3dVWR':
     tempdir = tempfile.gettempdir()
     outputfilename = os.path.join(tempdir, 'slice3dVWRscene')
     e.SetFilePrefix(outputfilename)
+    e.SetTexturePrefix(outputfilename)
     obj._orientationWidget.Off()
     e.Write()
     obj._orientationWidget.On()
