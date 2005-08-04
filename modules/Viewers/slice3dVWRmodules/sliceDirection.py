@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.23 2005/05/23 15:26:49 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.24 2005/08/04 16:23:31 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -87,10 +87,16 @@ class sliceDirection:
             cutter.SetInput(trfmFilter.GetOutput())
             stripper = vtk.vtkStripper()
             stripper.SetInput(cutter.GetOutput())
+            
+            #
+            tubef = vtk.vtkTubeFilter()
+            tubef.SetNumberOfSides(12)
+            tubef.SetRadius(0.5)
+            tubef.SetInput(stripper.GetOutput())
 
             # and create the overlay at least for the 3d renderer
             mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInput(stripper.GetOutput())
+            mapper.SetInput(tubef.GetOutput())
             mapper.ScalarVisibilityOff()
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
