@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.95 2005/07/19 14:45:48 cpbotha Exp $
+# $Id: devide.py,v 1.96 2005/08/04 16:23:12 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050705-T'
@@ -8,7 +8,7 @@ DEVIDE_VERSION = '20050705-T'
 # cvs commands necessary to get the versions of VTK and ITK
 # that are required for this release of DeVIDE checked out.
 # If you're not cpbotha, you shouldn't change these.
-VTK_VERSION_EXTRA = 'update -D 20050719 -dP'
+VTK_VERSION_EXTRA = 'update -D 20050804 -dP'
 ITK_VERSION_EXTRA = 'update -dAP'
 
 # standard Python imports
@@ -114,6 +114,9 @@ class devide_app_t(wx.App):
 	
 
     def OnInit(self):
+        """Standard WX OnInit() method, called during construction.
+        """
+        
         self._mainFrame = resources.python.mainFrame.mainFrame(
             None, -1, "dummy", name="DeVIDE")
 
@@ -561,6 +564,7 @@ def postWxInitImports():
     
 def main():
     devide_app = devide_app_t()
+    devide_app.startGraphEditor()
     devide_app.MainLoop()
     
 
