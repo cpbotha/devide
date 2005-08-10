@@ -7,6 +7,7 @@ import mutex
 from random import choice
 from moduleBase import defaultConfigClass
 
+# --------------------------------------------------------------------------
 class metaModule:
     """Class used to store module-related information.
     """
@@ -34,6 +35,8 @@ class metaModule:
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]
 
+
+# --------------------------------------------------------------------------
 class pickledModuleState:
     def __init__(self):
         self.moduleConfig = None
@@ -42,6 +45,7 @@ class pickledModuleState:
         # this is the unique name of the module, e.g. dvm15
         self.instanceName = None
 
+# --------------------------------------------------------------------------
 class pickledConnection:
     def __init__(self, sourceInstanceName=None, outputIdx=None,
                  targetInstanceName=None, inputIdx=None, connectionType=None):
@@ -52,13 +56,18 @@ class pickledConnection:
         self.inputIdx = inputIdx
         self.connectionType = connectionType
 
+# --------------------------------------------------------------------------
 class moduleManager:
     """This class in responsible for picking up new modules in the modules 
-    directory and making them available to the rest of the program."""
+    directory and making them available to the rest of the program.
+
+    @author: Charl P. Botha <http://cpbotha.net/>
+    """
     
     def __init__(self, devide_app):
 	"""Initialise module manager by fishing .py devide modules from
-	all pertinent directories."""
+	all pertinent directories.
+        """
 	
         self._devide_app = devide_app
         # module dictionary, keyed on instance... cool.
@@ -109,13 +118,17 @@ class moduleManager:
 
     def scanModules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
-	the list self.module_files."""
+	the list self.module_files.
+        """
+
         self._availableModuleList = {}
 
         def recursiveDirectoryD3MNSearch(adir, curModulePath, mnList):
             """Iterate recursively starting at adir and make a list of
-            all available modules and networks.  We do not traverse into dirs
-            that are named 'resources' or that end with 'modules'.
+            all available modules and networks.
+
+            We do not traverse into dirs that are named 'resources' or that
+            end with 'modules'.
             """
 
             if curModulePath:
@@ -491,6 +504,7 @@ class moduleManager:
 			      
     def viewModule(self, instance):
         instance.view()
+
     
     def deleteModule(self, instance):
         # first disconnect all outgoing connections
@@ -684,6 +698,7 @@ class moduleManager:
         # the newly created module-instance and a list with the connections
         return (newModulesDict, newConnections)
 
+
     def serialiseModuleInstances(self, moduleInstances):
         """Given 
         """
@@ -811,37 +826,29 @@ class moduleManager:
             self.setProgress(progressP, fullText)
             self._inProgressCallback.unlock()
     
-#     def vtk_progress_cb(self, process_object):
-#         """Default callback that can be used for VTK ProcessObject callbacks.
 
-#         In all VTK-using child classes, this method can be used if such a
-#         class wants to show its process graphically.  You'll have to use
-#         a lambda callback in order to pass the process_object along.  See
-#         vtk_plydta_rdr.py for a simple example.
-#         """
+    def getConsumerModules(self, instance):
+        """Determine modules that are connected to outputs of instance.
 
-#         # if this is called while still in progress, we do nothing...
-#         # it means multi-threaded VTK objects are calling back into us (yuck)
-#         if self._inProgressCallback.testandset():
-#             vtk_progress = process_object.GetProgress() * 100.0
-#             progressText = process_object.GetClassName() + ': ' + \
-#                            process_object.GetProgressText()
-#             if abs(vtk_progress - 100.0) < 0.01:
-#                 # difference smaller than a hundredth
-#                 progressText += ' [DONE]'
+        @param instance: module instance of which the consumers should be
+        determined.
+        @return: list of consumer module instances.
+        """
 
-#             self.setProgress(vtk_progress, progressText)
-#             self._inProgressCallback.unlock()
-            
-#     def vtk_poll_error(self):
-#         """This method should be called whenever VTK processing might have
-#         taken place, e.g. in the execute() method of a devide module.
+        consumerInstances = []
 
-#         update() will be called on the central vtk_log_window.  This will
-#         only show if the filesize of the vtk log file has changed since the
-#         last call.
-#         """
-#         print "vtk_poll_error is DEPRECATED"
+        # get outputs from metaModule: this is a list of list of tuples
+        # outer list has number of outputs elements
+        # inner lists store consumer modules for that output
+        # tuple contains (consumerModule, consumerInputIdx)
+        outputs = self._moduleDict[instance].outputs
+
+        for output in outputs:
+            for consumer in output:
+                consumerInstances.append(consumer[0])
+
+        return consumerInstances
+    
 
     def setProgress(self, progress, message):
         """Progress is in percent.

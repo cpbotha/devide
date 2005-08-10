@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.96 2005/08/04 16:23:12 cpbotha Exp $
+# $Id: devide.py,v 1.97 2005/08/10 16:50:44 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050705-T'
@@ -174,6 +174,9 @@ class devide_app_t(wx.App):
         
         # find all modules that we can use
 	self.moduleManager = moduleManager(self)
+
+        # initialise the scheduler
+        self.scheduler = scheduler(self)
 
         # perform vtk initialisation
         self._vtkInit()
@@ -551,11 +554,12 @@ def postWxInitImports():
     their thing.
     """
     
-    global graphEditor, moduleManager, pythonShell, helpClass
+    global graphEditor, moduleManager, scheduler, pythonShell, helpClass
     global vtk, vtkdevide
     
     from graphEditor import graphEditor
     from moduleManager import moduleManager
+    from scheduler import scheduler
     from pythonShell import pythonShell
     from helpClass import helpClass
 

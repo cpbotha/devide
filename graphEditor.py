@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.110 2005/06/30 10:08:25 cpbotha Exp $
+# $Id: graphEditor.py,v 1.111 2005/08/10 16:50:44 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -507,7 +507,25 @@ class graphEditor:
         if disable:
             if not self._glyphSelection.getSelectedGlyphs():
                 ni.Enable(False)
+
+
+        testId = wx.NewId()
+        ni = wx.MenuItem(pmenu, testId, 'Test Selected',
+                        'Test all selected glyphs.')
+        pmenu.AppendItem(ni)
+        wx.EVT_MENU(eventWidget, testId,
+                 lambda e: self._testSelectedGlyphs())
+        if disable:
+            if not self._glyphSelection.getSelectedGlyphs():
+                ni.Enable(False)
+                
+
+    def _testSelectedGlyphs(self):
+        si = [i.moduleInstance
+              for i in self._glyphSelection.getSelectedGlyphs()]
         
+        if self._devideApp.scheduler._detectCycles(si):
+            print "CYCLES"
 
     def createGlyph(self, rx, ry, labelList, moduleInstance):
         """Create only a glyph on the canvas given an already created
