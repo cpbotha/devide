@@ -840,7 +840,7 @@ class moduleManager:
         # get outputs from metaModule: this is a list of list of tuples
         # outer list has number of outputs elements
         # inner lists store consumer modules for that output
-        # tuple contains (consumerModule, consumerInputIdx)
+        # tuple contains (consumerModuleInstance, consumerInputIdx)
         outputs = self._moduleDict[instance].outputs
 
         for output in outputs:

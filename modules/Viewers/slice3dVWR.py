@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.42 2005/06/03 09:42:27 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.42.4.1 2005/08/11 16:30:51 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -47,8 +47,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.42 $
+    $Revision: 1.42.4.1 $
     """
+
+    IS_VIEW = 1
 
     gridSelectionBackground = (11, 137, 239)
 
