@@ -1,7 +1,14 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.1.2.1 2005/08/11 16:30:49 cpbotha Exp $
+# $Id: scheduler.py,v 1.1.2.2 2005/08/11 20:24:07 cpbotha Exp $
 
 class schedulerModuleWrapper:
+    """Wrapper class that adapts module instance to scheduler-usable
+    object.  We can use this to handle exceptions, such as the viewer
+    split.
+
+    @author: Charl P. Botha <http://cpbotha.net/>
+    """
+    
     def __init__(self, instance = None, view = False, viewSegment = -1):
         self.instance = instance
         self.view = view
@@ -100,9 +107,14 @@ class scheduler:
         """
 
         def detectCycleMatch(visited, currentModule):
+            """Recursive function used to check for cycles in the module
+            network starting from initial module currentModule.
 
-            print currentModule.viewSegment
-
+            @param visited: list of schedulerModules used during recursion.
+            @param currentModule: initial schedulerModule
+            @return: True if cycle detected starting from currentModule
+            """
+            
             consumers = self.getConsumerModules(currentModule)
 
             for consumer in consumers:
@@ -111,9 +123,15 @@ class scheduler:
                         return True
                     
                 else:
-                    visited[consumer] = 1
+                    # we need to make a copy of visited and send it along
+                    # if we don't, changes to visit are shared between
+                    # different branches of the recursion; we only want
+                    # it to aggregate per recursion branch 
+                    visited_copy = {}
+                    visited_copy.update(visited)
+                    visited_copy[consumer] = 1
                     
-                    if detectCycleMatch(visited, consumer):
+                    if detectCycleMatch(visited_copy, consumer):
                         return True
 
             # the recursion ends when there are no consumers and 
