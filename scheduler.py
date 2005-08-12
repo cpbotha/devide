@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.1.2.2 2005/08/11 20:24:07 cpbotha Exp $
+# $Id: scheduler.py,v 1.1.2.3 2005/08/12 16:25:25 cpbotha Exp $
 
 class schedulerModuleWrapper:
     """Wrapper class that adapts module instance to scheduler-usable
@@ -151,12 +151,11 @@ class scheduler:
         sort that can be used to determine the execution order of the
         give modules.
 
-        @param moduleInstances: list of module instance to be sorted
+        @param schedulerModules: list of module instance to be sorted
         @return: modules in topological order.
         """
 
-        pass
-
+        if self.detectCycles(schedulerModules):
+            # TODO: implement schedulerException class
+            raise RuntimeError
             
-
-    
