@@ -365,7 +365,7 @@ class moduleManager:
             return self._halfBornInstanceName
 
     def get_modules_dir(self):
-	return self._modules_dir
+        return self._modules_dir
 
     def get_module_view_parent_window(self):
         # this could change
