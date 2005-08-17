@@ -7,6 +7,9 @@ import mutex
 from random import choice
 from moduleBase import defaultConfigClass
 
+class moduleManagerException(Exception):
+    pass
+    
 # --------------------------------------------------------------------------
 class metaModule:
     """Class used to store module-related information.
@@ -60,6 +63,8 @@ class pickledConnection:
 class moduleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program.
+    
+    @todo: add transferOutput method, part of the new event-driven work.
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -492,15 +497,29 @@ class moduleManager:
         return hasattr(modules, '__importsub__')
 
     def executeModule(self, instance):
+        """Execute module instance.
+        
+        @param instance: module instance to be executed.
+        @raise moduleManagerException: this exception is raised with an
+        informative error string if a module fails to execute.
+        @return: Nothing.
+        """
+        
         try:
             instance.executeModule()
+            
         except Exception, e:
             mModule = self._moduleDict[instance]
             instanceName = mModule.instanceName
             moduleName = instance.__class__.__name__
             
-            genUtils.logError('Unable to execute module %s (%s): %s' \
-                              % (instanceName, moduleName, str(e)))
+            es = 'Unable to execute module %s (%s): %s' \
+                 % (instanceName, moduleName, str(e))
+                 
+            raise moduleManagerException(es)
+            
+            #genUtils.logError('Unable to execute module %s (%s): %s' \
+            #                  % (instanceName, moduleName, str(e)))
 			      
     def viewModule(self, instance):
         instance.view()

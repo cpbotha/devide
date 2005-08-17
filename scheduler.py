@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.1.2.4 2005/08/17 14:33:31 cpbotha Exp $
+# $Id: scheduler.py,v 1.1.2.5 2005/08/17 16:47:08 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -13,8 +13,11 @@ class schedulerModuleWrapper:
     
     We can use this to handle exceptions, such as the viewer
     split.  Module instances are wrapped on an ad hoc basis, so you CAN'T
-    use equality testing or 'in' tests to check for matches.  Use the L{match}
+    use equality testing or 'in' tests to check for matches.  Use the L{matches}
     method.
+    
+    @todo: add method to transfer data and execute modules taking into account
+    the modified information.
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -50,8 +53,9 @@ class scheduler:
     def __init__(self, devideApp):
         """Initialise scheduler instance.
 
-        @param moduleManager: an instance of the modulemanager class that
-        we'll use to communicate with modules.
+        @param devideApp: an instance of the devideApplication that we'll use
+        to communicate with the outside world.
+
         """
         
         self._devideApp = devideApp
@@ -59,6 +63,10 @@ class scheduler:
     def modulesToSchedulerModules(self, moduleInstances):
         """Preprocess module instance list before cycle detection or
         topological sorting to take care of exceptions.
+        
+        Note that the modules are wrapped anew by this method, so equality tests
+        with previously existing scheduleModules will not work.  You have
+        to use the L{schedulerModuleWrapper.matches()} method.
 
         @param moduleInstances: list of raw module instances
         @return: list with schedulerModuleWrappers
@@ -86,7 +94,7 @@ class scheduler:
         
         The consumers that are returned have been wrapped on an ad hoc basis,
         so you can't trust normal equality or 'in' tests.  Use the 
-        L{schedulerModuleWrapper.maches} method instead.
+        L{schedulerModuleWrapper.matches} method instead.
 
         @param schedulerModule: determine modules that are connected to outputs
         of this instance.
@@ -122,7 +130,7 @@ class scheduler:
         """Given a list of moduleWrappers, detect cycles in the topology
         of the modules.
 
-        @param moduleInstances: list of module instances that has to be
+        @param schedulerModules: list of module instances that has to be
         checked.
         @return: True if cycles detected, False otherwise.
         @todo: check should really be limited to modules in selection.
@@ -226,7 +234,34 @@ class scheduler:
         scheduleList.reverse()
         return scheduleList
 
-
+    def executeModules(self, schedulerModules):
+        """Execute the modules in schedulerModules in topological order.
+        
+        
+        @param schedulerModules: list of modules that should be executed in
+        order.
+        @raise cyclesDetectedException: This exception is raised if any
+        cycles are detected in the modules that have to be executed.
+        
+        """
+        
+        if self.detectCycles(schedulerModules):
+            raise cyclesDetectedException(
+                'Cycles detected in selected network modules.  '
+                'Unable to execute.')
+                
+        schedList = self.topoSort(schedulerModules)
+        mm = self._devideApp.getModuleManager()
+        
+        try:
+            for sm in schedList:
+                mm.executeModule(sm.instance)
+                mm.transferOutput(sm.instance)
+                
+        except Exception, e:
+            es = 'scheduler: error during network execution: %s' % (str(e),)
+            raise schedulerException(es)
+    
             
         
             
