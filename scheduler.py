@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.1.2.5 2005/08/17 16:47:08 cpbotha Exp $
+# $Id: scheduler.py,v 1.1.2.6 2005/08/31 17:12:08 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -7,14 +7,15 @@ class schedulerException(Exception):
 class cyclesDetectedException(schedulerException):
     pass
 
+#########################################################################
 class schedulerModuleWrapper:
     """Wrapper class that adapts module instance to scheduler-usable
     object.  
     
     We can use this to handle exceptions, such as the viewer
     split.  Module instances are wrapped on an ad hoc basis, so you CAN'T
-    use equality testing or 'in' tests to check for matches.  Use the L{matches}
-    method.
+    use equality testing or 'in' tests to check for matches.  Use the
+    L{matches} method.
     
     @todo: add method to transfer data and execute modules taking into account
     the modified information.
@@ -43,7 +44,7 @@ class schedulerModuleWrapper:
 
         return eq
         
-
+#########################################################################
 class scheduler:
     """Coordinates event-driven network execution.
 
@@ -64,8 +65,8 @@ class scheduler:
         """Preprocess module instance list before cycle detection or
         topological sorting to take care of exceptions.
         
-        Note that the modules are wrapped anew by this method, so equality tests
-        with previously existing scheduleModules will not work.  You have
+        Note that the modules are wrapped anew by this method, so equality
+        tests with previously existing scheduleModules will not work.  You have
         to use the L{schedulerModuleWrapper.matches()} method.
 
         @param moduleInstances: list of raw module instances
@@ -124,6 +125,9 @@ class scheduler:
                 schedulerModuleWrapper(consumer, view, viewSegment))
 
         return sConsumers
+
+    def getProducerModules(self, schedulerModule):
+        pass
                 
             
     def detectCycles(self, schedulerModules):
@@ -237,7 +241,6 @@ class scheduler:
     def executeModules(self, schedulerModules):
         """Execute the modules in schedulerModules in topological order.
         
-        
         @param schedulerModules: list of modules that should be executed in
         order.
         @raise cyclesDetectedException: This exception is raised if any
@@ -249,21 +252,22 @@ class scheduler:
             raise cyclesDetectedException(
                 'Cycles detected in selected network modules.  '
                 'Unable to execute.')
-                
+
+        # this will also check for cycles...
         schedList = self.topoSort(schedulerModules)
         mm = self._devideApp.getModuleManager()
         
         try:
             for sm in schedList:
+                # find all producer modules, transfer relevant data
+                pmodules_and_output_indices = self.getProducerModules(sm)
+                for pmodule, output_indices in pmodules_and_output_indices:
+                    mm.transferOutput(pmodule, output_indices)
+
+                # finally execute the module
                 mm.executeModule(sm.instance)
-                mm.transferOutput(sm.instance)
+
                 
         except Exception, e:
             es = 'scheduler: error during network execution: %s' % (str(e),)
             raise schedulerException(es)
-    
-            
-        
-            
-        
-            

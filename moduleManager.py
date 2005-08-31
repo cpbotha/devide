@@ -32,6 +32,7 @@ class metaModule:
         numIns = len(self.instance.getInputDescriptions())
         numOuts = len(self.instance.getOutputDescriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
+        # supplierModule is a module instance, not a metaModule
         self.inputs = [None] * numIns
         # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
         # be careful with list concatenation, it makes copies, which are mostly
@@ -577,6 +578,8 @@ class moduleManager:
         """Connect output_idx'th output of provider output_module to
         input_idx'th input of consumer input_module.  If an error occurs
         during connection, an exception will be raised.
+
+        @param output_module: This is a module instance.
         """
 
         # if a port is already connected, refuse the connection!
@@ -867,7 +870,17 @@ class moduleManager:
                 consumerInstances.append(consumer[0])
 
         return consumerInstances
-    
+
+    def getProducerModules(self, instance):
+        # inputs is a list of tuples, each tuple containing moduleInstance
+        # and outputIdx of the producer/supplier module
+        inputs = self._moduleDict[instance].inputs
+        
+        for inputIdx in range(len(inputs)):
+            instance.setInput(inputIdx, None)
+            # set supplier to None - so we know it's nuked
+            inputs[inputIdx] = None
+
 
     def setProgress(self, progress, message):
         """Progress is in percent.
@@ -963,3 +976,16 @@ class moduleManager:
         return True
 
         
+    def transferOutput(self, moduleInstance, outputIndexes):
+        """Transfer output data from moduleInstance to the consumer modules
+        connected to its specified output indexes.
+
+        FIXME: to be done...
+
+        @param moduleInstance: producer module whose output data must be
+        transferred.
+        @param outputIndexes: only output data produced by these outputs will
+        be transferred.
+        """
+
+        pass
