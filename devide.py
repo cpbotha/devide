@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.97 2005/08/10 16:50:44 cpbotha Exp $
+# $Id: devide.py,v 1.98 2005/10/05 19:55:27 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20050705-T'
@@ -111,7 +111,7 @@ class devide_app_t(wx.App):
         self._graphEditor = None
         self._pythonShell = None
         self._helpClass = None
-	
+    
 
     def OnInit(self):
         """Standard WX OnInit() method, called during construction.
@@ -173,7 +173,7 @@ class devide_app_t(wx.App):
         postWxInitImports()
         
         # find all modules that we can use
-	self.moduleManager = moduleManager(self)
+        self.moduleManager = moduleManager(self)
 
         # initialise the scheduler
         self.scheduler = scheduler(self)
@@ -211,7 +211,11 @@ class devide_app_t(wx.App):
         
         # now make sure that VTK will always send error to vtk.log logfile
         temp = vtkdevide.vtkEventOutputWindow()
-        temp.SetInstance(temp)
+        
+        # IMPORTANT:
+        # we're disabling this in the event-driven branch of DeVIDE
+        # each module or tool should do its own error reporting!
+        #temp.SetInstance(temp)
 
         def observerEOW(theObject, eventType):
             # theObject is of course a vtkEventOutputWindow
@@ -271,7 +275,7 @@ class devide_app_t(wx.App):
         return self.getMainWindow()
 
     def getModuleManager(self):
-	return self.moduleManager
+        return self.moduleManager
 
     def getAppDir(self):
         return self._appdir
@@ -315,8 +319,8 @@ class devide_app_t(wx.App):
         if self._helpClass:
             self._helpClass.close()
         
-	# take care of main window
-	self._mainFrame.Close()
+        # take care of main window
+        self._mainFrame.Close()
 
     def showHelp(self):
         self._startHelpClass()
@@ -544,7 +548,7 @@ class devide_app_t(wx.App):
                     pass
             
 
-	
+    
 # ---------------------------------------------------------------------------
 
 def postWxInitImports():

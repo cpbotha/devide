@@ -7,6 +7,9 @@ import mutex
 from random import choice
 from moduleBase import defaultConfigClass
 
+class moduleManagerException(Exception):
+    pass
+    
 # --------------------------------------------------------------------------
 class metaModule:
     """Class used to store module-related information.
@@ -29,6 +32,7 @@ class metaModule:
         numIns = len(self.instance.getInputDescriptions())
         numOuts = len(self.instance.getOutputDescriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
+        # supplierModule is a module instance, not a metaModule
         self.inputs = [None] * numIns
         # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
         # be careful with list concatenation, it makes copies, which are mostly
@@ -60,6 +64,8 @@ class pickledConnection:
 class moduleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program.
+    
+    @todo: add transferOutput method, part of the new event-driven work.
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -365,7 +371,7 @@ class moduleManager:
             return self._halfBornInstanceName
 
     def get_modules_dir(self):
-	return self._modules_dir
+        return self._modules_dir
 
     def get_module_view_parent_window(self):
         # this could change
@@ -492,15 +498,29 @@ class moduleManager:
         return hasattr(modules, '__importsub__')
 
     def executeModule(self, instance):
+        """Execute module instance.
+        
+        @param instance: module instance to be executed.
+        @raise moduleManagerException: this exception is raised with an
+        informative error string if a module fails to execute.
+        @return: Nothing.
+        """
+        
         try:
             instance.executeModule()
+            
         except Exception, e:
             mModule = self._moduleDict[instance]
             instanceName = mModule.instanceName
             moduleName = instance.__class__.__name__
             
-            genUtils.logError('Unable to execute module %s (%s): %s' \
-                              % (instanceName, moduleName, str(e)))
+            es = 'Unable to execute module %s (%s): %s' \
+                 % (instanceName, moduleName, str(e))
+                 
+            raise moduleManagerException(es)
+            
+            #genUtils.logError('Unable to execute module %s (%s): %s' \
+            #                  % (instanceName, moduleName, str(e)))
 			      
     def viewModule(self, instance):
         instance.view()
@@ -558,6 +578,8 @@ class moduleManager:
         """Connect output_idx'th output of provider output_module to
         input_idx'th input of consumer input_module.  If an error occurs
         during connection, an exception will be raised.
+
+        @param output_module: This is a module instance.
         """
 
         # if a port is already connected, refuse the connection!
@@ -840,7 +862,7 @@ class moduleManager:
         # get outputs from metaModule: this is a list of list of tuples
         # outer list has number of outputs elements
         # inner lists store consumer modules for that output
-        # tuple contains (consumerModule, consumerInputIdx)
+        # tuple contains (consumerModuleInstance, consumerInputIdx)
         outputs = self._moduleDict[instance].outputs
 
         for output in outputs:
@@ -848,7 +870,17 @@ class moduleManager:
                 consumerInstances.append(consumer[0])
 
         return consumerInstances
-    
+
+    def getProducerModules(self, instance):
+        # inputs is a list of tuples, each tuple containing moduleInstance
+        # and outputIdx of the producer/supplier module
+        inputs = self._moduleDict[instance].inputs
+        
+        for inputIdx in range(len(inputs)):
+            instance.setInput(inputIdx, None)
+            # set supplier to None - so we know it's nuked
+            inputs[inputIdx] = None
+
 
     def setProgress(self, progress, message):
         """Progress is in percent.
@@ -944,3 +976,16 @@ class moduleManager:
         return True
 
         
+    def transferOutput(self, moduleInstance, outputIndexes):
+        """Transfer output data from moduleInstance to the consumer modules
+        connected to its specified output indexes.
+
+        FIXME: to be done...
+
+        @param moduleInstance: producer module whose output data must be
+        transferred.
+        @param outputIndexes: only output data produced by these outputs will
+        be transferred.
+        """
+
+        pass
