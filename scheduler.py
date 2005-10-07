@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.2 2005/10/05 19:55:27 cpbotha Exp $
+# $Id: scheduler.py,v 1.3 2005/10/07 14:18:38 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -271,3 +271,4 @@ class scheduler:
         except Exception, e:
             es = 'scheduler: error during network execution: %s' % (str(e),)
             raise schedulerException(es)
+
