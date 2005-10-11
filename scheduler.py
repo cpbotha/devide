@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.3 2005/10/07 14:18:38 cpbotha Exp $
+# $Id: scheduler.py,v 1.4 2005/10/11 16:19:34 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -127,8 +127,40 @@ class scheduler:
         return sConsumers
 
     def getProducerModules(self, schedulerModule):
-        pass
+        """Return producer modules that supply schedulerModule with data.
+
+        The producers that are returned have been wrapped on an ad hoc basis,
+        so you can't trust normal equality or 'in' tests. Use the
+        L{schedulerModuleWrapper.matches} method instead.
+
+        @param schedulerModule: determine modules that are connected to inputs
+        of this instance.
+        @return: list of producer schedulerModules, ad hoc wrappings.
+        """
+
+        if schedulerModule.view and schedulerModule.viewSegment == 1:
+            # if schedulerModule is segment 1 of a view, there can be no
+            # producers (by definition)
+            return []
+
+        mm = self._devideApp.getModuleManager()
+        consumers = mm.getProducerModules(schedulerModule.instance)
+
+        sProducers = []
+        for producer in producers:
+            if hasattr(producer, 'IS_VIEW') and producer.IS_VIEW:
+                view = True
+                # it's a producer, so segment has to be 1
+                viewSegment = 1
                 
+            else:
+                view = False
+                viewSegment = -1
+                
+            sProducers.append(
+                schedulerModuleWrapper(producer, view, viewSegment))
+
+        return sProducers
             
     def detectCycles(self, schedulerModules):
         """Given a list of moduleWrappers, detect cycles in the topology
@@ -261,6 +293,7 @@ class scheduler:
             for sm in schedList:
                 # find all producer modules, transfer relevant data
                 pmodules_and_output_indices = self.getProducerModules(sm)
+                # FIXME: continue here!
                 for pmodule, output_indices in pmodules_and_output_indices:
                     mm.transferOutput(pmodule, output_indices)
 

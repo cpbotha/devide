@@ -32,6 +32,7 @@ class metaModule:
         numIns = len(self.instance.getInputDescriptions())
         numOuts = len(self.instance.getOutputDescriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
+        # if the input is not connected, that position in the list is None
         # supplierModule is a module instance, not a metaModule
         self.inputs = [None] * numIns
         # numOuts list of lists of tuples of (consumerModule, consumerInputIdx)
@@ -872,16 +873,27 @@ class moduleManager:
         return consumerInstances
 
     def getProducerModules(self, instance):
-        # inputs is a list of tuples, each tuple containing moduleInstance
-        # and outputIdx of the producer/supplier module
-        inputs = self._moduleDict[instance].inputs
+        """Return a list of module instances that supply 'instance' with data.
+
+        @param instance: consumer module.
+        @return: list of producer module instances.
+        """
         
-        for inputIdx in range(len(inputs)):
-            instance.setInput(inputIdx, None)
-            # set supplier to None - so we know it's nuked
-            inputs[inputIdx] = None
+        # inputs is a list of tuples, each tuple containing moduleInstance
+        # and outputIdx of the producer/supplier module; if the port is
+        # not connected, that position in inputs contains "None"
+        inputs = self._moduleDict[instance].inputs
 
+        producerInstances = []
+        for pTuple in inputs:
+            if pTuple is not None:
+                # unpack
+                pInstance, pOutputIdx = pTuple
+                # and store
+                producerInstances.append(pModule)
 
+        return producerInstances
+        
     def setProgress(self, progress, message):
         """Progress is in percent.
         """
