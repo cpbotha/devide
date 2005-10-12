@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.4 2005/10/11 16:19:34 cpbotha Exp $
+# $Id: scheduler.py,v 1.5 2005/10/12 13:43:51 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -127,7 +127,8 @@ class scheduler:
         return sConsumers
 
     def getProducerModules(self, schedulerModule):
-        """Return producer modules that supply schedulerModule with data.
+        """Return producer modules and indices that supply schedulerModule
+        with data.
 
         The producers that are returned have been wrapped on an ad hoc basis,
         so you can't trust normal equality or 'in' tests. Use the
@@ -135,7 +136,8 @@ class scheduler:
 
         @param schedulerModule: determine modules that are connected to inputs
         of this instance.
-        @return: list of producer schedulerModules, ad hoc wrappings.
+        @return: list of tuples with producer schedulerModules and output
+        indices; producer modules have been wrapped in schedulerModules.
         """
 
         if schedulerModule.view and schedulerModule.viewSegment == 1:
@@ -144,11 +146,12 @@ class scheduler:
             return []
 
         mm = self._devideApp.getModuleManager()
-        consumers = mm.getProducerModules(schedulerModule.instance)
+        # producers is a list of (instance, output_idx) tuples
+        producers = mm.getProducerModules(schedulerModule.instance)
 
         sProducers = []
-        for producer in producers:
-            if hasattr(producer, 'IS_VIEW') and producer.IS_VIEW:
+        for pInstance, outputIndex in producers:
+            if hasattr(pInstance, 'IS_VIEW') and pInstance.IS_VIEW:
                 view = True
                 # it's a producer, so segment has to be 1
                 viewSegment = 1
@@ -158,7 +161,8 @@ class scheduler:
                 viewSegment = -1
                 
             sProducers.append(
-                schedulerModuleWrapper(producer, view, viewSegment))
+                (schedulerModuleWrapper(pInstance, view, viewSegment),
+                 outputIndex))
 
         return sProducers
             
@@ -294,11 +298,12 @@ class scheduler:
                 # find all producer modules, transfer relevant data
                 pmodules_and_output_indices = self.getProducerModules(sm)
                 # FIXME: continue here!
-                for pmodule, output_indices in pmodules_and_output_indices:
-                    mm.transferOutput(pmodule, output_indices)
+                for pmodule, output_index in pmodules_and_output_indices:
+                    mm.transferOutput(pmodule.instance, output_index)
 
                 # finally execute the module
-                mm.executeModule(sm.instance)
+                #mm.executeModule(sm.instance)
+                print 'executing %s' % (sm.instance.__class__.__name__,)
 
                 
         except Exception, e:

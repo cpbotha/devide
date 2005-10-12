@@ -873,10 +873,12 @@ class moduleManager:
         return consumerInstances
 
     def getProducerModules(self, instance):
-        """Return a list of module instances that supply 'instance' with data.
+        """Return a list of module instances and output indices that supply
+        'instance' with data.
 
         @param instance: consumer module.
-        @return: list of producer module instances.
+        @return: list of tuples, each tuple consists of producer instance
+        and output index connecting to an instance input.
         """
         
         # inputs is a list of tuples, each tuple containing moduleInstance
@@ -884,15 +886,15 @@ class moduleManager:
         # not connected, that position in inputs contains "None"
         inputs = self._moduleDict[instance].inputs
 
-        producerInstances = []
+        producers = []
         for pTuple in inputs:
             if pTuple is not None:
                 # unpack
                 pInstance, pOutputIdx = pTuple
                 # and store
-                producerInstances.append(pModule)
+                producers.append(pTuple)
 
-        return producerInstances
+        return producers
         
     def setProgress(self, progress, message):
         """Progress is in percent.
@@ -988,11 +990,9 @@ class moduleManager:
         return True
 
         
-    def transferOutput(self, moduleInstance, outputIndexes):
+    def transferOutput(self, moduleInstance, outputIndex):
         """Transfer output data from moduleInstance to the consumer modules
         connected to its specified output indexes.
-
-        FIXME: to be done...
 
         @param moduleInstance: producer module whose output data must be
         transferred.
@@ -1000,4 +1000,6 @@ class moduleManager:
         be transferred.
         """
 
-        pass
+        print 'transferring data %s:%d' % (moduleInstance.__class__.__name__,
+                                           outputIndex)
+

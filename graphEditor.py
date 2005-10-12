@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.112 2005/10/05 19:55:27 cpbotha Exp $
+# $Id: graphEditor.py,v 1.113 2005/10/12 13:43:51 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -528,9 +528,11 @@ class graphEditor:
         #if self._devideApp.scheduler.detectCycles(sms):
         #    print "CYCLES"
         
-        mm = self._devideApp.getModuleManager()
-        print [i.instance.__class__.__name__
-               for i in self._devideApp.scheduler.topoSort(sms)]
+        #mm = self._devideApp.getModuleManager()
+        #print [i.instance.__class__.__name__
+        #       for i in self._devideApp.scheduler.topoSort(sms)]
+
+        self._devideApp.scheduler.executeModules(sms)
 
     def createGlyph(self, rx, ry, labelList, moduleInstance):
         """Create only a glyph on the canvas given an already created
