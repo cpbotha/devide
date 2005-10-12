@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.5 2005/10/12 13:43:51 cpbotha Exp $
+# $Id: scheduler.py,v 1.6 2005/10/12 15:05:58 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -303,6 +303,8 @@ class scheduler:
 
                 # finally execute the module
                 #mm.executeModule(sm.instance)
+                # FIXME: we should only execute VIEWS if it's segment 0
+                # segment 1 should always be 'ready' in anycase
                 print 'executing %s' % (sm.instance.__class__.__name__,)
 
                 
