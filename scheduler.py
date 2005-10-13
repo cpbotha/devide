@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.6 2005/10/12 15:05:58 cpbotha Exp $
+# $Id: scheduler.py,v 1.7 2005/10/13 16:25:36 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -295,18 +295,27 @@ class scheduler:
         
         try:
             for sm in schedList:
-                # find all producer modules, transfer relevant data
+                # find all producer modules
                 pmodules_and_output_indices = self.getProducerModules(sm)
-                # FIXME: continue here!
+                # transfer relevant data
                 for pmodule, output_index in pmodules_and_output_indices:
-                    mm.transferOutput(pmodule.instance, output_index)
+                    if mm.shouldTransferOutput(pmodule.instance, output_index,
+                                               sm.instance):
+                        mm.transferOutput(pmodule.instance, output_index,
+                                          sm.instance)
 
-                # finally execute the module
-                #mm.executeModule(sm.instance)
-                # FIXME: we should only execute VIEWS if it's segment 0
-                # segment 1 should always be 'ready' in anycase
-                print 'executing %s' % (sm.instance.__class__.__name__,)
-
+                # here we can code exeption that block execution
+                # for example, the final segment of a view should never
+                # be executed.  it's output is always ready (a result of
+                # interaction)
+                if sm.view and sm.viewSegment == 1:
+                    blockExecution = True
+                    
+                # finally: execute module if its not blocked and the
+                # moduleManager thinks it's necessary
+                if not blockExecution and mm.shouldExecute(sm.instance):
+                    print 'executing %s' % (sm.instance.__class__.__name__,)
+                    mm.executeModule(sm.instance)
                 
         except Exception, e:
             es = 'scheduler: error during network execution: %s' % (str(e),)

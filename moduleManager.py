@@ -6,6 +6,15 @@ import modules
 import mutex
 from random import choice
 from moduleBase import defaultConfigClass
+import time
+
+# some notes with regards to extra module state/logic required for scheduling
+# * in general, executeModule()/transferOutput()/etc calls do exactly that
+#   when called, i.e. they don't automatically cache.  The scheduler should
+#   take care of caching by making the necessary isModified() or
+#   shouldTransfer() callls.  The reason for this is so that the module
+#   actions can be forced
+# 
 
 class moduleManagerException(Exception):
     pass
@@ -13,6 +22,10 @@ class moduleManagerException(Exception):
 # --------------------------------------------------------------------------
 class metaModule:
     """Class used to store module-related information.
+
+    @todo: The functionality of this class has grown with the event-driven
+    conversion.  Think about what exactly its current function is and how
+    we should factor it out of the moduleManager.
     """
     
     def __init__(self, instance, instanceName):
@@ -21,6 +34,18 @@ class metaModule:
         """
         self.instance = instance        
         self.instanceName = instanceName
+
+        # time when module was last invalidated (through parameter changes)
+        self.modifiedTime = time.time()
+        # time when module was last brought up to date
+        # default to 0.0; that will guarantee an initial execution
+        self.executeTime = 0.0
+        # dictionary mapping from (outputIndex, consumerModule) tuples
+        # to the time when data was last transferred from the encapsulated
+        # instance through this path
+        self.transferTimes = {}
+
+        # this will create self.inputs, self.outputs and self.transferTimes
         self.resetInputsOutputs()
 
     def close(self):
@@ -40,6 +65,89 @@ class metaModule:
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]
 
+    def executeModule(self):
+        """Used by moduleManager to execute module.
+
+        This method also takes care of timestamping the execution time if
+        execution was successful.
+        """
+
+        if self.instance:
+            # this is the actual user function.
+            # if something goes wrong, an exception will be thrown and
+            # correctly handled by the invoking module manager
+            self.instance.executeModule()
+
+            # if we get here, everything is okay and we can record
+            # the execution time.
+            self.executeTime = time.time()
+
+    def modify(self):
+        """Used by the moduleManager to timestamp the modified time.
+
+        This should be called whenever module state has changed in such a way
+        as to invalidate the current state of the module.
+        """
+
+        self.modifiedTime = time.time()
+
+    def shouldExecute(self):
+        """Determine whether the encapsulated module needs to be executed.
+        """
+        
+        return self.modifiedTime > self.executeTime
+
+    def shouldTransferOutput(self, outputIndex, consumerInstance):
+        """Determine whether output should be transferred through
+        the given output index to the given consumer module.
+
+        If the transferTime is older than executeTime, we should transfer.
+        Semantics with viewer modules (internal division into source and
+        sink modules by the scheduler) are taken care of by the scheduler.
+        """
+
+        # first double check that we're actually connected on this output
+        # to the given consumerModule
+        ol = self.outputs[outputIdx]
+        consumerFound = False
+
+        for consumerModule, consumerInputIdx in ol:
+            if consumerModule == consumerInstance:
+                consumerFound = True
+                break
+            
+        if consumerFound:
+            tTime = self.transferTimes[(outputIndex, consumerInstance)]
+            return tTime < self.executeTime
+
+        else:
+            return False
+
+    def transferOutput(self, outputIndex, consumerInstance):
+        """This will be called by the moduleManager right before execution
+        to transfer the given output from the encapsulated instance to the
+        correct input on the consumerModule.
+
+        In general, this is only done if shouldTransferOutput is true, so
+        the number of unnecessary transfers should be minimised.
+        """
+        
+        od = self.instance.getOutput(outputIndex)
+
+        # list of tuples with connected (consumerModule, consumerInputIdx)s
+        ol = self.outputs[outputIndex]
+        # search for all tuples that match consumerInstance and transfer data
+        # don't forget to update the time stamps
+        # if one output goes to multiple inputs on the same consumer module
+        # (highly unlikely) we have one time stamp for that.
+        for consumerModule, consumerInputIdx in ol:
+            # we have a match
+            if consumerModule == consumerInstance:
+                # transfer data
+                consumerInstance.setInput(consumerInputIdx, od)
+                # and set the timestamp
+                self.transferTimes[(outputIndex, consumerInstance)] = \
+                                                 time.time()
 
 # --------------------------------------------------------------------------
 class pickledModuleState:
@@ -506,9 +614,13 @@ class moduleManager:
         informative error string if a module fails to execute.
         @return: Nothing.
         """
+
+        mModule = self._moduleDict[instance]
         
         try:
-            instance.executeModule()
+            # this goes via the metaModule so that time stamps and the
+            # like are correctly reported
+            mModule.executeModule(instance)
             
         except Exception, e:
             mModule = self._moduleDict[instance]
@@ -525,7 +637,6 @@ class moduleManager:
 			      
     def viewModule(self, instance):
         instance.view()
-
     
     def deleteModule(self, instance):
         # first disconnect all outgoing connections
@@ -601,7 +712,11 @@ class moduleManager:
         self._moduleDict[input_module].inputs[input_idx] = (output_module,
                                                             output_idx)
 
-        #
+        # and update the outputs thingy on the producer module
+        # FIXME: continue here
+        # make function in metaModule that can be used to record outputs
+        # do the same for the inputs above; these functions can then also
+        # do the necessary time stamping.
         self._moduleDict[output_module].outputs[output_idx].append(
             (input_module, input_idx))
 	
@@ -895,6 +1010,21 @@ class moduleManager:
                 producers.append(pTuple)
 
         return producers
+
+    def setModified(self, moduleInstance):
+        """Changed modified ivar in metaModule.
+
+        This ivar is used to determine whether moduleInstance needs to be
+        executed to become up to date.  It should be set whenever changes
+        are made that dirty the module state, for example parameter changes
+        or topology changes.
+
+        @param moduleInstance: the instance whose modified state sbould be
+        changed.
+        @param value: the new value of the modified ivar, True or False.
+        """
+        
+        self._moduleDict[moduleInstance].modified = value
         
     def setProgress(self, progress, message):
         """Progress is in percent.
@@ -989,17 +1119,62 @@ class moduleManager:
         # everything proceeded according to plan.        
         return True
 
+    def modifyModule(self, moduleInstance):
+        """Call this whenever module state has changed in such a way that
+        necessitates a re-execution, for instance when parameters have been
+        changed or when new input data has been transferred.
+        """
+
+        self._moduleDict[moduleInstance].modify()
+
+    def shouldExecuteModule(self, moduleInstance):
+
+        """Determine whether moduleInstance requires execution to become
+        up to date.
+
+        Execution is required when the module is new or when the user has made
+        parameter or introspection changes.  All of these conditions should be
+        indicated by calling L{moduleManager.modify(instance)}.
+
+        @return: True if execution required, False if not.
+        """
+
+        return self._moduleDict[moduleInstance].shouldExecute()
+
+    def shouldTransferOutput(
+        self, moduleInstance, outputIndex, consumerInstance):
         
-    def transferOutput(self, moduleInstance, outputIndex):
+        """Determine whether output data has to be transferred from
+        moduleInstance via output outputIndex to module consumerInstance.
+
+        Output needs to be transferred if:
+         - moduleInstance has new or changed output
+         - consumerInstance does not have the data anymore / yet
+
+        @return: True if output should be transferred, False if not.
+        """
+        
+        return self._moduleDict[moduleInstance].shouldTransferOutput(
+            outputIndex, consumerInstance)
+
+        
+    def transferOutput(self, moduleInstance, outputIndex, consumerInstance):
         """Transfer output data from moduleInstance to the consumer modules
         connected to its specified output indexes.
 
         @param moduleInstance: producer module whose output data must be
         transferred.
-        @param outputIndexes: only output data produced by these outputs will
+        @param outputIndex: only output data produced by this output will
         be transferred.
+        @param consumerInstance: only data going to this instance will be
+        transferred.
         """
 
-        print 'transferring data %s:%d' % (moduleInstance.__class__.__name__,
-                                           outputIndex)
+        #print 'transferring data %s:%d' % (moduleInstance.__class__.__name__,
+        #                                   outputIndex)
+
+        self._moduleDict[moduleInstance].transferOutput(
+            outputIndex, consumerInstance)
+    
+
 
