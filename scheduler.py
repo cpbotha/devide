@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.7 2005/10/13 16:25:36 cpbotha Exp $
+# $Id: scheduler.py,v 1.8 2005/10/14 15:43:17 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -296,13 +296,13 @@ class scheduler:
         try:
             for sm in schedList:
                 # find all producer modules
-                pmodules_and_output_indices = self.getProducerModules(sm)
+                producers = self.getProducerModules(sm)
                 # transfer relevant data
-                for pmodule, output_index in pmodules_and_output_indices:
+                for pmodule, output_index, input_index in producers:
                     if mm.shouldTransferOutput(pmodule.instance, output_index,
-                                               sm.instance):
+                                               sm.instance, input_index):
                         mm.transferOutput(pmodule.instance, output_index,
-                                          sm.instance)
+                                          sm.instance, input_index)
 
                 # here we can code exeption that block execution
                 # for example, the final segment of a view should never
