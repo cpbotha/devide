@@ -61,7 +61,7 @@ class metaModule:
         del self.outputs
 
 
-    def _findConsumerInOutputConnections(
+    def findConsumerInOutputConnections(
         self, outputIdx, consumerInstance, consumerInputIdx=-1):
         """Find the given consumer module and its input index in the
         list for the given output index.
@@ -69,7 +69,7 @@ class metaModule:
         @param consumerInputIdx: input index on consumer module.  If this is
         -1, the code will only check for the correct consumerInstance and
         will return the first occurrence.
-        @return: index of given instance and index if found, -1 otherwise.
+        @return: index of given instance if found, -1 otherwise.
         """
 
         ol = self.outputs[outputIdx]
@@ -109,6 +109,15 @@ class metaModule:
         # record the input connection
         self.inputs[inputIdx] = (producerModule, producerOutputIdx)
 
+    def disconnectInput(self, inputIdx):
+        """Record disconnection on the given input of the encapsulated
+        instance.
+
+        @return: Nothing.
+        """
+        
+        self.inputs[inputIdx] = None
+
     def connectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
         """Record connection on the given output of the encapsulated module.
 
@@ -116,7 +125,7 @@ class metaModule:
         connection already exists)
         """
 
-        if self._findConsumerInOutputConnections(
+        if self.findConsumerInOutputConnections(
             outputIdx, consumerInstance, consumerInputIdx) >= 0:
             # this connection has already been made, bail.
             return
@@ -128,6 +137,29 @@ class metaModule:
         # this is a new connection, so set the transfer times to 0
         self.transferTimes[
             (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
+
+    def disconnectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
+        """Record disconnection on the given output of the encapsulated module.
+        """
+
+        # find index of the given consumerInstance and consumerInputIdx
+        # in the list of consumers connected to producer port outputIdx
+        cidx = self.findConsumerInOutputConnections(
+            outputIdx, consumerInstance, consumerInputIdx)
+
+        # if this is a valid index, nuke it
+        if cidx >= 0:
+            ol = self.outputs[outputIdx]
+            del ol[cidx]
+
+            # also remove the relevant slot from our transferTimes
+            del self.transferTimes[
+                (outputIdx, consumerInstance, consumerInputIdx)]
+
+        else:
+            # consumer not found, the connection didn't exist
+            raise Exception, \
+                  "Attempt to disconnect output which isn't connected."
         
 
     def resetInputsOutputs(self):
@@ -187,7 +219,7 @@ class metaModule:
 
         # first double check that we're actually connected on this output
         # to the given consumerModule
-        if self._findConsumerInOutputConnections(
+        if self.findConsumerInOutputConnections(
             outputIndex, consumerInstance) >= 0:
             consumerFound = True
         else:
@@ -202,28 +234,12 @@ class metaModule:
         else:
             return False
 
-    def transferOutput(self, outputIndex, consumerInstance, consumerInputIdx):
-        """This will be called by the moduleManager right before execution
-        to transfer the given output from the encapsulated instance to the
-        correct input on the consumerInstance.
+    def timeStampTransferTime(
+        self, outputIndex, consumerInstance, consumerInputIdx):
+        """Timestamp given transfer time with current time.
 
-        @todo: should this method really be in metaModule?
-
-        In general, this is only done if shouldTransferOutput is true, so
-        the number of unnecessary transfers should be minimised.
+        This method is called right after a successful transfer has been made.
         """
-
-        # double check that this connection already exists
-        if self._findConsumerInOutputConnections(
-            outputIndex, consumerInstance, consumerInputIdx) == -1:
-
-            raise Exception, 'metaModule.transferOutput called for ' \
-                  'connection that does not exist.'
-        
-        # get data from producerModule output
-        od = self.instance.getOutput(outputIndex)
-        # set on consumerInstance input
-        consumerInstance.setInput(consumerInputIdx, od)
 
         # and set the timestamp
         self.transferTimes[
@@ -804,13 +820,13 @@ class moduleManager:
         if s:
             supp = s[0]
             suppOutIdx = s[1]
-        
-            oList = self._moduleDict[supp].outputs[suppOutIdx]
-            del oList[oList.index((input_module, input_idx))]
+
+            self._moduleDict[supp].disconnectOutput(
+                suppOutIdx, input_module, input_idx)
 
         # indicate to the meta data that this module doesn't have an input
         # anymore
-        self._moduleDict[input_module].inputs[input_idx] = None
+        self._moduleDict[input_module].disconnectInput(input_idx)
 
     def deserialiseModuleInstances(self, pmsDict, connectionList):
         """Given a pickled stream, this method will recreate all modules,
@@ -1236,19 +1252,47 @@ class moduleManager:
         """Transfer output data from moduleInstance to the consumer modules
         connected to its specified output indexes.
 
+        This will be called by the moduleManager right before execution to
+        transfer the given output from moduleInstance instance to the correct
+        input on the consumerInstance.  In general, this is only done if
+        shouldTransferOutput is true, so the number of unnecessary transfers
+        should be minimised.
+
+        This method is in moduleManager and not in metaModule because it
+        involves more than one metaModule.
+
         @param moduleInstance: producer module whose output data must be
         transferred.
         @param outputIndex: only output data produced by this output will
         be transferred.
         @param consumerInstance: only data going to this instance will be
         transferred.
+        @param consumerInputIdx: data enters consumerInstance via this input
+        port.
         """
 
         #print 'transferring data %s:%d' % (moduleInstance.__class__.__name__,
         #                                   outputIndex)
 
-        self._moduleDict[moduleInstance].transferOutput(
+        # double check that this connection already exists
+
+        pMetaModule = self._moduleDict[moduleInstance]
+        if pMetaModule.findConsumerInOutputConnections(
+            outputIndex, consumerInstance, consumerInputIdx) == -1:
+
+            raise Exception, 'moduleManager.transferOutput called for ' \
+                  'connection that does not exist.'
+        
+        # get data from producerModule output
+        od = moduleInstance.getOutput(outputIndex)
+        # set on consumerInstance input
+        consumerInstance.setInput(consumerInputIdx, od)
+
+        # record that the transfer has just happened
+        pMetaModule.timeStampTransferTime(
             outputIndex, consumerInstance, consumerInputIdx)
-    
 
-
+        # also invalidate the consumerModule; it should re-execute when
+        # a transfer has been made; 
+        cMetaModule = self._moduleDict[consumerInstance]
+        cMetaModule.modify()

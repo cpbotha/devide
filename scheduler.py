@@ -1,6 +1,7 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.9 2005/10/15 00:25:03 cpbotha Exp $
+# $Id: scheduler.py,v 1.10 2005/10/15 13:40:09 cpbotha Exp $
 
+#########################################################################
 class schedulerException(Exception):
     pass
     
@@ -17,9 +18,6 @@ class schedulerModuleWrapper:
     use equality testing or 'in' tests to check for matches.  Use the
     L{matches} method.
     
-    @todo: add method to transfer data and execute modules taking into account
-    the modified information.
-
     @author: Charl P. Botha <http://cpbotha.net/>
     """
     
@@ -302,9 +300,9 @@ class scheduler:
                 if mm.shouldTransferOutput(pmodule.instance, output_index,
                                            sm.instance, input_index):
                     print 'transferring output: %s:%d to %s:%d' % \
-                          (sm.instance.__class__.__name__,
+                          (pmodule.instance.__class__.__name__,
                            output_index,
-                           pmodule.instance.__class__.__name__,
+                           sm.instance.__class__.__name__,
                            input_index)
                     mm.transferOutput(pmodule.instance, output_index,
                                           sm.instance, input_index)
