@@ -127,7 +127,7 @@ class metaModule:
 
         # this is a new connection, so set the transfer times to 0
         self.transferTimes[
-            (outputIdx, consumerInstance, consumerInputIdx)] = time.time()
+            (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
         
 
     def resetInputsOutputs(self):
