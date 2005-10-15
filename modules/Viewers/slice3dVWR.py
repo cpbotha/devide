@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.43 2005/10/05 19:55:27 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.44 2005/10/15 00:25:03 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 import cPickle
@@ -47,7 +47,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.43 $
+    $Revision: 1.44 $
     """
 
     IS_VIEW = 1
@@ -329,6 +329,11 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                         
                 # clear the cached input
                 self._cachedInputs[idx] = -1
+
+    def executeModule(self):
+        # in terms of the view module, executeModule() should update the
+        # view.
+        self.render3D()
             
     def getConfig(self):
         # implant some stuff into the _config object and return it

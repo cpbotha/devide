@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.8 2005/10/14 15:43:17 cpbotha Exp $
+# $Id: scheduler.py,v 1.9 2005/10/15 00:25:03 cpbotha Exp $
 
 class schedulerException(Exception):
     pass
@@ -150,7 +150,7 @@ class scheduler:
         producers = mm.getProducerModules(schedulerModule.instance)
 
         sProducers = []
-        for pInstance, outputIndex in producers:
+        for pInstance, outputIndex, consumerInputIdx in producers:
             if hasattr(pInstance, 'IS_VIEW') and pInstance.IS_VIEW:
                 view = True
                 # it's a producer, so segment has to be 1
@@ -162,7 +162,7 @@ class scheduler:
                 
             sProducers.append(
                 (schedulerModuleWrapper(pInstance, view, viewSegment),
-                 outputIndex))
+                 outputIndex, consumerInputIdx))
 
         return sProducers
             
@@ -293,31 +293,34 @@ class scheduler:
         schedList = self.topoSort(schedulerModules)
         mm = self._devideApp.getModuleManager()
         
-        try:
-            for sm in schedList:
-                # find all producer modules
-                producers = self.getProducerModules(sm)
-                # transfer relevant data
-                for pmodule, output_index, input_index in producers:
-                    if mm.shouldTransferOutput(pmodule.instance, output_index,
-                                               sm.instance, input_index):
-                        mm.transferOutput(pmodule.instance, output_index,
+        for sm in schedList:
+            # find all producer modules
+            producers = self.getProducerModules(sm)
+            # transfer relevant data
+            for pmodule, output_index, input_index in producers:
+                print 'checking for transfer'
+                if mm.shouldTransferOutput(pmodule.instance, output_index,
+                                           sm.instance, input_index):
+                    print 'transferring output: %s:%d to %s:%d' % \
+                          (sm.instance.__class__.__name__,
+                           output_index,
+                           pmodule.instance.__class__.__name__,
+                           input_index)
+                    mm.transferOutput(pmodule.instance, output_index,
                                           sm.instance, input_index)
 
-                # here we can code exeption that block execution
-                # for example, the final segment of a view should never
-                # be executed.  it's output is always ready (a result of
-                # interaction)
-                if sm.view and sm.viewSegment == 1:
-                    blockExecution = True
+            # here we can code exeptions that block execution
+            # for example, the final segment of a view should never
+            # be executed.  it's output is always ready (a result of
+            # interaction)
+            blockExecution = False
+            if sm.view and sm.viewSegment == 1:
+                blockExecution = True
                     
-                # finally: execute module if its not blocked and the
-                # moduleManager thinks it's necessary
-                if not blockExecution and mm.shouldExecute(sm.instance):
-                    print 'executing %s' % (sm.instance.__class__.__name__,)
-                    mm.executeModule(sm.instance)
+            # finally: execute module if its not blocked and the
+            # moduleManager thinks it's necessary
+            if not blockExecution and mm.shouldExecuteModule(sm.instance):
+                print 'executing %s' % (sm.instance.__class__.__name__,)
+                mm.executeModule(sm.instance)
                 
-        except Exception, e:
-            es = 'scheduler: error during network execution: %s' % (str(e),)
-            raise schedulerException(es)
 

@@ -19,7 +19,7 @@ import time
 class moduleManagerException(Exception):
     pass
     
-# --------------------------------------------------------------------------
+#########################################################################
 class metaModule:
     """Class used to store module-related information.
 
@@ -40,11 +40,14 @@ class metaModule:
         self.instanceName = instanceName
 
         # time when module was last invalidated (through parameter changes)
+        # default is current time.  Along with 0.0 executeTime, this will
+        # guarantee initial execution.
         self.modifiedTime = time.time()
         # time when module was last brought up to date
         # default to 0.0; that will guarantee an initial execution
         self.executeTime = 0.0
-        # dictionary mapping from (outputIndex, consumerModule) tuples
+        # dictionary mapping from (outputIndex, consumerModule,
+        # consumerInputIdx) tuples
         # to the time when data was last transferred from the encapsulated
         # instance through this path
         self.transferTimes = {}
@@ -59,7 +62,7 @@ class metaModule:
 
 
     def _findConsumerInOutputConnections(
-        self, outputIndex, consumerInstance, consumerInputIdx=-1):
+        self, outputIdx, consumerInstance, consumerInputIdx=-1):
         """Find the given consumer module and its input index in the
         list for the given output index.
         
@@ -75,9 +78,12 @@ class metaModule:
         for i in range(len(ol)):
             ci, cii = ol[i]
             if ci == consumerInstance and \
-                   (cii == -1 or cii == consumerInputIdx):
+                   (consumerInputIdx == -1 or cii == consumerInputIdx):
                 found = True
                 break
+
+        #import pdb
+        #pdb.set_trace()
 
         if found:
             return i
@@ -98,7 +104,7 @@ class metaModule:
         if self.inputs[inputIdx] is not None:
             raise Exception, \
                   "%d'th input of module %s already connected." % \
-                  (inputIdx, self._instance.__class__.__name__)
+                  (inputIdx, self.instance.__class__.__name__)
 
         # record the input connection
         self.inputs[inputIdx] = (producerModule, producerOutputIdx)
@@ -111,16 +117,17 @@ class metaModule:
         """
 
         if self._findConsumerInOutputConnections(
-            outputIdx, consumerModule, consumerInputIdx) >= 0:
+            outputIdx, consumerInstance, consumerInputIdx) >= 0:
             # this connection has already been made, bail.
             return
 
         # do the connection
         ol = self.outputs[outputIdx]
-        ol.append((consumerModule, consumerInputIdx))
+        ol.append((consumerInstance, consumerInputIdx))
 
         # this is a new connection, so set the transfer times to 0
-        self.transferTimes[(outputIdx, consumerInstance)] = time.time()
+        self.transferTimes[
+            (outputIdx, consumerInstance, consumerInputIdx)] = time.time()
         
 
     def resetInputsOutputs(self):
@@ -178,8 +185,6 @@ class metaModule:
         sink modules by the scheduler) are taken care of by the scheduler.
         """
 
-        
-
         # first double check that we're actually connected on this output
         # to the given consumerModule
         if self._findConsumerInOutputConnections(
@@ -189,7 +194,9 @@ class metaModule:
             consumerFound = False
 
         if consumerFound:
-            tTime = self.transferTimes[(outputIndex, consumerInstance)]
+            tTime = self.transferTimes[
+                (outputIndex, consumerInstance, consumerInputIdx)]
+
             return tTime < self.executeTime
 
         else:
@@ -198,32 +205,31 @@ class metaModule:
     def transferOutput(self, outputIndex, consumerInstance, consumerInputIdx):
         """This will be called by the moduleManager right before execution
         to transfer the given output from the encapsulated instance to the
-        correct input on the consumerModule.
+        correct input on the consumerInstance.
 
-        FIMXE: continue here adding consumerInputIdx support.
+        @todo: should this method really be in metaModule?
 
         In general, this is only done if shouldTransferOutput is true, so
         the number of unnecessary transfers should be minimised.
         """
+
+        # double check that this connection already exists
+        if self._findConsumerInOutputConnections(
+            outputIndex, consumerInstance, consumerInputIdx) == -1:
+
+            raise Exception, 'metaModule.transferOutput called for ' \
+                  'connection that does not exist.'
         
+        # get data from producerModule output
         od = self.instance.getOutput(outputIndex)
+        # set on consumerInstance input
+        consumerInstance.setInput(consumerInputIdx, od)
 
-        # list of tuples with connected (consumerModule, consumerInputIdx)s
-        ol = self.outputs[outputIndex]
-        # search for all tuples that match consumerInstance and transfer data
-        # don't forget to update the time stamps
-        # if one output goes to multiple inputs on the same consumer module
-        # (highly unlikely) we have one time stamp for that.
-        for consumerModule, consumerInputIdx in ol:
-            # we have a match
-            if consumerModule == consumerInstance:
-                # transfer data
-                consumerInstance.setInput(consumerInputIdx, od)
-                # and set the timestamp
-                self.transferTimes[(outputIndex, consumerInstance)] = \
-                                                 time.time()
+        # and set the timestamp
+        self.transferTimes[
+            (outputIndex, consumerInstance, consumerInputIdx)] = time.time()
 
-# --------------------------------------------------------------------------
+#########################################################################
 class pickledModuleState:
     def __init__(self):
         self.moduleConfig = None
@@ -232,7 +238,7 @@ class pickledModuleState:
         # this is the unique name of the module, e.g. dvm15
         self.instanceName = None
 
-# --------------------------------------------------------------------------
+#########################################################################
 class pickledConnection:
     def __init__(self, sourceInstanceName=None, outputIdx=None,
                  targetInstanceName=None, inputIdx=None, connectionType=None):
@@ -243,7 +249,7 @@ class pickledConnection:
         self.inputIdx = inputIdx
         self.connectionType = connectionType
 
-# --------------------------------------------------------------------------
+#########################################################################
 class moduleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program.
@@ -694,7 +700,7 @@ class moduleManager:
         try:
             # this goes via the metaModule so that time stamps and the
             # like are correctly reported
-            mModule.executeModule(instance)
+            mModule.executeModule()
             
         except Exception, e:
             mModule = self._moduleDict[instance]
@@ -774,25 +780,10 @@ class moduleManager:
             input_idx, output_module, output_idx)
 
         # record connection on the output of the producer module
+        # this will also initialise the transfer times
         self._moduleDict[output_module].connectOutput(
             output_idx, input_module, input_idx)
 
-        # if there's nothing there yet, we can't connect!
-#         if output_module.getOutput(output_idx) == None:
-#             raise Exception, \
-#                   "Module %s has no output ready on port %d yet." % \
-#                   (output_module.__class__.__name__, output_idx)
-            
-        # hmmm, we probably shouldn't do this yet...
-# 	input_module.setInput(input_idx, output_module.getOutput(output_idx))
-        
-        # and update the outputs thingy on the producer module
-        # FIXME: continue here
-        # make function in metaModule that can be used to record outputs
-        # do the same for the inputs above; these functions can then also
-        # do the necessary time stamping.
-#         self._moduleDict[output_module].outputs[output_idx].append(
-#             (input_module, input_idx))
 	
     def disconnectModules(self, input_module, input_idx):
         """Disconnect a consumer module from its provider.
@@ -800,6 +791,8 @@ class moduleManager:
         This method will disconnect input_module from its provider by
         disconnecting the link between the provider and input_module at
         the input_idx'th input port of input_module.
+
+        @todo: factor parts of this out into the metaModule.
         """
 
 	input_module.setInput(input_idx, None)
@@ -1085,7 +1078,7 @@ class moduleManager:
                 # unpack
                 pInstance, pOutputIdx = pTuple
                 # and store
-                producers.append((pInstance, pOutputIdx, i)
+                producers.append((pInstance, pOutputIdx, i))
 
         return producers
 
