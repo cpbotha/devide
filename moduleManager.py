@@ -254,8 +254,6 @@ class moduleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program.
     
-    @todo: add transferOutput method, part of the new event-driven work.
-
     @author: Charl P. Botha <http://cpbotha.net/>
     """
     
@@ -793,6 +791,9 @@ class moduleManager:
         the input_idx'th input port of input_module.
 
         @todo: factor parts of this out into the metaModule.
+        FIXME: continue here...  (we can start converting some of
+        the modules to shallow copy their data; especially the slice3dVWR
+        is a problem child.)
         """
 
 	input_module.setInput(input_idx, None)
