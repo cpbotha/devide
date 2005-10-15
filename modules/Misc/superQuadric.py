@@ -1,4 +1,4 @@
-# $Id: superQuadric.py,v 1.3 2004/09/27 17:13:52 cpbotha Exp $
+# $Id: superQuadric.py,v 1.4 2005/10/15 23:05:40 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -8,7 +8,7 @@ import vtk
 class superQuadric(scriptedConfigModuleMixin, moduleBase):
     """Generates a SuperQuadric implicit function and polydata as outputs.
     
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     def __init__(self, moduleManager):
@@ -53,6 +53,10 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         # now create the necessary VTK modules
         self._superquadric = vtk.vtkSuperquadric()
         self._superquadricSource = vtk.vtkSuperquadricSource()
+
+        # we need these temporary outputs
+        self._outputs = [self._superquadric, vtk.vtkPolyData()]
+        
         # setup progress for the processObject
         moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,
                                            "Synthesizing polydata.")
@@ -81,7 +85,16 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         del self._superquadric
         
     def executeModule(self):
+        # when we're executed, outputs become active
         self._superquadricSource.Update()
+
+        # self._outputs[0] (the superquadric implicit) is always ready
+
+        # make shallowCopy
+        self._outputs[1].ShallowCopy(self._superquadricSource.GetOutput())
+        # show that it's modified
+        self._outputs[1].Modified()
+        
 
     def getInputDescriptions(self):
         return ()
@@ -94,10 +107,13 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
                 'Polydata')
     
     def getOutput(self, idx):
-        if idx == 0:
-            return self._superquadric
-        else:
-            return self._superquadricSource.GetOutput()
+        return self._outputs[idx]
+        
+#         if idx == 0:
+#             return self._superquadric
+#         else:
+#             return self._superquadricSource.GetOutput()
+
 
     def configToLogic(self):
         # sanity check

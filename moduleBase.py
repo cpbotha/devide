@@ -1,4 +1,4 @@
-# $Id: moduleBase.py,v 1.16 2004/05/18 23:10:00 cpbotha Exp $
+# $Id: moduleBase.py,v 1.17 2005/10/15 23:05:40 cpbotha Exp $
 
 """Module containing base class for devide modules.
 
@@ -55,7 +55,17 @@ class moduleBase(object):
     def setInput(self, idx, input_stream):
 	"""Attaches input_stream (which is e.g. the output of a previous
         module) to this module's input at position idx.
+
+        If the previous value was None and the current value is not None,
+        the module should initialise as if it's getting a new input.  These
+        actions are signify a disconnect and a connect, i.e. the creation
+        of a new connection in the network.
+
+        If the previous value was not-None and the current value is not-None,
+        the module should take actions as for a changed input.  This event
+        signifies a re-transfer on an already existing connection.
         """
+        
 	raise NotImplementedError
     
     def getOutputDescriptions(self):
