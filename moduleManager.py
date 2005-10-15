@@ -1,3 +1,6 @@
+# moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
+# $Id: moduleManager.py,v 1.75 2005/10/15 13:48:13 cpbotha Exp $
+
 import sys, os, fnmatch
 import re
 import copy
