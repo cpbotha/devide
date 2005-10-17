@@ -1,18 +1,22 @@
-# $Id: moduleBase.py,v 1.17 2005/10/15 23:05:40 cpbotha Exp $
+# moduleBase.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
+# $Id: moduleBase.py,v 1.18 2005/10/17 15:35:14 cpbotha Exp $
 
 """Module containing base class for devide modules.
 
 author: Charl P. Botha <cpbotha@ieee.org>
 """
 
+#########################################################################
 class genericObject(object):
     """Generic object into which we can stuff whichever attributes we want.
     """
     pass
 
+#########################################################################
 class defaultConfigClass(object):
     pass
 
+#########################################################################
 class moduleBase(object):
     """Base class for all modules.
 
@@ -63,7 +67,8 @@ class moduleBase(object):
 
         If the previous value was not-None and the current value is not-None,
         the module should take actions as for a changed input.  This event
-        signifies a re-transfer on an already existing connection.
+        signifies a re-transfer on an already existing connection.  This can
+        be considered an event for which this module is an observer.
         """
         
 	raise NotImplementedError

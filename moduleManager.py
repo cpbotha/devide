@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.75 2005/10/15 13:48:13 cpbotha Exp $
+# $Id: moduleManager.py,v 1.76 2005/10/17 15:35:05 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -19,6 +19,7 @@ import time
 #   actions can be forced
 # 
 
+#########################################################################
 class moduleManagerException(Exception):
     pass
     
