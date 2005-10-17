@@ -1,6 +1,8 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.44 2005/10/15 00:25:03 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.45 2005/10/17 16:23:07 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
+
+# TODO: 'refresh' handlers in setInput()
 
 import cPickle
 from external.SwitchColourDialog import ColourDialog
@@ -38,8 +40,7 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
 
-# -------------------------------------------------------------------------
-
+#########################################################################
 class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     
     """Slicing, dicing slice viewing class.
@@ -47,7 +48,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.44 $
+    $Revision: 1.45 $
     """
 
     IS_VIEW = 1
@@ -69,9 +70,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
         # the renderers corresponding to the render windows
         self._threedRenderer = None
-        self._dummyRenderer = None
-        self._executionEnabled = True
-        self._cachedInputs = [-1] * len(self._inputs)
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
@@ -154,10 +152,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         for idx in range(self._numDataInputs):
             self.setInput(idx, None)
 
-        # also make sure the cached inputs are not bound
-        for idx in range(len(self._cachedInputs)):
-            self._cachedInputs[idx] = -1
-
         # take care of the sliceDirections
         self.sliceDirections.close()
         del self.sliceDirections
@@ -193,7 +187,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self._threedRenderer.RemoveAllProps()
         # take care of all our bindings to renderers
         del self._threedRenderer
-        del self._dummyRenderer
 
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
@@ -229,106 +222,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # take care of the controlFrame too
         self.controlFrame.Destroy()
         del self.controlFrame
-
-    def disableExecution(self):
-        self._executionEnabled = False
-        
-        rw = self.threedFrame.threedRWI.GetRenderWindow()
-
-        # disable interaction
-        rw.GetInteractor().Disable()
-
-        # disable all sliceDirections
-        self.sliceDirections.disableEnabledSliceDirections()
-        
-        # remove current renderer from renderwindow
-        rw.RemoveRenderer(self._threedRenderer)
-
-        # create and install dummy renderer
-        self._dummyRenderer = vtk.vtkRenderer()
-        self._dummyRenderer.SetBackground(0.4, 0.4, 0.4)
-        rw.AddRenderer(self._dummyRenderer)
-
-        # add text to show that we've been disabled
-        ta = vtk.vtkTextActor()
-        ta.SetInput("Execution disabled.  Enable in main window.")
-        x,y = rw.GetSize()
-        ta.SetPosition(10, y / 2 )
-        self._dummyRenderer.AddActor(ta)
-
-        # set cachedInputs to -1, indicating that they have not been touched
-        for idx in range(len(self._cachedInputs)):
-            self._cachedInputs[idx] = -1
-
-        #
-        self.render3D()
-
-    def enableExecution(self):
-        self._executionEnabled = True
-        if self._dummyRenderer:
-            
-            # put old renderer back and destroy dummyRenderer
-            rw = self.threedFrame.threedRWI.GetRenderWindow()
-            rw.RemoveRenderer(self._dummyRenderer)
-            rw.AddRenderer(self._threedRenderer)
-            self._dummyRenderer.RemoveAllProps()
-            self._dummyRenderer = None
-
-            # enable interaction
-            rw.GetInteractor().Enable()
-
-            # enable all sliceDirections
-            self.sliceDirections.enableEnabledSliceDirections()
-
-            # reset the thing
-            self._resetAll()
-
-            # now do all the cached inputs, checking for exceptions!
-            for idx in range(len(self._cachedInputs)):
-
-                # we only have to something if an input is != -1
-
-                if self._cachedInputs[idx] == None:
-                    # we're going to try to disconnect
-                    try:
-                        self.setInput(idx, None)
-                        
-                    except Exception, e:
-                        genUtils.logError(
-                            'Error disconnecting input %d of slice3dVWR ' \
-                            '%s:%s. ' % \
-                            (idx, self._moduleManager.getInstanceName(self),
-                             str(e)))
-
-                elif self._cachedInputs[idx] != -1:
-                    # this means it's NOT None and NOT -1
-                    # so first disconnect
-                    try:
-                        self.setInput(idx, None)
-
-                    except Exception, e:
-                        genUtils.logError(
-                            'Error disconnecting input %d of slice3dVWR ' \
-                            '%s before reconnect:%s. Going to attempt ' \
-                            'reconnection anyway.' % \
-                            (idx, self._moduleManager.getInstanceName(self),
-                             str(e)))
-
-                    try:
-                        self.setInput(idx, self._cachedInputs[idx])
-                        
-                    except Exception, e:
-                        # when this happens, the moduleManager (and
-                        # graphEditor) still think this input port is
-                        # connected, but this module obviously doesn't
-                        genUtils.logError(
-                            'Error adding input %d of slice3dVWR %s: %s. ' \
-                            'Consider disconnecting it.' % \
-                            (idx, self._moduleManager.getInstanceName(self),
-                             str(e)))
-                        
-                # clear the cached input
-                self._cachedInputs[idx] = -1
 
     def executeModule(self):
         # in terms of the view module, executeModule() should update the
@@ -366,18 +259,75 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
     def setInput(self, idx, inputStream):
+        """Attach new input.
 
-        # if execution is disabled, cache all attempts (and store bindings
-        # to the inputStreams) - when execution is re-enabled, we will
-        # playback the cache, destroying connections if necessary; to the
-        # user, it looks like all connections/disconnections are successful
-        if not self._executionEnabled:
-            # store the input
-            self._cachedInputs[idx] = inputStream
-            # and return
-            return
-            
-        
+        This is the slice3dVWR specialisation of the module API setInput
+        call.
+        """
+
+        def _handleNewImageDataInput():
+            connecteds = [i['Connected'] for i in self._inputs]
+            if 'vtkImageDataOverlay' in connecteds and \
+                   'vtkImageDataPrimary' not in connecteds:
+                # this means the user has disconnected his primary and
+                # is trying to reconnect something in its place.  We
+                # don't like that...
+                raise Exception, \
+                      "Please remove all overlays first " \
+                      "before attempting to add primary data."
+
+            # if we already have a primary, make sure the new inputStream
+            # is added at a higher port number than all existing
+            # primaries and overlays
+            if 'vtkImageDataPrimary' in connecteds:
+                highestPortIndex = connecteds.index('vtkImageDataPrimary')
+                for i in range(highestPortIndex, len(connecteds)):
+                    if connecteds[i] == 'vtkImageDataOverlay':
+                        highestPortIndex = i
+
+                if idx <= highestPortIndex:
+                    raise Exception, \
+                          "Please add overlay data at higher input " \
+                          "port numbers " \
+                          "than existing primary data and overlays."
+
+            # tell all our sliceDirections about the new data
+            self.sliceDirections.addData(inputStream)
+                
+            # find out whether this is  primary or an overlay, record it
+            if 'vtkImageDataPrimary' in connecteds:
+                # there's no way there can be only overlays in the list,
+                # the check above makes sure of that
+                self._inputs[idx]['Connected'] = 'vtkImageDataOverlay'
+            else:
+                # there are no primaries or overlays, this must be
+                # a primary then
+                self._inputs[idx]['Connected'] = 'vtkImageDataPrimary'
+
+            # also store binding to the data itself
+            self._inputs[idx]['inputData'] = inputStream
+
+            if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
+                # things to setup when primary data is added
+                #self._extractVOI.SetInput(inputStream)
+
+                # add outline actor and cube axes actor to renderer
+                self._threedRenderer.AddActor(self._outline_actor)
+                self._outline_actor.PickableOff()
+                self._threedRenderer.AddActor(self._cube_axes_actor2d)
+                self._cube_axes_actor2d.PickableOff()
+                # FIXME: make this toggle-able
+                self._cube_axes_actor2d.VisibilityOn()
+
+                # reset everything, including ortho camera
+                self._resetAll()
+
+            # update our 3d renderer
+            self.threedFrame.threedRWI.Render()
+
+        # end of function _handleImageData()
+
+
         if inputStream == None:
             if self._inputs[idx]['Connected'] == 'tdObject':
                 self._tdObjects.removeObject(self._inputs[idx]['tdObject'])
@@ -392,7 +342,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     self._threedRenderer.RemoveActor(self._outline_actor)
                     self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
-
 
                     # deactivate VOI widget as far as possible
                     self._voi_widget.SetInput(None)
@@ -413,74 +362,31 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
             if inputStream.GetClassName() == 'vtkVolume' or \
                inputStream.GetClassName() == 'vtkPolyData':
-                # our _tdObjects instance likes to do this
-                self._tdObjects.addObject(inputStream)
-                # if this worked, we have to make a note that it was
-                # connected as such
-                self._inputs[idx]['Connected'] = 'tdObject'
-                self._inputs[idx]['tdObject'] = inputStream
+
+                # first check if this is a None -> Something or a
+                # Something -> Something case.  In the former case, it's
+                # a new input, in the latter, it's an existing connection
+                # that wants to be updated.
+
+                if self._inputs[idx]['Connected'] is None:
+                    # our _tdObjects instance likes to do this
+                    self._tdObjects.addObject(inputStream)
+                    # if this worked, we have to make a note that it was
+                    # connected as such
+                    self._inputs[idx]['Connected'] = 'tdObject'
+                    self._inputs[idx]['tdObject'] = inputStream
+
+                else:
+                    # todo: take necessary actions to 'refresh' input
+                    pass
                 
             elif inputStream.IsA('vtkImageData'):
-                connecteds = [i['Connected'] for i in self._inputs]
-                if 'vtkImageDataOverlay' in connecteds and \
-                   'vtkImageDataPrimary' not in connecteds:
-                    # this means the user has disconnected his primary and
-                    # is trying to reconnect something in its place.  We
-                    # don't like that...
-                    raise Exception, \
-                          "Please remove all overlays first " \
-                          "before attempting to add primary data."
+                if self._inputs[idx]['Connected'] is None:
+                    _handleNewImageDataInput()
 
-                # if we already have a primary, make sure the new inputStream
-                # is added at a higher port number than all existing
-                # primaries and overlays
-                if 'vtkImageDataPrimary' in connecteds:
-                    highestPortIndex = connecteds.index('vtkImageDataPrimary')
-                    for i in range(highestPortIndex, len(connecteds)):
-                        if connecteds[i] == 'vtkImageDataOverlay':
-                            highestPortIndex = i
-
-                    if idx <= highestPortIndex:
-                        raise Exception, \
-                              "Please add overlay data at higher input " \
-                              "port numbers " \
-                              "than existing primary data and overlays."
-
-                
-                
-                # tell all our sliceDirections about the new data
-                self.sliceDirections.addData(inputStream)
-                
-                # find out whether this is  primary or an overlay, record it
-                if 'vtkImageDataPrimary' in connecteds:
-                    # there's no way there can be only overlays in the list,
-                    # the check above makes sure of that
-                    self._inputs[idx]['Connected'] = 'vtkImageDataOverlay'
                 else:
-                    # there are no primaries or overlays, this must be
-                    # a primary then
-                    self._inputs[idx]['Connected'] = 'vtkImageDataPrimary'
-
-                # also store binding to the data itself
-                self._inputs[idx]['inputData'] = inputStream
-
-                if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
-                    # things to setup when primary data is added
-                    #self._extractVOI.SetInput(inputStream)
-
-                    # add outline actor and cube axes actor to renderer
-                    self._threedRenderer.AddActor(self._outline_actor)
-                    self._outline_actor.PickableOff()
-                    self._threedRenderer.AddActor(self._cube_axes_actor2d)
-                    self._cube_axes_actor2d.PickableOff()
-                    # FIXME: make this toggle-able
-                    self._cube_axes_actor2d.VisibilityOn()
-
-                    # reset everything, including ortho camera
-                    self._resetAll()
-
-                # update our 3d renderer
-                self.threedFrame.threedRWI.Render()
+                    # todo: take necessary actions to 'refresh' input
+                    pass
 
             else:
                 raise TypeError, "Wrong input type!"
@@ -789,10 +695,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         It will configure all 3d widgets and textures and thingies, but it
         won't CREATE anything.
         """
-
-        # we can't do any of this if execution has not been enabled
-        if not self._executionEnabled:
-            return
 
         # we only do something here if we have data
         inputDataL = [i['inputData'] for i in self._inputs
