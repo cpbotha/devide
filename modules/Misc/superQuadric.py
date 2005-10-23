@@ -1,4 +1,4 @@
-# $Id: superQuadric.py,v 1.4 2005/10/15 23:05:40 cpbotha Exp $
+# $Id: superQuadric.py,v 1.5 2005/10/23 19:20:01 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -8,7 +8,7 @@ import vtk
 class superQuadric(scriptedConfigModuleMixin, moduleBase):
     """Generates a SuperQuadric implicit function and polydata as outputs.
     
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
 
     def __init__(self, moduleManager):
@@ -66,8 +66,11 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
              'vtkSuperquadric' : self._superquadric,
              'vtkSuperquadricSource' : self._superquadricSource})
 
+        # apply config to logic
         self.configToLogic()
-        self.syncViewWithLogic()
+        # then bring it all the way up again
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
