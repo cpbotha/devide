@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.113 2005/10/12 13:43:51 cpbotha Exp $
+# $Id: graphEditor.py,v 1.114 2005/10/23 19:16:29 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -190,8 +190,12 @@ class graphEditor:
         wx.EVT_MENU(self._canvasFrame, self._canvasFrame.fileExportAsDOTId,
                  self._handlerFileExportAsDOT)
 
-        wx.EVT_MENU(self._canvasFrame, self._canvasFrame.fileExportSelectedAsDOTId,
-                 self._handlerFileExportSelectedAsDOT)
+        wx.EVT_MENU(self._canvasFrame,
+                    self._canvasFrame.fileExportSelectedAsDOTId,
+                    self._handlerFileExportSelectedAsDOT)
+
+        wx.EVT_MENU(self._canvasFrame, self._canvasFrame.networkExecuteId,
+                    self._handlerNetworkExecute)
 
         wx.EVT_MENU(self._canvasFrame, self._canvasFrame.windowMainID,
                  self._handlerWindowMain)
@@ -302,6 +306,20 @@ class graphEditor:
         # event processing has to continue, else the listbox keeps listening
         # to mouse movements after the glyph has been dropped
         #event.Skip()
+
+    def _handlerNetworkExecute(self, event):
+        """Event handler for 'network|execute' menu call.
+
+        Gets list of all instances in current network, converts these
+        to scheduler modules and requests the scheduler to execute them.
+        """
+
+        allGlyphs = self._canvasFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allInstances = [g.moduleInstance for g in allGlyphs]
+
+        # now ask the scheduler to execute them
+        sms = self._devideApp.scheduler.modulesToSchedulerModules(allInstances)
+        self._devideApp.scheduler.executeModules(sms)
 
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
@@ -524,15 +542,7 @@ class graphEditor:
         si = [i.moduleInstance
               for i in self._glyphSelection.getSelectedGlyphs()]
 
-        sms = self._devideApp.scheduler.modulesToSchedulerModules(si)
-        #if self._devideApp.scheduler.detectCycles(sms):
-        #    print "CYCLES"
-        
-        #mm = self._devideApp.getModuleManager()
-        #print [i.instance.__class__.__name__
-        #       for i in self._devideApp.scheduler.topoSort(sms)]
-
-        self._devideApp.scheduler.executeModules(sms)
+        print "LALA, no test at the moment."
 
     def createGlyph(self, rx, ry, labelList, moduleInstance):
         """Create only a glyph on the canvas given an already created
