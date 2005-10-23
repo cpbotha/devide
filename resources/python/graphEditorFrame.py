@@ -32,6 +32,7 @@ class canvasFrame(wx.Frame):
         self.fileExportAsDOTId = wx.NewId()
         self.fileExportSelectedAsDOTId = wx.NewId()
         self.fileExitId = wx.NewId()
+        self.networkExecuteId = wx.NewId()
         self.windowMainID = wx.NewId()
         self.windowModulePaletteID = wx.NewId()
         self.helpShowHelpId = wx.NewId()
@@ -49,6 +50,9 @@ class canvasFrame(wx.Frame):
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
         self.editMenu = wx.Menu()
         self.frame_1_menubar.Append(self.editMenu, "&Edit")
+        wxglade_tmp_menu = wx.Menu()
+        wxglade_tmp_menu.Append(self.networkExecuteId, "E&xecute\tF5", "Execute the current network", wx.ITEM_NORMAL)
+        self.frame_1_menubar.Append(wxglade_tmp_menu, "&Network")
         wxglade_tmp_menu = wx.Menu()
         wxglade_tmp_menu.Append(self.windowMainID, "&Main window", "Show the DeVIDE main window.", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(self.windowModulePaletteID, "Module &Palette", "Show the module palette.", wx.ITEM_NORMAL)
@@ -105,7 +109,7 @@ class canvasFrame(wx.Frame):
 class modulePaletteFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: modulePaletteFrame.__init__
-        kwds["style"] = wx.CAPTION|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER|wx.FRAME_FLOAT_ON_PARENT
+        kwds["style"] = wx.CAPTION|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         self.panel_1 = wx.Panel(self, -1)
         self.modCatsListSplitterWindow = wx.SplitterWindow(self.panel_1, -1, style=wx.SP_3D|wx.SP_BORDER)
