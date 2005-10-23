@@ -1,10 +1,11 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.76 2005/10/17 15:35:05 cpbotha Exp $
+# $Id: moduleManager.py,v 1.77 2005/10/23 19:17:55 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
 import copy
 import genUtils
+from metaModule import metaModule
 import modules
 import mutex
 from random import choice
@@ -17,237 +18,18 @@ import time
 #   take care of caching by making the necessary isModified() or
 #   shouldTransfer() callls.  The reason for this is so that the module
 #   actions can be forced
-# 
+#
+
+# notes with regards to execute on change:
+# * devide.py should register a "change" handler with the moduleManager.
+#   I've indicated places with "execute on change" where I think this
+#   handler should be invoked.  devide.py can then invoke the scheduler.
 
 #########################################################################
 class moduleManagerException(Exception):
     pass
     
 #########################################################################
-class metaModule:
-    """Class used to store module-related information.
-
-    @todo: The functionality of this class has grown with the event-driven
-    conversion.  Think about what exactly its current function is and how
-    we should factor it out of the moduleManager.
-    @todo: at the moment, some interfaces work with a real module instance
-    as well as a metaModule.  Should be consistent and use all metaModules.
-
-    @author: Charl P. Botha <http://cpbotha.net/>
-    """
-    
-    def __init__(self, instance, instanceName):
-        """Instance is the actual class instance and instanceName is a unique
-        name that has been chosen by the user or automatically.
-        """
-        self.instance = instance        
-        self.instanceName = instanceName
-
-        # time when module was last invalidated (through parameter changes)
-        # default is current time.  Along with 0.0 executeTime, this will
-        # guarantee initial execution.
-        self.modifiedTime = time.time()
-        # time when module was last brought up to date
-        # default to 0.0; that will guarantee an initial execution
-        self.executeTime = 0.0
-        # dictionary mapping from (outputIndex, consumerModule,
-        # consumerInputIdx) tuples
-        # to the time when data was last transferred from the encapsulated
-        # instance through this path
-        self.transferTimes = {}
-
-        # this will create self.inputs, self.outputs and self.transferTimes
-        self.resetInputsOutputs()
-
-    def close(self):
-        del self.instance
-        del self.inputs
-        del self.outputs
-
-
-    def findConsumerInOutputConnections(
-        self, outputIdx, consumerInstance, consumerInputIdx=-1):
-        """Find the given consumer module and its input index in the
-        list for the given output index.
-        
-        @param consumerInputIdx: input index on consumer module.  If this is
-        -1, the code will only check for the correct consumerInstance and
-        will return the first occurrence.
-        @return: index of given instance if found, -1 otherwise.
-        """
-
-        ol = self.outputs[outputIdx]
-
-        found = False
-        for i in range(len(ol)):
-            ci, cii = ol[i]
-            if ci == consumerInstance and \
-                   (consumerInputIdx == -1 or cii == consumerInputIdx):
-                found = True
-                break
-
-        #import pdb
-        #pdb.set_trace()
-
-        if found:
-            return i
-        else:
-            return -1
-
-    def connectInput(self, inputIdx, producerModule, producerOutputIdx):
-        """Record connection on the specified inputIdx.
-
-        This is one half of recording a complete connection: the supplier
-        module should also record the connection of this consumer.
-
-        @raise Exception: if input is already connected.
-        @return: Nothing.
-        """
-
-        # check that the given input is not already connected
-        if self.inputs[inputIdx] is not None:
-            raise Exception, \
-                  "%d'th input of module %s already connected." % \
-                  (inputIdx, self.instance.__class__.__name__)
-
-        # record the input connection
-        self.inputs[inputIdx] = (producerModule, producerOutputIdx)
-
-    def disconnectInput(self, inputIdx):
-        """Record disconnection on the given input of the encapsulated
-        instance.
-
-        @return: Nothing.
-        """
-        
-        self.inputs[inputIdx] = None
-
-    def connectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
-        """Record connection on the given output of the encapsulated module.
-
-        @return: True if connection recorded, False if not (for example if
-        connection already exists)
-        """
-
-        if self.findConsumerInOutputConnections(
-            outputIdx, consumerInstance, consumerInputIdx) >= 0:
-            # this connection has already been made, bail.
-            return
-
-        # do the connection
-        ol = self.outputs[outputIdx]
-        ol.append((consumerInstance, consumerInputIdx))
-
-        # this is a new connection, so set the transfer times to 0
-        self.transferTimes[
-            (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
-
-    def disconnectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
-        """Record disconnection on the given output of the encapsulated module.
-        """
-
-        # find index of the given consumerInstance and consumerInputIdx
-        # in the list of consumers connected to producer port outputIdx
-        cidx = self.findConsumerInOutputConnections(
-            outputIdx, consumerInstance, consumerInputIdx)
-
-        # if this is a valid index, nuke it
-        if cidx >= 0:
-            ol = self.outputs[outputIdx]
-            del ol[cidx]
-
-            # also remove the relevant slot from our transferTimes
-            del self.transferTimes[
-                (outputIdx, consumerInstance, consumerInputIdx)]
-
-        else:
-            # consumer not found, the connection didn't exist
-            raise Exception, \
-                  "Attempt to disconnect output which isn't connected."
-        
-
-    def resetInputsOutputs(self):
-        numIns = len(self.instance.getInputDescriptions())
-        numOuts = len(self.instance.getOutputDescriptions())
-        # numIns list of tuples of (supplierModule, supplierOutputIdx)
-        # if the input is not connected, that position in the list is None
-        # supplierModule is a module instance, not a metaModule
-        self.inputs = [None] * numIns
-        # numOuts list of lists of tuples of (consumerModule,
-        # consumerInputIdx); consumerModule is an instance, not a metaModule
-        # be careful with list concatenation, it makes copies, which are mostly
-        # shallow!!!
-        self.outputs = [[] for _ in range(numOuts)]
-
-    def executeModule(self):
-        """Used by moduleManager to execute module.
-
-        This method also takes care of timestamping the execution time if
-        execution was successful.
-        """
-
-        if self.instance:
-            # this is the actual user function.
-            # if something goes wrong, an exception will be thrown and
-            # correctly handled by the invoking module manager
-            self.instance.executeModule()
-
-            # if we get here, everything is okay and we can record
-            # the execution time.
-            self.executeTime = time.time()
-
-    def modify(self):
-        """Used by the moduleManager to timestamp the modified time.
-
-        This should be called whenever module state has changed in such a way
-        as to invalidate the current state of the module.
-        """
-
-        self.modifiedTime = time.time()
-
-    def shouldExecute(self):
-        """Determine whether the encapsulated module needs to be executed.
-        """
-        
-        return self.modifiedTime > self.executeTime
-
-    def shouldTransferOutput(
-        self, outputIndex, consumerInstance, consumerInputIdx):
-        """Determine whether output should be transferred through
-        the given output index to the input index on the given consumer module.
-
-        If the transferTime is older than executeTime, we should transfer.
-        Semantics with viewer modules (internal division into source and
-        sink modules by the scheduler) are taken care of by the scheduler.
-        """
-
-        # first double check that we're actually connected on this output
-        # to the given consumerModule
-        if self.findConsumerInOutputConnections(
-            outputIndex, consumerInstance) >= 0:
-            consumerFound = True
-        else:
-            consumerFound = False
-
-        if consumerFound:
-            tTime = self.transferTimes[
-                (outputIndex, consumerInstance, consumerInputIdx)]
-
-            return tTime < self.executeTime
-
-        else:
-            return False
-
-    def timeStampTransferTime(
-        self, outputIndex, consumerInstance, consumerInputIdx):
-        """Timestamp given transfer time with current time.
-
-        This method is called right after a successful transfer has been made.
-        """
-
-        # and set the timestamp
-        self.transferTimes[
-            (outputIndex, consumerInstance, consumerInputIdx)] = time.time()
 
 #########################################################################
 class pickledModuleState:
@@ -328,6 +110,27 @@ class moduleManager:
             except:
                 # we can't allow a module to stop us
                 pass
+
+    def applyModuleViewToLogic(self, instance):
+        """Interface method that can be used by clients to transfer module
+        view to underlying logic.
+
+        This is usually called by moduleUtils and thunks through to the
+        relevant metaModule call.
+        """
+
+        mModule = self._moduleDict[instance]
+        mModule.applyViewToLogic()
+
+        # execute on change
+
+    def syncModuleViewWithLogic(self, instance):
+        """Interface method that can be used by clients to transfer config
+        information from the underlying module logic (model) to the view.
+        """
+
+        mModule = self._moduleDict[instance]
+        mModule.syncModuleViewWithLogic()
 
     def scanModules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
@@ -1211,13 +1014,13 @@ class moduleManager:
         # everything proceeded according to plan.        
         return True
 
-    def modifyModule(self, moduleInstance):
-        """Call this whenever module state has changed in such a way that
-        necessitates a re-execution, for instance when parameters have been
-        changed or when new input data has been transferred.
-        """
+#     def modifyModule(self, moduleInstance):
+#         """Call this whenever module state has changed in such a way that
+#         necessitates a re-execution, for instance when parameters have been
+#         changed or when new input data has been transferred.
+#         """
 
-        self._moduleDict[moduleInstance].modify()
+#         self._moduleDict[moduleInstance].modify()
 
     def shouldExecuteModule(self, moduleInstance):
 
@@ -1300,3 +1103,7 @@ class moduleManager:
         # a transfer has been made; 
         cMetaModule = self._moduleDict[consumerInstance]
         cMetaModule.modify()
+
+        # execute on change
+        # we probably shouldn't automatically execute here... transfers
+        # mean that some sort of network execution is already running
