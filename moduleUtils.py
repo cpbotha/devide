@@ -1,4 +1,9 @@
-# $Id: moduleUtils.py,v 1.28 2005/06/03 09:12:11 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.29 2005/10/23 19:18:47 cpbotha Exp $
+
+"""Collection of module utility functions.
+
+@author: Charl P. Botha <http://cpbotha.net/>
+"""
 
 import wx
 from external.vtkPipeline.vtkPipeline import \
@@ -121,17 +126,17 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     
     # execute
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
-               lambda e: (d3module.applyViewToLogic(),
+               lambda e: (mm.applyModuleViewToLogic(d3module),
                           mm.executeModule(d3module)))
     # close
     wx.EVT_BUTTON(viewFrame, viewFrame.closeButtonId,
                lambda e, vf=viewFrame: vf.Show(False))
     # apply
     wx.EVT_BUTTON(viewFrame, viewFrame.applyButtonId,
-               lambda e, m=d3module: m.applyViewToLogic())
+               lambda e: mm.applyModuleViewToLogic(d3module))
     # sync
     wx.EVT_BUTTON(viewFrame, viewFrame.syncButtonId,
-               lambda e, m=d3module: m.syncViewWithLogic())
+               lambda e: mm.syncModuleViewWithLogic(d3module))
 
     # help
     wx.EVT_BUTTON(viewFrame, viewFrame.helpButtonId,
