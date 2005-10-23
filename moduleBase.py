@@ -1,5 +1,5 @@
 # moduleBase.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleBase.py,v 1.18 2005/10/17 15:35:14 cpbotha Exp $
+# $Id: moduleBase.py,v 1.19 2005/10/23 19:17:08 cpbotha Exp $
 
 """Module containing base class for devide modules.
 
@@ -95,13 +95,20 @@ class moduleBase(object):
     def logicToConfig(self):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
+
+        If this has resulted in changes to the config, return True, otherwise
+        return False.
         """
         raise NotImplementedError
 
     def configToLogic(self):
         """Apply internal configuration information (usually self._config) to
         the underlying logic.
+
+        If this has resulted in changes to the logic, return True, otherwise
+        return False
         """
+        
         raise NotImplementedError
 
     def viewToConfig(self):
@@ -118,26 +125,6 @@ class moduleBase(object):
         """
 	raise NotImplementedError
 
-    def applyViewToLogic(self):
-        """Utility method that is used by the default CSAEO buttons.
-
-        By default, applying changes to the underlying logic is followed
-        by a synch of the view (via the config) to the underlying logic.
-        The reason for this is to enable real-time display of other logic-
-        dependent variables in the view.
-        """
-        
-        self.viewToConfig()
-        self.configToLogic()
-        # this brings everything up to the surface again
-        self.syncViewWithLogic()
-
-    def syncViewWithLogic(self):
-        """Utility method that is used by the default CSAEO buttons.
-        """
-        self.logicToConfig()
-        self.configToView()
-        
     def executeModule(self):
         """This should make the model do whatever processing it was designed
         to do.
