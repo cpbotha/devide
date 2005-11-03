@@ -1,5 +1,5 @@
 # pointsToSpheres.py copyright (c) 2005 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: pointsToSpheres.py,v 1.3 2005/10/23 19:20:43 cpbotha Exp $
+# $Id: pointsToSpheres.py,v 1.4 2005/11/03 17:08:39 cpbotha Exp $
 # see module documentation
 
 # FIXME: the observer pattern is not required anymore in the new event-driven
@@ -23,7 +23,9 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
     'VolumeIndex'.  All values in this array are equal to the corresponding
     point's index in the input points list.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
+
+    @author: Charl P. Botha <http://cpbotha.net/>
     """
 
     def __init__(self, moduleManager):
@@ -103,25 +105,14 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         if inputStream is not self._inputPoints:
 
             if inputStream == None:
-                # disconnect
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
-                    
                 self._inputPoints = None
 
             elif hasattr(inputStream, 'devideType') and \
-                 inputStream.devideType == 'namedPoints':
-                # correct type... first disconnect the old
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
-
+                     inputStream.devideType == 'namedPoints':
+                # correct type
                 self._inputPoints = inputStream
-                self._inputPoints.addObserver(self._observerInputPoints)
-
                 # initial update
-                self._observerInputPoints(None)
+                #self._observerInputPoints(None)
 
             else:
                 raise TypeError, 'This input requires a named points type.'
@@ -155,7 +146,6 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
             self._config.numInternalSpheres = 0
 
 
-
         # if the number of internal spheres has changed, we have to start over
         haveToCreate = False
         if len(self._sphereSources) > 0:
@@ -179,14 +169,17 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
                     sphere.SetPhiResolution(self._config.phiResolution)
     
     def executeModule(self):
+        # synchronise our balls on the input points (they might have changed)
+        self._syncOnInputPoints()
         # run the whole pipeline
         self._appendPolyData.Update()
+
         # shallow copy the polydata
         self._output.ShallowCopy(self._appendPolyData.GetOutput())
         # indicate that the output has been modified
         self._output.Modified()
 
-    def _observerInputPoints(self, obj):
+    def _syncOnInputPoints(self):
         # extract a list from the input points
         tempList = []
         if self._inputPoints:
