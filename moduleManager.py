@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.77 2005/10/23 19:17:55 cpbotha Exp $
+# $Id: moduleManager.py,v 1.78 2005/11/03 17:10:26 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -509,6 +509,9 @@ class moduleManager:
 
     def executeModule(self, instance):
         """Execute module instance.
+
+        Important: this method does not result in data being transferred
+        after the execution, it JUST performs the module execution.
         
         @param instance: module instance to be executed.
         @raise moduleManagerException: this exception is raised with an
