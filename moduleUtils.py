@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.29 2005/10/23 19:18:47 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.30 2005/11/04 10:07:35 cpbotha Exp $
 
 """Collection of module utility functions.
 
@@ -50,7 +50,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
                                         viewFrame.executeButtonId,
                                         "Execute")
     viewFrame.executeButton.SetToolTip(wx.ToolTip(
-        "Apply any changes, then execute the module."))
+        "Apply any changes, then execute the whole network."))
 
     viewFrame.closeButtonId = wx.NewId()
     viewFrame.closeButton = wx.Button(viewFramePanel,
@@ -127,7 +127,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     # execute
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
                lambda e: (mm.applyModuleViewToLogic(d3module),
-                          mm.executeModule(d3module)))
+                          mm.executeNetwork(d3module)))
     # close
     wx.EVT_BUTTON(viewFrame, viewFrame.closeButtonId,
                lambda e, vf=viewFrame: vf.Show(False))

@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.10 2005/10/15 13:40:09 cpbotha Exp $
+# $Id: scheduler.py,v 1.11 2005/11/04 10:07:35 cpbotha Exp $
 
 #########################################################################
 class schedulerException(Exception):
@@ -45,6 +45,9 @@ class schedulerModuleWrapper:
 #########################################################################
 class scheduler:
     """Coordinates event-driven network execution.
+
+    @todo: document the execution model completely, including for example
+    VTK exceptions and when updates are forced, etc.
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -274,11 +277,19 @@ class scheduler:
 
     def executeModules(self, schedulerModules):
         """Execute the modules in schedulerModules in topological order.
-        
+
+        For each module, all output is transferred from its consumers and then
+        it's executed.  I'm still thinking about the implications of doing
+        this the other way round, i.e. each module is executed and its output
+        is transferred.
+
         @param schedulerModules: list of modules that should be executed in
         order.
         @raise cyclesDetectedException: This exception is raised if any
         cycles are detected in the modules that have to be executed.
+
+        @todo: add start_module parameter, execution skips all modules before
+        this module in the topologically sorted execution list.
         
         """
         
