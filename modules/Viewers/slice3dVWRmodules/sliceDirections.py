@@ -1,5 +1,5 @@
 # sliceDirections.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirections.py,v 1.11 2005/05/21 23:39:15 cpbotha Exp $
+# $Id: sliceDirections.py,v 1.12 2005/11/04 15:47:43 cpbotha Exp $
 # class encapsulating all instances of the sliceDirection class
 
 import genUtils
@@ -90,11 +90,28 @@ class sliceDirections(s3dcGridMixin):
                 
             raise Exception, msg
 
-    def addContourObject(self, tdObject, prop3D):
-        """Activate contouring for tdObject on all sliceDirections.  prop3D
-        is the actor/prop representing the tdObject (which is most often a
-        vtkPolyData) in the 3d scene.
+    def updateData(self, prevData, newData):
+        """Replace prevData with newData.
+
+        This call is used to update a data object on an already existing
+        connection and is used by the slice3dVWR when a new transfer is made
+        to one of its inputs.  This method calls the updateData method of
+        the various sliceDirection instances.
+
+        @param prevData: the old dataset (will be replaced by the new)
+        @param newData: The new data.
         """
+
+        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+            sliceDirection.updateData(prevData, newData)
+
+    def addContourObject(self, tdObject, prop3D):
+        """Activate contouring for tdObject on all sliceDirections.
+
+        @param prop3D: the actor/prop representing the tdObject (which is
+        most often a vtkPolyData) in the 3d scene.
+        """
+        
         for sliceName, sliceDirection in self._sliceDirectionsDict.items():
             sliceDirection.addContourObject(tdObject, prop3D)
 

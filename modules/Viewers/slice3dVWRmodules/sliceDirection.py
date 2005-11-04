@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.24 2005/08/04 16:23:31 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.25 2005/11/04 15:47:43 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -305,6 +305,19 @@ class sliceDirection:
                 # and add ourselvess to the output unstructured grid pointer
                 self.sliceDirections.ipwAppendFilter.AddInput(
                     self._ipws[-1].GetResliceOutput())
+
+    def updateData(self, prevInputData, newInputData):
+        """Change data-object on an existing connection.
+
+        
+        """
+
+        for ipw in self._ipws:
+            if prevInputData is ipw.GetInput():
+                # we just make yet another ShallowCopy of the new input
+                # if we don't do this and actually call a SetInput on the IPW,
+                # it will go and reset the slice geometry.
+                ipw.GetInput().ShallowCopy(newInputData)
 
     def close(self):
         """Shut down everything."""

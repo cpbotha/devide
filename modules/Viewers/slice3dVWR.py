@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.46 2005/11/04 13:56:04 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.47 2005/11/04 15:47:42 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 # TODO: 'refresh' handlers in setInput()
@@ -48,7 +48,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.46 $
+    $Revision: 1.47 $
     """
 
     IS_VIEW = 1
@@ -390,14 +390,19 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                     _handleNewImageDataInput()
 
                 else:
-                    # todo: take necessary actions to 'refresh' input
-                    pass
+                    # take necessary actions to refresh
+                    prevData = self._inputs[idx]['inputData']
+                    self.sliceDirections.updateData(prevData, inputStream)
+                    # record it in our main structure
+                    self._inputs[idx]['inputData'] = inputStream
 
             else:
                 raise TypeError, "Wrong input type!"
 
         # ends: elif hasattr GetClassName
         elif hasattr(inputStream, 'devideType'):
+            # todo: re-implement, this will now be called at EVERY
+            # network execute!
             print "has d3type"
             if inputStream.devideType == 'namedPoints':
                 print "d3type correct"
