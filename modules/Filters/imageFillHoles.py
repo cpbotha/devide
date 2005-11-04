@@ -19,7 +19,7 @@ class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
     reconstruction filter as per Luc Vincent and a special image border mask
     generator filter.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -63,7 +63,8 @@ class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
              'vtkImageGreyReconstruct' : self._imageGreyReconstruct})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

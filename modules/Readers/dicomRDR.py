@@ -1,4 +1,4 @@
-# $Id: dicomRDR.py,v 1.11 2004/05/08 22:18:27 cpbotha Exp $
+# $Id: dicomRDR.py,v 1.12 2005/11/04 10:34:58 cpbotha Exp $
 
 import genUtils
 import os
@@ -23,7 +23,7 @@ class dicomRDR(moduleBase,
     button on the view/config window.  You can select multiple files in
     the File dialog by holding shift or control whilst clicking.
 
-    $Revision: 1.11 $
+    $Revision: 1.12 $
     """
     
     def __init__(self, moduleManager):
@@ -48,7 +48,8 @@ class dicomRDR(moduleBase,
 
         # do the normal thang (down to logic, up again)
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 	
     def close(self):
         del self._fileDialog

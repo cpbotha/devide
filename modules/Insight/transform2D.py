@@ -1,4 +1,4 @@
-# $Id: transform2D.py,v 1.7 2004/11/11 12:51:00 joris Exp $
+# $Id: transform2D.py,v 1.8 2005/11/04 10:34:55 cpbotha Exp $
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should
@@ -43,7 +43,8 @@ class transform2D(noConfigModuleMixin, moduleBase):
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self})
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
              
 
     def close(self):

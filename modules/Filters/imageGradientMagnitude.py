@@ -10,7 +10,7 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
     """Calculates the gradient magnitude of the input volume using central
     differences.
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
     
     def __init__(self, moduleManager):
@@ -31,7 +31,8 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

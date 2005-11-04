@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: nbCurvesLevelSet.py,v 1.3 2005/05/27 13:25:27 cpbotha Exp $
+# $Id: nbCurvesLevelSet.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -23,7 +23,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
     The initial level set is a volume with the initial surface embedded as the
     0 level set, i.e. the 0-value iso-contour (more or less).
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     def __init__(self, moduleManager):
@@ -57,7 +57,8 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
 
         # send config down to logic and then all the way up to the view
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         self._destroyITKPipeline()

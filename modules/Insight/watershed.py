@@ -1,4 +1,4 @@
-# $Id: watershed.py,v 1.1 2004/03/09 16:41:59 cpbotha Exp $
+# $Id: watershed.py,v 1.2 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -46,7 +46,8 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
              'itkWatershedImageFilter' : self._watershed})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

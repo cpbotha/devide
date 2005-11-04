@@ -17,7 +17,7 @@ class extractHDomes(scriptedConfigModuleMixin, moduleBase):
     Applications and Efficient Algorithms', Luc Vincent, IEEE Trans. on Image
     Processing, 1993.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -61,7 +61,8 @@ class extractHDomes(scriptedConfigModuleMixin, moduleBase):
              'ImageMath Subtract R' : self._imageMathSubtractR})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

@@ -1,4 +1,4 @@
-# $Id: gradientAnisotropicDiffusion.py,v 1.3 2004/04/14 15:58:02 cpbotha Exp $
+# $Id: gradientAnisotropicDiffusion.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -13,7 +13,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
     This will smooth homogeneous areas whilst preserving features
     (e.g. edges).
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):
@@ -48,7 +48,8 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
              'itkGradientAnisotropicDiffusion' : self._diffuse})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

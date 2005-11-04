@@ -1,5 +1,5 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: imageGaussianSmooth.py,v 1.6 2005/06/03 09:34:32 cpbotha Exp $
+# $Id: imageGaussianSmooth.py,v 1.7 2005/11/04 10:34:50 cpbotha Exp $
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
@@ -28,7 +28,8 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         self._createViewFrame()
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

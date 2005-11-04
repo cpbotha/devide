@@ -9,7 +9,7 @@ INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
 class streamTracer(scriptedConfigModuleMixin, moduleBase):
     """Visualise a vector field with stream lines.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -36,7 +36,8 @@ class streamTracer(scriptedConfigModuleMixin, moduleBase):
              'vtkStreamTracer' : self._streamTracer})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

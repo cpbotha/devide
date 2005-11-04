@@ -1,4 +1,4 @@
-# $Id: cannyEdgeDetection.py,v 1.2 2004/09/13 20:22:33 cpbotha Exp $
+# $Id: cannyEdgeDetection.py,v 1.3 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -11,7 +11,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
     """Performs 3D Canny edge detection on input image.
 
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -49,7 +49,8 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
              'itkCannyEdgeDetectionImageFilter' : self._canny})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

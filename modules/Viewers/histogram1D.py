@@ -17,7 +17,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
     """Calculates and shows 1D histogram (occurrences over value) of its
     input data.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -36,7 +36,8 @@ class histogram1D(introspectModuleMixin, moduleBase):
         self._config.maxValue = 256.0
         
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
         self.view()
 

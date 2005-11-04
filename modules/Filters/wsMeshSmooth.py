@@ -30,7 +30,8 @@ class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

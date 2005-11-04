@@ -1,4 +1,4 @@
-# $Id: vtkPolyDataWRT.py,v 1.4 2005/06/27 09:30:44 cpbotha Exp $
+# $Id: vtkPolyDataWRT.py,v 1.5 2005/11/04 10:35:01 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -33,7 +33,8 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
         
     def close(self):
         # we should disconnect all inputs

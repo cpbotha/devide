@@ -1,4 +1,4 @@
-# $Id: extractImageComponents.py,v 1.2 2004/11/02 16:29:18 cpbotha Exp $
+# $Id: extractImageComponents.py,v 1.3 2005/11/04 10:34:50 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -11,7 +11,7 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
     Specify the indices of the components you wish to extract and the number
     of components.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -48,7 +48,8 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
              'vtkImageExtractComponents' : self._extract})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

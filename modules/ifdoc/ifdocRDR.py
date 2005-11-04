@@ -1,5 +1,5 @@
 # ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocRDR.py,v 1.4 2005/06/03 09:34:39 cpbotha Exp $
+# $Id: ifdocRDR.py,v 1.5 2005/11/04 10:35:03 cpbotha Exp $
 # module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin
@@ -70,7 +70,8 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
                               None)
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
         
     def close(self):
         filenameViewModuleMixin.close(self)

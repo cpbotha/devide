@@ -13,7 +13,7 @@ class closing(scriptedConfigModuleMixin, moduleBase):
     with user specified sizes in 3 dimensions.  Specifying a size of 1 in any
     dimension will disable processing in that dimension.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -47,7 +47,8 @@ class closing(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

@@ -1,4 +1,4 @@
-# $Id: nbhSeedConnect.py,v 1.3 2004/04/15 22:49:46 cpbotha Exp $
+# $Id: nbhSeedConnect.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -16,7 +16,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
     pixels have intensities between the thresholds are considered valid
     candidates.  The size of the neighbourhood can be set as well.
     
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):
@@ -59,7 +59,8 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
              'itkNeighborhoodConnectedImageFilter' : self._nbhCIF})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

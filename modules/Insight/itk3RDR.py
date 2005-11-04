@@ -1,4 +1,4 @@
-# $Id: itk3RDR.py,v 1.1 2004/05/13 16:23:13 cpbotha Exp $
+# $Id: itk3RDR.py,v 1.2 2005/11/04 10:34:55 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -18,7 +18,7 @@ class itk3RDR(moduleBase, filenameViewModuleMixin):
     <li>.hdr or .img: Analyze .hdr header and .img data</li>
     </ul>
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     _outputTypes = ['Float 3D', 'Double 3D',
@@ -68,7 +68,8 @@ class itk3RDR(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
         
     def close(self):
         for i in range(len(self._readers)):

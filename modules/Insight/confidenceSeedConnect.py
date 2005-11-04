@@ -1,4 +1,4 @@
-# $Id: confidenceSeedConnect.py,v 1.5 2005/06/29 13:45:38 cpbotha Exp $
+# $Id: confidenceSeedConnect.py,v 1.6 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -26,7 +26,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
     won't quite work.  In other words, the output of this module can
     only be trusted if there's at least a single seed point.
     
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
     
     def __init__(self, moduleManager):
@@ -67,7 +67,8 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
              'itkConfidenceConnectedImageFilter' : self._cCIF})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

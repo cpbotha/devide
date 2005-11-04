@@ -9,7 +9,7 @@ class imageGreyDilate(scriptedConfigModuleMixin, moduleBase):
 
     """Performs a greyscale 3D dilation on the input.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -38,7 +38,8 @@ class imageGreyDilate(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

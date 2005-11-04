@@ -11,7 +11,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
     The underlying logic can do far more than the UI shows at this moment.
     Please let me know if you require more options.
     
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
 
     # get these values from vtkImageMathematics.h
@@ -55,7 +55,8 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

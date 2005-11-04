@@ -13,7 +13,7 @@ class probeFilter(noConfigModuleMixin, moduleBase):
     i.e. the interpolated values will be associated as the attributes of the
     polydata points.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     def __init__(self, moduleManager):
@@ -45,7 +45,8 @@ class probeFilter(noConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

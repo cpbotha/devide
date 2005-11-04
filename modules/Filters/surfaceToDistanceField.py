@@ -1,5 +1,5 @@
 # surfaceToDistanceField copyright (c) 2004 by Charl P. Botha cpbotha.net
-# $Id: surfaceToDistanceField.py,v 1.1 2004/04/01 21:08:59 cpbotha Exp $
+# $Id: surfaceToDistanceField.py,v 1.2 2005/11/04 10:34:50 cpbotha Exp $
 
 import genUtils
 from moduleBase import moduleBase
@@ -18,7 +18,7 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, moduleBase):
     extremely simple geometry.  Only use this if you know exactly what
     you're doing.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -54,7 +54,8 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

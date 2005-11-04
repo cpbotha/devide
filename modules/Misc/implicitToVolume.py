@@ -1,4 +1,4 @@
-# $Id: implicitToVolume.py,v 1.1 2004/03/07 16:07:58 cpbotha Exp $
+# $Id: implicitToVolume.py,v 1.2 2005/11/04 10:34:56 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -9,7 +9,7 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
     """Given an implicit function, this module will evaluate it over a volume
     and yield that volume as output.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -43,7 +43,8 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
              'vtkSampleFunction' : self._sampleFunction})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

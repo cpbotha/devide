@@ -1,4 +1,4 @@
-# $Id: cptBrepWRT.py,v 1.2 2005/06/27 09:30:44 cpbotha Exp $
+# $Id: cptBrepWRT.py,v 1.3 2005/11/04 10:35:01 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -16,7 +16,7 @@ class cptBrepWRT(moduleBase, filenameViewModuleMixin):
     home page</a> for more information about the algorithm and the
     software.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -43,7 +43,8 @@ class cptBrepWRT(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we should disconnect all inputs

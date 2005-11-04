@@ -1,4 +1,4 @@
-# $Id: symmetricDemonsRegistration.py,v 1.2 2004/12/06 18:01:46 cpbotha Exp $
+# $Id: symmetricDemonsRegistration.py,v 1.3 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -10,7 +10,7 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
     """Performs symmetric forces demons registration on fixed and moving input
     images, returns deformation field.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -59,7 +59,8 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
              'itkHistogramMatchingImageFilter' : self._matcher})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

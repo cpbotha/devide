@@ -8,7 +8,7 @@ import vtk
 class warpPoints(scriptedConfigModuleMixin, moduleBase):
     """Warp input points according to their associated vectors.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     _defaultVectorsSelectionString = 'Default Active Vectors'
@@ -42,7 +42,8 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

@@ -1,4 +1,4 @@
-# $Id: pngRDR.py,v 1.3 2005/01/04 14:32:31 joris Exp $
+# $Id: pngRDR.py,v 1.4 2005/11/04 10:34:58 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -15,7 +15,7 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
     digits, i.e. 000, 001, 002 etc.  %d counts from the 'First slice' to the
     'Last slice'.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
     
     def __init__(self, moduleManager):
@@ -55,7 +55,8 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
              'vtkPNGReader' : self._reader})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

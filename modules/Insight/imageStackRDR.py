@@ -28,7 +28,8 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
         #
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
 

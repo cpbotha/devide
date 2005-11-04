@@ -1,4 +1,4 @@
-# $Id: pngWRT.py,v 1.2 2004/10/25 15:43:22 cpbotha Exp $
+# $Id: pngWRT.py,v 1.3 2005/11/04 10:35:01 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -16,7 +16,7 @@ class pngWRT(scriptedConfigModuleMixin, moduleBase):
 
     Module by Joris van Zwieten.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -51,7 +51,8 @@ class pngWRT(scriptedConfigModuleMixin, moduleBase):
              'vtkPNGWriter' : self._writer})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
 	# we play it safe... (the graph_editor/module_manager should have

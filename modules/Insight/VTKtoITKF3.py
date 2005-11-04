@@ -1,4 +1,4 @@
-# $Id: VTKtoITKF3.py,v 1.3 2005/07/04 15:10:16 cpbotha Exp $
+# $Id: VTKtoITKF3.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -34,7 +34,8 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
              'itkVTKImageImportF3' : self._itkImporter})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
 
     def close(self):

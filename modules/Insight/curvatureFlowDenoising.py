@@ -1,4 +1,4 @@
-# $Id: curvatureFlowDenoising.py,v 1.1 2004/03/18 13:13:32 cpbotha Exp $
+# $Id: curvatureFlowDenoising.py,v 1.2 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -13,7 +13,7 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
     This uses curvature-based level set techniques to smooth
     homogeneous regions whilst retaining boundary information.
     
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -46,7 +46,8 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
              'itkCurvatureFlowImageFilter' : self._cfif})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

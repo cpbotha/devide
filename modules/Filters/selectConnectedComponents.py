@@ -11,7 +11,7 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
     as at the seed points.  This is primarily useful for selecting connected
     components.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -56,7 +56,8 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
            
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

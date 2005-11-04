@@ -1,4 +1,4 @@
-# $Id: ITKUS3toVTK.py,v 1.1 2004/04/13 17:03:03 cpbotha Exp $
+# $Id: ITKUS3toVTK.py,v 1.2 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ import ConnectVTKITKPython as CVIPy
 class ITKUS3toVTK(noConfigModuleMixin, moduleBase):
     """Convert ITK 3D unsigned short data to VTK.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -33,7 +33,8 @@ class ITKUS3toVTK(noConfigModuleMixin, moduleBase):
              'vtkImageImport' : self._vtkImporter})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
 
     def close(self):

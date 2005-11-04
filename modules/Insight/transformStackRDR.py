@@ -1,4 +1,4 @@
-# $Id: transformStackRDR.py,v 1.4 2003/12/18 14:27:46 cpbotha Exp $
+# $Id: transformStackRDR.py,v 1.5 2005/11/04 10:34:55 cpbotha Exp $
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 import fixitk as itk
@@ -41,7 +41,8 @@ class transformStackRDR(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
         
     def close(self):
         del self._transformStack

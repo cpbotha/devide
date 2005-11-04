@@ -1,4 +1,4 @@
-# $Id: transformStackWRT.py,v 1.5 2003/12/18 10:34:44 cpbotha Exp $
+# $Id: transformStackWRT.py,v 1.6 2005/11/04 10:34:55 cpbotha Exp $
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 from moduleBase import moduleBase
@@ -33,7 +33,8 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
         
     def close(self):
         # we should disconnect all inputs

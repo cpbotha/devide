@@ -1,5 +1,5 @@
 # landmarkTransform.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: landmarkTransform.py,v 1.6 2004/11/19 17:52:48 cpbotha Exp $
+# $Id: landmarkTransform.py,v 1.7 2005/11/04 10:34:50 cpbotha Exp $
 # see module documentation
 
 # TODO:
@@ -50,7 +50,8 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
              'vtkLandmarkTransform': self._landmarkTransform})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

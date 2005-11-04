@@ -10,7 +10,7 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
     This module makes use of the ParaView vtkPVExtractVOI class, which can
     handle structured points, structured grids and rectilinear grids.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     def __init__(self, moduleManager):
@@ -36,7 +36,8 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

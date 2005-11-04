@@ -1,4 +1,4 @@
-# $Id: histogram2D.py,v 1.7 2004/08/03 16:40:20 cpbotha Exp $
+# $Id: histogram2D.py,v 1.8 2005/11/04 10:35:00 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -45,7 +45,8 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
         self._input0 = None
         self._input1 = None

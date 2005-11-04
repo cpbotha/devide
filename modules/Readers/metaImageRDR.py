@@ -1,4 +1,4 @@
-# $Id: metaImageRDR.py,v 1.1 2004/10/12 23:24:59 cpbotha Exp $
+# $Id: metaImageRDR.py,v 1.2 2005/11/04 10:34:58 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -13,7 +13,7 @@ class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
     single files containing header and data, whereas .mhd are separate headers
     that refer to a separate raw data file.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
     
     def __init__(self, moduleManager):
@@ -41,7 +41,8 @@ class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
              'vtkMetaImageReader' : self._reader})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

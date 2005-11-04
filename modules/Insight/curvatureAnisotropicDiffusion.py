@@ -1,4 +1,4 @@
-# $Id: curvatureAnisotropicDiffusion.py,v 1.3 2004/04/14 15:58:02 cpbotha Exp $
+# $Id: curvatureAnisotropicDiffusion.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -42,7 +42,8 @@ class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
              'itkCurvatureAnisotropicDiffusion' : self._diffuse})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

@@ -50,7 +50,8 @@ class rawVolumeRDR(moduleBase,
         self.configToLogic()
 
         # then make sure they come all the way back up via self._config
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # close down the vtkPipeline stuff

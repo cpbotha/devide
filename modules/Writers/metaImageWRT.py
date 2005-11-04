@@ -1,4 +1,4 @@
-# $Id: metaImageWRT.py,v 1.1 2005/10/21 11:43:25 cpbotha Exp $
+# $Id: metaImageWRT.py,v 1.2 2005/11/04 10:35:01 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -34,7 +34,8 @@ class metaImageWRT(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we should disconnect all inputs

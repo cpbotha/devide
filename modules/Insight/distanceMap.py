@@ -1,4 +1,4 @@
-# $Id: distanceMap.py,v 1.1 2004/09/01 15:18:13 cpbotha Exp $
+# $Id: distanceMap.py,v 1.2 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -8,7 +8,7 @@ from moduleMixins import scriptedConfigModuleMixin
 class distanceMap(scriptedConfigModuleMixin, moduleBase):
 
     """
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -43,7 +43,8 @@ class distanceMap(scriptedConfigModuleMixin, moduleBase):
 
         # send config down to logic and then all the way up to the view
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         del self._ddmif

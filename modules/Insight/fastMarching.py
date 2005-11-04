@@ -1,4 +1,4 @@
-# $Id: fastMarching.py,v 1.2 2004/04/28 09:38:05 cpbotha Exp $
+# $Id: fastMarching.py,v 1.3 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
     propagate a moving front out from those points using the fast marching
     level set formulation.
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
 
     def __init__(self, moduleManager):
@@ -47,7 +47,8 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
              'itkFastMarchingImageFilter' : self._fastMarching})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

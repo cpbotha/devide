@@ -1,4 +1,4 @@
-# $Id: itkWRT.py,v 1.3 2004/09/28 17:31:45 cpbotha Exp $
+# $Id: itkWRT.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -19,7 +19,7 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
     <li>.hdr or .img: Analyze .hdr header and .img data</li>
     </ul>
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
 
@@ -47,7 +47,8 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we should disconnect all inputs

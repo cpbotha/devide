@@ -19,7 +19,7 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
 
     NOTE: This module has to be explicitly executed.
 
-    $Revision: 1.1 $
+    $Revision: 1.2 $
     """
 
     _cptDriverExe = '/home/cpbotha/build/cpt/3d/driver/driver.exe'
@@ -44,7 +44,8 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
         
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we should disconnect all inputs

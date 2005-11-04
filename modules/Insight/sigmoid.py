@@ -1,4 +1,4 @@
-# $Id: sigmoid.py,v 1.2 2004/08/23 17:07:51 cpbotha Exp $
+# $Id: sigmoid.py,v 1.3 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
 
     f(x) = (max - min) frac{1}{1 + exp(- frac{x - beta}{alpha})} + min
 
-    $Revision: 1.2 $
+    $Revision: 1.3 $
     """
     
     def __init__(self, moduleManager):
@@ -48,7 +48,8 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
              self._sigmoid})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

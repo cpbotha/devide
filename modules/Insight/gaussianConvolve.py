@@ -1,4 +1,4 @@
-# $Id: gaussianConvolve.py,v 1.3 2004/04/20 13:05:48 cpbotha Exp $
+# $Id: gaussianConvolve.py,v 1.4 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -14,7 +14,7 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
 
     The convolution is implemented as an IIR filter.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     _orders = ['Zero', 'First', 'Second']
@@ -55,7 +55,8 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
              'itkRecursiveGaussianImageFilter' : self._gaussian})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

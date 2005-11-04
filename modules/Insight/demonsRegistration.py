@@ -1,4 +1,4 @@
-# $Id: demonsRegistration.py,v 1.5 2005/05/23 09:43:00 cpbotha Exp $
+# $Id: demonsRegistration.py,v 1.6 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 from moduleBase import moduleBase
@@ -21,7 +21,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
     Also read this thread:
     http://public.kitware.com/pipermail/insight-users/2004-November/011002.html
 
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
     
     def __init__(self, moduleManager):
@@ -70,7 +70,8 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
              'itkHistogramMatchingImageFilter' : self._matcher})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

@@ -1,4 +1,4 @@
-# $Id: ITKF3toVTK.py,v 1.4 2005/07/04 15:10:16 cpbotha Exp $
+# $Id: ITKF3toVTK.py,v 1.5 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -12,7 +12,7 @@ import ConnectVTKITKPython as CVIPy
 class ITKF3toVTK(noConfigModuleMixin, moduleBase):
     """Convert ITK 3D float data to VTK.
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
     """
 
     def __init__(self, moduleManager):
@@ -33,7 +33,8 @@ class ITKF3toVTK(noConfigModuleMixin, moduleBase):
              'vtkImageImport' : self._vtkImporter})
 
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
 
     def close(self):

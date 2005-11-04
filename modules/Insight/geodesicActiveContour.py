@@ -1,5 +1,5 @@
 # geodesicActiveContour.py
-# $Id: geodesicActiveContour.py,v 1.11 2004/04/20 10:15:34 cpbotha Exp $
+# $Id: geodesicActiveContour.py,v 1.12 2005/11/04 10:34:55 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -26,7 +26,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
     Also see figure 9.18 in the ITK Software Guide.
 
-    $Revision: 1.11 $
+    $Revision: 1.12 $
     """
 
     def __init__(self, moduleManager):
@@ -63,7 +63,8 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
         # send config down to logic and then all the way up to the view
         self.configToLogic()
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
 
     def close(self):
         self._destroyITKPipeline()

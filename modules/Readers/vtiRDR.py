@@ -1,4 +1,4 @@
-# $Id: vtiRDR.py,v 1.1 2003/12/18 11:11:19 cpbotha Exp $
+# $Id: vtiRDR.py,v 1.2 2005/11/04 10:34:58 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
@@ -29,7 +29,8 @@ class vtiRDR(moduleBase, filenameViewModuleMixin):
         self._config.filename = ''
         self.configToLogic()
         # make sure these filter through from the bottom up
-        self.syncViewWithLogic()
+        self.logicToConfig()
+        self.configToView()
         
     def close(self):
         del self._reader
