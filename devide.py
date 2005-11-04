@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.99 2005/10/11 16:19:34 cpbotha Exp $
+# $Id: devide.py,v 1.100 2005/11/04 10:16:38 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051011-T'
@@ -143,14 +143,6 @@ class devide_app_t(wx.App):
         wx.EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
                     self.aboutCallback)
 
-        wx.EVT_CHECKBOX(
-            self._mainFrame, self._mainFrame.enableExecutionCheckBox.GetId(),
-            self._handlerEnableExecution)
-
-        wx.EVT_CHECKBOX(
-            self._mainFrame, self._mainFrame.blockExecutionCheckBox.GetId(),
-            self._handlerBlockExecution)
-
         self._mainFrame.Show(1)
         # here we also show twice: in wxPython 2.4.2.4 the TextCtrls sometimes
         # have difficulty completely drawing themselves at startup
@@ -180,10 +172,6 @@ class devide_app_t(wx.App):
 
         # perform vtk initialisation
         self._vtkInit()
-
-        #
-        self.moduleManager.enableExecution()
-        self._mainFrame.enableExecutionCheckBox.SetValue(1)
 
         # indicate that we're ready to go!
         self.setProgress(100, 'Started up')
@@ -230,11 +218,6 @@ class devide_app_t(wx.App):
                 self.logMessage(text)
 
             elif textType == 1:
-                # and we disable execution, else the error keeps on getting
-                # triggered...
-                self.moduleManager.disableExecution()
-                self._mainFrame.enableExecutionCheckBox.SetValue(0)
-                
                 # ErrorText - shown and logged
                 wx.LogError(text)
                 self.logMessage(text)
@@ -282,21 +265,6 @@ class devide_app_t(wx.App):
 
     def get_appdir(self):
         return self.getAppDir()
-
-    def _handlerBlockExecution(self, event):
-        if self._mainFrame.blockExecutionCheckBox.GetValue():
-            self.moduleManager.interruptExecution()
-            # this will also call disableExecution, so we set the correct box
-            self._mainFrame.enableExecutionCheckBox.SetValue(0)
-
-        else:
-            self.moduleManager.resumeExecution()
-
-    def _handlerEnableExecution(self, event):
-        if self._mainFrame.enableExecutionCheckBox.GetValue():
-            self.moduleManager.enableExecution()
-        else:
-            self.moduleManager.disableExecution()
 
     def _handlerHelpContents(self, event):
         self.showHelp()

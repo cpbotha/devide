@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.79 2005/11/04 10:07:35 cpbotha Exp $
+# $Id: moduleManager.py,v 1.80 2005/11/04 10:16:38 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -97,9 +97,6 @@ class moduleManager:
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inProgressCallback = mutex.mutex()
-
-        # default is not to disable
-        self.enableExecution()
 
     def close(self):
         """Iterates through each module and closes it.
@@ -251,98 +248,6 @@ class moduleManager:
                                      None, segmentList)
         self.availableSegmentsList = segmentList
 
-    def disableExecution(self):
-        """This will call the disableExecution on all modules that have
-        this method.  In addition, this call will be attempted on all new
-        modules that are created.
-        """
-
-        # already disabled, return... (we get recursing errors if we
-        # don't guard it like this)
-        if self._executionDisabled:
-            return
-
-        # and then set the variable
-        self._executionDisabled = True        
-        
-        # only then actually disable
-        for moduleInstance in self._moduleDict:
-            if hasattr(moduleInstance, 'disableExecution'):
-                moduleInstance.disableExecution()
-
-    def enableExecution(self):
-        """This will call enableExecution on all modules that have this
-        method.  In addition, disableExecution will not be called on newly
-        created modules.
-        """
-
-        for moduleInstance in self._moduleDict:
-            if hasattr(moduleInstance, 'enableExecution'):
-                moduleInstance.enableExecution()
-
-        self._executionDisabled = False
-
-    def interruptExecution(self):
-        """Stop as much of the demand driven execution as possible.
-        """
-
-        # here we call disableExecution, else the interruption can never
-        # work... resumeExecution does NOT automatically call enableExecution()
-        self.disableExecution()
-
-        for moduleInstance, metaModule in self._moduleDict.items():
-            className = moduleInstance.__class__.__name__
-
-            # now go through all the module's attributes calling
-            # SetAbortExecute() and SetAbortGenerateData() everywhere
-            for attrName in dir(moduleInstance):
-                obj = getattr(moduleInstance, attrName)
-                try:
-                    obj.SetAbortExecute(1)
-                except Exception:
-                    pass
-                else:
-                    print "Successfully called SetAbortExecute(1) on %s.%s" \
-                          % (moduleInstance, obj.GetClassName())
-
-                try:
-                    obj.SetAbortGenerateData(1)
-                except Exception:
-                    pass
-                else:
-                    print "Successfully called SetAbortGenerateData(1) on " \
-                          "%s.%s" \
-                          % (moduleInstance, obj.__class__)
-
-    def resumeExecution(self):
-        """Restart all execution after an interruptExecution
-        """
-
-        # FIXME: we ONLY want to do this if we're not inProgress
-        for moduleInstance, metaModule in self._moduleDict.items():
-            className = moduleInstance.__class__.__name__
-
-            # now go through all the module's attributes calling
-            # SetAbortExecute() and SetAbortGenerateData() everywhere
-            for attrName in dir(moduleInstance):
-                obj = getattr(moduleInstance, attrName)
-                try:
-                    obj.SetAbortExecute(0)
-                except Exception:
-                    pass
-                else:
-                    print "Successfully called SetAbortExecute(0) on %s.%s" \
-                          % (moduleInstance, obj.GetClassName())
-
-                try:
-                    obj.SetAbortGenerateData(0)
-                except Exception:
-                    pass
-                else:
-                    print "Successfully called SetAbortGenerateData(0) on " \
-                          "%s.%s" \
-                          % (moduleInstance, obj.__class__)
-
     def get_app_dir(self):
         return self.getAppDir()
 
@@ -434,11 +339,6 @@ class moduleManager:
                                 % (fullName, str(e)))
 	    return None
 
-        # first apply the executionDisabled setting
-        if self._executionDisabled:
-            if hasattr(moduleInstance, 'disableExecution'):
-                moduleInstance.disableExecution()
-                                    
 	# return the instance
 	return moduleInstance
 
