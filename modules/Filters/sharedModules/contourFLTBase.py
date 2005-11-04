@@ -14,7 +14,7 @@ class contourFLTBase(moduleBase, vtkPipelineConfigModuleMixin):
         if contourFilterText == 'marchingCubes':
             self._contourFilter = vtk.vtkMarchingCubes()
         else: # contourFilter == 'contourFilter'
-            self._contourFilter = vtk.vtkKitwareContourFilter()
+            self._contourFilter = vtk.vtkContourFilter()
 
         moduleUtils.setupVTKObjectProgress(self, self._contourFilter,
                                            'Extracting iso-surface')
