@@ -1,4 +1,4 @@
-# $Id: superQuadric.py,v 1.5 2005/10/23 19:20:01 cpbotha Exp $
+# $Id: superQuadric.py,v 1.6 2005/11/04 15:47:31 cpbotha Exp $
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -8,7 +8,7 @@ import vtk
 class superQuadric(scriptedConfigModuleMixin, moduleBase):
     """Generates a SuperQuadric implicit function and polydata as outputs.
     
-    $Revision: 1.5 $
+    $Revision: 1.6 $
     """
 
     def __init__(self, moduleManager):
@@ -110,12 +110,12 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
                 'Polydata')
     
     def getOutput(self, idx):
-        return self._outputs[idx]
+        #return self._outputs[idx]
         
-#         if idx == 0:
-#             return self._superquadric
-#         else:
-#             return self._superquadricSource.GetOutput()
+        if idx == 0:
+            return self._superquadric
+        else:
+            return self._superquadricSource.GetOutput()
 
 
     def configToLogic(self):
