@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.81 2005/11/04 13:54:23 cpbotha Exp $
+# $Id: moduleManager.py,v 1.82 2005/11/04 13:55:28 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -1020,7 +1020,6 @@ class moduleManager:
         if od and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
             nod = od.__class__()
             nod.ShallowCopy(od)
-            nod.Modified()
             od = nod
         
         # set on consumerInstance input
