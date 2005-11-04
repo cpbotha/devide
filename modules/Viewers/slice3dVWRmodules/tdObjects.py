@@ -1,5 +1,5 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.16 2004/12/06 21:21:42 cpbotha Exp $
+# $Id: tdObjects.py,v 1.17 2005/11/04 13:53:45 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
@@ -98,8 +98,7 @@ class tdObjects(s3dcGridMixin):
                 if tdObject.GetClassName() == 'vtkVolume':
                     self.slice3dVWR._threedRenderer.AddVolume(tdObject)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
-                                                     'type' : 'vtkVolume',
-                                                     'observerId' : None}
+                                                     'type' : 'vtkVolume'}
 
                 elif tdObject.GetClassName() == 'vtkPolyData':
                     mapper = vtk.vtkPolyDataMapper()
@@ -109,8 +108,7 @@ class tdObjects(s3dcGridMixin):
                     self.slice3dVWR._threedRenderer.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
-                                                     'vtkActor' : actor,
-                                                     'observerId' : None}
+                                                     'vtkActor' : actor}
 
                     # to get the name of the scalars we need to do this.
                     tdObject.Update()
@@ -139,14 +137,6 @@ class tdObjects(s3dcGridMixin):
 #                         # we switch it off as we mostly work with isosurfaces
 #                         mapper.ScalarVisibilityOff()
                 
-                    # connect an event handler to the data
-                    source = tdObject.GetSource()
-                    if source:
-                        oid = source.AddObserver(
-                            'EndEvent',
-                            self._tdObjectModifiedCallback)
-                        self._tdObjectsDict[tdObject]['observerId'] = oid
-
                 else:
                     raise Exception, 'Non-handled tdObject type'
 
@@ -188,6 +178,46 @@ class tdObjects(s3dcGridMixin):
         # ends 
         else:
             raise Exception, 'Attempt to add same object twice.'
+
+    def updateObject(self, prevObject, newObject):
+        """Method used to update new data on a new connection.
+
+        When the moduleManager transfers data, it simply calls setInput()
+        with a non-None inputStream on an already non-None connection.  This
+        function will take the necessary steps to update just the object and
+        keep everything else as is.
+
+        @param prevObject: the previous object binding, will be used to remove
+        if the binding has changed.
+        @param newObject: the new object binding.
+        """
+
+        if newObject.GetClassName() == 'vtkVolume':
+            self.slice3dVWR._threedRenderer.RemoveVolume(prevObject)
+            self.slice3dVWR._threedRenderer.AddVolume(newObject)
+        
+        elif newObject.GetClassName() == 'vtkPolyData':
+            objectDict = self._tdObjectsDict[prevObject]
+            del self._tdObjectsDict[prevObject]
+            
+            # record the new object ###################################
+            objectDict['tdObject'] = newObject
+            mapper = objectDict['vtkActor'].GetMapper()
+            mapper.SetInput(newObject)
+            self._tdObjectsDict[newObject] = objectDict
+
+            # set the new scalar range ################################
+            if newObject.GetPointData().GetScalars():
+                scalarsName = newObject.GetPointData().GetScalars().\
+                              GetName()
+            else:
+                scalarsName = None
+                
+            if scalarsName:
+                mapper.SetScalarRange(newObject.GetScalarRange())
+            
+
+            
 
     def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
         """Appends the points grid commands to a menu.  This can be used
@@ -1284,15 +1314,6 @@ class tdObjects(s3dcGridMixin):
             except KeyError:
                 pass
             
-            if self._tdObjectsDict[tdObject]['observerId']:
-                source = actor.GetMapper().GetInput().GetSource()
-                if source:
-                    source.RemoveObserver(
-                        self._tdObjectsDict[tdObject]['observerId'])
-                    
-                # whether we had a source or not, zero this
-                self._tdObjectsDict[tdObject]['observerId'] = None
-
             self.slice3dVWR.render3D()
             
         else:
@@ -1556,9 +1577,6 @@ class tdObjects(s3dcGridMixin):
             vtk.vtkMath.Cross(mCV[0], mCV[1], lineVector)
             # and tell the boxWidget about this!
             boxWidget.SetConstraintVector(lineVector)
-
-    def _tdObjectModifiedCallback(self, o, e):
-        self.slice3dVWR.render3D()
 
     def _transformObjectProps(self, tdObject, transform):
         """This will perform the final transformation on all props belonging
