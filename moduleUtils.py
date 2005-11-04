@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.30 2005/11/04 10:07:35 cpbotha Exp $
+# $Id: moduleUtils.py,v 1.31 2005/11/04 16:37:12 cpbotha Exp $
 
 """Collection of module utility functions.
 
@@ -128,12 +128,15 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
                lambda e: (mm.applyModuleViewToLogic(d3module),
                           mm.executeNetwork(d3module)))
+    
     # close
     wx.EVT_BUTTON(viewFrame, viewFrame.closeButtonId,
                lambda e, vf=viewFrame: vf.Show(False))
+    
     # apply
     wx.EVT_BUTTON(viewFrame, viewFrame.applyButtonId,
                lambda e: mm.applyModuleViewToLogic(d3module))
+    
     # sync
     wx.EVT_BUTTON(viewFrame, viewFrame.syncButtonId,
                lambda e: mm.syncModuleViewWithLogic(d3module))

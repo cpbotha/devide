@@ -14,6 +14,19 @@ def clampVariable(v, min, max):
 
     return v
 
+def exceptionToMsgs():
+    # create nice formatted string with tracebacks and all
+    ei = sys.exc_info()
+    #dmsg = \
+    #     string.join(traceback.format_exception(ei[0],
+    #                                            ei[1],
+    #                                            ei[2]))
+
+    dmsgs = traceback.format_exception(ei[0], ei[1], ei[2])
+
+    return dmsgs
+    
+
 def logError(msg):
     # create nice formatted string with tracebacks and all
     ei = sys.exc_info()

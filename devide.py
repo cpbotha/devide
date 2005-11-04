@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.100 2005/11/04 10:16:38 cpbotha Exp $
+# $Id: devide.py,v 1.101 2005/11/04 16:37:12 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051011-T'
@@ -31,6 +31,7 @@ import wx.html
 import resources.python.mainFrame
 import resources.graphics.images
 
+############################################################################
 class mainConfigClass(object):
 
     def __init__(self):
@@ -76,7 +77,7 @@ class mainConfigClass(object):
             elif o in ('--stereo',):
                 self.stereo = True
 
-# ---------------------------------------------------------------------------
+############################################################################
 class devide_app_t(wx.App):
     """Main devide application class.
 
@@ -274,6 +275,19 @@ class devide_app_t(wx.App):
         reload(testing)
         dt = testing.devideTesting(self)
         dt.runAllTests()
+
+    def logError(self, msgs):
+        """This method can be called by any DeVIDE component for error
+        reporting.
+
+        DeVIDE will decide how the error should be reported depending on the
+        context.  For now we only have the GUI context.
+        """
+
+        for msg in msgs:
+            wx.LogError(msg)
+
+        wx.Log_FlushActive()
 
     def quit(self):
         # take care of the graphEditor if it exists

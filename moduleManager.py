@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.82 2005/11/04 13:55:28 cpbotha Exp $
+# $Id: moduleManager.py,v 1.83 2005/11/04 16:37:12 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -443,7 +443,7 @@ class moduleManager:
             #genUtils.logError('Unable to execute module %s (%s): %s' \
             #                  % (instanceName, moduleName, str(e)))
 
-    def executeNetwork(self, startingModule):
+    def executeNetwork(self, startingModule=None):
         """Execute local network in order, starting from startingModule.
 
         @todo: integrate concept of startingModule.
@@ -456,7 +456,13 @@ class moduleManager:
         # execute them!
         sms = self._devide_app.scheduler.modulesToSchedulerModules(
             allInstances)
-        self._devide_app.scheduler.executeModules(sms)
+
+        try:
+            self._devide_app.scheduler.executeModules(sms)
+
+        except Exception, e:
+            emsgs = genUtils.exceptionToMsgs()
+            self._devide_app.logError(emsgs + [str(e)])
 			      
     def viewModule(self, instance):
         instance.view()
