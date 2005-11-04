@@ -8,7 +8,7 @@ import vtk
 class warpPoints(scriptedConfigModuleMixin, moduleBase):
     """Warp input points according to their associated vectors.
 
-    $Revision: 1.3 $
+    $Revision: 1.4 $
     """
 
     _defaultVectorsSelectionString = 'Default Active Vectors'
@@ -108,7 +108,9 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
                     for name in names:
                         choice.Append(name)
 
-        vs = self._warpVector.GetInputVectorsSelection()
+        #vs = self._warpVector.GetInputVectorsSelection()
+        inf = self._warpVector.GetInputArrayInformation(0)
+        vs = inf.Get(vtk.vtkDataObject.FIELD_NAME())
 
         if vs:
             si = choice.FindString(vs)
@@ -133,9 +135,10 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
 
         if self._config.vectorsSelection == \
                self._defaultVectorsSelectionString:
-            # default
-            self._warpVector.SelectInputVectors(None)
+            # default: idx, port, connection, fieldassociation (points), name
+            self._warpVector.SetInputArrayToProcess(0, 0, 0, 0, None)
             
         else:
-            self._warpVector.SelectInputVectors(self._config.vectorsSelection)
+            self._warpVector.SetInputArrayToProcess(
+                0, 0, 0, 0, self._config.vectorsSelection)
 
