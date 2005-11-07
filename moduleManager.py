@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.83 2005/11/04 16:37:12 cpbotha Exp $
+# $Id: moduleManager.py,v 1.84 2005/11/07 14:08:33 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -445,6 +445,11 @@ class moduleManager:
 
     def executeNetwork(self, startingModule=None):
         """Execute local network in order, starting from startingModule.
+
+        This is a utility method used by moduleUtils to bind to the Execute
+        control found on must module UIs.  We are still in the process
+        of formalising the concepts of networks vs. groups of modules.
+        Eventually, networks will be grouped by process node and whatnot.
 
         @todo: integrate concept of startingModule.
         """
