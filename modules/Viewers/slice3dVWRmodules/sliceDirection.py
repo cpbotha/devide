@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.25 2005/11/04 15:47:43 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.26 2005/11/07 11:06:00 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -314,10 +314,16 @@ class sliceDirection:
 
         for ipw in self._ipws:
             if prevInputData is ipw.GetInput():
-                # we just make yet another ShallowCopy of the new input
-                # if we don't do this and actually call a SetInput on the IPW,
-                # it will go and reset the slice geometry.
-                ipw.GetInput().ShallowCopy(newInputData)
+                # we have to save the plane geometry, as SetInput resets the
+                # plane to its "native" orientation
+                p1, p2, o =  ipw.GetPoint1(), ipw.GetPoint2(), ipw.GetOrigin()
+                # set new input
+                ipw.SetInput(newInputData)
+                # restore geometry
+                ipw.SetPoint1(p1)
+                ipw.SetPoint2(p2)
+                ipw.SetOrigin(o)
+                
 
     def close(self):
         """Shut down everything."""
