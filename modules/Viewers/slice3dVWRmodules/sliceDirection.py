@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.26 2005/11/07 11:06:00 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.27 2005/11/07 12:09:36 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -308,21 +308,33 @@ class sliceDirection:
 
     def updateData(self, prevInputData, newInputData):
         """Change data-object on an existing connection.
-
         
         """
 
-        for ipw in self._ipws:
+        primaryUpdated = False
+        for i in range(len(self._ipws)):
+            ipw = self._ipws[i]
+                       
             if prevInputData is ipw.GetInput():
-                # we have to save the plane geometry, as SetInput resets the
-                # plane to its "native" orientation
-                p1, p2, o =  ipw.GetPoint1(), ipw.GetPoint2(), ipw.GetOrigin()
+                
                 # set new input
                 ipw.SetInput(newInputData)
-                # restore geometry
-                ipw.SetPoint1(p1)
-                ipw.SetPoint2(p2)
-                ipw.SetOrigin(o)
+
+                if i == 0:
+                    primaryUpdated = True
+
+                # this data can occur only once
+                break
+                
+
+        if primaryUpdated:
+            self._resetPrimary()
+            self._syncOutputPolyData()
+            self._syncOverlays()
+
+        else:
+            # the update was for an overlay
+            self._syncOverlays()
                 
 
     def close(self):
