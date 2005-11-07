@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.103 2005/11/07 12:22:22 cpbotha Exp $
+# $Id: devide.py,v 1.104 2005/11/07 14:10:32 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051104-T'
@@ -20,6 +20,7 @@ import stat
 import string
 import sys
 import time
+import traceback
 
 # WX imports
 # this HAS to go before we call import wx
@@ -204,7 +205,7 @@ class devide_app_t(wx.App):
         # IMPORTANT:
         # we're disabling this in the event-driven branch of DeVIDE
         # each module or tool should do its own error reporting!
-        #temp.SetInstance(temp)
+        temp.SetInstance(temp)
 
         def observerEOW(theObject, eventType):
             # theObject is of course a vtkEventOutputWindow
@@ -215,27 +216,27 @@ class devide_app_t(wx.App):
             
             if textType == 0:
                 # Text
-                #wx.LogMessage(text)
                 self.logMessage(text)
 
             elif textType == 1:
                 # ErrorText - shown and logged
-                wx.LogError(text)
-                self.logMessage(text)
+                #wx.LogError(text)
+                #self.logMessage(text)
+                print "YAHOOOO!"
+                traceback.print_stack()
+                print "!OOOOHAY"
+                raise Exception(text)
                 
             elif textType == 2:
                 # WarningText
-                #wx.LogWarning(text)
                 self.logMessage(text)
                 
             elif textType == 3:
                 # GenericWarningText
-                #wx.LogWarning(text)
                 self.logMessage(text)
                 
             else:
                 # DebugText
-                #wx.LogDebug(text)
                 self.logMessage(text)
 
         temp.AddObserver('ErrorEvent', observerEOW)
@@ -276,18 +277,6 @@ class devide_app_t(wx.App):
         dt = testing.devideTesting(self)
         dt.runAllTests()
 
-    def logError(self, msgs):
-        """This method can be called by any DeVIDE component for error
-        reporting.
-
-        DeVIDE will decide how the error should be reported depending on the
-        context.  For now we only have the GUI context.
-        """
-
-        for msg in msgs:
-            wx.LogError(msg)
-
-        wx.Log_FlushActive()
 
     def quit(self):
         # take care of the graphEditor if it exists
@@ -329,6 +318,19 @@ class devide_app_t(wx.App):
             self._graphEditor = graphEditor(self)
         else:
             self._graphEditor.show()
+
+    def logError(self, msgs):
+        """This method can be called by any DeVIDE component for error
+        reporting.
+
+        DeVIDE will decide how the error should be reported depending on the
+        context.  For now we only have the GUI context.
+        """
+
+        for msg in msgs:
+            wx.LogError(msg)
+
+        wx.Log_FlushActive()
 
     def logMessage(self, message, timeStamp=True):
         if timeStamp:
