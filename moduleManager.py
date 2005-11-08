@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.85 2005/11/08 12:09:11 cpbotha Exp $
+# $Id: moduleManager.py,v 1.86 2005/11/08 16:28:28 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -98,6 +98,9 @@ class moduleManager:
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inProgressCallback = mutex.mutex()
 
+        # array of no exception module execution errors
+        self._noExcModuleExecError = []
+
     def close(self):
         """Iterates through each module and closes it.
 
@@ -111,6 +114,16 @@ class moduleManager:
             except:
                 # we can't allow a module to stop us
                 pass
+
+    def addNoExcModuleExecError(self, message):
+        """Method that can be called by module execute functions to indicate
+        errors (as an alternative to throwing an exception).
+
+        This method belongs to the per-processing node part of the module
+        manager.
+        """
+        
+        self._noExcModuleExecError.append(message)
 
     def applyModuleViewToLogic(self, instance):
         """Interface method that can be used by clients to transfer module
@@ -416,7 +429,8 @@ class moduleManager:
 
         Important: this method does not result in data being transferred
         after the execution, it JUST performs the module execution.  This
-        method is called by the scheduler during network execution.
+        method is called by the scheduler during network execution.  No
+        other call should be used to execute a single module!
         
         @param instance: module instance to be executed.
         @raise moduleManagerException: this exception is raised with an
@@ -430,12 +444,24 @@ class moduleManager:
             # this goes via the metaModule so that time stamps and the
             # like are correctly reported
             mModule.executeModule()
+
+            # some modules don't raise exceptions, but rather set an error
+            # flag in the moduleManager.
+            if self._noExcModuleExecError:
+                # so we turn these into an error message
+                msgs = self._noExcModuleExecError[:]
+                # remembering to zero the error messages
+                self._noExcModuleExecError = []
+                # and then raise an exception
+                raise Exception('\n'.join(msgs))
             
         except Exception, e:
+            # get details about the errored module
             mModule = self._moduleDict[instance]
             instanceName = mModule.instanceName
             moduleName = instance.__class__.__name__
-            
+
+            # and raise the relevant exception
             es = 'Unable to execute module %s (%s): %s' \
                  % (instanceName, moduleName, str(e))
                  
