@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.104 2005/11/07 14:10:32 cpbotha Exp $
+# $Id: devide.py,v 1.105 2005/11/08 16:28:44 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051104-T'
@@ -202,10 +202,9 @@ class devide_app_t(wx.App):
         # now make sure that VTK will always send error to vtk.log logfile
         temp = vtkdevide.vtkEventOutputWindow()
         
-        # IMPORTANT:
-        # we're disabling this in the event-driven branch of DeVIDE
-        # each module or tool should do its own error reporting!
-        temp.SetInstance(temp)
+        # this is a special case: we try to do all VTK error handling
+        # centrally.
+        #temp.SetInstance(temp)
 
         def observerEOW(theObject, eventType):
             # theObject is of course a vtkEventOutputWindow
