@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.84 2005/11/07 14:08:33 cpbotha Exp $
+# $Id: moduleManager.py,v 1.85 2005/11/08 12:09:11 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -415,7 +415,8 @@ class moduleManager:
         """Execute module instance.
 
         Important: this method does not result in data being transferred
-        after the execution, it JUST performs the module execution.
+        after the execution, it JUST performs the module execution.  This
+        method is called by the scheduler during network execution.
         
         @param instance: module instance to be executed.
         @raise moduleManagerException: this exception is raised with an
@@ -440,9 +441,6 @@ class moduleManager:
                  
             raise moduleManagerException(es)
             
-            #genUtils.logError('Unable to execute module %s (%s): %s' \
-            #                  % (instanceName, moduleName, str(e)))
-
     def executeNetwork(self, startingModule=None):
         """Execute local network in order, starting from startingModule.
 
