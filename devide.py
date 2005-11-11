@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.105 2005/11/08 16:28:44 cpbotha Exp $
+# $Id: devide.py,v 1.106 2005/11/11 16:36:33 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051104-T'
@@ -159,15 +159,19 @@ class devide_app_t(wx.App):
         self.SetTopWindow(self._mainFrame)
 
         # pre-import VTK and optionally ITK (these are BIG libraries)
-        import startupImports
-        startupImports.doImports(
-            self.setProgress, mainConfig=self.mainConfig)
+        #import startupImports
+        #startupImports.doImports(
+        #    self.setProgress, mainConfig=self.mainConfig)
+
+        # load up the moduleManager; we do that here as the moduleManager
+        # needs to give feedback via the GUI (when it's available)
+        print "about to import moduleManager"
+        global moduleManager
+        import moduleManager
+        self.moduleManager = moduleManager.moduleManager(self)
 
         # perform post initialisation and pre-loading imports
         postWxInitImports()
-        
-        # find all modules that we can use
-        self.moduleManager = moduleManager(self)
 
         # initialise the scheduler
         self.scheduler = scheduler(self)
@@ -200,7 +204,7 @@ class devide_app_t(wx.App):
         #vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
         
         # now make sure that VTK will always send error to vtk.log logfile
-        temp = vtkdevide.vtkEventOutputWindow()
+        #temp = vtkdevide.vtkEventOutputWindow()
         
         # this is a special case: we try to do all VTK error handling
         # centrally.
@@ -238,10 +242,10 @@ class devide_app_t(wx.App):
                 # DebugText
                 self.logMessage(text)
 
-        temp.AddObserver('ErrorEvent', observerEOW)
-        temp.AddObserver('WarningEvent', observerEOW)        
+        #temp.AddObserver('ErrorEvent', observerEOW)
+        #temp.AddObserver('WarningEvent', observerEOW)        
             
-        del temp
+        #del temp
 
     def OnExit(self):
         pass
@@ -542,7 +546,7 @@ def postWxInitImports():
     """
     
     global graphEditor, moduleManager, scheduler, pythonShell, helpClass
-    global vtk, vtkdevide
+    #global vtk, vtkdevide
     
     from graphEditor import graphEditor
     from moduleManager import moduleManager
@@ -550,8 +554,8 @@ def postWxInitImports():
     from pythonShell import pythonShell
     from helpClass import helpClass
 
-    import vtk
-    import vtkdevide
+    #import vtk
+    #import vtkdevide
     
 def main():
     devide_app = devide_app_t()

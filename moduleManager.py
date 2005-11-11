@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.86 2005/11/08 16:28:28 cpbotha Exp $
+# $Id: moduleManager.py,v 1.87 2005/11/11 16:36:33 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -80,6 +80,12 @@ class moduleManager:
         appdir = self._devide_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
         self._userModules_dir = os.path.join(appdir, 'userModules')
+
+        # initialise module Kits - Kits are collections of libraries
+        # that modules can depend on.  The Kits also make it possible
+        # for us to write hooks for when these libraries are imported
+        import moduleKits.vtkKit
+        moduleKits.vtkKit.init(self)
         
 	# make first scan of available modules
 	self.scanModules()
@@ -92,7 +98,7 @@ class moduleManager:
         # slice3dVWRs must be connected LAST, histogramSegment second to last
         # and all the rest before them
         self.consumerTypeTable = {'slice3dVWR' : 5,
-                                'histogramSegment' : 4}
+                                  'histogramSegment' : 4}
 
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE moduleManager instance)
@@ -878,10 +884,10 @@ class moduleManager:
         
         self._moduleDict[moduleInstance].modified = value
         
-    def setProgress(self, progress, message):
+    def setProgress(self, progress, message, noTime=False):
         """Progress is in percent.
         """
-        self._devide_app.setProgress(progress, message)
+        self._devide_app.setProgress(progress, message, noTime)
 
     def _makeUniqueInstanceName(self, instanceName=None):
         """Ensure that instanceName is unique or create a new unique

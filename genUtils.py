@@ -2,7 +2,8 @@ import wx
 import string
 import sys
 import traceback
-import vtk
+
+# todo: remove all VTK dependencies from this file!!
 
 def clampVariable(v, min, max):
     """Make sure variable is on the range [min,max].  Return clamped variable.
