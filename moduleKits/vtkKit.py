@@ -1,16 +1,7 @@
-# $Id: vtkKit.py,v 1.2 2005/11/11 16:17:26 cpbotha Exp $
+# $Id: vtkKit.py,v 1.3 2005/11/11 16:36:18 cpbotha Exp $
 
 import types
 import sys
-
-def ErrorEventHandler(theObject, eventName, callData):
-    # due to the VTK Python wrappings, raising an exception here will
-    # only print the error, not go through the complete exceptiong handling
-    # trajectory - best we can do is to toggle some error flag somewhere
-    # and react on it later
-    print "YEEEHAAAAW!  Error trapped: %s" % (callData,)
-
-ErrorEventHandler.CallDataType = "string0"
 
 class vtkModuleTrappedErrors(types.ModuleType):
     """Class to enable default instantiation of all wrapped VTK classes with
@@ -18,31 +9,48 @@ class vtkModuleTrappedErrors(types.ModuleType):
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """
+
+    def __init__(self, name, moduleManager):
+        types.ModuleType.__init__(self, name)
+        self._moduleManager = moduleManager
+        
+    def ErrorEventHandler(self, theObject, eventName, callData):
+        """Shouldn't this rather be embedded in each vtkClassTrappedErrors ?
+        """
+        
+        print "YEEEHAAAAW!  Error trapped: %s" % (callData,)
+
+    ErrorEventHandler.CallDataType = "string0"
     
     def __getattribute__(self, name):
         if name.startswith('vtk'):
             klass = object.__getattribute__(self, name)
+            
+            # dynamically-created class to wrap vtk_object ##################
             class vtkClassTrappedErrors(klass):
-                def __init__(self):
+                def __init__(zelf):
                     # if our base class has a ctor, call it
                     try:
-                        rv = klass.__init__(self)
+                        rv = klass.__init__(zelf)
                     except AttributeError, e:
                         rv = None
 
-                    if hasattr(self, 'AddObserver'):
+                    if hasattr(zelf, 'AddObserver'):
                         # add the ErrorEvent observer
-                        self.AddObserver('ErrorEvent', ErrorEventHandler)
+                        zelf.AddObserver(
+                            'ErrorEvent', self.ErrorEventHandler)
 
                     # in the case of a vtkAlgorithm, the Executive has to
                     # be instrumented as well
-                    if hasattr(self, 'GetExecutive'):
-                        self.GetExecutive().AddObserver(
-                            'ErrorEvent', ErrorEventHandler)
+                    if hasattr(zelf, 'GetExecutive'):
+                        zelf.GetExecutive().AddObserver(
+                            'ErrorEvent', self.ErrorEventHandler)
                     
                     # and return either the value of the parent constructor
                     # or none if there was no parent.
                     return rv
+
+            # end of dynamically-created class ############################
 
             # return our instrumented class instead of the native vtkclass
             return vtkClassTrappedErrors
@@ -125,14 +133,14 @@ def init(theModuleManager):
     preImportVTK(theModuleManager.setProgress)
     
     # finally import VTK by first instantiating our new ModuleType class
-    vtk = vtkModuleTrappedErrors('vtk')
+    vtk = vtkModuleTrappedErrors('vtk', theModuleManager)
     # installing it in the modules directory
     sys.modules['vtk'] = vtk
     # and then requesting a reload
     reload(vtk)
 
     # and do the same for vtkdevide, vtktud
-    vtkdevide = vtkModuleTrappedErrors('vtkdevide')
+    vtkdevide = vtkModuleTrappedErrors('vtkdevide', theModuleManager)
     sys.modules['vtkdevide'] = vtkdevide
     reload(vtkdevide)
 
