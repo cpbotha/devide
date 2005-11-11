@@ -1,7 +1,8 @@
-$Id: TODO,v 1.30 2005/11/11 15:43:16 cpbotha Exp $
+$Id: TODO,v 1.31 2005/11/11 16:12:30 cpbotha Exp $
 
 HIGH-PRIORITY
 
+* REMOVE VTK dependencies from genUtils.py
 * Sanitise directory structure, especially the modules: modules/core 
   modules/packs modules/user etc.
 * devide.py should be view-less core module that we can execute WITHOUT
