@@ -1,10 +1,12 @@
 # tdObjects.py copyright (c) 2003 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: tdObjects.py,v 1.17 2005/11/04 13:53:45 cpbotha Exp $
+# $Id: tdObjects.py,v 1.18 2005/11/13 17:09:03 cpbotha Exp $
 # class that controls the 3-D objects list
 
 import genUtils
 reload(genUtils)
 import math
+import moduleKits
+from moduleKits.vtkKit import misc
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
@@ -991,7 +993,7 @@ class tdObjects(s3dcGridMixin):
                     return
 
                 try:
-                    lineOrigin, lineVector = genUtils.planePlaneIntersection(
+                    lineOrigin, lineVector = misc.planePlaneIntersection(
                         pn0, po0, pn1, po1)
                 except ValueError, msg:
                     md = wx.MessageDialog(self.slice3dVWR.controlFrame,
@@ -1485,10 +1487,10 @@ class tdObjects(s3dcGridMixin):
                 bw.OutlineCursorWiresOff()
                 bw.SetInteractor(self.slice3dVWR.threedFrame.threedRWI)
                 # also "flatten" the actor (i.e. integrate its UserTransform)
-                genUtils.flattenProp3D(objectDict['vtkActor'])
+                misc.flattenProp3D(objectDict['vtkActor'])
                 # and the axis, if any
                 try:
-                    genUtils.flattenProp3D(objectDict['axisLineActor'])
+                    misc.flattenProp3D(objectDict['axisLineActor'])
                 except KeyError:
                     pass
                                           
@@ -1522,9 +1524,9 @@ class tdObjects(s3dcGridMixin):
                    objectDict['motionBoxWidget']:
                     try:
                         # let's flatten the prop again (if there is one)
-                        genUtils.flattenProp3D(objectDict['vtkActor'])
+                        misc.flattenProp3D(objectDict['vtkActor'])
                         # and flatten the axis (if any)
-                        genUtils.flattenProp3D(objectDict['axisLineActor'])
+                        misc.flattenProp3D(objectDict['axisLineActor'])
                     except KeyError:
                         pass
                         
@@ -1602,11 +1604,11 @@ class tdObjects(s3dcGridMixin):
 
         for prop in props:
             # first we make sure that there's no UserTransform
-            genUtils.flattenProp3D(prop)
+            misc.flattenProp3D(prop)
             # then set the UserTransform that we want
             prop.SetUserTransform(transform)
             # then flatten the f*cker (i.e. UserTransform absorbed)
-            genUtils.flattenProp3D(prop)
+            misc.flattenProp3D(prop)
 
     def _unlockObjectFromPlanes(self, tdObject):
         """Make sure that there are no plane constraints on the motion
