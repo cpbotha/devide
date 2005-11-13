@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.87 2005/11/11 16:36:33 cpbotha Exp $
+# $Id: moduleManager.py,v 1.88 2005/11/13 16:55:02 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -84,8 +84,11 @@ class moduleManager:
         # initialise module Kits - Kits are collections of libraries
         # that modules can depend on.  The Kits also make it possible
         # for us to write hooks for when these libraries are imported
-        import moduleKits.vtkKit
-        moduleKits.vtkKit.init(self)
+        import moduleKits
+        for moduleKit in moduleKits.moduleKitList:
+            # call moduleKit.init()
+            getattr(moduleKits, moduleKit).init(self)
+            #moduleKits.vtkKit.init(self)
         
 	# make first scan of available modules
 	self.scanModules()

@@ -1,4 +1,8 @@
-# $Id: vtkKit.py,v 1.3 2005/11/11 16:36:18 cpbotha Exp $
+# $Id: __init__.py,v 1.1 2005/11/13 16:55:02 cpbotha Exp $
+
+# importing this module shouldn't directly cause other large imports
+# do large imports in the init() hook so that you can call back to the
+# moduleManager progress handler methods.
 
 import types
 import sys
@@ -143,4 +147,3 @@ def init(theModuleManager):
     vtkdevide = vtkModuleTrappedErrors('vtkdevide', theModuleManager)
     sys.modules['vtkdevide'] = vtkdevide
     reload(vtkdevide)
-
