@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.89 2005/11/13 17:40:55 cpbotha Exp $
+# $Id: moduleManager.py,v 1.90 2005/11/13 17:59:59 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -982,13 +982,13 @@ class moduleManager:
         # everything proceeded according to plan.        
         return True
 
-#     def modifyModule(self, moduleInstance):
-#         """Call this whenever module state has changed in such a way that
-#         necessitates a re-execution, for instance when parameters have been
-#         changed or when new input data has been transferred.
-#         """
+    def modifyModule(self, moduleInstance):
+        """Call this whenever module state has changed in such a way that
+        necessitates a re-execution, for instance when parameters have been
+        changed or when new input data has been transferred.
+        """
 
-#         self._moduleDict[moduleInstance].modify()
+        self._moduleDict[moduleInstance].modify()
 
     def shouldExecuteModule(self, moduleInstance):
 

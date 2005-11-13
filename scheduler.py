@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.11 2005/11/04 10:07:35 cpbotha Exp $
+# $Id: scheduler.py,v 1.12 2005/11/13 17:59:59 cpbotha Exp $
 
 #########################################################################
 class schedulerException(Exception):
@@ -322,6 +322,9 @@ class scheduler:
             # for example, the final segment of a view should never
             # be executed.  it's output is always ready (a result of
             # interaction)
+
+            # FIXME: continue here: views should get a two-stage execute
+            # once for the source segment and once for the sink segment!!
             blockExecution = False
             if sm.view and sm.viewSegment == 1:
                 blockExecution = True

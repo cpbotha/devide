@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.115 2005/11/04 16:37:12 cpbotha Exp $
+# $Id: graphEditor.py,v 1.116 2005/11/13 17:59:59 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -321,11 +321,14 @@ class graphEditor:
         sms = self._devideApp.scheduler.modulesToSchedulerModules(
             allInstances)
 
+        print "STARTING network execute ----------------------------"
         try:
             self._devideApp.scheduler.executeModules(sms)
         except Exception, e:
             emsgs = genUtils.exceptionToMsgs()
             self._devideApp.logError(emsgs + [str(e)])
+
+        print "ENDING network execute ------------------------------"
 
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
