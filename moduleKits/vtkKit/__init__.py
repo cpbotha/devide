@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.1 2005/11/13 16:55:02 cpbotha Exp $
+# $Id: __init__.py,v 1.2 2005/11/13 17:02:27 cpbotha Exp $
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
@@ -147,3 +147,7 @@ def init(theModuleManager):
     vtkdevide = vtkModuleTrappedErrors('vtkdevide', theModuleManager)
     sys.modules['vtkdevide'] = vtkdevide
     reload(vtkdevide)
+
+    # load up some generic functions into this namespace
+    import misc
+
