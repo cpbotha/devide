@@ -1,8 +1,19 @@
-# $Id: __init__.py,v 1.2 2005/11/13 17:02:27 cpbotha Exp $
+# $Id: __init__.py,v 1.3 2005/11/13 17:40:55 cpbotha Exp $
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
 # moduleManager progress handler methods.
+
+"""vtkKit package driver file.
+
+This performs all initialisation necessary to use VTK from DeVIDE.  Makes
+sure that all VTK classes have ErrorEvent handlers that report back to
+the moduleManager.
+
+Inserts the following modules in sys.modules: vtk, vtkdevide.
+
+@author: Charl P. Botha <http://cpbotha.net/>
+"""
 
 import types
 import sys
@@ -19,10 +30,21 @@ class vtkModuleTrappedErrors(types.ModuleType):
         self._moduleManager = moduleManager
         
     def ErrorEventHandler(self, theObject, eventName, callData):
-        """Shouldn't this rather be embedded in each vtkClassTrappedErrors ?
+        """Standard handler for DeVIDE vtkKit object ErrorEvents.
+
+        Due to the Python wrappings, an exception raised here will not
+        go through the normal catch handling, but will instead just
+        be printed to stdout.  Instead, we use moduleManager functionality
+        to indicate the error.  moduleManager will trap these errors
+        and handle them as it usually does.
         """
-        
-        print "YEEEHAAAAW!  Error trapped: %s" % (callData,)
+
+        # we only have to report the specific VTK object error,
+        # moduleManager will add information about which DeVIDE module
+        # contains the error
+        self._moduleManager.addNoExcModuleExecError(callData)
+        # debug output
+        print callData
 
     ErrorEventHandler.CallDataType = "string0"
     

@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.88 2005/11/13 16:55:02 cpbotha Exp $
+# $Id: moduleManager.py,v 1.89 2005/11/13 17:40:55 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -59,6 +59,8 @@ class moduleManager:
     @todo: we should split this functionality into a moduleManager and
     networkManager class.  One moduleManager per processing node,
     global networkManager to coordinate everything.
+
+    @todo: ideally, ALL module actions should go via the metaModule.
     
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -1025,7 +1027,7 @@ class moduleManager:
         """Transfer output data from moduleInstance to the consumer modules
         connected to its specified output indexes.
 
-        This will be called by the moduleManager right before execution to
+        This will be called by the scheduler right before execution to
         transfer the given output from moduleInstance instance to the correct
         input on the consumerInstance.  In general, this is only done if
         shouldTransferOutput is true, so the number of unnecessary transfers
@@ -1042,6 +1044,9 @@ class moduleManager:
         transferred.
         @param consumerInputIdx: data enters consumerInstance via this input
         port.
+
+        @raise moduleManagerException: if an error occurs getting the data
+        from or transferring it to a new module.
         """
 
         #print 'transferring data %s:%d' % (moduleInstance.__class__.__name__,
@@ -1056,18 +1061,68 @@ class moduleManager:
             raise Exception, 'moduleManager.transferOutput called for ' \
                   'connection that does not exist.'
         
-        # get data from producerModule output
-        od = moduleInstance.getOutput(outputIndex)
+        try:
+            # get data from producerModule output
+            od = moduleInstance.getOutput(outputIndex)
+
+            # some modules don't raise exceptions, but rather set an error
+            # flag in the moduleManager.
+            if self._noExcModuleExecError:
+                # so we turn these into an error message
+                msgs = self._noExcModuleExecError[:]
+                # remembering to zero the error messages
+                self._noExcModuleExecError = []
+                # and then raise an exception
+                raise Exception('\n'.join(msgs))
+            
+        except Exception, e:
+            # get details about the errored module
+            mModule = self._moduleDict[instance]
+            instanceName = mModule.instanceName
+            moduleName = instance.__class__.__name__
+
+            # and raise the relevant exception
+            es = 'Faulty transferOutput (getOutput on module %s (%s)): %s' \
+                 % (instanceName, moduleName, str(e))
+                 
+            raise moduleManagerException(es)
+        
 
         # experiment here with making shallowcopies if we're working with
         # VTK data.
+        # TODO: somehow this should be part of one of the moduleKits
+        # or some other module-related pluggable logic.
         if od and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
             nod = od.__class__()
             nod.ShallowCopy(od)
             od = nod
         
-        # set on consumerInstance input
-        consumerInstance.setInput(consumerInputIdx, od)
+        try:
+            # set on consumerInstance input
+            consumerInstance.setInput(consumerInputIdx, od)
+
+            # some modules don't raise exceptions, but rather set an error
+            # flag in the moduleManager.
+            if self._noExcModuleExecError:
+                # so we turn these into an error message
+                msgs = self._noExcModuleExecError[:]
+                # remembering to zero the error messages
+                self._noExcModuleExecError = []
+                # and then raise an exception
+                raise Exception('\n'.join(msgs))
+            
+        except Exception, e:
+            # get details about the errored module
+            mModule = self._moduleDict[instance]
+            instanceName = mModule.instanceName
+            moduleName = instance.__class__.__name__
+
+            # and raise the relevant exception
+            es = 'Faulty transferOutput (setInput on module %s (%s)): %s' \
+                 % (instanceName, moduleName, str(e))
+                 
+            raise moduleManagerException(es)
+        
 
         # record that the transfer has just happened
         pMetaModule.timeStampTransferTime(
