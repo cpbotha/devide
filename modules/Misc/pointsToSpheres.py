@@ -1,5 +1,5 @@
 # pointsToSpheres.py copyright (c) 2005 by Charl P. Botha <cpbotha@ieee.org>
-# $Id: pointsToSpheres.py,v 1.4 2005/11/03 17:08:39 cpbotha Exp $
+# $Id: pointsToSpheres.py,v 1.5 2005/11/13 13:40:44 cpbotha Exp $
 # see module documentation
 
 # FIXME: the observer pattern is not required anymore in the new event-driven
@@ -23,7 +23,7 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
     'VolumeIndex'.  All values in this array are equal to the corresponding
     point's index in the input points list.
 
-    $Revision: 1.4 $
+    $Revision: 1.5 $
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -73,7 +73,7 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         # (vtkArrayCalculator, vtkSphereSource)
         self._sphereSources = []
 
-        # this is our shallow-copied output
+        # this will hold our shallow-copied output
         self._output = vtk.vtkPolyData()
 
         self._createWindow(
