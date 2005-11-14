@@ -1,8 +1,7 @@
-$Id: TODO,v 1.31 2005/11/11 16:12:30 cpbotha Exp $
+$Id: TODO,v 1.32 2005/11/14 16:52:09 cpbotha Exp $
 
 HIGH-PRIORITY
 
-* REMOVE VTK dependencies from genUtils.py
 * Sanitise directory structure, especially the modules: modules/core 
   modules/packs modules/user etc.
 * devide.py should be view-less core module that we can execute WITHOUT
@@ -80,6 +79,8 @@ BUGS:
   easily.
 
 FIXED:
+
+* REMOVE VTK dependencies from genUtils.py [DONE]
 
 * on Win 2000, modules with many ports are too narrow (i.e. the font is too
   narrow, so the knobs come out the side, if you know what I mean; gimme
