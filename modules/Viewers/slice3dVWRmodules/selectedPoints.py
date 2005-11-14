@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.14 2005/06/29 13:45:38 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.15 2005/11/14 16:17:43 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -505,6 +505,10 @@ class selectedPoints(s3dcGridMixin):
 
         # then make sure this structure knows that it has been modified
         self.outputSelectedPoints.notify()
+
+        # make sure that the input-independent part of this module knows
+        # that it has been modified
+        self.slice3dVWR._moduleManager.modifyModule(self.slice3dVWR, 1)
     
 
 
