@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.3 2005/11/13 17:40:55 cpbotha Exp $
+# $Id: __init__.py,v 1.4 2005/11/14 17:06:13 cpbotha Exp $
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
@@ -15,8 +15,12 @@ Inserts the following modules in sys.modules: vtk, vtkdevide.
 @author: Charl P. Botha <http://cpbotha.net/>
 """
 
-import types
+import re
 import sys
+import types
+
+VERSION = ''
+VTK_VERSION_EXTRA = '-D'
 
 class vtkModuleTrappedErrors(types.ModuleType):
     """Class to enable default instantiation of all wrapped VTK classes with
@@ -173,3 +177,13 @@ def init(theModuleManager):
     # load up some generic functions into this namespace
     import misc
 
+    # setup the kit version
+    global VERSION
+
+    # moo
+    vsv = vtk.vtkVersion.GetVTKSourceVersion()
+    # VTK source nightly date
+    vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
+    VERSION = '%s (%s: %s)' % (vtk.vtkVersion.GetVTKVersion(), vnd,
+                               VTK_VERSION_EXTRA)
+    

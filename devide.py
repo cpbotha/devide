@@ -1,14 +1,9 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.106 2005/11/11 16:36:33 cpbotha Exp $
+# $Id: devide.py,v 1.107 2005/11/14 17:06:10 cpbotha Exp $
 
 # the current main release version
-DEVIDE_VERSION = '20051104-T'
+DEVIDE_VERSION = '20051114-T'
 
-# VTK and ITK extra version information: here we add the
-# cvs commands necessary to get the versions of VTK and ITK
-# that are required for this release of DeVIDE checked out.
-# If you're not cpbotha, you shouldn't change these.
-VTK_VERSION_EXTRA = 'update -D "Sun Nov 06 21:40:36 EST 2005"'
 ITK_VERSION_EXTRA = 'update -dAP'
 
 # standard Python imports
@@ -411,7 +406,7 @@ class devide_app_t(wx.App):
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog
 
-        aboutText = '''
+        aboutText1 = '''
         <html>
         <body>
         <center>
@@ -425,8 +420,9 @@ class devide_app_t(wx.App):
         </p>
         <p>
         wxPython %s, Python %s<br>
-        VTK %s<br>
-        ITK %s
+        '''
+
+        aboutText2 = '''
         </p>
         </center>
         </body>
@@ -436,30 +432,35 @@ class devide_app_t(wx.App):
         about = aboutDialog(self._mainFrame, -1, 'dummy')
         pyver = string.split(sys.version)[0]
 
-        # make VTK "official version" + date of nightly (so we know
-        # what to checkout)
-        vsv = vtk.vtkVersion.GetVTKSourceVersion()
-        # VTK source nightly date
-        vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
-        vvs = '%s (%s: %s)' % (vtk.vtkVersion.GetVTKVersion(), vnd,
-                               VTK_VERSION_EXTRA)
+        # get versions of all included kits; by this time moduleManager
+        # has been imported
+        kits_and_versions = []
+        import moduleKits
+        for moduleKit in moduleKits.moduleKitList:
+            v = getattr(moduleKits, moduleKit).VERSION
+            kits_and_versions.append('%s: %s' % (moduleKit, v))
 
         # if applicable, let's make an ITK version string
-        ivs = ''
-        if self.mainConfig.useInsight:
-            # let's hope McMillan doesn't catch this one!
-            itk = __import__('fixitk')
-            isv = itk.itkVersion.GetITKSourceVersion()
-            ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
-            ivs = '%s (%s: %s)' % (itk.itkVersion.GetITKVersion(), ind,
-                                   ITK_VERSION_EXTRA)
-        else:
-            ivs = 'N/A'
+#         ivs = ''
+#         if self.mainConfig.useInsight:
+#             # let's hope McMillan doesn't catch this one!
+#             itk = __import__('fixitk')
+#             isv = itk.itkVersion.GetITKSourceVersion()
+#             ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
+#             ivs = '%s (%s: %s)' % (itk.itkVersion.GetITKVersion(), ind,
+#                                    ITK_VERSION_EXTRA)
+#         else:
+#             ivs = 'N/A'
 
+
+
+        aboutText = '%s%s%s' % (aboutText1,
+                                '<br>'.join(kits_and_versions),
+                                aboutText2)
+        
         about.htmlWindow.SetPage(aboutText % (DEVIDE_VERSION,
                                               wx.VERSION_STRING,
-                                              pyver,
-                                              vvs, ivs))
+                                              pyver))
 
         ir = about.htmlWindow.GetInternalRepresentation()
         ir.SetIndent(0, wx.html.HTML_INDENT_ALL)
