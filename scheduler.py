@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.13 2005/11/14 16:20:50 cpbotha Exp $
+# $Id: scheduler.py,v 1.14 2005/11/14 22:08:51 cpbotha Exp $
 
 #########################################################################
 class schedulerException(Exception):
@@ -304,7 +304,6 @@ class scheduler:
             producers = self.getProducerModules(sm)
             # transfer relevant data
             for pmodule, output_index, input_index in producers:
-                print 'checking for transfer'
                 if mm.shouldTransferOutput(pmodule.meta_module, output_index,
                                            sm.meta_module, input_index):
                     print 'transferring output: %s:%d to %s:%d' % \
