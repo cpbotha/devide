@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.91 2005/11/14 16:20:50 cpbotha Exp $
+# $Id: moduleManager.py,v 1.92 2005/11/14 16:45:34 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -558,7 +558,6 @@ class moduleManager:
 	instance.close()
         # if that worked (i.e. no exception) let's remove it from the dict
         del self._moduleDict[instance]
-
 
 #         print "Deleted %s, %.2fM freed." % \
 #               (instance.__class__.__name__,
