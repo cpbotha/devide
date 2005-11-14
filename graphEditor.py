@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.116 2005/11/13 17:59:59 cpbotha Exp $
+# $Id: graphEditor.py,v 1.117 2005/11/14 16:20:50 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -316,10 +316,13 @@ class graphEditor:
 
         allGlyphs = self._canvasFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
         allInstances = [g.moduleInstance for g in allGlyphs]
+        mm = self._devideApp.getModuleManager()
+        allMetaModules = [mm._moduleDict[instance]
+                          for instance in allInstances]
 
         # now ask the scheduler to execute them
-        sms = self._devideApp.scheduler.modulesToSchedulerModules(
-            allInstances)
+        sms = self._devideApp.scheduler.metaModulesToSchedulerModules(
+            allMetaModules)
 
         print "STARTING network execute ----------------------------"
         try:

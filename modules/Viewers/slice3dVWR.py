@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.49 2005/11/13 18:00:00 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.50 2005/11/14 16:20:51 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 # TODO: 'refresh' handlers in setInput()
@@ -48,10 +48,12 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.49 $
+    $Revision: 1.50 $
     """
 
-    IS_VIEW = 1
+    # part 0 is "normal", part 1 is the input-independent output part
+    PARTS_TO_INPUTS = {0 : (0,1,2,3,4,5,6)}
+    PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0, 1, 2)}
 
     gridSelectionBackground = (11, 137, 239)
 
@@ -223,13 +225,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self.controlFrame.Destroy()
         del self.controlFrame
 
-    def executeModule(self):
-        # in terms of the view module, executeModule() should update the
-        # view.
-        self.render3D()
+    def executeModule(self, part=0):
+        # part 0 is the "normal" part and part 1 is the input-independent part
+        if part == 0:
+            self.render3D()
 
-        # and make sure outputs and things are up to date!
-        self.getOutput(2).Update()
+        else:
+            # and make sure outputs and things are up to date!
+            self.getOutput(2).Update()
             
     def getConfig(self):
         # implant some stuff into the _config object and return it

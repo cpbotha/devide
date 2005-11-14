@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.90 2005/11/13 17:59:59 cpbotha Exp $
+# $Id: moduleManager.py,v 1.91 2005/11/14 16:20:50 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -347,9 +347,19 @@ class moduleManager:
             exec('moduleInstance = %s.%s(self)' % (fullName,
                                                    fullName.split('.')[-1]))
 
+            if hasattr(moduleInstance, 'PARTS_TO_INPUTS'):
+                pti = moduleInstance.PARTS_TO_INPUTS
+            else:
+                pti = None
+
+            if hasattr(moduleInstance, 'PARTS_TO_OUTPUTS'):
+                pto = moduleInstance.PARTS_TO_OUTPUTS
+            else:
+                pto = None
+            
             # and store it in our internal structures
-            self._moduleDict[moduleInstance] = metaModule(moduleInstance,
-                                                          instanceName)
+            self._moduleDict[moduleInstance] = metaModule(
+                moduleInstance, instanceName, pti, pto)
 
             # it's now fully born ;)
             self._halfBornInstanceName = None
@@ -435,7 +445,7 @@ class moduleManager:
         """
         return hasattr(modules, '__importsub__')
 
-    def executeModule(self, instance):
+    def executeModule(self, meta_module, part=0):
         """Execute module instance.
 
         Important: this method does not result in data being transferred
@@ -449,12 +459,10 @@ class moduleManager:
         @return: Nothing.
         """
 
-        mModule = self._moduleDict[instance]
-        
         try:
             # this goes via the metaModule so that time stamps and the
             # like are correctly reported
-            mModule.executeModule()
+            meta_module.executeModule(part)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -468,15 +476,18 @@ class moduleManager:
             
         except Exception, e:
             # get details about the errored module
-            mModule = self._moduleDict[instance]
-            instanceName = mModule.instanceName
-            moduleName = instance.__class__.__name__
+            instanceName = meta_module.instanceName
+            moduleName = meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
-            es = 'Unable to execute module %s (%s): %s' \
-                 % (instanceName, moduleName, str(e))
+            es = 'Unable to execute part %d of module %s (%s): %s' \
+                 % (part, instanceName, moduleName, str(e))
                  
-            raise moduleManagerException(es)
+            # we use the three argument form so that we can add a new
+            # message to the exception but we get to see the old traceback
+            # see: http://docs.python.org/ref/raise.html
+            raise moduleManagerException, es, sys.exc_info()[2]
+        
             
     def executeNetwork(self, startingModule=None):
         """Execute local network in order, starting from startingModule.
@@ -489,20 +500,19 @@ class moduleManager:
         @todo: integrate concept of startingModule.
         """
 
-        # make list of all module instances
-        allInstances = [mModule.instance for mModule in
-                        self._moduleDict.values()]
+        # convert all metaModules to schedulerModules
+        sms = self._devide_app.scheduler.metaModulesToSchedulerModules(
+            self._moduleDict.values())
 
-        # execute them!
-        sms = self._devide_app.scheduler.modulesToSchedulerModules(
-            allInstances)
-
+        print "STARTING network execute ----------------------------"
         try:
             self._devide_app.scheduler.executeModules(sms)
 
         except Exception, e:
             emsgs = genUtils.exceptionToMsgs()
             self._devide_app.logError(emsgs + [str(e)])
+
+        print "ENDING network execute ------------------------------"
 			      
     def viewModule(self, instance):
         instance.view()
@@ -824,36 +834,49 @@ class moduleManager:
             self._inProgressCallback.unlock()
     
 
-    def getConsumerModules(self, instance):
-        """Determine modules that are connected to outputs of instance.
+    def getConsumers(self, meta_module):
+        """Determine meta modules that are connected to the outputs of
+        meta_module.
+
+        This method is called by the scheduler.
+
+        @todo: this should be part of the metaModule code, as soon as
+        the metaModule inputs and outputs are of type metaModule and not
+        instance.
 
         @param instance: module instance of which the consumers should be
         determined.
-        @return: list of consumer module instances.
+        @return: list of tuples, each consisting of (this module's output
+        index, the consumer meta module, the consumer input index)
         """
 
-        consumerInstances = []
+        consumers = []
 
         # get outputs from metaModule: this is a list of list of tuples
         # outer list has number of outputs elements
         # inner lists store consumer modules for that output
         # tuple contains (consumerModuleInstance, consumerInputIdx)
-        outputs = self._moduleDict[instance].outputs
+        outputs = meta_module.outputs
 
-        for output in outputs:
-            for consumer in output:
-                consumerInstances.append(consumer[0])
+        for outputIdx in range(len(outputs)):
+            output = outputs[outputIdx]
+            for consumerInstance, consumerInputIdx in output:
+                consumerMetaModule = self._moduleDict[consumerInstance]
+                consumers.append(
+                    (outputIdx, consumerMetaModule, consumerInputIdx))
 
-        return consumerInstances
+        return consumers
 
-    def getProducerModules(self, instance):
-        """Return a list of module instances, output indices and the input
-        index through which they supply 'instance' with data.
+    def getProducers(self, meta_module):
+        """Return a list of meta modules, output indices and the input
+        index through which they supply 'meta_module' with data.
 
-        @todo: this should be part of the metaModule code.
+        @todo: this should be part of the metaModule code, as soon as
+        the metaModule inputs and outputs are of type metaModule and not
+        instance.
 
-        @param instance: consumer module.
-        @return: list of tuples, each tuple consists of producer instance
+        @param meta_module: consumer meta module.
+        @return: list of tuples, each tuple consists of producer meta module
         and output index as well as input index of the instance input that
         they connect to.
         """
@@ -861,7 +884,7 @@ class moduleManager:
         # inputs is a list of tuples, each tuple containing moduleInstance
         # and outputIdx of the producer/supplier module; if the port is
         # not connected, that position in inputs contains "None"
-        inputs = self._moduleDict[instance].inputs
+        inputs = meta_module.inputs
 
         producers = []
         for i in range(len(inputs)):
@@ -869,8 +892,9 @@ class moduleManager:
             if pTuple is not None:
                 # unpack
                 pInstance, pOutputIdx = pTuple
+                pMetaModule = self._moduleDict[pInstance]
                 # and store
-                producers.append((pInstance, pOutputIdx, i))
+                producers.append((pMetaModule, pOutputIdx, i))
 
         return producers
 
@@ -982,15 +1006,15 @@ class moduleManager:
         # everything proceeded according to plan.        
         return True
 
-    def modifyModule(self, moduleInstance):
+    def modifyModule(self, moduleInstance, part=0):
         """Call this whenever module state has changed in such a way that
         necessitates a re-execution, for instance when parameters have been
         changed or when new input data has been transferred.
         """
 
-        self._moduleDict[moduleInstance].modify()
+        self._moduleDict[moduleInstance].modify(part)
 
-    def shouldExecuteModule(self, moduleInstance):
+    def shouldExecuteModule(self, meta_module, part=0):
 
         """Determine whether moduleInstance requires execution to become
         up to date.
@@ -1002,10 +1026,11 @@ class moduleManager:
         @return: True if execution required, False if not.
         """
 
-        return self._moduleDict[moduleInstance].shouldExecute()
+        return meta_module.shouldExecute(part)
 
     def shouldTransferOutput(
-        self, moduleInstance, outputIndex, consumerInstance, consumerInputIdx):
+        self,
+        meta_module, output_idx, consumer_meta_module, consumer_input_idx):
         
         """Determine whether output data has to be transferred from
         moduleInstance via output outputIndex to module consumerInstance.
@@ -1017,12 +1042,13 @@ class moduleManager:
         @return: True if output should be transferred, False if not.
         """
         
-        return self._moduleDict[moduleInstance].shouldTransferOutput(
-            outputIndex, consumerInstance, consumerInputIdx)
+        return meta_module.shouldTransferOutput(
+            output_idx, consumer_meta_module, consumer_input_idx)
 
         
     def transferOutput(
-        self, moduleInstance, outputIndex, consumerInstance, consumerInputIdx):
+        self,
+        meta_module, output_idx, consumer_meta_module, consumer_input_idx):
 
         """Transfer output data from moduleInstance to the consumer modules
         connected to its specified output indexes.
@@ -1054,16 +1080,16 @@ class moduleManager:
 
         # double check that this connection already exists
 
-        pMetaModule = self._moduleDict[moduleInstance]
-        if pMetaModule.findConsumerInOutputConnections(
-            outputIndex, consumerInstance, consumerInputIdx) == -1:
+        consumer_instance = consumer_meta_module.instance
+        if meta_module.findConsumerInOutputConnections(
+            output_idx, consumer_instance, consumer_input_idx) == -1:
 
             raise Exception, 'moduleManager.transferOutput called for ' \
                   'connection that does not exist.'
         
         try:
             # get data from producerModule output
-            od = moduleInstance.getOutput(outputIndex)
+            od = meta_module.instance.getOutput(output_idx)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -1077,15 +1103,18 @@ class moduleManager:
             
         except Exception, e:
             # get details about the errored module
-            mModule = self._moduleDict[instance]
-            instanceName = mModule.instanceName
-            moduleName = instance.__class__.__name__
+            instanceName = meta_module.instanceName
+            moduleName = meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
             es = 'Faulty transferOutput (getOutput on module %s (%s)): %s' \
                  % (instanceName, moduleName, str(e))
                  
-            raise moduleManagerException(es)
+            # we use the three argument form so that we can add a new
+            # message to the exception but we get to see the old traceback
+            # see: http://docs.python.org/ref/raise.html
+            raise moduleManagerException, es, sys.exc_info()[2]
+        
         
 
         # experiment here with making shallowcopies if we're working with
@@ -1099,7 +1128,7 @@ class moduleManager:
         
         try:
             # set on consumerInstance input
-            consumerInstance.setInput(consumerInputIdx, od)
+            consumer_meta_module.instance.setInput(consumer_input_idx, od)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -1113,25 +1142,28 @@ class moduleManager:
             
         except Exception, e:
             # get details about the errored module
-            mModule = self._moduleDict[instance]
-            instanceName = mModule.instanceName
-            moduleName = instance.__class__.__name__
+            instanceName = consumer_meta_module.instanceName
+            moduleName = consumer_meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
             es = 'Faulty transferOutput (setInput on module %s (%s)): %s' \
                  % (instanceName, moduleName, str(e))
-                 
-            raise moduleManagerException(es)
+
+            # we use the three argument form so that we can add a new
+            # message to the exception but we get to see the old traceback
+            # see: http://docs.python.org/ref/raise.html
+            raise moduleManagerException, es, sys.exc_info()[2]
         
 
         # record that the transfer has just happened
-        pMetaModule.timeStampTransferTime(
-            outputIndex, consumerInstance, consumerInputIdx)
+        meta_module.timeStampTransferTime(
+            output_idx, consumer_instance, consumer_input_idx)
 
-        # also invalidate the consumerModule; it should re-execute when
-        # a transfer has been made; 
-        cMetaModule = self._moduleDict[consumerInstance]
-        cMetaModule.modify()
+        # also invalidate the consumerModule: it should re-execute when
+        # a transfer has been made.  We only invalidate the part that
+        # takes responsibility for that input.
+        part = consumer_meta_module.getPartForInput(consumer_input_idx)
+        consumer_meta_module.modify(part)
 
         # execute on change
         # we probably shouldn't automatically execute here... transfers

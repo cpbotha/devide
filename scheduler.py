@@ -1,5 +1,5 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.12 2005/11/13 17:59:59 cpbotha Exp $
+# $Id: scheduler.py,v 1.13 2005/11/14 16:20:50 cpbotha Exp $
 
 #########################################################################
 class schedulerException(Exception):
@@ -17,14 +17,19 @@ class schedulerModuleWrapper:
     split.  Module instances are wrapped on an ad hoc basis, so you CAN'T
     use equality testing or 'in' tests to check for matches.  Use the
     L{matches} method.
+
+    @ivar instance: the module instance, e.g. instance of child of moduleBase
+    @ivar input_independent_part: part of module that is not input dependent,
+    e.g. in the case of purely interaction-dependent outputs
+    @ivar input_independent_outputs: list of outputs that are input-dependent.
+    This has to be set for both dependent and independent parts of a module.
     
     @author: Charl P. Botha <http://cpbotha.net/>
     """
     
-    def __init__(self, instance = None, view = False, viewSegment = -1):
-        self.instance = instance
-        self.view = view
-        self.viewSegment = viewSegment
+    def __init__(self, meta_module, part):
+        self.meta_module = meta_module
+        self.part = part
 
     def matches(self, otherModule):
         """Checks if two schedulerModules are equivalent.
@@ -36,9 +41,8 @@ class schedulerModuleWrapper:
         @param otherModule: module with which equivalency should be tested.
         @return: True if equivalent, False otherwise.
         """
-        eq = self.instance == otherModule.instance and \
-             self.view == otherModule.view and \
-             self.viewSegment == otherModule.viewSegment
+        eq = self.meta_module == otherModule.meta_module and \
+             self.part == otherModule.part
 
         return eq
         
@@ -62,7 +66,7 @@ class scheduler:
         
         self._devideApp = devideApp
 
-    def modulesToSchedulerModules(self, moduleInstances):
+    def metaModulesToSchedulerModules(self, metaModules):
         """Preprocess module instance list before cycle detection or
         topological sorting to take care of exceptions.
         
@@ -76,18 +80,11 @@ class scheduler:
         
         # replace every view module with two segments: final and initial
         schedulerModuleWrappers = []
-        for moduleInstance in moduleInstances:
-            if hasattr(moduleInstance, 'IS_VIEW') and moduleInstance.IS_VIEW:
-                # break it up into two
-                smw1 = schedulerModuleWrapper(moduleInstance, True, 0)
-                schedulerModuleWrappers.append(smw1)
-
-                smw2 = schedulerModuleWrapper(moduleInstance, True, 1)
-                schedulerModuleWrappers.append(smw2)
-
-            else:
-                smw = schedulerModuleWrapper(moduleInstance, False, -1)
-                schedulerModuleWrappers.append(smw)
+        for mModule in metaModules:
+            # wrap every part separately
+            for part in range(mModule.numParts):
+                schedulerModuleWrappers.append(
+                    schedulerModuleWrapper(mModule, part))
 
         return schedulerModuleWrappers
 
@@ -100,30 +97,31 @@ class scheduler:
 
         @param schedulerModule: determine modules that are connected to outputs
         of this instance.
+        @param part: Only return modules that are dependent on this part.
         @return: list of consumer schedulerModules, ad hoc wrappings.
         """
 
-        if schedulerModule.view and schedulerModule.viewSegment == 0:
-            # if schedulerModule is segment 0 of a view, there can't be
-            # any consumers by definition.
-            return []
-        
-        mm = self._devideApp.getModuleManager()
-        consumers = mm.getConsumerModules(schedulerModule.instance)
+
+        # get the producer meta module
+        p_meta_module = schedulerModule.meta_module
+
+        # only consumers that are dependent on p_part are relevant
+        p_part = schedulerModule.part
+
+        # consumers is a list of (outputIdx, consumerMetaModule,
+        # consumerInputIdx) tuples
+        mm = self._devideApp.getModuleManager()        
+        consumers = mm.getConsumers(p_meta_module)
         
         sConsumers = []
-        for consumer in consumers:
-            if hasattr(consumer, 'IS_VIEW') and consumer.IS_VIEW:
-                view = True
-                # it's a consumer, so segment has to be 0
-                viewSegment = 0
+        for outputIdx, consumerMetaModule, consumerInputIdx in consumers:
+            if p_meta_module.getPartForOutput(outputIdx) == p_part:
+
+                # now see which part of the consumerMetaModule is dependent
+                cPart = consumerMetaModule.getPartForInput(consumerInputIdx)
                 
-            else:
-                view = False
-                viewSegment = -1
-                
-            sConsumers.append(
-                schedulerModuleWrapper(consumer, view, viewSegment))
+                sConsumers.append(
+                    schedulerModuleWrapper(consumerMetaModule, cPart))
 
         return sConsumers
 
@@ -137,33 +135,32 @@ class scheduler:
 
         @param schedulerModule: determine modules that are connected to inputs
         of this instance.
-        @return: list of tuples with producer schedulerModules and output
-        indices; producer modules have been wrapped in schedulerModules.
+        @return: list of tuples with (producer schedulerModule, output
+        index, consumer input index). 
         """
 
-        if schedulerModule.view and schedulerModule.viewSegment == 1:
-            # if schedulerModule is segment 1 of a view, there can be no
-            # producers (by definition)
-            return []
-
-        mm = self._devideApp.getModuleManager()
-        # producers is a list of (instance, output_idx) tuples
-        producers = mm.getProducerModules(schedulerModule.instance)
+        # get the consumer meta module
+        c_meta_module = schedulerModule.meta_module
+        # only producers that supply this part are relevant
+        c_part = schedulerModule.part
+        
+        # producers is a list of (producerMetaModule, output_idx, inputIdx)
+        # tuples
+        mm = self._devideApp.getModuleManager()        
+        producers = mm.getProducers(c_meta_module)
 
         sProducers = []
-        for pInstance, outputIndex, consumerInputIdx in producers:
-            if hasattr(pInstance, 'IS_VIEW') and pInstance.IS_VIEW:
-                view = True
-                # it's a producer, so segment has to be 1
-                viewSegment = 1
+        for p_meta_module, outputIndex, consumerInputIdx in producers:
+
+            if c_meta_module.getPartForInput(consumerInputIdx) == c_part:
+
+                # find part of producer meta module that is actually
+                # producing for schedulerModule
+                p_part = p_meta_module.getPartForOutput(outputIndex)
                 
-            else:
-                view = False
-                viewSegment = -1
-                
-            sProducers.append(
-                (schedulerModuleWrapper(pInstance, view, viewSegment),
-                 outputIndex, consumerInputIdx))
+                sProducers.append(
+                    (schedulerModuleWrapper(p_meta_module, p_part),
+                     outputIndex, consumerInputIdx))
 
         return sProducers
             
@@ -308,31 +305,23 @@ class scheduler:
             # transfer relevant data
             for pmodule, output_index, input_index in producers:
                 print 'checking for transfer'
-                if mm.shouldTransferOutput(pmodule.instance, output_index,
-                                           sm.instance, input_index):
+                if mm.shouldTransferOutput(pmodule.meta_module, output_index,
+                                           sm.meta_module, input_index):
                     print 'transferring output: %s:%d to %s:%d' % \
-                          (pmodule.instance.__class__.__name__,
+                          (pmodule.meta_module.instance.__class__.__name__,
                            output_index,
-                           sm.instance.__class__.__name__,
+                           sm.meta_module.instance.__class__.__name__,
                            input_index)
-                    mm.transferOutput(pmodule.instance, output_index,
-                                          sm.instance, input_index)
-
-            # here we can code exeptions that block execution
-            # for example, the final segment of a view should never
-            # be executed.  it's output is always ready (a result of
-            # interaction)
-
-            # FIXME: continue here: views should get a two-stage execute
-            # once for the source segment and once for the sink segment!!
-            blockExecution = False
-            if sm.view and sm.viewSegment == 1:
-                blockExecution = True
                     
-            # finally: execute module if its not blocked and the
+                    mm.transferOutput(pmodule.meta_module, output_index,
+                                      sm.meta_module, input_index)
+
+            # finally: execute module if
             # moduleManager thinks it's necessary
-            if not blockExecution and mm.shouldExecuteModule(sm.instance):
-                print 'executing %s' % (sm.instance.__class__.__name__,)
-                mm.executeModule(sm.instance)
+            if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                print 'executing part %d of %s' % \
+                      (sm.part, sm.meta_module.instance.__class__.__name__)
+                
+                mm.executeModule(sm.meta_module, sm.part)
                 
 
