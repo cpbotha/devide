@@ -1,8 +1,9 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.50 2005/11/14 16:20:51 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.51 2005/11/14 16:45:50 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 # TODO: 'refresh' handlers in setInput()
+# TODO: front-end / back-end module split (someday)
 
 import cPickle
 from external.SwitchColourDialog import ColourDialog
@@ -48,7 +49,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.50 $
+    $Revision: 1.51 $
     """
 
     # part 0 is "normal", part 1 is the input-independent output part
@@ -179,7 +180,6 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         del self._outline_actor
         del self._cube_axes_actor2d
 
-
         del self._voi_widget
         #del self._extractVOI
 
@@ -209,7 +209,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         #self.threedFrame.Show(0)
 
         #self.threedFrame.threedRWI.GetRenderWindow().SetSize(10,10)
-        self.threedFrame.threedRWI.GetRenderWindow().WindowRemap()
+        #self.threedFrame.threedRWI.GetRenderWindow().WindowRemap()
+
+        # finalize should be available everywhere
+        self.threedFrame.threedRWI.GetRenderWindow().Finalize()
+        # zero the RenderWindow
+        self.threedFrame.threedRWI.SetRenderWindow(None)
+        # and get rid of the threedRWI interface
+        del self.threedFrame.threedRWI
         
         # all the RenderWindow()s are now reparented, so we can destroy
         # the containing frame
@@ -224,6 +231,13 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # take care of the controlFrame too
         self.controlFrame.Destroy()
         del self.controlFrame
+
+        # if we don't give time up here, things go wrong (BadWindow error,
+        # invalid glcontext, etc).  we'll have to integrate this with the
+        # eventual module front-end / back-end split.  This time-slice
+        # allows wx time to destroy all windows which somehow also leads
+        # to VTK being able to deallocate everything that it has.
+        wx.SafeYield()
 
     def executeModule(self, part=0):
         # part 0 is the "normal" part and part 1 is the input-independent part
