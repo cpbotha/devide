@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.92 2005/11/14 16:45:34 cpbotha Exp $
+# $Id: moduleManager.py,v 1.93 2005/11/15 09:48:56 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -88,6 +88,8 @@ class moduleManager:
         # for us to write hooks for when these libraries are imported
         import moduleKits
         for moduleKit in moduleKits.moduleKitList:
+            # import moduleKit into moduleKits namespace
+            exec('import moduleKits.%s' % (moduleKit,))
             # call moduleKit.init()
             getattr(moduleKits, moduleKit).init(self)
             #moduleKits.vtkKit.init(self)
@@ -216,10 +218,8 @@ class moduleManager:
         reload(modules)
         # first add the core modules to our central list
         for mn in modules.moduleList:
-            if self._devide_app.mainConfig.useInsight or \
-               not mn.startswith('Insight'):
-                self._availableModuleList['modules.%s' % (mn,)] = \
-                                                       modules.moduleList[mn]
+            self._availableModuleList['modules.%s' % (mn,)] = \
+                                                   modules.moduleList[mn]
 
         # now do the modulePacks
         # first get a list of directories in modulePacks
