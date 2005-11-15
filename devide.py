@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.107 2005/11/14 17:06:10 cpbotha Exp $
+# $Id: devide.py,v 1.108 2005/11/15 08:18:05 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051114-T'
@@ -153,11 +153,6 @@ class devide_app_t(wx.App):
 
         self.SetTopWindow(self._mainFrame)
 
-        # pre-import VTK and optionally ITK (these are BIG libraries)
-        #import startupImports
-        #startupImports.doImports(
-        #    self.setProgress, mainConfig=self.mainConfig)
-
         # load up the moduleManager; we do that here as the moduleManager
         # needs to give feedback via the GUI (when it's available)
         print "about to import moduleManager"
@@ -171,77 +166,11 @@ class devide_app_t(wx.App):
         # initialise the scheduler
         self.scheduler = scheduler(self)
 
-        # perform vtk initialisation
-        self._vtkInit()
-
         # indicate that we're ready to go!
         self.setProgress(100, 'Started up')
 
         return True
         
-
-    def _vtkInit(self):
-        """All VTK specific initialisation is done from here.
-        """
-        
-        # CRITICAL VTK CUSTOMISATION BIT:
-        # multi-threaded vtk objects will call back into python causing
-        # re-entrancy; usually, the number of threads is set to the number
-        # of CPUs, so on single-cpu machines this is no problem
-        # On Linux SMP this somehow does not cause any problems either.
-        # On Windows SMP the doubleThreshold module can reliably crash your
-        # machine.  Give me a Windows SMP machine, and I shall fix it.
-        # for now we will just make sure that threading doesn't use more
-        # than one thread. :)
-        # UPDATE: 20050719 - made patches to VTK (along with work by Sander
-        # Niemeijer) that should fix all of these re-entrancy problems.
-        #vtk.vtkMultiThreader.SetGlobalMaximumNumberOfThreads(1)
-        #vtk.vtkMultiThreader.SetGlobalDefaultNumberOfThreads(1)
-        
-        # now make sure that VTK will always send error to vtk.log logfile
-        #temp = vtkdevide.vtkEventOutputWindow()
-        
-        # this is a special case: we try to do all VTK error handling
-        # centrally.
-        #temp.SetInstance(temp)
-
-        def observerEOW(theObject, eventType):
-            # theObject is of course a vtkEventOutputWindow
-            textType = theObject.GetTextType()
-            text = theObject.GetText()
-
-            #print "EOW: %d - %s" % (textType, text)
-            
-            if textType == 0:
-                # Text
-                self.logMessage(text)
-
-            elif textType == 1:
-                # ErrorText - shown and logged
-                #wx.LogError(text)
-                #self.logMessage(text)
-                print "YAHOOOO!"
-                traceback.print_stack()
-                print "!OOOOHAY"
-                raise Exception(text)
-                
-            elif textType == 2:
-                # WarningText
-                self.logMessage(text)
-                
-            elif textType == 3:
-                # GenericWarningText
-                self.logMessage(text)
-                
-            else:
-                # DebugText
-                self.logMessage(text)
-
-        #temp.AddObserver('ErrorEvent', observerEOW)
-        #temp.AddObserver('WarningEvent', observerEOW)        
-            
-        #del temp
-
     def OnExit(self):
         pass
     
@@ -547,7 +476,6 @@ def postWxInitImports():
     """
     
     global graphEditor, moduleManager, scheduler, pythonShell, helpClass
-    #global vtk, vtkdevide
     
     from graphEditor import graphEditor
     from moduleManager import moduleManager
@@ -555,9 +483,6 @@ def postWxInitImports():
     from pythonShell import pythonShell
     from helpClass import helpClass
 
-    #import vtk
-    #import vtkdevide
-    
 def main():
     devide_app = devide_app_t()
     devide_app.startGraphEditor()
