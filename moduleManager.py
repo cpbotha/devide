@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.93 2005/11/15 09:48:56 cpbotha Exp $
+# $Id: moduleManager.py,v 1.94 2005/11/15 14:23:10 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -92,7 +92,6 @@ class moduleManager:
             exec('import moduleKits.%s' % (moduleKit,))
             # call moduleKit.init()
             getattr(moduleKits, moduleKit).init(self)
-            #moduleKits.vtkKit.init(self)
         
 	# make first scan of available modules
 	self.scanModules()

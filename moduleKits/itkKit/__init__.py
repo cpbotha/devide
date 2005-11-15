@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.1 2005/11/15 09:03:30 cpbotha Exp $
+# $Id: __init__.py,v 1.2 2005/11/15 14:23:13 cpbotha Exp $
 
 """itkKit package driver file.
 
@@ -91,6 +91,8 @@ def init(theModuleManager):
     import InsightToolkit as itk
     # stuff itk in there as well
     sys.modules['itk'] = itk
+
+    import moduleUtils
 
     # setup the kit version
     global VERSION

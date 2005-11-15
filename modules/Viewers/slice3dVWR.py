@@ -1,5 +1,5 @@
 # slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id: slice3dVWR.py,v 1.51 2005/11/14 16:45:50 cpbotha Exp $
+# $Id: slice3dVWR.py,v 1.52 2005/11/15 14:23:15 cpbotha Exp $
 # next-generation of the slicing and dicing devide module
 
 # TODO: 'refresh' handlers in setInput()
@@ -36,7 +36,7 @@ import vtk
 import vtkdevide
 
 import wx
-
+    
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
 
@@ -49,7 +49,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     Please see the main DeVIDE help/user manual by pressing F1.  This module,
     being so absolutely great, has its own section.
 
-    $Revision: 1.51 $
+    $Revision: 1.52 $
     """
 
     # part 0 is "normal", part 1 is the input-independent output part

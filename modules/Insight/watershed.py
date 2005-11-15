@@ -1,4 +1,4 @@
-# $Id: watershed.py,v 1.2 2005/11/04 10:34:55 cpbotha Exp $
+# $Id: watershed.py,v 1.3 2005/11/15 14:23:14 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -6,6 +6,8 @@ from moduleBase import moduleBase
 import moduleUtils
 import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
+
+MODULE_KITS = ['vtkKit', 'itkKit']
 
 class watershed(scriptedConfigModuleMixin, moduleBase):
 
