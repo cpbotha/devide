@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.108 2005/11/15 08:18:05 cpbotha Exp $
+# $Id: devide.py,v 1.109 2005/11/15 09:03:27 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051114-T'
-
-ITK_VERSION_EXTRA = 'update -dAP'
 
 # standard Python imports
 import getopt
