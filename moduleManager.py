@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.94 2005/11/15 14:23:10 cpbotha Exp $
+# $Id: moduleManager.py,v 1.95 2005/11/17 12:11:19 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -11,6 +11,7 @@ import mutex
 from random import choice
 from moduleBase import defaultConfigClass
 import time
+import types
 
 # some notes with regards to extra module state/logic required for scheduling
 # * in general, executeModule()/transferOutput()/etc calls do exactly that
@@ -163,8 +164,78 @@ class moduleManager:
 	the list self.module_files.
         """
 
-        self._availableModuleList = {}
+        self._availableModules = {}
+        appDir = self._devide_app.get_appdir()
+        modulePath = os.path.join(appDir, 'modules')
 
+
+        # search through modules hierarchy and pick up all moduleIndex files
+        ####################################################################
+
+        moduleIndices = []
+
+        def miwFunc(arg, dirname, fnames):
+            moduleIndices.extend([os.path.join(dirname, fname)
+                                  for fname in fnames
+                                  if fnmatch.fnmatch(fname, 'moduleIndex.py')])
+
+        os.path.walk(modulePath, miwFunc, arg=None)
+
+        # iterate through the moduleIndices, building up the available
+        # modules list.
+        import moduleKits # we'll need this to check available kits
+        for mi in moduleIndices:
+            # mi is a full path
+            # remove modulePath from the beginning and extension from the end
+            mi2 = os.path.splitext(mi.replace(modulePath, ''))[0]
+            # add modules. to the beginning
+            mim = 'modules%s' % (mi2.replace(os.path.sep, '.'),)
+            # now we can import
+            __import__(mim, globals(), locals())
+            # reload, as this could be a run-time rescan
+            m = sys.modules[mim]
+            reload(m)
+            
+            # find all classes in the imported module
+            
+            cs = [a for a in dir(m) if type(getattr(m,a)) == types.ClassType]
+
+            # stuff these classes, keyed on the module name that they
+            # represent, into the modules list.
+            for a in cs:
+                # a is the name of the class
+                c = getattr(m,a)
+
+                module_deps = True
+                for kit in c.kits:
+                    if kit not in moduleKits.moduleKitList:
+                        module_deps = False
+                        break
+
+                if module_deps:
+                    module_name = mim.replace('moduleIndex', a)
+                    self._availableModules[module_name] = c
+
+        # we should move this functionality to the graphEditor.  "segments"
+        # are _probably_ only valid there... alternatively, we should move
+        # the concept here
+
+        segmentList = []
+        def swFunc(arg, dirname, fnames):
+            segmentList.extend([os.path.join(dirname, fname)
+                                for fname in fnames
+                                if fnmatch.fnmatch(fname, '*.dvn')])
+
+        os.path.walk(os.path.join(appDir, 'segments'), swFunc, arg=None)
+
+#         segmentList = []
+#         recursiveDirectoryD3MNSearch(os.path.join(appDir, 'segments'),
+#                                      None, segmentList)
+
+        self.availableSegmentsList = segmentList
+
+    ########################################################################
+    def old_scanmodules_code(self):
         def recursiveDirectoryD3MNSearch(adir, curModulePath, mnList):
             """Iterate recursively starting at adir and make a list of
             all available modules and networks.
@@ -206,20 +277,23 @@ class moduleManager:
                                        os.path.splitext(fileName)[0]))
                     else:
                         mnList.append(completeName)
+        
 
-        appDir = self._devide_app.get_appdir()
         userModuleList = []
         recursiveDirectoryD3MNSearch(os.path.join(appDir,
                                                     'userModules'),
                                        'userModules', userModuleList)
 
+
         # make sure we pick it up if someone has edited the moduleList
         reload(modules)
         # first add the core modules to our central list
         for mn in modules.moduleList:
-            self._availableModuleList['modules.%s' % (mn,)] = \
+            self._availableModules['modules.%s' % (mn,)] = \
                                                    modules.moduleList[mn]
 
+
+        
         # now do the modulePacks
         # first get a list of directories in modulePacks
         modulePacksDir = os.path.join(appDir, 'modulePacks')        
@@ -252,7 +326,7 @@ class moduleManager:
 
                     mpdirModuleList = getattr(modulePacks, mpdir).moduleList
                     for mn,cats in mpdirModuleList.items():
-                        self._availableModuleList['modulePacks.%s.%s' %
+                        self._availableModules['modulePacks.%s.%s' %
                                                   (mpdir, mn)] = cats
                                                   
 
@@ -260,16 +334,9 @@ class moduleManager:
 
         # then all the user modules
         for umn in userModuleList:
-            self._availableModuleList['%s' % (umn,)] = \
+            self._availableModules['%s' % (umn,)] = \
                                            ('userModules',)
-
-        # we should move this functionality to the graphEditor.  "segments"
-        # are _probably_ only valid there... alternatively, we should move
-        # the concept here
-        segmentList = []
-        recursiveDirectoryD3MNSearch(os.path.join(appDir, 'segments'),
-                                     None, segmentList)
-        self.availableSegmentsList = segmentList
+        
 
     def get_app_dir(self):
         return self.getAppDir()
@@ -280,8 +347,13 @@ class moduleManager:
     def getAppMainConfig(self):
         return self._devide_app.mainConfig
 	
-    def getAvailableModuleList(self):
-	return self._availableModuleList
+    def getAvailableModules(self):
+        """Return the availableModules, a dictionary keyed on fully qualified
+        module name (e.g. modules.Readers.vtiRDR) with values the classes
+        defined in moduleIndex files.
+        """
+        
+	return self._availableModules
 
 
     def getInstance(self, instanceName):

@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.117 2005/11/14 16:20:50 cpbotha Exp $
+# $Id: graphEditor.py,v 1.118 2005/11/17 12:11:19 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -696,14 +696,14 @@ class graphEditor:
 
         mm = self._devideApp.getModuleManager()
         mm.scanModules()
-        self._availableModuleList = mm.getAvailableModuleList()
+        self._availableModules = mm.getAvailableModules()
 
         self._moduleCats = {}
         # let's build up new dictionary with categoryName as key and
         # list of complete moduleNames as value - check for 'Segments',
         # that's reserved
-        for mn,catTuple in self._availableModuleList.items():
-            for cat in catTuple:
+        for mn,module_metadata in self._availableModules.items():
+            for cat in module_metadata.cats:
                 if cat in self._moduleCats:
                     self._moduleCats[cat].append(mn)
                 else:

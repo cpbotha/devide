@@ -1,4 +1,4 @@
-# $Id: watershed.py,v 1.3 2005/11/15 14:23:14 cpbotha Exp $
+# $Id: watershed.py,v 1.4 2005/11/17 12:11:22 cpbotha Exp $
 
 import fixitk as itk
 import genUtils
@@ -7,7 +7,10 @@ import moduleUtils
 import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
-MODULE_KITS = ['vtkKit', 'itkKit']
+# the categories that we belong to
+DVM_CATS = 'Insight', 'Morphology'
+# specify kits that we are dependent on
+DVM_KITS = 'vtkKit', 'itkKit'
 
 class watershed(scriptedConfigModuleMixin, moduleBase):
 

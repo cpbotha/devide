@@ -1,6 +1,7 @@
-# $Id: moduleIndex.py,v 1.1 2005/11/16 16:19:30 cpbotha Exp $
+# $Id: moduleIndex.py,v 1.2 2005/11/17 12:11:23 cpbotha Exp $
 
 class vtiRDR:
-    kits = 'vtkKit', 'itkKit'
+    kits = ['vtkKit']
+    cats = ['Readers']
 
 
