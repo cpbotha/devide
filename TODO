@@ -1,4 +1,4 @@
-$Id: TODO,v 1.33 2005/11/17 14:25:33 cpbotha Exp $
+$Id: TODO,v 1.34 2005/11/17 21:42:24 cpbotha Exp $
 
 HIGH-PRIORITY
 
@@ -12,6 +12,10 @@ HIGH-PRIORITY
 * think of scheme to pass active module parameters to consumer modules
 
 NORMAL PRIORITY
+
+* the _noExcError mechanism works fine for execution schemes where we can
+  check this variable, but what if the user is for instance futzing around
+  in an introspection interface?
 
 * think about making moduleKits run-time loadable, just like modules.
 
