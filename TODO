@@ -1,4 +1,4 @@
-$Id: TODO,v 1.32 2005/11/14 16:52:09 cpbotha Exp $
+$Id: TODO,v 1.33 2005/11/17 14:25:33 cpbotha Exp $
 
 HIGH-PRIORITY
 
@@ -12,6 +12,8 @@ HIGH-PRIORITY
 * think of scheme to pass active module parameters to consumer modules
 
 NORMAL PRIORITY
+
+* think about making moduleKits run-time loadable, just like modules.
 
 * Embed ConfigVtkObj UI in simpleVTKObjects.
 
