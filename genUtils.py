@@ -1,4 +1,4 @@
-import wx
+import wx # todo: this should go away...
 import string
 import sys
 import traceback

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.109 2005/11/15 09:03:27 cpbotha Exp $
+# $Id: devide.py,v 1.110 2005/11/17 14:25:46 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051114-T'
@@ -151,12 +151,24 @@ class devide_app_t(wx.App):
 
         self.SetTopWindow(self._mainFrame)
 
-        # load up the moduleManager; we do that here as the moduleManager
-        # needs to give feedback via the GUI (when it's available)
-        print "about to import moduleManager"
-        global moduleManager
-        import moduleManager
-        self.moduleManager = moduleManager.moduleManager(self)
+        import genUtils
+        try:
+            # load up the moduleManager; we do that here as the moduleManager
+            # needs to give feedback via the GUI (when it's available)
+            global moduleManager
+            import moduleManager
+            self.moduleManager = moduleManager.moduleManager(self)
+
+        except Exception, e:
+            es = 'Unable to startup the moduleManager: %s.  Terminating.' % \
+                 (str(e),)
+            msgs = genUtils.exceptionToMsgs()
+            self.logError(msgs + [es])
+
+            # this is a critical error: if the moduleManager raised an
+            # exception during construction, we have no moduleManager
+            # return False, thus terminating the application
+            return False
 
         # perform post initialisation and pre-loading imports
         postWxInitImports()

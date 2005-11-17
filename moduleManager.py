@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.95 2005/11/17 12:11:19 cpbotha Exp $
+# $Id: moduleManager.py,v 1.96 2005/11/17 14:25:46 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -84,6 +84,7 @@ class moduleManager:
         self._modules_dir = os.path.join(appdir, 'modules')
         self._userModules_dir = os.path.join(appdir, 'userModules')
 
+
         # initialise module Kits - Kits are collections of libraries
         # that modules can depend on.  The Kits also make it possible
         # for us to write hooks for when these libraries are imported
@@ -113,6 +114,7 @@ class moduleManager:
 
         # array of no exception module execution errors
         self._noExcModuleExecError = []
+
 
     def close(self):
         """Iterates through each module and closes it.
@@ -184,37 +186,59 @@ class moduleManager:
         # iterate through the moduleIndices, building up the available
         # modules list.
         import moduleKits # we'll need this to check available kits
+        failed_mis = {}
         for mi in moduleIndices:
             # mi is a full path
             # remove modulePath from the beginning and extension from the end
             mi2 = os.path.splitext(mi.replace(modulePath, ''))[0]
             # add modules. to the beginning
             mim = 'modules%s' % (mi2.replace(os.path.sep, '.'),)
-            # now we can import
-            __import__(mim, globals(), locals())
-            # reload, as this could be a run-time rescan
-            m = sys.modules[mim]
-            reload(m)
+
+            try:
+                # now we can import
+                __import__(mim, globals(), locals())
+                
+            except Exception, e:
+                # make a list of all failed moduleIndices
+                failed_mis[mi] = sys.exc_info()
+                msgs = genUtils.exceptionToMsgs()
+
+                # and log them as mesages
+                self._devide_app.logMessage(
+                    'Error loading %s: %s.' % (mi, str(e)))
+
+                for m in msgs:
+                    self._devide_app.logMessage(m, timeStamp=False)
+
+                # we don't want to throw an exception here, as that would
+                # mean that a singe misconfigured moduleIndex file can
+                # prevent the whole scanModules process from completing
+                # so we'll report on errors here and at the end
+
+            else:
+                # reload, as this could be a run-time rescan
+                m = sys.modules[mim]
+                reload(m)
             
-            # find all classes in the imported module
-            
-            cs = [a for a in dir(m) if type(getattr(m,a)) == types.ClassType]
+                # find all classes in the imported module
+                cs = [a for a in dir(m)
+                      if type(getattr(m,a)) == types.ClassType]
 
-            # stuff these classes, keyed on the module name that they
-            # represent, into the modules list.
-            for a in cs:
-                # a is the name of the class
-                c = getattr(m,a)
+                # stuff these classes, keyed on the module name that they
+                # represent, into the modules list.
+                for a in cs:
+                    # a is the name of the class
+                    c = getattr(m,a)
 
-                module_deps = True
-                for kit in c.kits:
-                    if kit not in moduleKits.moduleKitList:
-                        module_deps = False
-                        break
+                    module_deps = True
+                    for kit in c.kits:
+                        if kit not in moduleKits.moduleKitList:
+                            module_deps = False
+                            break
 
-                if module_deps:
-                    module_name = mim.replace('moduleIndex', a)
-                    self._availableModules[module_name] = c
+                    if module_deps:
+                        module_name = mim.replace('moduleIndex', a)
+                        self._availableModules[module_name] = c
 
         # we should move this functionality to the graphEditor.  "segments"
         # are _probably_ only valid there... alternatively, we should move
@@ -233,6 +257,15 @@ class moduleManager:
 #                                      None, segmentList)
 
         self.availableSegmentsList = segmentList
+
+
+        # report on accumulated errors - this is still a non-critical error
+        # so we don't throw an exception.
+        failed_indices = '\n'.join(failed_mis.keys())
+        self._devide_app.logError(
+            ['The following module indices failed to load: \n%s' % \
+             (failed_indices,)])
+        
 
     ########################################################################
     def old_scanmodules_code(self):
