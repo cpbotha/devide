@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.118 2005/11/17 12:11:19 cpbotha Exp $
+# $Id: graphEditor.py,v 1.119 2005/11/17 14:31:50 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -218,8 +218,11 @@ class graphEditor:
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
         self._availableModuleList = None
-        #self.fill_module_tree()
-        self.fillModuleLists()
+
+        # this is usually shortly after initialisation, so a module scan
+        # should be available.  Actually, the user could be very naughty,
+        # but let's not think about that.
+        self.fillModuleLists(scan_modules=False)
 
         #wx.EVT_LIST_BEGIN_DRAG(self._modulePaletteFrame,
         #                    self._modulePaletteFrame.modulesListCtrlId,
@@ -687,7 +690,7 @@ class graphEditor:
         htmlWindowFrame.Raise()
 
 
-    def fillModuleLists(self):
+    def fillModuleLists(self, scan_modules=True):
         """Build up the module tree from the list of available modules
         supplied by the moduleManager.  At the moment, things will look
         a bit strange if the module tree goes deeper than one level, but
@@ -695,7 +698,9 @@ class graphEditor:
         """
 
         mm = self._devideApp.getModuleManager()
-        mm.scanModules()
+        if scan_modules:
+            mm.scanModules()
+            
         self._availableModules = mm.getAvailableModules()
 
         self._moduleCats = {}

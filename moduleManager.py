@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.96 2005/11/17 14:25:46 cpbotha Exp $
+# $Id: moduleManager.py,v 1.97 2005/11/17 14:31:50 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -200,7 +200,7 @@ class moduleManager:
                 
             except Exception, e:
                 # make a list of all failed moduleIndices
-                failed_mis[mi] = sys.exc_info()
+                failed_mis[mim] = sys.exc_info()
                 msgs = genUtils.exceptionToMsgs()
 
                 # and log them as mesages
@@ -208,7 +208,7 @@ class moduleManager:
                     'Error loading %s: %s.' % (mi, str(e)))
 
                 for m in msgs:
-                    self._devide_app.logMessage(m, timeStamp=False)
+                    self._devide_app.logMessage(m.strip(), timeStamp=False)
 
                 # we don't want to throw an exception here, as that would
                 # mean that a singe misconfigured moduleIndex file can
@@ -261,10 +261,11 @@ class moduleManager:
 
         # report on accumulated errors - this is still a non-critical error
         # so we don't throw an exception.
-        failed_indices = '\n'.join(failed_mis.keys())
-        self._devide_app.logError(
-            ['The following module indices failed to load: \n%s' % \
-             (failed_indices,)])
+        if len(failed_mis) > 0:
+            failed_indices = '\n'.join(failed_mis.keys())
+            self._devide_app.logError(
+                ['The following module indices failed to load: \n%s' % \
+                 (failed_indices,)])
         
 
     ########################################################################
