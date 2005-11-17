@@ -1,5 +1,5 @@
 # sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: sliceDirection.py,v 1.29 2005/11/14 16:13:59 cpbotha Exp $
+# $Id: sliceDirection.py,v 1.30 2005/11/17 16:11:39 cpbotha Exp $
 # does all the actual work for a single slice in the slice3dVWR
 
 import operator
@@ -892,6 +892,7 @@ class sliceDirection:
         # been modified.
         m = self.sliceDirections.slice3dVWR
         m._moduleManager.modifyModule(m, 1)
+        #m._moduleManager.aaarrggghhh CONTINUE HERE
 
 
 
