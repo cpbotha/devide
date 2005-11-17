@@ -1,5 +1,5 @@
 # graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id: graphEditor.py,v 1.119 2005/11/17 14:31:50 cpbotha Exp $
+# $Id: graphEditor.py,v 1.120 2005/11/17 14:40:05 cpbotha Exp $
 # the graph-editor thingy where one gets to connect modules together
 
 import cPickle
@@ -217,7 +217,7 @@ class graphEditor:
 
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
-        self._availableModuleList = None
+        self._availableModules = None
 
         # this is usually shortly after initialisation, so a module scan
         # should be available.  Actually, the user could be very naughty,
@@ -601,7 +601,7 @@ class graphEditor:
         """
         
         # check that it's a valid module name
-        if moduleName in self._availableModuleList:
+        if moduleName in self._availableModules:
             # we have a valid module, we should try and instantiate
             mm = self._devideApp.getModuleManager()
             temp_module = mm.createModule(moduleName)
