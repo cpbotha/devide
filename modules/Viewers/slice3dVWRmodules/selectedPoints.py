@@ -1,5 +1,5 @@
 # selectedPoints.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id: selectedPoints.py,v 1.15 2005/11/14 16:17:43 cpbotha Exp $
+# $Id: selectedPoints.py,v 1.16 2005/11/18 22:48:37 cpbotha Exp $
 #
 
 from genMixins import subjectMixin
@@ -473,7 +473,6 @@ class selectedPoints(s3dcGridMixin):
         self.slice3dVWR.render3D()
 
     def _syncGridRowToSelPoints(self, row):
-        # *sniff* *sob* It's unreadable, but why's it so pretty?
         # this just formats the real point
         name = self._pointsList[row]['name']
         discrete = self._pointsList[row]['discrete']
@@ -508,7 +507,10 @@ class selectedPoints(s3dcGridMixin):
 
         # make sure that the input-independent part of this module knows
         # that it has been modified
-        self.slice3dVWR._moduleManager.modifyModule(self.slice3dVWR, 1)
+        mm = self.slice3dVWR._moduleManager
+        mm.modifyModule(self.slice3dVWR, 1)
+        mm.requestAutoExecuteNetwork(self.slice3dVWR)
+
     
 
 

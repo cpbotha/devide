@@ -1,14 +1,16 @@
-$Id: TODO,v 1.34 2005/11/17 21:42:24 cpbotha Exp $
+$Id: TODO,v 1.35 2005/11/18 22:48:37 cpbotha Exp $
 
 HIGH-PRIORITY
 
+* lock network execution with mutex [nov 2005 milestone]
 * Sanitise directory structure, especially the modules: modules/core 
-  modules/packs modules/user etc.
+  modules/packs modules/user etc. [nov 2005 milestone]
+
+* ship VTK and ITK build environments with devide so that mortals can build
+  extension modules easily.
 * devide.py should be view-less core module that we can execute WITHOUT
   any UI as well.  Callbacks from modules are then turned into for example
   log messages or a frikking web page.
-* ship VTK and ITK build environments with devide so that mortals can build
-  extension modules easily.
 * think of scheme to pass active module parameters to consumer modules
 
 NORMAL PRIORITY

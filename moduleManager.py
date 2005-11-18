@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.97 2005/11/17 14:31:50 cpbotha Exp $
+# $Id: moduleManager.py,v 1.98 2005/11/18 22:48:37 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -97,6 +97,9 @@ class moduleManager:
         
 	# make first scan of available modules
 	self.scanModules()
+
+        # autoExecute mode, still need to link this up with the GUI
+        self.autoExecute = True
 
         # this is a list of modules that have the ability to start a network
         # executing all by themselves and usually do... when we break down
@@ -610,6 +613,7 @@ class moduleManager:
             self._moduleDict.values())
 
         print "STARTING network execute ----------------------------"
+        print time.ctime()
         try:
             self._devide_app.scheduler.executeModules(sms)
 
@@ -660,7 +664,9 @@ class moduleManager:
             del self._markedModules[mmKey]
         
         # now we can finally call close on the instance
-	instance.close()
+        # fixme: continue here
+        instance.close()
+
         # if that worked (i.e. no exception) let's remove it from the dict
         del self._moduleDict[instance]
 
@@ -809,6 +815,16 @@ class moduleManager:
         # the newly created module-instance and a list with the connections
         return (newModulesDict, newConnections)
 
+    def requestAutoExecuteNetwork(self, moduleInstance):
+        """Method that can be called by an interaction/view module to
+        indicate that some action by the user should result in a network
+        update.  The execution will only be performed if the
+        AutoExecute mode is active.
+        """
+
+        if self.autoExecute:
+            print "autoExecute ##### #####"
+            self.executeNetwork()
 
     def serialiseModuleInstances(self, moduleInstances):
         """Given 
