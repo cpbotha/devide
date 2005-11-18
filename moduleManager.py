@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.98 2005/11/18 22:48:37 cpbotha Exp $
+# $Id: moduleManager.py,v 1.99 2005/11/18 23:27:35 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -98,8 +98,8 @@ class moduleManager:
 	# make first scan of available modules
 	self.scanModules()
 
-        # autoExecute mode, still need to link this up with the GUI
-        self.autoExecute = True
+        # auto_execute mode, still need to link this up with the GUI
+        self.auto_execute = True
 
         # this is a list of modules that have the ability to start a network
         # executing all by themselves and usually do... when we break down
@@ -618,6 +618,9 @@ class moduleManager:
             self._devide_app.scheduler.executeModules(sms)
 
         except Exception, e:
+            # we are directly reporting the error, as this is used by
+            # a utility function that is too compact to handle an
+            # exception by itself.  Might change in the future.
             emsgs = genUtils.exceptionToMsgs()
             self._devide_app.logError(emsgs + [str(e)])
 
@@ -627,6 +630,13 @@ class moduleManager:
         instance.view()
     
     def deleteModule(self, instance):
+        """Destroy module.
+
+        This will disconnect all module inputs and outputs and call the
+        close() method.  This method is used by the graphEditor and by
+        the close() method of the moduleManager.
+        """
+        
         # first disconnect all outgoing connections
         inputs = self._moduleDict[instance].inputs
         outputs = self._moduleDict[instance].outputs
@@ -662,18 +672,44 @@ class moduleManager:
         # 2. remove all of em
         for mmKey in mmKeys:
             del self._markedModules[mmKey]
+
+        # get details about the module (we might need this later)
+        meta_module = self._moduleDict[instance]
+        instanceName = meta_module.instanceName
+        moduleName = meta_module.instance.__class__.__name__
         
-        # now we can finally call close on the instance
-        # fixme: continue here
-        instance.close()
+        # store autoexecute, then disable
+        ae = self.auto_execute
+        self.auto_execute = False
 
-        # if that worked (i.e. no exception) let's remove it from the dict
-        del self._moduleDict[instance]
+        try:
+            try:
+                # now we can finally call close on the instance
+                instance.close()
 
-#         print "Deleted %s, %.2fM freed." % \
-#               (instance.__class__.__name__,
-#                (endFreeMemory - beginFreeMemory) / 1024.0 / 1024.0)
-                                          
+            finally:
+                # do the following in all cases:
+                # 1. remove module from our dict
+                del self._moduleDict[instance]
+                # 2. reset auto_execute mode
+                self.auto_execute = ae
+                # the exception will now be re-raised if there was one
+                # to begin with.
+
+        except Exception, e:
+            # we're going to re-raise the exception: this method could be
+            # called by other parties that need to do alternative error
+            # handling
+
+            # create new exception message
+            es = 'Error calling close() on module %s (%s): %s' \
+                 % (part, instanceName, moduleName, str(e))
+                 
+            # we use the three argument form so that we can add a new
+            # message to the exception but we get to see the old traceback
+            # see: http://docs.python.org/ref/raise.html
+            raise moduleManagerException, es, sys.exc_info()[2]
+
     def connectModules(self, output_module, output_idx,
                         input_module, input_idx):
         """Connect output_idx'th output of provider output_module to
@@ -822,8 +858,8 @@ class moduleManager:
         AutoExecute mode is active.
         """
 
-        if self.autoExecute:
-            print "autoExecute ##### #####"
+        if self.auto_execute:
+            print "auto_execute ##### #####"
             self.executeNetwork()
 
     def serialiseModuleInstances(self, moduleInstances):
