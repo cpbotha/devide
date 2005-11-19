@@ -1,5 +1,7 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.14 2005/11/14 22:08:51 cpbotha Exp $
+# $Id: scheduler.py,v 1.15 2005/11/19 00:05:29 cpbotha Exp $
+
+import mutex
 
 #########################################################################
 class schedulerException(Exception):
@@ -50,6 +52,9 @@ class schedulerModuleWrapper:
 class scheduler:
     """Coordinates event-driven network execution.
 
+    This should be a singleton, as we're using a mutex to protect per-
+    process network execution.
+
     @todo: document the execution model completely, including for example
     VTK exceptions and when updates are forced, etc.
 
@@ -65,6 +70,7 @@ class scheduler:
         """
         
         self._devideApp = devideApp
+        self._execute_mutex = mutex.mutex()
 
     def metaModulesToSchedulerModules(self, metaModules):
         """Preprocess module instance list before cycle detection or
@@ -290,37 +296,50 @@ class scheduler:
         
         """
         
-        if self.detectCycles(schedulerModules):
-            raise cyclesDetectedException(
-                'Cycles detected in selected network modules.  '
-                'Unable to execute.')
 
-        # this will also check for cycles...
-        schedList = self.topoSort(schedulerModules)
-        mm = self._devideApp.getModuleManager()
+        # stop concurrent calls of executeModules.
+        if not self._execute_mutex.testandset():
+            return
         
-        for sm in schedList:
-            # find all producer modules
-            producers = self.getProducerModules(sm)
-            # transfer relevant data
-            for pmodule, output_index, input_index in producers:
-                if mm.shouldTransferOutput(pmodule.meta_module, output_index,
-                                           sm.meta_module, input_index):
-                    print 'transferring output: %s:%d to %s:%d' % \
-                          (pmodule.meta_module.instance.__class__.__name__,
-                           output_index,
-                           sm.meta_module.instance.__class__.__name__,
-                           input_index)
-                    
-                    mm.transferOutput(pmodule.meta_module, output_index,
-                                      sm.meta_module, input_index)
+        try:
+            if self.detectCycles(schedulerModules):
+                raise cyclesDetectedException(
+                    'Cycles detected in selected network modules.  '
+                    'Unable to execute.')
 
-            # finally: execute module if
-            # moduleManager thinks it's necessary
-            if mm.shouldExecuteModule(sm.meta_module, sm.part):
-                print 'executing part %d of %s' % \
-                      (sm.part, sm.meta_module.instance.__class__.__name__)
-                
-                mm.executeModule(sm.meta_module, sm.part)
+            # this will also check for cycles...
+            schedList = self.topoSort(schedulerModules)
+            mm = self._devideApp.getModuleManager()
+
+            for sm in schedList:
+                # find all producer modules
+                producers = self.getProducerModules(sm)
+                # transfer relevant data
+                for pmodule, output_index, input_index in producers:
+                    if mm.shouldTransferOutput(
+                        pmodule.meta_module, output_index,
+                        sm.meta_module, input_index):
+
+                        print 'transferring output: %s:%d to %s:%d' % \
+                              (pmodule.meta_module.instance.__class__.__name__,
+                               output_index,
+                               sm.meta_module.instance.__class__.__name__,
+                               input_index)
+
+                        mm.transferOutput(pmodule.meta_module, output_index,
+                                          sm.meta_module, input_index)
+
+                # finally: execute module if
+                # moduleManager thinks it's necessary
+                if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                    print 'executing part %d of %s' % \
+                          (sm.part, sm.meta_module.instance.__class__.__name__)
+
+                    mm.executeModule(sm.meta_module, sm.part)
+
+        finally:
+            # in whichever way execution terminates, we have to unlock the
+            # mutex.
+            self._execute_mutex.unlock()
                 
 
