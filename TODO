@@ -1,8 +1,7 @@
-$Id: TODO,v 1.35 2005/11/18 22:48:37 cpbotha Exp $
+$Id: TODO,v 1.36 2005/11/19 00:13:26 cpbotha Exp $
 
 HIGH-PRIORITY
 
-* lock network execution with mutex [nov 2005 milestone]
 * Sanitise directory structure, especially the modules: modules/core 
   modules/packs modules/user etc. [nov 2005 milestone]
 
@@ -126,6 +125,8 @@ FIXED:
 
 
 DONE:
+
+* lock network execution with mutex [nov 2005 milestone]
 
 * make module names configurable
 
