@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.99 2005/11/18 23:27:35 cpbotha Exp $
+# $Id: moduleManager.py,v 1.100 2005/11/20 21:54:17 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -82,18 +82,28 @@ class moduleManager:
 
         appdir = self._devide_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
+        #sys.path.insert(0,self._modules_dir)
+        
         self._userModules_dir = os.path.join(appdir, 'userModules')
 
-
+        ############################################################
         # initialise module Kits - Kits are collections of libraries
         # that modules can depend on.  The Kits also make it possible
         # for us to write hooks for when these libraries are imported
         import moduleKits
+        # remove no-kits from moduleKitList:
+        nmkl = [mk for mk in moduleKits.moduleKitList
+                if mk not in self.getAppMainConfig().nokits]
+        moduleKits.moduleKitList = nmkl
+
+        # now import the kits that remain
         for moduleKit in moduleKits.moduleKitList:
             # import moduleKit into moduleKits namespace
             exec('import moduleKits.%s' % (moduleKit,))
             # call moduleKit.init()
             getattr(moduleKits, moduleKit).init(self)
+
+        ##############################################################
         
 	# make first scan of available modules
 	self.scanModules()
@@ -171,8 +181,7 @@ class moduleManager:
 
         self._availableModules = {}
         appDir = self._devide_app.get_appdir()
-        modulePath = os.path.join(appDir, 'modules')
-
+        modulePath = self.get_modules_dir()
 
         # search through modules hierarchy and pick up all moduleIndex files
         ####################################################################
@@ -194,8 +203,16 @@ class moduleManager:
             # mi is a full path
             # remove modulePath from the beginning and extension from the end
             mi2 = os.path.splitext(mi.replace(modulePath, ''))[0]
-            # add modules. to the beginning
-            mim = 'modules%s' % (mi2.replace(os.path.sep, '.'),)
+            # replace path separator with .
+            mim = mi2.replace(os.path.sep, '.')
+
+            # Class.mod style
+            # and remove possible '.' at beginning
+            #if mim.startswith('.'):
+            #    mim = mim[1:]
+
+            # modules.Class.mod style
+            mim = 'modules%s' % (mim,)
 
             try:
                 # now we can import

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.37 2005/11/19 00:24:00 cpbotha Exp $
+$Id: TODO,v 1.38 2005/11/20 21:54:17 cpbotha Exp $
 
 HIGH-PRIORITY
 
@@ -7,7 +7,6 @@ HIGH-PRIORITY
  * add top-level module paths to sys.path, so modules.Readers.vtiRDR
    will be simply Readers.vtkRDR
 
-* Fix command-line parameters [nov 2005 milestone]
 
 * ship VTK and ITK build environments with devide so that mortals can build
   extension modules easily.
@@ -129,6 +128,8 @@ FIXED:
 
 
 DONE:
+
+* Fix command-line parameters [nov 2005 milestone]
 
 * lock network execution with mutex [nov 2005 milestone]
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.110 2005/11/17 14:25:46 cpbotha Exp $
+# $Id: devide.py,v 1.111 2005/11/20 21:54:17 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051114-T'
@@ -15,9 +15,14 @@ import sys
 import time
 import traceback
 
+# we need these explicit imports for cx_Freeze
+#import encodings
+#import encodings.ascii
+#import encodings.cp437
+#import encodings.utf_8
+#import encodings.idna
+
 # WX imports
-# this HAS to go before we call import wx
-#import fixWxImports
 import wx
 import wx.html
 
@@ -30,17 +35,18 @@ class mainConfigClass(object):
 
     def __init__(self):
         import defaults
-        self.useInsight = defaults.USE_INSIGHT
-        self.itkPreImport = True
+        self.nokits = defaults.NOKITS
         self.stereo = False
         
         self._parseCommandLine()
 
+        # now sanitise some options
+        if type(self.nokits) != type([]):
+            self.nokits = []
+
     def dispUsage(self):
         print "-h or --help               : Display this message."
-        print "--insight or --itk         : Use ITK-based modules."
-        print "--no-insight or --no-itk   : Do not use ITK-based modules."
-        print "--no-itk-preimport         : Do not pre-import ITK."
+        print "--no-kits kit1,kit2        : Don't load the specified kits."
         print "--stereo                   : Allocate stereo visuals."
 
     def _parseCommandLine(self):
@@ -48,8 +54,8 @@ class mainConfigClass(object):
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-itk', 'no-insight', 'itk', 'insight',
-                 'no-itk-preimport', 'stereo'])
+                ['help', 'no-kits=', 'stereo'])
+            
         except getopt.GetoptError,e:
             self.dispUsage()
             sys.exit(1)
@@ -59,14 +65,8 @@ class mainConfigClass(object):
                 self.dispUsage()
                 sys.exit(1)
 
-            elif o in ('--insight', '--itk'):
-                self.useInsight = True
-
-            elif o in ('--no-itk', '--no-insight'):
-                self.useInsight = False
-
-            elif o in ('--no-itk-preimport',):
-                self.itkPreImport = False
+            elif o in ('--no-kits',):
+                self.nokits = a.split(',')
 
             elif o in ('--stereo',):
                 self.stereo = True
@@ -100,6 +100,8 @@ class devide_app_t(wx.App):
                 self._appdir = dirname
             else:
                 self._appdir = os.getcwd()
+
+        sys.path.insert(0, self._appdir) # for cx_Freeze
         
         wx.App.__init__(self, 0)
 
@@ -152,6 +154,7 @@ class devide_app_t(wx.App):
         self.SetTopWindow(self._mainFrame)
 
         import genUtils
+
         try:
             # load up the moduleManager; we do that here as the moduleManager
             # needs to give feedback via the GUI (when it's available)

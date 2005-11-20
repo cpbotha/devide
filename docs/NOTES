@@ -9,4 +9,14 @@ event.m_id  = whateverId (you could just use GetId())
 wxPostEvent(theButton (or perhaps its frame), event)
 
 
+Miscellaneous
+-------------
+
+* cx_Freeze example command-line for DeVIDE
+
+/c/build/cx_Freeze-3.0.1/FreezePython.exe --include-modules moduleKits.vtkKit,
+modules.Viewers.histogram1D,modules.Viewers.slice3dVWR ../devide.py
+
+alternatively, create cxf_deps.py file with necessary imports and spec this
+as the only --include-module.
 
