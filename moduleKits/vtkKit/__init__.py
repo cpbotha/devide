@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.4 2005/11/14 17:06:13 cpbotha Exp $
+# $Id: __init__.py,v 1.5 2005/11/24 13:12:31 cpbotha Exp $
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
@@ -90,15 +90,15 @@ class vtkModuleTrappedErrors(types.ModuleType):
             return object.__getattribute__(self, name)
 
 def preImportVTK(progressMethod):
-    vtkImportList = [('vtk.common', 'Loading VTK Common.'),
-                     ('vtk.filtering', 'Loading VTK Filtering.'),
-                     ('vtk.io', 'Loading VTK IO.'),
-                     ('vtk.imaging', 'Loading VTK Imaging.'),
-                     ('vtk.graphics', 'Loading VTK Graphics.'),
-                     ('vtk.rendering', 'Loading VTK Rendering.'),
-                     ('vtk.hybrid', 'Loading VTK Hybrid.'),
-                     #('vtk.patented', 'Loading VTK Patented.'),
-                     ('vtk', 'Loading other VTK symbols')]
+    vtkImportList = [('vtk.common', 'VTK Common.'),
+                     ('vtk.filtering', 'VTK Filtering.'),
+                     ('vtk.io', 'VTK IO.'),
+                     ('vtk.imaging', 'VTK Imaging.'),
+                     ('vtk.graphics', 'VTK Graphics.'),
+                     ('vtk.rendering', 'VTK Rendering.'),
+                     ('vtk.hybrid', 'VTK Hybrid.'),
+                     #('vtk.patented', 'VTK Patented.'),
+                     ('vtk', 'Other VTK symbols')]
 
     # set the dynamic loading flags.  If we don't do this, we get strange
     # errors on 64 bit machines.  To see this happen, comment this statement
@@ -111,7 +111,8 @@ def preImportVTK(progressMethod):
     # do the imports
     for module, message in vtkImportList:
         currentPercent += percentStep
-        progressMethod(currentPercent, message, noTime=True)
+        progressMethod(currentPercent, 'Initialising vtkKit: %s' % (message,),
+                       noTime=True)
         exec('import %s' % (module,))
 
     # restore previous dynamic loading flags

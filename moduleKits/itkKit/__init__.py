@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.2 2005/11/15 14:23:13 cpbotha Exp $
+# $Id: __init__.py,v 1.3 2005/11/24 13:12:31 cpbotha Exp $
 
 """itkKit package driver file.
 
@@ -14,15 +14,15 @@ VERSION = ''
 ITK_VERSION_EXTRA = 'update -dAP'
 
 def preImportITK(progressMethod):
-    itkImportList = [('VXLNumericsPython', 'Loading VXL Numerics'),
-                     ('ITKCommonAPython', 'Loading ITK Common part A'),
-                     ('ITKCommonBPython', 'Loading ITK Common part B'),
-                     ('ITKBasicFiltersAPython', 'Loading ITK Basic Filters A'),
-                     ('ITKBasicFiltersBPython', 'Loading ITK Basic Filters B'),
-                     ('ITKNumericsPython', 'Loading ITK Numerics'),
-                     ('ITKAlgorithmsPython', 'Loading ITK Algorithms'),
-                     ('ITKIOPython', 'Loading ITK IO Python'),
-                     ('InsightToolkit', 'Loading other ITK symbols')] # fixitk
+    itkImportList = [('VXLNumericsPython', 'VXL Numerics'),
+                     ('ITKCommonAPython', 'ITK Common part A'),
+                     ('ITKCommonBPython', 'ITK Common part B'),
+                     ('ITKBasicFiltersAPython', 'ITK Basic Filters A'),
+                     ('ITKBasicFiltersBPython', 'ITK Basic Filters B'),
+                     ('ITKNumericsPython', 'ITK Numerics'),
+                     ('ITKAlgorithmsPython', 'ITK Algorithms'),
+                     ('ITKIOPython', 'ITK IO Python'),
+                     ('InsightToolkit', 'Other ITK symbols')] # fixitk
     
 
     # set the dynamic loading flags.  If we don't do this, we get strange
@@ -36,7 +36,8 @@ def preImportITK(progressMethod):
     # do the imports
     for module, message in itkImportList:
         currentPercent += percentStep
-        progressMethod(currentPercent, message, noTime=True)
+        progressMethod(currentPercent, 'Initialising itkKit: %s' % (message,),
+                       noTime=True)
         exec('import %s' % (module,))
 
     # restore previous dynamic loading flags
