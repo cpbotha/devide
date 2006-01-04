@@ -1,12 +1,9 @@
-$Id: TODO,v 1.39 2006/01/04 16:23:21 cpbotha Exp $
+$Id: TODO,v 1.40 2006/01/04 17:20:13 cpbotha Exp $
 
 HIGH-PRIORITY
 
 * Sanitise directory structure, especially the modules: modules/core 
-  modules/packs modules/user etc. [nov 2005 milestone]
-* add top-level module paths to sys.path, so modules.Readers.vtiRDR
-  will be simply Readers.vtkRDR
-
+  modules/packs modules/user etc. [jan 2005 milestone]
 
 * ship VTK and ITK build environments with devide so that mortals can build
   extension modules easily.
