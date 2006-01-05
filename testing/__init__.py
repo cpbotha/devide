@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.15 2006/01/05 15:24:43 cpbotha Exp $
+# $Id: __init__.py,v 1.16 2006/01/05 16:28:55 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -221,7 +221,8 @@ class testITKBasic(graphEditorVolumeTestBase):
         """
 
         # this will be the last big created thingy... from now on we'll
-        # do DVNs.  This simulates the user's actions creating the network though.
+        # do DVNs.  This simulates the user's actions creating the network
+        # though.
 
         # create a slice3dVWR
         (svmod, svglyph) = _devideApp._graphEditor.createModuleAndGlyph(
@@ -291,6 +292,7 @@ class devideTesting:
 
         suiteList = [self.basicSuite, self.moduleSuite]
 
+        # do check for presence of itkKit
         #if _devideApp.mainConfig.useInsight:
         #    suiteList.append(self.itkSuite)
 
