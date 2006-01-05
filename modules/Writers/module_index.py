@@ -2,10 +2,6 @@ class cptBrepWRT:
     kits = ['vtkKit']
     cats = ['Filters']
 
-class __init__:
-    kits = ['vtkKit']
-    cats = ['Filters']
-
 class ivWRT:
     kits = ['vtkKit']
     cats = ['Filters']

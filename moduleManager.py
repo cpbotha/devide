@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.100 2005/11/20 21:54:17 cpbotha Exp $
+# $Id: moduleManager.py,v 1.101 2006/01/05 15:28:22 cpbotha Exp $
 
 import sys, os, fnmatch
 import re
@@ -183,7 +183,7 @@ class moduleManager:
         appDir = self._devide_app.get_appdir()
         modulePath = self.get_modules_dir()
 
-        # search through modules hierarchy and pick up all moduleIndex files
+        # search through modules hierarchy and pick up all module_index files
         ####################################################################
 
         moduleIndices = []
@@ -191,7 +191,7 @@ class moduleManager:
         def miwFunc(arg, dirname, fnames):
             moduleIndices.extend([os.path.join(dirname, fname)
                                   for fname in fnames
-                                  if fnmatch.fnmatch(fname, 'moduleIndex.py')])
+                                  if fnmatch.fnmatch(fname, 'module_index.py')])
 
         os.path.walk(modulePath, miwFunc, arg=None)
 
@@ -231,7 +231,7 @@ class moduleManager:
                     self._devide_app.logMessage(m.strip(), timeStamp=False)
 
                 # we don't want to throw an exception here, as that would
-                # mean that a singe misconfigured moduleIndex file can
+                # mean that a singe misconfigured module_index file can
                 # prevent the whole scanModules process from completing
                 # so we'll report on errors here and at the end
 
@@ -257,7 +257,7 @@ class moduleManager:
                             break
 
                     if module_deps:
-                        module_name = mim.replace('moduleIndex', a)
+                        module_name = mim.replace('module_index', a)
                         self._availableModules[module_name] = c
 
         # we should move this functionality to the graphEditor.  "segments"
@@ -404,7 +404,7 @@ class moduleManager:
     def getAvailableModules(self):
         """Return the availableModules, a dictionary keyed on fully qualified
         module name (e.g. modules.Readers.vtiRDR) with values the classes
-        defined in moduleIndex files.
+        defined in module_index files.
         """
         
 	return self._availableModules

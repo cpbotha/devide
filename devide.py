@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.111 2005/11/20 21:54:17 cpbotha Exp $
+# $Id: devide.py,v 1.112 2006/01/05 15:28:22 cpbotha Exp $
 
 # the current main release version
 DEVIDE_VERSION = '20051114-T'
@@ -199,9 +199,12 @@ class devide_app_t(wx.App):
     def get_main_window(self):
         return self.getMainWindow()
 
-    def getModuleManager(self):
+    def get_module_manager(self):
         return self.moduleManager
 
+    def getModuleManager(self):
+        return self.get_module_manager()
+    
     def getAppDir(self):
         return self._appdir
 
