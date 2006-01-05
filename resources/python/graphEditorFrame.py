@@ -129,7 +129,7 @@ class graphEditorFrame(wx.Frame):
         self.window_1_pane_2.SetSizer(sizer_8)
         sizer_8.Fit(self.window_1_pane_2)
         sizer_8.SetSizeHints(self.window_1_pane_2)
-        self.main_splitter.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 100)
+        self.main_splitter.SplitVertically(self.window_1_pane_1, self.window_1_pane_2, 10)
         sizer_2.Add(self.main_splitter, 1, wx.EXPAND, 0)
         sizer_2.Add((0, 400), 0, 0, 0)
         sizer_6.Add(sizer_2, 1, wx.EXPAND, 0)
