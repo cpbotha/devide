@@ -1,4 +1,4 @@
-# $Id: moduleIndex.py,v 1.2 2006/01/05 14:56:03 cpbotha Exp $
+# $Id: moduleIndex.py,v 1.3 2006/01/05 15:09:36 cpbotha Exp $
 
 # this one was generated with:
 # for i in *.py; do n=`echo $i | cut -f 1 -d .`; \
@@ -102,10 +102,6 @@ class marchingCubes:
     cats = ['Filters']
 
 class modifyHomotopy:
-    kits = ['vtkKit']
-    cats = ['Filters']
-
-class moduleIndex:
     kits = ['vtkKit']
     cats = ['Filters']
 
