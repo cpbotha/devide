@@ -1,4 +1,20 @@
-# $Id: moduleIndex.py,v 1.2 2005/11/18 22:48:37 cpbotha Exp $
+# $Id: moduleIndex.py,v 1.3 2006/01/05 15:23:03 cpbotha Exp $
+
+class advectionProperties:
+    kits = ['vtkKit']
+    cats = ['Sources']
+    
+class cptDistanceField:
+    kits = ['vtkKit']
+    cats = ['Sources']
+    
+class implicitToVolume:
+    kits = ['vtkKit']
+    cats = ['Sources']
+
+class manualTransform:
+    kits = ['vtkKit']
+    cats = ['Sources']
 
 class pointsToSpheres:
     kits = ['vtkKit']
