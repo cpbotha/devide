@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.14 2005/07/04 15:10:16 cpbotha Exp $
+# $Id: __init__.py,v 1.15 2006/01/05 15:24:43 cpbotha Exp $
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -71,7 +71,7 @@ class graphEditorVolumeTestBase(graphEditorTestBase):
         ret = _devideApp._graphEditor._connect(ivglyph, 0, dtglyph, 0)
 
         # redraw
-        _devideApp._graphEditor._canvasFrame.canvas.redraw()
+        _devideApp._graphEditor._graphEditorFrame.canvas.redraw()
 
         # run the network
         dtmod.executeModule()
@@ -91,8 +91,7 @@ class graphEditorBasic(graphEditorTestBase):
         """graphEditor startup.
         """
         self.failUnless(
-           _devideApp._graphEditor._canvasFrame.IsShown() and 
-           _devideApp._graphEditor._modulePaletteFrame.IsShown())
+           _devideApp._graphEditor._graphEditorFrame.IsShown())
 
     def testModuleCreationDeletion(self):
         """Creation of simple module and glyph.
@@ -138,7 +137,7 @@ class graphEditorBasic(graphEditorTestBase):
             10, 90, 'modules.Viewers.slice3dVWR')
 
         ret = _devideApp._graphEditor._connect(sqglyph, 1, svglyph, 0)
-        _devideApp._graphEditor._canvasFrame.canvas.redraw()
+        _devideApp._graphEditor._graphEditorFrame.canvas.redraw()
         
         self.failUnless(ret)
 
@@ -184,7 +183,7 @@ class testReadersWriters(graphEditorVolumeTestBase):
         """
         self.failUnless(1 == 1)
 
-class testCoreModules(graphEditorTestBase):
+class testModulesMisc(graphEditorTestBase):
     
     def testCreateDestroy(self):
         """See if we can create and destroy all core modules.
@@ -193,22 +192,22 @@ class testCoreModules(graphEditorTestBase):
         import modules
         reload(modules)
 
-        coreModulesList = []
-        for mn in modules.moduleList:
-            if _devideApp.mainConfig.useInsight or \
-               not mn.startswith('Insight'):
-                coreModulesList.append('modules.%s' % (mn,))
+        modulesList = []
 
-        for coreModuleName in coreModulesList:
+        mm = _devideApp.get_module_manager()
+
+        for module_name in mm.getAvailableModules().keys():
+            print 'About to create %s.' % (module_name,)
+            
             (cmod, cglyph) = _devideApp._graphEditor.createModuleAndGlyph(
-                10, 10, coreModuleName)
+                10, 10, module_name)
 
-            _devideApp.setProgress(100, 'Created %s.' % (coreModuleName,))
+            print 'Created %s.' % (module_name,)
             self.failUnless(cmod and cglyph)
 
             # destroy
             ret = _devideApp._graphEditor._deleteModule(cglyph)
-            _devideApp.setProgress(100, 'Destroyed %s.' % (coreModuleName,))
+            print 'Destroyed %s.' % (module_name,)
             self.failUnless(ret)
 
 
@@ -264,7 +263,7 @@ class testITKBasic(graphEditorVolumeTestBase):
         self.failUnless(ret)        
         
         # redraw the canvas
-        _devideApp._graphEditor._canvasFrame.canvas.redraw()
+        _devideApp._graphEditor._graphEditorFrame.canvas.redraw()
 
         
 
@@ -285,15 +284,15 @@ class devideTesting:
         self.basicSuite.addTest(testReadersWriters('testVTI'))
 
         self.moduleSuite = unittest.TestSuite()
-        self.moduleSuite.addTest(testCoreModules('testCreateDestroy'))
+        self.moduleSuite.addTest(testModulesMisc('testCreateDestroy'))
 
         self.itkSuite = unittest.TestSuite()
         self.itkSuite.addTest(testITKBasic('testConfidenceSeedConnect'))
 
         suiteList = [self.basicSuite, self.moduleSuite]
 
-        if _devideApp.mainConfig.useInsight:
-            suiteList.append(self.itkSuite)
+        #if _devideApp.mainConfig.useInsight:
+        #    suiteList.append(self.itkSuite)
 
         self.mainSuite = unittest.TestSuite(tuple(suiteList))
         
