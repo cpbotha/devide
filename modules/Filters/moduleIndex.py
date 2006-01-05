@@ -1,4 +1,4 @@
-# $Id: moduleIndex.py,v 1.3 2006/01/05 15:09:36 cpbotha Exp $
+# $Id: moduleIndex.py,v 1.4 2006/01/05 15:15:51 cpbotha Exp $
 
 # this one was generated with:
 # for i in *.py; do n=`echo $i | cut -f 1 -d .`; \
@@ -86,10 +86,6 @@ class imageMathematics:
     cats = ['Filters']
 
 class imageMedian3D:
-    kits = ['vtkKit']
-    cats = ['Filters']
-
-class isolatedConnect:
     kits = ['vtkKit']
     cats = ['Filters']
 
