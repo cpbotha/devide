@@ -1,4 +1,4 @@
-$Id: TODO,v 1.41 2006/01/04 17:48:37 cpbotha Exp $
+$Id: TODO,v 1.42 2006/01/05 15:04:21 cpbotha Exp $
 
 HIGH-PRIORITY
 
@@ -12,7 +12,9 @@ HIGH-PRIORITY
   log messages or a frikking web page.
 * think of scheme to pass active module parameters to consumer modules
 
-NORMAL PRIORITY
+* kits should be able to specify dependencies on each other
+
+* some kits are not crucial and should not break DeVIDE startup.
 
 * the _noExcError mechanism works fine for execution schemes where we can
   check this variable, but what if the user is for instance futzing around
