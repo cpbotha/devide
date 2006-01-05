@@ -1,4 +1,4 @@
-# $Id: moduleIndex.py,v 1.6 2005/11/20 21:53:24 cpbotha Exp $
+# $Id: module_index.py,v 1.1 2006/01/05 15:26:33 cpbotha Exp $
 
 class dicomRDR:
     kits = ['vtkKit']

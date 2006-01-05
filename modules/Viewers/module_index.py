@@ -1,4 +1,4 @@
-# $Id: moduleIndex.py,v 1.1 2005/11/17 14:36:14 cpbotha Exp $
+# $Id: module_index.py,v 1.1 2006/01/05 15:26:34 cpbotha Exp $
 
 class histogram1D:
     kits = ['vtkKit']

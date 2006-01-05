@@ -1,4 +1,4 @@
-# $Id: moduleIndex.py,v 1.4 2006/01/05 15:15:51 cpbotha Exp $
+# $Id: module_index.py,v 1.1 2006/01/05 15:26:28 cpbotha Exp $
 
 # this one was generated with:
 # for i in *.py; do n=`echo $i | cut -f 1 -d .`; \
