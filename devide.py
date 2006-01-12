@@ -381,9 +381,9 @@ class devide_app_t(wx.App):
         # has been imported
         kits_and_versions = []
         import module_kits
-        for moduleKit in moduleKits.moduleKitList:
-            v = getattr(moduleKits, moduleKit).VERSION
-            kits_and_versions.append('%s: %s' % (moduleKit, v))
+        for module_kit in module_kits.module_kit_list:
+            v = getattr(module_kits, module_kit).VERSION
+            kits_and_versions.append('%s: %s' % (module_kit, v))
 
         # if applicable, let's make an ITK version string
 #         ivs = ''

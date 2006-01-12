@@ -1,5 +1,5 @@
 # moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py,v 1.101 2006/01/05 15:28:22 cpbotha Exp $
+# $Id$
 
 import sys, os, fnmatch
 import re
@@ -90,18 +90,18 @@ class moduleManager:
         # initialise module Kits - Kits are collections of libraries
         # that modules can depend on.  The Kits also make it possible
         # for us to write hooks for when these libraries are imported
-        import moduleKits
-        # remove no-kits from moduleKitList:
-        nmkl = [mk for mk in moduleKits.moduleKitList
+        import module_kits
+        # remove no-kits from module_kit_list:
+        nmkl = [mk for mk in module_kits.module_kit_list
                 if mk not in self.getAppMainConfig().nokits]
-        moduleKits.moduleKitList = nmkl
+        module_kits.module_kit_list = nmkl
 
         # now import the kits that remain
-        for moduleKit in moduleKits.moduleKitList:
-            # import moduleKit into moduleKits namespace
-            exec('import moduleKits.%s' % (moduleKit,))
-            # call moduleKit.init()
-            getattr(moduleKits, moduleKit).init(self)
+        for module_kit in module_kits.module_kit_list:
+            # import module_kit into module_kits namespace
+            exec('import module_kits.%s' % (module_kit,))
+            # call module_kit.init()
+            getattr(module_kits, module_kit).init(self)
 
         ##############################################################
         
@@ -197,7 +197,7 @@ class moduleManager:
 
         # iterate through the moduleIndices, building up the available
         # modules list.
-        import moduleKits # we'll need this to check available kits
+        import module_kits # we'll need this to check available kits
         failed_mis = {}
         for mi in moduleIndices:
             # mi is a full path
@@ -252,7 +252,7 @@ class moduleManager:
 
                     module_deps = True
                     for kit in c.kits:
-                        if kit not in moduleKits.moduleKitList:
+                        if kit not in module_kits.module_kit_list:
                             module_deps = False
                             break
 
