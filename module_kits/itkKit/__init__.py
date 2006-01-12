@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.3 2005/11/24 13:12:31 cpbotha Exp $
+# $Id$
 
 """itkKit package driver file.
 

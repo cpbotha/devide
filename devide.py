@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: devide.py,v 1.112 2006/01/05 15:28:22 cpbotha Exp $
+# $Id$
 
 # the current main release version
 DEVIDE_VERSION = '20051114-T'
@@ -380,7 +380,7 @@ class devide_app_t(wx.App):
         # get versions of all included kits; by this time moduleManager
         # has been imported
         kits_and_versions = []
-        import moduleKits
+        import module_kits
         for moduleKit in moduleKits.moduleKitList:
             v = getattr(moduleKits, moduleKit).VERSION
             kits_and_versions.append('%s: %s' % (moduleKit, v))

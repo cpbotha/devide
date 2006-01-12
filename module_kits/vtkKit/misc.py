@@ -1,4 +1,4 @@
-# $Id: misc.py,v 1.1 2005/11/13 17:02:27 cpbotha Exp $
+# $Id$
 
 """Miscellaneous functions that are part of the vtkKit.
 
