@@ -51,7 +51,39 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
                                         None, None)
         return (moduleName, moduleText, 'vtkReaders')
 
-    elif vtkObj.IsA('vtkPolyDataToPolyDataFilter'):
+    else:
+        num_i = vtkObj.GetNumberOfInputPorts()
+        ip_types = []
+        for i in range(num_i):
+            ip_inf = vtkObj.GetInputPortInformation(i)
+            ip_typ = ip_inf.Get(vtk.vtkAlgorithm.INPUT_REQUIRED_DATA_TYPE())
+            ip_types.append(ip_typ)
+
+        ip_types = tuple(ip_types)
+        
+        num_o = vtkObj.GetNumberOfOutputPorts()
+        op_types = []
+        for i in range(num_o):
+            op_inf = vtkObj.GetOutputPortInformation(i)
+            op_typ = op_inf.Get(vtk.vtkDataObject.DATA_TYPE_NAME())
+            op_types.append(op_typ)
+
+        op_types = tuple(op_types)
+
+        moduleName = vtkObjName
+        moduleText = moduleSkeleton1 % (moduleName, vtkObjName,
+                                        'Processing.',
+                                        ip_types, op_types,
+                                        None, None)
+
+        return (moduleName, moduleText, 'VTK basic filter')
+        
+
+def blaat():
+    # use GetInputPortInformation() INPUT_REQUIRED_DATA_TYPE
+    # GetNumberOfInputPorts()
+
+    if vtkObj.IsA('vtkPolyDataAlgorithm'):
         moduleName = vtkObjName
 
         moduleText = moduleSkeleton1 % (moduleName, vtkObjName,
@@ -112,7 +144,8 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
 
 
 def main():
-    list1 = [i for i in dir(vtk) if i.startswith('vtk') and i not in excludeList]
+    list1 = [i for i in dir(vtk)
+             if i.startswith('vtk') and i not in excludeList]
     list2 = []
 
     # objects that can be instantiated 
@@ -124,14 +157,8 @@ def main():
             # if it can't be instantiated, we can't use it
             pass
         else:
-            if a.IsA('vtkProcessObject'):
-                if a.IsA('vtkSource'):
-                    # all sources get appended
-                    list2.append(vtkobj)
-                elif vtkobj.endswith('Writer'):
-                    # classes that aren't sources but are writers
-                    # can also be appended
-                    list2.append(vtkobj)
+            if a.IsA('vtkAlgorithm'):
+                list2.append(vtkobj)
 
     # list2 will now be parsed and modules will be generated
     # we have to start our conditionals with the most specific cases
