@@ -1,5 +1,5 @@
 # testing.__init__.py copyright 2004 by Charl P. Botha http://cpbotha.net/
-# $Id: __init__.py,v 1.16 2006/01/05 16:28:55 cpbotha Exp $
+# $Id$
 # this drives the devide unit testing.  neat huh?
 
 import os
@@ -292,7 +292,7 @@ class devideTesting:
 
         suiteList = [self.basicSuite, self.moduleSuite]
 
-        # do check for presence of itkKit
+        # do check for presence of itk_kit
         #if _devideApp.mainConfig.useInsight:
         #    suiteList.append(self.itkSuite)
 

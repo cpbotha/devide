@@ -10,7 +10,7 @@ from moduleMixins import scriptedConfigModuleMixin
 # the categories that we belong to
 DVM_CATS = 'Insight', 'Morphology'
 # specify kits that we are dependent on
-DVM_KITS = 'vtk_kit', 'itkKit'
+DVM_KITS = 'vtk_kit', 'itk_kit'
 
 class watershed(scriptedConfigModuleMixin, moduleBase):
 

@@ -1,6 +1,6 @@
 # $Id$
 
-"""itkKit package driver file.
+"""itk_kit package driver file.
 
 Inserts the following modules in sys.modules: itk, InsightToolkit.
 
@@ -36,7 +36,7 @@ def preImportITK(progressMethod):
     # do the imports
     for module, message in itkImportList:
         currentPercent += percentStep
-        progressMethod(currentPercent, 'Initialising itkKit: %s' % (message,),
+        progressMethod(currentPercent, 'Initialising itk_kit: %s' % (message,),
                        noTime=True)
         exec('import %s' % (module,))
 

@@ -1,6 +1,6 @@
-# $Id: module_index.py,v 1.1 2006/01/05 15:26:30 cpbotha Exp $
+# $Id$
 
 class itkRDR:
-    kits = ['itkKit']
+    kits = ['itk_kit']
     cats = ['Readers']
 
