@@ -100,9 +100,7 @@ def init(theModuleManager):
     import vtk
 
     # and do the same for vtkdevide, vtktud
-    vtkdevide = vtkModuleTrappedErrors('vtkdevide', theModuleManager)
-    sys.modules['vtkdevide'] = vtkdevide
-    reload(vtkdevide)
+    import vtkdevide
 
     # load up some generic functions into this namespace
     import misc

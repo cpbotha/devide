@@ -1,4 +1,4 @@
-# $Id: moduleMixins.py,v 1.61 2005/06/03 19:57:03 cpbotha Exp $
+# $Id$
 
 from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
@@ -9,6 +9,7 @@ from external.filebrowsebutton import FileBrowseButton, \
 import genUtils
 from moduleBase import moduleBase
 import moduleUtils
+import module_kits.vtkKit.utils
 
 import wx
 import wx.lib.masked
@@ -596,6 +597,11 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         moduleBase.__init__(self, moduleManager)
 
         self._theFilter = vtkObjectBinding
+        module_kits.vtkKit.utils.add_error_handler(
+            self._theFilter, self._vtk_error_handler)
+        
+        self._vtk_error = False
+        
         if replaceDoc:
             myMessage = "<em>"\
                         "This is a special DeVIDE module that very simply " \
@@ -670,6 +676,10 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         # get rid of our binding to the vtkObject
         del self._theFilter
 
+    def _vtk_error_handler(self, vtk_object, event_name, call_data):
+        self._vtk_error = True
+        self._vtk_error_call_data = call_data
+
     def getOutputDescriptions(self):
         return self._outputDescriptions
 
@@ -701,14 +711,16 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
                 exec('self._theFilter.SetInput%d(inputStream)' % (idx+1,))
 
     def executeModule(self):
-        for i in range(len(self.getOutputDescriptions())):
-            # according to DeVIDE, module output MUST have an Update()
-            self.getOutput(i).Update()
-
         # it could be a writer, in that case, call the Write method.
         if hasattr(self._theFilter, 'Write') and \
            callable(self._theFilter.Write):
             self._theFilter.Write()
+
+        else:
+            self._theFilter.Update()
+
+        if self._vtk_error:
+            raise RuntimeError(self._vtk_error_call_data)
 
     def view(self):
         self._viewFrame.Show(True)

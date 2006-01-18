@@ -9,15 +9,16 @@ class error_event_class:
     """Class used to encapsulate error_func with error_event_handler.
     """
     
-    def __init__(error_func):
+    def __init__(self, error_func):
         self.error_func = error_func
         
-    def error_event_handler(vtk_object, event_name, call_data):
+    def error_event_handler(self, vtk_object, event_name, call_data):
         """Standard error handler for VTK objects that can be used by vtkKit
         dependent DeVIDE modules.
         """
 
-        self.error_func(vtk_object, event_name, call_data)
+        ef = self.error_func
+        ef(vtk_object, event_name, call_data)
 
     error_event_handler.CallDataType = "string0"
 
@@ -35,5 +36,5 @@ def add_error_handler(vtk_object, error_func):
     """
 
     eec = error_event_class(error_func)
-    vtk_object.AddObserver(eec.error_event_handler)
+    vtk_object.AddObserver('ErrorEvent', eec.error_event_handler)
 
