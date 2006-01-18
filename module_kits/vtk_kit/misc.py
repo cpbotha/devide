@@ -1,15 +1,15 @@
 # $Id$
 
-"""Miscellaneous functions that are part of the vtkKit.
+"""Miscellaneous functions that are part of the vtk_kit.
 
-This module is imported by vtkKit.init() after the rest of the vtkKit has
+This module is imported by vtk_kit.init() after the rest of the vtk_kit has
 been initialised.  To use these functions in your module code, do e.g.:
-import moduleKits; moduleKits.vtkKit.misc.flatterProp3D(obj);
+import moduleKits; moduleKits.vtk_kit.misc.flatterProp3D(obj);
 
 @author: Charl P. Botha <http://cpbotha.net/>
 """
 
-# this import does no harm; we go after the rest of vtkKit has been
+# this import does no harm; we go after the rest of vtk_kit has been
 # initialised
 import vtk
 

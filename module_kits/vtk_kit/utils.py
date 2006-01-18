@@ -1,6 +1,6 @@
 # $Id$
 
-"""Utility methods for vtkKit module kit.
+"""Utility methods for vtk_kit module kit.
 
 @author Charl P. Botha <http://cpbotha.net/>
 """
@@ -13,7 +13,7 @@ class error_event_class:
         self.error_func = error_func
         
     def error_event_handler(self, vtk_object, event_name, call_data):
-        """Standard error handler for VTK objects that can be used by vtkKit
+        """Standard error handler for VTK objects that can be used by vtk_kit
         dependent DeVIDE modules.
         """
 

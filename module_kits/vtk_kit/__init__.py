@@ -4,7 +4,7 @@
 # do large imports in the init() hook so that you can call back to the
 # moduleManager progress handler methods.
 
-"""vtkKit package driver file.
+"""vtk_kit package driver file.
 
 This performs all initialisation necessary to use VTK from DeVIDE.  Makes
 sure that all VTK classes have ErrorEvent handlers that report back to
@@ -44,7 +44,7 @@ def preImportVTK(progressMethod):
     # do the imports
     for module, message in vtkImportList:
         currentPercent += percentStep
-        progressMethod(currentPercent, 'Initialising vtkKit: %s' % (message,),
+        progressMethod(currentPercent, 'Initialising vtk_kit: %s' % (message,),
                        noTime=True)
         exec('import %s' % (module,))
 
