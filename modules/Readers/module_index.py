@@ -1,43 +1,43 @@
-# $Id: module_index.py,v 1.1 2006/01/05 15:26:33 cpbotha Exp $
+# $Id$
 
 class dicomRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class metaImageRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class objRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class pngRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class rawVolumeRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class stlRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class vtiRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class vtkPolyDataRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class vtkStructPtsRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
 class vtpRDR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Readers']
 
     

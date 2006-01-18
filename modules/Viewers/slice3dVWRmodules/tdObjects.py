@@ -6,7 +6,7 @@ import genUtils
 reload(genUtils)
 import math
 import module_kits
-from module_kits.vtkKit import misc
+from module_kits.vtk_kit import misc
 from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk

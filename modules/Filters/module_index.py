@@ -1,163 +1,163 @@
-# $Id: module_index.py,v 1.1 2006/01/05 15:26:28 cpbotha Exp $
+# $Id$
 
 # this one was generated with:
 # for i in *.py; do n=`echo $i | cut -f 1 -d .`; \
-# echo -e "class $n:\n    kits = ['vtkKit']\n    cats = ['Filters']\n" \
+# echo -e "class $n:\n    kits = ['vtk_kit']\n    cats = ['Filters']\n" \
 # >> blaat.txt; done
 
 class appendPolyData:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class clipPolyData:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class closing:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class contour:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class decimate:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class doubleThreshold:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class extractGrid:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class extractHDomes:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class extractImageComponents:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class glenoidMouldDesign:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class glyphs:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class greyReconstruct:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageFillHoles:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageFlip:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageGaussianSmooth:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageGradientMagnitude:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageGreyDilate:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageGreyErode:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageMask:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageMathematics:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class imageMedian3D:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class landmarkTransform:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class marchingCubes:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class modifyHomotopy:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class morphGradient:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class opening:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class polyDataConnect:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class polyDataNormals:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class probeFilter:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class resampleImage:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class seedConnect:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class selectConnectedComponents:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class shellSplatSimple:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class streamTracer:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class surfaceToDistanceField:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class transformPolyData:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class transformVolumeData:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class warpPoints:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class wsMeshSmooth:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 

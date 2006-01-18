@@ -1,36 +1,36 @@
 class cptBrepWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class ivWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class metaImageWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class pngWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class stlWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class vtiWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class vtkPolyDataWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class vtkStructPtsWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 
 class vtpWRT:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Filters']
 

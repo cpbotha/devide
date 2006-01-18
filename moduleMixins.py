@@ -9,7 +9,7 @@ from external.filebrowsebutton import FileBrowseButton, \
 import genUtils
 from moduleBase import moduleBase
 import moduleUtils
-import module_kits.vtkKit.utils
+import module_kits.vtk_kit.utils
 
 import wx
 import wx.lib.masked
@@ -597,7 +597,7 @@ class simpleVTKClassModuleBase(pickleVTKObjectsModuleMixin,
         moduleBase.__init__(self, moduleManager)
 
         self._theFilter = vtkObjectBinding
-        module_kits.vtkKit.utils.add_error_handler(
+        module_kits.vtk_kit.utils.add_error_handler(
             self._theFilter, self._vtk_error_handler)
         
         self._vtk_error = False

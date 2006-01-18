@@ -1,25 +1,25 @@
-# $Id: module_index.py,v 1.1 2006/01/05 15:26:31 cpbotha Exp $
+# $Id$
 
 class advectionProperties:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Sources']
     
 class cptDistanceField:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Sources']
     
 class implicitToVolume:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Sources']
 
 class manualTransform:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Sources']
 
 class pointsToSpheres:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Sources']
 
 class superQuadric:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Sources']

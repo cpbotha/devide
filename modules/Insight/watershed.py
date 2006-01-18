@@ -1,4 +1,4 @@
-# $Id: watershed.py,v 1.4 2005/11/17 12:11:22 cpbotha Exp $
+# $Id$
 
 import fixitk as itk
 import genUtils
@@ -10,7 +10,7 @@ from moduleMixins import scriptedConfigModuleMixin
 # the categories that we belong to
 DVM_CATS = 'Insight', 'Morphology'
 # specify kits that we are dependent on
-DVM_KITS = 'vtkKit', 'itkKit'
+DVM_KITS = 'vtk_kit', 'itkKit'
 
 class watershed(scriptedConfigModuleMixin, moduleBase):
 

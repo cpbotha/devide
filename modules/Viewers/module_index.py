@@ -1,10 +1,10 @@
-# $Id: module_index.py,v 1.1 2006/01/05 15:26:34 cpbotha Exp $
+# $Id$
 
 class histogram1D:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Viewers', 'Statistics']
 
 class slice3dVWR:
-    kits = ['vtkKit']
+    kits = ['vtk_kit']
     cats = ['Viewers']
 
