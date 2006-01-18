@@ -181,7 +181,7 @@ def main():
             f.write(moduleText)
 
             moduleListStrings.append("class %s:" % (moduleName,))
-            moduleListStrings.append("    kits = ['vtkKit']")
+            moduleListStrings.append("    kits = ['vtk_kit']")
             moduleListStrings.append("    cats = ['%s']\n" % (moduleCats,))
 
             #moduleListStrings.append("'%s' : %s," % (moduleName, moduleCats))
