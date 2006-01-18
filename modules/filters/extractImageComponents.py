@@ -1,4 +1,4 @@
-# $Id: extractImageComponents.py,v 1.3 2005/11/04 10:34:50 cpbotha Exp $
+# $Id$
 
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin

@@ -1,5 +1,5 @@
 # surfaceToDistanceField copyright (c) 2004 by Charl P. Botha cpbotha.net
-# $Id: surfaceToDistanceField.py,v 1.2 2005/11/04 10:34:50 cpbotha Exp $
+# $Id$
 
 import genUtils
 from moduleBase import moduleBase

@@ -1,5 +1,5 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: imageGaussianSmooth.py,v 1.7 2005/11/04 10:34:50 cpbotha Exp $
+# $Id$
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
