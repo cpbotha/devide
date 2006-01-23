@@ -2,7 +2,7 @@
 # $Id$
 
 import genUtils
-from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
+from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import vtk
 import wx
 

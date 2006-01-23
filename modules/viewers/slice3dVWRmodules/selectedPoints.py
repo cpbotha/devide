@@ -3,7 +3,7 @@
 #
 
 from genMixins import subjectMixin
-from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
+from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
 import wx

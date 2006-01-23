@@ -15,20 +15,20 @@ import moduleUtils
 
 # the following four lines are only needed during prototyping of the modules
 # that they import
-import modules.Viewers.slice3dVWRmodules.sliceDirections
-reload(modules.Viewers.slice3dVWRmodules.sliceDirections)
-import modules.Viewers.slice3dVWRmodules.selectedPoints
-reload(modules.Viewers.slice3dVWRmodules.selectedPoints)
-import modules.Viewers.slice3dVWRmodules.tdObjects
-reload(modules.Viewers.slice3dVWRmodules.tdObjects)
-import modules.Viewers.slice3dVWRmodules.implicits
-reload(modules.Viewers.slice3dVWRmodules.implicits)
+import modules.viewers.slice3dVWRmodules.sliceDirections
+reload(modules.viewers.slice3dVWRmodules.sliceDirections)
+import modules.viewers.slice3dVWRmodules.selectedPoints
+reload(modules.viewers.slice3dVWRmodules.selectedPoints)
+import modules.viewers.slice3dVWRmodules.tdObjects
+reload(modules.viewers.slice3dVWRmodules.tdObjects)
+import modules.viewers.slice3dVWRmodules.implicits
+reload(modules.viewers.slice3dVWRmodules.implicits)
 
 
-from modules.Viewers.slice3dVWRmodules.sliceDirections import sliceDirections
-from modules.Viewers.slice3dVWRmodules.selectedPoints import selectedPoints
-from modules.Viewers.slice3dVWRmodules.tdObjects import tdObjects
-from modules.Viewers.slice3dVWRmodules.implicits import implicits
+from modules.viewers.slice3dVWRmodules.sliceDirections import sliceDirections
+from modules.viewers.slice3dVWRmodules.selectedPoints import selectedPoints
+from modules.viewers.slice3dVWRmodules.tdObjects import tdObjects
+from modules.viewers.slice3dVWRmodules.implicits import implicits
 
 import os
 import time
@@ -484,15 +484,15 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
 
     def _create_window(self):
-        import modules.Viewers.resources.python.slice3dVWRFrames
-        reload(modules.Viewers.resources.python.slice3dVWRFrames)
+        import modules.viewers.resources.python.slice3dVWRFrames
+        reload(modules.viewers.resources.python.slice3dVWRFrames)
 
         stereo = self._moduleManager.getAppMainConfig().stereo
         print stereo
-        modules.Viewers.resources.python.slice3dVWRFrames.S3DV_STEREO = stereo
+        modules.viewers.resources.python.slice3dVWRFrames.S3DV_STEREO = stereo
 
         # threedFrame creation and basic setup -------------------
-        threedFrame = modules.Viewers.resources.python.slice3dVWRFrames.\
+        threedFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                       threedFrame
         self.threedFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, threedFrame)
@@ -507,7 +507,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                                                                _threedRenderer)
         
         # controlFrame creation and basic setup -------------------
-        controlFrame = modules.Viewers.resources.python.slice3dVWRFrames.\
+        controlFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                        controlFrame
         self.controlFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, controlFrame)
@@ -591,7 +591,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
 
         # objectAnimationFrame creation and basic setup -------------------
-        oaf = modules.Viewers.resources.python.slice3dVWRFrames.\
+        oaf = modules.viewers.resources.python.slice3dVWRFrames.\
               objectAnimationFrame
         self.objectAnimationFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, oaf)

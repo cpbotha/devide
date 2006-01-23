@@ -6,11 +6,11 @@ import genUtils
 
 # the following two lines are only needed during prototyping of the modules
 # that they import
-import modules.Viewers.slice3dVWRmodules.sliceDirection
-reload(modules.Viewers.slice3dVWRmodules.sliceDirection)
+import modules.viewers.slice3dVWRmodules.sliceDirection
+reload(modules.viewers.slice3dVWRmodules.sliceDirection)
 
-from modules.Viewers.slice3dVWRmodules.sliceDirection import sliceDirection
-from modules.Viewers.slice3dVWRmodules.shared import s3dcGridMixin
+from modules.viewers.slice3dVWRmodules.sliceDirection import sliceDirection
+from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 
 import vtk
 import wx
