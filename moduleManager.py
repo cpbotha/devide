@@ -652,6 +652,9 @@ class moduleManager:
         This will disconnect all module inputs and outputs and call the
         close() method.  This method is used by the graphEditor and by
         the close() method of the moduleManager.
+
+        @raise moduleManagerException: if an error occurs during module
+        deletion.
         """
         
         # first disconnect all outgoing connections
@@ -1011,7 +1014,7 @@ class moduleManager:
         """Determine meta modules that are connected to the outputs of
         meta_module.
 
-        This method is called by the scheduler.
+        This method is called by: scheduler, self.recreate_module_in_place.
 
         @todo: this should be part of the metaModule code, as soon as
         the metaModule inputs and outputs are of type metaModule and not
@@ -1186,6 +1189,33 @@ class moduleManager:
         """
 
         self._moduleDict[moduleInstance].modify(part)
+
+    def recreate_module_in_place(self, meta_module):
+        """Destroy, create and reconnect a module in place.
+
+        @param meta_module: The module that will be destroyed.
+        @returns: new module_instance.
+        """
+
+        # 1. store input and output connections, module name
+        #################################################################
+
+        # prod_tuple contains a list of (prod_meta_module, output_idx,
+        # input_idx) tuples
+        prod_tuples = self.getProducers(meta_module)
+        # cons_tuples contains a list of (output_index, consumer_meta_module,
+        # consumer input index)
+        cons_tuples = self.getConsumers(meta_module)
+        # store the name
+        name = meta_module.instanceName
+        
+        # 2. delete the module
+        self.deleteModule(meta_module.instance)
+
+        # 3. instantiate a new one (giving it the old name)
+
+        # 4. connect it up
+        
 
     def shouldExecuteModule(self, meta_module, part=0):
 
