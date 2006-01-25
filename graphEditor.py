@@ -2,6 +2,7 @@
 # $Id$
 # the graph-editor thingy where one gets to connect modules together
 
+import copy
 import cPickle
 from internal.wxPyCanvas import wxpc
 import genUtils
@@ -579,10 +580,13 @@ class graphEditor:
         # the network loading needs this
         return co
     
-    def createModuleAndGlyph(self, x, y, moduleName):
+    def createModuleAndGlyph(self, x, y, moduleName, convert_coords=True):
         """Create a DeVIDE and a corresponding glyph at window event
         position x,y.  x, y will be converted to real (canvas-absolute)
         coordinates internally.
+
+        @return: a tuple with (module_instance, glyph) if successful, (None,
+        None) if not.
         """
         
         # check that it's a valid module name
@@ -593,7 +597,11 @@ class graphEditor:
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
                 # create and draw the actual glyph
-                rx, ry = self._graphEditorFrame.canvas.eventToRealCoords(x, y)
+                if convert_coords:
+                    rx, ry = self._graphEditorFrame.canvas.eventToRealCoords(
+                        x, y)
+                else:
+                    rx, ry = x, y
 
                 # the modulemanager generates a random module name, which
                 # we can query with mm.getInstanceName(temp_module).  However,
@@ -718,6 +726,26 @@ class graphEditor:
         # no category is selected
         self._graphEditorFrame.modulesListBox.Clear()
 
+    def find_glyph(self, meta_module):
+        """Given a meta_module, return the glyph that contains it.
+
+        @return: glyph if found, None otherwise.
+        """
+
+        all_glyphs = self._graphEditorFrame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
+
+        found = False
+        for glyph in all_glyphs:
+            if glyph.moduleInstance == meta_module.instance:
+                found = True
+                break # get out of this for
+
+        if found:
+            return glyph
+        else:
+            return None
+
     def _handlerGraphFrameClose(self, event):
         self.hide()
 
@@ -834,6 +862,62 @@ class graphEditor:
             self._devideApp.getModuleManager().markModule(
                 instance, markedModuleName)
 
+    def _reload_module(self, module_instance, glyph):
+        """Reload a module by storing all configuration information, deleting
+        the module, and then recreating and reconnecting it.
+
+        @param module_instance: the instance that's to be reloaded.
+        @param glyph: the glyph that represents the module.
+        """
+        
+        mm = self._devideApp.getModuleManager()
+        meta_module = mm.get_meta_module(module_instance)
+
+        # prod_tuple contains a list of (prod_meta_module, output_idx,
+        # input_idx) tuples
+        prod_tuples = mm.getProducers(meta_module)
+        # cons_tuples contains a list of (output_index, consumer_meta_module,
+        # consumer input index)
+        cons_tuples = mm.getConsumers(meta_module)
+        # store the instance name
+        instance_name = meta_module.instanceName
+        # and the full module spec name
+        full_name = meta_module.module_name
+        # and get the module state (we make a deep copy just in case)
+        module_config = copy.deepcopy(meta_module.instance.getConfig())
+        # and even the glyph position
+        gp_x, gp_y = glyph.getPosition()
+
+        # now disconnect and nuke the old module
+        self._deleteModule(glyph)
+
+        # create a new one (don't convert my coordinates)
+        new_instance, new_glyph = self.createModuleAndGlyph(
+            gp_x, gp_y, full_name, False)
+
+        # give it its name back
+        self._renameModule(new_instance, new_glyph, instance_name)
+
+        # and its config (FIXME: we should honour pre- and post-connection
+        # config!)
+        new_instance.setConfig(module_config)
+
+        # connect it back up
+        for producer_meta_module, output_idx, input_idx in prod_tuples:
+            producer_glyph = self.find_glyph(producer_meta_module)
+            self._connect(producer_glyph, output_idx,
+                          new_glyph, input_idx)
+
+        for output_idx, consumer_meta_module, input_idx in cons_tuples:
+            consumer_glyph = self.find_glyph(consumer_meta_module)
+            self._connect(new_glyph, output_idx,
+                          consumer_glyph, input_idx)
+
+        self._graphEditorFrame.canvas.redraw()
+
+        wx.SafeYield()
+
+
     def _renameModule(self, module, glyph, newModuleName):
         if newModuleName:
             # try to rename the module...
@@ -868,10 +952,8 @@ class graphEditor:
                 return False
 
     def _handler_reload_module(self, module_instance, glyph):
-        mm = self._devideApp.getModuleManager()
-        meta_module = mm.get_meta_module(module_instance)
-        new_meta_module = mm.recreate_module_in_place(meta_module)
-        glyph.moduleInstance = new_meta_module.instance
+        self._reload_module(module_instance, glyph)
+        
                 
     def _handlerRenameModule(self, module, glyph):
         newModuleName = wx.GetTextFromUser(
