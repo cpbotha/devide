@@ -438,6 +438,15 @@ class moduleManager:
         except Exception:
             return self._halfBornInstanceName
 
+    def get_meta_module(self, instance):
+        """Given an instance, return the corresponding meta_module.
+
+        @param instance: the instance whose meta_module should be returned.
+        @return: meta_module corresponding to instance.
+        @raise KeyError: this instance doesn't exist in the moduleDict.
+        """
+        return self._moduleDict[instance]
+
     def get_modules_dir(self):
         return self._modules_dir
 
@@ -449,8 +458,12 @@ class moduleManager:
         return self._devide_app.get_main_window()
     
     def createModule(self, fullName, instanceName=None):
-        """Try and create module fullName.  fullName is the complete module
-        spec below application directory, e.g. modules.Readers.hdfRDR.
+        """Try and create module fullName.
+
+        @param fullName: The complete module spec below application directory,
+        e.g. modules.Readers.hdfRDR.
+
+        @return: moduleInstance if successful, None if not.
         """
         
 	try:
@@ -484,7 +497,7 @@ class moduleManager:
             
             # and store it in our internal structures
             self._moduleDict[moduleInstance] = metaModule(
-                moduleInstance, instanceName, pti, pto)
+                moduleInstance, instanceName, fullName, pti, pto)
 
             # it's now fully born ;)
             self._halfBornInstanceName = None
@@ -917,6 +930,7 @@ class moduleManager:
                     
                 #pms.moduleName = moduleInstance.__class__.__name__
                 # we need to store the complete module name
+                # we could also get this from meta_module.module_name
                 pms.moduleName = moduleInstance.__class__.__module__
 
                 # this will only be used for uniqueness purposes
@@ -1193,11 +1207,16 @@ class moduleManager:
     def recreate_module_in_place(self, meta_module):
         """Destroy, create and reconnect a module in place.
 
+        This function works but is not being used at the moment.  It was
+        intended for graphEditor-driven module reloading, but it turned out
+        that implementing that in the graphEditor was easier.  I'm keeping
+        this here for reference purposes.
+        
         @param meta_module: The module that will be destroyed.
-        @returns: new module_instance.
+        @returns: new meta_module.
         """
 
-        # 1. store input and output connections, module name
+        # 1. store input and output connections, module name, module state
         #################################################################
 
         # prod_tuple contains a list of (prod_meta_module, output_idx,
@@ -1206,15 +1225,50 @@ class moduleManager:
         # cons_tuples contains a list of (output_index, consumer_meta_module,
         # consumer input index)
         cons_tuples = self.getConsumers(meta_module)
-        # store the name
-        name = meta_module.instanceName
-        
-        # 2. delete the module
+        # store the instance name
+        instance_name = meta_module.instanceName
+        # and the full module spec name
+        full_name = meta_module.module_name
+        # and get the module state (we make a deep copy just in case)
+        module_config = copy.deepcopy(meta_module.instance.getConfig())
+
+        # 2. instantiate a new one and give it its old config
+        ###############################################################
+        # because we instantiate the new one first, if this instantiation
+        # breaks, an exception will be raised and no harm will be done,
+        # we still have the old one lying around
+
+        # instantiate
+        new_instance = self.createModule(full_name, instance_name)
+        # and give it its old config back
+        new_instance.setConfig(module_config)
+
+        # 3. delete the old module
+        #############################################################
         self.deleteModule(meta_module.instance)
 
-        # 3. instantiate a new one (giving it the old name)
+        # 4. now rename the new module
+        #############################################################
 
-        # 4. connect it up
+        # find the corresponding new meta_module
+        meta_module = self._moduleDict[new_instance]
+        # give it its old name back
+        meta_module.instanceName = instance_name
+
+        # 5. connect it up
+        #############################################################
+        for producer_meta_module, output_idx, input_idx in prod_tuples:
+            self.connectModules(
+                producer_meta_module.instance, output_idx,
+                new_instance, input_idx)
+
+        for output_idx, consumer_meta_module, input_idx in cons_tuples:
+            self.connectModules(
+                new_instance, output_idx,
+                consumer_meta_module.instance, input_idx)
+
+        # we should be done now
+        return meta_module
         
 
     def shouldExecuteModule(self, meta_module, part=0):

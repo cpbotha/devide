@@ -563,13 +563,13 @@ class graphEditor:
         co.addObserver('motion', self._glyphMotion)
                     
         co.addObserver('buttonDown',
-                       self._glyphButtonDown, moduleInstance)
+                       self._glyphButtonDown)
         co.addObserver('buttonUp',
-                       self._glyphButtonUp, moduleInstance)
+                       self._glyphButtonUp)
         co.addObserver('drag',
-                       self._glyphDrag, moduleInstance)
+                       self._glyphDrag)
         co.addObserver('buttonDClick',
-                       self._glyphButtonDClick, moduleInstance)
+                       self._glyphButtonDClick)
 
         # first have to draw the just-placed glyph so it has
         # time to update its (label-dependent) dimensions
@@ -866,7 +866,12 @@ class graphEditor:
 
             else:
                 return False
-        
+
+    def _handler_reload_module(self, module_instance, glyph):
+        mm = self._devideApp.getModuleManager()
+        meta_module = mm.get_meta_module(module_instance)
+        new_meta_module = mm.recreate_module_in_place(meta_module)
+        glyph.moduleInstance = new_meta_module.instance
                 
     def _handlerRenameModule(self, module, glyph):
         newModuleName = wx.GetTextFromUser(
@@ -1099,7 +1104,7 @@ class graphEditor:
             
             
 
-    def _canvasButtonDown(self, canvas, eventName, event, userData):
+    def _canvasButtonDown(self, canvas, eventName, event):
         # we should only get this if there's no glyph involved
         if event.RightDown():
             pmenu = wx.Menu('Canvas Menu')
@@ -1114,7 +1119,7 @@ class graphEditor:
         elif not event.ShiftDown() and not event.ControlDown():
             self._glyphSelection.removeAllGlyphs()
 
-    def _canvasButtonUp(self, canvas, eventName, event, userData):
+    def _canvasButtonUp(self, canvas, eventName, event):
         if event.LeftUp():
 
             # whatever the case may be, stop rubber banding
@@ -1132,7 +1137,7 @@ class graphEditor:
                     self._disconnect(canvas.getDraggedObject(),
                                      inputIdx)
 
-    def _canvasDrag(self, canvas, eventName, event, userData):
+    def _canvasDrag(self, canvas, eventName, event):
         if event.LeftIsDown() and not canvas.getDraggedObject():
             self._drawRubberBand(event)
 
@@ -1579,7 +1584,7 @@ class graphEditor:
             if filename:
                 self._saveNetwork(allGlyphs, filename)
 
-    def _glyphDrag(self, glyph, eventName, event, module):
+    def _glyphDrag(self, glyph, eventName, event):
 
         canvas = glyph.getCanvas()        
 
@@ -1651,12 +1656,14 @@ class graphEditor:
             # redraw everything
             canvas.redraw()
 
-    def _glyphMotion(self, glyph, eventName, event, module):
+    def _glyphMotion(self, glyph, eventName, event):
         port = glyph.findPortContainingMouse(event.realX, event.realY)
         if port:
             self.updatePortInfoStatusBar(glyph, port)
 
-    def _glyphButtonDown(self, glyph, eventName, event, module):
+    def _glyphButtonDown(self, glyph, eventName, event):
+        module = glyph.moduleInstance
+        
         if event.RightDown():
 
             pmenu = wx.Menu(glyph.getLabel())
@@ -1677,7 +1684,13 @@ class graphEditor:
             wx.EVT_MENU(self._graphEditorFrame.canvas, exe_id,
                      lambda e: self._executeModule(module))
 
-            pmenu.AppendSeparator()            
+            pmenu.AppendSeparator()
+
+            reload_id = wx.NewId()
+            pmenu.AppendItem(wx.MenuItem(pmenu, reload_id, 'Reload Module'))
+            wx.EVT_MENU(self._graphEditorFrame.canvas, reload_id,
+                        lambda e: self._handler_reload_module(module,
+                                                              glyph))
 
             del_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, del_id, 'Delete Module'))
@@ -1715,7 +1728,7 @@ class graphEditor:
                 if not glyph.selected:
                     self._glyphSelection.selectGlyph(glyph)
             
-    def _glyphButtonUp(self, glyph, eventName, event, module):
+    def _glyphButtonUp(self, glyph, eventName, event):
         if event.LeftUp():
             # whatever the case may be, stop rubber banding.
             self._stopRubberBanding(event)
@@ -1761,7 +1774,8 @@ class graphEditor:
                         # (I think)
                         pass
 
-    def _glyphButtonDClick(self, glyph, eventName, event, module):
+    def _glyphButtonDClick(self, glyph, eventName, event):
+        module = glyph.moduleInstance
         # double clicking on a module opens the View/Config.
         self._viewConfModule(module)
 
