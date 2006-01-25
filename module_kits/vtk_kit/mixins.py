@@ -5,8 +5,6 @@
 @author: Charl P. Botha <http://cpbotha.net/>
 """
 
-__revision__ = '$Revision$'
-
 import utils
 
 class VTKErrorInfoClass:
