@@ -2,18 +2,18 @@ class canvasSubject:
     def __init__(self):
         self._observers = {}
         
-    def addObserver(self, eventName, observer, userData=None):
+    def addObserver(self, eventName, observer):
         """Add an observer for a particular event.
 
         eventName can be one of 'enter', 'exit', 'drag', 'buttonDown'
         or 'buttonUp'.  observer is a callable object that will be
         invoked at event time with parameters canvas object,
-        eventName, event and userData.
+        eventName, and event.
         """
         
-        self._observers[eventName].append((observer, userData))
+        self._observers[eventName].append(observer)
 
     def notifyObservers(self, eventName, event):
         for observer in self._observers[eventName]:
-            observer[0](self, eventName, event, observer[1])
+            observer(self, eventName, event)
     
