@@ -15,10 +15,16 @@ class metaModule:
     @author: Charl P. Botha <http://cpbotha.net/>
     """
     
-    def __init__(self, instance, instanceName,
+    def __init__(self, instance, instanceName, module_name,
                  partsToInputs=None, partsToOutputs=None):
         """Instance is the actual class instance and instanceName is a unique
         name that has been chosen by the user or automatically.
+
+        @param module_name: the full spec of the module of which the instance
+        is encapsulated by this meta_module, for example
+        modules.filters.blaat.  One could also get at this with
+        instance.__class__.__module__, but that relies on the convention that
+        the name of the module and contained class is the same.
         """
 
         if instance is None:
@@ -27,6 +33,7 @@ class metaModule:
 
         self.instance = instance
         self.instanceName = instanceName
+        self.module_name = module_name
 
         # determine number of module parts based on parts to indices mappings
         maxPart = 0
