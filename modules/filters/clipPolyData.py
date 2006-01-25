@@ -4,7 +4,7 @@ from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
-from module_kits.vtk_kit.mixins import vtk_error_func_mixin
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 class clipPolyData(moduleBase, noConfigModuleMixin, vtk_error_func_mixin):
     """Given an input polydata and an implicitFunction, this will clip

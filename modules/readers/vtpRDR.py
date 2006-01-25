@@ -6,7 +6,7 @@ import moduleUtils
 import vtk
 from module_kits.vtk_kit.mixins import vtk_error_func_mixin
 
-class vtpRDR(moduleBase, filenameViewModuleMixin, vtk_error_func_mixin):
+class vtpRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     """Reads VTK PolyData in the VTK XML format.
 
     VTP is the preferred format for DeVIDE PolyData.
