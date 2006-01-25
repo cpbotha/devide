@@ -6,7 +6,7 @@ import wx
 import vtk
 from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class clipPolyData(moduleBase, noConfigModuleMixin, vtk_error_func_mixin):
+class clipPolyData(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
     """Given an input polydata and an implicitFunction, this will clip
     the polydata.
 

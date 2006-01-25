@@ -4,7 +4,7 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import vtk_error_func_mixin
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 class vtpRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     """Reads VTK PolyData in the VTK XML format.
@@ -25,7 +25,7 @@ class vtpRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self, self._reader,
             'Reading VTK PolyData')
 
-        self.add_vtk_error_handler(self._clipPolyData)
+        self.add_vtk_error_handler(self._reader)
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
