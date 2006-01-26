@@ -895,23 +895,33 @@ class graphEditor:
         new_instance, new_glyph = self.createModuleAndGlyph(
             gp_x, gp_y, full_name, False)
 
-        # give it its name back
-        self._renameModule(new_instance, new_glyph, instance_name)
+        if new_instance and new_glyph:
+            # give it its name back
+            self._renameModule(new_instance, new_glyph, instance_name)
 
-        # and its config (FIXME: we should honour pre- and post-connection
-        # config!)
-        new_instance.setConfig(module_config)
+            try:
+                # and its config (FIXME: we should honour pre- and
+                # post-connect config!)
+                new_instance.setConfig(module_config)
+                
+            except Exception, e:
+                self._devideApp.logError(
+                    'Could not restore state/config to module %s: %s' %
+                    (newModule.__class__.__name__, e)                    
+                    )
 
-        # connect it back up
-        for producer_meta_module, output_idx, input_idx in prod_tuples:
-            producer_glyph = self.find_glyph(producer_meta_module)
-            self._connect(producer_glyph, output_idx,
-                          new_glyph, input_idx)
+            # connect it back up
+            for producer_meta_module, output_idx, input_idx in prod_tuples:
+                producer_glyph = self.find_glyph(producer_meta_module)
+                # connect reports the error internally, so we'll just
+                # continue trying to connect up things
+                self._connect(producer_glyph, output_idx,
+                              new_glyph, input_idx)
 
-        for output_idx, consumer_meta_module, input_idx in cons_tuples:
-            consumer_glyph = self.find_glyph(consumer_meta_module)
-            self._connect(new_glyph, output_idx,
-                          consumer_glyph, input_idx)
+            for output_idx, consumer_meta_module, input_idx in cons_tuples:
+                consumer_glyph = self.find_glyph(consumer_meta_module)
+                self._connect(new_glyph, output_idx,
+                              consumer_glyph, input_idx)
 
         self._graphEditorFrame.canvas.redraw()
 
