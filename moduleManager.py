@@ -460,6 +460,10 @@ class moduleManager:
     def createModule(self, fullName, instanceName=None):
         """Try and create module fullName.
 
+        If an error occurs, this will be directly logged with
+        devideApp.logError.  Think about this: shouldn't this function rather
+        raise an exception?
+
         @param fullName: The complete module spec below application directory,
         e.g. modules.Readers.hdfRDR.
 
@@ -504,11 +508,14 @@ class moduleManager:
 
 
 	except ImportError:
-	    genUtils.logError("Unable to import module %s!" % fullName)
+            self._devideApp.logError(
+                ["Unable to import module %s!" % fullName])
 	    return None
+        
 	except Exception, e:
-	    genUtils.logError("Unable to instantiate module %s: %s" \
-                                % (fullName, str(e)))
+            self._devideApp.logError(
+                ["Unable to instantiate module %s: %s" \
+                                % (fullName, str(e))])
 	    return None
 
 	# return the instance
