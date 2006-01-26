@@ -29,6 +29,9 @@ def exceptionToMsgs():
     
 
 def logError(msg):
+    """DEPRECATED.  Rather use devide_app.logError().
+    """
+    
     # create nice formatted string with tracebacks and all
     ei = sys.exc_info()
     #dmsg = \
@@ -53,6 +56,9 @@ def logError(msg):
     wx.Log_FlushActive()
 
 def logWarning(msg):
+    """DEPRECATED.  Rather use devide_app.logWarning().
+    """
+    
     # create nice formatted string with tracebacks and all
     ei = sys.exc_info()
     #dmsg = \
