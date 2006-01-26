@@ -508,12 +508,14 @@ class moduleManager:
 
 
 	except ImportError:
-            self._devideApp.logError(
+            self._devide_app.logError(
+                genUtils.exceptionToMsgs() +
                 ["Unable to import module %s!" % fullName])
 	    return None
         
 	except Exception, e:
-            self._devideApp.logError(
+            self._devide_app.logError(
+                genUtils.exceptionToMsgs() +
                 ["Unable to instantiate module %s: %s" \
                                 % (fullName, str(e))])
 	    return None
