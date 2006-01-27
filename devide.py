@@ -113,6 +113,9 @@ class devide_app_t(wx.App):
     def OnInit(self):
         """Standard WX OnInit() method, called during construction.
         """
+
+        # set the wx.GetApp() application name
+        self.SetAppName('DeVIDE')
         
         self._mainFrame = resources.python.mainFrame.mainFrame(
             None, -1, "dummy", name="DeVIDE")
