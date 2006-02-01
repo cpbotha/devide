@@ -2,10 +2,10 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 
-
-class warpPoints(scriptedConfigModuleMixin, moduleBase):
+class warpPoints(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Warp input points according to their associated vectors.
 
     $Revision: 1.4 $
@@ -34,6 +34,7 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
         
         moduleUtils.setupVTKObjectProgress(self, self._warpVector,
                                            'Warping points.')
+        self.add_vtk_error_handler(self._warpVector)
 
         self._createWindow(
             {'Module (self)' : self,
@@ -59,6 +60,7 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
 
     def executeModule(self):
         self._warpVector.Update()
+        self.check_vtk_error()
 
     def getInputDescriptions(self):
         return ('VTK points/polydata with vector attribute',)
