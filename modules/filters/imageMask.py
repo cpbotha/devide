@@ -2,10 +2,10 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageMask(moduleBase, noConfigModuleMixin):
+class imageMask(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
 
     """The input data (input 1) is masked with the mask (input 2).
 
@@ -24,6 +24,7 @@ class imageMask(moduleBase, noConfigModuleMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageMask,
                                            'Masking image')
+        self.add_vtk_error_handler(self._imageMask)
 
         self._viewFrame = self._createViewFrame(
             {'vtkImageMask' : self._imageMask})
@@ -75,6 +76,7 @@ class imageMask(moduleBase, noConfigModuleMixin):
     
     def executeModule(self):
         self._imageMask.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

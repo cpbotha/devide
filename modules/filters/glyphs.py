@@ -3,6 +3,7 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 # scale vector glyph with scalar, vector magnitude, or separately for each
 # direction (using vector components), or don't scale at all
@@ -34,7 +35,7 @@ glyphVectorModeTexts = ['Use vector', 'Use normal', 'Do not orient']
 glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 
 
-class glyphs(scriptedConfigModuleMixin, moduleBase):
+class glyphs(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Visualise vector field with glyphs.
 
     $Revision: 1.4 $
@@ -84,6 +85,7 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         
         moduleUtils.setupVTKObjectProgress(self, self._glyphFilter,
                                            'Creating glyphs.')
+        self.add_vtk_error_handler(self._glyphFilter)
 
         self._createWindow(
             {'Module (self)' : self,
@@ -109,6 +111,7 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
 
     def executeModule(self):
         self._glyphFilter.Update()
+        self.check_vtk_error()
 
     def getInputDescriptions(self):
         return ('VTK Vector dataset',)

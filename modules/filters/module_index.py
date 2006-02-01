@@ -41,10 +41,6 @@ class extractImageComponents:
     kits = ['vtk_kit']
     cats = ['Filters']
 
-class glenoidMouldDesign:
-    kits = ['vtk_kit']
-    cats = ['Filters']
-
 class glyphs:
     kits = ['vtk_kit']
     cats = ['Filters']

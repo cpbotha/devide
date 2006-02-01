@@ -7,8 +7,10 @@ from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
+class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin,
+                          VTKErrorFuncMixin):
 
     """Performs 3D Gaussian filtering of the input volume.
     """
@@ -20,6 +22,7 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._imageGaussianSmooth,
                                            'Smoothing image with Gaussian')
+        self.add_vtk_error_handler(self._imageGaussianSmooth)
 
         self._config.standardDeviation = (2.0, 2.0, 2.0)
         self._config.radiusCutoff = (1.5, 1.5, 1.5)
@@ -87,6 +90,7 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
 
     def executeModule(self):
         self._imageGaussianSmooth.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
@@ -95,12 +99,12 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
 
     def _createViewFrame(self):
         self._moduleManager.importReload(
-            'modules.Filters.resources.python.imageGaussianSmoothViewFrame')
-        import modules.Filters.resources.python.imageGaussianSmoothViewFrame
+            'modules.filters.resources.python.imageGaussianSmoothViewFrame')
+        import modules.filters.resources.python.imageGaussianSmoothViewFrame
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.Filters.resources.python.imageGaussianSmoothViewFrame.\
+            modules.filters.resources.python.imageGaussianSmoothViewFrame.\
             imageGaussianSmoothViewFrame)
 
         objectDict = {'vtkImageGaussianSmooth' : self._imageGaussianSmooth}

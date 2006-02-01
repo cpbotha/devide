@@ -5,8 +5,9 @@ import moduleUtils
 import wx
 import vtk
 import vtkdevide
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class greyReconstruct(noConfigModuleMixin, moduleBase):
+class greyReconstruct(noConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """
     Performs grey value reconstruction of mask I from marker J.
 
@@ -30,6 +31,7 @@ class greyReconstruct(noConfigModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(
             self, self._greyReconstruct,
             'Performing greyscale reconstruction')
+        self.add_vtk_error_handler(self._greyReconstruct)
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self,
@@ -84,4 +86,5 @@ class greyReconstruct(noConfigModuleMixin, moduleBase):
     
     def executeModule(self):
         self._greyReconstruct.Update()
+        self.check_vtk_error()
     

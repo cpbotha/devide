@@ -3,8 +3,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
+class imageFillHoles(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Filter to fill holes.
 
     In binary images, holes are image regions with 0-value that are completely
@@ -42,8 +43,11 @@ class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
 
         moduleUtils.setupVTKObjectProgress(self, self._imageBorderMask,
                                            'Creating image mask.')
+        self.add_vtk_error_handler(self._imageBorderMask)
+        
         moduleUtils.setupVTKObjectProgress(self, self._imageGreyReconstruct,
                                            'Performing reconstruction.')
+        self.add_vtk_error_handler(self._imageGreyReconstruct)
 
         self._config.holesTouchEdges = (0,0,0,0,0,0)
 
@@ -109,6 +113,7 @@ class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
 
     def executeModule(self):
         self._imageGreyReconstruct.Update()
+        self.check_vtk_error()
 
 
 
