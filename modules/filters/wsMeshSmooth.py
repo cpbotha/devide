@@ -1,10 +1,11 @@
 import genUtils
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
+class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Module that runs vtkWindowedSincPolyDataFilter on its input data for
     mesh smoothing.
     """
@@ -12,11 +13,13 @@ class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
+        
 
         self._wsPDFilter = vtk.vtkWindowedSincPolyDataFilter()
 
         moduleUtils.setupVTKObjectProgress(self, self._wsPDFilter,
                                            'Smoothing polydata')
+        self.add_vtk_error_handler(self._wsPDFilter)
 
         # setup some defaults
         self._config.numberOfIterations = 20
@@ -24,9 +27,23 @@ class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         self._config.featureEdgeSmoothing = False
         self._config.boundarySmoothing = True
 
-        # create and setup the viewFrame
-        self._viewFrame = self._createViewFrame()
+        config_list = [
+            ('Number of iterations', 'numberOfIterations', 'base:int', 'text',
+             'Algorithm will stop after this many iterations.'),
+            ('Pass band (0 - 2, default 0.1)', 'passBand', 'base:float',
+             'text', 'Indication of frequency cut-off, the lower, the more '
+             'it smoothes.'),
+            ('Feature edge smoothing', 'featureEdgeSmoothing', 'base:bool',
+             'checkbox', 'Smooth feature edges (large dihedral angle)'),
+            ('Boundary smoothing', 'boundarySmoothing', 'base:bool',
+             'checkbox', 'Smooth boundary edges (edges with only one face).')]
 
+        scriptedConfigModuleMixin.__init__(self, config_list)
+
+        self._viewFrame = self._createWindow(
+            {'Module (self)' : self,
+             'vtkWindowedSincPolyDataFilter' : self._wsPDFilter})
+   
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
@@ -38,15 +55,14 @@ class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         # disconnected us by now)
         for inputIdx in range(len(self.getInputDescriptions())):
             self.setInput(inputIdx, None)
-        
+
+        # this will take care of all display thingies
+        scriptedConfigModuleMixin.close(self)
+
+        moduleBase.close(self)
+            
         # get rid of our reference
         del self._wsPDFilter
-
-        # takes care of inspection windows explicitly
-        vtkPipelineConfigModuleMixin.close(self)
-
-        self._viewFrame.Destroy()
-        del self._viewFrame
 
     def getInputDescriptions(self):
         return ('vtkPolyData',)
@@ -77,66 +93,8 @@ class wsMeshSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         self._wsPDFilter.SetBoundarySmoothing(
             self._config.boundarySmoothing)
 
-    def viewToConfig(self):
-        self._config.numberOfIterations = genUtils.textToInt(
-            self._viewFrame.smoothingIterationsText.GetValue(),
-            self._config.numberOfIterations)
-
-        self._config.passBand = genUtils.textToFloat(
-            self._viewFrame.passBandText.GetValue(),
-            self._config.passBand)
-
-        self._config.featureEdgeSmoothing =  bool(
-            self._viewFrame.featureEdgeSmoothingCheckBox.GetValue())
-
-        self._config.boundarySmoothing = bool(
-            self._viewFrame.boundarySmoothingCheckBox.GetValue())
-        
-
-    def configToView(self):
-        self._viewFrame.smoothingIterationsText.SetValue(
-            "%d" % (self._config.numberOfIterations,))
-        self._viewFrame.passBandText.SetValue(
-            "%.2f" % (self._config.passBand,))
-        self._viewFrame.featureEdgeSmoothingCheckBox.SetValue(
-            bool(self._config.featureEdgeSmoothing))
-        self._viewFrame.boundarySmoothingCheckBox.SetValue(
-            bool(self._config.boundarySmoothing))
 
     def executeModule(self):
         self._wsPDFilter.Update()
+        self.check_vtk_error()
 
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-
-    def _createViewFrame(self):
-
-        mm = self._moduleManager
-        # import/reload the viewFrame (created with wxGlade)
-        mm.importReload(
-            'modules.Filters.resources.python.wsMeshSmoothFLTViewFrame')
-        # this line is harmless due to Python's import caching, but we NEED
-        # to do it so that the Installer knows that this devide module
-        # requires it and so that it's available in this namespace.
-        import modules.Filters.resources.python.wsMeshSmoothFLTViewFrame
-
-        # instantiate the view frame, add close handler, set default icon
-        viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, mm,
-            modules.Filters.resources.python.wsMeshSmoothFLTViewFrame.\
-            wsMeshSmoothFLTViewFrame)
-
-        # setup introspection with default everythings
-        objectDict = {'vtkWindowedSincPolyDataFilter': self._wsPDFilter}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, viewFrame, viewFrame.viewFramePanel,
-            objectDict, None)
-
-        # create and configure the standard ECAS buttons
-        moduleUtils.createECASButtons(self, viewFrame,
-                                      viewFrame.viewFramePanel)
-
-        # return it so that it gets assigned to the correct ivar
-        return viewFrame
