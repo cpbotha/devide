@@ -164,12 +164,12 @@ class histogram1D(introspectModuleMixin, moduleBase):
 
     def _createViewFrame(self):
         # create the viewerFrame
-        import modules.Viewers.resources.python.histogram1DFrames
-        reload(modules.Viewers.resources.python.histogram1DFrames)
+        import modules.viewers.resources.python.histogram1DFrames
+        reload(modules.viewers.resources.python.histogram1DFrames)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.Viewers.resources.python.histogram1DFrames.\
+            modules.viewers.resources.python.histogram1DFrames.\
             histogram1DFrame)
 
         self._viewFrame.plotCanvas.SetEnableZoom(True)
