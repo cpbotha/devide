@@ -382,11 +382,11 @@ class graphEditor:
                         
             
         
-        actionDict = {'vti' : ('modules.Readers.vtiRDR', 'filename'),
-                      'vtp' : ('modules.Readers.vtpRDR', 'filename'),
-                      'mha' : ('modules.Readers.metaImageRDR', 'filename'),
-                      'mhd' : ('modules.Readers.metaImageRDR', 'filename'),
-                      'stl' : ('modules.Readers.stlRDR', 'filename')}
+        actionDict = {'vti' : ('modules.readers.vtiRDR', 'filename'),
+                      'vtp' : ('modules.readers.vtpRDR', 'filename'),
+                      'mha' : ('modules.readers.metaImageRDR', 'filename'),
+                      'mhd' : ('modules.readers.metaImageRDR', 'filename'),
+                      'stl' : ('modules.readers.stlRDR', 'filename')}
 
         # list of tuples: (filename, errormessage)
         dropFilenameErrors = []
@@ -421,13 +421,13 @@ class graphEditor:
                     # this only executes if there was no exception
                     if fline.endswith('structured_points'):
                         createModuleOneVar(
-                            'modules.Readers.vtkStructPtsRDR',
+                            'modules.readers.vtkStructPtsRDR',
                             'filename', filename,
                             os.path.basename(filename))
                         
                     elif fline.lower().endswith('polydata'):
                         createModuleOneVar(
-                            'modules.Readers.vtkPolyDataRDR',
+                            'modules.readers.vtkPolyDataRDR',
                             'filename', filename,
                             os.path.basename(filename))
 
@@ -455,7 +455,7 @@ class graphEditor:
 
         if len(dcmFilenames) > 0:
             (mod,glyph) = self.createModuleAndGlyph(x, y,
-                                                    'modules.Readers.dicomRDR')
+                                                    'modules.readers.dicomRDR')
             
             if mod:
                 cfg = mod.getConfig()
