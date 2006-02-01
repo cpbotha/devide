@@ -3,8 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class appendPolyData(moduleBase, noConfigModuleMixin):
+class appendPolyData(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
     """DeVIDE encapsulation of the vtkAppendPolyDataFilter that enables us
     to combine multiple PolyData structures into one.
 
@@ -27,6 +28,7 @@ class appendPolyData(moduleBase, noConfigModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._appendPolyData,
                                            'Appending PolyData')
+        self.add_vtk_error_handler(self._appendPolyData)
 
         self._viewFrame = self._createViewFrame(
             {'vtkAppendPolyData' : self._appendPolyData})
@@ -86,6 +88,7 @@ class appendPolyData(moduleBase, noConfigModuleMixin):
     
     def executeModule(self):
         self._appendPolyData.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
