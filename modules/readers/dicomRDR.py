@@ -6,6 +6,7 @@ from moduleBase import moduleBase
 from moduleMixins import \
      vtkPipelineConfigModuleMixin, fileOpenDialogModuleMixin
 import moduleUtils
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 import stat
 import wx
@@ -15,7 +16,8 @@ import moduleUtils
 
 class dicomRDR(moduleBase,
                vtkPipelineConfigModuleMixin,
-               fileOpenDialogModuleMixin):
+               fileOpenDialogModuleMixin,
+               VTKErrorFuncMixin):
 
     """Module for reading DICOM data.
 
@@ -35,6 +37,7 @@ class dicomRDR(moduleBase,
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
+        self.add_vtk_error_handler(self._reader)
 
         self._viewFrame = ""
         self._createViewFrame()
@@ -193,14 +196,15 @@ class dicomRDR(moduleBase,
     def executeModule(self):
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
+        self.check_vtk_error()
 
     def _createViewFrame(self):
-        import modules.Readers.resources.python.dicomRDRViewFrame
-        reload(modules.Readers.resources.python.dicomRDRViewFrame)
+        import modules.readers.resources.python.dicomRDRViewFrame
+        reload(modules.readers.resources.python.dicomRDRViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.Readers.resources.python.dicomRDRViewFrame.\
+            modules.readers.resources.python.dicomRDRViewFrame.\
             dicomRDRViewFrame)
 
         # make sure the listbox is empty

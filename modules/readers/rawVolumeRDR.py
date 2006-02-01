@@ -5,10 +5,12 @@ from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
 import vtk
 import wx
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 class rawVolumeRDR(moduleBase,
                    vtkPipelineConfigModuleMixin,
-                   fileOpenDialogModuleMixin):
+                   fileOpenDialogModuleMixin,
+                   VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
 
@@ -22,6 +24,8 @@ class rawVolumeRDR(moduleBase,
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading raw volume data')
+
+        self.add_vtk_error_handler(self._reader)
         
         self._dataTypes = {'Double': vtk.VTK_DOUBLE,
                            'Float' : vtk.VTK_FLOAT,
@@ -170,6 +174,7 @@ class rawVolumeRDR(moduleBase,
     def executeModule(self):
         # get the reader to read :)
         self._reader.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
@@ -179,12 +184,12 @@ class rawVolumeRDR(moduleBase,
     def _createViewFrame(self):
 
         # import the viewFrame (created with wxGlade)
-        import modules.Readers.resources.python.rawVolumeRDRViewFrame
-        reload(modules.Readers.resources.python.rawVolumeRDRViewFrame)
+        import modules.readers.resources.python.rawVolumeRDRViewFrame
+        reload(modules.readers.resources.python.rawVolumeRDRViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.Readers.resources.python.rawVolumeRDRViewFrame.\
+            modules.readers.resources.python.rawVolumeRDRViewFrame.\
             rawVolumeRDRViewFrame)
 
         # bind the file browse button

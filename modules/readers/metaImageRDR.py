@@ -5,8 +5,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import wx
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
+class metaImageRDR(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Reads MetaImage format files.
 
     MetaImage files have an .mha or .mhd file extension.  .mha files are
@@ -23,6 +24,7 @@ class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading MetaImage data.')
+        self.add_vtk_error_handler(self._reader)
 
         self._config.filename = ''
 
@@ -78,6 +80,7 @@ class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
         
     def executeModule(self):
         self._reader.Update()
+        self.check_vtk_error()
 
         
         

@@ -4,8 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
+class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
 
@@ -19,6 +20,7 @@ class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
         moduleUtils.setupVTKObjectProgress(
             self, self._reader,
             'Reading vtk structured points data')
+        self.add_vtk_error_handler(self._reader)
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -68,6 +70,7 @@ class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
         # get the vtkPolyDataReader to try and execute
         if len(self._reader.GetFileName()):
             self._reader.Update()
+            self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

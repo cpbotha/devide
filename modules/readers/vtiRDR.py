@@ -4,8 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtiRDR(moduleBase, filenameViewModuleMixin):
+class vtiRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
 
@@ -19,6 +20,8 @@ class vtiRDR(moduleBase, filenameViewModuleMixin):
         moduleUtils.setupVTKObjectProgress(
             self, self._reader,
             'Reading VTK ImageData')
+
+        self.add_vtk_error_handler(self._reader)
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -68,6 +71,7 @@ class vtiRDR(moduleBase, filenameViewModuleMixin):
         # get the vtkPolyDataReader to try and execute
         if len(self._reader.GetFileName()):
             self._reader.Update()
+            self.check_vtk_error()
 
     def view(self, parent_window=None):
         self._viewFrame.Show(True)

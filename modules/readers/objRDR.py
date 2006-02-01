@@ -5,8 +5,9 @@ from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 import os
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class objRDR(moduleBase, filenameViewModuleMixin):
+class objRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
@@ -25,6 +26,8 @@ class objRDR(moduleBase, filenameViewModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading Wavefront OBJ data')
+
+        self.add_vtk_error_handler(self._reader)
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame(
@@ -77,6 +80,7 @@ class objRDR(moduleBase, filenameViewModuleMixin):
         # get the vtkSTLReader to try and execute (if there's a filename)
         if len(self._reader.GetFileName()):        
             self._reader.Update()
+            self.check_vtk_error()
             
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes
