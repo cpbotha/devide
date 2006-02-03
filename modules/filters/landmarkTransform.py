@@ -2,9 +2,6 @@
 # $Id$
 # see module documentation
 
-# TODO:
-# * make mode configurable by the user
-
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
