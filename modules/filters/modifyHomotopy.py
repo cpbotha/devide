@@ -1,4 +1,4 @@
-# TODO: simply module!!  all this muck was necessary due to the old
+# TODO: simplify module!!  all this muck was necessary due to the old
 # demand-driven model.  Keep the code around, it could be used as
 # illustrative case.
 
