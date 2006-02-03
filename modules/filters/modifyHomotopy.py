@@ -1,14 +1,21 @@
+# TODO: simply module!!  all this muck was necessary due to the old
+# demand-driven model.  Keep the code around, it could be used as
+# illustrative case.
+
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
 import vtkdevide
 
 class modifyHomotopy(noConfigModuleMixin, moduleBase):
 
-    """Modifies homotopy of input image I so that the only minima will
+    """IMPORTANT: this module needs to be updated to the new event-driven
+    execution scheme.  It should still work, but it may also blow up
+    your computer.
+
+    Modifies homotopy of input image I so that the only minima will
     be at the user-specified seed-points or marker image, all other
     minima will be suppressed and ridge lines separating minima will
     be preserved.
