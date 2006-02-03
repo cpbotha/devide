@@ -6,7 +6,6 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
 from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
