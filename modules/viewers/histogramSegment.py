@@ -427,11 +427,11 @@ class histogramSegment(introspectModuleMixin, moduleBase):
 
     def _createViewFrame(self):
         # create the viewerFrame
-        import modules.Viewers.resources.python.histogramSegmentFrames
+        import modules.viewers.resources.python.histogramSegmentFrames
         # this reload is temporary during development
-        reload(modules.Viewers.resources.python.histogramSegmentFrames)
+        reload(modules.viewers.resources.python.histogramSegmentFrames)
 
-        viewFrame = modules.Viewers.resources.python.histogramSegmentFrames.\
+        viewFrame = modules.viewers.resources.python.histogramSegmentFrames.\
                     viewFrame
 
         # DeVIDE takes care of the icon and the window close handlers
