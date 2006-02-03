@@ -38,7 +38,11 @@ def add_error_handler(vtk_object, error_func):
     eec = error_event_class(error_func)
     vtk_object.AddObserver('ErrorEvent', eec.error_event_handler)
 
-    e = vtk_object.GetExecutive()
-    if e:
-        e.AddObserver('ErrorEvent', eec.error_event_handler)
+    try:
+        e = vtk_object.GetExecutive()
+    except AttributeError:
+        pass
+    else:
+        if e:
+            e.AddObserver('ErrorEvent', eec.error_event_handler)
 
