@@ -11,8 +11,10 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
+class landmarkTransform(scriptedConfigModuleMixin, moduleBase,
+                        VTKErrorFuncMixin):
     """The landmarkTransform will calculate a 4x4 linear transform that maps
     from a set of source landmarks to a set of target landmarks.
 
@@ -44,6 +46,7 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.__init__(self, configList)
 
         self._landmarkTransform = vtk.vtkLandmarkTransform()
+        self.add_vtk_error_handler(self._landmarkTransform)
 
         self._createWindow(
             {'Module (self)' : self,
@@ -72,25 +75,12 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
         if inputStream is not self._inputPoints:
 
             if inputStream == None:
-                # disconnect
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
-                    
                 self._inputPoints = None
 
             elif hasattr(inputStream, 'devideType') and \
                  inputStream.devideType == 'namedPoints':
-                # correct type... first disconnect the old
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
 
                 self._inputPoints = inputStream
-                self._inputPoints.addObserver(self._observerInputPoints)
-
-                # initial update
-                self._observerInputPoints(None)
 
             else:
                 raise TypeError, 'This input requires a named points type.'
@@ -116,14 +106,16 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
             self._landmarkTransform.SetModeToAffine()
     
     def executeModule(self):
+        self._sync_with_input_points()
         self._landmarkTransform.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
         self._viewFrame.Show(True)
         self._viewFrame.Raise()
 
-    def _observerInputPoints(self, obj):
+    def _sync_with_input_points(self):
         # the points have changed, let's see if they really have
 
         if not self._inputPoints:
@@ -142,14 +134,9 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
             print "seems like I have to update"
 
             if len(tempSourceLandmarks) != len(tempTargetLandmarks):
-                md= wx.MessageDialog(
-                    self._moduleManager.getModuleViewParentWindow(),
+                raise Exception(
                     "landmarkTransform: Your 'Source' landmark set and "
-                    "'Target' landmark set should be of equal size.",
-                    "Landmark Set Size",
-                    wx.ICON_INFORMATION | wx.OK)
-                
-                md.ShowModal()
+                    "'Target' landmark set should be of equal size.")
 
             else:
                 self._sourceLandmarks = tempSourceLandmarks
