@@ -3,8 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class polyDataNormals(moduleBase, noConfigModuleMixin):
+class polyDataNormals(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
     """Module that runs vtkWindowedSincPolyDataFilter on its input data for
     mesh smoothing.
     """
@@ -17,6 +18,7 @@ class polyDataNormals(moduleBase, noConfigModuleMixin):
         self._pdNormals = vtk.vtkPolyDataNormals()
         moduleUtils.setupVTKObjectProgress(self, self._pdNormals,
                                            'Calculating normals')
+        self.add_vtk_error_handler()
 
         self._viewFrame = self._createViewFrame(
             {'vtkPolyDataNormals' : self._pdNormals})
@@ -65,6 +67,7 @@ class polyDataNormals(moduleBase, noConfigModuleMixin):
     
     def executeModule(self):
         self._pdNormals.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

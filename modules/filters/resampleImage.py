@@ -7,8 +7,10 @@ from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
+class resampleImage(moduleBase, vtkPipelineConfigModuleMixin,
+                    VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -17,6 +19,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._imageResample,
                                            'Resampling image.')
+        self.add_vtk_error_handler(self._imageResample)
 
 
         # 0: nearest neighbour
@@ -113,6 +116,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
     
     def executeModule(self):
         self._imageResample.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
@@ -121,12 +125,12 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
 
     def _createViewFrame(self):
         self._moduleManager.importReload(
-            'modules.Filters.resources.python.resampleImageViewFrame')
-        import modules.Filters.resources.python.resampleImageViewFrame
+            'modules.filters.resources.python.resampleImageViewFrame')
+        import modules.filters.resources.python.resampleImageViewFrame
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.Filters.resources.python.resampleImageViewFrame.\
+            modules.filters.resources.python.resampleImageViewFrame.\
             resampleImageViewFrame)
 
         objectDict = {'vtkImageResample' : self._imageResample}

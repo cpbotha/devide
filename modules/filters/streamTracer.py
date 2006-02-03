@@ -2,11 +2,12 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 INTEG_TYPE = ['RK2', 'RK4', 'RK45']
 INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
 
-class streamTracer(scriptedConfigModuleMixin, moduleBase):
+class streamTracer(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Visualise a vector field with stream lines.
 
     $Revision: 1.2 $
@@ -30,6 +31,7 @@ class streamTracer(scriptedConfigModuleMixin, moduleBase):
         self._streamTracer = vtk.vtkStreamTracer()
         moduleUtils.setupVTKObjectProgress(self, self._streamTracer,
                                            'Tracing stream lines.')
+        self.add_vtk_error_handler(self._streamTracer)
 
         self._createWindow(
             {'Module (self)' : self,
@@ -53,6 +55,7 @@ class streamTracer(scriptedConfigModuleMixin, moduleBase):
 
     def executeModule(self):
         self._streamTracer.Update()
+        self.check_vtk_error()
 
     def getInputDescriptions(self):
         return ('VTK Vector dataset', 'VTK source geometry')

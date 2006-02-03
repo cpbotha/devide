@@ -3,8 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class polyDataConnect(moduleBase, noConfigModuleMixin):
+class polyDataConnect(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
 
@@ -21,6 +22,7 @@ class polyDataConnect(moduleBase, noConfigModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._polyDataConnect,
                                            'Finding connected surfaces')
+        self.add_vtk_error_handler(self._polyDataConnect)
 
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
@@ -91,6 +93,7 @@ class polyDataConnect(moduleBase, noConfigModuleMixin):
     
     def executeModule(self):
         self._polyDataConnect.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

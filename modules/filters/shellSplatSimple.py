@@ -6,8 +6,10 @@ import moduleUtils
 import vtk
 import vtkdevide
 import wx
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
+class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
+                       VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -24,6 +26,8 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
                             'volumeProp' : self._volumeProperty,
                             'volume' : self._volume}
 
+        for o in self._objectDict.values():
+            self.add_vtk_error_handler(o)
 
         # setup some config defaults
         # for segmetented data
@@ -197,6 +201,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
 
     def executeModule(self):
         self._splatMapper.Update()
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
@@ -284,15 +289,15 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin):
         mm = self._moduleManager
         # import/reload the viewFrame (created with wxGlade)
         mm.importReload(
-            'modules.Filters.resources.python.shellSplatSimpleFLTViewFrame')
+            'modules.filters.resources.python.shellSplatSimpleFLTViewFrame')
         # this line is harmless due to Python's import caching, but we NEED
         # to do it so that the Installer knows that this devide module
         # requires it and so that it's available in this namespace.
-        import modules.Filters.resources.python.shellSplatSimpleFLTViewFrame
+        import modules.filters.resources.python.shellSplatSimpleFLTViewFrame
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, mm,
-            modules.Filters.resources.python.shellSplatSimpleFLTViewFrame.\
+            modules.filters.resources.python.shellSplatSimpleFLTViewFrame.\
             shellSplatSimpleFLTViewFrame)
 
         # setup introspection with default everythings

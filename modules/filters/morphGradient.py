@@ -2,10 +2,11 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class morphGradient(scriptedConfigModuleMixin, moduleBase):
+class morphGradient(scriptedConfigModuleMixin, moduleBase,
+                    VTKErrorFuncMixin):
 
     """Performs a greyscale morphological gradient on the input image.
 
@@ -49,21 +50,26 @@ class morphGradient(scriptedConfigModuleMixin, moduleBase):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
+        self.add_vtk_error_handler(self._imageDilate)
 
         moduleUtils.setupVTKObjectProgress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
+        self.add_vtk_error_handler(self._imageErode)
 
         moduleUtils.setupVTKObjectProgress(self, self._imageMath,
                                            'Subtracting erosion from '
                                            'dilation')
+        self.add_vtk_error_handler(self._imageMath)
 
         moduleUtils.setupVTKObjectProgress(self, self._innerImageMath,
                                            'Subtracting erosion from '
                                            'image (inner)')
+        self.add_vtk_error_handler(self._innerImageMath)
 
         moduleUtils.setupVTKObjectProgress(self, self._outerImageMath,
                                            'Subtracting image from '
                                            'dilation (outer)')
+        self.add_vtk_error_handler(self._outerImageMath)
                                            
         self._config.kernelSize = (3, 3, 3)
 
@@ -137,5 +143,6 @@ class morphGradient(scriptedConfigModuleMixin, moduleBase):
     def executeModule(self):
         # we only execute the main gradient
         self._imageMath.Update()
+        self.check_vtk_error()
 
 
