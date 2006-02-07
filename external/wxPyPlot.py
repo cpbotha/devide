@@ -7,7 +7,7 @@
 # Author:      Gordon Williams
 #
 # Created:     2003/11/03
-# RCS-ID:      $Id: wxPyPlot.py,v 1.2 2004/08/23 15:30:57 cpbotha Exp $
+# RCS-ID:      $Id$
 # Copyright:   (c) 2002
 # Licence:     Use as you wish.
 #-----------------------------------------------------------------------------
