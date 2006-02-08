@@ -180,7 +180,7 @@ class devide_app_t(wx.App):
         postWxInitImports()
 
         # initialise the scheduler
-        self.scheduler = scheduler(self)
+        self.scheduler = Scheduler(self)
 
         # indicate that we're ready to go!
         self.setProgress(100, 'Started up')
@@ -494,11 +494,11 @@ def postWxInitImports():
     their thing.
     """
     
-    global graphEditor, moduleManager, scheduler, pythonShell, helpClass
+    global graphEditor, moduleManager, Scheduler, pythonShell, helpClass
     
     from graphEditor import graphEditor
     from moduleManager import moduleManager
-    from scheduler import scheduler
+    from scheduler import Scheduler
     from pythonShell import pythonShell
     from helpClass import helpClass
 

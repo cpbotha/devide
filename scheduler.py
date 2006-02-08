@@ -1,17 +1,17 @@
 # scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
-# $Id: scheduler.py,v 1.15 2005/11/19 00:05:29 cpbotha Exp $
+# $Id$
 
 import mutex
 
 #########################################################################
-class schedulerException(Exception):
+class SchedulerException(Exception):
     pass
     
-class cyclesDetectedException(schedulerException):
+class CyclesDetectedException(SchedulerException):
     pass
 
 #########################################################################
-class schedulerModuleWrapper:
+class SchedulerModuleWrapper:
     """Wrapper class that adapts module instance to scheduler-usable
     object.  
     
@@ -49,7 +49,7 @@ class schedulerModuleWrapper:
         return eq
         
 #########################################################################
-class scheduler:
+class Scheduler:
     """Coordinates event-driven network execution.
 
     This should be a singleton, as we're using a mutex to protect per-
@@ -78,28 +78,28 @@ class scheduler:
         
         Note that the modules are wrapped anew by this method, so equality
         tests with previously existing scheduleModules will not work.  You have
-        to use the L{schedulerModuleWrapper.matches()} method.
+        to use the L{SchedulerModuleWrapper.matches()} method.
 
         @param moduleInstances: list of raw module instances
-        @return: list with schedulerModuleWrappers
+        @return: list with SchedulerModuleWrappers
         """
         
         # replace every view module with two segments: final and initial
-        schedulerModuleWrappers = []
+        SchedulerModuleWrappers = []
         for mModule in metaModules:
             # wrap every part separately
             for part in range(mModule.numParts):
-                schedulerModuleWrappers.append(
-                    schedulerModuleWrapper(mModule, part))
+                SchedulerModuleWrappers.append(
+                    SchedulerModuleWrapper(mModule, part))
 
-        return schedulerModuleWrappers
+        return SchedulerModuleWrappers
 
     def getConsumerModules(self, schedulerModule):
         """Return consumers of schedulerModule as a list of schedulerModules.
         
         The consumers that are returned have been wrapped on an ad hoc basis,
         so you can't trust normal equality or 'in' tests.  Use the 
-        L{schedulerModuleWrapper.matches} method instead.
+        L{SchedulerModuleWrapper.matches} method instead.
 
         @param schedulerModule: determine modules that are connected to outputs
         of this instance.
@@ -127,7 +127,7 @@ class scheduler:
                 cPart = consumerMetaModule.getPartForInput(consumerInputIdx)
                 
                 sConsumers.append(
-                    schedulerModuleWrapper(consumerMetaModule, cPart))
+                    SchedulerModuleWrapper(consumerMetaModule, cPart))
 
         return sConsumers
 
@@ -137,7 +137,7 @@ class scheduler:
 
         The producers that are returned have been wrapped on an ad hoc basis,
         so you can't trust normal equality or 'in' tests. Use the
-        L{schedulerModuleWrapper.matches} method instead.
+        L{SchedulerModuleWrapper.matches} method instead.
 
         @param schedulerModule: determine modules that are connected to inputs
         of this instance.
@@ -165,7 +165,7 @@ class scheduler:
                 p_part = p_meta_module.getPartForOutput(outputIndex)
                 
                 sProducers.append(
-                    (schedulerModuleWrapper(p_meta_module, p_part),
+                    (SchedulerModuleWrapper(p_meta_module, p_part),
                      outputIndex, consumerInputIdx))
 
         return sProducers
@@ -259,7 +259,7 @@ class scheduler:
             
 
         if self.detectCycles(schedulerModules):
-            raise cyclesDetectedException(
+            raise CyclesDetectedException(
                 'Cycles detected in network.  Unable to schedule.')
             
         # keep on finding final vertices, move to final list
@@ -288,7 +288,7 @@ class scheduler:
 
         @param schedulerModules: list of modules that should be executed in
         order.
-        @raise cyclesDetectedException: This exception is raised if any
+        @raise CyclesDetectedException: This exception is raised if any
         cycles are detected in the modules that have to be executed.
 
         @todo: add start_module parameter, execution skips all modules before
@@ -303,7 +303,7 @@ class scheduler:
         
         try:
             if self.detectCycles(schedulerModules):
-                raise cyclesDetectedException(
+                raise CyclesDetectedException(
                     'Cycles detected in selected network modules.  '
                     'Unable to execute.')
 
