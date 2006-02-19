@@ -2,9 +2,6 @@
 # $Id$
 # see module documentation
 
-# FIXME: the observer pattern is not required anymore in the new event-driven
-# model.
-
 import genUtils
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
@@ -111,8 +108,6 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
                      inputStream.devideType == 'namedPoints':
                 # correct type
                 self._inputPoints = inputStream
-                # initial update
-                #self._observerInputPoints(None)
 
             else:
                 raise TypeError, 'This input requires a named points type.'
