@@ -7,6 +7,8 @@ Changes since 20050330 - released on Mon May 30 14:42:42 CEST 2005:
    - what this means to the user: you HAVE to press F5 in the Graph Editor, 
      or select Network|Execute from the menu, or press the execute button
      on any of the module configuration dialog boxes to execute a network.
+ * All WX functionality has been factored out of the DeVIDE core.  This is
+   part of the DeVIDE NG1 Phase 2 planning.
  * Introduced concept of module_kits, a generic way for adding libraries
    (such as VTK or ITK) to DeVIDE.
  * Module "in-place" reload feature added.
