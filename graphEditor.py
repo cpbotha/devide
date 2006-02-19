@@ -130,17 +130,18 @@ class glyphSelection:
 # ----------------------------------------------------------------------------
 
 class graphEditor:
-    def __init__(self, devideApp):
+    def __init__(self, interface, devideApp):
         # initialise vars
+        self._interface = interface
         self._devideApp = devideApp
 
         import resources.python.graphEditorFrame as rpg
 
         self._graphEditorFrame = rpg.graphEditorFrame(
-            self._devideApp.get_main_window(),
+            self._interface.get_main_window(),
             -1, title='dummy', name='DeVIDE', wxpcCanvas=wxpc.canvas)
 
-        self._graphEditorFrame.SetIcon(self._devideApp.getApplicationIcon())
+        self._graphEditorFrame.SetIcon(self._interface.getApplicationIcon())
 
         self._appendEditCommands(self._graphEditorFrame.editMenu,
                                  self._graphEditorFrame,
@@ -1086,7 +1087,7 @@ class graphEditor:
 
             
     def _handlerHelpShowHelp(self, event):
-        self._devideApp.showHelp()
+        self._interface.showHelp()
             
     def _handlerCopySelected(self, event):
         if self._glyphSelection.getSelectedGlyphs():
@@ -1102,7 +1103,7 @@ class graphEditor:
 
     def _handlerWindowMain(self, event):
         # show and raise the main window
-        self._devideApp.showMainWindow()
+        self._interface.showMainWindow()
 
     def hide(self):
         self._graphEditorFrame.Show(False)
@@ -1647,7 +1648,8 @@ class graphEditor:
         self._graphEditorFrame.GetStatusBar().SetStatusText(msg)            
                                    
     def _fileExitCallback(self, event):
-        self._devideApp.quit()
+        # call the interface quit handler (we're its child)
+        self._interface.quit()
 
     def _fileNewCallback(self, event):
         self.clearAllGlyphsFromCanvas()

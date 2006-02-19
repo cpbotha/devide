@@ -10,11 +10,11 @@ import wx
 import wx.html
 
 class helpClass(object):
-    def __init__(self, devideApp):
+    def __init__(self, app_dir):
         wx.FileSystem_AddHandler(wx.ZipFSHandler())
         self._htmlHelpController = wx.html.HtmlHelpController()
         
-        helpDir = os.path.join(devideApp.getAppDir(), 'docs/help')
+        helpDir = os.path.join(app_dir, 'docs/help')
         mainBook = os.path.join(helpDir, 'devideHelp.htb')
         self._htmlHelpController.AddBook(mainBook, True)
 

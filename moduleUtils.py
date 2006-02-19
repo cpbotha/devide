@@ -1,4 +1,4 @@
-# $Id: moduleUtils.py,v 1.31 2005/11/04 16:37:12 cpbotha Exp $
+# $Id$
 
 """Collection of module utility functions.
 
@@ -119,7 +119,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     mm = d3module._moduleManager
 
     # call back into the graphEditor, if it exists
-    ge = mm._devide_app._graphEditor    
+    ge = mm._devide_app.get_interface()._graphEditor    
     def helpModule(dvModule):
         if ge:
             ge._helpModule(dvModule)

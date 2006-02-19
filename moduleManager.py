@@ -455,7 +455,18 @@ class moduleManager:
         return self.getModuleViewParentWindow()
 
     def getModuleViewParentWindow(self):
-        return self._devide_app.get_main_window()
+        """Get parent window for module windows.
+
+        THIS METHOD WILL BE DEPRECATED.  The ModuleManager and view-less
+        (back-end) modules shouldn't know ANYTHING about windows or UI
+        aspects.
+        """
+        
+        try:
+            return self._devide_app.get_interface().get_main_window()
+        except AttributeError:
+            # the interface has no main_window
+            return None
     
     def createModule(self, fullName, instanceName=None):
         """Try and create module fullName.
