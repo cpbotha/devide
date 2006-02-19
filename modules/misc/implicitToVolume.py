@@ -4,8 +4,10 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
+class implicitToVolume(scriptedConfigModuleMixin, moduleBase,
+                       VTKErrorFuncMixin):
     """Given an implicit function, this module will evaluate it over a volume
     and yield that volume as output.
 
@@ -37,6 +39,7 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
         # setup progress for the processObject
         moduleUtils.setupVTKObjectProgress(self, self._sampleFunction,
                                            "Sampling implicit function.")
+        self.add_vtk_error_handler(self._sampleFunction)
 
         self._createWindow(
             {'Module (self)' : self,
@@ -62,6 +65,7 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
         
     def executeModule(self):
         self._sampleFunction.Update()
+        self.check_vtk_error()
 
     def getInputDescriptions(self):
         return ('Implicit Function',)
