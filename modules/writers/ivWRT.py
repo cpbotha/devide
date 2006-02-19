@@ -3,8 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class ivWRT(moduleBase, filenameViewModuleMixin):
+class ivWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     """ivWRT is an Inventor Viewer polygonal data writer devide module.
     """
     def __init__(self, moduleManager):
@@ -21,9 +22,10 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
 
         # following is the standard way of connecting up the devide progress
         # callback to a VTK object; you should do this for all objects in
-        mm = self._moduleManager
         moduleUtils.setupVTKObjectProgress(
             self, self._writer, 'Writing polydata to Inventor Viewer format')
+
+        self.add_vtk_error_handler(self._writer)
         
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame(
@@ -76,6 +78,8 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
     def executeModule(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
+
+        self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

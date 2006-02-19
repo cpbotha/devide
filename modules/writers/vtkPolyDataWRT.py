@@ -4,8 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
+class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
 
     def __init__(self, moduleManager):
 
@@ -22,6 +23,8 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
         moduleUtils.setupVTKObjectProgress(
             self, self._writer,
             'Writing VTK Polygonal data')
+
+        self.add_vtk_error_handler(self._writer)
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -73,6 +76,7 @@ class vtkPolyDataWRT(moduleBase, filenameViewModuleMixin):
     def executeModule(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
+            self.check_vtk_error()
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

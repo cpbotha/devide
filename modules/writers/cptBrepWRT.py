@@ -3,10 +3,10 @@
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
-import wx
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class cptBrepWRT(moduleBase, filenameViewModuleMixin):
+class cptBrepWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     """Writes polydata to disc in the format required by the Closest
     Point Transform (CPT) driver software.  Input data is put through
     a triangle filter first, as that is what the CPT requires.
@@ -31,6 +31,8 @@ class cptBrepWRT(moduleBase, filenameViewModuleMixin):
         moduleUtils.setupVTKObjectProgress(
             self, self._triFilter,
             'Converting to triangles')
+
+        self.add_vtk_error_handler(self._triFilter)
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -82,6 +84,9 @@ class cptBrepWRT(moduleBase, filenameViewModuleMixin):
             # make sure our input is up to date
             polyData = self._triFilter.GetOutput()
             polyData.Update()
+
+            # this will throw an exception if something went wrong.
+            self.check_vtk_error()
             
             # list of tuples, each tuple contains three indices into vertices
             # list constituting a triangle face

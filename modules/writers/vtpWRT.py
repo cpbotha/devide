@@ -3,10 +3,10 @@
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
-import wx
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtpWRT(moduleBase, filenameViewModuleMixin):
+class vtpWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     """Writes VTK PolyData in the VTK XML format.  The data attribute is
     compressed.
 
@@ -25,6 +25,8 @@ class vtpWRT(moduleBase, filenameViewModuleMixin):
         moduleUtils.setupVTKObjectProgress(
             self, self._writer,
             'Writing VTK PolyData')
+
+        self.add_vtk_error_handler(self._writer)
 
         self._writer.SetDataModeToBinary()
 
@@ -78,6 +80,7 @@ class vtpWRT(moduleBase, filenameViewModuleMixin):
     def executeModule(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
+            self.check_vtk_error()
 
     def view(self, parent_window=None):
         self._viewFrame.Show(True)

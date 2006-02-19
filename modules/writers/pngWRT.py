@@ -4,9 +4,11 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-import wx
+import wx # needs this for wx.OPEN, we need to make this constant available
+          # elsewhere
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class pngWRT(scriptedConfigModuleMixin, moduleBase):
+class pngWRT(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """Writes a volume as a series of PNG images.
 
     Set the file pattern by making use of the file browsing dialog.  Replace
@@ -28,12 +30,21 @@ class pngWRT(scriptedConfigModuleMixin, moduleBase):
 	
 	self._shiftScale = vtk.vtkImageShiftScale()
         self._shiftScale.SetOutputScalarTypeToUnsignedShort()
+
+        moduleUtils.setupVTKObjectProgress(
+            self, self._shiftScale,
+            'Converting input to unsigned short.')
+
+        self.add_vtk_error_handler(self._shiftScale)
 	
 	self._writer = vtk.vtkPNGWriter()
 	self._writer.SetFileDimensionality(3)
         self._writer.SetInput(self._shiftScale.GetOutput())
         
-	moduleUtils.setupVTKObjectProgress(self, self._writer, 'Writing PNG file(s)')
+	moduleUtils.setupVTKObjectProgress(
+            self, self._writer, 'Writing PNG file(s)')
+
+        self.add_vtk_error_handler(self._writer)
        
         self._config.filePattern = '%d.png'
 
@@ -94,7 +105,11 @@ class pngWRT(scriptedConfigModuleMixin, moduleBase):
             minv,maxv = inp.GetScalarRange()
             self._shiftScale.SetShift(-minv)
             self._shiftScale.SetScale(65535 / (maxv - minv))
+            self._shiftScale.Update()
+            self.check_vtk_error()
+            
 	    self._writer.Write()
+            self.check_vtk_error()
             self._moduleManager.setProgress(
                 100.0, "vtkPNGWriter: Writing PNG file(s). [DONE]")
 
