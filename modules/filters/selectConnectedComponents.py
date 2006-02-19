@@ -3,15 +3,15 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
+class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase,
+                                VTKErrorFuncMixin):
     """3D region growing.
 
     Finds all points connected to the seed points that have the same values
     as at the seed points.  This is primarily useful for selecting connected
     components.
-
-    $Revision: 1.2 $
     """
 
     def __init__(self, moduleManager):
@@ -26,8 +26,11 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
 
         moduleUtils.setupVTKObjectProgress(self, self._selectccs,
                                            'Marking selected components')
+        self.add_vtk_error_handler(self._selectccs)
+        
         moduleUtils.setupVTKObjectProgress(self, self._imageCast,
                                            'Casting data to unsigned long')
+        self.add_vtk_error_handler(self._imageCast)
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
@@ -81,20 +84,10 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
         if idx == 0:
             # will work for None and not-None
             self._imageCast.SetInput(inputStream)
+            
         else:
             if inputStream != self._inputPoints:
-                if self._inputPoints != None:
-                    self._inputPoints.removeObserver(self._inputPointsObserver)
-
-                if inputStream != None:
-                    inputStream.addObserver(
-                        self._inputPointsObserver)
-
                 self._inputPoints = inputStream
-
-                # initial update
-                self._inputPointsObserver(None)
-            
     
     def getOutputDescriptions(self):
         return ('Selected connected components (vtkImageData)',)
@@ -115,10 +108,15 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
                                                   outputUnconnectedValue)
 
     def executeModule(self):
+        self._sync_to_input_points()
+
+        self._imageCast.Update()
+        self.check_vtk_error()
+        
         self._selectccs.Update()
+        self.check_vtk_error()
 
-
-    def _inputPointsObserver(self, obj):
+    def _sync_to_input_points(self):
         # extract a list from the input points
         tempList = []
         if self._inputPoints:
