@@ -18,7 +18,7 @@ class polyDataNormals(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
         self._pdNormals = vtk.vtkPolyDataNormals()
         moduleUtils.setupVTKObjectProgress(self, self._pdNormals,
                                            'Calculating normals')
-        self.add_vtk_error_handler()
+        self.add_vtk_error_handler(self._pdNormals)
 
         self._viewFrame = self._createViewFrame(
             {'vtkPolyDataNormals' : self._pdNormals})
