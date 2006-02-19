@@ -1,10 +1,11 @@
 import genUtils
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
+class seedConnect(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     """3D region growing.
 
     Finds all points connected to the seed points that also have values
@@ -26,8 +27,11 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._seedConnect,
                                            'Performing region growing')
+        self.add_vtk_error_handler(self._seedConnect)
+        
         moduleUtils.setupVTKObjectProgress(self, self._imageCast,
                                            'Casting data to unsigned char')
+        self.add_vtk_error_handler(self._imageCast)
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
@@ -39,8 +43,22 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
         self._config.outputConnectedValue = 1
         self._config.outputUnconnectedValue = 0
 
-        self._viewFrame = None
-        self._createViewFrame()
+
+        config_list = [
+            ('Input connect value:', 'inputConnectValue', 'base:int', 'text',
+             'Points connected to seed points with this value will be '
+             'included.'),
+            ('Output connected value:', 'outputConnectedValue', 'base:int',
+             'text', 'Included points will get this value.'),
+            ('Output unconnected value:', 'outputUnconnectedValue',
+             'base:int', 'text', 'Non-included points will get this value.')]
+             
+        scriptedConfigModuleMixin.__init__(self, config_list)
+
+        self._createWindow(
+            {'Module (self)' : self,
+             'vtkImageSeedConnectivity' : self._seedConnect,
+             'vtkImageCast' : self._imageCast})
 
         # transfer these defaults to the logic
         self.configToLogic()
@@ -55,9 +73,8 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
         self.setInput(0, None)
         self.setInput(1, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        vtkPipelineConfigModuleMixin.close(self)
-        # take out our view interface
-        self._viewFrame.Destroy()
+        scriptedConfigModuleMixin.close(self)
+
         # get rid of our reference
         del self._imageCast
         self._seedConnect.SetInput(None)
@@ -72,18 +89,7 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
             self._imageCast.SetInput(inputStream)
         else:
             if inputStream != self._inputPoints:
-                if self._inputPoints != None:
-                    self._inputPoints.removeObserver(self._inputPointsObserver)
-
-                if inputStream != None:
-                    inputStream.addObserver(
-                        self._inputPointsObserver)
-
                 self._inputPoints = inputStream
-
-                # initial update
-                self._inputPointsObserver(None)
-            
     
     def getOutputDescriptions(self):
         return ('Region growing result (vtkImageData)',)
@@ -106,63 +112,12 @@ class seedConnect(moduleBase, vtkPipelineConfigModuleMixin):
         self._seedConnect.SetOutputUnconnectedValue(self._config.\
                                                     outputUnconnectedValue)
 
-    def viewToConfig(self):
-        try:
-            icv = int(self._viewFrame.inputConnectValueText.GetValue())
-        except ValueError:
-            icv = self._config.inputConnectValue
-
-        try:
-            ocv = int(self._viewFrame.outputConnectedValueText.GetValue())
-        except ValueError:
-            ocv = self._config.outputConnectedValue
-
-        try:
-            ouv = int(self._viewFrame.outputUnconnectedValueText.GetValue())
-        except ValueError:
-            ouv = self._config.outputUnconnectedValue
-            
-        self._config.inputConnectValue = icv
-        self._config.outputConnectedValue = ocv
-        self._config.outputUnconnectedValue = ouv
-
-    def configToView(self):
-        icv = str(self._config.inputConnectValue)
-        self._viewFrame.inputConnectValueText.SetValue(icv)
-        ocv = str(self._config.outputConnectedValue)        
-        self._viewFrame.outputConnectedValueText.SetValue(ocv)
-        ouv = str(self._config.outputUnconnectedValue)
-        self._viewFrame.outputUnconnectedValueText.SetValue(ouv)
-
     def executeModule(self):
+        self._sync_to_input_points()
         self._seedConnect.Update()
+        self.check_vtk_error()
 
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-
-    def _createViewFrame(self):
-
-        # import the viewFrame (created with wxGlade)
-        import modules.Filters.resources.python.seedConnectFLTViewFrame
-        reload(modules.Filters.resources.python.seedConnectFLTViewFrame)
-
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
-            modules.Filters.resources.python.seedConnectFLTViewFrame.\
-            seedConnectFLTViewFrame)
-
-        objectDict = {'imageCast' : self._imageCast,
-                      'seedConnect' : self._seedConnect}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._viewFrame, self._viewFrame.viewFramePanel,
-            objectDict, None)
-
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
-
-    def _inputPointsObserver(self, obj):
+    def _sync_to_input_points(self):
         # extract a list from the input points
         tempList = []
         if self._inputPoints:
