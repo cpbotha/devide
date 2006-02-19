@@ -67,6 +67,11 @@ class VTKErrorFuncMixin:
         
         self._ensure_vtk_error_info()
         if self.vtk_error_info.error:
+            # we're going to raise this error, so first we have to reset
+            # the error flag, else subsequent executions might think that
+            # we're still erroring
+            self.vtk_error_info.error = False
+            # finally we get to raise
             raise RuntimeError(self.vtk_error_info.call_data)
     
     def _vtk_error_func(self, vtk_object, event_name, call_data):
