@@ -480,7 +480,7 @@ class moduleManager:
 
         @return: moduleInstance if successful, None if not.
         """
-        
+
 	try:
             # think up name for this module (we have to think this up now
             # as the module might want to know about it whilst it's being
@@ -495,10 +495,20 @@ class moduleManager:
             # in THIS case, there is a McMillan hook which'll tell the
             # installer about all the devide modules. :)
 
-    	    # then instantiate the requested class
-            moduleInstance = None
-            exec('moduleInstance = %s.%s(self)' % (fullName,
-                                                   fullName.split('.')[-1]))
+            ae = self.auto_execute
+            self.auto_execute = False
+
+            try:
+                # then instantiate the requested class
+                moduleInstance = None
+                exec(
+                    'moduleInstance = %s.%s(self)' % (fullName,
+                                                      fullName.split('.')[-1]))
+            finally:
+                # do the following in all cases:
+                self.auto_execute = ae
+
+                # if there was an exception, it will now be re-raised
 
             if hasattr(moduleInstance, 'PARTS_TO_INPUTS'):
                 pti = moduleInstance.PARTS_TO_INPUTS
@@ -817,9 +827,11 @@ class moduleManager:
         configure them and connect them up.  It returns a list of
         successfully instantiated modules.
         """
-        
-        # let's attempt to instantiate all the modules
 
+        # store and deactivate auto-execute
+        ae = self.auto_execute
+        self.auto_execute = False
+        
         # newModulesDict will act as translator between pickled instanceName
         # and new instance!
         newModulesDict = {}
@@ -898,7 +910,8 @@ class moduleManager:
                     'Could not restore post connect state/config to module '
                     '%s: %s' % (newModuleInstance.__class__.__name__, e))
                 
-
+        # reset auto_execute
+        self.auto_execute = ae
 
         # we return a dictionary, keyed on OLD pickled name with value
         # the newly created module-instance and a list with the connections
