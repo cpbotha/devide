@@ -645,7 +645,7 @@ class graphEditor:
         except KeyError:
             import resources.python.htmlWindowFrame
             htmlWindowFrame = resources.python.htmlWindowFrame.htmlWindowFrame(
-                self._devideApp._mainFrame, id=-1,
+                self._interface.get_main_window(), id=-1,
                 title='dummy')
 
             # store it in the dict for later use
