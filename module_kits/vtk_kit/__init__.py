@@ -20,7 +20,7 @@ import sys
 import types
 
 VERSION = ''
-VTK_VERSION_EXTRA = '-D'
+VTK_VERSION_EXTRA = '-r VTK-5-0'
 
 def preImportVTK(progressMethod):
     vtkImportList = [('vtk.common', 'VTK Common.'),
