@@ -70,10 +70,23 @@ class geCanvasDropTarget(wx.PyDropTarget):
         
 
 # ----------------------------------------------------------------------------
-class glyphSelection:
-    def __init__(self, canvas):
+class GlyphSelection:
+    """Abstraction for any selection of glyphs.
+
+    This is used for the default selection and for the blocked glyph selection
+    currently. 
+    """
+    
+    def __init__(self, canvas, glyph_flag):
+        """
+        @param glyph_flag: string name of glyph attribute that will be set
+        to true or false depending on the selection that it belongs to.
+        """
+        
         self._canvas = canvas
+        self._glyph_flag = glyph_flag
         self._selectedGlyphs = []
+        
 
     def close(self):
         # take care of all references
@@ -90,7 +103,8 @@ class glyphSelection:
         # add it to our structures
         self._selectedGlyphs.append(glyph)
         # tell it that it's the chosen one (ha ha)
-        glyph.selected = True
+        setattr(glyph, self._glyph_flag, True)
+        #glyph.selected = True
         # redraw it
         self._canvas.drawObject(glyph)
 
@@ -107,7 +121,8 @@ class glyphSelection:
             return
 
         del self._selectedGlyphs[self._selectedGlyphs.index(glyph)]
-        glyph.selected = False
+        setattr(glyph, self._glyph_flag, False)
+        #glyph.selected = False
         self._canvas.drawObject(glyph)
 
     def removeAllGlyphs(self):
@@ -147,6 +162,10 @@ class graphEditor:
                                  self._graphEditorFrame,
                                  (0,0), False)
 
+        self._append_execute_commands(self._graphEditorFrame.execution_menu,
+                                      self._graphEditorFrame, False)
+        
+
         wx.EVT_CLOSE(self._graphEditorFrame, self._handlerGraphFrameClose)
 
         # we have to make this call, else the user can unsplit the window
@@ -183,8 +202,17 @@ class graphEditor:
                     self._graphEditorFrame.fileExportSelectedAsDOTId,
                     self._handlerFileExportSelectedAsDOT)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.networkExecuteId,
-                    self._handlerNetworkExecute)
+#         wx.EVT_MENU(self._graphEditorFrame,
+#                     self._graphEditorFrame.networkExecuteId,
+#                     self._handler_execute_network)
+
+#         wx.EVT_MENU(self._graphEditorFrame,
+#                     self._graphEditorFrame.network_blockmodules_id,
+#                     self._handler_blockmodules)
+
+#         wx.EVT_MENU(self._graphEditorFrame,
+#                     self._graphEditorFrame.network_unblockmodules_id,
+#                     self._handler_unblockmodules)
 
         wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.windowMainID,
                  self._handlerWindowMain)
@@ -252,7 +280,11 @@ class graphEditor:
                                             self._canvasDrag)
 
         # initialise selection
-        self._glyphSelection = glyphSelection(self._graphEditorFrame.canvas)
+        self._selected_glyphs = GlyphSelection(self._graphEditorFrame.canvas,
+                                              'selected')
+
+        self._blocked_glyphs = GlyphSelection(self._graphEditorFrame.canvas,
+                                              'blocked')
 
         self._rubberBandCoords = None
 
@@ -298,18 +330,33 @@ class graphEditor:
         # to mouse movements after the glyph has been dropped
         #event.Skip()
 
-    def _handlerNetworkExecute(self, event):
-        """Event handler for 'network|execute' menu call.
+    def _blockmodule(self, glyph):
+        # first get the module manager to block this
+        mm = self._devideApp.getModuleManager()
+        mm.blockmodule(mm.get_meta_module(glyph.moduleInstance))
+        # then tell the glyph about it
+        self._blocked_glyphs.addGlyph(glyph)
 
-        Gets list of all instances in current network, converts these
-        to scheduler modules and requests the scheduler to execute them.
+    def _unblockmodule(self, glyph):
+        # first get the module manager to unblock this
+        mm = self._devideApp.getModuleManager()
+        mm.unblockmodule(mm.get_meta_module(glyph.moduleInstance))
+        # then tell the glyph about it
+        self._blocked_glyphs.removeGlyph(glyph)
+
+    def _execute_modules(self, glyphs):
+        """Given a list of glyphs, request the scheduler to execute only those
+        modules.
+
+        Of course, producers of selected modules will also be asked to resend
+        their output, even although they are perhaps not part of the
+        selection.
         """
-
-        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
-        allInstances = [g.moduleInstance for g in allGlyphs]
+        
+        instances = [g.moduleInstance for g in glyphs]
         mm = self._devideApp.getModuleManager()
         allMetaModules = [mm._moduleDict[instance]
-                          for instance in allInstances]
+                          for instance in instances]
 
         # now ask the scheduler to execute them
         sms = self._devideApp.scheduler.metaModulesToSchedulerModules(
@@ -323,6 +370,36 @@ class graphEditor:
             self._devideApp.logError(emsgs + [str(e)])
 
         print "ENDING network execute ------------------------------"
+        
+
+    def _handler_blockmodules(self, event):
+        """Block all selected glyphs and their modules.
+        """
+
+        for glyph in self._selected_glyphs.getSelectedGlyphs():
+            self._blockmodule(glyph)
+
+    def _handler_unblockmodules(self, event):
+        """Unblock all selected glyphs and their modules.
+        """
+
+        for glyph in self._selected_glyphs.getSelectedGlyphs():
+            self._unblockmodule(glyph)
+
+    def _handler_execute_network(self, event):
+        """Event handler for 'network|execute' menu call.
+
+        Gets list of all instances in current network, converts these
+        to scheduler modules and requests the scheduler to execute them.
+        """
+
+        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
+
+        self._execute_modules(allGlyphs)
+
+    def _handler_execute_selected(self, event):
+        self._execute_modules(self._selected_glyphs.getSelectedGlyphs())
 
     def canvasDropText(self, x, y, itemText):
         """itemText is a complete module or segment spec, e.g.
@@ -476,7 +553,7 @@ class graphEditor:
         self._moduleHelpFrames.clear()
         
         # make sure no refs are stuck in the selection
-        self._glyphSelection.close()
+        self._selected_glyphs.close()
         # this should take care of just about everything!
         self.clearAllGlyphsFromCanvas()
 
@@ -494,7 +571,7 @@ class graphEditor:
         wx.EVT_MENU(eventWidget, copyId,
                  self._handlerCopySelected)
         if disable:
-            if not self._glyphSelection.getSelectedGlyphs():
+            if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
             
         cutId = wx.NewId()
@@ -504,7 +581,7 @@ class graphEditor:
         wx.EVT_MENU(eventWidget, cutId,
                  self._handlerCutSelected)
         if disable:
-            if not self._glyphSelection.getSelectedGlyphs():
+            if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
             
         pasteId = wx.NewId()
@@ -525,7 +602,7 @@ class graphEditor:
         wx.EVT_MENU(eventWidget, deleteId,
                  lambda e: self._deleteSelectedGlyphs())
         if disable:
-            if not self._glyphSelection.getSelectedGlyphs():
+            if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
 
 
@@ -536,13 +613,63 @@ class graphEditor:
         wx.EVT_MENU(eventWidget, testId,
                  lambda e: self._testSelectedGlyphs())
         if disable:
-            if not self._glyphSelection.getSelectedGlyphs():
+            if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
-                
+
+    def _append_execute_commands(self, pmenu, eventWidget, disable=True):
+        """Append copy/cut/paste/delete commands and the default handlers
+        to a given menu.  
+        """
+
+        #############################################################
+        execute_id = wx.NewId()
+        ni = wx.MenuItem(pmenu, execute_id, 'E&xecute network\tF5',
+                         'Execute the complete network.')
+        pmenu.AppendItem(ni)
+        wx.EVT_MENU(eventWidget, execute_id,
+                    self._handler_execute_network)
+
+        #############################################################
+        execute_selected_id = wx.NewId()
+        ni = wx.MenuItem(pmenu, execute_selected_id,
+                         'E&xecute selected modules',
+                         'Execute only the selected modules.')
+        pmenu.AppendItem(ni)
+        wx.EVT_MENU(eventWidget, execute_selected_id,
+                    self._handler_execute_selected)
+
+        if disable:
+            if not self._selected_glyphs.getSelectedGlyphs():
+                ni.Enable(False)
+
+        ############################################################# 
+        block_id = wx.NewId()
+        ni = wx.MenuItem(pmenu, block_id, '&Block Selected\tCtrl-B',
+                         'Block selected modules from executing.')
+        pmenu.AppendItem(ni)
+        wx.EVT_MENU(eventWidget, block_id,
+                    self._handler_blockmodules)
+
+        if disable:
+            if not self._selected_glyphs.getSelectedGlyphs():
+                ni.Enable(False)
+            
+        #############################################################
+        unblock_id = wx.NewId()
+        ni = wx.MenuItem(pmenu, unblock_id, '&Unblock Selected\tCtrl-U',
+                         'Unblock selected modules so that they can execute.')
+        pmenu.AppendItem(ni)
+        wx.EVT_MENU(eventWidget, unblock_id,
+                    self._handler_unblockmodules)
+
+        if disable:
+            if not self._selected_glyphs.getSelectedGlyphs():
+                ni.Enable(False)
+
 
     def _testSelectedGlyphs(self):
         si = [i.moduleInstance
-              for i in self._glyphSelection.getSelectedGlyphs()]
+              for i in self._selected_glyphs.getSelectedGlyphs()]
 
         print "LALA, no test at the moment."
 
@@ -771,7 +898,7 @@ class graphEditor:
                 self._exportNetworkAsDOT(allGlyphs, filename)
 
     def _handlerFileExportSelectedAsDOT(self, event):
-        glyphs = self._glyphSelection.getSelectedGlyphs()
+        glyphs = self._selected_glyphs.getSelectedGlyphs()
         if glyphs:
             filename = wx.FileSelector(
                 "Choose filename for GraphViz DOT file",
@@ -794,7 +921,7 @@ class graphEditor:
             self._loadNetworkIntoCopyBuffer(filename)
 
     def _handlerFileSaveSelected(self, event):
-        glyphs = self._glyphSelection.getSelectedGlyphs()
+        glyphs = self._selected_glyphs.getSelectedGlyphs()
         if glyphs:
             filename = wx.FileSelector(
                 "Choose filename for DeVIDE network",
@@ -1090,14 +1217,14 @@ class graphEditor:
         self._interface.showHelp()
             
     def _handlerCopySelected(self, event):
-        if self._glyphSelection.getSelectedGlyphs():
+        if self._selected_glyphs.getSelectedGlyphs():
             self._copyBuffer = self._serialiseNetwork(
-                self._glyphSelection.getSelectedGlyphs())
+                self._selected_glyphs.getSelectedGlyphs())
 
     def _handlerCutSelected(self, event):
-        if self._glyphSelection.getSelectedGlyphs():
+        if self._selected_glyphs.getSelectedGlyphs():
             self._copyBuffer = self._serialiseNetwork(
-                self._glyphSelection.getSelectedGlyphs())
+                self._selected_glyphs.getSelectedGlyphs())
         
             self._deleteSelectedGlyphs()
 
@@ -1206,11 +1333,16 @@ class graphEditor:
             self._appendEditCommands(pmenu, self._graphEditorFrame.canvas,
                                      (event.realX, event.realY))
 
+            pmenu.AppendSeparator()
+
+            self._append_execute_commands(pmenu, self._graphEditorFrame.canvas)
+            
+
             self._graphEditorFrame.canvas.PopupMenu(pmenu, wx.Point(event.GetX(),
                                                              event.GetY()))
             
         elif not event.ShiftDown() and not event.ControlDown():
-            self._glyphSelection.removeAllGlyphs()
+            self._selected_glyphs.removeAllGlyphs()
 
     def _canvasButtonUp(self, canvas, eventName, event):
         if event.LeftUp():
@@ -1356,7 +1488,7 @@ class graphEditor:
         # we have to make a deep copy, as we're going to be deleting stuff
         # from this list
         deadGlyphs = [glyph for glyph in \
-                      self._glyphSelection.getSelectedGlyphs()]
+                      self._selected_glyphs.getSelectedGlyphs()]
         
         for glyph in deadGlyphs:
             # delete the glyph, do not refresh the canvas
@@ -1698,11 +1830,11 @@ class graphEditor:
         if glyph.draggedPort == (-1, -1):
             # this means that there's no port involved, so the glyph itself,
             # or the current selection of glyphs, gets dragged
-            if glyph in self._glyphSelection.getSelectedGlyphs():
+            if glyph in self._selected_glyphs.getSelectedGlyphs():
                 # move the whole selection (MAN THIS IS CLEAN)
                 # err, kick yerself in the nads: you CAN'T use glyph
                 # as iteration variable, it'll overwrite the current glyph
-                for sglyph in self._glyphSelection.getSelectedGlyphs():
+                for sglyph in self._selected_glyphs.getSelectedGlyphs():
                     canvas.dragObject(sglyph, canvas.getMouseDelta())
             else:
                 # or just the glyph under the mouse
@@ -1773,12 +1905,10 @@ class graphEditor:
             wx.EVT_MENU(self._graphEditorFrame.canvas, help_id,
                      lambda e: self._helpModule(module))
             
-            exe_id = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(pmenu, exe_id, "Execute Module"))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, exe_id,
-                     lambda e: self._executeModule(module))
-
-            pmenu.AppendSeparator()
+#             exe_id = wx.NewId()
+#             pmenu.AppendItem(wx.MenuItem(pmenu, exe_id, "Execute Module"))
+#             wx.EVT_MENU(self._graphEditorFrame.canvas, exe_id,
+#                      lambda e: self._executeModule(module))
 
             reload_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, reload_id, 'Reload Module'))
@@ -1806,21 +1936,27 @@ class graphEditor:
             self._appendEditCommands(pmenu, self._graphEditorFrame.canvas,
                                      (event.GetX(), event.GetY()))
 
+            pmenu.AppendSeparator()
+
+            self._append_execute_commands(
+                pmenu, self._graphEditorFrame.canvas)
+
             # popup that menu!
-            self._graphEditorFrame.canvas.PopupMenu(pmenu, wx.Point(event.GetX(),
+            self._graphEditorFrame.canvas.PopupMenu(pmenu,
+                                                    wx.Point(event.GetX(),
                                                              event.GetY()))
         elif event.LeftDown():
             if event.ControlDown() or event.ShiftDown():
                 # with control or shift you can add or remove that glyph
                 if glyph.selected:
-                    self._glyphSelection.removeGlyph(glyph)
+                    self._selected_glyphs.removeGlyph(glyph)
                 else:
-                    self._glyphSelection.addGlyph(glyph)
+                    self._selected_glyphs.addGlyph(glyph)
             else:
                 # if the user already has a selection of which this is a part,
                 # we're not going to muck around with that.
                 if not glyph.selected:
-                    self._glyphSelection.selectGlyph(glyph)
+                    self._selected_glyphs.selectGlyph(glyph)
             
     def _glyphButtonUp(self, glyph, eventName, event):
         if event.LeftUp():
@@ -2101,7 +2237,7 @@ class graphEditor:
         try:
             # FIRST remove it from any selections; we have to do this
             # while everything is still more or less active
-            self._glyphSelection.removeGlyph(glyph)
+            self._selected_glyphs.removeGlyph(glyph)
             
             # first we disconnect all consumers
             consumerList = []
@@ -2160,12 +2296,12 @@ class graphEditor:
                     glyphsInRubberBand.append(glyph)
 
             if not event.ControlDown() and not event.ShiftDown():
-                self._glyphSelection.removeAllGlyphs()
+                self._selected_glyphs.removeAllGlyphs()
 
             # hmmm, can't we be a bit more efficient with this and
             # dc.BeginDrawing()?
             for glyph in glyphsInRubberBand:
-                    self._glyphSelection.addGlyph(glyph)
+                    self._selected_glyphs.addGlyph(glyph)
                 
             self._rubberBandCoords = None
         

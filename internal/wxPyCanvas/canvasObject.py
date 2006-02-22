@@ -237,6 +237,7 @@ class coGlyph(coRectangle):
         self.draggedPort = None
         self.enteredPort = None
         self.selected = False
+        self.blocked = False
 
     def close(self):
         del self.moduleInstance
@@ -244,14 +245,33 @@ class coGlyph(coRectangle):
         del self.outputLines
 
     def draw(self, dc):
-        # we're going to alpha blend a purplish sheen if this glyph is active
+        normal_colour = (192, 192, 192)
+        selected_colour = (255, 0, 246)
+        blocked_colour = (16, 16, 16)
+
+        colour = normal_colour
+
         if self.selected:
-            # sheen: 255, 0, 246
-            # alpha-blend with 192, 192, 192 with alpha 0.5 yields
-            #  224, 96, 219
-            blockFillColour = wx.wxColour(224, 96, 219)
-        else:
-            blockFillColour = wx.wxColour(192, 192, 192)
+            colour = [selected_colour[i] * 0.5 + colour[i] * 0.5
+                      for i in range(3)]
+
+        if self.blocked:
+            colour = [blocked_colour[i] * 0.5 + colour[i] * 0.5
+                      for i in range(3)]
+
+        colour = tuple([int(i) for i in colour])
+
+        blockFillColour = wx.wxColour(*colour)
+
+        
+#         # we're going to alpha blend a purplish sheen if this glyph is active
+#         if self.selected:
+#             # sheen: 255, 0, 246
+#             # alpha-blend with 192, 192, 192 with alpha 0.5 yields
+#             #  224, 96, 219
+#             blockFillColour = wx.wxColour(224, 96, 219)
+#         else:
+#             blockFillColour = wx.wxColour(192, 192, 192)
         
         # default pen and font
         dc.SetBrush(wx.wxBrush(blockFillColour, wx.wxSOLID))

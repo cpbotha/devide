@@ -300,7 +300,21 @@ class Scheduler:
         # stop concurrent calls of executeModules.
         if not self._execute_mutex.testandset():
             return
-        
+
+        # first remove all blocked modules from the list, before we do any
+        # kind of analysis.
+        blocked_module_indices = []
+        for i in range(len(schedulerModules)):
+            if schedulerModules[i].meta_module.blocked:
+                blocked_module_indices.append(i)
+
+        blocked_module_indices.reverse()
+
+        for i in blocked_module_indices:
+            del(schedulerModules[i])
+          
+
+        # finally start with execution.
         try:
             if self.detectCycles(schedulerModules):
                 raise CyclesDetectedException(

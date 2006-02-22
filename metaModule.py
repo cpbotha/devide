@@ -35,6 +35,9 @@ class metaModule:
         self.instanceName = instanceName
         self.module_name = module_name
 
+        # init blocked ivar
+        self.blocked = False
+
         # determine number of module parts based on parts to indices mappings
         maxPart = 0
         if not partsToInputs is None:

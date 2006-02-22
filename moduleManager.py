@@ -174,6 +174,12 @@ class moduleManager:
         mModule = self._moduleDict[instance]
         mModule.syncModuleViewWithLogic()
 
+    def blockmodule(self, meta_module):
+        meta_module.blocked = True
+
+    def unblockmodule(self, meta_module):
+        meta_module.blocked = False
+
     def scanModules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files.
