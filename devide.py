@@ -39,6 +39,7 @@ class mainConfigClass(object):
     def dispUsage(self):
         print "-h or --help               : Display this message."
         print "--no-kits kit1,kit2        : Don't load the specified kits."
+        print "--kits kit1,kit2           : Load the specified kits."
         print "--stereo                   : Allocate stereo visuals."
 
     def _parseCommandLine(self):
@@ -46,7 +47,7 @@ class mainConfigClass(object):
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-kits=', 'stereo'])
+                ['help', 'no-kits=', 'kits=', 'stereo'])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -58,7 +59,16 @@ class mainConfigClass(object):
                 sys.exit(1)
 
             elif o in ('--no-kits',):
-                self.nokits = a.split(',')
+                self.nokits = [i.strip() for i in a.split(',')]
+
+            elif o in ('--kits',):
+                # this actually removes the listed kits from the nokits list
+                kits = [i.strip() for i in a.split(',')]
+                for kit in kits:
+                    try:
+                        del self.nokits[self.nokits.index(kit)]
+                    except ValueError:
+                        pass
 
             elif o in ('--stereo',):
                 self.stereo = True
