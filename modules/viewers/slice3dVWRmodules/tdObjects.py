@@ -195,8 +195,19 @@ class tdObjects(s3dcGridMixin):
         """
 
         if newObject.GetClassName() == 'vtkVolume':
+            # remove old object from renderer
             self.slice3dVWR._threedRenderer.RemoveVolume(prevObject)
+            # store the old object dict
+            objectDict = self._tdObjectsDict[prevObject]
+            # remove it from our list
+            del self._tdObjectsDict[prevObject]
+
+            # add the object to the renderer
             self.slice3dVWR._threedRenderer.AddVolume(newObject)
+            # modify the stored old object dict with the new object
+            objectDict['tdObject'] = newObject
+            # and store it in our list!
+            self._tdObjectsDict[newObject] = objectDict
         
         elif newObject.GetClassName() == 'vtkPolyData':
             objectDict = self._tdObjectsDict[prevObject]
