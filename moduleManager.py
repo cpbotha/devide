@@ -772,7 +772,7 @@ class moduleManager:
 
             # create new exception message
             es = 'Error calling close() on module %s (%s): %s' \
-                 % (part, instanceName, moduleName, str(e))
+                 % (instanceName, moduleName, str(e))
                  
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
