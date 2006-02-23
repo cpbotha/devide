@@ -156,8 +156,10 @@ class DeVIDEApp:
     def logError(self, msgs):
         self._interface.log_error(msgs)
 
-    def logMessage(self, message, timeStamp):
+    def log_message(self, message, timeStamp=True):
         self._interface.log_message(message, timeStamp)
+
+    logMessage = log_message
 
     def setProgress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress

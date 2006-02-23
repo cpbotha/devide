@@ -230,11 +230,11 @@ class moduleManager:
                 msgs = genUtils.exceptionToMsgs()
 
                 # and log them as mesages
-                self._devide_app.logMessage(
+                self._devide_app.log_message(
                     'Error loading %s: %s.' % (mi, str(e)))
 
                 for m in msgs:
-                    self._devide_app.logMessage(m.strip(), timeStamp=False)
+                    self._devide_app.log_message(m.strip(), timeStamp=False)
 
                 # we don't want to throw an exception here, as that would
                 # mean that a singe misconfigured module_index file can
