@@ -153,8 +153,10 @@ class DeVIDEApp:
     def getModuleManager(self):
         return self.get_module_manager()
     
-    def logError(self, msgs):
+    def log_error(self, msgs):
         self._interface.log_error(msgs)
+
+    logError = log_error
 
     def log_message(self, message, timeStamp=True):
         self._interface.log_message(message, timeStamp)

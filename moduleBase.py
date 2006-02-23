@@ -1,5 +1,5 @@
 # moduleBase.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id: moduleBase.py,v 1.19 2005/10/23 19:17:08 cpbotha Exp $
+# $Id$
 
 """Module containing base class for devide modules.
 
@@ -60,11 +60,16 @@ class moduleBase(object):
 	"""Attaches input_stream (which is e.g. the output of a previous
         module) to this module's input at position idx.
 
-        If the previous value was None and the current value is not None,
-        the module should initialise as if it's getting a new input.  These
-        actions are signify a disconnect and a connect, i.e. the creation
-        of a new connection in the network.
+        If the previous value was None and the current value is not None, it
+        signifies a connect and the module should initialise as if it's
+        getting a new input.  This usually happens during the first network
+        execution AFTER a connection.
 
+        If the previous value was not-None and the new value is None, it
+        signifies a disconnect and the module should take the necessary
+        actions.  This usually happens immediatly when the user disconnects an
+        input
+        
         If the previous value was not-None and the current value is not-None,
         the module should take actions as for a changed input.  This event
         signifies a re-transfer on an already existing connection.  This can

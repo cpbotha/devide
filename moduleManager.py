@@ -705,6 +705,11 @@ class moduleManager:
         @raise moduleManagerException: if an error occurs during module
         deletion.
         """
+
+        # get details about the module (we might need this later)
+        meta_module = self._moduleDict[instance]
+        instanceName = meta_module.instanceName
+        moduleName = meta_module.instance.__class__.__name__
         
         # first disconnect all outgoing connections
         inputs = self._moduleDict[instance].inputs
@@ -727,7 +732,16 @@ class moduleManager:
         # inputs is a list of tuples, each tuple containing moduleInstance
         # and outputIdx of the producer/supplier module
         for inputIdx in range(len(inputs)):
-            instance.setInput(inputIdx, None)
+            try:
+                instance.setInput(inputIdx, None)
+            except Exception, e:
+                # we can't allow this to prevent a destruction, just log
+                em = genUtils.exceptionToMsgs()
+                self._devide_app.log_error(em +
+                    ['Module %s (%s) errored during disconnect of input %d. '
+                     'Continuing with deletion.' % \
+                     (instanceName, moduleName, inputIdx)])
+                
             # set supplier to None - so we know it's nuked
             inputs[inputIdx] = None
 
@@ -742,11 +756,6 @@ class moduleManager:
         for mmKey in mmKeys:
             del self._markedModules[mmKey]
 
-        # get details about the module (we might need this later)
-        meta_module = self._moduleDict[instance]
-        instanceName = meta_module.instanceName
-        moduleName = meta_module.instance.__class__.__name__
-        
         # store autoexecute, then disable
         ae = self.auto_execute
         self.auto_execute = False
@@ -812,7 +821,23 @@ class moduleManager:
         is a problem child.)
         """
 
-	input_module.setInput(input_idx, None)
+        meta_module = self._moduleDict[input_module]
+        instance_name = meta_module.instanceName
+        module_name = meta_module.instance.__class__.__name__
+
+        try:
+            input_module.setInput(input_idx, None)
+        except Exception, e:
+            # if the module errors during disconnect, we have no choice
+            # but to continue with deleting it from our metadata
+            # at least this way, no data transfers will be attempted during
+            # later network executions.
+            em = genUtils.exceptionToMsgs()
+            self._devide_app.log_error(
+                em +
+                ['Module %s (%s) errored during disconnect of input %d. '
+                 'Removing link anyway.' % \
+                 (instance_name, module_name, input_idx)])
 
         # trace it back to our supplier, and tell it that it has one
         # less consumer (if we even HAVE a supplier on this port)
