@@ -51,7 +51,15 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
         del self._itkImporter
 
     def executeModule(self):
-        self._itkImporter.Update()
+        # the whole connectvtkitk thingy is quite shaky and was really
+        # designed for demand-driven use.  using it in an event-driven
+        # environment, we have to make sure it does exactly what we want
+        # it to do.  one day, we'll implement contracts and do this
+        # differently.
+        o = self._itkImporter.GetOutput()
+        o.UpdateOutputInformation()
+        o.SetRequestedRegionToLargestPossibleRegion()
+        o.Update()
 
     def getInputDescriptions(self):
         return ('VTK Image Data',)
@@ -85,9 +93,6 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
     def configToView(self):
         pass
     
-    def executeModule(self):
-        self._itkImporter.Update()
-
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
         self._viewFrame.Show(True)

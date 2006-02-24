@@ -49,7 +49,13 @@ class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
         del self._vtkImporter
 
     def executeModule(self):
-        self._vtkImporter.Update()
+        # due to event-driven vs. demand-driven issues, we have to make
+        # sure in this converter that ALL data goes through.  if we don't
+        # segfault fun ensues.
+        o = self._vtkImporter.GetOutput()
+        o.UpdateInformation()
+        o.SetUpdateExtentToWholeExtent()
+        o.Update()
 
     def getInputDescriptions(self):
         return ('ITK Image (3D, float)',)        
@@ -80,9 +86,6 @@ class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
     def configToView(self):
         pass
     
-    def executeModule(self):
-        self._vtkImporter.Update()
-
     def view(self, parent_window=None):
         # if the window was visible already. just raise it
         self._viewFrame.Show(True)
