@@ -1,10 +1,9 @@
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 import genUtils
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
@@ -54,11 +53,13 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
 
         # this will contain our binding to the input points
         self._inputPoints = None
+        # and this will be our internal list
+        self._seedPoints = []
         
         # setup the pipeline
         self._cCIF = itk.itkConfidenceConnectedImageFilterF3F3_New()
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._cCIF, 'itkConfidenceConnectedImageFilter',
             'Region growing...')
 
@@ -85,6 +86,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         del self._cCIF
 
     def executeModule(self):
+        self._transferPoints()
         self._cCIF.Update()
 
     def getInputDescriptions(self):
@@ -106,21 +108,9 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
 
                 except (AttributeError, TypeError):
                     raise TypeError, 'This input requires a points-type'
-                    
-                # REMEMBER: if _inputPoints is an empty array (which can often
-                # happen) the test "if self._inputPoints" will be false!  So,
-                # check explicitly for != None.
-                if self._inputPoints != None:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
-
+ 
                 self._inputPoints = inputStream
                 
-                if self._inputPoints:
-                    self._inputPoints.addObserver(self._observerInputPoints)
-                    self._transferPoints()
-            
-
     def getOutputDescriptions(self):
         return ('Segmented ITK Image (3D, float)',)
 
@@ -139,28 +129,34 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         self._config.numberOfIterations = self._cCIF.GetNumberOfIterations()
         self._config.replaceValue = self._cCIF.GetReplaceValue()
                                           
-    def _observerInputPoints(self, obj):
-        # this will be called if anything happens to the points
-        self._transferPoints()
-
     def _transferPoints(self):
         """This will transfer all points from self._inputPoints to the nbhCIF
         instance.
         """
 
-        self._cCIF.ClearSeeds()
-        # it seems that ClearSeeds() doesn't call Modified(), so we do this
-        # this is important if the list of inputPoints is empty.
-        self._cCIF.Modified()
+        # extract a list from the input points
+        tempList = []
+        if self._inputPoints:
+            for i in self._inputPoints:
+                tempList.append(i['discrete'])
+
+        if tempList != self._seedPoints:
+            self._seedPoints = tempList
         
-        for ip in self._inputPoints:
-            # bugger, it could be that our input dataset has an extent
-            # that doesn't start at 0,0,0... ITK doesn't understand this
-            x,y,z = [int(i) for i in ip['discrete']]
-            idx = itk.itkIndex3()
-            idx.SetElement(0, x)
-            idx.SetElement(1, y)
-            idx.SetElement(2, z)
-            self._cCIF.AddSeed(idx)
+
+            self._cCIF.ClearSeeds()
+            # it seems that ClearSeeds() doesn't call Modified(), so we do this
+            # this is important if the list of inputPoints is empty.
+            self._cCIF.Modified()
+        
+            for ip in self._seedPoints:
+                # bugger, it could be that our input dataset has an extent
+                # that doesn't start at 0,0,0... ITK doesn't understand this
+                x,y,z = [int(i) for i in ip]
+                idx = itk.itkIndex3()
+                idx.SetElement(0, x)
+                idx.SetElement(1, y)
+                idx.SetElement(2, z)
+                self._cCIF.AddSeed(idx)
             
-            print "Added %d,%d,%d" % (x,y,z)
+                print "Added %d,%d,%d" % (x,y,z)
