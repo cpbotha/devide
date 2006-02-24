@@ -1,10 +1,9 @@
 # $Id$
 
-import fixitk as itk
+import itk
 import genUtils
+import module_kits.itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 # the categories that we belong to
@@ -42,7 +41,7 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
         # setup the pipeline
         self._watershed = itk.itkWatershedImageFilterF3_New()
         
-        moduleUtilsITK.setupITKObjectProgress(
+        module_kits.itk_kit.utils.setupITKObjectProgress(
             self, self._watershed, 'itkWatershedImageFilter',
             'Performing watershed')
 
@@ -70,7 +69,8 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
 
     def executeModule(self):
         self._watershed.Update()
-        self._moduleManager.setProgress(100, "Watershed complete.")
+        self._watershed.GetOutput().Update()
+        #self._moduleManager.setProgress(100, "Watershed complete.")
 
     def getInputDescriptions(self):
         return ('ITK Image (3D, float)',)
