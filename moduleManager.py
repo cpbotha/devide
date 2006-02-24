@@ -172,7 +172,7 @@ class moduleManager:
         """
 
         mModule = self._moduleDict[instance]
-        mModule.syncModuleViewWithLogic()
+        mModule.syncViewWithLogic()
 
     def blockmodule(self, meta_module):
         meta_module.blocked = True
@@ -398,11 +398,11 @@ class moduleManager:
                                            ('userModules',)
         
 
-    def get_app_dir(self):
-        return self.getAppDir()
+    def get_appdir(self):
+        return self._devide_app.get_appdir()
 
-    def getAppDir(self):
-        return self._devide_app.getAppDir()
+    # for backwards compatibility
+    getAppDir = get_appdir
 
     def getAppMainConfig(self):
         return self._devide_app.mainConfig
