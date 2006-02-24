@@ -90,10 +90,12 @@ def init(theModuleManager):
 
     # brings 'InsightToolkit' into sys.modules
     import InsightToolkit as itk
-    # stuff itk in there as well
+    # stuff itk in there as well (so that if the user does import itk,
+    # she'll get this)
     sys.modules['itk'] = itk
 
-    import moduleUtils
+    # user can address this as module_kits.itk_kit.utils.blaat()
+    import module_kits.itk_kit.utils as utils
 
     # setup the kit version
     global VERSION

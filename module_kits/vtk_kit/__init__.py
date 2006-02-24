@@ -103,8 +103,10 @@ def init(theModuleManager):
     import vtkdevide
 
     # load up some generic functions into this namespace
-    import misc
-    import utils
+    # user can, after import of module_kits.vtk_kit, address these as
+    # module_kits.vtk_kit.blaat
+    import module_kits.vtk_kit.misc as misc
+    import module_kits.vtk_kit.utils as utils
 
     # setup the kit version
     global VERSION
