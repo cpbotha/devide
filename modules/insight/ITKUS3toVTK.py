@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
+import itk
 import genUtils
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import noConfigModuleMixin
 import vtk
 import ConnectVTKITKPython as CVIPy
