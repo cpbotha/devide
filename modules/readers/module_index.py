@@ -1,5 +1,9 @@
 # $Id$
 
+class BMPReader:
+    kits = ['vtk_kit']
+    cats = ['Readers']
+
 class dicomRDR:
     kits = ['vtk_kit']
     cats = ['Readers']
