@@ -1,10 +1,9 @@
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 import genUtils
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
@@ -39,8 +38,9 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
 
         # setup the pipeline
         self._canny = itk.itkCannyEdgeDetectionImageFilterF3F3_New()
+
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._canny, 'itkCannyEdgeDetectionImageFilter',
             'Performing Canny edge detection')
 
@@ -97,7 +97,12 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
         self._canny.SetMaximumError(me)
 
         # THRESHOLD
-        self._canny.SetThreshold(self._config.threshold)
+        self._canny.SetUpperThreshold(self._config.threshold)
+        # this is to emulate the old behaviour where there was only
+        # one threshold.
+        # see: http://public.kitware.com/Bug/bug.php?op=show&bugid=1511
+        # we'll bring these into the GUI later
+        self._canny.SetLowerThreshold(self._config.threshold / 2.0)
 
         # OUTSIDE VALUE
         self._canny.SetOutsideValue(self._config.outsideValue)
@@ -118,7 +123,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
                                      me.GetElement(2))
 
         # THRESHOLD
-        self._config.threshold = self._canny.GetThreshold()
+        self._config.threshold = self._canny.GetUpperThreshold()
 
         # OUTSIDE VALUE
         self._config.outsideValue = self._canny.GetOutsideValue()
