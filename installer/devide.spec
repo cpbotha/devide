@@ -83,21 +83,17 @@ mainScript = os.path.join(APP_DIR, 'devide.py')
 print "[*] mainScript == %s" % (mainScript)
 
 # segments
-segTree = Tree(os.path.join(APP_DIR, 'segments'), 'segments', ['CVS'])
+segTree = Tree(os.path.join(APP_DIR, 'segments'), 'segments', ['.svn'])
 # snippets
-snipTree = Tree(os.path.join(APP_DIR, 'snippets'), 'snippets', ['CVS']) 
+snipTree = Tree(os.path.join(APP_DIR, 'snippets'), 'snippets', ['.svn']) 
 # arb data
-dataTree = Tree(os.path.join(APP_DIR, 'data'), 'data', ['CVS'])
+dataTree = Tree(os.path.join(APP_DIR, 'data'), 'data', ['.svn'])
 # documents and help, exclude help source
-docsTree = Tree(os.path.join(APP_DIR, 'docs'), 'docs', ['CVS', 'source'])
+docsTree = Tree(os.path.join(APP_DIR, 'docs'), 'docs', ['.svn', 'source'])
 
-# USER MODULES
-userModulesTree = Tree(os.path.join(APP_DIR, 'userModules'), 'userModules',
-                       ['CVS', '*~'])
-
-# the extra modulePacks
-modulePacksTree = Tree(os.path.join(APP_DIR, 'modulePacks'), 'modulePacks',
-                       ['CVS', '*~'])
+# all modules
+modules_tree = Tree(os.path.join(APP_DIR, 'modules'), 'modules',
+                    ['.svn', '*~'])
 
 # VTKPIPELINE ICONS
 
@@ -137,7 +133,7 @@ exe = EXE(pyz,
 
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
-allBinaries = a.binaries + userModulesTree + modulePacksTree + vpli + \
+allBinaries = a.binaries + modules_tree + vpli + \
               extraLibs + segTree + snipTree + dataTree + docsTree
 
 
