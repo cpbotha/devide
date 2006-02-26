@@ -505,7 +505,9 @@ class selectedPoints(s3dcGridMixin):
 
         if temp_output_selected_points != self.outputSelectedPoints:
             # only if the points have changed do we send them out
-            self.outputSelectedPoints = temp_output_selected_points
+            # we have to copy like this so that outputSelectedPoints
+            # keeps its type.
+            self.outputSelectedPoints[:] = temp_output_selected_points[:]
             
 
             # make sure that the input-independent part of this module knows
