@@ -72,9 +72,9 @@ class imageStackRDR:
     kits = ['itk_kit']
     cats = ['Insight']
 
-class isolatedConnect:
-    kits = ['itk_kit']
-    cats = ['Insight']
+#class isolatedConnect:
+#    kits = ['itk_kit']
+#    cats = ['Insight']
 
 class itk3RDR:
     kits = ['itk_kit']
