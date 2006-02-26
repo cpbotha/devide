@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
+import module_kits.itk_kit
 from moduleMixins import scriptedConfigModuleMixin
 
 class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
@@ -39,7 +37,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
         d.SetTimeStep(0.0625) # standard for 3D
         self._diffuse = d
         
-        moduleUtilsITK.setupITKObjectProgress(
+        module_kits.itk_kit.utils.setupITKObjectProgress(
             self, self._diffuse, 'itkGradientAnisotropicDiffusionImageFilter',
             'Smoothing data')
 
