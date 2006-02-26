@@ -65,7 +65,9 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
     def executeModule(self):
         self._watershed.Update()
         self._watershed.GetOutput().Update()
-        #self._moduleManager.setProgress(100, "Watershed complete.")
+        # the watershed module is REALLY CRAP about setting progress to 100,
+        # so we do it here.
+        self._moduleManager.setProgress(100, "Watershed complete.")
 
     def getInputDescriptions(self):
         return ('ITK Image (3D, float)',)
