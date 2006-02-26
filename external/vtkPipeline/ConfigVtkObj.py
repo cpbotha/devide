@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: ConfigVtkObj.py,v 1.27 2005/06/07 13:18:01 cpbotha Exp $
+# $Id$
 #
 # This python program/module takes a VTK object and provides a GUI 
 # configuration for it.
@@ -45,13 +45,7 @@ except ImportError:
           "Install it and try again."
     sys.exit (1)
 
-try:
-    # if we're being run from devide, this should work
-    from external.SwitchColourDialog import ColourDialog
-except ImportError:
-    # if not, fall back to old behaviour (but DO print a warning)
-    print "ConfigVtkObj WARNING: could not import external.SwitchColourDialog"
-    ColourDialog = wx.ColourDialog
+ColourDialog = wx.ColourDialog
 
 from external.filebrowsebutton import FileBrowseButton, \
      FileBrowseButtonWithHistory,DirBrowseButton

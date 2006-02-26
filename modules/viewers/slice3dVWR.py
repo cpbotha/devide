@@ -6,7 +6,6 @@
 # TODO: front-end / back-end module split (someday)
 
 import cPickle
-from external.SwitchColourDialog import ColourDialog
 import genUtils
 
 from moduleBase import moduleBase
