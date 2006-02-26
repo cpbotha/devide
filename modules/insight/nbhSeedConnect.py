@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
@@ -50,7 +48,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
         # setup the pipeline
         self._nbhCIF = itk.itkNeighborhoodConnectedImageFilterF3F3_New()
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._nbhCIF, 'itkNeighborhoodConnectedImageFilter',
             'Region growing...')
 
@@ -77,6 +75,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
         del self._nbhCIF
 
     def executeModule(self):
+        self._transferPoints()
         self._nbhCIF.Update()
 
     def getInputDescriptions(self):
@@ -88,27 +87,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
 
         else:
             if inputStream != self._inputPoints:
-                # check that the inputStream is either None (meaning
-                # disconnect) or a valid type
-
-                try:
-                    if inputStream != None and \
-                       inputStream.devideType != 'namedPoints':
-                        raise TypeError
-
-                except (AttributeError, TypeError):
-                    raise TypeError, 'This input requires a points-type'
-                    
-                
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
-
                 self._inputPoints = inputStream
-                
-                if self._inputPoints:
-                    self._inputPoints.addObserver(self._observerInputPoints)
-                    self._transferPoints()
             
 
     def getOutputDescriptions(self):
@@ -139,10 +118,6 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
             (sz.GetElement(0), sz.GetElement(1), sz.GetElement(2)))
 
                                           
-    def _observerInputPoints(self, obj):
-        # this will be called if anything happens to the points
-        self._transferPoints()
-
     def _transferPoints(self):
         """This will transfer all points from self._inputPoints to the nbhCIF
         instance.
