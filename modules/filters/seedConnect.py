@@ -123,7 +123,7 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         if self._inputPoints:
             for i in self._inputPoints:
                 tempList.append(i['discrete'])
-            
+
         if tempList != self._seedPoints:
             self._seedPoints = tempList
             self._seedConnect.RemoveAllSeeds()
