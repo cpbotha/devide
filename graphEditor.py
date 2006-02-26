@@ -1035,7 +1035,7 @@ class graphEditor:
             except Exception, e:
                 self._devideApp.logError(
                     'Could not restore state/config to module %s: %s' %
-                    (newModule.__class__.__name__, e)                    
+                    (new_instance.__class__.__name__, e)                    
                     )
 
             # connect it back up
