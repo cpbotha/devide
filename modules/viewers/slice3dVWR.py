@@ -896,7 +896,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     def _handlerVoiFilenameBrowseButton(self, event):
         dlg = wx.FileDialog(self.controlFrame,
                            "Select VTI filename to write VOI to",
-                           "", "", "*.vti", wx.OPEN)
+                           "", "", "*.vti", wx.SAVE)
         
         if dlg.ShowModal() == wx.ID_OK:
             self.controlFrame.voiFilenameText.SetValue(dlg.GetPath())
