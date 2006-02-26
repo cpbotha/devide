@@ -1,6 +1,5 @@
 # $Id$
 
-from external.SwitchColourDialog import ColourDialog
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
@@ -334,7 +333,7 @@ class colourDialogMixin(object):
         # we want the detailed dialog under windows        
         ccd.SetChooseFull(True)
         # create the dialog
-        self._colourDialog = ColourDialog(parent, ccd)
+        self._colourDialog = wx.ColourDialog(parent, ccd)
 
     def close(self):
         # destroy the dialog
