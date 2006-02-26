@@ -24,7 +24,13 @@ mkl = module_kits.module_kit_list[:]
 # remove the no_kits
 mkl = [i for i in mkl if i not in defaults.NOKITS]
 
-hiddenimports = ['module_kits.%s' % (i,) for i in mkl]
+# other imports
+other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
+                 'moduleUtils']
+
+hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
+
+
 
 print "[*] hook-moduleManager.py - HIDDENIMPORTS"
 print hiddenimports

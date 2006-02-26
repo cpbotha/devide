@@ -106,6 +106,7 @@ def init(theModuleManager):
     # user can, after import of module_kits.vtk_kit, address these as
     # module_kits.vtk_kit.blaat
     import module_kits.vtk_kit.misc as misc
+    import module_kits.vtk_kit.mixins as mixins
     import module_kits.vtk_kit.utils as utils
 
     # setup the kit version
