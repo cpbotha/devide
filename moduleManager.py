@@ -1450,10 +1450,10 @@ class moduleManager:
             # NASTY NASTY NASTY FIXME
             # also make sure that an output object does not know who
             # its producer is.  GetSource/SetSource don't work anymore.
-            if hasattr(od, 'GetPipelineInformation'):
-                import vtk
-                inf = od.GetPipelineInformation()
-                inf.Set(vtk.vtkExecutive.PRODUCER(), None, 0)
+            #if hasattr(od, 'GetPipelineInformation'):
+            #    import vtk
+            #    inf = od.GetPipelineInformation()
+            #    inf.Set(vtk.vtkExecutive.PRODUCER(), None, 0)
         
         try:
             # set on consumerInstance input
