@@ -51,9 +51,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     $Revision: 1.52 $
     """
 
-    # part 0 is "normal", part 1 is the input-independent output part
+    # part 0 is "normal", parts 1,2,3 are the input-independent output parts
     PARTS_TO_INPUTS = {0 : (0,1,2,3,4,5,6)}
-    PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0, 1, 2)}
+    #PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0, 1, 2)}
+    PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0,), 2 : (1,), 3 : (2,)}
+    # part 1 does the points, part 2 does the implicit function,
+    # part 2 does the slices polydata.
+    # this makes it possible for various parts of the slice3dVWR to trigger
+    # only bits of the network that are necessary
 
     gridSelectionBackground = (11, 137, 239)
 

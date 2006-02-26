@@ -493,23 +493,26 @@ class selectedPoints(s3dcGridMixin):
         VERY low.
         """
 
-        del self.outputSelectedPoints[:]
-
+        
+        temp_output_selected_points = []
+        
         # then transfer everything
         for i in self._pointsList:
-            self.outputSelectedPoints.append({'name' : i['name'],
-                                              'discrete' : i['discrete'],
-                                              'world' : i['world'],
-                                              'value' : i['value']})
+            temp_output_selected_points.append({'name' : i['name'],
+                                                'discrete' : i['discrete'],
+                                                'world' : i['world'],
+                                                'value' : i['value']})
 
-        # then make sure this structure knows that it has been modified
-        self.outputSelectedPoints.notify()
+        if temp_output_selected_points != self.outputSelectedPoints:
+            # only if the points have changed do we send them out
+            self.outputSelectedPoints = temp_output_selected_points
+            
 
-        # make sure that the input-independent part of this module knows
-        # that it has been modified
-        mm = self.slice3dVWR._moduleManager
-        mm.modifyModule(self.slice3dVWR, 1)
-        mm.requestAutoExecuteNetwork(self.slice3dVWR)
+            # make sure that the input-independent part of this module knows
+            # that it has been modified
+            mm = self.slice3dVWR._moduleManager
+            mm.modifyModule(self.slice3dVWR, 1)
+            mm.requestAutoExecuteNetwork(self.slice3dVWR)
 
     
 

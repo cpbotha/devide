@@ -889,9 +889,10 @@ class sliceDirection:
         self._syncOutputPolyData()
 
         # we have to indicate to the moduleManager that we might have
-        # been modified.
+        # been modified, but we only do it for the output part that's
+        # responsible for the slices polydata
         m = self.sliceDirections.slice3dVWR
-        m._moduleManager.modifyModule(m, 1)
+        m._moduleManager.modifyModule(m, 2) # part 2 does the slices
         m._moduleManager.requestAutoExecuteNetwork(m)
 
 
