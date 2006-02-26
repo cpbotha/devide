@@ -62,7 +62,7 @@ Zooming controls with mouse (when enabled):
     Right mouse click - zoom out centred on click location.
 """
 
-from wxPython import wx
+import wx
 import time, string
 
 # Needs Numeric
@@ -139,7 +139,7 @@ class PolyLine(PolyPoints):
     
     _attributes = {'colour': 'black',
                    'width': 1,
-                   'style': wx.wxSOLID,
+                   'style': wx.SOLID,
                    'legend': ''}
 
     def __init__(self, points, **attr):
@@ -158,7 +158,7 @@ class PolyLine(PolyPoints):
         colour = self.attributes['colour']
         width = self.attributes['width'] * printerScale
         style= self.attributes['style']
-        dc.SetPen(wx.wxPen(wx.wxNamedColour(colour), int(width), style))
+        dc.SetPen(wx.Pen(wx.NamedColour(colour), int(width), style))
         if coord == None:
             dc.DrawLines(self.scaled)
         else:
@@ -180,7 +180,7 @@ class PolyMarker(PolyPoints):
                    'width': 1,
                    'size': 2,
                    'fillcolour': None,
-                   'fillstyle': wx.wxSOLID,
+                   'fillstyle': wx.SOLID,
                    'marker': 'circle',
                    'legend': ''}
 
@@ -193,7 +193,7 @@ class PolyMarker(PolyPoints):
                 'width'= 1,                 - Pen width
                 'size'= 2,                  - Marker size
                 'fillcolour'= same as colour,      - wxBrush Colour any wxNamedColour
-                'fillstyle'= wx.wxSOLID,    - wxBrush fill style (use wxTRANSPARENT for no fill)
+                'fillstyle'= wx.SOLID,    - wxBrush fill style (use wxTRANSPARENT for no fill)
                 'marker'= 'circle'          - Marker shape
                 'legend'= ''                - Marker Legend to display
               
@@ -217,11 +217,11 @@ class PolyMarker(PolyPoints):
         fillstyle = self.attributes['fillstyle']
         marker = self.attributes['marker']
 
-        dc.SetPen(wx.wxPen(wx.wxNamedColour(colour),int(width)))
+        dc.SetPen(wx.Pen(wx.NamedColour(colour),int(width)))
         if fillcolour:
-            dc.SetBrush(wx.wxBrush(wx.wxNamedColour(fillcolour),fillstyle))
+            dc.SetBrush(wx.Brush(wx.NamedColour(fillcolour),fillstyle))
         else:
-            dc.SetBrush(wx.wxBrush(wx.wxNamedColour(colour), fillstyle))
+            dc.SetBrush(wx.Brush(wx.NamedColour(colour), fillstyle))
         if coord == None:
             self._drawmarkers(dc, self.scaled, marker, size)
         else:
@@ -370,19 +370,19 @@ class PlotGraphics:
 #-------------------------------------------------------------------------------
 #Main window that you will want to import into your application.
 
-class PlotCanvas(wx.wxWindow):
+class PlotCanvas(wx.Window):
     """Subclass of a wxWindow to allow simple general plotting
     of data with zoom, labels, and automatic axis scaling."""
 
-    def __init__(self, parent, id = -1, pos=wx.wxDefaultPosition,
-            size=wx.wxDefaultSize, style= wx.wxDEFAULT_FRAME_STYLE, name= ""):
+    def __init__(self, parent, id = -1, pos=wx.DefaultPosition,
+            size=wx.DefaultSize, style= wx.DEFAULT_FRAME_STYLE, name= ""):
         """Constucts a window, which can be a child of a frame, dialog or
         any other non-control window"""
     
-        wx.wxWindow.__init__(self, parent, id, pos, size, style, name)
+        wx.Window.__init__(self, parent, id, pos, size, style, name)
         self.border = (1,1)
 
-        self.SetBackgroundColour(wx.wxNamedColour("white"))
+        self.SetBackgroundColour(wx.NamedColour("white"))
         
         wx.EVT_PAINT(self, self.OnPaint)
         wx.EVT_SIZE(self,self.OnSize)
@@ -395,13 +395,13 @@ class PlotCanvas(wx.wxWindow):
         wx.EVT_RIGHT_DOWN(self, self.OnMouseRightDown)
 
         # set curser as cross-hairs
-        self.SetCursor(wx.wxCROSS_CURSOR)
+        self.SetCursor(wx.CROSS_CURSOR)
 
         #Things for printing
-        self.print_data = wx.wxPrintData()
-        self.print_data.SetPaperId(wx.wxPAPER_LETTER)
-        self.print_data.SetOrientation(wx.wxLANDSCAPE)
-        self.pageSetupData= wx.wxPageSetupDialogData()
+        self.print_data = wx.PrintData()
+        self.print_data.SetPaperId(wx.PAPER_LETTER)
+        self.print_data.SetOrientation(wx.LANDSCAPE)
+        self.pageSetupData= wx.PageSetupDialogData()
         self.pageSetupData.SetMarginBottomRight((25,25))
         self.pageSetupData.SetMarginTopLeft((25,25))
         self.pageSetupData.SetPrintData(self.print_data)
@@ -437,7 +437,7 @@ class PlotCanvas(wx.wxWindow):
         self.OnSize(None) #sets the initial size based on client size
         
         #SaveFile
-        wx.wxInitAllImageHandlers()
+        wx.InitAllImageHandlers()
         
     def SaveFile(self, fileName= ''):
         """Saves the file to the type specified in the extension. If no file
@@ -451,19 +451,19 @@ class PlotCanvas(wx.wxWindow):
         .jpg  Save a Joint Photographic Experts Group file.
         """
         if string.lower(fileName[-3:]) not in ['bmp','xbm','xpm','png','jpg']:
-            dlg1 = wx.wxFileDialog(self, "Choose a file with extension bmp, gif, xbm, xpm, png, or jpg", ".", "",
+            dlg1 = wx.FileDialog(self, "Choose a file with extension bmp, gif, xbm, xpm, png, or jpg", ".", "",
              "BMP files (*.bmp)|*.bmp|XBM files (*.xbm)|*.xbm|XPM file (*.xpm)|*.xpm|PNG files (*.png)|*.png|JPG files (*.jpg)|*.jpg",
-             wx.wxSAVE|wx.wxOVERWRITE_PROMPT)
+             wx.SAVE|wx.OVERWRITE_PROMPT)
             try:
                 while 1:
-                    if dlg1.ShowModal() == wx.wxID_OK:
+                    if dlg1.ShowModal() == wx.ID_OK:
                         fileName = dlg1.GetPath()
                         #Check for proper exension
                         if string.lower(fileName[-3:]) not in ['bmp','xbm','xpm','png','jpg']:
-                            dlg2 = wx.wxMessageDialog(self, 'File name extension\n'
+                            dlg2 = wx.MessageDialog(self, 'File name extension\n'
                             'must be one of\n'
                             'bmp, xbm, xpm, png, or jpg',
-                              'File Name Error', wx.wxOK | wx.wxICON_ERROR)
+                              'File Name Error', wx.OK | wx.ICON_ERROR)
                             try:
                                 dlg2.ShowModal()
                             finally:
@@ -478,15 +478,15 @@ class PlotCanvas(wx.wxWindow):
         #File name has required extension
         fType = string.lower(fileName[-3:])
         if fType == "bmp":
-            tp= wx.wxBITMAP_TYPE_BMP       #Save a Windows bitmap file.
+            tp= wx.BITMAP_TYPE_BMP       #Save a Windows bitmap file.
         elif fType == "xbm":
-            tp= wx.wxBITMAP_TYPE_XBM       #Save an X bitmap file.
+            tp= wx.BITMAP_TYPE_XBM       #Save an X bitmap file.
         elif fType == "xpm":
-            tp= wx.wxBITMAP_TYPE_XPM       #Save an XPM bitmap file.
+            tp= wx.BITMAP_TYPE_XPM       #Save an XPM bitmap file.
         elif fType == "jpg":
-            tp= wx.wxBITMAP_TYPE_JPEG      #Save a JPG file.
+            tp= wx.BITMAP_TYPE_JPEG      #Save a JPG file.
         else:
-            tp= wx.wxBITMAP_TYPE_PNG       #Save a PNG file.
+            tp= wx.BITMAP_TYPE_PNG       #Save a PNG file.
         #Save Bitmap
         res= self._Buffer.SaveFile(fileName, tp)
         return res
@@ -495,9 +495,9 @@ class PlotCanvas(wx.wxWindow):
         """Brings up the page setup dialog"""
         data = self.pageSetupData
         data.SetPrintData(self.print_data)
-        dlg = wx.wxPageSetupDialog(self.parent, data)
+        dlg = wx.PageSetupDialog(self.parent, data)
         try:
-            if dlg.ShowModal() == wx.wxID_OK:
+            if dlg.ShowModal() == wx.ID_OK:
                 data = dlg.GetPageSetupData() #returns wxPageSetupDialogData
                 #updates page parameters from dialog
                 self.pageSetupData.SetMarginBottomRight(data.GetMarginBottomRight())
@@ -511,9 +511,9 @@ class PlotCanvas(wx.wxWindow):
         """Print current plot."""
         if paper != None:
             self.print_data.SetPaperId(paper)
-        pdd = wx.wxPrintDialogData()
+        pdd = wx.PrintDialogData()
         pdd.SetPrintData(self.print_data)
-        printer = wx.wxPrinter(pdd)
+        printer = wx.Printer(pdd)
         out = plot_printout(self)
         print_ok = printer.Print(self.parent, out)
         if print_ok:
@@ -524,21 +524,21 @@ class PlotCanvas(wx.wxWindow):
         """Print-preview current plot."""
         printout = plot_printout(self)
         printout2 = plot_printout(self)
-        self.preview = wx.wxPrintPreview(printout, printout2, self.print_data)
+        self.preview = wx.PrintPreview(printout, printout2, self.print_data)
         if not self.preview.Ok():
-            wx.wxMessageDialog(self, "Print Preview failed.\n" \
+            wx.MessageDialog(self, "Print Preview failed.\n" \
                                "Check that default printer is configured\n", \
-                               "Print error", wx.wxOK|wx.wxCENTRE).ShowModal()
+                               "Print error", wx.OK|wx.CENTRE).ShowModal()
         self.preview.SetZoom(30)
         #search up tree to find frame instance
         frameInst= self
-        while not isinstance(frameInst, wx.wxFrame):
+        while not isinstance(frameInst, wx.Frame):
             frameInst= frameInst.GetParent()
-        frame = wx.wxPreviewFrame(self.preview, frameInst, "Preview")
+        frame = wx.PreviewFrame(self.preview, frameInst, "Preview")
         frame.Initialize()
         frame.SetPosition(self.GetPosition())
         frame.SetSize((500,400))
-        frame.Centre(wx.wxBOTH)
+        frame.Centre(wx.BOTH)
         frame.Show(True)
 
     def SetFontSizeAxis(self, point= 10):
@@ -694,7 +694,7 @@ class PlotCanvas(wx.wxWindow):
             
         if dc == None:
             # allows using floats for certain functions 
-            dc = FloatDCWrapper(wx.wxBufferedDC(wx.wxClientDC(self), self._Buffer))
+            dc = FloatDCWrapper(wx.BufferedDC(wx.ClientDC(self), self._Buffer))
             dc.Clear()
             
         dc.BeginDrawing()
@@ -799,7 +799,7 @@ class PlotCanvas(wx.wxWindow):
 
     def Clear(self):
         """Erase the window."""
-        dc = wx.wxBufferedDC(wx.wxClientDC(self), self._Buffer)
+        dc = wx.BufferedDC(wx.ClientDC(self), self._Buffer)
         dc.Clear()
         self.last_draw = None
 
@@ -857,7 +857,7 @@ class PlotCanvas(wx.wxWindow):
 
     def OnPaint(self, event):
         # All that is needed here is to draw the buffer to screen
-        dc = wx.wxBufferedPaintDC(self, self._Buffer)        
+        dc = wx.BufferedPaintDC(self, self._Buffer)        
 
     def OnSize(self,event):
         # The Buffer init is done here, to make sure the buffer is always
@@ -867,7 +867,7 @@ class PlotCanvas(wx.wxWindow):
         # Make new offscreen bitmap: this bitmap will always have the
         # current drawing in it, so it can be used to save the image to
         # a file, or whatever.
-        self._Buffer = wx.wxEmptyBitmap(Size[0],Size[1])
+        self._Buffer = wx.EmptyBitmap(Size[0],Size[1])
         self._setSize()
         if self.last_draw is None:
             self.Clear()
@@ -963,13 +963,13 @@ class PlotCanvas(wx.wxWindow):
         """Draws/erases rect box from corner1 to corner2"""
         ptx,pty,rectWidth,rectHeight= self._point2ClientCoord(corner1, corner2)
         #draw rectangle
-        dc = wx.wxClientDC( self )
+        dc = wx.ClientDC( self )
         dc.BeginDrawing()                 
-        dc.SetPen(wx.wxPen(wx.wxBLACK))
-        dc.SetBrush(wx.wxBrush( wx.wxWHITE, wx.wxTRANSPARENT ) )
-        dc.SetLogicalFunction(wx.wxINVERT)
+        dc.SetPen(wx.Pen(wx.BLACK))
+        dc.SetBrush(wx.Brush( wx.WHITE, wx.TRANSPARENT ) )
+        dc.SetLogicalFunction(wx.INVERT)
         dc.DrawRectangle( ptx,pty,rectWidth,rectHeight)
-        dc.SetLogicalFunction(wx.wxCOPY)
+        dc.SetLogicalFunction(wx.COPY)
         dc.EndDrawing()
 
     def _getFont(self,size):
@@ -982,7 +982,7 @@ class PlotCanvas(wx.wxWindow):
         if font:
             return font                 # yeah! cache hit
         else:
-            font =  wx.wxFont(int(s), of.GetFamily(), of.GetStyle(), of.GetWeight())
+            font =  wx.Font(int(s), of.GetFamily(), of.GetStyle(), of.GetWeight())
             self._fontCache[key] = font
             return font
 
@@ -1035,7 +1035,7 @@ class PlotCanvas(wx.wxWindow):
     def _drawAxes(self, dc, p1, p2, scale, shift, xticks, yticks):
         
         penWidth= self.printerScale        #increases thickness for printing only
-        dc.SetPen(wx.wxPen(wx.wxNamedColour('BLACK'),int(penWidth)))
+        dc.SetPen(wx.Pen(wx.NamedColour('BLACK'),int(penWidth)))
         
         #set length of tick marks--long ones make grid
         if self._gridEnabled:
@@ -1110,13 +1110,13 @@ class PlotCanvas(wx.wxWindow):
 #-------------------------------------------------------------------------------
 #Used to layout the printer page
 
-class plot_printout(wx.wxPrintout):
+class plot_printout(wx.Printout):
     """Controls how the plot is made in printing and previewing"""
     # Do not change method names in this class,
     # we have to override wxPrintout methods here!
     def __init__(self, graph):
         """graph is instance of plotCanvas to be printed or previewed"""
-        wx.wxPrintout.__init__(self)
+        wx.Printout.__init__(self)
         self.graph = graph
 
     def HasPage(self, page):
@@ -1186,7 +1186,7 @@ class plot_printout(wx.wxPrintout):
 # Hack to allow plotting real numbers for the methods listed.
 # All others passed directly to DC.
 # For Drawing it is used as
-# dc = FloatDCWrapper(wx.wxBufferedDC(wx.wxClientDC(self), self._Buffer))
+# dc = FloatDCWrapper(wx.BufferedDC(wx.ClientDC(self), self._Buffer))
 # For printing is is used as
 # dc = FloatDCWrapper(self.GetDC()) 
 class FloatDCWrapper:
@@ -1245,19 +1245,19 @@ def __test():
         data1 = 2.*Numeric.pi*Numeric.arange(200)/200.
         data1.shape = (100, 2)
         data1[:,1] = Numeric.sin(data1[:,0])
-        line1 = PolyLine(data1, legend='Green Line', colour='green', width=6, style=wx.wxDOT)
+        line1 = PolyLine(data1, legend='Green Line', colour='green', width=6, style=wx.DOT)
 
         # 50 points cos function, plotted as red dot-dash
         data1 = 2.*Numeric.pi*Numeric.arange(100)/100.
         data1.shape = (50,2)
         data1[:,1] = Numeric.cos(data1[:,0])
-        line2 = PolyLine(data1, legend='Red Line', colour='red', width=3, style= wx.wxDOT_DASH)
+        line2 = PolyLine(data1, legend='Red Line', colour='red', width=3, style= wx.DOT_DASH)
 
         # A few more points...
         pi = Numeric.pi
         markers1 = PolyMarker([(0., 0.), (pi/4., 1.), (pi/2, 0.),
                               (3.*pi/4., -1)], legend='Cross Hatch Square', colour='blue', width= 3, size= 6,
-                              fillcolour= 'red', fillstyle= wx.wxCROSSDIAG_HATCH,
+                              fillcolour= 'red', fillstyle= wx.CROSSDIAG_HATCH,
                               marker='square')
 
         return PlotGraphics([markers1, line1, line2], "Big Markers with Different Line Styles")
@@ -1289,15 +1289,15 @@ def __test():
         return PlotGraphics([line1], "Empty Plot With Just Axes", "Value X", "Value Y")
 
 
-    class AppFrame(wx.wxFrame):
+    class AppFrame(wx.Frame):
         def __init__(self, parent, id, title):
-            wx.wxFrame.__init__(self, parent, id, title,
-                                wx.wxPyDefaultPosition, wx.wxSize(600, 400))
+            wx.Frame.__init__(self, parent, id, title,
+                                wx.DefaultPosition, wx.Size(600, 400))
 
             # Now Create the menu bar and items
-            self.mainmenu = wx.wxMenuBar()
+            self.mainmenu = wx.MenuBar()
 
-            menu = wx.wxMenu()
+            menu = wx.Menu()
             menu.Append(200, 'Page Setup...', 'Setup the printer page')
             wx.EVT_MENU(self, 200, self.OnFilePageSetup)
             
@@ -1314,7 +1314,7 @@ def __test():
             wx.EVT_MENU(self, 205, self.OnFileExit)
             self.mainmenu.Append(menu, '&File')
 
-            menu = wx.wxMenu()
+            menu = wx.Menu()
             menu.Append(206, 'Draw1', 'Draw plots1')
             wx.EVT_MENU(self,206,self.OnPlotDraw1)
             menu.Append(207, 'Draw2', 'Draw plots2')
@@ -1333,11 +1333,11 @@ def __test():
             wx.EVT_MENU(self,212,self.OnPlotClear)
             menu.Append(213, '&Scale', 'Scale canvas')
             wx.EVT_MENU(self,213,self.OnPlotScale) 
-            menu.Append(214, 'Enable &Zoom', 'Enable Mouse Zoom', kind=wx.wxITEM_CHECK)
+            menu.Append(214, 'Enable &Zoom', 'Enable Mouse Zoom', kind=wx.ITEM_CHECK)
             wx.EVT_MENU(self,214,self.OnEnableZoom) 
-            menu.Append(215, 'Enable &Grid', 'Turn on Grid', kind=wx.wxITEM_CHECK)
+            menu.Append(215, 'Enable &Grid', 'Turn on Grid', kind=wx.ITEM_CHECK)
             wx.EVT_MENU(self,215,self.OnEnableGrid)
-            menu.Append(220, 'Enable &Legend', 'Turn on Legend', kind=wx.wxITEM_CHECK)
+            menu.Append(220, 'Enable &Legend', 'Turn on Legend', kind=wx.ITEM_CHECK)
             wx.EVT_MENU(self,220,self.OnEnableLegend) 
             menu.Append(225, 'Scroll Up 1', 'Move View Up 1 Unit')
             wx.EVT_MENU(self,225,self.OnScrUp) 
@@ -1348,7 +1348,7 @@ def __test():
 
             self.mainmenu.Append(menu, '&Plot')
 
-            menu = wx.wxMenu()
+            menu = wx.Menu()
             menu.Append(300, '&About', 'About this thing...')
             wx.EVT_MENU(self, 300, self.OnHelpAbout)
             self.mainmenu.Append(menu, '&Help')
@@ -1392,7 +1392,7 @@ def __test():
         
         def OnPlotDraw3(self, event):
             self.resetDefaults()
-            self.client.SetFont(wx.wxFont(10,wx.wxSCRIPT,wx.wxNORMAL,wx.wxNORMAL))
+            self.client.SetFont(wx.Font(10,wx.SCRIPT,wx.NORMAL,wx.NORMAL))
             self.client.SetFontSizeAxis(20)
             self.client.SetFontSizeLegend(12)
             self.client.SetXSpec('min')
@@ -1453,16 +1453,16 @@ def __test():
 
         def resetDefaults(self):
             """Just to reset the fonts back to the PlotCanvas defaults"""
-            self.client.SetFont(wx.wxFont(10,wx.wxSWISS,wx.wxNORMAL,wx.wxNORMAL))
+            self.client.SetFont(wx.Font(10,wx.SWISS,wx.NORMAL,wx.NORMAL))
             self.client.SetFontSizeAxis(10)
             self.client.SetFontSizeLegend(7)
             self.client.SetXSpec('auto')
             self.client.SetYSpec('auto')
             
 
-    class MyApp(wx.wxApp):
+    class MyApp(wx.App):
         def OnInit(self):
-            frame = AppFrame(wx.NULL, -1, "wxPlotCanvas")
+            frame = AppFrame(None, -1, "wxPlotCanvas")
             frame.Show(True)
             self.SetTopWindow(frame)
             return True
