@@ -1,14 +1,10 @@
 # geodesicActiveContour.py
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
-import vtk
-import ConnectVTKITKPython as CVIPy
 
 class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
@@ -131,7 +127,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         geodesicActiveContour = gAC
         #geodesicActiveContour.SetMaximumRMSError( 0.1 );
         self._geodesicActiveContour = geodesicActiveContour
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, geodesicActiveContour,
             'GeodesicActiveContourLevelSetImageFilter',
             'Growing active contour')
