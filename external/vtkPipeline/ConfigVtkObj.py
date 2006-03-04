@@ -623,7 +623,16 @@ class ConfigVtkObj:
             st = wx.StaticText(parent=panel, id=-1, label=self.get_meths[i]+":")
             grid_sizer.Add(st)
 
-            st2 = wx.StaticText(parent=panel, id=-1, label=str(res))
+            #print "%s = %s" % (self.get_meths[i], res)
+            try:
+                st2 = wx.StaticText(parent=panel, id=-1, label=str(res))
+            except UnicodeDecodeError:
+                # vtkExodusReader.GetTitle() generates this error on
+                # a freshly instantiated class.
+                st2 = wx.StaticText(parent=panel, id=-1,
+                                    label='UNICODE_DECODE_ERROR')
+                
+                
             grid_sizer.Add(st2, flag=wx.EXPAND)
 
             self.get_texts[i] = st2
