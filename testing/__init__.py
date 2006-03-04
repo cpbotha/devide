@@ -9,6 +9,10 @@ import unittest
 from testing import basic
 from testing import graph_editor
 
+module_list = [basic, graph_editor]
+for m in module_list:
+    reload(m)
+
 
 # ----------------------------------------------------------------------------
 class devideTesting:
