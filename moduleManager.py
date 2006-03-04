@@ -220,6 +220,12 @@ class moduleManager:
             # modules.Class.mod style
             mim = 'modules%s' % (mim,)
 
+            # if this thing was imported before, we have to remove it, else
+            # classes that have been removed from the module_index file
+            # will still appear after the reload.
+            if mim in sys.modules:
+                del sys.modules[mim]
+
             try:
                 # now we can import
                 __import__(mim, globals(), locals())
