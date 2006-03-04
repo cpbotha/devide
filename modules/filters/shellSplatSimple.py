@@ -1,4 +1,3 @@
-from external.SwitchColourDialog import ColourDialog
 import operator
 from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
@@ -7,13 +6,16 @@ import vtk
 import vtkdevide
 import wx
 from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
+from moduleMixins import colourDialogMixin
 
 class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
-                       VTKErrorFuncMixin):
+                       VTKErrorFuncMixin, colourDialogMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
+        colourDialogMixin.__init__(
+            self, moduleManager.getModuleViewParentWindow())
 
         # setup the whole VTK pipeline that we're going to use
         self._createPipeline()
@@ -43,14 +45,6 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         self._viewFrame = None
         self._createViewFrame()
 
-        # some more UI elements that we'll need
-        ccd = wx.ColourData()
-        ccd.SetCustomColour(0,wx.Colour(255, 239, 219))
-        # under windows, we want the complete thing
-        ccd.SetChooseFull(True)
-        # and create the bugger
-        self._colourDialog = ColourDialog(self._viewFrame, ccd)
-
         # pass the data down to the underlying logic
         self.configToLogic()
         # and all the way up from logic -> config -> view to make sure
@@ -72,11 +66,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
 
         del self._objectDict
 
-        if self._colourDialog:
-            self._colourDialog.Destroy()
-            
-        del self._colourDialog
-
+        colourDialogMixin.close(self)
         # we have to call this mixin close so that all inspection windows
         # can be taken care of.  They should be taken care of in anycase
         # when the viewFrame is destroyed, but we like better safe than
@@ -220,16 +210,12 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
             self._viewFrame.colourText.GetValue(),
             defaultColourTuple)
 
-        colourTuple = tuple([i * 255.0 for i in colourTuple])        
+        self.setColourDialogColour(colourTuple)
 
-        self._colourDialog.GetColourData().SetColour(colourTuple)
-        
-        if self._colourDialog.ShowModal() == wx.ID_OK:
-            col = self._colourDialog.GetColourData().GetColour()
+        c = self.getColourDialogColour()
+        if c:
             self._viewFrame.colourText.SetValue(
-                "(%.2f, %.2f, %.2f)" %  (col.Red() / 255.0,
-                                         col.Green() / 255.0,
-                                         col.Blue() / 255.0))
+                "(%.2f, %.2f, %.2f)" %  c)
 
     def _convertStringToColour(self, colourString, defaultColourTuple):
         """Attempt to convert colourString into tuple representation.
