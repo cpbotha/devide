@@ -90,19 +90,13 @@ class WXInterface(wx.App):
     def get_main_window(self):
         return self.getMainWindow()
 
-    def get_module_manager(self):
-        return self.moduleManager
-
-    def getModuleManager(self):
-        return self.get_module_manager()
-    
     def _handlerHelpContents(self, event):
         self.showHelp()
 
     def _handlerTestingAllTests(self, event):
         import testing
         reload(testing)
-        dt = testing.devideTesting(self)
+        dt = testing.devideTesting(self._devide_app)
         dt.runAllTests()
 
     def handler_post_app_init(self):
