@@ -245,8 +245,6 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         self.add_vtk_error_handler(
             self._theFilter)
         
-        self._vtk_error = False
-        
         if replaceDoc:
             myMessage = "<em>"\
                         "This is a special DeVIDE module that very simply " \
@@ -321,10 +319,6 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         # get rid of our binding to the vtkObject
         del self._theFilter
 
-    def _vtk_error_handler(self, vtk_object, event_name, call_data):
-        self._vtk_error = True
-        self._vtk_error_call_data = call_data
-
     def getOutputDescriptions(self):
         return self._outputDescriptions
 
@@ -348,12 +342,10 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
                  (self._inputFunctions[idx]))
 
         else:
-            # usually, we use SetInput() for the first function,
-            # SetInput2() for the second function, etc.
             if idx == 0:
                 self._theFilter.SetInput(inputStream)
             else:
-                exec('self._theFilter.SetInput%d(inputStream)' % (idx+1,))
+                self._theFilter.SetInput(idx, inputStream)
 
     def executeModule(self):
         # it could be a writer, in that case, call the Write method.
