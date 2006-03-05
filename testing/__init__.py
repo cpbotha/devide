@@ -17,6 +17,8 @@ for m in module_list:
 # ----------------------------------------------------------------------------
 class devideTesting:
     def __init__(self, devide_app):
+
+        self._devide_app = devide_app
         
 #         self.basic_suite.addTest(graphEditorBasic('testStartup'))
 #         self.basic_suite.addTest(graphEditorBasic('testModuleCreationDeletion'))
@@ -47,9 +49,8 @@ class devideTesting:
         runner.run(self.main_suite)
 
     def runSomeTest(self):
-        someSuite = unittest.TestSuite()
-        someSuite.addTest(testITKBasic('testConfidenceSeedConnect'))
+        some_suite = graph_editor.get_some_suite(self._devide_app)
 
         runner = unittest.TextTestRunner()
-        runner.run(someSuite)
+        runner.run(some_suite)
 
