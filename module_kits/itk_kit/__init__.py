@@ -11,7 +11,7 @@ import re
 import sys
 
 VERSION = ''
-ITK_VERSION_EXTRA = 'update -dAP'
+ITK_VERSION_EXTRA = '-r ITK-2-4-1'
 
 def preImportITK(progressMethod):
     itkImportList = [('VXLNumericsPython', 'VXL Numerics'),
