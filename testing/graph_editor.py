@@ -179,7 +179,9 @@ class TestModulesMisc(GraphEditorTestBase):
 
         mm = self._devide_app.get_module_manager()
 
-        for module_name in mm.getAvailableModules().keys():
+        ml = mm.getAvailableModules().keys()
+        ml.sort()
+        for module_name in ml:
             print 'About to create %s.' % (module_name,)
             
             (cmod, cglyph) = self._devide_app.get_interface()._graphEditor.\
@@ -275,7 +277,7 @@ def get_suite(devide_app):
 
     t = TestModulesMisc('test_create_destroy')
     t._devide_app = devide_app
-    #graph_editor_suite.addTest(t)
+    graph_editor_suite.addTest(t)
     
 
     return graph_editor_suite
