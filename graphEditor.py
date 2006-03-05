@@ -366,8 +366,7 @@ class graphEditor:
         try:
             self._devideApp.scheduler.executeModules(sms)
         except Exception, e:
-            emsgs = genUtils.exceptionToMsgs()
-            self._devideApp.logError(emsgs + [str(e)])
+            self._devideApp.log_error_with_exception(str(e))
 
         print "ENDING network execute ------------------------------"
         
@@ -1033,7 +1032,7 @@ class graphEditor:
                 new_instance.setConfig(module_config)
                 
             except Exception, e:
-                self._devideApp.logError(
+                self._devideApp.log_error_with_exception(
                     'Could not restore state/config to module %s: %s' %
                     (new_instance.__class__.__name__, e)                    
                     )
