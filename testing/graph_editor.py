@@ -179,7 +179,12 @@ class TestModulesMisc(GraphEditorTestBase):
 
         mm = self._devide_app.get_module_manager()
 
+        # we tested all the vtk_basic modules once with VTK5.0
+        # but this causes trouble on Weendows.
         ml = mm.getAvailableModules().keys()
+        ml = [i for i in ml
+              if not i.startswith('modules.vtk_basic')]
+        
         ml.sort()
         for module_name in ml:
             print 'About to create %s.' % (module_name,)
