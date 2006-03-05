@@ -1,9 +1,9 @@
 # geodesicActiveContour.py
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class tpgac(scriptedConfigModuleMixin, moduleBase):
@@ -128,7 +128,7 @@ class tpgac(scriptedConfigModuleMixin, moduleBase):
         self._tpgac = itk.itkTPGACLevelSetImageFilterF3F3_New()
         #geodesicActiveContour.SetMaximumRMSError( 0.1 );
 
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._tpgac,
             'TPGACLevelSetImageFilter',
             'Growing active contour')
