@@ -1,3 +1,4 @@
+import re
 import vtk
 
 # parameters that need to be filled in:
@@ -20,8 +21,22 @@ excludeList = ['vtkDataWriter', 'vtkDataReader', # two helper classes
                'vtkStructuredPointsGeometryFilter', # deprecated after 4.0
                'vtkDemandDrivenPipeline', # CRASH
                'vtkStreamingDemandDrivenPipeline', # CRASH
-               'vtkAlgorithm' # abstract (kinda)
+               'vtkAlgorithm', # abstract (kinda)
+               'vtkPExodusReader', # cannot instantiate in VTK5.0 linux
+               'vtkHierarchicalPolyDataMapper', # no SetInput attribute
+               'vtkMaskFields', # GetCopyAll attribute error
+               'vtkCursor3D', # attribute error
+               'vtkPCAAnalysisFilter', # this has an non-normal SetInput iface
+               'vtkImageStencilSource', # no SetInput method
+               'vtkVolumeTextureMapper2D',
+               'vtkVolumeTextureMapper3D',
+               'vtkProcrustesAlignmentFilter', # non-standard SetInput iface
+               'vtkRectilinearGridToTetrahedra', # non-standard SetInput iface
+               'vtkImageCanvasSource2D'
                ]
+
+# regular expression pattern objects that should be excluded as well
+exclude_pos = [re.compile('.*Mapper[2,3]*[D]*$')]
 
 def createDeVIDEModuleFromVTKObject(vtkObjName):
     """Returns tuple with first element the name of the module,
@@ -153,8 +168,25 @@ def blaat():
 def main():
     list1 = [i for i in dir(vtk)
              if i.startswith('vtk') and i not in excludeList]
-    list2 = []
 
+    # handle exclusion regular expression pattern objects here
+    list1b = []
+    for i in list1:
+        exclude = False
+        for po in exclude_pos:
+            if po.match(i):
+                exclude = True
+                break
+
+        if not exclude:
+            list1b.append(i)
+
+    # bind the old list name to the new list
+    list1 = list1b
+            
+    
+    # start second phase of checking
+    list2 = []
     # objects that can be instantiated 
     for vtkobj in list1:
         try:
