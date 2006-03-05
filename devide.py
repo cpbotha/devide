@@ -126,9 +126,7 @@ class DeVIDEApp:
         except Exception, e:
             es = 'Unable to startup the moduleManager: %s.  Terminating.' % \
                  (str(e),)
-            import genUtils
-            msgs = genUtils.exceptionToMsgs()
-            self.logError(msgs + [es])
+            self.log_error_with_exception(es)
 
             # this is a critical error: if the moduleManager raised an
             # exception during construction, we have no moduleManager
@@ -163,15 +161,31 @@ class DeVIDEApp:
     def getModuleManager(self):
         return self.get_module_manager()
     
-    def log_error(self, msgs):
-        self._interface.log_error(msgs)
+    def log_error(self, msg):
+        self._interface.log_error(msg)
 
     logError = log_error
+
+    def log_error_list(self, msgs):
+        self._interface.log_error_list(msgs)
+
+    def log_error_with_exception(self, msg):
+        """Can be used by DeVIDE components to log an error message along
+        with all information about current exception.
+
+        """
+        
+        import genUtils
+        emsgs = genUtils.exceptionToMsgs()
+        self.log_error_list(emsgs + [msg])
 
     def log_message(self, message, timeStamp=True):
         self._interface.log_message(message, timeStamp)
 
     logMessage = log_message
+
+    def log_warning(self, message, timeStamp=True):
+        self._interface.log_message(message, timeStamp)
 
     def setProgress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress

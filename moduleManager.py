@@ -180,6 +180,22 @@ class moduleManager:
     def unblockmodule(self, meta_module):
         meta_module.blocked = False
 
+    def log_error(self, message):
+        """Convenience method that can be used by modules.
+        """
+        self._devide_app.log_error(message)
+
+    def log_message(self, message):
+        """Convenience method that can be used by modules.
+        """
+        self._devide_app.log_message(message)
+
+    def log_warning(self, message):
+        """Convenience method that can be used by modules.
+        """
+        self._devide_app.log_warning(message)
+
+
     def scanModules(self):
 	"""(Re)Check the modules directory for *.py files and put them in
 	the list self.module_files.
@@ -296,8 +312,8 @@ class moduleManager:
         if len(failed_mis) > 0:
             failed_indices = '\n'.join(failed_mis.keys())
             self._devide_app.logError(
-                ['The following module indices failed to load: \n%s' % \
-                 (failed_indices,)])
+                'The following module indices failed to load: \n%s' % \
+                (failed_indices,))
         
 
     ########################################################################
@@ -541,16 +557,14 @@ class moduleManager:
 
 
 	except ImportError:
-            self._devide_app.logError(
-                genUtils.exceptionToMsgs() +
-                ["Unable to import module %s!" % fullName])
+            self._devide_app.log_error_with_exception(
+                "Unable to import module %s!" % fullName)
 	    return None
         
 	except Exception, e:
-            self._devide_app.logError(
-                genUtils.exceptionToMsgs() +
-                ["Unable to instantiate module %s: %s" \
-                                % (fullName, str(e))])
+            self._devide_app.log_error_with_exception(
+                "Unable to instantiate module %s: %s" \
+                % (fullName, str(e)))
 	    return None
 
 	# return the instance
@@ -693,8 +707,7 @@ class moduleManager:
             # we are directly reporting the error, as this is used by
             # a utility function that is too compact to handle an
             # exception by itself.  Might change in the future.
-            emsgs = genUtils.exceptionToMsgs()
-            self._devide_app.logError(emsgs + [str(e)])
+            self._devide_app.log_error_with_exception(str(e))
 
         print "ENDING network execute ------------------------------"
 			      
@@ -742,11 +755,10 @@ class moduleManager:
                 instance.setInput(inputIdx, None)
             except Exception, e:
                 # we can't allow this to prevent a destruction, just log
-                em = genUtils.exceptionToMsgs()
-                self._devide_app.log_error(em +
-                    ['Module %s (%s) errored during disconnect of input %d. '
-                     'Continuing with deletion.' % \
-                     (instanceName, moduleName, inputIdx)])
+                self.log_error_with_exception(
+                    'Module %s (%s) errored during disconnect of input %d. '
+                    'Continuing with deletion.' % \
+                    (instanceName, moduleName, inputIdx))
                 
             # set supplier to None - so we know it's nuked
             inputs[inputIdx] = None
@@ -838,12 +850,10 @@ class moduleManager:
             # but to continue with deleting it from our metadata
             # at least this way, no data transfers will be attempted during
             # later network executions.
-            em = genUtils.exceptionToMsgs()
-            self._devide_app.log_error(
-                em +
-                ['Module %s (%s) errored during disconnect of input %d. '
-                 'Removing link anyway.' % \
-                 (instance_name, module_name, input_idx)])
+            self._devide_app.log_error_with_exception(
+                'Module %s (%s) errored during disconnect of input %d. '
+                'Removing link anyway.' % \
+                (instance_name, module_name, input_idx))
 
         # trace it back to our supplier, and tell it that it has one
         # less consumer (if we even HAVE a supplier on this port)

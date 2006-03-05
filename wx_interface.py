@@ -161,18 +161,24 @@ class WXInterface(wx.App):
         else:
             self._graphEditor.show()
 
-    def log_error(self, msgs):
-        """This method can be called by any DeVIDE component for error
-        reporting.
+    def log_error_list(self, msgs):
+        """Log a list of strings as error.
 
-        DeVIDE will decide how the error should be reported depending on the
-        context.  For now we only have the GUI context.
+        This method must be supplied by all interfaces.
         """
 
         for msg in msgs:
             wx.LogError(msg)
 
         wx.Log_FlushActive()
+
+    def log_error(self, msg):
+        """Log a single string as error.
+
+        This method must be supplied by all interfaces.
+        """
+        
+        self.log_error_list([msg])
 
     def log_message(self, message, timeStamp=True):
         if timeStamp:
