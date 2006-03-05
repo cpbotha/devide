@@ -91,6 +91,8 @@ def resetDLFlags(data):
     except:
         pass
 
+
+
 def init(theModuleManager):
     # first do the VTK pre-imports: this is here ONLY to keep the user happy
     # it's not necessary for normal functioning
@@ -101,6 +103,21 @@ def init(theModuleManager):
 
     # and do the same for vtkdevide, vtktud
     import vtkdevide
+
+    # setup some default error handling for VTK objects that have neither
+    # ErrorEvent or WarningEvent observers
+
+    def observer_eow_error(o, e):
+        theModuleManager.log_error(o.GetText())
+
+    def observer_eow_warning(o, e):
+        theModuleManager.log_warning(o.GetText())
+    
+    eow = vtkdevide.vtkEventOutputWindow()
+    eow.AddObserver('ErrorEvent', observer_eow_error)
+    eow.AddObserver('WarningEvent', observer_eow_warning)
+    
+    eow.SetInstance(eow)
 
     # load up some generic functions into this namespace
     # user can, after import of module_kits.vtk_kit, address these as
