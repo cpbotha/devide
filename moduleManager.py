@@ -131,6 +131,10 @@ class moduleManager:
         error_kit_indices.reverse()
         for idx in error_kit_indices:
             del module_kits.module_kit_list[idx]
+
+        # binding to module that can be used without having to do
+        # import module_kits
+        self.module_kits = module_kits
                     
 
         ##############################################################
