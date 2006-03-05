@@ -749,8 +749,10 @@ class ConfigVtkObj:
 
             if type (val_tst) is types.StringType: 
 		st = 1
-            elif self.get_set_meths[i].endswith('FileName'):
-                # we make an exception with Get/SetFilename
+            elif self.get_set_meths[i].endswith('FileName') or \
+                 self.get_set_meths[i] == 'Function':
+                # we make an exception with Get/Set.*Filename, Get/SetFunction
+                # here and in vtkMethodParser
                 if val == 'None' or val == '':
                     val = None
                     st = 0
