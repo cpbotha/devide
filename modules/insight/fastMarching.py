@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class fastMarching(scriptedConfigModuleMixin, moduleBase):
@@ -38,7 +36,7 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
         # setup the pipeline
         self._fastMarching = itk.itkFastMarchingImageFilterF3F3_New()
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._fastMarching, 'itkFastMarchingImageFilter',
             'Propagating front.')
 
@@ -65,6 +63,7 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
         del self._fastMarching
 
     def executeModule(self):
+        self._transferPoints()
         self._fastMarching.Update()
 
     def getInputDescriptions(self):
@@ -87,18 +86,8 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
                 except (AttributeError, TypeError):
                     raise TypeError, 'This input requires a points-type'
                     
-                
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(
-                        self._observerInputPoints)
-
                 self._inputPoints = inputStream
                 
-                if self._inputPoints:
-                    self._inputPoints.addObserver(self._observerInputPoints)
-                    self._transferPoints()
-            
-
     def getOutputDescriptions(self):
         return ('Front arrival times (ITK, 3D, float)',)
 
@@ -115,10 +104,6 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
         self._config.normalisationFactor = self._fastMarching.\
                                            GetNormalizationFactor()
                                           
-    def _observerInputPoints(self, obj):
-        # this will be called if anything happens to the points
-        self._transferPoints()
-
     def _transferPoints(self):
         """This will transfer all points from self._inputPoints to the
         _fastMarching object.

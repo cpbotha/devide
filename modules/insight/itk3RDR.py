@@ -1,9 +1,9 @@
 # $Id$
 
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtilsITK
-import fixitk as itk
 
 class itk3RDR(moduleBase, filenameViewModuleMixin):
     """Reads all the 3D formats that you can write with itkWRT.  Every output
@@ -49,7 +49,7 @@ class itk3RDR(moduleBase, filenameViewModuleMixin):
             setattr(self, '_dummyReader%d' % (len(self._readers) - 1,),
                     self._readers[-1])
 
-            moduleUtilsITK.setupITKObjectProgress(
+            itk_kit.utils.setupITKObjectProgress(
                 self, self._readers[-1],
                 'itkImageFileReader',
                 'Reading ITK %s image from disc.' % outputType)

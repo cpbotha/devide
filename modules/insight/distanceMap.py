@@ -1,8 +1,8 @@
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class distanceMap(scriptedConfigModuleMixin, moduleBase):
@@ -30,7 +30,7 @@ class distanceMap(scriptedConfigModuleMixin, moduleBase):
 
         # create all pipeline thingies
         self._ddmif = itk.itkDanielssonDistanceMapImageFilterF3F3_New()
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._ddmif,
             'itkDanielssonDistanceMapImageFilter',
             'Calculating distance map.')

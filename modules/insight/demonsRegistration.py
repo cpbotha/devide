@@ -1,9 +1,8 @@
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
@@ -60,7 +59,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
         self._demons.SetStandardDeviations(1.0)
         self._demons.SetMovingImage(self._matcher.GetOutput())
 
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._demons, 'itkDemonsRegistration',
             'Performing registration, metric = %.2f', ('GetMetric()',))
 

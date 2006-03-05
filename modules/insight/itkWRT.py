@@ -1,10 +1,9 @@
 # $Id$
 
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtilsITK
-import wx
-import fixitk as itk
 import re
 
 class itkWRT(moduleBase, filenameViewModuleMixin):

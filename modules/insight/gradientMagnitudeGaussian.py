@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
@@ -32,7 +30,7 @@ class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
         g = itk.itkGradientMagnitudeRecursiveGaussianImageFilterF3F3_New()
         self._gradientMagnitude = g
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, g,
             'itkGradientMagnitudeRecursiveGaussianImageFilter',
             'Calculating gradient image')

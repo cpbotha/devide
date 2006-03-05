@@ -1,14 +1,10 @@
 # geodesicActiveContour.py
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
-import vtk
-import ConnectVTKITKPython as CVIPy
 
 class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
 
@@ -115,7 +111,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         #self._nbcLS.SetMaximumRMSError( 0.1 );
         self._nbcLS.SetNumberOfIterations( 500 );
 
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._nbcLS,
             'NarrowBandCurvesLevelSetImageFilter',
             'Evolving level set')

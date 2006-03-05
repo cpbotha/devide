@@ -1,9 +1,8 @@
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
@@ -58,7 +57,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         # DenseFiniteDifference -> PDEDeformableRegistration -> LevelSetMotion
         # Dense still has it, PDE onwards doesn't.  Dense is templated on
         # input and output, PDE on two image types and a deformation field...
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._levelSetMotion, 'itkLevelSetMotionRegistrationFilter',
             'Performing registration, metric = %.2f',
             ('GetMetric()',))

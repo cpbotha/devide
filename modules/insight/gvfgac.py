@@ -1,9 +1,9 @@
 # geodesicActiveContour.py
 # $Id$
 
-import fixitk as itk
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class gvfgac(scriptedConfigModuleMixin, moduleBase):
@@ -130,7 +130,7 @@ class gvfgac(scriptedConfigModuleMixin, moduleBase):
         self._gvfgac = itk.itkGVFGACLevelSetImageFilterF3F3_New()
         #geodesicActiveContour.SetMaximumRMSError( 0.1 );
 
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._gvfgac,
             'GVFGACLevelSetImageFilter',
             'Growing active contour')

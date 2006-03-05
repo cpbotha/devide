@@ -2,7 +2,6 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-import genUtils
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 

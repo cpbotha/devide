@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import noConfigModuleMixin
 
 class discreteLaplacian(noConfigModuleMixin, moduleBase):
@@ -30,7 +28,7 @@ class discreteLaplacian(noConfigModuleMixin, moduleBase):
         # setup the pipeline
         self._laplacian = itk.itkLaplacianImageFilterF3F3_New()
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._laplacian,
             'itkLaplacianImageFilter',
             'Calculating Laplacian')

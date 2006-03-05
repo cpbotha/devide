@@ -1,10 +1,8 @@
 # $Id$
 
-import fixitk as itk
-import genUtils
+import itk
+import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
-import moduleUtils
-import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
@@ -37,7 +35,7 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
         # setup the pipeline
         self._cfif = itk.itkCurvatureFlowImageFilterF3F3_New()
         
-        moduleUtilsITK.setupITKObjectProgress(
+        itk_kit.utils.setupITKObjectProgress(
             self, self._cfif, 'itkCurvatureFlowImageFilter',
             'Denoising data')
 
