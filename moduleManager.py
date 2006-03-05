@@ -97,11 +97,41 @@ class moduleManager:
         module_kits.module_kit_list = nmkl
 
         # now import the kits that remain
+        error_kit_indices = []
         for module_kit in module_kits.module_kit_list:
-            # import module_kit into module_kits namespace
-            exec('import module_kits.%s' % (module_kit,))
-            # call module_kit.init()
-            getattr(module_kits, module_kit).init(self)
+            try:
+                # import module_kit into module_kits namespace
+                exec('import module_kits.%s' % (module_kit,))
+                # call module_kit.init()
+                getattr(module_kits, module_kit).init(self)
+
+            except Exception, e:
+                # if it's a crucial module_kit, we re-raise with our own
+                # message added using th three argument raise form
+                # see: http://docs.python.org/ref/raise.html
+                if module_kit in module_kits.crucial_kit_list:
+                    es = 'Error loading required module_kit %s: %s.' \
+                         % (module_kit, str(e))
+                    raise Exception, es, sys.exc_info()[2]
+                
+                
+                # if not we can report the error and continue
+                else:
+                    self._devide_app.log_error_with_exception(
+                        'Unable to load non-critical module_kit %s: '
+                        '%s.  Continuing with startup.' %
+                        (module_kit, str(e)))
+                    # remove this from the list of loaded module_kits
+                    mk_idx = module_kits.module_kit_list.index(module_kit)
+                    error_kit_indices.append(mk_idx)
+
+        # if we got this far, startup was successful, but we may have had
+        # some non-critical kits that didn't want to load.
+        error_kit_indices.sort()
+        error_kit_indices.reverse()
+        for idx in error_kit_indices:
+            del module_kits.module_kit_list[idx]
+                    
 
         ##############################################################
         
