@@ -2,7 +2,7 @@
 # i.e. do a cvs update, a cmake and a build of:
 # vtkdevide, vtktud
 # TODO: ConnectVTKITK
-# $Id: updateAll.py,v 1.8 2005/07/04 23:29:06 cpbotha Exp $
+# $Id$
 # authored by Charl P. Botha http://cpbotha.net/
 
 import getopt
@@ -17,8 +17,6 @@ import sys
 # vtkdevideBinary = '/home/cpbotha/work/code/vtkdevide'
 # vtktudSource = '/home/cpbotha/work/code/vtktud'
 # vtktudBinary = '/home/cpbotha/work/code/vtktud'
-# wrapitkSource = '/home/cpbotha/work/code/wrapitk'
-# wrapitkBinary = '/home/cpbotha/work/code/wrapitk-gcc'
 # --- END updateAllDefaults
 try:
     import updateAllDefaults as defaults
@@ -29,17 +27,17 @@ except ImportError, e:
 # buildcommands for posix and MSVS 7.1 on Windows
 if os.name == 'posix':
     buildCommand = 'make'
+    svn_update_command = 'svn update'
 else:
     # first %s is to be replaced by the .sln file
     buildCommand = 'devenv %s /project ALL_BUILD /projectconfig ' \
                    '"RelWithDebInfo|Win32" /build RelWithDebInfo'
-
-cvsUpdateCommand = 'cvs -z3 update -dAP'
+    svn_update_command = 'c:/apps/subversion/bin/svn update'
 
 def standardUpdate(source):
     print '\nCVS updating %s\n' % (source,)
     os.chdir(source)
-    os.system(cvsUpdateCommand)
+    os.system(svn_update_command)
 
 def standardBuild(binary, slnFile):
     print '\nUpdating build config in %s' % (binary,)
