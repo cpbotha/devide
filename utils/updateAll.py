@@ -28,21 +28,23 @@ except ImportError, e:
 if os.name == 'posix':
     buildCommand = 'make'
     svn_update_command = 'svn update'
+    cmake_update_command = 'cmake .'
 else:
     # first %s is to be replaced by the .sln file
     buildCommand = 'devenv %s /project ALL_BUILD /projectconfig ' \
                    '"RelWithDebInfo|Win32" /build RelWithDebInfo'
     svn_update_command = 'c:/apps/subversion/bin/svn update'
+    cmake_update_command = 'c:/program files/cmake 2.2/bin/cmake .'
 
 def standardUpdate(source):
-    print '\nCVS updating %s\n' % (source,)
+    print '\nSVN updating %s\n' % (source,)
     os.chdir(source)
     os.system(svn_update_command)
 
 def standardBuild(binary, slnFile):
     print '\nUpdating build config in %s' % (binary,)
     os.chdir(binary)
-    os.system('cmake .')
+    os.system(cmake_update_command)
 
     if os.name == 'posix':
         theBuildCommand = buildCommand
@@ -71,7 +73,7 @@ def doBuilds(itkRequested):
 
 def dispUsage():
     print "-h or --help               : Display this message."
-    print "--noUpdates                : Do not do any CVS updates."
+    print "--noUpdates                : Do not do any SVN updates."
     print "--noBuilds                 : Do not do any builds."
     print "--noItk or --no-itk        : Do not build any itk-related source."
 
