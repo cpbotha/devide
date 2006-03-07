@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: makeRelease.sh,v 1.8 2005/05/27 14:46:09 cpbotha Exp $
+# $Id$
 # makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
 
 # script to build a complete release:
@@ -43,7 +43,7 @@ cd ../../../
 echo "Building VTK version..."
 
 cp defaults.py defaults.py.backup
-cat defaults.py | sed -e 's/USE_INSIGHT *= *.*/USE_INSIGHT = False/g' > defaultsTemp.py
+cat defaults.py | sed -e "s/NOKITS *= *.*/NOKITS = ['itk_kit']/g" > defaultsTemp.py
 cp defaultsTemp.py defaults.py
 
 cd installer
@@ -65,7 +65,7 @@ if [ "$1" != noitk ]; then
 echo "Building ITK version..."
 
 cp defaults.py defaults.py.backup
-cat defaults.py | sed -e 's/USE_INSIGHT *= *.*/USE_INSIGHT = True/g' > defaultsTemp.py
+cat defaults.py | sed -e 's/NOKITS *= *.*/NOKITS = []/g' > defaultsTemp.py
 cp defaultsTemp.py defaults.py
 
 cd installer
