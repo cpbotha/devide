@@ -244,7 +244,7 @@ class WXInterface(wx.App):
         <html>
         <body>
         <center>
-        <h3>DeVIDE v.%s</h3>
+        <h3>DeVIDE %s</h3>
         <p>DeVIDE is copyright (c) 2003-2006 Charl P. Botha<br>
         http://cpbotha.net/DeVIDE
         </p>
@@ -299,7 +299,7 @@ class WXInterface(wx.App):
 
         ir = about.htmlWindow.GetInternalRepresentation()
         ir.SetIndent(0, wx.html.HTML_INDENT_ALL)
-        newSize = (int(1.25 * ir.GetWidth()), int(1.025 * ir.GetHeight()))
+        newSize = (int(1.25 * ir.GetWidth()), int(1.4 * ir.GetHeight()))
         about.SetSize(newSize)
 
         about.CentreOnParent(wx.BOTH)
