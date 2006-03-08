@@ -143,7 +143,7 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
                     self._input.GetLargestPossibleRegion())
                 self._input.Update()
 
-                moduleUtilsITK.setupITKObjectProgress(
+                itk_kit.utils.setupITKObjectProgress(
                     self, self._writer,
                     'itkImageFileWriter',
                     'Writing ITK image to disc.')
