@@ -97,6 +97,9 @@ def init(theModuleManager):
     # user can address this as module_kits.itk_kit.utils.blaat()
     import module_kits.itk_kit.utils as utils
 
+    # also import the VTK to ITK connection module
+    import ConnectVTKITKPython as CVIPy
+
     # setup the kit version
     global VERSION
 
