@@ -22,7 +22,7 @@ def preImportITK(progressMethod):
                      ('ITKNumericsPython', 'ITK Numerics'),
                      ('ITKAlgorithmsPython', 'ITK Algorithms'),
                      ('ITKIOPython', 'ITK IO Python'),
-                     ('InsightToolkit', 'Other ITK symbols')] # fixitk
+                     ('fixitk', 'Other ITK symbols')] # fixitk
     
 
     # set the dynamic loading flags.  If we don't do this, we get strange
@@ -89,7 +89,7 @@ def init(theModuleManager):
     preImportITK(theModuleManager.setProgress)
 
     # brings 'InsightToolkit' into sys.modules
-    import InsightToolkit as itk
+    import fixitk as itk
     # stuff itk in there as well (so that if the user does import itk,
     # she'll get this)
     sys.modules['itk'] = itk
