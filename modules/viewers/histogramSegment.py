@@ -44,7 +44,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         # we should be able to take care of our renderwindow now
         # we have to do this nasty trick until my Finalize changes are
         # implemented in all vtkRenderWindow types
-        self._renderer.RemoveAllProps()
+        self._renderer.RemoveAllViewProps()
         del self._renderer
         self._viewFrame.rwi.GetRenderWindow().WindowRemap()
         self._viewFrame.Destroy()
