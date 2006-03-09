@@ -58,7 +58,6 @@ else:
                    'libpthread.so', 'libreadline.so',
                    'libICE.so',
                    'libSM.so', 'libX11.so',
-                   'libXinerama.so',
                    'libXext.so', 'libXi.so', 
                    'libXt.so',
                    'libpango', 'libfontconfig', 'libfreetype',
