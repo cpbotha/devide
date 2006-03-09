@@ -53,7 +53,7 @@ else:
                    'libGLU.so', 'libGL.so', 'libGLcore.so', 
                    'libnvidia-tls.so',
                    'ld-linux-x86-64.so.2', 'libgcc_s.so',
-                   'libstdc++.so', 'libtermcap',
+                   'libtermcap',
                    'libXft.so', 'libXrandr.so', 'libXrender.so',
                    'libpthread.so', 'libreadline.so',
                    'libICE.so',
@@ -63,8 +63,7 @@ else:
                    'libXt.so',
                    'libpango', 'libfontconfig', 'libfreetype',
                    'libatk', 'libgtk', 'libgdk',
-                   'libglib', 'libgmodule', 'libgobject', 'libgthread',
-                   'libjpeg', 'libpng', 'libtiff', 'libz.so', 'libexpat']
+                   'libglib', 'libgmodule', 'libgobject', 'libgthread']
 
     # make sure removeNames is lowercase
     removeNames = [i.lower() for i in removeNames]    
