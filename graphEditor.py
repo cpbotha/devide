@@ -58,9 +58,10 @@ class geCanvasDropTarget(wx.PyDropTarget):
 
                 if len(dropFilenameErrors) > 0:
                     for i in dropFilenameErrors:
-                        wx.LogWarning('%s: %s' % (i))
+                        self._interface.log_warning('%s: %s' % (i))
                         
-                    wx.LogWarning('Some of the dropped files could not '
+                    self._interface.log_warning(
+                        'Some of the dropped files could not '
                                  'be handled.  See "Details".')
 
         # d is the recommended drag result.  we could also return
@@ -148,7 +149,7 @@ class graphEditor:
     def __init__(self, interface, devideApp):
         # initialise vars
         self._interface = interface
-        self._devideApp = devideApp
+        self._devide_app = devideApp
 
         import resources.python.graphEditorFrame as rpg
 
@@ -332,14 +333,14 @@ class graphEditor:
 
     def _blockmodule(self, glyph):
         # first get the module manager to block this
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.blockmodule(mm.get_meta_module(glyph.moduleInstance))
         # then tell the glyph about it
         self._blocked_glyphs.addGlyph(glyph)
 
     def _unblockmodule(self, glyph):
         # first get the module manager to unblock this
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.unblockmodule(mm.get_meta_module(glyph.moduleInstance))
         # then tell the glyph about it
         self._blocked_glyphs.removeGlyph(glyph)
@@ -354,19 +355,19 @@ class graphEditor:
         """
         
         instances = [g.moduleInstance for g in glyphs]
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         allMetaModules = [mm._moduleDict[instance]
                           for instance in instances]
 
         # now ask the scheduler to execute them
-        sms = self._devideApp.scheduler.metaModulesToSchedulerModules(
+        sms = self._devide_app.scheduler.metaModulesToSchedulerModules(
             allMetaModules)
 
         print "STARTING network execute ----------------------------"
         try:
-            self._devideApp.scheduler.executeModules(sms)
+            self._devide_app.scheduler.executeModules(sms)
         except Exception, e:
-            self._devideApp.log_error_with_exception(str(e))
+            self._devide_app.log_error_with_exception(str(e))
 
         print "ENDING network execute ------------------------------"
         
@@ -719,7 +720,7 @@ class graphEditor:
         # check that it's a valid module name
         if moduleName in self._availableModules:
             # we have a valid module, we should try and instantiate
-            mm = self._devideApp.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             temp_module = mm.createModule(moduleName)
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
@@ -749,7 +750,7 @@ class graphEditor:
         the parameter moduleInstance.
         """
         
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.executeModule(moduleInstance)
 	
     def _helpModule(self, moduleInstance):
@@ -817,7 +818,7 @@ class graphEditor:
         everything will still work.
         """
 
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         if scan_modules:
             mm.scanModules()
             
@@ -986,7 +987,7 @@ class graphEditor:
             instance.__class__.__name__)
 
         if markedModuleName:
-            self._devideApp.getModuleManager().markModule(
+            self._devide_app.getModuleManager().markModule(
                 instance, markedModuleName)
 
     def _reload_module(self, module_instance, glyph):
@@ -997,7 +998,7 @@ class graphEditor:
         @param glyph: the glyph that represents the module.
         """
         
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         meta_module = mm.get_meta_module(module_instance)
 
         # prod_tuple contains a list of (prod_meta_module, output_idx,
@@ -1032,7 +1033,7 @@ class graphEditor:
                 new_instance.setConfig(module_config)
                 
             except Exception, e:
-                self._devideApp.log_error_with_exception(
+                self._devide_app.log_error_with_exception(
                     'Could not restore state/config to module %s: %s' %
                     (new_instance.__class__.__name__, e)                    
                     )
@@ -1058,7 +1059,7 @@ class graphEditor:
     def _renameModule(self, module, glyph, newModuleName):
         if newModuleName:
             # try to rename the module...
-            if self._devideApp.getModuleManager().renameModule(
+            if self._devide_app.getModuleManager().renameModule(
                 module,newModuleName):
 
                 # if no conflict, set label and redraw
@@ -1078,8 +1079,8 @@ class graphEditor:
         else:
             # the user has given us a blank or None modulename... we'll rename
             # the module with an internal random name and remove its label
-            uin = self._devideApp.getModuleManager()._makeUniqueInstanceName()
-            rr = self._devideApp.getModuleManager().renameModule(module, uin)
+            uin = self._devide_app.getModuleManager()._makeUniqueInstanceName()
+            rr = self._devide_app.getModuleManager().renameModule(module, uin)
             if rr:
                 glyph.setLabelList([module.__class__.__name__])
                 self._graphEditorFrame.canvas.redraw()
@@ -1096,7 +1097,7 @@ class graphEditor:
         newModuleName = wx.GetTextFromUser(
             'Enter a new name for this module.',
             'Rename Module',
-            self._devideApp.getModuleManager().getInstanceName(module))
+            self._devide_app.getModuleManager().getInstanceName(module))
 
         self._renameModule(module, glyph, newModuleName)
 
@@ -1298,13 +1299,14 @@ class graphEditor:
 
         try:
             # first disconnect the actual modules
-            mm = self._devideApp.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             mm.disconnectModules(glyph.moduleInstance, inputIdx)
 
         except Exception, e:
-            genUtils.logError('Could not disconnect modules (removing link '
-                              'from canvas anyway): %s' \
-                              % (str(e)))
+            self._devide_app.log_error_with_exception(
+                'Could not disconnect modules (removing link '
+                'from canvas anyway): %s' \
+                % (str(e)))
 
         # we did our best, the module didn't want to comply
         # we're going to nuke it anyway
@@ -1403,7 +1405,7 @@ class graphEditor:
     def clearAllGlyphsFromCanvas(self):
         allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
 
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
 
         # we take care of the "difficult" modules first, so sort module
         # types from high to low
@@ -1467,7 +1469,7 @@ class graphEditor:
         success = True
         try:
             # connect the actual modules
-            mm = self._devideApp.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             mm.connectModules(fromObject.moduleInstance, fromOutputIdx,
                               toObject.moduleInstance, toInputIdx)
 
@@ -1476,7 +1478,8 @@ class graphEditor:
 
         except Exception, e:
             success = False
-            genUtils.logError('Could not connect modules: %s' % (str(e)))
+            self._devide_app.log_error_with_exception(
+                'Could not connect modules: %s' % (str(e)))
 
         return success
 
@@ -1506,7 +1509,7 @@ class graphEditor:
         """
         
         # get the module manager to deserialise
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         newModulesDict, newConnections = mm.deserialiseModuleInstances(
             pmsDict, connectionList)
             
@@ -1567,7 +1570,7 @@ class graphEditor:
             self._realiseNetwork(pmsDict, connectionList, glyphPosDict,
                                  position, reposition)
         except Exception, e:
-            genUtils.logError(str(e))
+            self._devide_app.log_error_with_exception(str(e))
 
     def _loadNetworkIntoCopyBuffer(self, filename):
         """Attempt to load (i.e. unpickle) a DVN network and bind the
@@ -1580,7 +1583,7 @@ class graphEditor:
             self._copyBuffer = (pmsDict, connectionList, glyphPosDict)
 
         except Exception, e:
-            genUtils.logError(str(e))
+            self._devide_app.log_error_with_exception(str(e))
 
     def _loadNetwork(self, filename):
         """Given a filename, read it as a DVN file and return a tuple with
@@ -1634,8 +1637,9 @@ class graphEditor:
             f = open(filename, 'wb')
             f.write(stream)
         except Exception, e:
-            genUtils.logError('Could not write network to %s: %s' % (filename,
-                                                                     str(e)))
+            self._devide_app.log_error_with_exception(
+                'Could not write network to %s: %s' % (filename,
+                                                       str(e)))
                                                                      
         if f:
             f.close()
@@ -1677,7 +1681,7 @@ class graphEditor:
         # connectionList is a list of pickledConnections
 
         connectionLines = []
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         
         for connection in connectionList:
 
@@ -1708,8 +1712,9 @@ class graphEditor:
             f.write('}')
             
         except Exception, e:
-            genUtils.logError('Could not write network to %s: %s' % (filename,
-                                                                     str(e)))
+            self._devide_app.log_error_with_exception(
+                'Could not write network to %s: %s' % (filename,
+                                                       str(e)))
                                                                      
         if f:
             f.close()
@@ -1724,7 +1729,7 @@ class graphEditor:
         """
 
         moduleInstances = [glyph.moduleInstance for glyph in glyphs]
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
 
         # let the moduleManager serialise what it can
         pmsDict, connectionList = mm.serialiseModuleInstances(
@@ -2228,7 +2233,7 @@ class graphEditor:
 
 
     def _viewConfModule(self, module):
-        mm = self._devideApp.getModuleManager()
+        mm = self._devide_app.getModuleManager()
         mm.viewModule(module)
 
     def _deleteModule(self, glyph, refreshCanvas=True):
@@ -2252,7 +2257,7 @@ class graphEditor:
                 self._disconnect(glyph, inputIdx)
             
             # then get the module manager to NUKE the module itself
-            mm = self._devideApp.getModuleManager()
+            mm = self._devide_app.getModuleManager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
             mm.deleteModule(glyph.moduleInstance)
@@ -2260,8 +2265,9 @@ class graphEditor:
 
         except Exception, e:
             success = False
-            genUtils.logError('Could not delete module (removing from canvas '
-                              'anyway): %s' % (str(e)))
+            self._devide_app.log_error_with_exception(
+                'Could not delete module (removing from canvas '
+                'anyway): %s' % (str(e)))
 
         canvas = glyph.getCanvas()
         # remove it from the canvas

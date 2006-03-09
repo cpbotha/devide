@@ -172,15 +172,20 @@ class WXInterface(wx.App):
 
         wx.Log_FlushActive()
 
-    def log_error(self, msg):
+    def log_error(self, message):
         """Log a single string as error.
 
         This method must be supplied by all interfaces.
         """
         
-        self.log_error_list([msg])
+        self.log_error_list([message])
 
-    def log_message(self, message, timeStamp=True):
+    def log_info(self, message, timeStamp=True):
+        """Log information.
+
+        This will simply go into the log window.
+        """
+        
         if timeStamp:
             msg = "%s: %s" % (
                 time.strftime("%X", time.localtime(time.time())),
@@ -190,6 +195,19 @@ class WXInterface(wx.App):
                               
         self._mainFrame.messageLogTextCtrl.AppendText(
             msg + '\n')
+        
+
+    def log_message(self, message, timeStamp=True):
+        """Use this to log a message that has to be shown to the user in
+        for example a message box.
+        """
+
+        wx.LogMessage(message)
+        wx.Log_FlushActive()
+
+    def log_warning(self, message, timeStamp=True):
+        wx.LogWarning(message)
+        wx.Log_FlushActive()
 
     def set_progress(self, progress, message, noTime=False):
         self._mainFrame.progressGauge.SetValue(
@@ -214,7 +232,7 @@ class WXInterface(wx.App):
 
             # let's also show the completion message in the
             # message log...
-            self.log_message(message)
+            self.log_info(message)
                    
         # bring this window to the top if the user wants it
         if self._mainFrame.progressRaiseCheckBox.GetValue():

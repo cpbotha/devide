@@ -111,16 +111,18 @@ class doubleThreshold(moduleBase,
 
         ocString = self._viewFrame.outputDataTypeChoice.GetStringSelection()
         if len(ocString) == 0:
-            genUtils.logError("Impossible error with outputType choice in "
-                              "doubleThresholdFLT.py.  Picking sane default.")
+            self._moduleManager.log_error(
+                "Impossible error with outputType choice in "
+                "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
             ocString = self._outputTypes.keys()[-1]
 
         try:
             symbolicOutputType = self._outputTypes[ocString]
         except KeyError:
-            genUtils.logError("Impossible error with ocString in "
-                              "doubleThresholdFLT.py.  Picking sane default.")
+            self._moduleManager.log_error(
+                "Impossible error with ocString in "
+                "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
             symbolicOutputType = self._outputTypes.values()[-1]
 
@@ -130,9 +132,10 @@ class doubleThreshold(moduleBase,
             try:
                 self._config.outputScalarType = getattr(vtk, symbolicOutputType)
             except AttributeError:
-                genUtils.logError("Impossible error with symbolicOutputType "
-                                  "in doubleThresholdFLT.py.  Picking sane "
-                                  "default.")
+                self._moduleManager.log_error(
+                    "Impossible error with symbolicOutputType "
+                    "in doubleThresholdFLT.py.  Picking sane "
+                    "default.")
                 self._config.outputScalarType = -1
 
     def configToView(self):

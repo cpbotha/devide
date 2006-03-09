@@ -767,7 +767,7 @@ class tdObjects(s3dcGridMixin):
                         exec('prop.%s' % (methodName,))
                         
             except Exception:
-                genUtils.logError(
+                self._moduleManager.log_error_with_exception(
                     'Could not execute %s on object %s\'s prop.' % \
                     (methodName,
                      self._tdObjectsDict[obj]['objectName']))

@@ -219,6 +219,11 @@ class moduleManager:
         """
         self._devide_app.log_error(message)
 
+    def log_error_with_exception(self, message):
+        """Convenience method that can be used by modules.
+        """
+        self._devide_app.log_error_with_exception(message)
+
     def log_message(self, message):
         """Convenience method that can be used by modules.
         """
@@ -345,7 +350,7 @@ class moduleManager:
         # so we don't throw an exception.
         if len(failed_mis) > 0:
             failed_indices = '\n'.join(failed_mis.keys())
-            self._devide_app.logError(
+            self._devide_app.log_error(
                 'The following module indices failed to load: \n%s' % \
                 (failed_indices,))
         
@@ -933,7 +938,7 @@ class moduleManager:
                     newModule.setConfig(configCopy)
                 except Exception, e:
                     # it could be a module with no defined config logic
-                    genUtils.logWarning(
+                    self._devide_app.log_warning(
                         'Could not restore state/config to module %s: %s' %
                         (newModule.__class__.__name__, e))
                 
@@ -987,7 +992,7 @@ class moduleManager:
                 pass
             except Exception, e:
                 # it could be a module with no defined config logic
-                genUtils.logWarning(
+                self._devide_app.log_warning(
                     'Could not restore post connect state/config to module '
                     '%s: %s' % (newModuleInstance.__class__.__name__, e))
                 
@@ -1035,7 +1040,7 @@ class moduleManager:
                            str(moduleInstance.getConfig()))
                     pms.moduleConfig = moduleInstance.getConfig()
                 except AttributeError, e:
-                    genUtils.logWarning(
+                    self._devide_app.log_warning(
                         'Could not extract state (config) from module %s: %s' \
                         % (moduleInstance.__class__.__name__, str(e)))
 

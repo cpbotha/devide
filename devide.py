@@ -162,9 +162,11 @@ class DeVIDEApp:
         return self.get_module_manager()
     
     def log_error(self, msg):
-        self._interface.log_error(msg)
+        """Report error.
 
-    logError = log_error
+        In general this will be brought to the user's attention immediately.
+        """
+        self._interface.log_error(msg)
 
     def log_error_list(self, msgs):
         self._interface.log_error_list(msgs)
@@ -179,13 +181,27 @@ class DeVIDEApp:
         emsgs = genUtils.exceptionToMsgs()
         self.log_error_list(emsgs + [msg])
 
-    def log_message(self, message, timeStamp=True):
-        self._interface.log_message(message, timeStamp)
+    def log_info(self, message, timeStamp=True):
+        """Log informative message to the log file or log window.
+        """
+        
+        self._interface.log_info(message, timeStamp)
 
-    logMessage = log_message
+    def log_message(self, message, timeStamp=True):
+        """Log a message that will also be brought to the user's attention,
+        for example in a dialog box.
+        """
+        
+        self._interface.log_message(message, timeStamp)
 
     def log_warning(self, message, timeStamp=True):
-        self._interface.log_message(message, timeStamp)
+        """Log warning message.
+
+        This is not as serious as an error condition, but it should also be
+        brought to the user's attention.
+        """
+        
+        self._interface.log_warning(message, timeStamp)
 
     def setProgress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress
