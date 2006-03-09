@@ -27,7 +27,7 @@ import types
 #   handler should be invoked.  devide.py can then invoke the scheduler.
 
 #########################################################################
-class moduleManagerException(Exception):
+class ModuleManagerException(Exception):
     pass
     
 #########################################################################
@@ -538,15 +538,19 @@ class moduleManager:
     def createModule(self, fullName, instanceName=None):
         """Try and create module fullName.
 
-        If an error occurs, this will be directly logged with
-        devideApp.logError.  Think about this: shouldn't this function rather
-        raise an exception?
-
         @param fullName: The complete module spec below application directory,
         e.g. modules.Readers.hdfRDR.
 
-        @return: moduleInstance if successful, None if not.
+        @return: moduleInstance if successful.
+
+        @raises ModuleManagerException: if there is a problem creating the
+        module.
         """
+
+        if fullName not in self._availableModules:
+            raise ModuleManagerException(
+                '%s is not available in the current Module Manager / '
+                'Kit configuration.' % (fullName,))
 
 	try:
             # think up name for this module (we have to think this up now
@@ -596,15 +600,13 @@ class moduleManager:
 
 
 	except ImportError:
-            self._devide_app.log_error_with_exception(
+            raise ModuleManagerException(
                 "Unable to import module %s!" % fullName)
-	    return None
         
 	except Exception, e:
-            self._devide_app.log_error_with_exception(
+            raise ModuleManagerException(
                 "Unable to instantiate module %s: %s" \
                 % (fullName, str(e)))
-	    return None
 
 	# return the instance
 	return moduleInstance
@@ -687,7 +689,7 @@ class moduleManager:
         other call should be used to execute a single module!
         
         @param instance: module instance to be executed.
-        @raise moduleManagerException: this exception is raised with an
+        @raise ModuleManagerException: this exception is raised with an
         informative error string if a module fails to execute.
         @return: Nothing.
         """
@@ -719,7 +721,7 @@ class moduleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise moduleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException, es, sys.exc_info()[2]
         
             
     def executeNetwork(self, startingModule=None):
@@ -760,7 +762,7 @@ class moduleManager:
         close() method.  This method is used by the graphEditor and by
         the close() method of the moduleManager.
 
-        @raise moduleManagerException: if an error occurs during module
+        @raise ModuleManagerException: if an error occurs during module
         deletion.
         """
 
@@ -843,7 +845,7 @@ class moduleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise moduleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException, es, sys.exc_info()[2]
 
     def connectModules(self, output_module, output_idx,
                         input_module, input_idx):
@@ -921,9 +923,21 @@ class moduleManager:
         # newModulesDict will act as translator between pickled instanceName
         # and new instance!
         newModulesDict = {}
+        failed_modules_dict = []
         for pmsTuple in pmsDict.items():
             # each pmsTuple == (instanceName, pms)
-            newModule = self.createModule(pmsTuple[1].moduleName)
+            # we're only going to try to create a module if the module_man
+            # says it's available!
+            try:
+                newModule = self.createModule(pmsTuple[1].moduleName)
+                
+            except ModuleManagerException, e:
+                self._devide_app.log_error_with_exception(
+                    'Could not create module %s:\n%s.' %
+                    (pmsTuple[1].moduleName, str(e)))
+                # make sure
+                newModule = None
+                
             if newModule:
                 # set its config!
                 try:
@@ -1447,7 +1461,7 @@ class moduleManager:
         @param consumerInputIdx: data enters consumerInstance via this input
         port.
 
-        @raise moduleManagerException: if an error occurs getting the data
+        @raise ModuleManagerException: if an error occurs getting the data
         from or transferring it to a new module.
         """
 
@@ -1489,7 +1503,7 @@ class moduleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise moduleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException, es, sys.exc_info()[2]
         
         
 
@@ -1536,7 +1550,7 @@ class moduleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise moduleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException, es, sys.exc_info()[2]
         
 
         # record that the transfer has just happened

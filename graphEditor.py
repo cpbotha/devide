@@ -6,6 +6,7 @@ import copy
 import cPickle
 from internal.wxPyCanvas import wxpc
 import genUtils
+from moduleManager import ModuleManagerException
 import moduleUtils # for getModuleIcon
 import os
 import re
@@ -721,7 +722,11 @@ class graphEditor:
         if moduleName in self._availableModules:
             # we have a valid module, we should try and instantiate
             mm = self._devide_app.getModuleManager()
-            temp_module = mm.createModule(moduleName)
+            try:
+                temp_module = mm.createModule(moduleName)
+            except ModuleManagerException:
+                return (None, None)
+                
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
                 # create and draw the actual glyph
@@ -742,8 +747,6 @@ class graphEditor:
                 self._routeAllLines()
 
                 return (temp_module, glyph)
-
-        return (None, None)
 
     def _executeModule(self, moduleInstance):
         """Ask the moduleManager to execute the devide module represented by
