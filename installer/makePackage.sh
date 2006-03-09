@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: makePackage.sh,v 1.15 2005/07/05 13:31:49 cpbotha Exp $
+# $Id$
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
@@ -29,11 +29,6 @@ mv distdevide/devide distdevide/devide.bin
 SCRIPTFILE='distdevide/devide'
 cp devideInvokingScript.sh $SCRIPTFILE
 chmod +x $SCRIPTFILE
-# make a tarball
-mv distdevide devide
-rm -f devide.tar.bz2
-tar cjvf "devide.tar.bz2" devide
-mv devide distdevide
 
 else
 
@@ -45,9 +40,5 @@ $INSTALLER devide.spec
 # (we are in the installer directory)
 cp devide.exe.manifest distdevide/
 
-# optionally make an archive
-# mv distdevide devide
-# zip -rp "devide-win32-`date +%Y%m%d`.zip" devide
-# mv devide distdevide
 
 fi

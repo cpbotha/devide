@@ -53,6 +53,12 @@ touch distdevide/NO_ITK
 c:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`.exe
 else
+# make a tarball
+mv distdevide devide
+rm -f devide.tar.bz2
+tar cjvf "devide.tar.bz2" devide
+mv devide distdevide
+# timestamp the tarball
 cp devide.tar.bz2 devide`date +%Y%m%d`.tar.bz2
 fi
 
@@ -74,6 +80,12 @@ if [ `uname` != Linux ]; then
 c:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`itk.exe
 else
+# make a tarball
+mv distdevide devide
+rm -f devide.tar.bz2
+tar cjvf "devide.tar.bz2" devide
+mv devide distdevide
+# timestamp the tarball
 cp devide.tar.bz2 devide`date +%Y%m%d`itk.tar.bz2
 fi
 
