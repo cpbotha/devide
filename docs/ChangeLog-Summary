@@ -1,26 +1,29 @@
-Release 20050530 - Mon May 30 14:42:42 CEST 2005
+Release ng1phase1 6.3.9 - Fri Mar 10 12:01:35 WEST 2006
 
-Changes since 20050330 - released on Mon May 30 14:42:42 CEST 2005:
+Changes since 20050330
 
  * Total conversion from demand driven to event driven.
    - we now do all our own scheduling
    - what this means to the user: you HAVE to press F5 in the Graph Editor, 
      or select Network|Execute from the menu, or press the execute button
      on any of the module configuration dialog boxes to execute a network.
+   - some modules, such as the slice3dVWR, explicitly request execution
+     of the network whilst you're interacting.  This is by design.
  * All WX functionality has been factored out of the DeVIDE core.  This is
    part of the DeVIDE NG1 Phase 2 planning.
  * Introduced concept of module_kits, a generic way for adding libraries
    (such as VTK or ITK) to DeVIDE.
- * Module "in-place" reload feature added.
+ * Module "in-place" reload feature added.  Right click on module for
+   pop-up menu, select "Reload".
  * Graph Editor:
    - starts up by default
    - module palette merged back into main interface
  * Updates and fixes for 64 bit Linux build
- * Say something about devide.exe.manifest
+ * On Windows XP machines with the XP look active, DeVIDE should also have
+   this look and feel.
  * Upgraded from wxPython 2.4.2.4 to wxPython 2.6.2.1.
  * Worked around nasty NVIDIA driver bug on Linux (some machines, all 
    driver versions from 6107 to 7667)
- * streamTracer module added.
  * More unit tests added.
  * modules directory structure more consistent.
 
