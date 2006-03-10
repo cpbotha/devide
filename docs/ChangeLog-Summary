@@ -9,6 +9,7 @@ Changes since 20050330
      on any of the module configuration dialog boxes to execute a network.
    - some modules, such as the slice3dVWR, explicitly request execution
      of the network whilst you're interacting.  This is by design.
+ * Updated to VTK 5.0 and ITK 2.4.1.
  * All WX functionality has been factored out of the DeVIDE core.  This is
    part of the DeVIDE NG1 Phase 2 planning.
  * Introduced concept of module_kits, a generic way for adding libraries
