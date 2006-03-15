@@ -32,6 +32,10 @@ class curvatureFlowDenoising:
     kits = ['itk_kit']
     cats = ['Insight']
 
+class DanielssonDistance:
+    kits = ['itk_kit']
+    cats = ['Insight']
+
 class demonsRegistration:
     kits = ['itk_kit']
     cats = ['Insight']
