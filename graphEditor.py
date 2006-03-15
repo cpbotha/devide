@@ -724,7 +724,9 @@ class graphEditor:
             mm = self._devide_app.getModuleManager()
             try:
                 temp_module = mm.createModule(moduleName)
-            except ModuleManagerException:
+            except ModuleManagerException, e:
+                self._devide_app.log_error_with_exception(
+                    'Could not create module %s: %s' % (moduleName, str(e)))
                 return (None, None)
                 
             # if the module_manager did its trick, we can make a glyph
