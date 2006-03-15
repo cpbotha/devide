@@ -28,6 +28,8 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
 
         # setup the pipeline
         self._dist_filter = itk.itkDanielssonDistanceMapImageFilterF3F3_New()
+        # THIS HAS TO BE ON.  SO THERE.
+        self._dist_filter.SetUseImageSpacing(True)
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._dist_filter, 'itkDanielssonDistanceMapImageFilter',
