@@ -13,7 +13,7 @@ call, this is ignored and DeVIDE starts up as usual.  However, if the module
 is in the crucial_kit_list, DeVIDE will refuse to start up.
 """
 
-module_kit_list = ['vtk_kit', 'vtktud_kit', 'itk_kit']
+module_kit_list = ['vtk_kit', 'vtktud_kit', 'itk_kit', 'matplotlib_kit']
 
 crucial_kit_list = ['vtk_kit']
 

@@ -6,7 +6,7 @@
 
 """matplotlib_kit package driver file.
 
-Inserts the following modules in sys.modules: pylab.
+Inserts the following modules in sys.modules: matplotlib, pylab.
 
 @author: Charl P. Botha <http://cpbotha.net/>
 """
@@ -20,8 +20,24 @@ VERSION = 'SVN'
 
 def init(theModuleManager):
     # import the main module itself
+    global matplotlib
     import matplotlib
-    matplotlib.use('WX')
+
+    # use WX + Agg backend (slower, but nicer that WX)
+    matplotlib.use('WXAgg')
+    # interactive mode: user can use pylab commands from any introspection
+    # interface, changes will be made immediately and matplotlib cooperates
+    # nicely with main WX event loop
+    matplotlib.interactive(True)
+    # makes sure we use the numpy backend
+    from matplotlib import rcParams
+    rcParams['numerix'] = 'numpy'
+
+    theModuleManager.setProgress(25, 'Initialising matplotlib_kit: config')
+
+    # import the pylab interface, make sure it's available from this namespace
+    global pylab
+    import pylab
     
-    theModuleManager.setProgress(100, 'Initialising matplotlib_kit')
+    theModuleManager.setProgress(100, 'Initialising matplotlib_kit: pylab')
 
