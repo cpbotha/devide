@@ -99,9 +99,14 @@ def init(theModuleManager):
     preImportVTK(theModuleManager.setProgress)
 
     # import the main module itself
+    # the global is so that users can also do:
+    # from module_kits import vtk_kit
+    # vtk_kit.vtk.vtkSomeFilter()
+    global vtk
     import vtk
 
-    # and do the same for vtkdevide, vtktud
+    # and do the same for vtkdevide
+    global vtkdevide
     import vtkdevide
 
     # setup some default error handling for VTK objects that have neither
@@ -121,7 +126,8 @@ def init(theModuleManager):
 
     # load up some generic functions into this namespace
     # user can, after import of module_kits.vtk_kit, address these as
-    # module_kits.vtk_kit.blaat
+    # module_kits.vtk_kit.blaat.  In this case we don't need "global",
+    # as these are modules directly in this package.
     import module_kits.vtk_kit.misc as misc
     import module_kits.vtk_kit.mixins as mixins
     import module_kits.vtk_kit.utils as utils
