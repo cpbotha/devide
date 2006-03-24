@@ -258,31 +258,20 @@ class WXInterface(wx.App):
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog
 
-        aboutText1 = '''
-        <html>
-        <body>
-        <center>
-        <h3>DeVIDE %s</h3>
-        <p>DeVIDE is copyright (c) 2003-2006 Charl P. Botha<br>
-        http://cpbotha.net/DeVIDE
-        </p>
-        <p>Unauthorised use or distribution strictly prohibited.
-        See LICENSE.txt in the docs directory for detailed terms of
-        use.
-        </p>
-        <p>
-        wxPython %s, Python %s<br>
-        '''
-
-        aboutText2 = '''
-        </p>
-        </center>
-        </body>
-        </html>
-        '''
-
         about = aboutDialog(self._mainFrame, -1, 'dummy')
+
+        about.icon_bitmap.SetBitmap(
+            resources.graphics.images.getdevidelogo64x64Bitmap())
+
+        # set the main name and version
+        about.name_version_text.SetLabel(
+            'DeVIDE %s' % (self._devide_app.get_devide_version(),))
+
+        # now get all other versions we require
         pyver = string.split(sys.version)[0]
+
+        about.versions_listbox.Append('Python %s' % (pyver,))
+        about.versions_listbox.Append('wxPython %s' % (wx.VERSION_STRING))
 
         # get versions of all included kits; by this time moduleManager
         # has been imported
@@ -290,35 +279,7 @@ class WXInterface(wx.App):
         import module_kits
         for module_kit in module_kits.module_kit_list:
             v = getattr(module_kits, module_kit).VERSION
-            kits_and_versions.append('%s: %s' % (module_kit, v))
-
-        # if applicable, let's make an ITK version string
-#         ivs = ''
-#         if self.mainConfig.useInsight:
-#             # let's hope McMillan doesn't catch this one!
-#             itk = __import__('fixitk')
-#             isv = itk.itkVersion.GetITKSourceVersion()
-#             ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
-#             ivs = '%s (%s: %s)' % (itk.itkVersion.GetITKVersion(), ind,
-#                                    ITK_VERSION_EXTRA)
-#         else:
-#             ivs = 'N/A'
-
-
-
-        aboutText = '%s%s%s' % (aboutText1,
-                                '<br>'.join(kits_and_versions),
-                                aboutText2)
-        
-        about.htmlWindow.SetPage(
-            aboutText % (self._devide_app.get_devide_version(),
-                         wx.VERSION_STRING,
-                         pyver))
-
-        ir = about.htmlWindow.GetInternalRepresentation()
-        ir.SetIndent(0, wx.html.HTML_INDENT_ALL)
-        newSize = (int(1.25 * ir.GetWidth()), int(1.4 * ir.GetHeight()))
-        about.SetSize(newSize)
+            about.versions_listbox.Append('%s: %s' % (module_kit, v))
 
         about.CentreOnParent(wx.BOTH)
         about.ShowModal()

@@ -10,8 +10,13 @@ class aboutDialog(wx.Dialog):
         # begin wxGlade: aboutDialog.__init__
         kwds["style"] = wx.DEFAULT_DIALOG_STYLE
         wx.Dialog.__init__(self, *args, **kwds)
-        self.htmlWindow = HtmlWindow(self, -1)
-        self.okButton = wx.Button(self, wx.ID_OK, "OK")
+        self.panel_1 = wx.Panel(self, -1)
+        self.sizer_5_staticbox = wx.StaticBox(self.panel_1, -1, "Component Versions")
+        self.name_version_text = wx.StaticText(self.panel_1, -1, "DeVIDE ng1phase1 6.3.9")
+        self.icon_bitmap = wx.StaticBitmap(self.panel_1, -1, wx.NullBitmap)
+        self.label_2 = wx.StaticText(self.panel_1, -1, "DeVIDE is copyright (c) 2003-2006 Charl P. Botha\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
+        self.versions_listbox = wx.ListBox(self.panel_1, -1, choices=[], style=wx.LB_NEEDED_SB)
+        self.button_1 = wx.Button(self.panel_1, wx.ID_OK, "OK")
 
         self.__set_properties()
         self.__do_layout()
@@ -20,15 +25,30 @@ class aboutDialog(wx.Dialog):
     def __set_properties(self):
         # begin wxGlade: aboutDialog.__set_properties
         self.SetTitle("About DeVIDE")
-        self.htmlWindow.SetSize((389, 245))
-        self.okButton.SetDefault()
+        self.name_version_text.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, ""))
+        self.icon_bitmap.SetMinSize((64, 64))
+        self.versions_listbox.SetMinSize((300, 100))
+        self.button_1.SetDefault()
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: aboutDialog.__do_layout
         sizer_3 = wx.BoxSizer(wx.VERTICAL)
-        sizer_3.Add(self.htmlWindow, 1, wx.ALL|wx.EXPAND, 5)
-        sizer_3.Add(self.okButton, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 10)
+        sizer_2 = wx.BoxSizer(wx.VERTICAL)
+        sizer_4 = wx.BoxSizer(wx.VERTICAL)
+        sizer_5 = wx.StaticBoxSizer(self.sizer_5_staticbox, wx.VERTICAL)
+        sizer_4.Add(self.name_version_text, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ADJUST_MINSIZE, 0)
+        sizer_4.Add(self.icon_bitmap, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ADJUST_MINSIZE, 10)
+        sizer_4.Add(self.label_2, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ADJUST_MINSIZE, 0)
+        sizer_5.Add(self.versions_listbox, 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 4)
+        sizer_4.Add(sizer_5, 1, wx.TOP|wx.BOTTOM|wx.EXPAND, 7)
+        sizer_4.Add(self.button_1, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
+        sizer_2.Add(sizer_4, 1, wx.ALL|wx.EXPAND, 7)
+        self.panel_1.SetAutoLayout(True)
+        self.panel_1.SetSizer(sizer_2)
+        sizer_2.Fit(self.panel_1)
+        sizer_2.SetSizeHints(self.panel_1)
+        sizer_3.Add(self.panel_1, 1, wx.EXPAND, 0)
         self.SetAutoLayout(True)
         self.SetSizer(sizer_3)
         sizer_3.Fit(self)
