@@ -16,7 +16,7 @@ import sys
 import types
 
 # you have to define this
-VERSION = 'SVN'
+VERSION = ''
 
 def init(theModuleManager):
     # import the main module itself
@@ -35,9 +35,23 @@ def init(theModuleManager):
 
     theModuleManager.setProgress(25, 'Initialising matplotlib_kit: config')
 
+    global numpy
+    import numpy
+
+    theModuleManager.setProgress(40, 'Initialising matplotlib_kit: numpy')
+
     # import the pylab interface, make sure it's available from this namespace
     global pylab
     import pylab
     
-    theModuleManager.setProgress(100, 'Initialising matplotlib_kit: pylab')
+    theModuleManager.setProgress(90, 'Initialising matplotlib_kit: pylab')
+
+    # build up VERSION
+    global VERSION
+    VERSION = '%s (numpy %s matplotlib %s)' % ('SVN', numpy.version.version,
+                                               matplotlib.__version__)
+
+    theModuleManager.setProgress(100, 'Initialising matplotlib_kit: complete')
+
+    
 
