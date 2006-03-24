@@ -598,15 +598,15 @@ class moduleManager:
             # it's now fully born ;)
             self._halfBornInstanceName = None
 
-
-	except ImportError:
-            raise ModuleManagerException(
-                "Unable to import module %s!" % fullName)
+	except ImportError, e:
+            # we re-raise with the three argument form to retain full
+            # trace information.
+            es = "Unable to import module %s: %s" % (fullName, str(e))
+            raise ModuleManagerException, es, sys.exc_info()[2]
         
 	except Exception, e:
-            raise ModuleManagerException(
-                "Unable to instantiate module %s: %s" \
-                % (fullName, str(e)))
+            es = "Unable to instantiate module %s: %s" % (fullName, str(e))
+            raise ModuleManagerException, es, sys.exc_info()[2]
 
 	# return the instance
 	return moduleInstance
