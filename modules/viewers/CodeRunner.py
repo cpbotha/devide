@@ -1,6 +1,7 @@
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
+import wx
 
 NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
@@ -15,6 +16,9 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self._create_view_frame()
         self._bind_events()
+
+        self._view_frame.shell_window.interp.locals.update(
+            {'obj' : self})
 
         self.configToLogic()
         self.logicToConfig()
@@ -61,6 +65,10 @@ class CodeRunner(introspectModuleMixin, moduleBase):
     def view(self):
         self._view_frame.Show()
         self._view_frame.Raise()
+
+    def _bind_events(self):
+        self._view_frame.run_button.Bind(
+            wx.EVT_BUTTON, self._handler_run_button)
         
     def _create_view_frame(self):
         import resources.python.code_runner_frame
@@ -73,7 +81,6 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self._view_frame.main_splitter.SetMinimumPaneSize(50)
 
-
         object_dict = {'Module (self)' : self}
 
         moduleUtils.createStandardObjectAndPipelineIntrospection(
@@ -83,9 +90,15 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         moduleUtils.createECASButtons(self, self._view_frame,
                                       self._view_frame.view_frame_panel)
 
-    def _bind_events(self):
-        pass
+    def _handler_run_button(self, evt):
+        self.run_current_edit()
 
+    def run_current_edit(self):
+        print self._view_frame.edit_notebook.GetCurrentPage()
+        text = self._view_frame.scratch_editwindow.GetText()
+        text = text.replace('\r\n', '\n')
+        text = text.replace('\r', '\n')
+        self._view_frame.shell_window.push(text)
         
         
         
