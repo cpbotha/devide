@@ -1,5 +1,9 @@
 # $Id$
 
+class CodeRunner:
+    kits = ['vtk_kit']
+    cats = ['Viewers']
+
 class histogram1D:
     kits = ['vtk_kit']
     cats = ['Viewers', 'Statistics']
