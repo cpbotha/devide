@@ -271,7 +271,6 @@ class WXInterface(wx.App):
         pyver = string.split(sys.version)[0]
 
         about.versions_listbox.Append('Python %s' % (pyver,))
-        about.versions_listbox.Append('wxPython %s' % (wx.VERSION_STRING))
 
         # get versions of all included kits; by this time moduleManager
         # has been imported

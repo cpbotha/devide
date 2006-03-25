@@ -15,6 +15,7 @@ import wx
 NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
 
+
 class CodeRunner(introspectModuleMixin, moduleBase):
 
     def __init__(self, module_manager):
@@ -27,9 +28,12 @@ class CodeRunner(introspectModuleMixin, moduleBase):
                                    self._config.execute_src = ''
 
         self._create_view_frame()
+        # convenience binding
+        self.interp = self._view_frame.shell_window.interp
+        
         self._bind_events()
 
-        self._view_frame.shell_window.interp.locals.update(
+        self.interp.locals.update(
             {'obj' : self})
 
         self.configToLogic()
@@ -92,6 +96,11 @@ class CodeRunner(introspectModuleMixin, moduleBase):
     def _bind_events(self):
         self._view_frame.run_button.Bind(
             wx.EVT_BUTTON, self._handler_run_button)
+
+        # Assign handlers for keyboard events.
+        self.window.Bind(wx.EVT_CHAR, self.OnChar)
+        self.window.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        
         
     def _create_view_frame(self):
         import resources.python.code_runner_frame
@@ -122,6 +131,66 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         return [self._view_frame.scratch_editwindow,
                 self._view_frame.setup_editwindow,
                 self._view_frame.execute_editwindow][sel]
+
+    def _handler_char(self, event):
+        """Keypress event handler.
+        
+        Only receives an event if OnKeyDown calls event.Skip() for the
+        corresponding event."""
+
+        window = event.GetEventObject()
+        key = event.KeyCode()
+
+        if key in self.interp.getAutoCompleteKeys():
+            # Usually the dot (period) key activates auto completion.
+            if window.AutoCompActive(): 
+                window.AutoCompCancel()
+            window.ReplaceSelection('')
+            window.AddText(chr(key))
+            text, pos = window.GetCurLine()
+            text = text[:pos]
+            if window.autoComplete: 
+                self.autoCompleteShow(text)
+        elif key == ord('('):
+            # The left paren activates a call tip and cancels an
+            # active auto completion.
+            if self.window.AutoCompActive(): 
+                self.window.AutoCompCancel()
+            self.window.ReplaceSelection('')
+            self.window.AddText('(')
+            text, pos = self.window.GetCurLine()
+            text = text[:pos]
+            self.autoCallTipShow(text)
+        else:
+            # Allow the normal event handling to take place.
+            event.Skip()
+
+    def _handler_key_down(self, event):
+        """Key down event handler."""
+
+        key = event.KeyCode()
+        # If the auto-complete window is up let it do its thing.
+        if self.window.AutoCompActive():
+            event.Skip()
+            return
+        controlDown = event.ControlDown()
+        altDown = event.AltDown()
+        shiftDown = event.ShiftDown()
+        # Let Ctrl-Alt-* get handled normally.
+        if controlDown and altDown:
+            event.Skip()
+        # Increase font size.
+        elif controlDown and key in (ord(']'),):
+            dispatcher.send(signal='FontIncrease')
+        # Decrease font size.
+        elif controlDown and key in (ord('['),):
+            dispatcher.send(signal='FontDecrease')
+        # Default font size.
+        elif controlDown and key in (ord('='),):
+            dispatcher.send(signal='FontDefault')
+        else:
+            event.Skip()
+    
 
     def _run_source(self, text):
         """Compile and run the source given in text in the shell interpreter's
