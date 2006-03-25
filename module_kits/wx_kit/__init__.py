@@ -25,4 +25,4 @@ def init(theModuleManager):
     global VERSION
     VERSION = wx.VERSION_STRING
 
-    theModuleManager.setProgress(100, 'Initialising wxpython_kit')
+    theModuleManager.setProgress(100, 'Initialising wx_kit')
