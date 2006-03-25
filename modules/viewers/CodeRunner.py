@@ -2,6 +2,9 @@
 # let's just override getConfig() to return the texts directly, that's
 # far easier. (and better)
 
+# need to combine Editor and Buffer to get autocomplete and what not
+# currently we're using EditWindows
+
 import code # deep magic
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
