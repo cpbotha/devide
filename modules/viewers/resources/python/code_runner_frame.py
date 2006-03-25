@@ -4,6 +4,7 @@
 
 import wx
 from wx import py
+import module_kits.wx_kit
 
 class CodeRunnerFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -18,7 +19,7 @@ class CodeRunnerFrame(wx.Frame):
         self.notebook_1_pane_3 = wx.Panel(self.edit_notebook, -1)
         self.notebook_1_pane_2 = wx.Panel(self.edit_notebook, -1)
         self.notebook_1_pane_1 = wx.Panel(self.edit_notebook, -1)
-        self.scratch_editwindow = py.editwindow.EditWindow(self.notebook_1_pane_1, -1)
+        self.scratch_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_1, -1)
         self.setup_editwindow = py.editwindow.EditWindow(self.notebook_1_pane_2, -1)
         self.execute_editwindow = py.editwindow.EditWindow(self.notebook_1_pane_3, -1)
         self.save_button = wx.Button(self.window_1_pane_1, -1, "Save")
