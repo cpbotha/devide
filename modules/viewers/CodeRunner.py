@@ -1,6 +1,12 @@
+# TODO: this shouldn't have the standard ECASH buttons, it's confusing
+# let's just override getConfig() to return the texts directly, that's
+# far easier. (and better)
+
+import code # deep magic
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
+import sys
 import wx
 
 NUMBER_OF_INPUTS = 5
@@ -13,6 +19,9 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self.inputs = [None] * NUMBER_OF_INPUTS
         self.outputs = [None] * NUMBER_OF_OUTPUTS
+
+        self._config.scratch_src = self._config.setup_src = \
+                                   self._config.execute_src = ''
 
         self._create_view_frame()
         self._bind_events()
@@ -54,13 +63,24 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         pass
 
     def viewToConfig(self):
-        pass
+        self._config.scratch_src = self._view_frame.scratch_editwindow.\
+                                   GetText()
+        self._config.setup_src = self._view_frame.setup_editwindow.GetText()
+        self._config.execute_src = self._view_frame.execute_editwindow.\
+                                   GetText()
 
     def configToView(self):
-        pass
+        scratch, setup, execute = [self._view_frame.scratch_editwindow,
+                                   self._view_frame.setup_editwindow,
+                                   self._view_frame.execute_editwindow]
+
+        scratch.SetText(self._config.scratch_src)
+        setup.SetText(self._config.setup_src)
+        execute.SetText(self._config.execute_src)
 
     def executeModule(self):
-        pass
+        t = self._view_frame.execute_editwindow.GetText()
+        self._run_source(t)
 
     def view(self):
         self._view_frame.Show()
@@ -88,17 +108,53 @@ class CodeRunner(introspectModuleMixin, moduleBase):
             object_dict, None)
 
         moduleUtils.createECASButtons(self, self._view_frame,
-                                      self._view_frame.view_frame_panel)
+                                      self._view_frame.view_frame_panel,
+                                      executeDefault=False)
 
     def _handler_run_button(self, evt):
         self.run_current_edit()
 
+    def _get_current_editwindow(self):
+        sel = self._view_frame.edit_notebook.GetSelection()
+        return [self._view_frame.scratch_editwindow,
+                self._view_frame.setup_editwindow,
+                self._view_frame.execute_editwindow][sel]
+
+    def _run_source(self, text):
+        """Compile and run the source given in text in the shell interpreter's
+        local namespace.
+
+        The idiot pyshell goes through the whole shell.push -> interp.push
+        -> interp.runsource -> InteractiveInterpreter.runsource hardcoding the
+        'mode' parameter (effectively) to 'single', thus breaking multi-line
+        definitions and whatnot.
+
+        Here we do some deep magic (ha ha) to externally override the interp
+        runsource.  Python does completely rule.
+        """
+        
+        interp = self._view_frame.shell_window.interp
+        stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
+        sys.stdin, sys.stdout, sys.stderr = \
+                   interp.stdin, interp.stdout, interp.stderr
+
+        # look: calling class method with interp instance as first parameter
+        # comes down to the same as interp calling runsource() as its
+        # parent method.
+        more = code.InteractiveInterpreter.runsource(
+            interp, text, '<input>', 'exec')
+
+        sys.stdin = stdin
+        sys.stdout = stdout
+        sys.stderr = stderr
+
+        return more
+
     def run_current_edit(self):
-        print self._view_frame.edit_notebook.GetCurrentPage()
-        text = self._view_frame.scratch_editwindow.GetText()
+        cew = self._get_current_editwindow()
+        text = cew.GetText()
         text = text.replace('\r\n', '\n')
         text = text.replace('\r', '\n')
-        self._view_frame.shell_window.push(text)
-        
-        
-        
+
+        self._run_source(text)
+        self._view_frame.shell_window.prompt()
