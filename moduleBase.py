@@ -103,6 +103,9 @@ class moduleBase(object):
 
         If this has resulted in changes to the config, return True, otherwise
         return False.
+
+        You only need to implement this if you make use of the standard ECASH
+        controls.
         """
         raise NotImplementedError
 
@@ -112,6 +115,9 @@ class moduleBase(object):
 
         If this has resulted in changes to the logic, return True, otherwise
         return False
+
+        You only need to implement this if you make use of the standard ECASH
+        controls.
         """
         
         raise NotImplementedError
@@ -120,6 +126,8 @@ class moduleBase(object):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
 
+        You only need to implement this if you make use of the standard ECASH
+        controls.
         """
         raise NotImplementedError
         
@@ -127,6 +135,8 @@ class moduleBase(object):
     def configToView(self):
         """Make the view reflect the internal configuration information.
 
+        You only need to implement this if you make use of the standard ECASH
+        controls.
         """
 	raise NotImplementedError
 
