@@ -1,11 +1,8 @@
-# TODO: this shouldn't have the standard ECASH buttons, it's confusing
-# let's just override getConfig() to return the texts directly, that's
-# far easier. (and better)
-
-# need to combine Editor and Buffer to get autocomplete and what not
-# currently we're using EditWindows
+# check python24/lib/code.py - exceptions raised only result in
+# printouts.  perhaps we want a real exception?
 
 import code # deep magic
+import md5
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
@@ -27,11 +24,34 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         self._config.scratch_src = self._config.setup_src = \
                                    self._config.execute_src = ''
 
+        self._config_srcs = ['scratch_src',
+                             'setup_src',
+                             'execute_src']
+
+        # these are the real deals, i.e. the underlying logic
+        self._src_scratch = self._src_setup = self._src_execute = ''
+        self._srcs = ['_src_scratch', '_src_setup', '_src_execute']
+
+        # we use this to determine whether the current setup src has been
+        # executed or not
+        self._md5_setup_src = ''
+
         self._create_view_frame()
+
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.view_frame_panel,
+                                      executeDefault=False)
+
+        # more convenience bindings
+        self._editwindows = [self._view_frame.scratch_editwindow,
+                             self._view_frame.setup_editwindow,
+                             self._view_frame.execute_editwindow]
         
         self.interp = self._view_frame.shell_window.interp
-        self._view_frame.scratch_editwindow.set_interp(self.interp)
-        
+
+        # set interpreter on all three our editwindows
+        for ew in self._editwindows:
+            ew.set_interp(self.interp)
         
         self._bind_events()
 
@@ -65,12 +85,6 @@ class CodeRunner(introspectModuleMixin, moduleBase):
     def getOutput(self, idx):
         return self.outputs[idx]
 
-    def logicToConfig(self):
-        pass
-
-    def configToLogic(self):
-        pass
-
     def viewToConfig(self):
         self._config.scratch_src = self._view_frame.scratch_editwindow.\
                                    GetText()
@@ -87,18 +101,47 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         setup.SetText(self._config.setup_src)
         execute.SetText(self._config.execute_src)
 
+    def configToLogic(self):
+        logic_changed = False
+
+        for cn,ln in zip(self._config_srcs, self._srcs):
+            c = getattr(self._config, cn)
+            l = getattr(self, ln)
+            if c != l:
+                setattr(self, ln, c)
+                logic_changed = True
+
+        return logic_changed
+
+    def logicToConfig(self):
+        config_changed = False
+
+        for cn,ln in zip(self._config_srcs, self._srcs):
+            c = getattr(self._config, cn)
+            l = getattr(self, ln)
+            if l != c:
+                setattr(self._config, cn, l)
+                config_changed = True
+
+        return config_changed
+
     def executeModule(self):
-        t = self._view_frame.execute_editwindow.GetText()
-        self._run_source(t)
+        # we only attempt running setup_src if its md5 is different from
+        # that of the previous setup_src that we attempted to run
+        hd = md5.md5(self._src_setup).hexdigest
+        if hd != self._md5_setup_src:
+            self._md5_setup_src = hd
+            self._run_source(self._src_setup)
+            
+        self._run_source(self._src_execute)
 
     def view(self):
         self._view_frame.Show()
         self._view_frame.Raise()
 
     def _bind_events(self):
-        self._view_frame.run_button.Bind(
-            wx.EVT_BUTTON, self._handler_run_button)
-
+        wx.EVT_MENU(self._view_frame, self._view_frame.run_id,
+                    self._handler_run)
         
     def _create_view_frame(self):
         import resources.python.code_runner_frame
@@ -111,17 +154,7 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self._view_frame.main_splitter.SetMinimumPaneSize(50)
 
-        object_dict = {'Module (self)' : self}
-
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._view_frame, self._view_frame.view_frame_panel,
-            object_dict, None)
-
-        moduleUtils.createECASButtons(self, self._view_frame,
-                                      self._view_frame.view_frame_panel,
-                                      executeDefault=False)
-
-    def _handler_run_button(self, evt):
+    def _handler_run(self, evt):
         self.run_current_edit()
 
     def _get_current_editwindow(self):
@@ -143,6 +176,9 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         Here we do some deep magic (ha ha) to externally override the interp
         runsource.  Python does completely rule.
         """
+
+        text = text.replace('\r\n', '\n')
+        text = text.replace('\r', '\n')
         
         interp = self._view_frame.shell_window.interp
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
@@ -155,6 +191,9 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         more = code.InteractiveInterpreter.runsource(
             interp, text, '<input>', 'exec')
 
+        # make sure the user can type again
+        self._view_frame.shell_window.prompt()
+
         sys.stdin = stdin
         sys.stdout = stdout
         sys.stderr = stderr
@@ -164,8 +203,6 @@ class CodeRunner(introspectModuleMixin, moduleBase):
     def run_current_edit(self):
         cew = self._get_current_editwindow()
         text = cew.GetText()
-        text = text.replace('\r\n', '\n')
-        text = text.replace('\r', '\n')
 
         self._run_source(text)
-        self._view_frame.shell_window.prompt()
+        

@@ -19,12 +19,22 @@ class CodeRunnerFrame(wx.Frame):
         self.notebook_1_pane_3 = wx.Panel(self.edit_notebook, -1)
         self.notebook_1_pane_2 = wx.Panel(self.edit_notebook, -1)
         self.notebook_1_pane_1 = wx.Panel(self.edit_notebook, -1)
+        
+        # Menu Bar
+        self.frame_1_menubar = wx.MenuBar()
+        self.SetMenuBar(self.frame_1_menubar)
+        self.file_open_id = wx.NewId()
+        self.file_save = wx.NewId()
+        self.run_id = wx.NewId()
+        wxglade_tmp_menu = wx.Menu()
+        wxglade_tmp_menu.Append(self.file_open_id, "&Open file to current edit", "Load a file into the current edit tab", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.file_save, "&Save current edit to file", "Save current edit tab to file", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.run_id, "&Run current edit\tCtrl-Enter", "Run the current edit tab code in the shell context", wx.ITEM_NORMAL)
+        self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
+        # Menu Bar end
         self.scratch_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_1, -1)
-        self.setup_editwindow = py.editwindow.EditWindow(self.notebook_1_pane_2, -1)
-        self.execute_editwindow = py.editwindow.EditWindow(self.notebook_1_pane_3, -1)
-        self.save_button = wx.Button(self.window_1_pane_1, -1, "Save")
-        self.load_button = wx.Button(self.window_1_pane_1, -1, "Load")
-        self.run_button = wx.Button(self.window_1_pane_1, -1, "Run")
+        self.setup_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_2, -1)
+        self.execute_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_3, -1)
         self.shell_window = py.shell.Shell(self.window_1_pane_2, -1)
 
         self.__set_properties()
@@ -34,6 +44,7 @@ class CodeRunnerFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: CodeRunnerFrame.__set_properties
         self.SetTitle("DeVIDE CodeRunner")
+        self.SetSize((480, 480))
         # end wxGlade
 
     def __do_layout(self):
@@ -43,7 +54,6 @@ class CodeRunnerFrame(wx.Frame):
         sizer_3 = wx.BoxSizer(wx.VERTICAL)
         sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_5 = wx.BoxSizer(wx.VERTICAL)
-        sizer_7 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_6_copy_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_6_copy = wx.BoxSizer(wx.VERTICAL)
         sizer_6 = wx.BoxSizer(wx.VERTICAL)
@@ -66,10 +76,6 @@ class CodeRunnerFrame(wx.Frame):
         self.edit_notebook.AddPage(self.notebook_1_pane_2, "Setup")
         self.edit_notebook.AddPage(self.notebook_1_pane_3, "Execute")
         sizer_5.Add(self.edit_notebook, 1, wx.EXPAND, 0)
-        sizer_7.Add(self.save_button, 0, wx.RIGHT|wx.ADJUST_MINSIZE, 4)
-        sizer_7.Add(self.load_button, 0, wx.RIGHT|wx.ADJUST_MINSIZE, 4)
-        sizer_7.Add(self.run_button, 0, wx.ADJUST_MINSIZE, 0)
-        sizer_5.Add(sizer_7, 0, wx.ALL|wx.ALIGN_RIGHT, 7)
         self.window_1_pane_1.SetAutoLayout(True)
         self.window_1_pane_1.SetSizer(sizer_5)
         sizer_5.Fit(self.window_1_pane_1)
@@ -91,8 +97,6 @@ class CodeRunnerFrame(wx.Frame):
         sizer_1.Add(self.view_frame_panel, 1, wx.EXPAND, 0)
         self.SetAutoLayout(True)
         self.SetSizer(sizer_1)
-        sizer_1.Fit(self)
-        sizer_1.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 
