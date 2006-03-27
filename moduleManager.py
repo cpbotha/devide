@@ -353,6 +353,10 @@ class moduleManager:
             self._devide_app.log_error(
                 'The following module indices failed to load: \n%s' % \
                 (failed_indices,))
+
+        self._devide_app.log_info(
+            '%d modules and %d segments scanned.' %
+            (len(self._availableModules), len(self.availableSegmentsList)))
         
 
     ########################################################################
