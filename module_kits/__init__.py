@@ -14,7 +14,7 @@ is in the crucial_kit_list, DeVIDE will refuse to start up.
 """
 
 module_kit_list = ['wx_kit', 'vtk_kit', 'vtktud_kit',
-                   'itk_kit', 'matplotlib_kit']
+                   'itk_kit', 'matplotlib_kit', 'stats_kit']
 
 crucial_kit_list = ['wx_kit', 'vtk_kit']
 
