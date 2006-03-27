@@ -109,6 +109,22 @@ class DVEditWindow(py.editwindow.EditWindow):
             self.CallTipSetHighlight(0, size)
         
     
-    
+    def autoCompleteShow(self, command):
+        """Display auto-completion popup list."""
+
+        if self.interp is None:
+            return
+        
+        list = self.interp.getAutoCompleteList(
+            command, 
+            includeMagic=self.autoCompleteIncludeMagic, 
+            includeSingle=self.autoCompleteIncludeSingle, 
+            includeDouble=self.autoCompleteIncludeDouble)
+        
+        if list:
+            options = ' '.join(list)
+            offset = 0
+            self.AutoCompShow(offset, options)
+
         
         
