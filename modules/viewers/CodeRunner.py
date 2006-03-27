@@ -12,7 +12,6 @@ import wx
 NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
 
-
 class CodeRunner(introspectModuleMixin, moduleBase):
 
     def __init__(self, module_manager):
@@ -140,8 +139,15 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         self._view_frame.Raise()
 
     def _bind_events(self):
+        wx.EVT_MENU(self._view_frame, self._view_frame.file_open_id,
+                    self._handler_file_open)
+        wx.EVT_MENU(self._view_frame, self._view_frame.file_save_id,
+                    self._handler_file_save)
+            
         wx.EVT_MENU(self._view_frame, self._view_frame.run_id,
                     self._handler_run)
+
+
         
     def _create_view_frame(self):
         import resources.python.code_runner_frame
@@ -154,6 +160,55 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self._view_frame.main_splitter.SetMinimumPaneSize(50)
 
+    def _handler_file_open(self, evt):
+        fd = wx.FileDialog(
+            self._view_frame,
+            'Select file to open into current edit',
+            wildcard='*.py', style=wx.OPEN)
+
+        if fd.ShowModal() == wx.ID_OK:
+            filename = fd.GetPath()
+            
+            cew = self._get_current_editwindow()
+            try:
+                f = open(filename, 'r')
+                cew.SetText(f.read())
+                f.close()
+                
+            except IOError, e:
+                self._moduleManager.log_error_with_exception(
+                    'Could not open file %s into CodeRunner edit: %s' %
+                    (filename, str(e)))
+
+            else:
+                self._view_frame.statusbar.SetLabel(
+                    'Loaded %s into current edit.' % (filename,))
+
+    def _handler_file_save(self, evt):
+        fd = wx.FileDialog(
+            self._view_frame,
+            'Select filename to save current edit to',
+            wildcard='*.py', style=wx.SAVE)
+
+        if fd.ShowModal() == wx.ID_OK:
+            filename = fd.GetPath()
+            
+            cew = self._get_current_editwindow()
+            try:
+                f = open(filename, 'w')
+                t = cew.GetText()
+                f.write(t)
+                f.close()
+                
+            except IOError, e:
+                self._moduleManager.log_error_with_exception(
+                    'Could not save CodeRunner edit to file %s: %s' %
+                    (filename, str(e)))
+
+            else:
+                self._view_frame.statusbar.SetLabel(
+                    'Saved current edit to %s.' % (filename,))
+        
     def _handler_run(self, evt):
         self.run_current_edit()
 
@@ -205,4 +260,7 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         text = cew.GetText()
 
         self._run_source(text)
+
+        self._view_frame.statusbar.SetLabel(
+            'Current edit run completed.')
         

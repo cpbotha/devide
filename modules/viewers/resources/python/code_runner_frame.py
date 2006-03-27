@@ -24,11 +24,11 @@ class CodeRunnerFrame(wx.Frame):
         self.frame_1_menubar = wx.MenuBar()
         self.SetMenuBar(self.frame_1_menubar)
         self.file_open_id = wx.NewId()
-        self.file_save = wx.NewId()
+        self.file_save_id = wx.NewId()
         self.run_id = wx.NewId()
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(self.file_open_id, "&Open file to current edit", "Load a file into the current edit tab", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.file_save, "&Save current edit to file", "Save current edit tab to file", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.file_open_id, "&Open file to current edit\tCtrl-O", "Load a file into the current edit tab", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.file_save_id, "&Save current edit to file\tCtrl-S", "Save current edit tab to file", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(self.run_id, "&Run current edit\tCtrl-Enter", "Run the current edit tab code in the shell context", wx.ITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "&File")
         # Menu Bar end
@@ -36,6 +36,7 @@ class CodeRunnerFrame(wx.Frame):
         self.setup_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_2, -1)
         self.execute_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_3, -1)
         self.shell_window = py.shell.Shell(self.window_1_pane_2, -1)
+        self.statusbar = self.CreateStatusBar(1, 0)
 
         self.__set_properties()
         self.__do_layout()
@@ -45,6 +46,11 @@ class CodeRunnerFrame(wx.Frame):
         # begin wxGlade: CodeRunnerFrame.__set_properties
         self.SetTitle("DeVIDE CodeRunner")
         self.SetSize((480, 480))
+        self.statusbar.SetStatusWidths([-1])
+        # statusbar fields
+        statusbar_fields = ["Welcome to the CodeRunner"]
+        for i in range(len(statusbar_fields)):
+            self.statusbar.SetStatusText(statusbar_fields[i], i)
         # end wxGlade
 
     def __do_layout(self):
