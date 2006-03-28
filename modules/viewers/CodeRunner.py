@@ -188,7 +188,7 @@ class CodeRunner(introspectModuleMixin, moduleBase):
                     (filename, str(e)))
 
             else:
-                self._view_frame.statusbar.SetLabel(
+                self._view_frame.statusbar.SetStatusText(
                     'Loaded %s into current edit.' % (filename,))
 
     def _handler_file_save(self, evt):
