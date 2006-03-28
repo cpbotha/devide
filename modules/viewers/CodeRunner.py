@@ -11,6 +11,7 @@ import wx
 
 NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
+EDITWINDOW_LABELS = ['Scratch', 'Setup', 'Execute']
 
 class CodeRunner(introspectModuleMixin, moduleBase):
 
@@ -85,20 +86,18 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         return self.outputs[idx]
 
     def viewToConfig(self):
-        self._config.scratch_src = self._view_frame.scratch_editwindow.\
-                                   GetText()
-        self._config.setup_src = self._view_frame.setup_editwindow.GetText()
-        self._config.execute_src = self._view_frame.execute_editwindow.\
-                                   GetText()
-
+        for ew, cn, i in zip(self._editwindows, self._config_srcs,
+                             range(len(self._editwindows))):
+            
+            setattr(self._config, cn, ew.GetText())
+            self.set_editwindow_modified(i, False)
+        
     def configToView(self):
-        scratch, setup, execute = [self._view_frame.scratch_editwindow,
-                                   self._view_frame.setup_editwindow,
-                                   self._view_frame.execute_editwindow]
-
-        scratch.SetText(self._config.scratch_src)
-        setup.SetText(self._config.setup_src)
-        execute.SetText(self._config.execute_src)
+        for ew, cn, i in zip(self._editwindows, self._config_srcs,
+                             range(len(self._editwindows))):
+            
+            ew.SetText(getattr(self._config, cn))
+            self.set_editwindow_modified(i, False)
 
     def configToLogic(self):
         logic_changed = False
@@ -147,6 +146,11 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         wx.EVT_MENU(self._view_frame, self._view_frame.run_id,
                     self._handler_run)
 
+        for i in range(len(self._editwindows)):
+            def observer_modified(ew, i=i):
+                self.set_editwindow_modified(i, True)
+                
+            self._editwindows[i].observer_modified = observer_modified
 
         
     def _create_view_frame(self):
@@ -270,4 +274,13 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self._view_frame.statusbar.SetStatusText(
             'Current edit run completed.')
+
+    def set_editwindow_modified(self, idx, modified):
+        pt = EDITWINDOW_LABELS[idx]
+
+        if modified:
+            pt += ' *'
+            
+        self._view_frame.edit_notebook.SetPageText(idx, pt)
+        
         

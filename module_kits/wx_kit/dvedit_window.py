@@ -10,6 +10,8 @@ class DVEditWindow(py.editwindow.EditWindow):
     EditWindow component.  The Py components are useful, they've just been put
     together in a really unfortunate way.  Poor Orbtech.
 
+    Note: SaveFile/LoadFile.
+
     @author: Charl P. Botha <http://cpbotha.net/>
     """
 
@@ -23,9 +25,17 @@ class DVEditWindow(py.editwindow.EditWindow):
 
         self.interp = None
 
+        self.observer_modified = None
+
+        # we only want insertions and deletions of text to be detected
+        # by self._handler_modified
+        self.SetModEventMask(stc.STC_MOD_INSERTTEXT |
+                             stc.STC_MOD_DELETETEXT)
+
         # Assign handlers for keyboard events.
         self.Bind(wx.EVT_CHAR, self._handler_char)
         self.Bind(stc.EVT_STC_MARGINCLICK, self._handler_marginclick)
+        self.Bind(stc.EVT_STC_MODIFIED, self._handler_modified)
 
     def _handler_char(self, event):
         """Keypress event handler.
@@ -89,7 +99,9 @@ class DVEditWindow(py.editwindow.EditWindow):
                     else:
                         self.ToggleFold(lineClicked)
 
-            
+    def _handler_modified(self, evt):
+        if callable(self.observer_modified):
+            self.observer_modified(self)
 
     def _fold_all(self):
         lineCount = self.GetLineCount()
