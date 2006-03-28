@@ -268,6 +268,6 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         self._run_source(text)
 
-        self._view_frame.statusbar.SetLabel(
+        self._view_frame.statusbar.SetStatusText(
             'Current edit run completed.')
         
