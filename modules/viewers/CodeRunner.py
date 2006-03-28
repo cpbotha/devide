@@ -213,7 +213,7 @@ class CodeRunner(introspectModuleMixin, moduleBase):
                     (filename, str(e)))
 
             else:
-                self._view_frame.statusbar.SetLabel(
+                self._view_frame.statusbar.SetStatusText(
                     'Saved current edit to %s.' % (filename,))
         
     def _handler_run(self, evt):
