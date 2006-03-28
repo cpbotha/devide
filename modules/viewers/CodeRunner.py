@@ -172,7 +172,14 @@ class CodeRunner(introspectModuleMixin, moduleBase):
             cew = self._get_current_editwindow()
             try:
                 f = open(filename, 'r')
-                cew.SetText(f.read())
+                
+                t = f.read()
+                # replace stupid DOS CR/LF with newline
+                t = t.replace('\r\n', '\n')
+                # any CRs that are left are nuked
+                t = t.replace('\r', '')
+
+                cew.SetText(t)
                 f.close()
                 
             except IOError, e:
