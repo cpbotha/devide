@@ -1,3 +1,10 @@
+# - make our own window control for colour-sequence bar
+# - this should also have separate (?) line with HSV colour vertices
+# - on this line, there should be vertical lines indicating the current
+#   position of all the opacity transfer function vertices
+# - abstract floatcanvas-derived linear function editor into wx_kit
+
+
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
