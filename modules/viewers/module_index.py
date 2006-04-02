@@ -1,7 +1,7 @@
 # $Id$
 
 class CodeRunner:
-    kits = ['vtk_kit']
+    kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
 
 class histogram1D:
@@ -13,11 +13,14 @@ class histogram2D:
     cats = ['Viewers']
 
 class histogramSegment:
-    kits = ['vtk_kit']
+    kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
-    
 
 class slice3dVWR:
-    kits = ['vtk_kit']
+    kits = ['wx_kit', 'vtk_kit']
+    cats = ['Viewers']
+
+class TFEditor:
+    kits = ['wx_kit']
     cats = ['Viewers']
 
