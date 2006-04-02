@@ -260,11 +260,10 @@ class ConfigVtkObj:
 
         self._notebook = wx.Notebook(parent=self._panel, id=-1,
                                     size=(640,480))
-        nbsizer = wx.NotebookSizer(self._notebook)
 
         # wxPython 2.6 doesn't have the option keyword anymore, it's now
         # proportion
-        sizer7.Add(nbsizer, proportion=0,
+        sizer7.Add(self._notebook, proportion=0,
                    flag=wx.EXPAND)
 
 	self.make_gui_vars ()
