@@ -280,6 +280,10 @@ class WXInterface(wx.App):
             v = getattr(module_kits, module_kit).VERSION
             about.versions_listbox.Append('%s: %s' % (module_kit, v))
 
+
+        about.GetSizer().Fit(about)
+        about.Layout()
+
         about.CentreOnParent(wx.BOTH)
         about.ShowModal()
         about.Destroy()

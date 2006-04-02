@@ -10,13 +10,13 @@ class aboutDialog(wx.Dialog):
         # begin wxGlade: aboutDialog.__init__
         kwds["style"] = wx.DEFAULT_DIALOG_STYLE
         wx.Dialog.__init__(self, *args, **kwds)
-        self.panel_1 = wx.Panel(self, -1)
-        self.sizer_5_staticbox = wx.StaticBox(self.panel_1, -1, "Component Versions")
-        self.name_version_text = wx.StaticText(self.panel_1, -1, "DeVIDE ng1phase1 6.3.9")
-        self.icon_bitmap = wx.StaticBitmap(self.panel_1, -1, wx.NullBitmap)
-        self.label_2 = wx.StaticText(self.panel_1, -1, "DeVIDE is copyright (c) 2003-2006 Charl P. Botha\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
-        self.versions_listbox = wx.ListBox(self.panel_1, -1, choices=[], style=wx.LB_NEEDED_SB)
-        self.button_1 = wx.Button(self.panel_1, wx.ID_OK, "OK")
+        self.toplevel_panel = wx.Panel(self, -1)
+        self.sizer_5_staticbox = wx.StaticBox(self.toplevel_panel, -1, "Component Versions")
+        self.name_version_text = wx.StaticText(self.toplevel_panel, -1, "DeVIDE ng1phase1 6.3.00")
+        self.icon_bitmap = wx.StaticBitmap(self.toplevel_panel, -1, wx.NullBitmap)
+        self.label_2 = wx.StaticText(self.toplevel_panel, -1, "DeVIDE is copyright (c) 2003-2006 Charl P. Botha\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
+        self.versions_listbox = wx.ListBox(self.toplevel_panel, -1, choices=[], style=wx.LB_NEEDED_SB)
+        self.button_1 = wx.Button(self.toplevel_panel, wx.ID_OK, "OK")
 
         self.__set_properties()
         self.__do_layout()
@@ -33,7 +33,7 @@ class aboutDialog(wx.Dialog):
 
     def __do_layout(self):
         # begin wxGlade: aboutDialog.__do_layout
-        sizer_3 = wx.BoxSizer(wx.VERTICAL)
+        toplevel_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
         sizer_4 = wx.BoxSizer(wx.VERTICAL)
         sizer_5 = wx.StaticBoxSizer(self.sizer_5_staticbox, wx.VERTICAL)
@@ -44,15 +44,15 @@ class aboutDialog(wx.Dialog):
         sizer_4.Add(sizer_5, 1, wx.TOP|wx.BOTTOM|wx.EXPAND, 7)
         sizer_4.Add(self.button_1, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 0)
         sizer_2.Add(sizer_4, 1, wx.ALL|wx.EXPAND, 7)
-        self.panel_1.SetAutoLayout(True)
-        self.panel_1.SetSizer(sizer_2)
-        sizer_2.Fit(self.panel_1)
-        sizer_2.SetSizeHints(self.panel_1)
-        sizer_3.Add(self.panel_1, 1, wx.EXPAND, 0)
+        self.toplevel_panel.SetAutoLayout(True)
+        self.toplevel_panel.SetSizer(sizer_2)
+        sizer_2.Fit(self.toplevel_panel)
+        sizer_2.SetSizeHints(self.toplevel_panel)
+        toplevel_sizer.Add(self.toplevel_panel, 1, wx.EXPAND, 0)
         self.SetAutoLayout(True)
-        self.SetSizer(sizer_3)
-        sizer_3.Fit(self)
-        sizer_3.SetSizeHints(self)
+        self.SetSizer(toplevel_sizer)
+        toplevel_sizer.Fit(self)
+        toplevel_sizer.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 
