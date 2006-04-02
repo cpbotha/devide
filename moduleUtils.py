@@ -163,7 +163,8 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
 
 def createStandardObjectAndPipelineIntrospection(d3module,
                                                  viewFrame, viewFramePanel,
-                                                 objectDict, renderWindow):
+                                                 objectDict,
+                                                 renderWindow=None):
        
     """Given a devide module and its viewframe, this will create a
     standard wxChoice and wxButton (+ labels) UI for object and

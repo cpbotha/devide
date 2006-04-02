@@ -1,7 +1,8 @@
 from moduleBase import moduleBase
+from moduleMixins import introspectModuleMixin
 import moduleUtils
 
-class TFEditor(moduleBase):
+class TFEditor(introspectModuleMixin, moduleBase):
 
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
@@ -20,6 +21,15 @@ class TFEditor(moduleBase):
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             resources.python.tfeditorframe.TFEditorFrame)
+
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._view_frame, self._view_frame.view_frame_panel,
+            {'Module (self)' : self})
+
+        # add the ECASH buttons
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.view_frame_panel)
+        
 
     def close(self):
         for i in range(len(self.getInputDescriptions())):
