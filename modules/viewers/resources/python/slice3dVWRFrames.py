@@ -108,7 +108,7 @@ class orthoViewFrame(wxFrame):
         # begin wxGlade: orthoViewFrame.__set_properties
         self.SetTitle("Ortho View")
         self.SetSize((480, 433))
-        self.RWI.SetSize((-1, -1))
+        self.RWI.SetMinSize((-1, -1))
         # end wxGlade
 
     def __do_layout(self):
@@ -133,7 +133,7 @@ class orthoViewFrame(wxFrame):
 class controlFrame(wxFrame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: controlFrame.__init__
-        kwds["style"] = wxCAPTION|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxSYSTEM_MENU
+        kwds["style"] = wxDEFAULT_FRAME_STYLE
         wxFrame.__init__(self, *args, **kwds)
         self.panel_3 = wxPanel(self, -1)
         self.notebook_1 = wxNotebook(self.panel_3, -1, style=0)
@@ -238,7 +238,7 @@ class controlFrame(wxFrame):
         self.pointsGrid.SetColSize(0, 200)
         self.pointsGrid.SetColLabelValue(1, "Discrete")
         self.pointsGrid.SetColLabelValue(2, "Value")
-        self.surfacePickActionChoice.SetSize((200, 34))
+        self.surfacePickActionChoice.SetMinSize((200, 21))
         self.surfacePickActionChoice.SetSelection(0)
         self.objectsListGrid.CreateGrid(2, 5)
         self.objectsListGrid.EnableEditing(0)
@@ -261,7 +261,7 @@ class controlFrame(wxFrame):
         self.implicitsGrid.SetColLabelValue(1, "Type")
         self.implicitsGrid.SetColLabelValue(2, "Enabled")
         self.implicitsGrid.SetColLabelValue(3, "Interaction")
-        self.implicitsGrid.SetSize((500, 400))
+        self.implicitsGrid.SetMinSize((500, 400))
         self.voiAutoSizeChoice.SetSelection(0)
         # end wxGlade
 
@@ -306,7 +306,7 @@ class controlFrame(wxFrame):
         sizer_27.Add(self.label_6, 0, wxRIGHT, 4)
         sizer_27.Add(self.fusionAlphaSlider, 1, wxALIGN_CENTER_VERTICAL, 0)
         sizer_18.Add(sizer_27, 0, wxTOP|wxBOTTOM, 7)
-        sizer_22.Add(sizer_18, 0, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
+        sizer_22.Add(sizer_18, 1, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
         sizer_28.Add(self.label_1_2, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_28.Add(self.sliceCursorDiscreteText, 1, wxRIGHT|wxEXPAND|wxALIGN_CENTER_VERTICAL, 7)
         sizer_28.Add(self.label_8, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
@@ -322,7 +322,7 @@ class controlFrame(wxFrame):
         sizer_30.Add((0, 125), 0, 0, 0)
         sizer_17.Add(sizer_30, 1, wxEXPAND, 0)
         sizer_17.Add((500, 0), 0, 0, 0)
-        sizer_22.Add(sizer_17, 0, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
+        sizer_22.Add(sizer_17, 1, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
         sizer_13.Add(self.label_5_1, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 3)
         sizer_13.Add(self.surfacePickActionChoice, 0, wxALIGN_CENTER_VERTICAL, 0)
         sizer_19.Add(sizer_13, 0, wxALL, 4)
@@ -330,7 +330,7 @@ class controlFrame(wxFrame):
         sizer_31.Add(self.objectsListGrid, 1, wxEXPAND, 4)
         sizer_31.Add((0, 125), 0, 0, 0)
         sizer_19.Add(sizer_31, 1, wxEXPAND, 0)
-        sizer_22.Add(sizer_19, 0, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
+        sizer_22.Add(sizer_19, 1, wxLEFT|wxRIGHT|wxTOP|wxEXPAND, 7)
         self.notebook_1_pane_1.SetAutoLayout(True)
         self.notebook_1_pane_1.SetSizer(sizer_22)
         sizer_22.Fit(self.notebook_1_pane_1)
@@ -346,7 +346,7 @@ class controlFrame(wxFrame):
         sizer_26.Add(self.label_4, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
         sizer_26.Add(self.implicitManualBoundsText, 2, wxALIGN_CENTER_VERTICAL, 0)
         sizer_25.Add(sizer_26, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 4)
-        sizer_25.Add(self.implicitsGrid, 0, 0, 0)
+        sizer_25.Add(self.implicitsGrid, 0, wxEXPAND, 0)
         sizer_24.Add(sizer_25, 1, wxBOTTOM|wxEXPAND, 7)
         sizer_21.Add(self.voiEnabledCheckBox, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 7)
         sizer_21.Add(self.label_10, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 4)
@@ -371,13 +371,13 @@ class controlFrame(wxFrame):
         sizer_23.SetSizeHints(self.notebook_1_pane_2)
         self.notebook_1.AddPage(self.notebook_1_pane_1, "Main")
         self.notebook_1.AddPage(self.notebook_1_pane_2, "Widgets")
-        sizer_14.Add(wxNotebookSizer(self.notebook_1), 1, wxEXPAND|wxADJUST_MINSIZE, 0)
+        sizer_14.Add(self.notebook_1, 1, wxEXPAND|wxADJUST_MINSIZE, 0)
         sizer_3.Add(sizer_14, 1, wxALL|wxEXPAND, 7)
         self.panel_3.SetAutoLayout(True)
         self.panel_3.SetSizer(sizer_3)
         sizer_3.Fit(self.panel_3)
         sizer_3.SetSizeHints(self.panel_3)
-        sizer_16.Add(self.panel_3, 0, 0, 0)
+        sizer_16.Add(self.panel_3, 1, wxEXPAND, 0)
         self.SetAutoLayout(True)
         self.SetSizer(sizer_16)
         sizer_16.Fit(self)
@@ -408,7 +408,7 @@ class objectAnimationFrame(wxFrame):
     def __set_properties(self):
         # begin wxGlade: objectAnimationFrame.__set_properties
         self.SetTitle("frame_3")
-        self.frameSlider.SetSize((250, 15))
+        self.frameSlider.SetMinSize((250, 15))
         # end wxGlade
 
     def __do_layout(self):
