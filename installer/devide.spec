@@ -18,6 +18,8 @@ if sys.platform.startswith('win'):
     APP_DIR = 'c:\\work\\code\\devide'
     exeName = 'builddevide/devide.exe'
 
+    MPL_DATA_DIR = 'C:\\Python24\\Lib\\site-packages\\matplotlib\\mpl-data'
+
     extraLibs = []
     # we can keep msvcr71.dll and msvcp71.dll, in fact they should just
     # go in the installation directory with the other DLLs, see:
@@ -30,6 +32,8 @@ else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
     APP_DIR = '/home/cpbotha/work/code/devide'
     exeName = 'builddevide/devide'
+
+    MPL_DATA_DIR = '/usr/lib/python2.4/site-packages/matplotlib/mpl-data'
 
     # under some linuxes, libpython is shared -- McMillan installer doesn't 
     # know about this...
@@ -103,6 +107,9 @@ vpli = [(os.path.join('Icons', i),
          os.path.join(vpli_dir, i), 'DATA')
         for i in os.listdir(vpli_dir) if fnmatch.fnmatch(i, '*.xpm')]
 
+# MATPLOTLIB data dir
+mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
+
 ##########################################################################
 
 SUPPORT_DIR = os.path.join(INSTALLER_DIR, 'support')
@@ -132,7 +139,7 @@ exe = EXE(pyz,
 
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
-allBinaries = a.binaries + modules_tree + vpli + \
+allBinaries = a.binaries + modules_tree + vpli + mpl_data_dir + \
               extraLibs + segTree + snipTree + dataTree + docsTree
 
 
