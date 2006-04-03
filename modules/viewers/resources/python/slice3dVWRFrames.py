@@ -21,6 +21,7 @@ class threedFrame(wxFrame):
 
         # this line will stay: transfer stereo setting to class
         wxVTKRenderWindowInteractor.USE_STEREO = S3DV_STEREO
+        print "s3dv Frames STEREO:", S3DV_STEREO
 
         # begin wxGlade: threedFrame.__init__
         kwds["style"] = wxDEFAULT_FRAME_STYLE
