@@ -250,9 +250,10 @@ class moduleManager:
         moduleIndices = []
 
         def miwFunc(arg, dirname, fnames):
-            moduleIndices.extend([os.path.join(dirname, fname)
-                                  for fname in fnames
-                                  if fnmatch.fnmatch(fname, 'module_index.py')])
+            moduleIndices.extend(
+                [os.path.join(dirname, fname)
+                 for fname in fnames
+                 if fnmatch.fnmatch(fname, 'module_index.py')])
 
         os.path.walk(modulePath, miwFunc, arg=None)
 
@@ -358,110 +359,7 @@ class moduleManager:
             '%d modules and %d segments scanned.' %
             (len(self._availableModules), len(self.availableSegmentsList)))
         
-
     ########################################################################
-    def old_scanmodules_code(self):
-        def recursiveDirectoryD3MNSearch(adir, curModulePath, mnList):
-            """Iterate recursively starting at adir and make a list of
-            all available modules and networks.
-
-            We do not traverse into dirs that are named 'resources' or that
-            end with 'modules'.
-            """
-
-            if curModulePath:
-                wildCard = "*.py"
-            else:
-                wildCard = "*.dvn"
-                
-            fileNames = os.listdir(adir)
-            for fileName in fileNames:
-                completeName = os.path.join(adir, fileName)
-                if os.path.isdir(completeName) and \
-                       fileName.strip('/') != 'resources' and \
-                       not fileName.strip('/').lower().endswith('modules'):
-                    # fileName is just a directory name then
-                    # make sure it has no /'s at the end and append
-                    # it to the curModulePath when recursing
-                    newCurModulePath = None
-                    if curModulePath:
-                        newCurModulePath = curModulePath + '.' + \
-                                           fileName.strip('/')
-
-                    recursiveDirectoryD3MNSearch(
-                        completeName,
-                        newCurModulePath,
-                        mnList)
-
-                elif os.path.isfile(completeName) and \
-                         fnmatch.fnmatch(fileName, wildCard) and \
-                         not fnmatch.fnmatch(fileName, "_*"):
-                    if curModulePath:
-                        mnList.append(
-                            "%s.%s" % (curModulePath,
-                                       os.path.splitext(fileName)[0]))
-                    else:
-                        mnList.append(completeName)
-        
-
-        userModuleList = []
-        recursiveDirectoryD3MNSearch(os.path.join(appDir,
-                                                    'userModules'),
-                                       'userModules', userModuleList)
-
-
-        # make sure we pick it up if someone has edited the moduleList
-        reload(modules)
-        # first add the core modules to our central list
-        for mn in modules.moduleList:
-            self._availableModules['modules.%s' % (mn,)] = \
-                                                   modules.moduleList[mn]
-
-
-        
-        # now do the modulePacks
-        # first get a list of directories in modulePacks
-        modulePacksDir = os.path.join(appDir, 'modulePacks')        
-        try:
-            mpdcands = os.listdir(modulePacksDir)
-        except Exception, e:
-            print "Could not list modulePacks: %s." % (str(e),)
-        else:
-            try:
-                import modulePacks
-            except ImportError, e:
-                print "Could not import modulePacks: %s." % (str(e),)
-            else:
-                mpdirs = [mpdir for mpdir in mpdcands
-                          if os.path.isdir(
-                    os.path.join(modulePacksDir, mpdir))]
-
-                for mpdir in mpdirs:
-                    # this should remove trailing dirseps
-                    mpdir = os.path.normpath(mpdir)
-                    try:
-                        # import the modulePack
-                        __import__('modulePacks.%s' % (mpdir,),
-                                   globals(), locals())
-                        # reload it
-                        reload(getattr(modulePacks, mpdir))
-                    except ImportError:
-                        # skip to next mpdir
-                        continue
-
-                    mpdirModuleList = getattr(modulePacks, mpdir).moduleList
-                    for mn,cats in mpdirModuleList.items():
-                        self._availableModules['modulePacks.%s.%s' %
-                                                  (mpdir, mn)] = cats
-                                                  
-
-            
-
-        # then all the user modules
-        for umn in userModuleList:
-            self._availableModules['%s' % (umn,)] = \
-                                           ('userModules',)
-        
 
     def get_appdir(self):
         return self._devide_app.get_appdir()
