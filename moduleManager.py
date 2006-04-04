@@ -96,14 +96,37 @@ class moduleManager:
                 if mk not in self.getAppMainConfig().nokits]
         module_kits.module_kit_list = nmkl
 
-        # now import the kits that remain
-        error_kit_indices = []
+        # now import the kits that remain ##########################
+        
+        # this will record the kits that successfully load
+        loaded_kits = []
+        # convenience binding for deps dict
+        dd = module_kits.dependencies_dict
+
         for module_kit in module_kits.module_kit_list:
+
+            # first check that all dependencies are satisfied
+            deps_satisfied = True
+            if module_kit in dd:
+                dl = dd[module_kit]
+                for d in dl:
+                    if d not in loaded_kits:
+                        deps_satisfied = False
+                        # break out of the for loop
+                        break
+                    
+            if not deps_satisfied:
+                # skip this iteration of the for, go to the next iteration
+                # (we don't want to try loading this module)
+                continue
+            
             try:
                 # import module_kit into module_kits namespace
                 exec('import module_kits.%s' % (module_kit,))
                 # call module_kit.init()
                 getattr(module_kits, module_kit).init(self)
+                # add it to the loaded_kits for dependency checking
+                loaded_kits.append(module_kit)
 
             except Exception, e:
                 # if it's a crucial module_kit, we re-raise with our own
@@ -121,16 +144,12 @@ class moduleManager:
                         'Unable to load non-critical module_kit %s: '
                         '%s.  Continuing with startup.' %
                         (module_kit, str(e)))
-                    # remove this from the list of loaded module_kits
-                    mk_idx = module_kits.module_kit_list.index(module_kit)
-                    error_kit_indices.append(mk_idx)
 
-        # if we got this far, startup was successful, but we may have had
-        # some non-critical kits that didn't want to load.
-        error_kit_indices.sort()
-        error_kit_indices.reverse()
-        for idx in error_kit_indices:
-            del module_kits.module_kit_list[idx]
+        # if we got this far, startup was successful, but not all kits
+        # were loaded: some not due to failure, and some not due to
+        # unsatisfied dependencies.  set the current list to the list of
+        # module_kits that did actually load.
+        module_kits.module_kit_list = loaded_kits
 
         # binding to module that can be used without having to do
         # import module_kits
