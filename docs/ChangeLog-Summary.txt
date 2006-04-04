@@ -1,6 +1,18 @@
-Release ng1phase1 6.3.9 - Fri Mar 10 12:01:35 WEST 2006
+Release ng1phase1 6.4.00 - Fri Mar 10 12:01:35 WEST 2006
 
-Changes since 20050330
+Changes since ng1phase1 6.3.9:
+
+ * numpy, matplotlib and statistics kits
+    - you can now generate Matlab-quality figures in DeVIDE
+    - numpy has some really fast matrix and linear algebra routines
+    - statistics contains a number of useful stats routines
+ * the CodeRunner module.  Try it, you'll like it.
+ * Modules can be blocked/unblocked from execution.  Select a module
+   or modules and right click to see the block/unblock commands.
+ * New and improved About window.
+ * As always, various bug fixes.
+
+Changes since 20050330:
 
  * Total conversion from demand driven to event driven.
    - we now do all our own scheduling
