@@ -112,7 +112,10 @@ vpli = [(os.path.join('Icons', i),
 # MATPLOTLIB data dir
 mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
 
-#numpy_core_tree = Tree()
+from distutils import sysconfig
+numpy_tree = Tree(
+    os.path.join(sysconfig.get_python_lib(),'numpy'),
+    os.path.join('module_kits/numpy_kit/numpy'))
 
 ##########################################################################
 
@@ -127,17 +130,22 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
 ######################################################################
 # now we're going to remove modules. and module_kits. from a.pure
 # because we ship these directories as they are (see modules_tree and
-# module_kits_tree)
+# module_kits_tree).  we also remove all occurrences of numpy from
+# a.pure (pure python modules) and from a.binaries (libraries and such)
+# because we ship this in a separate Tree, see numpy_tree.
 
-dead_mod_indices = []
-for i in range(len(a.pure)):
+for i in range(len(a.pure)-1, -1, -1):
     mn = a.pure[i][0]
-    if mn.startswith('modules.') or mn.startswith('module_kits'):
-        dead_mod_indices.append(i)
+    if mn.startswith('modules.') or mn.startswith('module_kits') or \
+           mn.find('numpy') >= 0:
+        
+        del a.pure[i]
 
-dead_mod_indices.reverse()
-for i in dead_mod_indices:
-    del a.pure[i]
+for i in range(len(a.binaries)-1, -1, -1):
+    mn = a.binaries[i][0]
+    if mn.find('numpy') >= 0:
+        del a.binaries[i]
+
 ######################################################################    
 
 # create the compressed archive with all the other pyc files
@@ -163,7 +171,7 @@ exe = EXE(pyz,
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
 allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
-              mpl_data_dir + \
+              mpl_data_dir + numpy_tree + \
               extraLibs + segTree + snipTree + dataTree + docsTree
 
 # make new list of 3-element tuples of shipable things
