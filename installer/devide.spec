@@ -115,7 +115,8 @@ mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
 from distutils import sysconfig
 numpy_tree = Tree(
     os.path.join(sysconfig.get_python_lib(),'numpy'),
-    os.path.join('module_kits/numpy_kit/numpy'))
+    prefix=os.path.join('module_kits/numpy_kit/numpy'), 
+    excludes=['*.py', 'doc', 'docs'])
 
 ##########################################################################
 
