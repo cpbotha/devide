@@ -69,13 +69,11 @@ else:
                    'libglib', 'libgmodule', 'libgobject', 'libgthread']
 
     # make sure removeNames is lowercase
-    removeNames = [i.lower() for i in removeNames]    
+    removeNames = [i.lower() for i in removeNames]
 
 
 # we have to remove these nasty built-in dependencies EARLY in the game
 dd = config['EXE_dependencies']
-
-    
 newdd = [i for i in dd if not remove(i[0].lower(), removeNames)]
 config['EXE_dependencies'] = newdd
 
@@ -98,6 +96,10 @@ docsTree = Tree(os.path.join(APP_DIR, 'docs'), 'docs', ['.svn', 'source'])
 modules_tree = Tree(os.path.join(APP_DIR, 'modules'), 'modules',
                     ['.svn', '*~'])
 
+# all module_kits
+module_kits_tree = Tree(os.path.join(APP_DIR, 'module_kits'), 'module_kits',
+                    ['.svn', '*~'])
+
 # VTKPIPELINE ICONS
 
 # unfortunately, due to the vtkPipeline design, these want to live one
@@ -110,21 +112,42 @@ vpli = [(os.path.join('Icons', i),
 # MATPLOTLIB data dir
 mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
 
+#numpy_core_tree = Tree()
+
 ##########################################################################
 
 SUPPORT_DIR = os.path.join(INSTALLER_DIR, 'support')
+
 a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
               os.path.join(SUPPORT_DIR, 'useUnicode.py'),
               mainScript],
              pathex=[],
              hookspath=[os.path.join(APP_DIR, 'installer/hooks/')])
 
+######################################################################
+# now we're going to remove modules. and module_kits. from a.pure
+# because we ship these directories as they are (see modules_tree and
+# module_kits_tree)
+
+dead_mod_indices = []
+for i in range(len(a.pure)):
+    mn = a.pure[i][0]
+    if mn.startswith('modules.') or mn.startswith('module_kits'):
+        dead_mod_indices.append(i)
+
+dead_mod_indices.reverse()
+for i in dead_mod_indices:
+    del a.pure[i]
+######################################################################    
+
+# create the compressed archive with all the other pyc files
+# will be integrated with EXE archive
 pyz = PYZ(a.pure)
 
 # in Installer 6a2, the -f option is breaking things (the support directory
 # is deleted after the first invocation!)
 #options = [('f','','OPTION')] # LD_LIBRARY_PATH is correctly set on Linux
-#options += [('v', '', 'OPTION')]     # Python is ran with -v
+#options = [('v', '', 'OPTION')]     # Python is ran with -v
 
 # because we've already modified the config, we won't be pulling in
 # hardcoded dependencies that we don't want.
@@ -139,9 +162,9 @@ exe = EXE(pyz,
 
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
-allBinaries = a.binaries + modules_tree + vpli + mpl_data_dir + \
+allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
+              mpl_data_dir + \
               extraLibs + segTree + snipTree + dataTree + docsTree
-
 
 # make new list of 3-element tuples of shipable things
 binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]

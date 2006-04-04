@@ -33,8 +33,6 @@ other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
 
-
-
 print "[*] hook-moduleManager.py - HIDDENIMPORTS"
 print hiddenimports
 

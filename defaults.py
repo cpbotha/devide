@@ -1,6 +1,6 @@
 # file containing some default config values for devide
 # $Id$
 
-NOKITS = []
+NOKITS = ['itk_kit']
 
 
