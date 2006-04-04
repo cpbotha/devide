@@ -80,9 +80,9 @@ class DilateExample(scriptedConfigModuleMixin, moduleBase,
         self._imageDilate.Update()
         self.check_vtk_error()
 
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
+    #def view(self, parent_window=None):
+    #    # if the window was visible already. just raise it
+    #    self._viewFrame.Show(True)
+    #    self._viewFrame.Raise()
 
 
