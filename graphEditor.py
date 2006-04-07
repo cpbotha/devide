@@ -61,7 +61,7 @@ class geCanvasDropTarget(wx.PyDropTarget):
                     for i in dropFilenameErrors:
                         self._interface.log_warning('%s: %s' % (i))
                         
-                    self._interface.log_warning(
+                    self._graphEditor._interface.log_warning(
                         'Some of the dropped files could not '
                                  'be handled.  See "Details".')
 
