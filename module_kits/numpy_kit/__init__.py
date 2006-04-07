@@ -29,8 +29,16 @@ def init(theModuleManager):
     sys.path.append(p1)
     sys.path.append(p2)
 
+    # after this, 'numpy' exists within our namespace, and
+    # sys.modules['numpy'] contains a ref to our import (although it might
+    # still have the default path c:\python24\lib\site-packages\numpy)
     global numpy
     import numpy
+
+    # remove the two paths that we inserted so we don't confuse anybody
+    # with relative package imports that act strangely
+    del sys.path[-1]
+    del sys.path[-1]
 
     theModuleManager.setProgress(95, 'Initialising numpy_kit: import done')
 

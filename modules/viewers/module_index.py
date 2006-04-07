@@ -20,7 +20,7 @@ class slice3dVWR:
     kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
 
-class TFEditor:
-    kits = ['wx_kit']
-    cats = ['Viewers']
+# class TFEditor:
+#     kits = ['wx_kit']
+#     cats = ['Viewers']
 
