@@ -29,7 +29,8 @@ mkl = [i for i in mkl if i not in defaults.NOKITS]
 other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
                  'moduleUtils',
                  'modules.viewers.slice3dVWR',
-                 'modules.viewers.histogram1D']
+                 'modules.viewers.histogram1D',
+                 'modules.viewers.TFEditor']
 # slice3dVWR is temporary, just to see if we can get it going this way.
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
