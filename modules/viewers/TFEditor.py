@@ -38,7 +38,21 @@ class TFEditor(introspectModuleMixin, moduleBase):
                                       self._view_frame.view_frame_panel)
 
 
-        #self._view_frame.opacity_canvas
+        oc = self._view_frame.opacity_canvas
+
+        # do initial drawing setup
+        oc.AddLine(((0, 0), (100, 0)))
+        oc.AddLine(((0, 0), (0, 100)))
+
+        # this should be dependent on some internal datastructure with
+        # points
+        oc.AddCircle((0, 0), 5)
+        oc.AddCircle((30, 0), 5)
+        oc.AddCircle((100,0), 5)
+
+        #Poly.Bind(FloatCanvas.EVT_FC_LEFT_DOWN, MyCallback)
+
+        oc.ZoomToBB()
         
 
     def close(self):
