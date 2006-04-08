@@ -129,14 +129,25 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
 
         # setup orientation widget stuff
-        self._orientationWidget = vtk.vtkOrientationMarkerWidget()
-        self._annotatedCubeActor = vtk.vtkAxesActor() #vtk.vtkAnnotatedCubeActor()
+        self._orientation_widget = vtk.vtkOrientationMarkerWidget()
+        
+        self._annotated_cube_actor = aca = vtk.vtkAnnotatedCubeActor()
+        aca.TextEdgesOff()
 
-        self._orientationWidget.SetInteractor(
+        aca.GetXMinusFaceProperty().SetColor(1,0,0)
+        aca.GetXPlusFaceProperty().SetColor(1,0,0)
+        aca.GetYMinusFaceProperty().SetColor(0,1,0)
+        aca.GetYPlusFaceProperty().SetColor(0,1,0)
+        aca.GetZMinusFaceProperty().SetColor(0,0,1)
+        aca.GetZPlusFaceProperty().SetColor(0,0,1)
+        
+        self._axes_actor = vtk.vtkAxesActor()
+
+        self._orientation_widget.SetInteractor(
             self.threedFrame.threedRWI)
-        self._orientationWidget.SetOrientationMarker(
-            self._annotatedCubeActor)
-        self._orientationWidget.On()
+        self._orientation_widget.SetOrientationMarker(
+            self._axes_actor)
+        self._orientation_widget.On()
         
 
     #################################################################
@@ -145,11 +156,11 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def close(self):
         # shut down the orientationWidget/Actor stuff
-        self._orientationWidget.Off()
-        self._orientationWidget.SetInteractor(None)
-        self._orientationWidget.SetOrientationMarker(None)
-        del self._orientationWidget
-        del self._annotatedCubeActor
+        self._orientation_widget.Off()
+        self._orientation_widget.SetInteractor(None)
+        self._orientation_widget.SetOrientationMarker(None)
+        del self._orientation_widget
+        del self._annotated_cube_actor
         
         # take care of scalarbar
         self._showScalarBarForProp(None)
@@ -342,6 +353,27 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 self._cube_axes_actor2d.PickableOff()
                 # FIXME: make this toggle-able
                 self._cube_axes_actor2d.VisibilityOn()
+
+                # also fix up orientation actor thingy...
+                ala = inputStream.GetFieldData().GetArray('axis_labels_array')
+                if ala:
+                    lut = list('LRPAFH')
+                    labels = []
+                    for i in range(6):
+                        labels.append(lut[ala.GetValue(i)])
+                        
+                    self._set_annotated_cube_actor_labels(labels)
+                    self._orientation_widget.Off()
+                    self._orientation_widget.SetOrientationMarker(
+                        self._annotated_cube_actor)
+                    self._orientation_widget.On()
+                    
+                else:
+                    self._orientation_widget.Off()
+                    self._orientation_widget.SetOrientationMarker(
+                        self._axes_actor)
+                    self._orientation_widget.On()
+
 
                 # reset everything, including ortho camera
                 self._resetAll()
@@ -615,6 +647,15 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 self.threedFrame.threedRWI.GetSize())
             self.threedFrame.threedRWI._Iren.ConfigureEvent()
             wx.SafeYield()
+
+    def _set_annotated_cube_actor_labels(self, labels):
+        aca = self._annotated_cube_actor
+        aca.SetXMinusFaceText(labels[0])
+        aca.SetXPlusFaceText(labels[1])
+        aca.SetYMinusFaceText(labels[2])
+        aca.SetYPlusFaceText(labels[3])
+        aca.SetZMinusFaceText(labels[4])
+        aca.SetZPlusFaceText(labels[5])
 
     def getPrimaryInput(self):
         """Get primary input data, i.e. bottom layer.
