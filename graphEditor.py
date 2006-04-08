@@ -58,13 +58,14 @@ class geCanvasDropTarget(wx.PyDropTarget):
                     x,y,filenames)
 
                 if len(dropFilenameErrors) > 0:
+                    em = ['The following dropped files could not '
+                          'be handled:']
                     for i in dropFilenameErrors:
-                        self._graphEditor._interface.log_warning(
+                        em.append(
                             '%s: %s' % (i))
                         
                     self._graphEditor._interface.log_warning(
-                        'Some of the dropped files could not '
-                                 'be handled.  See "Details".')
+                        '\n'.join(em))
 
         # d is the recommended drag result.  we could also return
         # wx.DragNone if we don't want whatever's been dropped.
