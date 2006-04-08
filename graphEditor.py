@@ -59,7 +59,8 @@ class geCanvasDropTarget(wx.PyDropTarget):
 
                 if len(dropFilenameErrors) > 0:
                     for i in dropFilenameErrors:
-                        self._interface.log_warning('%s: %s' % (i))
+                        self._graphEditor._interface.log_warning(
+                            '%s: %s' % (i))
                         
                     self._graphEditor._interface.log_warning(
                         'Some of the dropped files could not '
