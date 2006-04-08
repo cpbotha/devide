@@ -152,6 +152,7 @@ class dicomRDR(moduleBase,
         # we're going to be reading some information from the _reader which
         # is only up to date after this call
         self._reader.UpdateInformation()
+        self.check_vtk_error()
 
         # get current SeriesInstanceIdx from the DICOMReader
         # FIXME: the frikking SpinCtrl does not want to update when we call
