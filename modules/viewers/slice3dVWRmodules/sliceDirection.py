@@ -664,8 +664,10 @@ class sliceDirection:
             if hasattr(inputData_source, 'GetWindowCenter') and \
                    callable(inputData_source.GetWindowCenter):
                 level = inputData_source.GetWindowCenter()
+                print "s3dv: Getting LEVEL from input source"
             else:
                 level = ilevel
+                print "s3dv: Estimating LEVEL"
 
             if hasattr(inputData_source, 'GetWindowWidth') and \
                    callable(inputData_source.GetWindowWidth):
