@@ -36,6 +36,9 @@ class TFEditor(introspectModuleMixin, moduleBase):
         # add the ECASH buttons
         moduleUtils.createECASButtons(self, self._view_frame,
                                       self._view_frame.view_frame_panel)
+
+
+        #self._view_frame.opacity_canvas
         
 
     def close(self):

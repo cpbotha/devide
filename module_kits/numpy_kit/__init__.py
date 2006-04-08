@@ -35,6 +35,10 @@ def init(theModuleManager):
     global numpy
     import numpy
 
+    # we add this so that modules using "import Numeric" will probably also
+    # work (such as the FloatCanvas)
+    sys.modules['Numeric'] = numpy
+
     # remove the two paths that we inserted so we don't confuse anybody
     # with relative package imports that act strangely
     del sys.path[-1]
