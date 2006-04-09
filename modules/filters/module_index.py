@@ -105,6 +105,10 @@ class opening:
     kits = ['vtk_kit']
     cats = ['Filters']
 
+class MIPRender:
+    kits = ['vtk_kit']
+    cats = ['Volume Rendering']
+
 class polyDataConnect:
     kits = ['vtk_kit']
     cats = ['Filters']
@@ -131,7 +135,7 @@ class selectConnectedComponents:
 
 class shellSplatSimple:
     kits = ['vtk_kit']
-    cats = ['Filters']
+    cats = ['Volume Rendering']
 
 class streamTracer:
     kits = ['vtk_kit']
