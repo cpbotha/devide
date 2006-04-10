@@ -132,7 +132,7 @@
                                                     <flag>wxLEFT|wxRIGHT|wxEXPAND</flag>
                                                     <border>7</border>
                                                     <option>1</option>
-                                                    <object class="py.shell.Shell" name="shell_window" base="CustomWidget">
+                                                    <object class="module_kits.wx_kit.dvshell.DVShell" name="shell_window" base="CustomWidget">
                                                         <arguments>
                                                             <argument>$parent</argument>
                                                             <argument>$id</argument>

@@ -20,6 +20,7 @@ def init(theModuleManager):
     import wx
 
     import dvedit_window
+    import dvshell
 
     # build up VERSION
     global VERSION

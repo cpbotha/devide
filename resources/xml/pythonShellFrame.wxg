@@ -33,7 +33,7 @@
                                     <flag>wxEXPAND</flag>
                                     <border>0</border>
                                     <option>1</option>
-                                    <object class="py.shell.Shell" name="pyShell" base="CustomWidget">
+                                    <object class="module_kits.wx_kit.dvshell.DVShell" name="pyShell" base="CustomWidget">
                                         <focused>1</focused>
                                         <arguments>
                                             <argument>$parent</argument>

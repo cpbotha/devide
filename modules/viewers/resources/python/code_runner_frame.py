@@ -35,7 +35,7 @@ class CodeRunnerFrame(wx.Frame):
         self.scratch_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_1, -1)
         self.setup_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_2, -1)
         self.execute_editwindow = module_kits.wx_kit.dvedit_window.DVEditWindow(self.notebook_1_pane_3, -1)
-        self.shell_window = py.shell.Shell(self.window_1_pane_2, -1)
+        self.shell_window = module_kits.wx_kit.dvshell.DVShell(self.window_1_pane_2, -1)
         self.statusbar = self.CreateStatusBar(1, 0)
 
         self.__set_properties()
