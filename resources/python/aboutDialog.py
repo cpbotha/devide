@@ -12,7 +12,7 @@ class aboutDialog(wx.Dialog):
         wx.Dialog.__init__(self, *args, **kwds)
         self.toplevel_panel = wx.Panel(self, -1)
         self.sizer_5_staticbox = wx.StaticBox(self.toplevel_panel, -1, "Component Versions")
-        self.name_version_text = wx.StaticText(self.toplevel_panel, -1, "DeVIDE ng1phase1 6.3.00")
+        self.name_version_text = wx.StaticText(self.toplevel_panel, -1, "DeVIDE ng1phase1 6.3.00x")
         self.icon_bitmap = wx.StaticBitmap(self.toplevel_panel, -1, wx.NullBitmap)
         self.label_2 = wx.StaticText(self.toplevel_panel, -1, "DeVIDE is copyright (c) 2003-2006 Charl P. Botha\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
         self.versions_listbox = wx.ListBox(self.toplevel_panel, -1, choices=[], style=wx.LB_NEEDED_SB)
