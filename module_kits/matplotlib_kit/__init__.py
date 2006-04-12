@@ -21,12 +21,13 @@ VERSION = ''
 
 def init(theModuleManager):
 
-    # matplotlib supports py2exe by checking for matplotlibdata in the appdir
-    # but this is only done on windows (and therefore works for our windows
-    # installer builds).  On non-windows, we have to stick it in the env
-    # to make sure that MPL finds its datadir.
-    mpldir = os.path.join(theModuleManager.get_appdir(), 'matplotlibdata')
-    os.environ['MATPLOTLIBDATA'] = mpldir
+    if hasattr(sys, 'frozen') and sys.frozen:
+        # matplotlib supports py2exe by checking for matplotlibdata in the appdir
+        # but this is only done on windows (and therefore works for our windows
+        # installer builds).  On non-windows, we have to stick it in the env
+        # to make sure that MPL finds its datadir (only if we're frozen)
+        mpldir = os.path.join(theModuleManager.get_appdir(), 'matplotlibdata')
+        os.environ['MATPLOTLIBDATA'] = mpldir
     
     # import the main module itself
     global matplotlib
