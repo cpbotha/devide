@@ -2,6 +2,7 @@ Release ng1phase1 6.4.00 - Fri Mar 10 12:01:35 WEST 2006
 
 Changes since ng1phase1 6.3.9:
 
+ * Upgraded to ITK 2.6 from ITK 2.4.
  * numpy, matplotlib and statistics kits
     - you can now generate Matlab-quality figures in DeVIDE
     - numpy has some really fast matrix and linear algebra routines
