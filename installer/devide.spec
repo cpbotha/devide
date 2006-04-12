@@ -52,6 +52,25 @@ else:
 
     # RHEL3 64 has a static python library.
     
+    ######################################################################
+    # also add some binary dependencies of numpy that are normally ignored
+    # because they are in /lib and/or /usr/lib (see excludes in bindepend.py)
+    from distutils import sysconfig
+    npdir = os.path.join(sysconfig.get_python_lib(), 'numpy')
+    ladir = os.path.join(npdir, 'linalg')
+    lplpath = os.path.join(ladir, 'lapack_lite.so')
+    # use mcmillan function to get LDD dependencies of lapack_lite.so
+    import bindepend
+    lpl_deps = bindepend.getImports(lplpath)
+    for d in lpl_deps:
+        if d.find('lapack') > 0 or d.find('blas') > 0 or \
+           d.find('g2c') > 0 or d.find('atlas') > 0:
+              extraLibs.append(
+                 (os.path.basename(d), d, 'BINARY'))
+                 
+    # end numpy-dependent extraLibs section
+    ##################################################################
+                 
     # these libs will be removed from the package
     removeNames = ['libdl.so', 'libutil.so', 'libm.so', 'libc.so',
                    'libGLU.so', 'libGL.so', 'libGLcore.so', 
