@@ -11,6 +11,7 @@ Inserts the following modules in sys.modules: matplotlib, pylab.
 @author: Charl P. Botha <http://cpbotha.net/>
 """
 
+import os
 import re
 import sys
 import types
@@ -19,6 +20,14 @@ import types
 VERSION = ''
 
 def init(theModuleManager):
+
+    # matplotlib supports py2exe by checking for matplotlibdata in the appdir
+    # but this is only done on windows (and therefore works for our windows
+    # installer builds).  On non-windows, we have to stick it in the env
+    # to make sure that MPL finds its datadir.
+    mpldir = os.path.join(theModuleManager.get_appdir(), 'matplotlibdata')
+    os.environ['MATPLOTLIBDATA'] = mpldir
+    
     # import the main module itself
     global matplotlib
     import matplotlib
