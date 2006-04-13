@@ -10,6 +10,7 @@ Changes since ng1phase1 6.3.9:
  * the CodeRunner module.  Try it, you'll like it.
  * Modules can be blocked/unblocked from execution.  Select a module
    or modules and right click to see the block/unblock commands.
+ * DICOM support much improved.
  * New and improved About window.
  * As always, various bug fixes.
 
