@@ -79,6 +79,14 @@ class VTKErrorFuncMixin:
             # we're still erroring
             self.vtk_error_info.error = False
             # finally we get to raise
+
+            # we could do the following:
+            #es = 'Error in module %s with vtk object %s: %s' % \
+            #     (self.__class__.__name__,
+            #      self.vtk_error_info.object.GetClassName(),
+            #      str(self.vtk_error_info.call_data))
+            # and then raise this, but our caller should give more context
+            # (and usually does)
             raise RuntimeError(self.vtk_error_info.call_data)
     
     def _vtk_error_func(self, vtk_object, event_name, call_data):
