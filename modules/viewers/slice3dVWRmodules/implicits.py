@@ -263,7 +263,16 @@ class implicits(s3dcGridMixin):
 
 
             if implicitWidget:
-                # first add to our internal thingy
+                # set the priority so it gets interaction before the
+                # ImagePlaneWidget.  3D widgets have default priority 0.5,
+                # so we assign our widgets just a tad higher. (voiwidget
+                # has 0.6 for example)
+                # NB: in a completely weird twist of events, only slices
+                # added AFTER this widget will act like they have lower
+                # priority.  The initial slice still takes events from us!
+                implicitWidget.SetPriority(0.7)
+                
+                # add to our internal thingy
                 ii = implicitInfo()
                 ii.name = implicitName
                 ii.type = implicitType
