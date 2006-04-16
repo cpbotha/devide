@@ -20,7 +20,8 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase,
         # setup config
         self._config.sampleDimensions = (64, 64, 64)
         self._config.modelBounds = (-1, 1, -1, 1, -1, 1)
-        self._config.computeNormals = True
+        # we init normals to off, they EAT memory (3 elements per point!)
+        self._config.computeNormals = False
 
         # and then our scripted config
         configList = [
@@ -36,10 +37,14 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase,
         
         # now create the necessary VTK modules
         self._sampleFunction = vtk.vtkSampleFunction()
+        # this is more than good enough.
+        self._sampleFunction.SetOutputScalarTypeToFloat()
         # setup progress for the processObject
         moduleUtils.setupVTKObjectProgress(self, self._sampleFunction,
                                            "Sampling implicit function.")
         self.add_vtk_error_handler(self._sampleFunction)
+
+        self._example_input = None
 
         self._createWindow(
             {'Module (self)' : self,
@@ -62,20 +67,33 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase,
             
         # remove all bindings
         del self._sampleFunction
+        del self._example_input
         
     def executeModule(self):
+        # if we have an example input volume, copy its bounds and resolution
+        i1 = self._example_input
+        try:
+            self._sampleFunction.SetModelBounds(i1.GetBounds())
+            self._sampleFunction.SetSampleDimensions(i1.GetDimensions())
+            
+        except AttributeError:
+            # if we couldn't get example_input metadata, just use our config
+            self.configToLogic()
+
         self._sampleFunction.Update()
         self.check_vtk_error()
 
     def getInputDescriptions(self):
-        return ('Implicit Function',)
+        return ('Implicit Function', 'Example vtkImageData')
 
     def setInput(self, idx, inputStream):
-        self._sampleFunction.SetImplicitFunction(inputStream)
+        if idx == 0:
+            self._sampleFunction.SetImplicitFunction(inputStream)
+        else:
+            self._example_input = inputStream
     
     def getOutputDescriptions(self):
 	return ('VTK Image Data (volume)',)
-
     
     def getOutput(self, idx):
         return self._sampleFunction.GetOutput()
