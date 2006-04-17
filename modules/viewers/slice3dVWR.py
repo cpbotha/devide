@@ -1006,11 +1006,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def _handlerSaveImageButton(self, event):
         # first get the filename
+        # (if we don't specify the parent correctly, the DeVIDE main
+        #  window pops up!)
         filename = wx.FileSelector(
             "Choose filename for PNG image",
             "", "", "png",
             "PNG files (*.png)|*.png|All files (*.*)|*.*",
-            wx.SAVE)
+            wx.SAVE,
+            parent=self.threedFrame)
                     
         if filename:
             self._save3DToImage(filename)
