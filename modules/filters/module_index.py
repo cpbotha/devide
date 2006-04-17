@@ -73,13 +73,17 @@ class imageGreyErode:
     kits = ['vtk_kit']
     cats = ['Filters']
 
-class imageMask:
+class ImageLogic:
     kits = ['vtk_kit']
-    cats = ['Filters']
+    cats = ['Filters', 'Combine']
+
+class ImageMask:
+    kits = ['vtk_kit']
+    cats = ['Filters', 'Combine']
 
 class imageMathematics:
     kits = ['vtk_kit']
-    cats = ['Filters']
+    cats = ['Filters', 'Combine']
 
 class imageMedian3D:
     kits = ['vtk_kit']
