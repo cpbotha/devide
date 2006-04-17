@@ -1,11 +1,10 @@
-import genUtils
 from moduleBase import moduleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageMask(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
+class imageMask(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
     """The input data (input 1) is masked with the mask (input 2).
 
@@ -16,18 +15,51 @@ class imageMask(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
 
+        # setup VTK pipeline #########################################
+        # 1. vtkImageMask
         self._imageMask = vtk.vtkImageMask()
-        self._imageMask.SetMaskedOutputValue(0)
+
         self._imageMask.GetOutput().SetUpdateExtentToWholeExtent()
+        #self._imageMask.SetMaskedOutputValue(0)
         
         moduleUtils.setupVTKObjectProgress(self, self._imageMask,
                                            'Masking image')
+        
         self.add_vtk_error_handler(self._imageMask)
 
-        self._viewFrame = self._createViewFrame(
-            {'vtkImageMask' : self._imageMask})
+        # 2. vtkImageCast
+        self._image_cast = vtk.vtkImageCast()
+        # type required by vtkImageMask
+        self._image_cast.SetOutputScalarTypeToUnsignedChar()
+        # connect output of cast to imagemask input
+        self._imageMask.SetMaskInput(self._image_cast.GetOutput())
+
+        moduleUtils.setupVTKObjectProgress(
+            self, self._image_cast,
+            'Casting mask image to unsigned char')
+        
+        self.add_vtk_error_handler(self._image_cast)
+
+        ###############################################################
+        
+
+        self._config.not_mask = False
+        self._config.masked_output_value = 0.0
+
+        config_list = [
+            ('Negate (NOT) mask:', 'not_mask', 'base:bool', 'checkbox',
+             'Should mask be negated (NOT operator applied) before '
+             'applying to input?'),
+            ('Masked output value:', 'masked_output_value', 'base:float',
+             'text', 'Positions outside the mask will be assigned this '
+             'value.')]
+
+        scriptedConfigModuleMixin.__init__(self, config_list)
+
+        self._viewFrame = self._createWindow(
+            {'Module (self)' :self,
+             'vtkImageMask' : self._imageMask})
 
         # pass the data down to the underlying logic
         self.configToLogic()
@@ -42,10 +74,13 @@ class imageMask(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
             self.setInput(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        scriptedConfigModuleMixin.close(self)
+
+        moduleBase.close(self)
         
         # get rid of our reference
         del self._imageMask
+        del self._image_cast
 
     def getInputDescriptions(self):
         return ('vtkImageData (data)', 'vtkImageData (mask)')
@@ -54,7 +89,7 @@ class imageMask(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
         if idx == 0:
             self._imageMask.SetImageInput(inputStream)
         else:
-            self._imageMask.SetMaskInput(inputStream)
+            self._image_cast.SetInput(inputStream)
 
     def getOutputDescriptions(self):
         return (self._imageMask.GetOutput().GetClassName(), )
@@ -63,24 +98,19 @@ class imageMask(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
         return self._imageMask.GetOutput()
 
     def logicToConfig(self):
-        pass
+        self._config.not_mask = bool(self._imageMask.GetNotMask())
+
+        # GetMaskedOutputValue() is not wrapped.  *SIGH*
+        #self._config.masked_output_value = \
+        #                     self._imageMask.GetMaskedOutputValue()
+        
     
     def configToLogic(self):
-        pass
-    
-    def viewToConfig(self):
-        pass
-
-    def configToView(self):
-        pass
+        self._imageMask.SetNotMask(self._config.not_mask)
+        self._imageMask.SetMaskedOutputValue(self._config.masked_output_value)
     
     def executeModule(self):
         self._imageMask.Update()
         self.check_vtk_error()
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
 
 
