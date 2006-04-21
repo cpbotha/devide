@@ -28,6 +28,7 @@ class mainConfigClass(object):
     def __init__(self):
         import defaults
         self.nokits = defaults.NOKITS
+        self.interface = 'wx'
         self.stereo = False
         
         self._parseCommandLine()
@@ -40,6 +41,7 @@ class mainConfigClass(object):
         print "-h or --help               : Display this message."
         print "--no-kits kit1,kit2        : Don't load the specified kits."
         print "--kits kit1,kit2           : Load the specified kits."
+        print "--interface wx|rpc         : Load 'wx' or 'rpc' interface."
         print "--stereo                   : Allocate stereo visuals."
 
     def _parseCommandLine(self):
@@ -47,7 +49,7 @@ class mainConfigClass(object):
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-kits=', 'kits=', 'stereo'])
+                ['help', 'no-kits=', 'kits=', 'stereo', 'interface='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -69,6 +71,13 @@ class mainConfigClass(object):
                         del self.nokits[self.nokits.index(kit)]
                     except ValueError:
                         pass
+
+            elif o in ('--interface',):
+                print a
+                if a == 'rpc':
+                    self.interface = 'rpc'
+                else:
+                    self.interface = 'wx'
 
             elif o in ('--stereo',):
                 self.stereo = True
@@ -110,8 +119,13 @@ class DeVIDEApp:
 
         ####
         # startup relevant interface instance
-        from wx_interface import WXInterface
-        self._interface = WXInterface(self)
+        if self.mainConfig.interface == 'rpc':
+            from pyro_interface import PyroInterface
+            self._interface = PyroInterface(self)
+            
+        else:
+            from wx_interface import WXInterface
+            self._interface = WXInterface(self)
 
         ####
         # now startup module manager
