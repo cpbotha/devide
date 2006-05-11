@@ -15,6 +15,41 @@ EDITWINDOW_LABELS = ['Scratch', 'Setup', 'Execute']
 
 class CodeRunner(introspectModuleMixin, moduleBase):
 
+    """CodeRunner facilitates the direct integration of Python code into a
+    DeVIDE network.
+
+    The top part contains three editor interfaces: scratch, setup and
+    execute.  The first is for experimentation and does not take part in
+    network scheduling.  The second, 'setup', will be executed once per
+    modification that you make, at network execution time.  The third,
+    'execute', will be executed everytime the module is ran during network
+    execution.  You have to apply changes before they will be integrated in
+    the network execution.  If you seen an asterisk (*) on the editor tab, it
+    means your latest changes have not been applied.
+
+    You can execute any editor window during editing by hitting Ctrl-Enter.
+    This will execute the code currently visible, i.e. it doesn't have to be
+    applied yet.  The three editor windows and the shell window below share
+    the same interpreter, i.e. things that you define in one window will be
+    available in all others.
+
+    Applied code will also be saved and loaded along with the rest of the
+    network.  You can also save code from the currently selected editor window
+    to a separate .py file by selecting File|Save from the main menu.
+
+    VTK and matplotlib support are included.
+
+    To make a new matplotlib figure, do 'h1 = mpl_new_figure()'.  To close it,
+    use 'mpl_close_figure(h1)'.  A list of all figures is available in
+    obj.mpl_figure_handles.
+
+    You can retrieve the VTK renderer, render window and render window
+    interactor of any slice3dVWR by using vtk_get_render_info(name) where name
+    has been set by right-clicking on a module in the graph editor and
+    choosing 'Rename Module'.
+    
+    """
+
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
@@ -58,6 +93,13 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         self.interp.locals.update(
             {'obj' : self})
 
+        # init close handlers
+        self.close_handlers = []
+
+        # initialise macro packages
+        self.support_vtk()
+        self.support_matplotlib()
+
         self.configToLogic()
         self.logicToConfig()
         self.configToView()
@@ -65,6 +107,14 @@ class CodeRunner(introspectModuleMixin, moduleBase):
         self.view()
 
     def close(self):
+        for ch in self.close_handlers:
+            try:
+                ch()
+            except Exception, e:
+                self._moduleManager.log_error_with_exception(
+                    'Exception during CodeRunner close_handlers: %s' %
+                    (str(e),))
+        
         for i in range(len(self.getInputDescriptions())):
             self.setInput(i, None)
 
@@ -266,6 +316,10 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
         return more
 
+    def output_text(self, text):
+        self._view_frame.shell_window.write(text + '\n')
+        self._view_frame.shell_window.prompt()
+
     def run_current_edit(self):
         cew = self._get_current_editwindow()
         text = cew.GetText()
@@ -283,4 +337,96 @@ class CodeRunner(introspectModuleMixin, moduleBase):
             
         self._view_frame.edit_notebook.SetPageText(idx, pt)
         
+        
+    def support_vtk(self):
+        if hasattr(self, 'vtk_renderwindows'):
+            return
+
+        import module_kits
+        if 'vtk_kit' not in module_kits.module_kit_list:
+            self.output_text('No VTK support.')
+            return
+        
+        from module_kits import vtk_kit
+        vtk = vtk_kit.vtk
+
+        def get_render_info(instance_name):
+            instance = self._moduleManager.get_instance(instance_name)
+
+            if instance is None:
+                return None
+            
+            class RenderInfo:
+                pass
+
+            render_info = RenderInfo()
+
+            render_info.renderer = instance._threedRenderer
+            render_info.render_window = instance.threedFrame.threedRWI.\
+                                        GetRenderWindow()
+            render_info.interactor = instance.threedFrame.threedRWI
+
+            return render_info
+
+        new_dict = {'vtk' : vtk,
+                    'vtk_get_render_info' : get_render_info}
+
+        self.interp.locals.update(new_dict)
+        self.__dict__.update(new_dict)
+
+        self.output_text('VTK support loaded.')
+
+    def support_matplotlib(self):
+        if hasattr(self, 'mpl_figure_handles'):
+            return
+
+        import module_kits
+
+        if 'matplotlib_kit' not in module_kits.module_kit_list:
+            self.output_text('No matplotlib support.')
+            return
+
+        from module_kits import matplotlib_kit
+        pylab = matplotlib_kit.pylab
+        
+        # setup shutdown logic ########################################
+        self.mpl_figure_handles = []
+
+        def mpl_close_handler():
+            for fh in self.mpl_figure_handles:
+                pylab.close(fh)
+        
+        self.close_handlers.append(mpl_close_handler)
+        
+        # hook our mpl_new_figure method ##############################
+
+        # mpl_new_figure hook so that all created figures are registered
+        # and will be closed when the module is closed
+        def mpl_new_figure(*args):
+            handle = pylab.figure(*args)
+            self.mpl_figure_handles.append(handle)
+            return handle
+
+        def mpl_close_figure(handle):
+            """Close matplotlib figure.
+            """
+            pylab.close(handle)
+            if handle in self.mpl_figure_handles:
+                idx = self.mpl_figure_handles(handle)
+                del self.mpl_figure_handles[idx]
+
+        # replace our hook's documentation with the 'real' documentation
+        mpl_new_figure.__doc__ = pylab.figure.__doc__
+
+        # stuff the required symbols into the module's namespace ######
+        new_dict = {'matplotlib' : matplotlib_kit.matplotlib,
+                    'pylab' : matplotlib_kit.pylab,
+                    'mpl_new_figure' : mpl_new_figure,
+                    'mpl_close_figure' : mpl_close_figure}
+        
+        self.interp.locals.update(new_dict)
+        self.__dict__.update(new_dict)
+
+        self.output_text('matplotlib support loaded.')
+
         
