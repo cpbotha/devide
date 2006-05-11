@@ -741,7 +741,7 @@ class graphEditor:
                     rx, ry = x, y
 
                 # the modulemanager generates a random module name, which
-                # we can query with mm.getInstanceName(temp_module).  However,
+                # we can query with mm.get_instance_name(temp_module).  However,
                 # this is a new module, so we don't actually display the name
                 # in the glyph label.
                 gLabel = [moduleName.split('.')[-1]]
@@ -1104,7 +1104,7 @@ class graphEditor:
         newModuleName = wx.GetTextFromUser(
             'Enter a new name for this module.',
             'Rename Module',
-            self._devide_app.getModuleManager().getInstanceName(module))
+            self._devide_app.getModuleManager().get_instance_name(module))
 
         self._renameModule(module, glyph, newModuleName)
 
@@ -1540,7 +1540,7 @@ class graphEditor:
             position = glyphPosDict[newModulePickledName]
             moduleInstance = newModulesDict[newModulePickledName]
             gLabel = [moduleInstance.__class__.__name__]
-            instname = mm.getInstanceName(moduleInstance)
+            instname = mm.get_instance_name(moduleInstance)
             if not instname.startswith('dvm'):
                 gLabel.append(instname)
                 
@@ -1555,7 +1555,7 @@ class graphEditor:
         # note that we use "newConnections" and not connectionList
         for connection in newConnections:
             sGlyph = newGlyphDict[connection.sourceInstanceName]
-            tGlyph = newGlyphDict[connection.targetInstanceName]
+            tGlyph = newGlyphDict[connection.target_instance_name]
             self._createLine(sGlyph, connection.outputIdx,
                              tGlyph, connection.inputIdx)
 
@@ -1692,14 +1692,14 @@ class graphEditor:
         
         for connection in connectionList:
 
-            mi = mm.getInstance(connection.sourceInstanceName)
+            mi = mm.get_instance(connection.sourceInstanceName)
             outputName = ''
             if mi:
                 outputName = mi.getOutputDescriptions()[connection.outputIdx]
                 
             connectionLines.append('%s -> %s [label="%s"];\n' % \
                                    (connection.sourceInstanceName,
-                                    connection.targetInstanceName,
+                                    connection.target_instance_name,
                                     outputName
                                     ))
 
@@ -1747,12 +1747,12 @@ class graphEditor:
         # now we also get to store the coordinates of the glyphs which
         # have been saved (keyed on instanceName)
         savedGlyphs = [glyph for glyph in glyphs
-                       if mm.getInstanceName(glyph.moduleInstance)\
+                       if mm.get_instance_name(glyph.moduleInstance)\
                        in savedInstanceNames]
             
         glyphPosDict = {}
         for savedGlyph in savedGlyphs:
-            instanceName = mm.getInstanceName(savedGlyph.moduleInstance)
+            instanceName = mm.get_instance_name(savedGlyph.moduleInstance)
             glyphPosDict[instanceName] = savedGlyph.getPosition()
 
         return (pmsDict, connectionList, glyphPosDict)

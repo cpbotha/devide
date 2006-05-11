@@ -44,11 +44,11 @@ class pickledModuleState:
 #########################################################################
 class pickledConnection:
     def __init__(self, sourceInstanceName=None, outputIdx=None,
-                 targetInstanceName=None, inputIdx=None, connectionType=None):
+                 target_instance_name=None, inputIdx=None, connectionType=None):
         
         self.sourceInstanceName = sourceInstanceName
         self.outputIdx = outputIdx
-        self.targetInstanceName = targetInstanceName
+        self.target_instance_name = target_instance_name
         self.inputIdx = inputIdx
         self.connectionType = connectionType
 
@@ -398,7 +398,7 @@ class moduleManager:
 	return self._availableModules
 
 
-    def getInstance(self, instanceName):
+    def get_instance(self, instanceName):
         """Given the unique instance name, return the instance itself.
         If the module doesn't exist, return None.
         """
@@ -415,7 +415,7 @@ class moduleManager:
         else:
             return None
 
-    def getInstanceName(self, instance):
+    def get_instance_name(self, instance):
         """Given the actual instance, return its unique instance.  If the
         instance doesn't exist in self._moduleDict, return the currently
         halfborn instance.
@@ -897,9 +897,9 @@ class moduleManager:
             
             for connection in typeConnections:
                 if newModulesDict.has_key(connection.sourceInstanceName) and \
-                   newModulesDict.has_key(connection.targetInstanceName):
+                   newModulesDict.has_key(connection.target_instance_name):
                     sourceM = newModulesDict[connection.sourceInstanceName]
-                    targetM = newModulesDict[connection.targetInstanceName]
+                    targetM = newModulesDict[connection.target_instance_name]
                     # attempt connecting them
                     print "connecting %s:%d to %s:%d..." % \
                           (sourceM.__class__.__name__, connection.outputIdx,
@@ -1236,7 +1236,7 @@ class moduleManager:
             basename = name
             i = 1
         
-        while (self.getInstance(name) != None):
+        while (self.get_instance(name) != None):
             # add a number (%d) until the name is unique
             name = '%s (%d)' % (basename, i)
             i += 1
