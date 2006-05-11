@@ -9,7 +9,8 @@ this happens though, members of this list that are also in the no-kits list
 (defined by defaults.py or command-line) will be removed.  The kits will be
 imported in the order that they are specified.  Make sure that kits dependent
 on other kits occur after those kits in the list, the dependency checker is
-that simple.
+that simple.  After all kit loading is complete, the module_kit_list will
+contain the names of the kits that were successfully loaded.
 
 @ivar crucial_kits: Usually, when a kit raises an exception during its init()
 call, this is ignored and DeVIDE starts up as usual.  However, if the module
