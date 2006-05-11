@@ -77,7 +77,7 @@ class ImageLogic:
     kits = ['vtk_kit']
     cats = ['Filters', 'Combine']
 
-class ImageMask:
+class imageMask:
     kits = ['vtk_kit']
     cats = ['Filters', 'Combine']
 
