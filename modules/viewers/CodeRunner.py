@@ -361,10 +361,11 @@ class CodeRunner(introspectModuleMixin, moduleBase):
 
             render_info = RenderInfo()
 
-            render_info.renderer = instance._threedRenderer
-            render_info.render_window = instance.threedFrame.threedRWI.\
-                                        GetRenderWindow()
-            render_info.interactor = instance.threedFrame.threedRWI
+            render_info.renderer = instance.get_3d_renderer()
+            render_info.render_window = instance.get_3d_render_window()
+            render_info.interactor = instance.\
+                                     get_3d_render_window_interactor()
+            
 
             return render_info
 

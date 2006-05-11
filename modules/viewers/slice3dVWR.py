@@ -35,6 +35,7 @@ import vtk
 import vtkdevide
 
 import wx
+import weakref
     
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import operator
@@ -519,6 +520,24 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def getViewFrame(self):
         return self.threedFrame
+
+    def get_3d_renderer(self):
+        """All external entities MUST use this method to get to the VTK
+        renderer.
+        """
+        return weakref.proxy(self._threedRenderer)
+
+    def get_3d_render_window(self):
+        """All external entities MUST use this method to get to the VTK
+        render window.
+        """
+        return weakref.proxy(self.threedFrame.threedRWI.GetRenderWindow())
+
+    def get_3d_render_window_interactor(self):
+        """All external entities MUST use this method to get to the VTK render
+        window interactor.
+        """
+        return weakref.proxy(self.threedFrame.threedRWI)
 
     def render3D(self):
         """This will cause a render to be called on the encapsulated 3d
