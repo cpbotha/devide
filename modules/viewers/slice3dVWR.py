@@ -488,7 +488,21 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             return self.sliceDirections.ipwAppendPolyData.GetOutput()
         else:
             return self.sliceDirections.ipwAppendFilter.GetOutput()
+        
+#         else:
+#             class RenderInfo:
+#                 def __init__(self, renderer, render_window, interactor):
+#                     self.renderer = renderer
+#                     self.render_window = render_window
+#                     self.interactor = interactor
 
+#             render_info = RenderInfo(
+#                 self._threedRenderer,
+#                 self.threedFrame.threedRWI.GetRenderWindow(),
+#                 self.threedFrame.threedRWI)
+            
+#             return render_info
+                    
     def view(self):
         self.controlFrame.Show(True)
         self.controlFrame.Raise()
