@@ -240,7 +240,7 @@ def getModuleIcon():
 def createModuleViewFrameTitle(d3module):
     return '%s View: %s' % \
            (d3module.__class__.__name__,
-            d3module._moduleManager.getInstanceName(d3module))
+            d3module._moduleManager.get_instance_name(d3module))
 
 def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
     # instantiate the frame
