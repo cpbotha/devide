@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: vtkPipeline.py,v 1.9 2005/06/07 12:52:26 cpbotha Exp $
+# $Id$
 #
 # This python program/module creates a graphical VTK pipeline browser.  
 # The objects in the pipeline can be configured.
@@ -112,6 +112,9 @@ def get_methods (vtk_obj):
         
     if re.match ("vtk\w*Renderer", vtk_obj.GetClassName ()):
 	methods.append (["ActiveCamera", ""])
+        # GetProps is deprecated from 5.0 onwards, we don't want to see
+        # the deprecation warning, so we remove the method
+        remove_method('Props', methods, method_names)
 
     if re.match ("vtk\w*Assembly", vtk_obj.GetClassName ()):
         methods.append (["Parts", ""])
@@ -446,27 +449,27 @@ class vtkPipelineBrowser:
 
 def main ():
     # example code...
-    import vtkpython
-    from vtk.wx.VTKRenderWindow import VTKRenderWindow
+    import vtk
+    from vtk.wx.wxVTKRenderWindow import wxVTKRenderWindow
     
-    cone = vtkpython.vtkConeSource()
+    cone = vtk.vtkConeSource()
     cone.SetResolution(8)
-    transform = vtkpython.vtkTransformFilter ()
+    transform = vtk.vtkTransformFilter ()
     transform.SetInput ( cone.GetOutput() )
-    transform.SetTransform ( vtkpython.vtkTransform() )
-    coneMapper = vtkpython.vtkPolyDataMapper()
+    transform.SetTransform ( vtk.vtkTransform() )
+    coneMapper = vtk.vtkPolyDataMapper()
     coneMapper.SetInput(transform.GetOutput())
-    l = vtkpython.vtkLookupTable ()
+    l = vtk.vtkLookupTable ()
     coneMapper.SetLookupTable (l)
-    coneActor = vtkpython.vtkActor()
+    coneActor = vtk.vtkActor()
     coneActor.SetMapper(coneMapper)    
-    axes = vtkpython.vtkCubeAxesActor2D ()
+    axes = vtk.vtkCubeAxesActor2D ()
 
     app = wx.PySimpleApp()
     frame = wx.Frame(None, -1, "wx.RenderWindow", size=wx.Size(400,400))
-    wid = wx.VTKRenderWindow(frame, -1)
+    wid = wxVTKRenderWindow(frame, -1)
 
-    ren = vtkpython.vtkRenderer()
+    ren = vtk.vtkRenderer()
     renWin = wid.GetRenderWindow()
     renWin.AddRenderer(ren)
     renWin.SetSize(300,300)
