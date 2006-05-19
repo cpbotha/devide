@@ -44,11 +44,11 @@ class pickledModuleState:
 #########################################################################
 class pickledConnection:
     def __init__(self, sourceInstanceName=None, outputIdx=None,
-                 target_instance_name=None, inputIdx=None, connectionType=None):
+                 targetInstanceName=None, inputIdx=None, connectionType=None):
         
         self.sourceInstanceName = sourceInstanceName
         self.outputIdx = outputIdx
-        self.target_instance_name = target_instance_name
+        self.targetInstanceName = targetInstanceName
         self.inputIdx = inputIdx
         self.connectionType = connectionType
 
@@ -897,9 +897,9 @@ class moduleManager:
             
             for connection in typeConnections:
                 if newModulesDict.has_key(connection.sourceInstanceName) and \
-                   newModulesDict.has_key(connection.target_instance_name):
+                   newModulesDict.has_key(connection.targetInstanceName):
                     sourceM = newModulesDict[connection.sourceInstanceName]
-                    targetM = newModulesDict[connection.target_instance_name]
+                    targetM = newModulesDict[connection.targetInstanceName]
                     # attempt connecting them
                     print "connecting %s:%d to %s:%d..." % \
                           (sourceM.__class__.__name__, connection.outputIdx,

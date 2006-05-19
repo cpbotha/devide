@@ -1555,7 +1555,7 @@ class graphEditor:
         # note that we use "newConnections" and not connectionList
         for connection in newConnections:
             sGlyph = newGlyphDict[connection.sourceInstanceName]
-            tGlyph = newGlyphDict[connection.target_instance_name]
+            tGlyph = newGlyphDict[connection.targetInstanceName]
             self._createLine(sGlyph, connection.outputIdx,
                              tGlyph, connection.inputIdx)
 
@@ -1699,7 +1699,7 @@ class graphEditor:
                 
             connectionLines.append('%s -> %s [label="%s"];\n' % \
                                    (connection.sourceInstanceName,
-                                    connection.target_instance_name,
+                                    connection.targetInstanceName,
                                     outputName
                                     ))
 
