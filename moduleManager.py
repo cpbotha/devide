@@ -311,11 +311,11 @@ class moduleManager:
                 msgs = genUtils.exceptionToMsgs()
 
                 # and log them as mesages
-                self._devide_app.log_message(
+                self._devide_app.log_info(
                     'Error loading %s: %s.' % (mi, str(e)))
 
                 for m in msgs:
-                    self._devide_app.log_message(m.strip(), timeStamp=False)
+                    self._devide_app.log_info(m.strip(), timeStamp=False)
 
                 # we don't want to throw an exception here, as that would
                 # mean that a singe misconfigured module_index file can
@@ -371,8 +371,9 @@ class moduleManager:
         if len(failed_mis) > 0:
             failed_indices = '\n'.join(failed_mis.keys())
             self._devide_app.log_error(
-                'The following module indices failed to load: \n%s' % \
-                (failed_indices,))
+                'The following module indices failed to load '
+                '(see message log for details): \n%s' \
+                % (failed_indices,))
 
         self._devide_app.log_info(
             '%d modules and %d segments scanned.' %
