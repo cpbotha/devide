@@ -12,6 +12,15 @@ class appendPolyData:
 class clipPolyData:
     kits = ['vtk_kit']
     cats = ['Filters']
+    keywords = ['polydata', 'clip', 'implicit']
+    help = \
+         """Given an input polydata and an implicitFunction, this will clip
+         the polydata.
+
+         All points that are inside the implicit function are kept, everything
+         else is discarded.  'Inside' is defined as all points in the polydata
+         where the implicit function value is greater than 0.
+         """
 
 class closing:
     kits = ['vtk_kit']
