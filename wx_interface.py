@@ -8,12 +8,7 @@ import resources.python.mainFrame
 import resources.graphics.images
 
 class WXInterface(wx.App):
-    """Main devide application class.
-
-    Class that's used as communication hub for most other components of the
-    platform.  We've derived from wxApp but this is not a requirement... we
-    could just as well have contained the wxApp instance.  This inheritance
-    does not prevent abstraction from the GUI.
+    """WX-based graphical user interface for DeVIDE.
     """
     
     def __init__(self, devide_app):
