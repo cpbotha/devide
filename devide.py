@@ -120,11 +120,11 @@ class DeVIDEApp:
         ####
         # startup relevant interface instance
         if self.mainConfig.interface == 'rpc':
-            from pyro_interface import PyroInterface
+            from interfaces.pyro_interface import PyroInterface
             self._interface = PyroInterface(self)
             
         else:
-            from wx_interface import WXInterface
+            from interfaces.wx_interface import WXInterface
             self._interface = WXInterface(self)
 
         ####
