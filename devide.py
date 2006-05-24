@@ -41,7 +41,7 @@ class mainConfigClass(object):
         print "-h or --help               : Display this message."
         print "--no-kits kit1,kit2        : Don't load the specified kits."
         print "--kits kit1,kit2           : Load the specified kits."
-        print "--interface wx|rpc         : Load 'wx' or 'rpc' interface."
+        print "--interface wx|pyro|xmlrpc : Load 'wx' or 'rpc' interface."
         print "--stereo                   : Allocate stereo visuals."
 
     def _parseCommandLine(self):
@@ -74,8 +74,10 @@ class mainConfigClass(object):
 
             elif o in ('--interface',):
                 print a
-                if a == 'rpc':
-                    self.interface = 'rpc'
+                if a == 'pyro':
+                    self.interface = 'pyro'
+                elif a == 'xmlrpc':
+                    self.interface = 'xmlrpc'
                 else:
                     self.interface = 'wx'
 
@@ -119,9 +121,13 @@ class DeVIDEApp:
 
         ####
         # startup relevant interface instance
-        if self.mainConfig.interface == 'rpc':
+        if self.mainConfig.interface == 'pyro':
             from interfaces.pyro_interface import PyroInterface
             self._interface = PyroInterface(self)
+
+        elif self.mainConfig.interface == 'xmlrpc':
+            from interfaces.xmlrpc_interface import XMLRPCInterface
+            self._interface = XMLRPCInterface(self)
             
         else:
             from interfaces.wx_interface import WXInterface
