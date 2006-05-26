@@ -556,7 +556,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         import modules.viewers.resources.python.slice3dVWRFrames
         reload(modules.viewers.resources.python.slice3dVWRFrames)
 
-        stereo = self._moduleManager.getAppMainConfig().stereo
+        stereo = self._moduleManager.get_app_main_config().stereo
         #print "STEREO:", stereo
         modules.viewers.resources.python.slice3dVWRFrames.S3DV_STEREO = stereo
 
