@@ -23,7 +23,7 @@ import traceback
 #import encodings.idna
 
 ############################################################################
-class mainConfigClass(object):
+class MainConfigClass(object):
 
     def __init__(self):
         import defaults
@@ -100,7 +100,7 @@ class DeVIDEApp:
         configure relevant main-loop / interface class.
         """
         
-        self.mainConfig = mainConfigClass()
+        self.main_config = MainConfigClass()
         
         self._inProgress = mutex.mutex()
         self._previousProgressTime = 0
@@ -121,11 +121,11 @@ class DeVIDEApp:
 
         ####
         # startup relevant interface instance
-        if self.mainConfig.interface == 'pyro':
+        if self.main_config.interface == 'pyro':
             from interfaces.pyro_interface import PyroInterface
             self._interface = PyroInterface(self)
 
-        elif self.mainConfig.interface == 'xmlrpc':
+        elif self.main_config.interface == 'xmlrpc':
             from interfaces.xmlrpc_interface import XMLRPCInterface
             self._interface = XMLRPCInterface(self)
             

@@ -93,7 +93,7 @@ class moduleManager:
         import module_kits
         # remove no-kits from module_kit_list:
         nmkl = [mk for mk in module_kits.module_kit_list
-                if mk not in self.getAppMainConfig().nokits]
+                if mk not in self.get_app_main_config().nokits]
         module_kits.module_kit_list = nmkl
 
         # now import the kits that remain ##########################
@@ -387,8 +387,8 @@ class moduleManager:
     # for backwards compatibility
     getAppDir = get_appdir
 
-    def getAppMainConfig(self):
-        return self._devide_app.mainConfig
+    def get_app_main_config(self):
+        return self._devide_app.main_config
 	
     def getAvailableModules(self):
         """Return the availableModules, a dictionary keyed on fully qualified
