@@ -124,10 +124,14 @@ class DeVIDEApp:
         if self.main_config.interface == 'pyro':
             from interfaces.pyro_interface import PyroInterface
             self._interface = PyroInterface(self)
+            # this is a GUI-less interface, so wx_kit has to go
+            self.main_config.nokits.append('wx_kit')
 
         elif self.main_config.interface == 'xmlrpc':
             from interfaces.xmlrpc_interface import XMLRPCInterface
             self._interface = XMLRPCInterface(self)
+            # this is a GUI-less interface, so wx_kit has to go
+            self.main_config.nokits.append('wx_kit')
             
         else:
             from interfaces.wx_interface import WXInterface
