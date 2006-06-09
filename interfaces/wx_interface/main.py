@@ -6,6 +6,7 @@ import wx.html
 
 import resources.python.mainFrame
 import resources.graphics.images
+import main_frame
 
 class WXInterface(wx.App):
     """WX-based graphical user interface for DeVIDE.
@@ -31,6 +32,9 @@ class WXInterface(wx.App):
         
         self._mainFrame = resources.python.mainFrame.mainFrame(
             None, -1, "dummy", name="DeVIDE")
+
+        self._blaat = main_frame.MainWXFrame(None, -1, "dummy")
+        self._blaat.Show()
 
         wx.InitAllImageHandlers()
         self._mainFrame.SetIcon(self.getApplicationIcon())
