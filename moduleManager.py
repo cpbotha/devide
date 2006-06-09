@@ -31,6 +31,68 @@ class ModuleManagerException(Exception):
     pass
     
 #########################################################################
+class ModuleSearch:
+    """Class for doing relative fast searches through module metadata.
+
+    @author Charl P. Botha <http://cpbotha.net/>
+    """
+    
+    def __init__(self):
+        # dict of dicts of tuple, e.g.:
+        # {'isosurface' : {('contour', 'keywords') : 1,
+        #                  ('marching', 'help') : 1} ...
+        self.search_dict = {}
+
+    def build_search_index(self, available_modules):
+        self.search_dict.clear()
+
+        def index_field(module_name, mi_class, field_name, split=False):
+            try:
+                field = getattr(mi_class, field_name)
+                
+            except AttributeError:
+                pass
+            else:
+                if split:
+                    iter_list = field.split()
+                else:
+                    iter_list = field
+                    
+                for w in iter_list:
+                    if w not in self.search_dict:
+                        self.search_dict[w.lower()] = {(module_name,
+                                                        field_name) : 1}
+                    else:
+                        self.search_dict[w.lower()][(module_name,
+                                                     field_name)] = 1
+            
+        for module_name in available_modules:
+            mc = available_modules[module_name]
+            short_module_name = mc.__name__
+
+            if short_module_name not in self.search_dict:
+                self.search_dict[short_module_name] = {(module_name, 'name') :
+                1}
+            else:
+                # we don't have to increment, there can be only one unique
+                # complete module_name
+                self.search_dict[short_module_name][(module_name, 'name')] = 1
+                
+            index_field(module_name, mc, 'keywords')
+            index_field(module_name, mc, 'help', True)
+
+    def find_matches(self, partial_text):
+        search_results = {}
+        for w in self.search_dict:
+            if w.find(partial_text.lower()) >= 0:
+                # we can have partial matches with more than one key
+                # returning the same location, so we stuff results in a dict
+                # too to consolidate results
+                for k in self.search_dict[w].keys():
+                    search_results[k] = 1
+
+        return search_results.keys()
+        
 
 #########################################################################
 class pickledModuleState:
@@ -157,6 +219,8 @@ class moduleManager:
                     
 
         ##############################################################
+
+        self.module_search = ModuleSearch()
         
 	# make first scan of available modules
 	self.scanModules()
@@ -346,6 +410,10 @@ class moduleManager:
                     if module_deps:
                         module_name = mim.replace('module_index', a)
                         self._availableModules[module_name] = c
+
+        # self._availableModules is a dict keyed on module_name with
+        # module description class as value
+        self.module_search.build_search_index(self._availableModules)
 
         # we should move this functionality to the graphEditor.  "segments"
         # are _probably_ only valid there... alternatively, we should move
