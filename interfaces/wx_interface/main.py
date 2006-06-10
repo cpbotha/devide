@@ -15,7 +15,7 @@ class WXInterface(wx.App):
     def __init__(self, devide_app):
         self._devide_app = devide_app
         
-        self._mainFrame = None
+        self._main_frame = None
 
         wx.App.__init__(self, 0)
 
@@ -30,47 +30,47 @@ class WXInterface(wx.App):
         # set the wx.GetApp() application name
         self.SetAppName('DeVIDE')
         
-        self._mainFrame = resources.python.mainFrame.mainFrame(
-            None, -1, "dummy", name="DeVIDE")
+        #self._main_frame = resources.python.mainFrame.mainFrame(
+        #    None, -1, "dummy", name="DeVIDE")
 
-        self._blaat = main_frame.MainWXFrame(None, -1, "dummy")
-        self._blaat.Show()
+        self._main_frame = main_frame.MainWXFrame(None, -1, "dummy")
+        #self._blaat.Show()
 
         wx.InitAllImageHandlers()
-        self._mainFrame.SetIcon(self.getApplicationIcon())
+        self._main_frame.SetIcon(self.getApplicationIcon())
 
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.fileExitId,
+        wx.EVT_MENU(self._main_frame, self._main_frame.fileExitId,
                     self.exitCallback)
         
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowGraphEditorId,
-                   self._handlerMenuGraphEditor)
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowPythonShellId,
-                    self._handlerMenuPythonShell)
+        #wx.EVT_MENU(self._main_frame, self._main_frame.windowGraphEditorId,
+        #           self._handlerMenuGraphEditor)
+        #wx.EVT_MENU(self._main_frame, self._main_frame.windowPythonShellId,
+        #            self._handlerMenuPythonShell)
 
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowMinimiseChildrenId,
-                    lambda e: self._windowIconizeAllChildren())
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.windowRestoreChildrenId,
-                    lambda e: self._windowRestoreAllChildren())
+        #wx.EVT_MENU(self._main_frame, self._main_frame.windowMinimiseChildrenId,
+        #            lambda e: self._windowIconizeAllChildren())
+        #wx.EVT_MENU(self._main_frame, self._main_frame.windowRestoreChildrenId,
+        #            lambda e: self._windowRestoreAllChildren())
         
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.testingAllTestsId,
-                    self._handlerTestingAllTests)
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.helpContentsId,
+        #wx.EVT_MENU(self._main_frame, self._main_frame.testingAllTestsId,
+        #            self._handlerTestingAllTests)
+        wx.EVT_MENU(self._main_frame, self._main_frame.helpShowHelpId,
                     self._handlerHelpContents)
-        wx.EVT_MENU(self._mainFrame, self._mainFrame.helpAboutId,
+        wx.EVT_MENU(self._main_frame, self._main_frame.helpAboutId,
                     self.aboutCallback)
 
-        self._mainFrame.Show(1)
+        self._main_frame.Show(1)
         # here we also show twice: in wxPython 2.4.2.4 the TextCtrls sometimes
         # have difficulty completely drawing themselves at startup
-        self._mainFrame.Show(1)
+        self._main_frame.Show(1)
 
         # with these calls, we force an immediate draw of the full window
         # if we don't do this, some of the controls are only drawn when
         # startup progress is 100% (this is on wxPython 2.6.0.1)
-        self._mainFrame.Refresh()
-        self._mainFrame.Update()
+        self._main_frame.Refresh()
+        self._main_frame.Update()
 
-        self.SetTopWindow(self._mainFrame)
+        self.SetTopWindow(self._main_frame)
 
         return True
         
@@ -84,7 +84,7 @@ class WXInterface(wx.App):
         return icon
 
     def getMainWindow(self):
-        return self._mainFrame        
+        return self._main_frame        
 
     def get_main_window(self):
         return self.getMainWindow()
@@ -132,7 +132,7 @@ class WXInterface(wx.App):
             self._helpClass.close()
         
         # take care of main window
-        self._mainFrame.Close()
+        self._main_frame.Close()
 
     def showHelp(self):
         self._startHelpClass()
@@ -192,7 +192,7 @@ class WXInterface(wx.App):
         else:
             msg = message
                               
-        self._mainFrame.messageLogTextCtrl.AppendText(
+        self._main_frame.message_log_text_ctrl.AppendText(
             msg + '\n')
         
 
@@ -209,9 +209,9 @@ class WXInterface(wx.App):
         wx.Log_FlushActive()
 
     def set_progress(self, progress, message, noTime=False):
-        self._mainFrame.progressGauge.SetValue(
+        self._main_frame.progress_gauge.SetValue(
             int(round(progress)))
-        self._mainFrame.progressText.SetLabel(message)
+        self._main_frame.progress_text.SetLabel(message)
 
         # we also output an informative message to standard out
         # in cases where DeVIDE is very busy, this is quite
@@ -234,21 +234,21 @@ class WXInterface(wx.App):
             self.log_info(message)
                    
         # bring this window to the top if the user wants it
-        if self._mainFrame.progressRaiseCheckBox.GetValue():
-            self._mainFrame.Raise()
+        #if self._main_frame.progressRaiseCheckBox.GetValue():
+        #    self._main_frame.Raise()
 
         # we want wx to update its UI, but it shouldn't accept any
         # user input, else things can get really crazy. -
         # we do keep interaction for the main window enabled,
         # but we disable all menus.
-        menuCount = self._mainFrame.GetMenuBar().GetMenuCount()
+        menuCount = self._main_frame.GetMenuBar().GetMenuCount()
         for menuPos in range(menuCount):
-            self._mainFrame.GetMenuBar().EnableTop(menuPos, False)
+            self._main_frame.GetMenuBar().EnableTop(menuPos, False)
             
-        wx.SafeYield(win=self._mainFrame)
+        wx.SafeYield(win=self._main_frame)
 
         for menuPos in range(menuCount):
-            self._mainFrame.GetMenuBar().EnableTop(menuPos, True)
+            self._main_frame.GetMenuBar().EnableTop(menuPos, True)
 
 
     def start_main_loop(self):
@@ -257,7 +257,7 @@ class WXInterface(wx.App):
     def aboutCallback(self, event):
         from resources.python.aboutDialog import aboutDialog
 
-        about = aboutDialog(self._mainFrame, -1, 'dummy')
+        about = aboutDialog(self._main_frame, -1, 'dummy')
 
         about.icon_bitmap.SetBitmap(
             resources.graphics.images.getdevidelogo64x64Bitmap())
@@ -300,11 +300,11 @@ class WXInterface(wx.App):
         """Make the main window visible and bring it to the front.
         """
 
-        self._mainFrame.Show(True)
-        self._mainFrame.Raise()
+        self._main_frame.Show(True)
+        self._main_frame.Raise()
 
     def _windowIconizeAllChildren(self):
-        children = self._mainFrame.GetChildren()
+        children = self._main_frame.GetChildren()
 
         for w in children:
             try:
@@ -322,7 +322,7 @@ class WXInterface(wx.App):
             
 
     def _windowRestoreAllChildren(self):
-        children = self._mainFrame.GetChildren()
+        children = self._main_frame.GetChildren()
 
         for w in children:
             

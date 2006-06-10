@@ -34,6 +34,17 @@ class MainWXFrame(wx.Frame):
         # could make toolbars here
 
         # now we need to add panes
+
+        self._mgr.AddPane(
+            self._create_progress_panel(),
+            PyAUI.PaneInfo().Name('progress_panel').
+            Caption('Progress').CenterPane().Top())
+
+        self._mgr.AddPane(
+            wxpc.canvas(self, -1),
+            PyAUI.PaneInfo().Name('graph_canvas').
+            Caption('Graph Canvas').Center())
+        
         self.module_cats = self._create_module_cats()
         self._mgr.AddPane(
             self.module_cats,
@@ -45,16 +56,6 @@ class MainWXFrame(wx.Frame):
             self.module_list,
             PyAUI.PaneInfo().Name('module_list').Caption('Module List'))
 
-        self._mgr.AddPane(
-            self._create_progress_panel(),
-            PyAUI.PaneInfo().Name('progress_panel').
-            Caption('Progress').Top())
-
-        
-        self._mgr.AddPane(
-            wxpc.canvas(self, -1),
-            PyAUI.PaneInfo().Name('graph_canvas').
-            Caption('Graph Canvas').CenterPane())
 
         self._mgr.AddPane(
             self._create_documentation_window(),
@@ -79,6 +80,7 @@ class MainWXFrame(wx.Frame):
         tc = wx.TextCtrl(
             self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
         tc.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, ""))
+        self.message_log_text_ctrl = tc
         return tc
 
     def _create_module_cats(self):
@@ -126,7 +128,9 @@ class MainWXFrame(wx.Frame):
         self.fileExportSelectedAsDOTId = wx.NewId()
         self.fileExitId = wx.NewId()
         self.windowMainID = wx.NewId()
+        self.window_python_shell_id = wx.NewId()
         self.helpShowHelpId = wx.NewId()
+        self.helpAboutId = wx.NewId()
         wxglade_tmp_menu = wx.Menu()
         wxglade_tmp_menu.Append(self.fileNewId, "&New\tCtrl-N", "Create new network.", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(self.fileOpenId, "&Open\tCtrl-O", "Open and load existing network.", wx.ITEM_NORMAL)
@@ -144,10 +148,19 @@ class MainWXFrame(wx.Frame):
         self.execution_menu = wx.Menu()
         self.menubar.Append(self.execution_menu, "E&xecution")
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(self.windowMainID, "&Main window", "Show the DeVIDE main window.", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(
+            self.windowMainID, "&Main window", "Show the DeVIDE main window.",
+            wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.window_python_shell_id, "&Python Shell",
+                                "Show the Python Shell interface.",
+                                wx.ITEM_NORMAL)
         self.menubar.Append(wxglade_tmp_menu, "&Window")
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(self.helpShowHelpId, "Show &Help\tF1", "", wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.helpShowHelpId, "Show &Help\tF1", "",
+    wx.ITEM_NORMAL)
+        wxglade_tmp_menu.Append(self.helpAboutId, "About", "",
+                                wx.ITEM_NORMAL)
+        
         self.menubar.Append(wxglade_tmp_menu, "&Help")
         # Menu Bar end
         
