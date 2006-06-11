@@ -40,8 +40,9 @@ class MainWXFrame(wx.Frame):
             PyAUI.PaneInfo().Name('progress_panel').
             Caption('Progress').CenterPane().Top())
 
+        self.canvas = wxpc.canvas(self, -1)
         self._mgr.AddPane(
-            wxpc.canvas(self, -1),
+            self.canvas,
             PyAUI.PaneInfo().Name('graph_canvas').
             Caption('Graph Canvas').Center())
         
@@ -84,12 +85,15 @@ class MainWXFrame(wx.Frame):
         return tc
 
     def _create_module_cats(self):
-        return wx.ListBox(self, -1, choices=[],
-                          style=wx.LB_EXTENDED|wx.LB_NEEDED_SB)
+        self.module_cats_list_box = wx.ListBox(
+            self, -1, choices=[],
+            style=wx.LB_EXTENDED|wx.LB_NEEDED_SB)
+        return self.module_cats_list_box 
 
     def _create_module_list(self):
-        return wx.ListBox(self, -1, choices=[],
-                          style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
+        self.module_list_box = wx.ListBox(self, -1, choices=[],
+                                          style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
+        return self.module_list_box
 
     def _create_progress_panel(self):
         progress_panel = wx.Panel(self, -1)#, size=wx.Size(100, 50))
@@ -143,32 +147,42 @@ class MainWXFrame(wx.Frame):
         wxglade_tmp_menu.AppendSeparator()
         wxglade_tmp_menu.Append(self.fileExitId, "E&xit\tCtrl-Q", "Exit DeVIDE!", wx.ITEM_NORMAL)
         self.menubar.Append(wxglade_tmp_menu, "&File")
+
         self.edit_menu = wx.Menu()
         self.menubar.Append(self.edit_menu, "&Edit")
+
         self.execution_menu = wx.Menu()
         self.menubar.Append(self.execution_menu, "E&xecution")
-        wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(
+
+        modules_menu = wx.Menu()
+        self.id_rescan_modules = wx.NewId()
+        modules_menu.Append(
+            self.id_rescan_modules, "Rescan modules", "Recheck all module "
+            "directories for new modules and metadata.", wx.ITEM_NORMAL)
+        self.menubar.Append(modules_menu, "&Modules")
+
+        window_menu = wx.Menu()
+        window_menu.Append(
             self.windowMainID, "&Main window", "Show the DeVIDE main window.",
             wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.window_python_shell_id, "&Python Shell",
+        window_menu.Append(self.window_python_shell_id, "&Python Shell",
                                 "Show the Python Shell interface.",
                                 wx.ITEM_NORMAL)
-        self.menubar.Append(wxglade_tmp_menu, "&Window")
-        wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(self.helpShowHelpId, "Show &Help\tF1", "",
+        self.menubar.Append(window_menu, "&Window")
+
+        help_menu = wx.Menu()
+        help_menu.Append(self.helpShowHelpId, "Show &Help\tF1", "",
     wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.helpAboutId, "About", "",
+        help_menu.Append(self.helpAboutId, "About", "",
                                 wx.ITEM_NORMAL)
         
-        self.menubar.Append(wxglade_tmp_menu, "&Help")
+        self.menubar.Append(help_menu, "&Help")
         # Menu Bar end
         
     def OnEraseBackground(self, event):
-
+        # from PyAUI demo
         event.Skip()
 
-
     def OnSize(self, event):
-
+        # from PyAUI demo
         event.Skip()

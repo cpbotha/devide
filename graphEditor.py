@@ -154,14 +154,6 @@ class GraphEditor:
         self._interface = interface
         self._devide_app = devideApp
 
-        #import resources.python.graphEditorFrame as rpg
-
-        #self._graphEditorFrame = rpg.graphEditorFrame(
-        #    self._interface.get_main_window(),
-        #    -1, title='dummy', name='DeVIDE', wxpcCanvas=wxpc.canvas)
-
-        #self._graphEditorFrame.SetIcon(self._interface.getApplicationIcon())
-
         mf = self._interface._main_frame
         em = mf.edit_menu
         self._appendEditCommands(em,
@@ -172,16 +164,8 @@ class GraphEditor:
                                       mf, False)
         
 
-        #wx.EVT_CLOSE(self._graphEditorFrame, self._handlerGraphFrameClose)
-
-        # we have to make this call, else the user can unsplit the window
-        # and lose one of the panes (really irritating)
-        #self._graphEditorFrame.main_splitter.SetMinimumPaneSize(50)
-        #self._graphEditorFrame.module_palette_splitter.SetMinimumPaneSize(50)
-            
-        wx.EVT_BUTTON(mf,
-                      mf.rescanButtonId,
-                      lambda e, s=self: s.fillModuleLists())
+        wx.EVT_MENU(mf, mf.id_rescan_modules,
+                    lambda e, s=self: s.fillModuleLists())
 
         wx.EVT_MENU(mf, mf.fileNewId,
                     self._fileNewCallback)
@@ -231,12 +215,12 @@ class GraphEditor:
 
         # event handlers
         wx.EVT_LISTBOX(mf,
-                    mf.moduleCatsListBoxId,
-                    self._handlerModuleCatsListBoxSelected)
+                       mf.module_cats_list_box.GetId(),
+                       self._handlerModuleCatsListBoxSelected)
 
         wx.EVT_LISTBOX(mf,
-                    mf.modulesListBoxId,
-                    self._handlerModulesListBoxSelected)
+                       mf.module_list_box.GetId(),
+                       self._handlerModulesListBoxSelected)
 
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
@@ -258,7 +242,7 @@ class GraphEditor:
             else:
                 event.Skip()
 
-        wx.EVT_MOUSE_EVENTS(mf.modulesListBox,
+        wx.EVT_MOUSE_EVENTS(mf.module_list_box,
                          self._handlerModulesListBoxMouseEvents)
 
         # (shortName, longName) tuples, updated every time the user changes
@@ -316,7 +300,7 @@ class GraphEditor:
             event.Skip()
             return
         
-        mlb = self._interface._main_frame.modulesListBox
+        mlb = self._interface._main_frame.module_list_box
 
         sel = mlb.GetSelection()
         if sel >= 0:
@@ -326,7 +310,7 @@ class GraphEditor:
                 return
         
             dataObject = wx.TextDataObject(moduleName)
-            dropSource = wx.DropSource(self._graphEditorFrame.modulesListBox)
+            dropSource = wx.DropSource(self._interface._main_frame.module_list_box)
             dropSource.SetData(dataObject)
             # we don't need the result of the DoDragDrop call (phew)
             # the param is supposedly the copy vs. move flag; True is move.
@@ -399,7 +383,7 @@ class GraphEditor:
         to scheduler modules and requests the scheduler to execute them.
         """
 
-        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
             wxpc.coGlyph)
 
         self._execute_modules(allGlyphs)
@@ -422,21 +406,21 @@ class GraphEditor:
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
-                self._graphEditorFrame.canvas.SetFocus()
+                self._interface._main_frame.canvas.SetFocus()
                 # yield also necessary, else the workaround doesn't
                 wx.SafeYield()
           
 
         elif itemText.startswith(segp):
             # we have to convert the event coords to real coords
-            rx, ry = self._graphEditorFrame.canvas.eventToRealCoords(x, y)
+            rx, ry = self._interface._main_frame.canvas.eventToRealCoords(x, y)
             self._loadAndRealiseNetwork(itemText[len(segp):], (rx,ry),
                                         reposition=True)
 
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
-                self._graphEditorFrame.canvas.SetFocus()
+                self._interface._main_frame.canvas.SetFocus()
                 # yield also necessary, else the workaround doesn't
                 wx.SafeYield()
             
@@ -479,7 +463,7 @@ class GraphEditor:
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
-                rx, ry = self._graphEditorFrame.canvas.eventToRealCoords(x, y)
+                rx, ry = self._interface._main_frame.canvas.eventToRealCoords(x, y)
                 self._loadAndRealiseNetwork(filename, (rx,ry),
                                             reposition=True)
 
@@ -691,7 +675,7 @@ class GraphEditor:
                           len(moduleInstance.getOutputDescriptions()),
                           labelList, moduleInstance)
         
-        canvas = self._graphEditorFrame.canvas
+        canvas = self._interface._main_frame.canvas
         canvas.addObject(co)
 
 
@@ -708,7 +692,7 @@ class GraphEditor:
 
         # first have to draw the just-placed glyph so it has
         # time to update its (label-dependent) dimensions
-        dc = self._graphEditorFrame.canvas.getDC()
+        dc = self._interface._main_frame.canvas.getDC()
         co.draw(dc)
 
         # the network loading needs this
@@ -738,7 +722,7 @@ class GraphEditor:
             if temp_module:
                 # create and draw the actual glyph
                 if convert_coords:
-                    rx, ry = self._graphEditorFrame.canvas.eventToRealCoords(
+                    rx, ry = self._interface._main_frame.canvas.eventToRealCoords(
                         x, y)
                 else:
                     rx, ry = x, y
@@ -769,7 +753,7 @@ class GraphEditor:
 
         if not moduleInstance.__doc__:
             md = wx.MessageDialog(
-                self._graphEditorFrame,
+                self._interface._main_frame,
                 "This module has no help documentation yet.",
                 "Information",
                 wx.OK | wx.ICON_INFORMATION)
@@ -852,17 +836,17 @@ class GraphEditor:
                     
         
         # setup all categories
-        self._graphEditorFrame.moduleCatsListBox.Clear()
+        self._interface._main_frame.module_cats_list_box.Clear()
         idx = 0
 
         cats = self._moduleCats.keys()
         cats.sort()
         
         for cat in cats:
-            self._graphEditorFrame.moduleCatsListBox.Append(cat)
+            self._interface._main_frame.module_cats_list_box.Append(cat)
 
         # no category is selected
-        self._graphEditorFrame.modulesListBox.Clear()
+        self._interface._main_frame.module_list_box.Clear()
 
     def find_glyph(self, meta_module):
         """Given a meta_module, return the glyph that contains it.
@@ -870,7 +854,7 @@ class GraphEditor:
         @return: glyph if found, None otherwise.
         """
 
-        all_glyphs = self._graphEditorFrame.canvas.getObjectsOfClass(
+        all_glyphs = self._interface._main_frame.canvas.getObjectsOfClass(
             wxpc.coGlyph)
 
         found = False
@@ -888,13 +872,13 @@ class GraphEditor:
         self.hide()
 
     def show(self):
-        self._graphEditorFrame.Show(True)
-        self._graphEditorFrame.Iconize(False)
-        self._graphEditorFrame.Raise()
+        self._interface._main_frame.Show(True)
+        self._interface._main_frame.Iconize(False)
+        self._interface._main_frame.Raise()
 
     def _handlerFileExportAsDOT(self, event):
         # make a list of all glyphs
-        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
             wxpc.coGlyph)
         
         if allGlyphs:
@@ -943,11 +927,11 @@ class GraphEditor:
                 self._saveNetwork(glyphs, filename)
 
     def _handlerModuleCatsListBoxSelected(self, event):
-        self._graphEditorFrame.modulesListBox.Clear()
+        self._interface._main_frame.module_list_box.Clear()
 
         selectedCats = []
 
-        mclb = self._graphEditorFrame.moduleCatsListBox
+        mclb = self._interface._main_frame.module_cats_list_box
         sels = mclb.GetSelections()
 
         for sel in sels:
@@ -983,7 +967,7 @@ class GraphEditor:
                     (mParts[-1], 'module:%s' % (mn,)))
 
         # now populate the mlb
-        mlb = self._graphEditorFrame.modulesListBox
+        mlb = self._interface._main_frame.module_list_box
         # important: sort by shortnames
         self._selectedModulesList.sort()
 
@@ -1061,7 +1045,7 @@ class GraphEditor:
                 self._connect(new_glyph, output_idx,
                               consumer_glyph, input_idx)
 
-        self._graphEditorFrame.canvas.redraw()
+        self._interface._main_frame.canvas.redraw()
 
         wx.SafeYield()
 
@@ -1078,7 +1062,7 @@ class GraphEditor:
                     ll.append(newModuleName)
 
                 glyph.setLabelList(ll)
-                self._graphEditorFrame.canvas.redraw()
+                self._interface._main_frame.canvas.redraw()
 
                 return True
             
@@ -1093,7 +1077,7 @@ class GraphEditor:
             rr = self._devide_app.getModuleManager().renameModule(module, uin)
             if rr:
                 glyph.setLabelList([module.__class__.__name__])
-                self._graphEditorFrame.canvas.redraw()
+                self._interface._main_frame.canvas.redraw()
                 return True
 
             else:
@@ -1112,10 +1096,10 @@ class GraphEditor:
         self._renameModule(module, glyph, newModuleName)
 
     def _handlerModulesListBoxSelected(self, event):
-        mlb = self._graphEditorFrame.modulesListBox
+        mlb = self._interface._main_frame.module_list_box
         idx = mlb.GetSelection()
 
-        self._graphEditorFrame.GetStatusBar().SetStatusText(
+        self._interface._main_frame.GetStatusBar().SetStatusText(
             self._selectedModulesList[idx][1])
 
     def _handlerPaste(self, event, position):
@@ -1170,7 +1154,7 @@ class GraphEditor:
             # and zero current qss
 
             # first check that we have a valid mouse pos
-            cst = self._graphEditorFrame.canvas.GetClientSizeTuple()
+            cst = self._interface._main_frame.canvas.GetClientSizeTuple()
             if event.GetX() < 0 or event.GetX() >= cst[0] or \
                event.GetY() < 0 or event.GetY() >= cst[1]:
                 # just bail out of this function... the user is trying
@@ -1178,7 +1162,7 @@ class GraphEditor:
                 return
             
 
-            mlb = self._graphEditorFrame.modulesListBox
+            mlb = self._interface._main_frame.module_list_box
             idx = mlb.GetSelection()
             if idx >= 0:
                 # place just this one
@@ -1203,7 +1187,7 @@ class GraphEditor:
         if updateSelectionAndStatusBar:
             if idx >= 0:
                 # then select what we want
-                self._graphEditorFrame.modulesListBox.SetSelection(idx)
+                self._interface._main_frame.module_list_box.SetSelection(idx)
                 # we only update the string if it was found
                 self._quickSearchString = qss
 
@@ -1211,15 +1195,15 @@ class GraphEditor:
                 if qss == '':
                     # this means the search was cancelled, so we have
                     # to deselect everything and cancel the status bar disp
-                    sel = self._graphEditorFrame.modulesListBox.\
+                    sel = self._interface._main_frame.module_list_box.\
                           GetSelection()
                     if sel >= 0:
-                        self._graphEditorFrame.modulesListBox.SetSelection(
+                        self._interface._main_frame.module_list_box.SetSelection(
                             sel, False)
 
                     self._quickSearchString = qss
 
-            self._graphEditorFrame.GetStatusBar().SetStatusText(
+            self._interface._main_frame.GetStatusBar().SetStatusText(
                 self._quickSearchString)
 
             
@@ -1243,12 +1227,12 @@ class GraphEditor:
         self._interface.showMainWindow()
 
     def hide(self):
-        self._graphEditorFrame.Show(False)
+        self._interface._main_frame.Show(False)
 
     def _drawPreviewLine(self, beginp, endp0, endp1):
 
         # make a DC to draw on
-        dc = self._graphEditorFrame.canvas.getDC()        
+        dc = self._interface._main_frame.canvas.getDC()        
 
         dc.BeginDrawing()
         
@@ -1270,7 +1254,7 @@ class GraphEditor:
         """
         
         # make a DC to draw on
-        dc = self._graphEditorFrame.canvas.getDC()
+        dc = self._interface._main_frame.canvas.getDC()
 
         dc.BeginDrawing()
         
@@ -1330,7 +1314,7 @@ class GraphEditor:
             del outlines[outlines.index(deadLine)]
 
             # and from the canvas
-            self._graphEditorFrame.canvas.removeObject(deadLine)
+            self._interface._main_frame.canvas.removeObject(deadLine)
             deadLine.close()
             
             
@@ -1341,15 +1325,15 @@ class GraphEditor:
             pmenu = wx.Menu('Canvas Menu')
 
             # fill it out with edit (copy, cut, paste, delete) commands
-            self._appendEditCommands(pmenu, self._graphEditorFrame.canvas,
+            self._appendEditCommands(pmenu, self._interface._main_frame.canvas,
                                      (event.realX, event.realY))
 
             pmenu.AppendSeparator()
 
-            self._append_execute_commands(pmenu, self._graphEditorFrame.canvas)
+            self._append_execute_commands(pmenu, self._interface._main_frame.canvas)
             
 
-            self._graphEditorFrame.canvas.PopupMenu(pmenu, wx.Point(event.GetX(),
+            self._interface._main_frame.canvas.PopupMenu(pmenu, wx.Point(event.GetX(),
                                                              event.GetY()))
             
         elif not event.ShiftDown() and not event.ControlDown():
@@ -1389,7 +1373,7 @@ class GraphEditor:
             self._connect(draggedObject, draggedPort[1],
                           droppedObject, droppedInputPort)
             
-            self._graphEditorFrame.canvas.redraw()
+            self._interface._main_frame.canvas.redraw()
 
         elif draggedObject.inputLines[draggedPort[1]]:
             # this means the user was dragging a connected input port and has
@@ -1410,10 +1394,10 @@ class GraphEditor:
             self._connect(fromGlyph, fromOutputIdx,
                           droppedObject, droppedInputPort)
 
-            self._graphEditorFrame.canvas.redraw()
+            self._interface._main_frame.canvas.redraw()
 
     def clearAllGlyphsFromCanvas(self):
-        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(wxpc.coGlyph)
 
         mm = self._devide_app.getModuleManager()
 
@@ -1459,12 +1443,12 @@ class GraphEditor:
 #             self._deleteModule(glyph, False)
 
         # only here!
-        self._graphEditorFrame.canvas.redraw()
+        self._interface._main_frame.canvas.redraw()
 
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
         l1 = wxpc.coLine(fromObject, fromOutputIdx,
                          toObject, toInputIdx)
-        self._graphEditorFrame.canvas.addObject(l1)
+        self._interface._main_frame.canvas.addObject(l1)
             
         # also record the line in the glyphs
         toObject.inputLines[toInputIdx] = l1
@@ -1507,7 +1491,7 @@ class GraphEditor:
             self._deleteModule(glyph, False)
 
         # finally we can let the canvas redraw
-        self._graphEditorFrame.canvas.redraw()
+        self._interface._main_frame.canvas.redraw()
 
     def _realiseNetwork(self, pmsDict, connectionList, glyphPosDict,
                         origin=(0,0), reposition=False):
@@ -1563,7 +1547,7 @@ class GraphEditor:
                              tGlyph, connection.inputIdx)
 
         # finally we can let the canvas redraw
-        self._graphEditorFrame.canvas.redraw()
+        self._interface._main_frame.canvas.redraw()
 
 
     def _loadAndRealiseNetwork(self, filename, position=(0,0),
@@ -1791,7 +1775,7 @@ class GraphEditor:
              
         msg += '|%s|-[%s]' % (currentGlyph.getLabel(), pstr)
 
-        self._graphEditorFrame.GetStatusBar().SetStatusText(msg)            
+        self._interface._main_frame.GetStatusBar().SetStatusText(msg)            
                                    
     def _fileExitCallback(self, event):
         # call the interface quit handler (we're its child)
@@ -1813,7 +1797,7 @@ class GraphEditor:
 
     def _fileSaveCallback(self, event):
         # make a list of all glyphs
-        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(wxpc.coGlyph)
         if allGlyphs:
             filename = wx.FileSelector(
                 "Choose filename for DeVIDE network",
@@ -1884,7 +1868,7 @@ class GraphEditor:
                 # want to reroute all lines!
 
                 # reroute all lines
-                allLines = self._graphEditorFrame.canvas.getObjectsOfClass(
+                allLines = self._interface._main_frame.canvas.getObjectsOfClass(
                     wxpc.coLine)
 
                 for line in allLines:
@@ -1910,53 +1894,53 @@ class GraphEditor:
 
             vc_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, vc_id, "View-Configure"))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, vc_id,
+            wx.EVT_MENU(self._interface._main_frame.canvas, vc_id,
                      lambda e: self._viewConfModule(module))
 
             help_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(
                 pmenu, help_id, "Help on Module"))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, help_id,
+            wx.EVT_MENU(self._interface._main_frame.canvas, help_id,
                      lambda e: self._helpModule(module))
             
 #             exe_id = wx.NewId()
 #             pmenu.AppendItem(wx.MenuItem(pmenu, exe_id, "Execute Module"))
-#             wx.EVT_MENU(self._graphEditorFrame.canvas, exe_id,
+#             wx.EVT_MENU(self._interface._main_frame.canvas, exe_id,
 #                      lambda e: self._executeModule(module))
 
             reload_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, reload_id, 'Reload Module'))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, reload_id,
+            wx.EVT_MENU(self._interface._main_frame.canvas, reload_id,
                         lambda e: self._handler_reload_module(module,
                                                               glyph))
 
             del_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, del_id, 'Delete Module'))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, del_id,
+            wx.EVT_MENU(self._interface._main_frame.canvas, del_id,
                      lambda e: self._deleteModule(glyph))
 
             renameModuleId = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, renameModuleId, 'Rename Module'))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, renameModuleId,
+            wx.EVT_MENU(self._interface._main_frame.canvas, renameModuleId,
                      lambda e: self._handlerRenameModule(module,glyph))
 
             markModuleId = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, markModuleId, 'Mark Module'))
-            wx.EVT_MENU(self._graphEditorFrame.canvas, markModuleId,
+            wx.EVT_MENU(self._interface._main_frame.canvas, markModuleId,
                      lambda e: self._handlerMarkModule(module))
 
             pmenu.AppendSeparator()
 
-            self._appendEditCommands(pmenu, self._graphEditorFrame.canvas,
+            self._appendEditCommands(pmenu, self._interface._main_frame.canvas,
                                      (event.GetX(), event.GetY()))
 
             pmenu.AppendSeparator()
 
             self._append_execute_commands(
-                pmenu, self._graphEditorFrame.canvas)
+                pmenu, self._interface._main_frame.canvas)
 
             # popup that menu!
-            self._graphEditorFrame.canvas.PopupMenu(pmenu,
+            self._interface._main_frame.canvas.PopupMenu(pmenu,
                                                     wx.Point(event.GetX(),
                                                              event.GetY()))
         elif event.LeftDown():
@@ -2103,7 +2087,7 @@ class GraphEditor:
         return clipPoints
                 
     def _routeAllLines(self):
-        canvas = self._graphEditorFrame.canvas
+        canvas = self._interface._main_frame.canvas
         # THEN reroute all lines
         allLines = canvas.getObjectsOfClass(wxpc.coLine)
                     
@@ -2117,7 +2101,7 @@ class GraphEditor:
     def _routeLine(self, line):
         
         # we have to get a list of all coGlyphs
-        allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(wxpc.coGlyph)
 
         # make sure the line is back to 4 points
         line.updateEndPoints()
@@ -2299,7 +2283,7 @@ class GraphEditor:
             self._drawRubberBand(event, endRubberBand=True)
 
             # now determine all glyphs inside of the rubberBand
-            allGlyphs = self._graphEditorFrame.canvas.getObjectsOfClass(
+            allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
                 wxpc.coGlyph)
 
             glyphsInRubberBand = []
