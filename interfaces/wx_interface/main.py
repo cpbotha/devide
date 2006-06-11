@@ -19,7 +19,7 @@ class WXInterface(wx.App):
 
         wx.App.__init__(self, 0)
 
-        self._graphEditor = None
+        self._graph_editor = None
         self._pythonShell = None
         self._helpClass = None
 
@@ -107,7 +107,7 @@ class WXInterface(wx.App):
     
         global GraphEditor, pythonShell, helpClass
     
-        from graphEditor import GraphEditor
+        from graph_editor import GraphEditor
         from pythonShell import pythonShell
         from helpClass import helpClass
 
@@ -124,8 +124,8 @@ class WXInterface(wx.App):
 
     def close(self):
         # take care of the graphEditor if it exists
-        if self._graphEditor:
-            self._graphEditor.close()
+        if self._graph_editor:
+            self._graph_editor.close()
             
         # take down the help
         if self._helpClass:
@@ -155,10 +155,10 @@ class WXInterface(wx.App):
             self._helpClass = helpClass(self._devide_app.get_appdir())
 
     def startGraphEditor(self):
-        if self._graphEditor == None:
-            self._graphEditor = GraphEditor(self, self._devide_app)
+        if self._graph_editor == None:
+            self._graph_editor = GraphEditor(self, self._devide_app)
         else:
-            self._graphEditor.show()
+            self._graph_editor.show()
 
     def log_error_list(self, msgs):
         """Log a list of strings as error.
