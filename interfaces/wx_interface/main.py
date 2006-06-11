@@ -4,7 +4,7 @@ import time
 import wx
 import wx.html
 
-import resources.python.mainFrame
+#import resources.python.mainFrame
 import resources.graphics.images
 import main_frame
 
@@ -105,9 +105,9 @@ class WXInterface(wx.App):
         can't do their thing.
         """
     
-        global graphEditor, pythonShell, helpClass
+        global GraphEditor, pythonShell, helpClass
     
-        from graphEditor import graphEditor
+        from graphEditor import GraphEditor
         from pythonShell import pythonShell
         from helpClass import helpClass
 
@@ -156,7 +156,7 @@ class WXInterface(wx.App):
 
     def startGraphEditor(self):
         if self._graphEditor == None:
-            self._graphEditor = graphEditor(self, self._devide_app)
+            self._graphEditor = GraphEditor(self, self._devide_app)
         else:
             self._graphEditor.show()
 

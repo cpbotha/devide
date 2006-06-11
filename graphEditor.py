@@ -148,91 +148,94 @@ class GlyphSelection:
 
 # ----------------------------------------------------------------------------
 
-class graphEditor:
+class GraphEditor:
     def __init__(self, interface, devideApp):
         # initialise vars
         self._interface = interface
         self._devide_app = devideApp
 
-        import resources.python.graphEditorFrame as rpg
+        #import resources.python.graphEditorFrame as rpg
 
-        self._graphEditorFrame = rpg.graphEditorFrame(
-            self._interface.get_main_window(),
-            -1, title='dummy', name='DeVIDE', wxpcCanvas=wxpc.canvas)
+        #self._graphEditorFrame = rpg.graphEditorFrame(
+        #    self._interface.get_main_window(),
+        #    -1, title='dummy', name='DeVIDE', wxpcCanvas=wxpc.canvas)
 
-        self._graphEditorFrame.SetIcon(self._interface.getApplicationIcon())
+        #self._graphEditorFrame.SetIcon(self._interface.getApplicationIcon())
 
-        self._appendEditCommands(self._graphEditorFrame.editMenu,
-                                 self._graphEditorFrame,
+        mf = self._interface._main_frame
+        em = mf.edit_menu
+        self._appendEditCommands(em,
+                                 mf,
                                  (0,0), False)
 
-        self._append_execute_commands(self._graphEditorFrame.execution_menu,
-                                      self._graphEditorFrame, False)
+        self._append_execute_commands(mf.execution_menu,
+                                      mf, False)
         
 
-        wx.EVT_CLOSE(self._graphEditorFrame, self._handlerGraphFrameClose)
+        #wx.EVT_CLOSE(self._graphEditorFrame, self._handlerGraphFrameClose)
 
         # we have to make this call, else the user can unsplit the window
         # and lose one of the panes (really irritating)
-        self._graphEditorFrame.main_splitter.SetMinimumPaneSize(50)
-        self._graphEditorFrame.module_palette_splitter.SetMinimumPaneSize(50)
+        #self._graphEditorFrame.main_splitter.SetMinimumPaneSize(50)
+        #self._graphEditorFrame.module_palette_splitter.SetMinimumPaneSize(50)
             
-        wx.EVT_BUTTON(self._graphEditorFrame,
-                   self._graphEditorFrame.rescanButtonId,
-                   lambda e, s=self: s.fillModuleLists())
+        wx.EVT_BUTTON(mf,
+                      mf.rescanButtonId,
+                      lambda e, s=self: s.fillModuleLists())
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileNewId,
-                 self._fileNewCallback)
+        wx.EVT_MENU(mf, mf.fileNewId,
+                    self._fileNewCallback)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileExitId,
-                 self._fileExitCallback)
+        wx.EVT_MENU(mf, mf.fileExitId,
+                    self._fileExitCallback)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileOpenId,
-                 self._fileOpenCallback)
+        wx.EVT_MENU(mf, mf.fileOpenId,
+                    self._fileOpenCallback)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileOpenSegmentId,
-                 self._handlerFileOpenSegment)
+        wx.EVT_MENU(mf,
+                    mf.fileOpenSegmentId,
+                    self._handlerFileOpenSegment)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileSaveId,
+        wx.EVT_MENU(mf, mf.fileSaveId,
                  self._fileSaveCallback)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileSaveSelectedId,
+        wx.EVT_MENU(mf, mf.fileSaveSelectedId,
                  self._handlerFileSaveSelected)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.fileExportAsDOTId,
+        wx.EVT_MENU(mf, mf.fileExportAsDOTId,
                  self._handlerFileExportAsDOT)
 
-        wx.EVT_MENU(self._graphEditorFrame,
-                    self._graphEditorFrame.fileExportSelectedAsDOTId,
+        wx.EVT_MENU(mf,
+                    mf.fileExportSelectedAsDOTId,
                     self._handlerFileExportSelectedAsDOT)
 
-#         wx.EVT_MENU(self._graphEditorFrame,
-#                     self._graphEditorFrame.networkExecuteId,
+#         wx.EVT_MENU(mf,
+#                     mf.networkExecuteId,
 #                     self._handler_execute_network)
 
-#         wx.EVT_MENU(self._graphEditorFrame,
-#                     self._graphEditorFrame.network_blockmodules_id,
+#         wx.EVT_MENU(mf,
+#                     mf.network_blockmodules_id,
 #                     self._handler_blockmodules)
 
-#         wx.EVT_MENU(self._graphEditorFrame,
-#                     self._graphEditorFrame.network_unblockmodules_id,
+#         wx.EVT_MENU(mf,
+#                     mf.network_unblockmodules_id,
 #                     self._handler_unblockmodules)
 
-        wx.EVT_MENU(self._graphEditorFrame, self._graphEditorFrame.windowMainID,
+        wx.EVT_MENU(mf, mf.windowMainID,
                  self._handlerWindowMain)
 
-        wx.EVT_MENU(self._graphEditorFrame,
-                    self._graphEditorFrame.helpShowHelpId,
+        wx.EVT_MENU(mf,
+                    mf.helpShowHelpId,
                     self._handlerHelpShowHelp)
 
 
         # event handlers
-        wx.EVT_LISTBOX(self._graphEditorFrame,
-                    self._graphEditorFrame.moduleCatsListBoxId,
+        wx.EVT_LISTBOX(mf,
+                    mf.moduleCatsListBoxId,
                     self._handlerModuleCatsListBoxSelected)
 
-        wx.EVT_LISTBOX(self._graphEditorFrame,
-                    self._graphEditorFrame.modulesListBoxId,
+        wx.EVT_LISTBOX(mf,
+                    mf.modulesListBoxId,
                     self._handlerModulesListBoxSelected)
 
         # this will be filled in by self.fill_module_tree; it's here for
@@ -255,7 +258,7 @@ class graphEditor:
             else:
                 event.Skip()
 
-        wx.EVT_MOUSE_EVENTS(self._graphEditorFrame.modulesListBox,
+        wx.EVT_MOUSE_EVENTS(mf.modulesListBox,
                          self._handlerModulesListBoxMouseEvents)
 
         # (shortName, longName) tuples, updated every time the user changes
@@ -264,30 +267,30 @@ class graphEditor:
         
         # and also setup the module quick search
         self._quickSearchString = ''
-        wx.EVT_CHAR(self._graphEditorFrame.canvas, self._handlerCanvasChar)
+        wx.EVT_CHAR(mf.canvas, self._handlerCanvasChar)
         
 
         # setup the canvas...
-        self._graphEditorFrame.canvas.SetVirtualSize((2048, 2048))
-        self._graphEditorFrame.canvas.SetScrollRate(20,20)
+        mf.canvas.SetVirtualSize((2048, 2048))
+        mf.canvas.SetScrollRate(20,20)
 
         # the canvas is a drop target
         self._canvasDropTarget = geCanvasDropTarget(self)
-        self._graphEditorFrame.canvas.SetDropTarget(self._canvasDropTarget)
+        mf.canvas.SetDropTarget(self._canvasDropTarget)
         
         # bind events on the canvas
-        self._graphEditorFrame.canvas.addObserver('buttonDown',
+        mf.canvas.addObserver('buttonDown',
                                             self._canvasButtonDown)
-        self._graphEditorFrame.canvas.addObserver('buttonUp',
+        mf.canvas.addObserver('buttonUp',
                                             self._canvasButtonUp)
-        self._graphEditorFrame.canvas.addObserver('drag',
+        mf.canvas.addObserver('drag',
                                             self._canvasDrag)
 
         # initialise selection
-        self._selected_glyphs = GlyphSelection(self._graphEditorFrame.canvas,
+        self._selected_glyphs = GlyphSelection(mf.canvas,
                                               'selected')
 
-        self._blocked_glyphs = GlyphSelection(self._graphEditorFrame.canvas,
+        self._blocked_glyphs = GlyphSelection(mf.canvas,
                                               'blocked')
 
         self._rubberBandCoords = None
@@ -313,7 +316,7 @@ class graphEditor:
             event.Skip()
             return
         
-        mlb = self._graphEditorFrame.modulesListBox
+        mlb = self._interface._main_frame.modulesListBox
 
         sel = mlb.GetSelection()
         if sel >= 0:
