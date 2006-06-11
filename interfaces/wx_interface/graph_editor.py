@@ -226,29 +226,18 @@ class GraphEditor:
         # completeness
         self._availableModules = None
 
+        # (shortName, longName) tuples, updated every time the user changes
+        # here module category selection
+        self._selectedModulesList = []
+
         # this is usually shortly after initialisation, so a module scan
         # should be available.  Actually, the user could be very naughty,
         # but let's not think about that.
         self.fillModuleLists(scan_modules=False)
 
-        #wx.EVT_LIST_BEGIN_DRAG(self._modulePaletteFrame,
-        #                    self._modulePaletteFrame.modulesListCtrlId,
-        #                    self.modulesListCtrlBeginDragHandler)
-
-        def mpfmouse(event):
-            if event.Dragging():
-                print "HALLO"
-
-            else:
-                event.Skip()
-
         wx.EVT_MOUSE_EVENTS(mf.module_list_box,
-                         self._handlerModulesListBoxMouseEvents)
+                            self._handlerModulesListBoxMouseEvents)
 
-        # (shortName, longName) tuples, updated every time the user changes
-        # here module category selection
-        self._selectedModulesList = []
-        
         # and also setup the module quick search
         self._quickSearchString = ''
         wx.EVT_CHAR(mf.canvas, self._handlerCanvasChar)
@@ -823,7 +812,8 @@ class GraphEditor:
         # list of complete moduleNames as value - check for 'Segments',
         # that's reserved
         for mn,module_metadata in self._availableModules.items():
-            for cat in module_metadata.cats:
+            # we add an ALL category implicitly to all modules
+            for cat in module_metadata.cats + ['ALL']:
                 if cat in self._moduleCats:
                     self._moduleCats[cat].append(mn)
                 else:
@@ -841,12 +831,17 @@ class GraphEditor:
 
         cats = self._moduleCats.keys()
         cats.sort()
-        
+
+        # but make sure that ALL is up front, no matter what
+        del cats[cats.index('ALL')]
+        cats = ['ALL'] + cats
+
         for cat in cats:
             self._interface._main_frame.module_cats_list_box.Append(cat)
 
-        # no category is selected
-        self._interface._main_frame.module_list_box.Clear()
+        self._interface._main_frame.module_cats_list_box.Select(0)
+
+        self._handlerModuleCatsListBoxSelected(None)
 
     def find_glyph(self, meta_module):
         """Given a meta_module, return the glyph that contains it.
@@ -926,6 +921,9 @@ class GraphEditor:
             if filename:
                 self._saveNetwork(glyphs, filename)
 
+    # FIXME: this should be factored out so that it can be called for
+    # general search result updating, i.e. when the search phrases are
+    # updated or when the categories are changed.
     def _handlerModuleCatsListBoxSelected(self, event):
         self._interface._main_frame.module_list_box.Clear()
 
@@ -938,6 +936,7 @@ class GraphEditor:
             selectedCats.append(mclb.GetString(sel))
 
         selectedModuleNames = {}
+
         for cat in selectedCats:
             for mn in self._moduleCats[cat]:
                 # the dict eliminates duplicates
