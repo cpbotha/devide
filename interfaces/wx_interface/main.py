@@ -33,7 +33,8 @@ class WXInterface(wx.App):
         #self._main_frame = resources.python.mainFrame.mainFrame(
         #    None, -1, "dummy", name="DeVIDE")
 
-        self._main_frame = main_frame.MainWXFrame(None, -1, "dummy")
+        self._main_frame = main_frame.MainWXFrame(None, -1, "DeVIDE", (-1,-1),
+                                                  (640,480))
         #self._blaat.Show()
 
         wx.InitAllImageHandlers()

@@ -119,7 +119,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     mm = d3module._moduleManager
 
     # call back into the graphEditor, if it exists
-    ge = mm._devide_app.get_interface()._graphEditor    
+    ge = mm._devide_app.get_interface()._graph_editor
     def helpModule(dvModule):
         if ge:
             ge._helpModule(dvModule)

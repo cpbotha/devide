@@ -35,10 +35,13 @@ class MainWXFrame(wx.Frame):
 
         # now we need to add panes
 
+        # minsize is quite important here; progress-panel can never be
+        # obscured by moving one of the splitters
+        pp = self._create_progress_panel() 
         self._mgr.AddPane(
-            self._create_progress_panel(),
+            pp,
             PyAUI.PaneInfo().Name('progress_panel').
-            Caption('Progress').CenterPane().Top())
+            Caption('Progress').CenterPane().Top().MinSize(pp.GetSize()))
 
         self.canvas = wxpc.canvas(self, -1)
         self._mgr.AddPane(
@@ -109,14 +112,17 @@ class MainWXFrame(wx.Frame):
 
         # these are in a vertical sizer, so expand will make them draw
         # out horizontally as well
-        sizer.Add(self.progress_text, 0, wx.EXPAND)
+        sizer.Add(self.progress_text, 0, wx.EXPAND | wx.BOTTOM, 4)
         sizer.Add(self.progress_gauge, 0, wx.EXPAND)
 
-        tl_sizer.Add(sizer, 1, wx.EXPAND)
+        tl_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 7)
         
         #sizer.SetMinSize((100, 50))
+        progress_panel.SetAutoLayout(True)
         progress_panel.SetSizer(tl_sizer)
+        progress_panel.GetSizer().Fit(progress_panel)
         progress_panel.GetSizer().SetSizeHints(progress_panel)
+
         return progress_panel
 
     def _make_menu(self):
@@ -135,18 +141,36 @@ class MainWXFrame(wx.Frame):
         self.window_python_shell_id = wx.NewId()
         self.helpShowHelpId = wx.NewId()
         self.helpAboutId = wx.NewId()
-        wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(self.fileNewId, "&New\tCtrl-N", "Create new network.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.fileOpenId, "&Open\tCtrl-O", "Open and load existing network.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.fileOpenSegmentId, "Open as Se&gment\tCtrl-G", "Open a DeVIDE network as a segment in the copy buffer.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.fileSaveId, "&Save\tCtrl-S", "Save the current network.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.fileSaveSelectedId, "Save se&lected Glyphs\tCtrl-L", "Save the selected glyphs as a network.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.AppendSeparator()
-        wxglade_tmp_menu.Append(self.fileExportAsDOTId, "&Export as DOT file\tCtrl-E", "Export the current network as a GraphViz DOT file.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(self.fileExportSelectedAsDOTId, "Export selection as DOT file", "Export the selected glyphs as a GraphViz DOT file.", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.AppendSeparator()
-        wxglade_tmp_menu.Append(self.fileExitId, "E&xit\tCtrl-Q", "Exit DeVIDE!", wx.ITEM_NORMAL)
-        self.menubar.Append(wxglade_tmp_menu, "&File")
+
+        
+        file_menu = wx.Menu()
+        file_menu.Append(self.fileNewId, "&New\tCtrl-N",
+                         "Create new network.", wx.ITEM_NORMAL)
+        file_menu.Append(self.fileOpenId, "&Open\tCtrl-O",
+                         "Open and load existing network.", wx.ITEM_NORMAL)
+        file_menu.Append(
+            self.fileOpenSegmentId, "Open as Se&gment\tCtrl-G",
+            "Open a DeVIDE network as a segment in the copy buffer.",
+            wx.ITEM_NORMAL)
+        file_menu.Append(self.fileSaveId, "&Save\tCtrl-S",
+                         "Save the current network.", wx.ITEM_NORMAL)
+        file_menu.Append(self.fileSaveSelectedId,
+                         "Save se&lected Glyphs\tCtrl-L",
+                         "Save the selected glyphs as a network.",
+                         wx.ITEM_NORMAL)
+        file_menu.AppendSeparator()
+        file_menu.Append(
+            self.fileExportAsDOTId, "&Export as DOT file\tCtrl-E",
+            "Export the current network as a GraphViz DOT file.",
+            wx.ITEM_NORMAL)
+        file_menu.Append(self.fileExportSelectedAsDOTId,
+                         "Export selection as DOT file",
+                         "Export the selected glyphs as a GraphViz DOT file.",
+                         wx.ITEM_NORMAL)
+        file_menu.AppendSeparator()
+        file_menu.Append(self.fileExitId, "E&xit\tCtrl-Q",
+                         "Exit DeVIDE!", wx.ITEM_NORMAL)
+        self.menubar.Append(file_menu, "&File")
 
         self.edit_menu = wx.Menu()
         self.menubar.Append(self.edit_menu, "&Edit")
@@ -172,7 +196,7 @@ class MainWXFrame(wx.Frame):
 
         help_menu = wx.Menu()
         help_menu.Append(self.helpShowHelpId, "Show &Help\tF1", "",
-    wx.ITEM_NORMAL)
+                         wx.ITEM_NORMAL)
         help_menu.Append(self.helpAboutId, "About", "",
                                 wx.ITEM_NORMAL)
         
