@@ -1011,9 +1011,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         """Open Python introspection window with this module as main object.
         """
 
-        self.miscObjectConfigure(self.threedFrame, self,
-                                 'slice3dVWR %s' % \
-                                 (self._moduleManager.getInstanceName(self),))
+        self.miscObjectConfigure(
+            self.threedFrame, self,
+            'slice3dVWR %s' % \
+            (self._moduleManager.get_instance_name(self),))
         
 
     def _handlerProjectionChoice(self, event):
