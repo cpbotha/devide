@@ -9,7 +9,7 @@ if className == 'slice3dVWR':
     if ipw.GetInput():
         mins, maxs = ipw.GetInput().GetScalarRange()
     else:
-        mins, maxs = -2100, 3000
+        mins, maxs = 1, 1000000
         
     lut = vtk.vtkLookupTable()
     lut.SetTableRange(mins, maxs)

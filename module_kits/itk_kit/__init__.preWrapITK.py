@@ -1,4 +1,4 @@
-# $Id$
+# $Id: __init__.py 1967 2006-03-08 00:26:38Z cpbotha $
 
 """itk_kit package driver file.
 
@@ -84,36 +84,27 @@ def resetDLFlags(data):
         pass
 
 def init(theModuleManager):
+    # first do the VTK pre-imports: this is here ONLY to keep the user happy
+    # it's not necessary for normal functioning
+    preImportITK(theModuleManager.setProgress)
 
-    # with WrapITK, this takes almost no time
-    import itk
+    # brings 'InsightToolkit' into sys.modules
+    import fixitk as itk
+    # stuff itk in there as well (so that if the user does import itk,
+    # she'll get this)
+    sys.modules['itk'] = itk
 
-    theModuleManager.setProgress(5, 'Initialising ITK: start')
-
-    # let's get the version (which will bring in VXLNumerics and Base)
-
-    # let's hope McMillan doesn't catch this one!
-    isv = itk.Version.GetITKSourceVersion()
-    ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
-    VERSION = '%s (%s: %s)' % (itk.Version.GetITKVersion(), ind,
-                               ITK_VERSION_EXTRA)
-
-    theModuleManager.setProgress(45, 'Initialising ITK: VXLNumerics, Base')
-
-    # then ItkVtkGlue (at the moment this is fine, VTK is always there;
-    # keep in mind for later when we allow VTK-less startups)
-    a = itk.VTKImageToImageFilter
-
-    theModuleManager.setProgress(
-        75,
-        'Initialising ITK: BaseTransforms, SimpleFilters, ItkVtkGlue')
-    
     # user can address this as module_kits.itk_kit.utils.blaat()
     import module_kits.itk_kit.utils as utils
+
+    # also import the VTK to ITK connection module
+    import ConnectVTKITKPython as CVIPy
 
     # setup the kit version
     global VERSION
 
-    theModuleManager.setProgress(100, 'Initialising ITK: DONE')
-
-
+    # let's hope McMillan doesn't catch this one!
+    isv = itk.itkVersion.GetITKSourceVersion()
+    ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
+    VERSION = '%s (%s: %s)' % (itk.itkVersion.GetITKVersion(), ind,
+                               ITK_VERSION_EXTRA)
