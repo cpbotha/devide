@@ -13,7 +13,7 @@
 # Python Code By:
 #
 # Andrea Gavana, @ 23 Dec 2005
-# Latest Revision: 21 Apr 2006, 13.00 GMT
+# Latest Revision: 20 Jun 2006, 20.00 GMT
 #
 #
 # PyAUI version 0.9.2 Adds:
@@ -29,6 +29,12 @@
 #    win32all or ctypes. Moreover, It Should Make PyAUI Working On All
 #    Platforms (I Hope).
 #
+#
+# Latest Patches:
+#
+# 1) Reduced Flicker While Drawing The Dock Hint
+# 2) Made Impossoible To Drag The Sash Separator Outside The Main Frame
+# 3) Improved Repaint When Using The Active Pane Option
 #
 # For All Kind Of Problems, Requests Of Enhancements And Bug Reports, Please
 # Write To Me At:
@@ -151,7 +157,7 @@ License And Version:
 
 PyAUI Library Is Freeware And Distributed Under The wxPython License. 
 
-Latest Revision: Andrea Gavana @ 21 Apr 2006, 13.00 GMT
+Latest Revision: Andrea Gavana @ 20 Jun 2006, 20.00 GMT
 Version 0.9.2. 
 
 """
@@ -618,6 +624,9 @@ class DefaultDockArt:
         else:
             raise "\nERROR: Invalid Metric Ordinal. "
         
+
+    GetColour = GetColor
+    SetColour = SetColor
 
     def SetFont(self, id, font):
 
@@ -1530,6 +1539,14 @@ class FloatingPane(FloatingPaneBaseClass):
         self.Destroy()
         
         self._mgr.UnInit()
+
+        # Eventually to be added to handle wx.EVT_CLOSE events
+        # commenting ALL the above 3 lines
+        #
+        # e = FrameManagerEvent(wxEVT_AUI_PANEBUTTON)
+        # e.SetPane(self._owner_mgr.GetPane(self._pane_window))
+        # e.SetButton(PaneInfo.buttonClose)
+        # self._owner_mgr.ProcessMgrEvent(e)
     
 
     def OnMoveEvent(self, event):
@@ -1626,9 +1643,9 @@ def PaneCreateStippleBitmap():
 
 
 def DrawResizeHint(dc, rect):
+        
     stipple = PaneCreateStippleBitmap()
     brush = wx.BrushFromBitmap(stipple)
-    #brush.SetStipple(stipple)
     dc.SetBrush(brush)
     dc.SetPen(wx.TRANSPARENT_PEN)
 
@@ -2332,6 +2349,11 @@ class FrameManager(wx.EvtHandler):
                 # wxToolBar::GetBestSize() is fixed.  Is this assumption
                 # correct?
                 pinfo.best_size.y = pinfo.best_size.y + 1
+
+                # this is needed for Win2000 to correctly fill toolbar backround
+                # it should probably be repeated once system colour change happens
+                if wx.Platform == "__WXMSW__" and pinfo.window.UseBgCol():
+                    pinfo.window.SetBackgroundColour(self.GetArtProvider().GetColour(AUI_ART_BACKGROUND_COLOUR))
 
             if pinfo.min_size != wx.DefaultSize:
                 if pinfo.best_size.x < pinfo.min_size.x:
@@ -3317,7 +3339,7 @@ class FrameManager(wx.EvtHandler):
                     # the dragging is happening right now, then the floating
                     # window should have this style by default                  
                     
-                    if self.UseTransparentDrag():
+                    if self._action == actionDragFloatingPane and self.UseTransparentDrag():
                         self.MakeWindowTransparent(frame, 150)
                     
                     frame.SetPaneWindow(p)
@@ -3945,8 +3967,7 @@ class FrameManager(wx.EvtHandler):
         clip = wx.Region(1, 1, 10000, 10000)
 
         # clip all floating windows, so we don't draw over them
-        for ii in xrange(len(self._panes)):
-            pane = self._panes[ii]
+        for pane in self._panes:
             if pane.IsFloating() and pane.frame.IsShown():
                 recta = pane.frame.GetRect()
                 if wx.Platform == "__WXGTK__":
@@ -3956,10 +3977,9 @@ class FrameManager(wx.EvtHandler):
                     recta.Inflate(5, 5)
                     #endif
 
-                clip.Subtract(recta.x, recta.y, recta.width, recta.height)
+                clip.SubtractRect(recta)
 
-        box = clip.GetBox()
-        screendc.SetClippingRegion(box.x, box.y, box.width, box.height)
+        screendc.SetClippingRegionAsRegion(clip)
 
         screendc.SetBrush(wx.Brush(wx.SystemSettings_GetColour(wx.SYS_COLOUR_ACTIVECAPTION)))
         screendc.SetPen(wx.TRANSPARENT_PEN)
@@ -3982,7 +4002,7 @@ class FrameManager(wx.EvtHandler):
                 self.MakeWindowTransparent(self._hint_wnd, 0)
                 self._last_hint = wx.Rect()
                 
-        return
+            return
         
         # hides a painted hint by redrawing the frame window
         if not self._last_hint.IsEmpty():
@@ -4134,48 +4154,46 @@ class FrameManager(wx.EvtHandler):
         frame_pos = pane.frame.GetPosition()
         action_offset = wx.Point(pt[0]-frame_pos.x, pt[1]-frame_pos.y)
 
-        # no hint for toolbar floating windows
-        if pane.IsToolbar() and self._action == actionDragFloatingPane:
-            if self._action == actionDragFloatingPane:
-                
-                oldname = pane.name
-                indx = self._panes.index(pane)
-                hint = pane
-                docks, panes = CopyDocksAndPanes2(self._docks, self._panes)
-
-                # find out where the new pane would be
-                ret, hint = self.DoDrop(docks, panes, hint, client_pt)
-                
-                if not ret:
-                    return
-
-                if hint.IsFloating():
-                    return
-
-                pane = hint
-                pane.name = oldname
-                
-                self._panes[indx] = pane
-                self._action = actionDragToolbarPane
-                self._action_window = pane.window
-                
-                self.Update()
-            
-            return
+##        # no hint for toolbar floating windows
+##        if pane.IsToolbar() and self._action == actionDragFloatingPane:
+##
+##            oldname = pane.name
+##            indx = self._panes.index(pane)
+##            hint = pane
+##            docks, panes = CopyDocksAndPanes2(self._docks, self._panes)
+##
+##            # find out where the new pane would be
+##            ret, hint = self.DoDrop(docks, panes, hint, client_pt)
+##            
+##            if not ret:
+##                return
+##
+##            if hint.IsFloating():
+##                return
+##
+##            pane = hint
+##            pane.name = oldname
+##            
+##            self._panes[indx] = pane
+##            self._action = actionDragToolbarPane
+##            self._action_window = pane.window
+##            
+##            self.Update()
+##            
+##            return
 
         # if a key modifier is pressed while dragging the frame,
         # don't dock the window
         if wx.GetKeyState(wx.WXK_CONTROL) or wx.GetKeyState(wx.WXK_ALT):
             self.HideHint()
             return
-    
+
         if pane.IsDockable():
             self.DrawHintRect(wnd, client_pt, action_offset)
         
         # reduces flicker
         self._frame.Update()
-        wx.CallAfter(pane.frame.Refresh)
-
+        
 
     def OnFloatingPaneMoved(self, wnd):
 
@@ -4277,8 +4295,7 @@ class FrameManager(wx.EvtHandler):
         It renders the entire user interface.
         """
 
-        for ii in xrange(len(self._uiparts)):
-            part = self._uiparts[ii]
+        for part in self._uiparts:
 
             # don't draw hidden pane items
             if part.sizer_item and not part.sizer_item.IsShown():
@@ -4337,21 +4354,23 @@ class FrameManager(wx.EvtHandler):
         else:
             self.Repaint(dc)
 
-        event.Skip()
-
 
     def OnEraseBackground(self, event):
 
-        event.Skip()        
+        if wx.Platform == "__WXMAC__":
+            event.Skip()        
 
 
     def OnSize(self, event):
 
         if self._frame:
+            
             self.DoFrameLayout()
             wx.CallAfter(self.Repaint)
-##        event.Skip()
-
+            
+            if not isinstance(self._frame, wx.MDIParentFrame):
+                event.Skip()
+        
 
     def OnSetCursor(self, event):
 
@@ -4420,6 +4439,7 @@ class FrameManager(wx.EvtHandler):
 
         if part:
             if part.dock and part.dock.dock_direction == AUI_DOCK_CENTER:
+                event.Skip()
                 return
 
             if part.type == DockUIPart.typeDockSizer or \
@@ -4429,10 +4449,12 @@ class FrameManager(wx.EvtHandler):
                 # pane which is not resizable
                 if part.type == DockUIPart.typeDockSizer and part.dock and \
                    len(part.dock.panes) == 1 and part.dock.panes[0].IsFixed():
+                    event.Skip()
                     return
 
                 # panes that may not be resized should be ignored here
                 if part.pane and part.pane.IsFixed():
+                    event.Skip()
                     return
 
                 self._action = actionResize
@@ -4689,7 +4711,7 @@ class FrameManager(wx.EvtHandler):
         else:
 
             event.Skip()
-            
+
         self._action = actionNone
         self._last_mouse_move = wx.Point() # see comment in OnMotion()
 
@@ -4712,12 +4734,22 @@ class FrameManager(wx.EvtHandler):
             pos = self._action_part.rect.GetPosition()
             if self._action_part.orientation == wx.HORIZONTAL:
                 pos.y = max(0, mouse_pos.y - self._action_offset.y)
+                pos.y = min(pos.y, self._frame.GetClientSize().y - self._action_part.rect.GetSize().y)
             else:
                 pos.x = max(0, mouse_pos.x - self._action_offset.x)
+                pos.x = min(pos.x, self._frame.GetClientSize().x - self._action_part.rect.GetSize().x)
 
             mypos = self._frame.ClientToScreen(pos)
             mysize = self._action_part.rect.GetSize()
             rect = wx.Rect(mypos[0], mypos[1], mysize[0], mysize[1])
+
+            # is it the same as the old rectangle?
+            if self._action_hintrect == rect:
+                # heck, yes, no need to draw again, it will only bring about flicker
+                event.Skip()
+                return
+
+            # otherwise draw the hint
 
             dc = wx.ScreenDC()
             
@@ -4737,7 +4769,7 @@ class FrameManager(wx.EvtHandler):
             # mouse action to 'drag'
             if abs(mouse_pos.x - self._action_start.x) > drag_x_threshold or \
                abs(mouse_pos.y - self._action_start.y) > drag_y_threshold:
-            
+
                 pane_info = self._action_part.pane
                 indx = self._panes.index(pane_info)
 
