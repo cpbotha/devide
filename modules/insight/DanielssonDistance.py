@@ -27,7 +27,10 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.__init__(self, configList)
 
         # setup the pipeline
-        self._dist_filter = itk.itkDanielssonDistanceMapImageFilterF3F3_New()
+        imageF3 = itk.Image[itk.F, 3]
+        self._dist_filter = itk.DanielssonDistanceMapImageFilter[
+            imageF3, imageF3].New()
+        
         # THIS HAS TO BE ON.  SO THERE.
         self._dist_filter.SetUseImageSpacing(True)
         

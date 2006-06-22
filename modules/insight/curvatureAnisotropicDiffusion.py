@@ -26,7 +26,8 @@ class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
 
 
         # setup the pipeline
-        d = itk.itkCurvatureAnisotropicDiffusionImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        d = itk.CurvatureAnisotropicDiffusionImageFilter[if3, if3].New()
         d.SetTimeStep(0.0625) # standard for 3D
         self._diffuse = d
         
