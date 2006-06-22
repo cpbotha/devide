@@ -619,8 +619,8 @@ class DefaultDockArt:
             self._border_pen.SetColour(colour)
         elif id == AUI_ART_GRIPPER_COLOUR:
             self._gripper_brush.SetColour(colour)
-            self._gripper_pen1.SetColour(DarkenColor(colour, 40))
-            self._gripper_pen2.SetColour(DarkenColor(colour, 60))
+            self._gripper_pen1.SetColour(StepColour(colour, 40))
+            self._gripper_pen2.SetColour(StepColour(colour, 60))
         else:
             raise "\nERROR: Invalid Metric Ordinal. "
         
