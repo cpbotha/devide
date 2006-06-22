@@ -53,7 +53,12 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             sp,
             PyAUI.PaneInfo().Name('module_search').
-            Caption('Module Search').Left())
+            Caption('Module Search').Left().MinSize(sp.GetSize()))
+
+        # a little trick I found in the PyAUI source code.  This will make
+        # sure that the pane is as low (small y) as it can be
+        p = self._mgr.GetPane('module_search')
+        p.dock_proportion = 0
         
         self.module_cats = self._create_module_cats()
         self._mgr.AddPane(
@@ -105,7 +110,31 @@ class MainWXFrame(wx.Frame):
         return self.module_list_box
 
     def _create_module_search_panel(self):
-        pass
+        search_panel = wx.Panel(self, -1)
+
+        #search_label = wx.StaticText(search_panel, -1, "Search phrase")
+        self.search_text = wx.TextCtrl(search_panel, -1, "")
+        self.search_x_button = wx.Button(search_panel, -1, "X",
+                                    style=wx.BU_EXACTFIT)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        #sizer.Add(search_label, 0,
+        #          wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 3)
+        sizer.Add(search_text, 1,
+                  wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 3)
+        sizer.Add(search_x_button, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+
+        tl_sizer = wx.BoxSizer(wx.VERTICAL)
+        # in this case the wx.EXPAND makes it stretch horizontally
+        # the option=1 makes it stretch vertically
+        tl_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 4)
+        
+        search_panel.SetAutoLayout(True)
+        search_panel.SetSizer(tl_sizer)
+        search_panel.GetSizer().Fit(search_panel)
+        search_panel.GetSizer().SetSizeHints(search_panel)
+
+        return search_panel
 
     def _create_progress_panel(self):
         progress_panel = wx.Panel(self, -1)#, size=wx.Size(100, 50))
