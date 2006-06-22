@@ -323,6 +323,8 @@ class moduleManager:
 	the list self.module_files.
         """
 
+        # this is a dict mapping from full module name to the classes as
+        # found in the module_index.py files
         self._availableModules = {}
         appDir = self._devide_app.get_appdir()
         modulePath = self.get_modules_dir()

@@ -10,6 +10,16 @@ import main_frame
 
 class WXInterface(wx.App):
     """WX-based graphical user interface for DeVIDE.
+
+    This contains all functionality that used to be in the main devide WX
+    interface.  I'm still working on the division between this class and
+    the graph editor.
+
+    For now: we keep this class as small as possible; it only handles WX-app
+    central events.  The GraphEditor does everything else.
+
+    An alternative view would be that the GraphEditor is only concerned with
+    the actual network editor canvas.  As I said, I'm still working on this.
     """
     
     def __init__(self, devide_app):
@@ -35,8 +45,6 @@ class WXInterface(wx.App):
 
         self._main_frame = main_frame.MainWXFrame(None, -1, "DeVIDE", (-1,-1),
                                                   (640,480))
-        #self._blaat.Show()
-
         wx.InitAllImageHandlers()
         self._main_frame.SetIcon(self.getApplicationIcon())
 

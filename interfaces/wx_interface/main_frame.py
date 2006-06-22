@@ -120,9 +120,9 @@ class MainWXFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         #sizer.Add(search_label, 0,
         #          wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 3)
-        sizer.Add(search_text, 1,
+        sizer.Add(self.search_text, 1,
                   wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 3)
-        sizer.Add(search_x_button, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+        sizer.Add(self.search_x_button, 0, wx.ALIGN_CENTER_VERTICAL, 0)
 
         tl_sizer = wx.BoxSizer(wx.VERTICAL)
         # in this case the wx.EXPAND makes it stretch horizontally

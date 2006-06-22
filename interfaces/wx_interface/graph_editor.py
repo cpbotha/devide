@@ -214,6 +214,16 @@ class GraphEditor:
 
 
         # event handlers
+        def test_handler(evt):
+            t = mf.search_text.GetValue()
+            mm = self._devide_app.getModuleManager()
+            print mm.module_search.find_matches(t)
+            
+            
+        wx.EVT_TEXT(mf, mf.search_text.GetId(),
+                    test_handler)
+
+        
         wx.EVT_LISTBOX(mf,
                        mf.module_cats_list_box.GetId(),
                        self._handlerModuleCatsListBoxSelected)
