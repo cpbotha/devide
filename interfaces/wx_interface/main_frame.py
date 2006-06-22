@@ -48,6 +48,12 @@ class MainWXFrame(wx.Frame):
             self.canvas,
             PyAUI.PaneInfo().Name('graph_canvas').
             Caption('Graph Canvas').Center())
+
+        sp = self._create_module_search_panel()
+        self._mgr.AddPane(
+            sp,
+            PyAUI.PaneInfo().Name('module_search').
+            Caption('Module Search').Left())
         
         self.module_cats = self._create_module_cats()
         self._mgr.AddPane(
@@ -97,6 +103,9 @@ class MainWXFrame(wx.Frame):
         self.module_list_box = wx.ListBox(self, -1, choices=[],
                                           style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
         return self.module_list_box
+
+    def _create_module_search_panel(self):
+        pass
 
     def _create_progress_panel(self):
         progress_panel = wx.Panel(self, -1)#, size=wx.Size(100, 50))
