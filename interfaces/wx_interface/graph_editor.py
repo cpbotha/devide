@@ -1,4 +1,4 @@
-# graph_editor.py copyright 2002 by Charl P. Botha http://cpbotha.net/
+# graph_editor.py copyright 2002-2006 by Charl P. Botha http://cpbotha.net/
 # $Id$
 # the graph-editor thingy where one gets to connect modules together
 
@@ -975,14 +975,19 @@ class GraphEditor:
                     cat_found = True
                     
                 else:
-                    # srkey starts with module: or segment:, we have to
-                    # remove this
-                    module_name = srkey.split(':')[1]
-                    for c in mm._availableModules[module_name].cats:
-                        if c in selectedCats:
+                    if srkey.startswith('segment:'):
+                        if 'Segments' in selectedCats:
                             cat_found = True
-                            # stop with for iteration
-                            break
+                            
+                    else:
+                        # srkey starts with module: or segment:, we have to
+                        # remove this
+                        module_name = srkey.split(':')[1]
+                        for c in mm._availableModules[module_name].cats:
+                            if c in selectedCats:
+                                cat_found = True
+                                # stop with for iteration
+                                break
 
                 if cat_found:
                     # now go through the different where-founds
@@ -991,7 +996,7 @@ class GraphEditor:
                     for wf in wfs:
                         results_disp[wf].append('%s' % (srkey,))
 
-        else:
+        else: # no search string, only selected categories
             uniq_dict = {}
             for cat in selectedCats:
                 for mn in self._moduleCats[cat]:

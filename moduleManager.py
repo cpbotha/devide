@@ -45,8 +45,14 @@ class ModuleSearch:
         self.previous_partial_text = ''
         self.previous_results = None
 
-    # FIXME: add segments
-    def build_search_index(self, available_modules):
+    def build_search_index(self, available_modules, available_segments):
+        """Build search index given a list of available modules and segments.
+
+        @param available_modules: available modules dictionary from module
+        manager with module metadata classes as values.
+        @param available_segments: simple list of segments.
+        """
+        
         self.search_dict.clear()
 
         def index_field(index_name, mi_class, field_name, split=False):
@@ -84,6 +90,11 @@ class ModuleSearch:
                 
             index_field(index_name, mc, 'keywords')
             index_field(index_name, mc, 'help', True)
+
+        for segment_name in available_segments:
+            index_name = 'segment:%s' % (segment_name,)
+            # segment name's are unique by definition (complete file names)
+            self.search_dict[segment_name] = {(index_name, 'name') : 1}
 
     def find_matches(self, partial_text):
         """Do partial text (containment) search through all module names,
@@ -442,9 +453,6 @@ class moduleManager:
                         module_name = mim.replace('module_index', a)
                         self._availableModules[module_name] = c
 
-        # self._availableModules is a dict keyed on module_name with
-        # module description class as value
-        self.module_search.build_search_index(self._availableModules)
 
         # we should move this functionality to the graphEditor.  "segments"
         # are _probably_ only valid there... alternatively, we should move
@@ -458,13 +466,13 @@ class moduleManager:
 
         os.path.walk(os.path.join(appDir, 'segments'), swFunc, arg=None)
 
-#         segmentList = []
-#         recursiveDirectoryD3MNSearch(os.path.join(appDir, 'segments'),
-#                                      None, segmentList)
-
         # this is purely a list of segment filenames
         self.availableSegmentsList = segmentList
 
+        # self._availableModules is a dict keyed on module_name with
+        # module description class as value
+        self.module_search.build_search_index(self._availableModules,
+                                              self.availableSegmentsList)
 
         # report on accumulated errors - this is still a non-critical error
         # so we don't throw an exception.
