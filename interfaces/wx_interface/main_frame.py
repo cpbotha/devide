@@ -3,6 +3,55 @@ import external.PyAUI as PyAUI
 import wx
 from wx.html import HtmlWindow
 
+class SimpleHTMLListBox(wx.HtmlListBox):
+    """Simple class to emulate normal wx.ListBox (Append, Clear, GetClientData
+    and GetString methods) with the super-powers of the wx.HtmlListBox.
+
+    @author Charl P. Botha <http://cpbotha.net/>
+    """
+
+    def __init__(self, *args, **kwargs):
+        wx.HtmlListBox.__init__(self, *args, **kwargs)
+        self.items = []
+        self.Clear()
+
+    def Append(self, text, data=None, refresh=True):
+        """Emulates wx.ListBox Append method, except for refresh bit.
+
+        Set refresh to False if you're going to be appending bunches of
+        items.  When you're done, call the DoRefresh() method explicitly.
+        """
+        
+        self.items.append((text, data))
+        if refresh:
+            self.SetItemCount(len(self.items))
+            self.Refresh()
+
+    def DoRefresh(self):
+        """To be used after adding large amounts of items with Append and
+        refresh=False.
+        """
+        
+        self.SetItemCount(len(self.items))
+        self.Refresh()
+
+    def Clear(self):
+        del self.items[:]
+        self.SetSelection(-1)
+        self.SetItemCount(0)
+
+    def GetClientData(self, n):
+        return self.items[n][1]
+
+    def GetString(self, n):
+        return self.items[n][0]
+        
+    def OnGetItem(self, n):
+        try:
+            return self.items[n][0]
+        except IndexError:
+            return ''
+
 
 class MainWXFrame(wx.Frame):
     """Class for building main user interface frame.
@@ -105,14 +154,16 @@ class MainWXFrame(wx.Frame):
         return self.module_cats_list_box 
 
     def _create_module_list(self):
-        self.module_list_box = wx.ListBox(self, -1, choices=[],
-                                          style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
+        self.module_list_box = SimpleHTMLListBox(
+            self, -1,
+            style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
         return self.module_list_box
 
     def _create_module_search_panel(self):
         search_panel = wx.Panel(self, -1)
 
         #search_label = wx.StaticText(search_panel, -1, "Search phrase")
+        #search_label = wx.StaticText(search_panel, -1, "&S")
         self.search_text = wx.TextCtrl(search_panel, -1, "")
         self.search_x_button = wx.Button(search_panel, -1, "X",
                                     style=wx.BU_EXACTFIT)

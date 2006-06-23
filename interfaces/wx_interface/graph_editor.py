@@ -213,15 +213,11 @@ class GraphEditor:
                     self._handlerHelpShowHelp)
 
 
-        # event handlers
-        def test_handler(evt):
-            t = mf.search_text.GetValue()
-            mm = self._devide_app.getModuleManager()
-            print mm.module_search.find_matches(t)
-            
-            
         wx.EVT_TEXT(mf, mf.search_text.GetId(),
                     self._update_search_results)
+
+        wx.EVT_BUTTON(mf, mf.search_x_button.GetId(),
+                      self._handler_search_x_button)
 
         
         wx.EVT_LISTBOX(mf,
@@ -245,8 +241,8 @@ class GraphEditor:
                             self._handlerModulesListBoxMouseEvents)
 
         # and also setup the module quick search
-        self._quickSearchString = ''
-        wx.EVT_CHAR(mf.canvas, self._handlerCanvasChar)
+        #self._quickSearchString = ''
+        #wx.EVT_CHAR(mf.canvas, self._handlerCanvasChar)
         
 
         # setup the canvas...
@@ -287,6 +283,9 @@ class GraphEditor:
         # now refresh it... we have a work around in the showModulePalette
         # method that will shift the SashPosition and thus cause a redraw
         self.show()
+
+    def _handler_search_x_button(self, event):
+        self._interface._main_frame.search_text.SetValue('')
 
     def _handlerModulesListBoxMouseEvents(self, event):
         if not event.Dragging():
@@ -1009,7 +1008,9 @@ class GraphEditor:
 
         for section in ['misc', 'name', 'keywords', 'help']:
             if section != 'misc' and len(results_disp[section]) > 0:
-                mlb.Append('=== %s ===' % (section.upper(),))
+                mlb.Append('<b><center>- %s match -</center></b>' %
+                           (section.upper(),), data=None,
+                           refresh=False)
                 
             for mn in results_disp[section]:
 
@@ -1020,7 +1021,9 @@ class GraphEditor:
                     mParts = mn.split('.')
                     shortname = mParts[-1]
                 
-                mlb.Append(shortname, mn)
+                mlb.Append(shortname, mn, refresh=False)
+
+        mlb.DoRefresh()
 
     def _handlerMarkModule(self, instance):
         markedModuleName = wx.GetTextFromUser(
@@ -1147,8 +1150,10 @@ class GraphEditor:
         mlb = self._interface._main_frame.module_list_box
         idx = mlb.GetSelection()
 
-        self._interface._main_frame.GetStatusBar().SetStatusText(
-            mlb.GetClientData(idx))
+        if idx >= 0:
+            cdata = mlb.GetClientData(idx)
+            if cdata is not None:
+                self._interface._main_frame.GetStatusBar().SetStatusText(cdata)
 
     def _handlerPaste(self, event, position):
         if self._copyBuffer:
