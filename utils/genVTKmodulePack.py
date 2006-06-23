@@ -56,7 +56,7 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
                                         'Writing %s.' % (moduleName[:-6],),
                                         (vtkObjName[:-6],), (),
                                         None, None)
-        return (moduleName, moduleText, 'VTK basic writer')
+        return (moduleName, moduleText, 'VTK basic writer', vtkObj.__doc__)
         
     elif vtkObjName.endswith('Reader'):
         moduleName = vtkObjName
@@ -66,7 +66,7 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
                                         'Reading %s.' % (moduleName[:-6],),
                                         (), (vtkObjName[:-6],),
                                         None, None)
-        return (moduleName, moduleText, 'VTK basic readers')
+        return (moduleName, moduleText, 'VTK basic readers', vtkObj.__doc__)
 
     else:
 
@@ -98,7 +98,7 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
                                         ip_types, op_types,
                                         None, None)
 
-        return (moduleName, moduleText, 'VTK basic filters')
+        return (moduleName, moduleText, 'VTK basic filters', vtkObj.__doc__)
         
 
 def blaat():
@@ -206,8 +206,8 @@ def main():
                          'DeVIDE::createDeVIDEModuleFromVTKObject\n']
 
     for vtkObjName in list2:
-        moduleName, moduleText, moduleCats = createDeVIDEModuleFromVTKObject(
-            vtkObjName)
+        moduleName, moduleText, moduleCats, module_doc = \
+                    createDeVIDEModuleFromVTKObject(vtkObjName)
         
         if moduleName:
             f = open('%s.py' % (moduleName,), 'w')
@@ -216,6 +216,9 @@ def main():
             moduleListStrings.append("class %s:" % (moduleName,))
             moduleListStrings.append("    kits = ['vtk_kit']")
             moduleListStrings.append("    cats = ['%s']\n" % (moduleCats,))
+            moduleListStrings.append("    help = \\")
+            moduleListStrings.append(
+                "         \"\"\"%s\n\"\"\"" % (module_doc,))
 
             #moduleListStrings.append("'%s' : %s," % (moduleName, moduleCats))
             f.close()
