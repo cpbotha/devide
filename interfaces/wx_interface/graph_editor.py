@@ -221,12 +221,12 @@ class GraphEditor:
             
             
         wx.EVT_TEXT(mf, mf.search_text.GetId(),
-                    test_handler)
+                    self._update_search_results)
 
         
         wx.EVT_LISTBOX(mf,
                        mf.module_cats_list_box.GetId(),
-                       self._handlerModuleCatsListBoxSelected)
+                       self._update_search_results)
 
         wx.EVT_LISTBOX(mf,
                        mf.module_list_box.GetId(),
@@ -235,10 +235,6 @@ class GraphEditor:
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
         self._availableModules = None
-
-        # (shortName, longName) tuples, updated every time the user changes
-        # here module category selection
-        self._selectedModulesList = []
 
         # this is usually shortly after initialisation, so a module scan
         # should be available.  Actually, the user could be very naughty,
@@ -303,7 +299,7 @@ class GraphEditor:
 
         sel = mlb.GetSelection()
         if sel >= 0:
-            shortName, moduleName = self._selectedModulesList[sel]
+            shortName, moduleName = mlb.GetString(sel), mlb.GetClientData(sel)
             
             if type(moduleName) != str:
                 return
@@ -825,16 +821,18 @@ class GraphEditor:
             # we add an ALL category implicitly to all modules
             for cat in module_metadata.cats + ['ALL']:
                 if cat in self._moduleCats:
-                    self._moduleCats[cat].append(mn)
+                    self._moduleCats[cat].append('module:%s' % (mn,))
                 else:
-                    self._moduleCats[cat] = [mn]
+                    self._moduleCats[cat] = ['module:%s' % (mn,)]
 
 
         # list of DVN filenames
         if len(mm.availableSegmentsList) > 0:
-            self._moduleCats['Segments'] = mm.availableSegmentsList
-                    
-        
+            self._moduleCats['Segments'] = ['segment:%s' % (i,) for i in
+                                            mm.availableSegmentsList]
+            # this should add all segments to the 'ALL' category
+            self._moduleCats['ALL'] += self._moduleCats['Segments']
+
         # setup all categories
         self._interface._main_frame.module_cats_list_box.Clear()
         idx = 0
@@ -851,7 +849,8 @@ class GraphEditor:
 
         self._interface._main_frame.module_cats_list_box.Select(0)
 
-        self._handlerModuleCatsListBoxSelected(None)
+        #self._handlerModuleCatsListBoxSelected(None)
+        self._update_search_results()
 
     def find_glyph(self, meta_module):
         """Given a meta_module, return the glyph that contains it.
@@ -931,57 +930,97 @@ class GraphEditor:
             if filename:
                 self._saveNetwork(glyphs, filename)
 
-    # FIXME: this should be factored out so that it can be called for
-    # general search result updating, i.e. when the search phrases are
-    # updated or when the categories are changed.
-    def _handlerModuleCatsListBoxSelected(self, event):
-        self._interface._main_frame.module_list_box.Clear()
+    def _update_search_results(self, event=None):
+        """Each time the user modifies the module search string or the
+        category selection, this method is called to update the list of
+        modules that can be selected.
+        """
 
-        selectedCats = []
+        mf = self._interface._main_frame
 
-        mclb = self._interface._main_frame.module_cats_list_box
+        # get complete search results for this search string
+        t = mf.search_text.GetValue()
+        if t:
+            mm = self._devide_app.getModuleManager()
+            search_results = mm.module_search.find_matches(t)
+            # search_results is dictionary {'name' : {'module.name' : 1,
+            # 'other.module.name' : 1}, 'keywords' : ...
+
+        else:
+            # None is different from an empty dictionary
+            search_results = None
+
+        mclb = mf.module_cats_list_box
         sels = mclb.GetSelections()
 
+        selectedCats = {}
         for sel in sels:
-            selectedCats.append(mclb.GetString(sel))
+            selectedCats[mclb.GetString(sel)] = 1
 
-        selectedModuleNames = {}
+        results_disp = {'misc' : [], 'name' : [],
+                        'keywords' : [], 'help' : []}        
 
-        for cat in selectedCats:
-            for mn in self._moduleCats[cat]:
-                # the dict eliminates duplicates
-                # we set value to 'cat' so we can later check whether this
-                # thing is a segment
-                selectedModuleNames[mn] = cat
+        # now go through search results adding all modules that have
+        # the correct categories
+        if search_results is not None:
+            
+            for srkey in search_results:
+                # srkey is a full module name and is guaranteed to be unique
+                cat_found = False
+                if 'ALL' in selectedCats:
+                    # we don't have to check categories
+                    cat_found = True
+                    
+                else:
+                    # srkey starts with module: or segment:, we have to
+                    # remove this
+                    module_name = srkey.split(':')[1]
+                    for c in mm._availableModules[module_name].cats:
+                        if c in selectedCats:
+                            cat_found = True
+                            # stop with for iteration
+                            break
 
-        # now populate the module list
+                if cat_found:
+                    # now go through the different where-founds
+                    # wfs is a dict {'wf1' : 1, 'wf2' : 1}
+                    wfs = search_results[srkey]
+                    for wf in wfs:
+                        results_disp[wf].append('%s' % (srkey,))
 
-        # the currentModuleListShort is a list of the names as they are
-        # displayed!  the order should be exactly the same as the list
-        # that is currently being displayed
-        del self._selectedModulesList[:]
-        idx = 0
+        else:
+            uniq_dict = {}
+            for cat in selectedCats:
+                for mn in self._moduleCats[cat]:
+                    # the dict eliminates duplicates
+                    # we set value to 'cat' so we can later check whether this
+                    # thing is a segment
+                    uniq_dict[mn] = 1
 
-        smnItems = selectedModuleNames.items()
-        
-        for mn,cat in smnItems:
-            if cat == 'Segments':
-                basename = os.path.splitext(os.path.basename(mn))[0]
-                self._selectedModulesList.append(
-                    (basename, 'segment:%s' % (mn,)))
-                
-            else:
-                mParts = mn.split('.')
-                self._selectedModulesList.append(
-                    (mParts[-1], 'module:%s' % (mn,)))
+            results_disp['misc'] = uniq_dict.keys()
+
+        # make sure separate results are sorted
+        for where_found in results_disp:
+            results_disp[where_found].sort()
 
         # now populate the mlb
-        mlb = self._interface._main_frame.module_list_box
-        # important: sort by shortnames
-        self._selectedModulesList.sort()
+        mlb = mf.module_list_box
+        mlb.Clear()
 
-        for shortname,longname in self._selectedModulesList:
-            mlb.Append(shortname)
+        for section in ['misc', 'name', 'keywords', 'help']:
+            if section != 'misc' and len(results_disp[section]) > 0:
+                mlb.Append('=== %s ===' % (section.upper(),))
+                
+            for mn in results_disp[section]:
+
+                if mn.startswith('segment'):
+                    shortname = os.path.splitext(os.path.basename(mn))[0]
+
+                else:
+                    mParts = mn.split('.')
+                    shortname = mParts[-1]
+                
+                mlb.Append(shortname, mn)
 
     def _handlerMarkModule(self, instance):
         markedModuleName = wx.GetTextFromUser(
@@ -1109,7 +1148,7 @@ class GraphEditor:
         idx = mlb.GetSelection()
 
         self._interface._main_frame.GetStatusBar().SetStatusText(
-            self._selectedModulesList[idx][1])
+            mlb.GetClientData(idx))
 
     def _handlerPaste(self, event, position):
         if self._copyBuffer:

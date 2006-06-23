@@ -42,11 +42,14 @@ class ModuleSearch:
         # {'isosurface' : {('contour', 'keywords') : 1,
         #                  ('marching', 'help') : 1} ...
         self.search_dict = {}
+        self.previous_partial_text = ''
+        self.previous_results = None
 
+    # FIXME: add segments
     def build_search_index(self, available_modules):
         self.search_dict.clear()
 
-        def index_field(module_name, mi_class, field_name, split=False):
+        def index_field(index_name, mi_class, field_name, split=False):
             try:
                 field = getattr(mi_class, field_name)
                 
@@ -60,38 +63,64 @@ class ModuleSearch:
                     
                 for w in iter_list:
                     if w not in self.search_dict:
-                        self.search_dict[w.lower()] = {(module_name,
+                        self.search_dict[w.lower()] = {(index_name,
                                                         field_name) : 1}
                     else:
-                        self.search_dict[w.lower()][(module_name,
+                        self.search_dict[w.lower()][(index_name,
                                                      field_name)] = 1
-            
+
         for module_name in available_modules:
             mc = available_modules[module_name]
-            short_module_name = mc.__name__
+            index_name = 'module:%s' % (module_name,)
+            short_module_name = mc.__name__.lower()
 
             if short_module_name not in self.search_dict:
-                self.search_dict[short_module_name] = {(module_name, 'name') :
+                self.search_dict[short_module_name] = {(index_name, 'name') :
                 1}
             else:
                 # we don't have to increment, there can be only one unique
                 # complete module_name
-                self.search_dict[short_module_name][(module_name, 'name')] = 1
+                self.search_dict[short_module_name][(index_name, 'name')] = 1
                 
-            index_field(module_name, mc, 'keywords')
-            index_field(module_name, mc, 'help', True)
+            index_field(index_name, mc, 'keywords')
+            index_field(index_name, mc, 'help', True)
 
     def find_matches(self, partial_text):
+        """Do partial text (containment) search through all module names,
+        help and keywords.
+
+        Simple caching is currently done.
+
+        @returns: a list of unique tuples consisting of (modulename,
+        where_found) where where_found is 'name', 'keywords' or 'help'
+        """
+
+        # cache results in case the user asks for exactly the same
+        if partial_text == self.previous_partial_text:
+            return self.previous_results
+
+        # dict mapping from full.module.name -> {'where_found' : 1, 'wf2' : 1}
+        # think about optimising this with a bit mask rather; less flexible
+        # but saves space and is at least as fast.
+
         search_results = {}
+        
         for w in self.search_dict:
             if w.find(partial_text.lower()) >= 0:
                 # we can have partial matches with more than one key
                 # returning the same location, so we stuff results in a dict
                 # too to consolidate results
                 for k in self.search_dict[w].keys():
-                    search_results[k] = 1
-
-        return search_results.keys()
+                    # k[1] is where_found, k[0] is module_name
+                    if k[0] not in search_results:
+                        search_results[k[0]] = {k[1] : 1}
+                    else:
+                        search_results[k[0]][k[1]] = 1
+                    
+        self.previous_partial_text = partial_text
+        rl = search_results
+        self.previous_results = rl
+        return rl
         
 
 #########################################################################
@@ -433,6 +462,7 @@ class moduleManager:
 #         recursiveDirectoryD3MNSearch(os.path.join(appDir, 'segments'),
 #                                      None, segmentList)
 
+        # this is purely a list of segment filenames
         self.availableSegmentsList = segmentList
 
 
