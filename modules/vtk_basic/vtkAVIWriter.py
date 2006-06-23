@@ -2,11 +2,11 @@
 from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
-class vtkOBBDicer(SimpleVTKClassModuleBase):
+class vtkAVIWriter(SimpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtk.vtkOBBDicer(), 'Processing.',
-            ('vtkDataSet',), ('vtkDataSet',),
+            vtk.vtkAVIWriter(), 'Writing vtkAVI.',
+            ('vtkAVI',), (),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)
