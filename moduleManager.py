@@ -68,12 +68,13 @@ class ModuleSearch:
                     iter_list = field
                     
                 for w in iter_list:
-                    if w not in self.search_dict:
-                        self.search_dict[w.lower()] = {(index_name,
-                                                        field_name) : 1}
+                    wl = w.lower()
+                    if wl not in self.search_dict:
+                        self.search_dict[wl] = {(index_name,
+                                                 field_name) : 1}
                     else:
-                        self.search_dict[w.lower()][(index_name,
-                                                     field_name)] = 1
+                        self.search_dict[wl][(index_name,
+                                              field_name)] = 1
 
         for module_name in available_modules:
             mc = available_modules[module_name]
