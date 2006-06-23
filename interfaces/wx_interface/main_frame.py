@@ -138,11 +138,13 @@ class MainWXFrame(wx.Frame):
         #self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     def _create_documentation_window(self):
-        return HtmlWindow(self, -1)
+        self.doc_window = HtmlWindow(self, -1, size=(200,80))
+        return self.doc_window
 
     def _create_log_window(self):
         tc = wx.TextCtrl(
-            self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+            self, -1, "", size=(200, 80),
+            style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
         tc.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, ""))
         self.message_log_text_ctrl = tc
         return tc

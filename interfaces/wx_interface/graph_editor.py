@@ -740,6 +740,22 @@ class GraphEditor:
         
         mm = self._devide_app.getModuleManager()
         mm.executeModule(moduleInstance)
+
+    def _module_doc_to_html(self, full_module_name, doc):
+        # do rudimentary __doc__ -> html conversion
+        docLines = string.split(doc.strip(), '\n')
+        for idx in range(len(docLines)):
+            docLine = docLines[idx].strip()
+            if docLine == '':
+                docLines[idx] = '<br><br>'
+
+        # add pretty heading
+        htmlDoc = '<center><b>%s</b></center><br><br>' % \
+                  (full_module_name,) + string.join(docLines, '\n')
+
+        # finally change the contents of the new/existing module help window
+        return '<html><body>%s</body></html>' % (htmlDoc,)
+        
 	
     def _helpModule(self, moduleInstance):
 	"""
@@ -779,20 +795,8 @@ class GraphEditor:
                        handlerModuleHelpDestroy)
             wx.EVT_CLOSE(htmlWindowFrame, handlerModuleHelpDestroy)
 
-        # do rudimentary __doc__ -> html conversion
-        docLines = string.split(moduleInstance.__doc__.strip(), '\n')
-        for idx in range(len(docLines)):
-            docLine = docLines[idx].strip()
-            if docLine == '':
-                docLines[idx] = '<br><br>'
-
-        # add pretty heading
-        htmlDoc = '<center><b>%s</b></center><br><br>' % (fullModuleName,) + \
-                  string.join(docLines, '\n')
-
-        # finally change the contents of the new/existing module help window
-        htmlWindowFrame.htmlWindow.SetPage(
-            '<html><body>%s</body></html>' % (htmlDoc,))
+        htd = self._module_doc_to_html(fullModuleName, moduleInstance.__doc__)
+        htmlWindowFrame.htmlWindow.SetPage(htd)
 
         # Show and Raise
         htmlWindowFrame.Show(True)
@@ -1154,6 +1158,8 @@ class GraphEditor:
             cdata = mlb.GetClientData(idx)
             if cdata is not None:
                 self._interface._main_frame.GetStatusBar().SetStatusText(cdata)
+
+            self.show_module_help(cdata)
 
     def _handlerPaste(self, event, position):
         if self._copyBuffer:
@@ -2327,7 +2333,26 @@ class GraphEditor:
             canvas.redraw()
 
         return success
-            
+
+    def show_module_help(self, module_spec):
+        """module_spec is e.g. module:full.module.name
+        """
+
+        if not module_spec.startswith('module:'):
+            return
+        
+        module_name = module_spec.split(':')[1]
+        mm = self._devide_app.getModuleManager()
+        
+        try:
+            ht = mm._availableModules[module_name].help
+        except AttributeError:
+            ht = 'No documentation available for this module.'
+
+        mf = self._interface._main_frame
+        
+        mf.doc_window.SetPage(self._module_doc_to_html(
+            module_name, ht))
         
     def _stopRubberBanding(self, event):
         # whatever the case may be, rubberBanding stops
