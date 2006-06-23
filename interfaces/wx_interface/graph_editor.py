@@ -2343,7 +2343,7 @@ class GraphEditor:
         """module_spec is e.g. module:full.module.name
         """
 
-        if not module_spec.startswith('module:'):
+        if module_spec is None or not module_spec.startswith('module:'):
             return
         
         module_name = module_spec.split(':')[1]
