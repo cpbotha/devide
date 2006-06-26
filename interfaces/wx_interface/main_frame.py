@@ -96,13 +96,14 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             self.canvas,
             PyAUI.PaneInfo().Name('graph_canvas').
-            Caption('Graph Canvas').Center())
+            Caption('Graph Canvas').Center().CloseButton(False))
 
         sp = self._create_module_search_panel()
         self._mgr.AddPane(
             sp,
             PyAUI.PaneInfo().Name('module_search').
-            Caption('Module Search').Left().MinSize(sp.GetSize()))
+            Caption('Module Search').Left().MinSize(sp.GetSize()).
+            CloseButton(False))
 
         # a little trick I found in the PyAUI source code.  This will make
         # sure that the pane is as low (small y) as it can be
@@ -113,29 +114,41 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             self.module_cats,
             PyAUI.PaneInfo().Name('module_cats').Caption('Module Categories').
-            Left())
+            Left().CloseButton(False))
 
         self.module_list = self._create_module_list()
         self._mgr.AddPane(
             self.module_list,
-            PyAUI.PaneInfo().Name('module_list').Caption('Module List'))
+            PyAUI.PaneInfo().Name('module_list').Caption('Module List').
+            CloseButton(False))
 
 
         self._mgr.AddPane(
             self._create_documentation_window(),
             PyAUI.PaneInfo().Name('doc_window').
-            Caption('Documentation Window').Bottom())
+            Caption('Documentation Window').Bottom().CloseButton(False))
 
         self._mgr.AddPane(
             self._create_log_window(),
             PyAUI.PaneInfo().Name('log_window').
-            Caption('Log Messages').Bottom())
+            Caption('Log Messages').Bottom().CloseButton(False))
         
         self._mgr.Update()
+
+        self.perspective_default = self._mgr.SavePerspective()
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         #self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+        # even although we disable the close button, when a window floats
+        # it gets a close button back, so we have to make sure that when
+        # the user activates that the windows is merely hidden
+        self.Bind(PyAUI.EVT_AUI_PANEBUTTON, self.OnPaneButton)
+
+        wx.EVT_MENU(self, self.window_default_view_id,
+                    lambda e: self._mgr.LoadPerspective(
+            self.perspective_default) and self._mgr.Update())
 
     def _create_documentation_window(self):
         self.doc_window = HtmlWindow(self, -1, size=(200,80))
@@ -277,6 +290,13 @@ class MainWXFrame(wx.Frame):
         self.menubar.Append(modules_menu, "&Modules")
 
         window_menu = wx.Menu()
+
+        self.window_default_view_id = wx.NewId()
+        window_menu.Append(
+            self.window_default_view_id, "Restore &default view",
+            "Restore default perspective / window configuration.",
+            wx.ITEM_NORMAL)
+        
         window_menu.Append(
             self.windowMainID, "&Main window", "Show the DeVIDE main window.",
             wx.ITEM_NORMAL)
@@ -297,6 +317,9 @@ class MainWXFrame(wx.Frame):
     def OnEraseBackground(self, event):
         # from PyAUI demo
         event.Skip()
+
+    def OnPaneButton(self, event):
+        event.GetPane().Hide()
 
     def OnSize(self, event):
         # from PyAUI demo
