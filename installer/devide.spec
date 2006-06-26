@@ -119,6 +119,31 @@ modules_tree = Tree(os.path.join(APP_DIR, 'modules'), 'modules',
 module_kits_tree = Tree(os.path.join(APP_DIR, 'module_kits'), 'module_kits',
                     ['.svn', '*~'])
 
+import itkConfig
+
+# Tree() makes a TOC, i.e. a list of tuples with (app_dir relative
+# destination, full source file path, 'DATA')
+
+# on windows this doesn't work, because the python files are somewhere
+# in RelWithDebInfo...
+
+# TODO: filter Tree output so that we only get the files we want
+#       (i.e. not only excludes, but includes)
+wrapitk_py_tree = Tree(
+    os.path.normpath(os.path.join(itkConfig.config_py, '..')),
+    'module_kits/itk_kit/wrapitk/python',
+    ['*.cmake','*.pyc', 'CMakeFiles', 'InstallOnly','PyUtils', 'Tests',
+     '*.pth'])
+
+print wrapitk_py_tree
+
+wrapitk_lib_tree = Tree(
+    itkConfig.swig_lib,
+    'module_kits/itk_kit/wrapitk/lib',
+    ['*.cmake','*.pyc', 'CMakeFiles', 'InstallOnly','PyUtils', 'Tests',
+     '*.pth', '*.ilk', '*.exp', '*.pdb', '*.idb']))
+
+
 # VTKPIPELINE ICONS
 
 # unfortunately, due to the vtkPipeline design, these want to live one
@@ -193,6 +218,8 @@ exe = EXE(pyz,
 allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
               mpl_data_dir + numpy_tree + \
               extraLibs + segTree + snipTree + dataTree + docsTree
+
+allBinaries += wrapitk_py_tree
 
 # make new list of 3-element tuples of shipable things
 binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]

@@ -35,6 +35,18 @@ other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
 
+# if 'module_kits.itk_kit' in hiddenimports:
+#     hiddenimports += ['itk']
+
+#     print "Setting WrapITK LazyLoading to FALSE ============="
+#     import itkConfig
+#     itkConfig.LazyLoading = False
+
+#     import itkBase
+#     hiddenimports.extend(itkBase.known_modules)
+
+#     hiddenimports.extend(['%sPython' % (i,) for i in itkBase.known_modules])
+
 print "[*] hook-moduleManager.py - HIDDENIMPORTS"
 print hiddenimports
 

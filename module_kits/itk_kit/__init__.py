@@ -92,7 +92,8 @@ def init(theModuleManager):
 
     # let's get the version (which will bring in VXLNumerics and Base)
 
-    # let's hope McMillan doesn't catch this one!
+    # setup the kit version
+    global VERSION
     isv = itk.Version.GetITKSourceVersion()
     ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
     VERSION = '%s (%s: %s)' % (itk.Version.GetITKVersion(), ind,
@@ -110,9 +111,6 @@ def init(theModuleManager):
     
     # user can address this as module_kits.itk_kit.utils.blaat()
     import module_kits.itk_kit.utils as utils
-
-    # setup the kit version
-    global VERSION
 
     theModuleManager.setProgress(100, 'Initialising ITK: DONE')
 
