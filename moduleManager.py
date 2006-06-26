@@ -101,7 +101,8 @@ class ModuleSearch:
         """Do partial text (containment) search through all module names,
         help and keywords.
 
-        Simple caching is currently done.
+        Simple caching is currently done.  Each space-separated word in
+        partial_text is searched for and results are 'AND'ed.
 
         @returns: a list of unique tuples consisting of (modulename,
         where_found) where where_found is 'name', 'keywords' or 'help'
@@ -111,23 +112,88 @@ class ModuleSearch:
         if partial_text == self.previous_partial_text:
             return self.previous_results
 
+        partial_words = partial_text.lower().split()
+
         # dict mapping from full.module.name -> {'where_found' : 1, 'wf2' : 1}
         # think about optimising this with a bit mask rather; less flexible
         # but saves space and is at least as fast.
 
-        search_results = {}
-        
-        for w in self.search_dict:
-            if w.find(partial_text.lower()) >= 0:
-                # we can have partial matches with more than one key
-                # returning the same location, so we stuff results in a dict
-                # too to consolidate results
-                for k in self.search_dict[w].keys():
-                    # k[1] is where_found, k[0] is module_name
-                    if k[0] not in search_results:
-                        search_results[k[0]] = {k[1] : 1}
-                    else:
-                        search_results[k[0]][k[1]] = 1
+        def find_one_word(search_word):
+            """Searches for all partial / containment matches with
+            search_word.
+
+            @returns: search_results dict mapping from module name to
+            dictionary with where froms as keys and 1s as values.
+            
+            """
+            search_results = {}
+            for w in self.search_dict:
+                if w.find(search_word) >= 0:
+                    # we can have partial matches with more than one key
+                    # returning the same location, so we stuff results in a 
+                    # dict too to consolidate results
+                    for k in self.search_dict[w].keys():
+                        # k[1] is where_found, k[0] is module_name
+                        if k[0] not in search_results:
+                            search_results[k[0]] = {k[1] : 1}
+                                
+                        else:
+                            search_results[k[0]][k[1]] = 1
+
+            return search_results
+
+        # search using each of the words in the given list
+        search_results_list = []
+        for search_word in partial_words:
+            search_results_list.append(find_one_word(search_word))
+
+        # if more than one word, combine the results;
+        # a module + where_from result is only shown if ALL words occur in
+        # that specific module + where_from.
+
+        sr0 = search_results_list[0]
+        srl_len = len(search_results_list)
+        if srl_len > 1:
+            # will create brand-new combined search_results dict
+            search_results = {}
+
+            # iterate through all module names in the first word's results
+            for module_name in sr0:
+                # we will only process a module_name if it occurs in the
+                # search results of ALL search words
+                all_found = True
+                for sr in search_results_list[1:]:
+                    if module_name not in sr:
+                        all_found = False
+                        break
+
+                # now only take results where ALL search words occur
+                # in the same where_from of a specific module
+                if all_found:
+                    temp_finds = {}
+                    for sr in search_results_list:
+                        # sr[module_name] is a dict with where_founds as keys
+                        # by definition (dictionary) all where_founds are
+                        # unique per sr[module_name]
+                        for i in sr[module_name].keys():
+                            if i in temp_finds:
+                                temp_finds[i] += 1
+                            else:
+                                temp_finds[i] = 1
+
+                    # extract where_froms for which the number of hits is
+                    # equal to the number of words.
+                    temp_finds2 = [wf for wf in temp_finds.keys() if
+                                   temp_finds[wf] == srl_len]
+
+                    # make new dictionary from temp_finds2 list as keys,
+                    # 1 as value
+                    search_results[module_name] = dict.fromkeys(temp_finds2,1)
+
+        else:
+            # only a single word was searched for.
+            search_results = sr0
+            
                     
         self.previous_partial_text = partial_text
         rl = search_results
