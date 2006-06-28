@@ -2,12 +2,17 @@ Release ng1phase1 6.4.00 - Fri Mar 10 12:01:35 WEST 2006
 
 Changes since ng1phase1 6.3.9:
 
- * Upgraded to ITK 2.6 from ITK 2.4.
+ * New unified interface with dockable windows.
+ * Module quick search.  (searches in module metadata: name, keywords,
+   help)
+ * the CodeRunner module.  Try it, you'll like it.
+ * All DLLs are explicitly rebased on Windows, resulting in faster
+   startup and significantly less memory use.
+ * Upgraded to ITK 2.8
  * numpy, matplotlib and statistics kits
     - you can now generate Matlab-quality figures in DeVIDE
     - numpy has some really fast matrix and linear algebra routines
     - statistics contains a number of useful stats routines
- * the CodeRunner module.  Try it, you'll like it.
  * Modules can be blocked/unblocked from execution.  Select a module
    or modules and right click to see the block/unblock commands.
  * DICOM support much improved.
