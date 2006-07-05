@@ -102,6 +102,21 @@ print "[*] exeName == %s" % (exeName)
 mainScript = os.path.join(APP_DIR, 'devide.py')
 print "[*] mainScript == %s" % (mainScript)
 
+# generate available kit list #########################################
+# simple form of the checking done by the module_kits package itself
+
+sys.path.insert(0, APP_DIR)
+
+import module_kits
+import defaults
+
+# get a list of module kits
+module_kit_list = module_kits.module_kit_list[:] + ['numpy_kit']
+# remove the no_kits
+module_kit_list = [i for i in module_kit_list if i not in defaults.NOKITS]
+
+#######################################################################
+
 # segments
 segTree = Tree(os.path.join(APP_DIR, 'segments'), 'segments', ['.svn'])
 # snippets
@@ -118,9 +133,6 @@ modules_tree = Tree(os.path.join(APP_DIR, 'modules'), 'modules',
 # all module_kits
 module_kits_tree = Tree(os.path.join(APP_DIR, 'module_kits'), 'module_kits',
                     ['.svn', '*~'])
-
-# check that ITK is included in this build
-import wrapitk_tree
 
 # VTKPIPELINE ICONS
 
@@ -197,7 +209,9 @@ allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
               mpl_data_dir + numpy_tree + \
               extraLibs + segTree + snipTree + dataTree + docsTree
 
-allBinaries += wrapitk_tree.wrapitk_tree
+if 'itk_kit' in module_kit_list:
+    import wrapitk_tree
+    allBinaries += wrapitk_tree.get_wrapitk_tree()
 
 # make new list of 3-element tuples of shipable things
 binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]

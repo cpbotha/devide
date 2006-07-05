@@ -22,8 +22,7 @@ import defaults
 # get a list of module kits
 mkl = module_kits.module_kit_list[:] + ['numpy_kit']
 # remove the no_kits
-mkl = [i for i in mkl if i not in defaults.NOKITS]
-
+mkl = [i for i in mkl if i not in defaults.NOKITS or i == 'itk_kit']
 
 # other imports
 other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
