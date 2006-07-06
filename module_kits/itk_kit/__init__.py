@@ -7,6 +7,7 @@ Inserts the following modules in sys.modules: itk, InsightToolkit.
 @author: Charl P. Botha <http://cpbotha.net/>
 """
 
+import os
 import re
 import sys
 
@@ -84,6 +85,30 @@ def resetDLFlags(data):
         pass
 
 def init(theModuleManager):
+
+    if hasattr(sys, 'frozen') and sys.frozen:
+        # if we're frozen, make sure we grab the wrapitk contained in this kit
+        p1 = os.path.dirname(__file__)
+        p2 = os.path.join(p1, 'wrapitk/python')
+        p3 = os.path.join(p1, 'wrapitk/lib')
+        sys.path.insert(0, p2)
+        sys.path.insert(0, p3)
+
+        # and now the LD_LIBRARY_PATH / PATH
+        if sys.platform == 'win32':
+            so_path_key = 'PATH'
+
+        else:
+            so_path_key = 'LD_LIBRARY_PATH'
+
+        if so_path_key in os.environ:
+            os.environ[so_path_key] = '%s%s%s' % \
+                                      (p3, os.pathsep, os.environ[so_path_key])
+        else:
+            os.environ[so_path_key] = p3
+
+        print os.environ[so_path_key]
+
 
     # with WrapITK, this takes almost no time
     import itk
