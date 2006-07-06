@@ -209,10 +209,6 @@ allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
               mpl_data_dir + numpy_tree + \
               extraLibs + segTree + snipTree + dataTree + docsTree
 
-if 'itk_kit' in module_kit_list:
-    import wrapitk_tree
-    allBinaries += wrapitk_tree.get_wrapitk_tree()
-
 # make new list of 3-element tuples of shipable things
 binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]
 
@@ -221,4 +217,9 @@ coll = COLLECT(exe,
                strip=0,
                name='distdevide')
 
+# now do custom stuff afterwards
+if 'itk_kit' in module_kit_list:
+    import wrapitk_tree
+    wrapitk_tree.install(os.path.join(APP_DIR,'module_kits/itk_kit'))
+    allBinaries += wrapitk_tree.get_wrapitk_tree()
 

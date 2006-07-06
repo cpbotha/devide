@@ -36,6 +36,8 @@ other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
 
+hiddenimports += [ranlib]
+
 # if 'module_kits.itk_kit' in hiddenimports:
 #     hiddenimports += ['itk']
 
