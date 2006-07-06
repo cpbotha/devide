@@ -122,23 +122,35 @@ def install(itk_kit_dir):
     """Install a self-contained wrapitk installation in itk_kit_dir.
     """
 
-    print "Creating list of WrapITK files..."
+    print "Deleting existing wrapitk dir."
+    sys.stdout.flush()
     witk_dest_dir = os.path.join(itk_kit_dir, 'wrapitk')
     if os.path.exists(witk_dest_dir):
         shutil.rmtree(witk_dest_dir)
 
+    print "Creating list of WrapITK files..."
+    sys.stdout.flush()
     wrapitk_tree = get_wrapitk_tree()
 
     print "Copying WrapITK files..."
+    sys.stdout.flush()
     for f in wrapitk_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
 
     print "Creating list of ITK shared objects..."
+    sys.stdout.flush()
     itk_so_tree = get_itk_so_tree()
 
     print "Copying ITK shared objects..."
+    sys.stdout.flush()
     for f in itk_so_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
     
-        
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print "Specify itk_kit dir as argument."
+
+    else:
+        install(sys.argv[1])
     

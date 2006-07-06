@@ -1,3 +1,8 @@
+# RESTRUCTURE:
+# * remove_binaries (startswith and contains)
+# * remove_pure (startswith and contains)
+
+
 import os
 import fnmatch
 import sys
@@ -90,6 +95,8 @@ else:
     # make sure removeNames is lowercase
     removeNames = [i.lower() for i in removeNames]
 
+# global removes: we want to include this file so that the user can edit it
+removeNames += ['defaults.py']
 
 # we have to remove these nasty built-in dependencies EARLY in the game
 dd = config['EXE_dependencies']
@@ -152,6 +159,9 @@ numpy_tree = Tree(
     prefix=os.path.join('module_kits/numpy_kit/numpy'), 
     excludes=['*.py', 'doc', 'docs'])
 
+# and some miscellaneous files
+misc_tree = [('defaults.py', '%s/defaults.py' % (APP_DIR,), 'DATA')]
+
 ##########################################################################
 
 SUPPORT_DIR = os.path.join(INSTALLER_DIR, 'support')
@@ -163,22 +173,47 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
              hookspath=[os.path.join(APP_DIR, 'installer/hooks/')])
 
 ######################################################################
-# now we're going to remove modules. and module_kits. from a.pure
+# 1. now we're going to remove modules. and module_kits. from a.pure
 # because we ship these directories as they are (see modules_tree and
-# module_kits_tree).  we also remove all occurrences of numpy from
+# module_kits_tree).  
+# 2. we also remove all occurrences of numpy from
 # a.pure (pure python modules) and from a.binaries (libraries and such)
 # because we ship this in a separate Tree, see numpy_tree.
+# 3. we remove Numeric stuff as well; on my Ubuntu system this gets included
+# for some strange reason
+
+late_removes = ['numpy', 'numarry', 'Numeric']
 
 for i in range(len(a.pure)-1, -1, -1):
+    remove_flag = False
     mn = a.pure[i][0]
-    if mn.startswith('modules.') or mn.startswith('module_kits') or \
-           mn.find('numpy') >= 0:
-        
+    src = a.pure[i][1]
+    
+    if mn.startswith('modules.') or mn.startswith('module_kits'):
+        remove_flag = True
+
+    else:
+        for pr in late_removes:
+            if src.find(pr) >= 0:
+                remove_flag = True
+                break
+
+    if remove_flag:
+        print a.pure[i]
         del a.pure[i]
 
 for i in range(len(a.binaries)-1, -1, -1):
+    remove_flag = False
     mn = a.binaries[i][0]
-    if mn.find('numpy') >= 0:
+    src = a.pure[i][1]
+
+    for pr in late_removes:
+        if src.find(pr) >= 0:
+            remove_flag = True
+            break
+    
+    if remove_flag:
+        print a.binaries[i]
         del a.binaries[i]
 
 ######################################################################    
@@ -206,11 +241,16 @@ exe = EXE(pyz,
 # we do it this way so that removeLibs doesn't have to be case-sensitive
 # first add together everything that we want to ship
 allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
-              mpl_data_dir + numpy_tree + \
-              extraLibs + segTree + snipTree + dataTree + docsTree
+    mpl_data_dir + numpy_tree + \
+    extraLibs + segTree + snipTree + dataTree + docsTree
 
-# make new list of 3-element tuples of shipable things
+# make new list of 3-element tuples of shipable things, removing things
 binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]
+
+# there are some files in misc_tree which we remove, in the step
+# above, but which should be added to the resultant package as loose
+# files, so we add it here after the great removal
+binaries = binaries + misc_tree
 
 coll = COLLECT(exe,
                binaries,
@@ -218,8 +258,8 @@ coll = COLLECT(exe,
                name='distdevide')
 
 # now do custom stuff afterwards
-if 'itk_kit' in module_kit_list:
-    import wrapitk_tree
-    wrapitk_tree.install(os.path.join(APP_DIR,'module_kits/itk_kit'))
-    allBinaries += wrapitk_tree.get_wrapitk_tree()
+#if 'itk_kit' in module_kit_list:
+#    import wrapitk_tree
+#    wrapitk_tree.install(os.path.join(APP_DIR,'module_kits/itk_kit'))
+#    allBinaries += wrapitk_tree.get_wrapitk_tree()
 

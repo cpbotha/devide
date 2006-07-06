@@ -21,9 +21,9 @@ import defaults
 
 # get a list of module kits
 mkl = module_kits.module_kit_list[:] + ['numpy_kit']
-# remove the no_kits
-# explicitly remove itk_kit, it's handled completely separately by
-# the installer spec file
+# 1. remove the no_kits
+# 2. explicitly remove itk_kit, it's handled completely separately by
+# the makePackage.sh script file
 mkl = [i for i in mkl if i not in defaults.NOKITS and i != 'itk_kit']
 
 # other imports
@@ -35,20 +35,6 @@ other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
 # slice3dVWR is temporary, just to see if we can get it going this way.
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
-
-hiddenimports += [ranlib]
-
-# if 'module_kits.itk_kit' in hiddenimports:
-#     hiddenimports += ['itk']
-
-#     print "Setting WrapITK LazyLoading to FALSE ============="
-#     import itkConfig
-#     itkConfig.LazyLoading = False
-
-#     import itkBase
-#     hiddenimports.extend(itkBase.known_modules)
-
-#     hiddenimports.extend(['%sPython' % (i,) for i in itkBase.known_modules])
 
 print "[*] hook-moduleManager.py - HIDDENIMPORTS"
 print hiddenimports
