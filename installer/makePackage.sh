@@ -50,7 +50,9 @@ cp devide.exe.manifest distdevide/
 # http://forums.amd.com/index.php?showtopic=42055
 # http://blogs.msdn.com/larryosterman/archive/2004/07/06/174516.aspx
 cd distdevide
-rebase -b 0x60000000 -e 0x1000000 *.dll *.pyd -v
+find -name "*.dll" > dll_list
+find -name "*.pyd" >> dll_list
+rebase -b 0x60000000 -e 0x1000000 @dll_list -v
 cd ..
 
 fi
