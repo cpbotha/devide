@@ -36,8 +36,8 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
 
 
         # setup the pipeline
-        self._canny = itk.itkCannyEdgeDetectionImageFilterF3F3_New()
-
+        if3 = itk.Image[itk.F, 3]
+        self._canny = itk.CannyEdgeDetectionImageFilter[if3, if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._canny, 'itkCannyEdgeDetectionImageFilter',
