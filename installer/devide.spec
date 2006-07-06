@@ -5,14 +5,36 @@
 
 import os
 import fnmatch
+import re
 import sys
 
-def remove(name, removeNames):
+def helper_remove_start(name, remove_names):
     """Helper function used to remove libraries from list.
+
+    Returns true of name starts with anything from remove_names.
     """
     
-    for r in removeNames:
+    for r in remove_names:
         if name.startswith(r):
+            return True
+
+    return False
+
+def helper_remove_finds(name, remove_finds):
+    for r in remove_finds:
+        if name.find(r) >= 0:
+            return True
+
+    return False
+
+def helper_remove_regexp(name, remove_regexps):
+    """Helper function to remove things from list.
+
+    Returns true if name matches any regexp in remove_regexps.
+    """
+
+    for r in remove_regexps:
+        if re.match(r, name) is not None:
             return True
 
     return False
@@ -30,8 +52,8 @@ if sys.platform.startswith('win'):
     # go in the installation directory with the other DLLs, see:
     # http://msdn.microsoft.com/library/default.asp?url=/library/en-us/
     # vclib/html/_crt_c_run.2d.time_libraries.asp
-    removeNames = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
-                   'netapi32.dll', 'opengl32.dll']
+    remove_binaries = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
+                       'netapi32.dll', 'opengl32.dll']
     
 else:
     INSTALLER_DIR = '/home/cpbotha/build/Installer'
@@ -77,7 +99,7 @@ else:
     ##################################################################
                  
     # these libs will be removed from the package
-    removeNames = ['libdl.so', 'libutil.so', 'libm.so', 'libc.so',
+    remove_binaries = ['libdl.so', 'libutil.so', 'libm.so', 'libc.so',
                    'libGLU.so', 'libGL.so', 'libGLcore.so', 
                    'libnvidia-tls.so',
                    'ld-linux-x86-64.so.2', 'libgcc_s.so',
@@ -92,15 +114,16 @@ else:
                    'libatk', 'libgtk', 'libgdk',
                    'libglib', 'libgmodule', 'libgobject', 'libgthread']
 
-    # make sure removeNames is lowercase
-    removeNames = [i.lower() for i in removeNames]
+    # make sure remove_binaries is lowercase
+    remove_binaries = [i.lower() for i in remove_binaries]
 
 # global removes: we want to include this file so that the user can edit it
-removeNames += ['defaults.py']
+remove_binaries += ['defaults.py']
 
 # we have to remove these nasty built-in dependencies EARLY in the game
 dd = config['EXE_dependencies']
-newdd = [i for i in dd if not remove(i[0].lower(), removeNames)]
+newdd = [i for i in dd
+         if not helper_remove_start(i[0].lower(), remove_binaries)]
 config['EXE_dependencies'] = newdd
 
 
@@ -173,50 +196,33 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
              hookspath=[os.path.join(APP_DIR, 'installer/hooks/')])
 
 ######################################################################
-# 1. now we're going to remove modules. and module_kits. from a.pure
-# because we ship these directories as they are (see modules_tree and
-# module_kits_tree).  
-# 2. we also remove all occurrences of numpy from
-# a.pure (pure python modules) and from a.binaries (libraries and such)
-# because we ship this in a separate Tree, see numpy_tree.
-# 3. we remove Numeric stuff as well; on my Ubuntu system this gets included
-# for some strange reason
-
-late_removes = ['numpy', 'numarry', 'Numeric']
+# sanitise a.pure
+remove_pure_finds = ['numpy', 'numarray', 'Numeric']
+remove_pure_starts = ['modules.', 'module_kits']
 
 for i in range(len(a.pure)-1, -1, -1):
-    remove_flag = False
-    mn = a.pure[i][0]
-    src = a.pure[i][1]
-    
-    if mn.startswith('modules.') or mn.startswith('module_kits'):
-        remove_flag = True
-
-    else:
-        for pr in late_removes:
-            if src.find(pr) >= 0:
-                remove_flag = True
-                break
-
-    if remove_flag:
-        print a.pure[i]
+    if helper_remove_finds(a.pure[i][1], remove_pure_finds) or \
+       helper_remove_start(a.pure[i][0], remove_pure_starts):
         del a.pure[i]
+        
+        
+#print '===== NEW_PURE = %s' % (a.pure,)
+
+######################################################################
+# sanitise a.binaries
+
+# we want to remove all of these from the binaries as well (numpy is
+# separately packaged in its own tree)
+remove_binary_finds = ['numpy', 'numarray', 'Numeric']
 
 for i in range(len(a.binaries)-1, -1, -1):
-    remove_flag = False
-    mn = a.binaries[i][0]
-    src = a.pure[i][1]
-
-    for pr in late_removes:
-        if src.find(pr) >= 0:
-            remove_flag = True
-            break
-    
-    if remove_flag:
-        print a.binaries[i]
+    if helper_remove_finds(a.binaries[i][1], remove_binaries) or \
+       helper_remove_start(a.binaries[i][0], remove_binary_finds):
         del a.binaries[i]
 
-######################################################################    
+#print "===== NEW_BINARIES = %s" % (a.binaries,)
+
+######################################################################
 
 # create the compressed archive with all the other pyc files
 # will be integrated with EXE archive
@@ -238,22 +244,14 @@ exe = EXE(pyz,
           strip=0,
           console=1 )
 
-# we do it this way so that removeLibs doesn't have to be case-sensitive
-# first add together everything that we want to ship
-allBinaries = a.binaries + modules_tree + module_kits_tree + vpli + \
+
+all_binaries = a.binaries + modules_tree + module_kits_tree + vpli + \
     mpl_data_dir + numpy_tree + \
-    extraLibs + segTree + snipTree + dataTree + docsTree
+    extraLibs + segTree + snipTree + dataTree + docsTree + misc_tree
 
-# make new list of 3-element tuples of shipable things, removing things
-binaries = [i for i in allBinaries if not remove(i[0].lower(), removeNames)]
-
-# there are some files in misc_tree which we remove, in the step
-# above, but which should be added to the resultant package as loose
-# files, so we add it here after the great removal
-binaries = binaries + misc_tree
 
 coll = COLLECT(exe,
-               binaries,
+               all_binaries,
                strip=0,
                name='distdevide')
 
