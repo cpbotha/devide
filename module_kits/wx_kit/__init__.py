@@ -21,6 +21,8 @@ def init(theModuleManager):
 
     import dvedit_window
     import dvshell
+    import python_shell_mixin
+    import python_shell
 
     # build up VERSION
     global VERSION
