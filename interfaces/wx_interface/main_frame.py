@@ -241,7 +241,6 @@ class MainWXFrame(wx.Frame):
         self.fileExportAsDOTId = wx.NewId()
         self.fileExportSelectedAsDOTId = wx.NewId()
         self.fileExitId = wx.NewId()
-        self.windowMainID = wx.NewId()
         self.window_python_shell_id = wx.NewId()
         self.helpShowHelpId = wx.NewId()
         self.helpAboutId = wx.NewId()
@@ -297,9 +296,6 @@ class MainWXFrame(wx.Frame):
             "Restore default perspective / window configuration.",
             wx.ITEM_NORMAL)
         
-        window_menu.Append(
-            self.windowMainID, "&Main window", "Show the DeVIDE main window.",
-            wx.ITEM_NORMAL)
         window_menu.Append(self.window_python_shell_id, "&Python Shell",
                                 "Show the Python Shell interface.",
                                 wx.ITEM_NORMAL)

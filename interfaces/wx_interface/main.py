@@ -20,6 +20,8 @@ class WXInterface(wx.App):
 
     An alternative view would be that the GraphEditor is only concerned with
     the actual network editor canvas.  As I said, I'm still working on this.
+
+    NOTE: I'm leaning towards the latter approach.
     """
     
     def __init__(self, devide_app):
@@ -307,13 +309,6 @@ class WXInterface(wx.App):
 
     def _handlerMenuPythonShell(self, event):
         self.start_python_shell()
-
-    def showMainWindow(self):
-        """Make the main window visible and bring it to the front.
-        """
-
-        self._main_frame.Show(True)
-        self._main_frame.Raise()
 
     def _windowIconizeAllChildren(self):
         children = self._main_frame.GetChildren()

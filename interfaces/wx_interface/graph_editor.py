@@ -205,9 +205,6 @@ class GraphEditor:
 #                     mf.network_unblockmodules_id,
 #                     self._handler_unblockmodules)
 
-        wx.EVT_MENU(mf, mf.windowMainID,
-                 self._handlerWindowMain)
-
         wx.EVT_MENU(mf,
                     mf.helpShowHelpId,
                     self._handlerHelpShowHelp)
@@ -1285,10 +1282,6 @@ class GraphEditor:
                 self._selected_glyphs.getSelectedGlyphs())
         
             self._deleteSelectedGlyphs()
-
-    def _handlerWindowMain(self, event):
-        # show and raise the main window
-        self._interface.showMainWindow()
 
     def hide(self):
         self._interface._main_frame.Show(False)
