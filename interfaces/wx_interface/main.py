@@ -157,10 +157,12 @@ class WXInterface(wx.App):
             self._python_shell = PythonShell(self.getMainWindow(),
                                             'Main DeVIDE Python Introspection',
                                             self.getApplicationIcon(),
-                                            self._devide_app.get_appdir())
-            self._python_shell.inject_locals({'devide_app' : self._devide_app})
+                                            self._devide_app)
+            self._python_shell.inject_locals({'devide_app' : self._devide_app,
+                                              'obj' : self._python_shell})
             self._python_shell.set_statusbar_message(
-                "'devide_app' is bound to the main app class.")
+                "'devide_app' is bound to the main app class, "
+                "'obj' to the shell.")
         else:
             self._python_shell.show()
 

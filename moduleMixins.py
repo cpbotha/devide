@@ -49,7 +49,7 @@ class introspectModuleMixin(object):
                 parentWindow,
                 'Introspecting %s' % (objDescription,),
                 icon,
-                self._moduleManager.getAppDir())
+                self._moduleManager._devide_app)
             
             self._python_shells[obj].inject_locals({'obj' : obj})
             self._python_shells[obj].set_statusbar_message(

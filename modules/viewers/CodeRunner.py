@@ -41,7 +41,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
 
         self._create_view_frame()
 
-        PythonShellMixin.__init__(self, self._view_frame.shell_window)
+        PythonShellMixin.__init__(self, self._view_frame.shell_window,
+                                  module_manager)
 
         moduleUtils.createECASButtons(self, self._view_frame,
                                       self._view_frame.view_frame_panel,

@@ -169,7 +169,8 @@ class PythonShell(PythonShellMixin):
         self._frame.SetTitle(title)
 
         # call ctor of mixin
-        PythonShellMixin.__init__(self, self._frame.shell_window)
+        PythonShellMixin.__init__(self, self._frame.shell_window,
+                                  self._devide_app.get_module_manager())
 
         self._interp = self._frame.shell_window.interp
 
@@ -273,11 +274,14 @@ class PythonShell(PythonShellMixin):
 
         try:
             if not current_tab.filename:
+                # returns None if use cancelled  from file save dialog
                 filename = self._saveas_python_file(text, self._frame)
                 current_tab.filename = filename
                 
             else:
                 self._save_python_file(current_tab.filename, text)
+                # we do this
+                filename = current_tab.filename
 
         except IOError, e:
             self._devide_app.log_error_with_exception(
@@ -287,6 +291,7 @@ class PythonShell(PythonShellMixin):
         else:
             if filename is not None:
                 self._tabs.set_saved(current_tab.filename)
+                self.set_statusbar_message('Wrote %s to disc.' % (filename,))
 
     def _handler_file_saveas(self, event):
         text = self._tabs.get_current_text()

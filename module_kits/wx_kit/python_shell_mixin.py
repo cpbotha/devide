@@ -4,10 +4,11 @@ import wx
 
 class PythonShellMixin:
 
-    def __init__(self, shell_window):
+    def __init__(self, shell_window, module_manager):
         # init close handlers
         self.close_handlers = []
         self.shell_window = shell_window
+        self.module_manager = module_manager
 
     def close(self, exception_printer):
         for ch in self.close_handlers:
@@ -117,7 +118,7 @@ class PythonShellMixin:
         vtk = vtk_kit.vtk
 
         def get_render_info(instance_name):
-            instance = self._moduleManager.get_instance(instance_name)
+            instance = self.module_manager.get_instance(instance_name)
 
             if instance is None:
                 return None
