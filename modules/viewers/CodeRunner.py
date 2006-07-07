@@ -64,8 +64,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
             {'obj' : self})
 
         # initialise macro packages
-        self.support_vtk()
-        self.support_matplotlib()
+        self.support_vtk(self.interp)
+        self.support_matplotlib(self.interp)
 
         self.configToLogic()
         self.logicToConfig()
@@ -75,7 +75,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
 
     def close(self):
         # parameter is exception_printer method
-        PythonShellMixin.close(self._moduleManager.log_error_with_exception)
+        PythonShellMixin.close(self,
+                               self._moduleManager.log_error_with_exception)
         
         for i in range(len(self.getInputDescriptions())):
             self.setInput(i, None)
@@ -195,7 +196,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
     def _handler_file_save(self, evt):
         try:
             cew = self._get_current_editwindow()
-            filename = self._saveas_python_file(cew.GetText())
+            filename = self._saveas_python_file(cew.GetText(),
+                                                self._view_frame)
             if filename is not None:
                 self._view_frame.statusbar.SetStatusText(
                     'Saved current edit to %s.' % (filename,))
