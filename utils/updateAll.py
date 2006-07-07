@@ -34,7 +34,7 @@ else:
     buildCommand = 'devenv %s /project ALL_BUILD /projectconfig ' \
                    '"RelWithDebInfo|Win32" /build RelWithDebInfo'
     svn_update_command = 'c:/apps/subversion/bin/svn update'
-    cmake_update_command = '"c:\\program files\\cmake 2.2\\bin\\cmake" .'
+    cmake_update_command = '"c:\\program files\\cmake 2.4\\bin\\cmake" .'
 
 def standardUpdate(source):
     print '\nSVN updating %s\n' % (source,)

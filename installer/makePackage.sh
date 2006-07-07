@@ -10,10 +10,6 @@ find ../ -name "*.pyc" -exec rm {} \;
 find ../ -name "*~" -exec rm {} \;
 find ../ -name "#*#" -exec rm {} \;
 
-# remove build directories so that we are assured of a clean start
-rm -rf distdevide
-rm -rf builddevide
-
 # run the McMillan Installer
 if [ `uname` == Linux ]; then
 
@@ -40,19 +36,5 @@ $INSTALLER devide.spec
 # (we are in the installer directory)
 cp devide.exe.manifest distdevide/
 
-# and now use rebase.exe to rebase all the DLLs for faster loading,
-# improved memory use and better sharing of DLLs
-# see:
-# http://www.codeproject.com/dll/RebaseDll.asp
-# http://msdn.microsoft.com/library/default.asp?url=/library/en-us/tools/tools/rebase.asp
-# http://www.ddj.com/dept/windows/184416922
-# http://discuss.fogcreek.com/joelonsoftware3/default.asp?cmd=show&ixPost=97146&ixReplies=7
-# http://forums.amd.com/index.php?showtopic=42055
-# http://blogs.msdn.com/larryosterman/archive/2004/07/06/174516.aspx
-cd distdevide
-find -name "*.dll" > dll_list
-find -name "*.pyd" >> dll_list
-rebase -b 0x60000000 -e 0x1000000 @dll_list -v
-cd ..
 
 fi
