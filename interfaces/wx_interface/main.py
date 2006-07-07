@@ -30,7 +30,7 @@ class WXInterface(wx.App):
         wx.App.__init__(self, 0)
 
         self._graph_editor = None
-        self._pythonShell = None
+        self._python_shell = None
         self._helpClass = None
 
     def OnInit(self):
@@ -53,8 +53,8 @@ class WXInterface(wx.App):
         
         #wx.EVT_MENU(self._main_frame, self._main_frame.windowGraphEditorId,
         #           self._handlerMenuGraphEditor)
-        #wx.EVT_MENU(self._main_frame, self._main_frame.windowPythonShellId,
-        #            self._handlerMenuPythonShell)
+        wx.EVT_MENU(self._main_frame, self._main_frame.window_python_shell_id,
+                    self._handlerMenuPythonShell)
 
         #wx.EVT_MENU(self._main_frame, self._main_frame.windowMinimiseChildrenId,
         #            lambda e: self._windowIconizeAllChildren())
@@ -114,10 +114,13 @@ class WXInterface(wx.App):
         can't do their thing.
         """
     
-        global GraphEditor, pythonShell, helpClass
+        global GraphEditor, PythonShell, helpClass
     
         from graph_editor import GraphEditor
-        from pythonShell import pythonShell
+
+        import module_kits
+        from module_kits.wx_kit.python_shell import PythonShell
+
         from helpClass import helpClass
 
         self.startGraphEditor()
@@ -147,17 +150,17 @@ class WXInterface(wx.App):
         self._startHelpClass()
         self._helpClass.show()
 
-    def startPythonShell(self):
-        if self._pythonShell == None:
-            self._pythonShell = pythonShell(self.getMainWindow(),
+    def start_python_shell(self):
+        if self._python_shell == None:
+            self._python_shell = PythonShell(self.getMainWindow(),
                                             'Main DeVIDE Python Introspection',
                                             self.getApplicationIcon(),
                                             self._devide_app.get_appdir())
-            self._pythonShell.injectLocals({'devide_app' : self._devide_app})
-            self._pythonShell.setStatusBarMessage(
+            self._python_shell.inject_locals({'devide_app' : self._devide_app})
+            self._python_shell.set_status_bar_message(
                 "'devide_app' is bound to the main app class.")
         else:
-            self._pythonShell.show()
+            self._python_shell.show()
 
     def _startHelpClass(self):
         if self._helpClass == None:
@@ -303,7 +306,7 @@ class WXInterface(wx.App):
         self.startGraphEditor()
 
     def _handlerMenuPythonShell(self, event):
-        self.startPythonShell()
+        self.start_python_shell()
 
     def showMainWindow(self):
         """Make the main window visible and bring it to the front.

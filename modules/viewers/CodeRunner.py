@@ -20,6 +20,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
+
         self.inputs = [None] * NUMBER_OF_INPUTS
         self.outputs = [None] * NUMBER_OF_OUTPUTS
 
@@ -39,6 +40,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         self._md5_setup_src = ''
 
         self._create_view_frame()
+
+        PythonShellMixin.__init__(self, self._view_frame.shell_window)
 
         moduleUtils.createECASButtons(self, self._view_frame,
                                       self._view_frame.view_frame_panel,
@@ -60,9 +63,6 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         self.interp.locals.update(
             {'obj' : self})
 
-        # init close handlers
-        self.close_handlers = []
-
         # initialise macro packages
         self.support_vtk()
         self.support_matplotlib()
@@ -74,13 +74,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         self.view()
 
     def close(self):
-        for ch in self.close_handlers:
-            try:
-                ch()
-            except Exception, e:
-                self._moduleManager.log_error_with_exception(
-                    'Exception during CodeRunner close_handlers: %s' %
-                    (str(e),))
+        # parameter is exception_printer method
+        PythonShellMixin.close(self._moduleManager.log_error_with_exception)
         
         for i in range(len(self.getInputDescriptions())):
             self.setInput(i, None)
@@ -183,7 +178,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
 
     def _handler_file_open(self, evt):
         try:
-            filename, t = self._open_python_file()
+            filename, t = self._open_python_file(self._view_frame)
                 
         except IOError, e:
             self._moduleManager.log_error_with_exception(
@@ -200,7 +195,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
     def _handler_file_save(self, evt):
         try:
             cew = self._get_current_editwindow()
-            filename = self._save_python_file(cew.GetText())
+            filename = self._saveas_python_file(cew.GetText())
             if filename is not None:
                 self._view_frame.statusbar.SetStatusText(
                     'Saved current edit to %s.' % (filename,))
@@ -219,15 +214,11 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
                 self._view_frame.setup_editwindow,
                 self._view_frame.execute_editwindow][sel]
 
-    def output_text(self, text):
-        self._view_frame.shell_window.write(text + '\n')
-        self._view_frame.shell_window.prompt()
-
     def run_current_edit(self):
         cew = self._get_current_editwindow()
         text = cew.GetText()
 
-        self._run_source(text, self._view_frame.shell_window)
+        self._run_source(text)
 
         self._view_frame.statusbar.SetStatusText(
             'Current edit run completed.')

@@ -15,7 +15,8 @@ import wx.lib.masked
 
 import resources.python.filenameViewModuleMixinFrame
 import re
-from pythonShell import pythonShell
+import module_kits
+from module_kits.wx_kit.python_shell import PythonShell
 
 class introspectModuleMixin(object):
     """Mixin to use for modules that want to make use of the vtkPipeline

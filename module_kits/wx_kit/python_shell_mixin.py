@@ -4,9 +4,25 @@ import wx
 
 class PythonShellMixin:
 
-    def _open_python_file(self):
+    def __init__(self, shell_window):
+        # init close handlers
+        self.close_handlers = []
+        self.shell_window = shell_window
+
+    def close(self, exception_printer):
+        for ch in self.close_handlers:
+            try:
+                ch()
+            except Exception, e:
+                exception_printer(
+                    'Exception during CodeRunner close_handlers: %s' %
+                    (str(e),))
+
+        del self.shell_window
+
+    def _open_python_file(self, parent_window):
         fd = wx.FileDialog(
-            self._view_frame,
+            parent_window,
             'Select file to open into current edit',
             wildcard='*.py', style=wx.OPEN)
 
@@ -28,24 +44,27 @@ class PythonShellMixin:
         else:
             return (None, None)
 
-    def _save_python_file(self, text):
+    def _save_python_file(self, filename, text):
+        f = open(filename, 'w')
+        f.write(text)
+        f.close()
+        
+    def _saveas_python_file(self, text, parent_window):
         fd = wx.FileDialog(
-            self._view_frame,
+            parent_window,
             'Select filename to save current edit to',
             wildcard='*.py', style=wx.SAVE)
 
         if fd.ShowModal() == wx.ID_OK:
             filename = fd.GetPath()
-            
-            f = open(filename, 'w')
-            f.write(text)
-            f.close()
+
+            self._save_python_file(filename, text)
 
             return filename
         
         return None
                 
-    def _run_source(self, text, shell_window):
+    def _run_source(self, text):
         """Compile and run the source given in text in the shell interpreter's
         local namespace.
 
@@ -61,7 +80,7 @@ class PythonShellMixin:
         text = text.replace('\r\n', '\n')
         text = text.replace('\r', '\n')
         
-        interp = shell_window.interp
+        interp = self.shell_window.interp
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         sys.stdin, sys.stdout, sys.stderr = \
                    interp.stdin, interp.stdout, interp.stderr
@@ -73,15 +92,19 @@ class PythonShellMixin:
             interp, text, '<input>', 'exec')
 
         # make sure the user can type again
-        shell_window.prompt()
+        self.shell_window.prompt()
 
         sys.stdin = stdin
         sys.stdout = stdout
         sys.stderr = stderr
 
         return more
+
+    def output_text(self, text):
+        self.shell_window.write(text + '\n')
+        self.shell_window.prompt()
     
-    def support_vtk(self):
+    def support_vtk(self, interp):
         if hasattr(self, 'vtk_renderwindows'):
             return
 
@@ -115,12 +138,12 @@ class PythonShellMixin:
         new_dict = {'vtk' : vtk,
                     'vtk_get_render_info' : get_render_info}
 
-        self.interp.locals.update(new_dict)
+        interp.locals.update(new_dict)
         self.__dict__.update(new_dict)
 
         self.output_text('VTK support loaded.')
 
-    def support_matplotlib(self):
+    def support_matplotlib(self, interp):
         if hasattr(self, 'mpl_figure_handles'):
             return
 
@@ -168,7 +191,7 @@ class PythonShellMixin:
                     'mpl_new_figure' : mpl_new_figure,
                     'mpl_close_figure' : mpl_close_figure}
         
-        self.interp.locals.update(new_dict)
+        interp.locals.update(new_dict)
         self.__dict__.update(new_dict)
 
         self.output_text('matplotlib support loaded.')
