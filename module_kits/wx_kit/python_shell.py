@@ -3,6 +3,7 @@
 # window for interacting with the python interpreter during execution
 
 import os
+import sys
 import module_kits.wx_kit
 from module_kits.wx_kit.python_shell_mixin import PythonShellMixin
 import wx
@@ -307,7 +308,7 @@ class PythonShell(PythonShellMixin):
         if t is not None:
             self._run_source(t)
 
-        self.set_status_bar_message('Current run completed.')
+        self.set_statusbar_message('Current run completed.')
 
 
     def _handlerLoadSnippet(self, event):
@@ -365,7 +366,7 @@ class PythonShell(PythonShellMixin):
         self._psFrame.pyShell.redirectStdin(False)
 
 
-    def set_status_bar_message(self, message):
+    def set_statusbar_message(self, message):
         self._frame.statusbar.SetStatusText(message)
 
 

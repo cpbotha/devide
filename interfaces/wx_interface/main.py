@@ -159,7 +159,7 @@ class WXInterface(wx.App):
                                             self.getApplicationIcon(),
                                             self._devide_app.get_appdir())
             self._python_shell.inject_locals({'devide_app' : self._devide_app})
-            self._python_shell.set_status_bar_message(
+            self._python_shell.set_statusbar_message(
                 "'devide_app' is bound to the main app class.")
         else:
             self._python_shell.show()

@@ -38,31 +38,31 @@ class introspectModuleMixin(object):
         bring the pertinent window to the top.
         """
 
-        if not hasattr(self, '_pythonShells'):
-            self._pythonShells = {}
+        if not hasattr(self, '_python_shells'):
+            self._python_shells = {}
 
-        if obj not in self._pythonShells:
+        if obj not in self._python_shells:
             icon = moduleUtils.getModuleIcon()
 
             
-            self._pythonShells[obj] = pythonShell(
+            self._python_shells[obj] = PythonShell(
                 parentWindow,
                 'Introspecting %s' % (objDescription,),
                 icon,
                 self._moduleManager.getAppDir())
             
-            self._pythonShells[obj].injectLocals({'obj' : obj})
-            self._pythonShells[obj].setStatusBarMessage(
+            self._python_shells[obj].inject_locals({'obj' : obj})
+            self._python_shells[obj].set_statusbar_message(
                 "'obj' is bound to the introspected object")
 
-        self._pythonShells[obj].show()
+        self._python_shells[obj].show()
 
     def closeMiscObjectConfigure(self):
-        if hasattr(self, '_pythonShells'):
-            for pythonShell in self._pythonShells.values():
+        if hasattr(self, '_python_shells'):
+            for pythonShell in self._python_shells.values():
                 pythonShell.close()
 
-            self._pythonShells.clear()
+            self._python_shells.clear()
             
 
     def vtkObjectConfigure(self, parent, renwin, vtk_obj):
