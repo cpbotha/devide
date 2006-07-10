@@ -4,7 +4,6 @@ import itk
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import vtk
-import ConnectVTKITKPython as CVIPy
 
 class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
     """Convert ITK 3D unsigned long data to VTK.
@@ -16,18 +15,11 @@ class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
-        self._itkExporter = itk.itkVTKImageExportUL3_New()
-
-        # setup the pipeline
-        self._vtkImporter = vtk.vtkImageImport()
-
-        CVIPy.ConnectITKUL3ToVTK(
-            self._itkExporter.GetPointer(), self._vtkImporter)
+        self._itk2vtk = itk.ImageToVTKImageFilter[itk.Image[itk.UL, 3]].New()
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self,
-             'itkVTKImageExportUL3' : self._itkExporter,
-             'vtkImageImport' : self._vtkImporter})
+             'ImageToVTKImageFilter' : self._itk2vtk})
 
         self.configToLogic()
         self.logicToConfig()
@@ -45,34 +37,30 @@ class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
 
         moduleBase.close(self)
 
-        del self._itkExporter
-        del self._vtkImporter
+        del self._itk2vtk
 
     def executeModule(self):
         # due to event-driven vs. demand-driven issues, we have to make
         # sure in this converter that ALL data goes through.  if we don't
         # segfault fun ensues.
-        o = self._vtkImporter.GetOutput()
-        o.UpdateInformation()
-        o.SetUpdateExtentToWholeExtent()
-        o.Update()
+        #o = self._vtkImporter.GetOutput()
+        #o.UpdateInformation()
+        #o.SetUpdateExtentToWholeExtent()
+        #o.Update()
+
+        self._itk2vtk.Update()
 
     def getInputDescriptions(self):
         return ('ITK Image (3D, float)',)        
 
     def setInput(self, idx, inputStream):
-        self._itkExporter.SetInput(inputStream)
-        if not inputStream:
-            # if the inputStream is NULL, we make sure that the output is empty
-            self._vtkImporter.GetOutput().SetWholeExtent((0,0,0,0,0,0))
-            self._vtkImporter.GetOutput().SetExtent((0,0,0,0,0,0))
-            self._vtkImporter.GetOutput().SetUpdateExtent((0,0,0,0,0,0))            
+        self._itk2vtk.SetInput(inputStream)
 
     def getOutputDescriptions(self):
         return ('VTK Image Data',)
 
     def getOutput(self, idx):
-        return self._vtkImporter.GetOutput()
+        return self._itk2vtk.GetOutput()
 
     def logicToConfig(self):
         pass
@@ -85,11 +73,7 @@ class ITKUL3toVTK(noConfigModuleMixin, moduleBase):
 
     def configToView(self):
         pass
-    
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
+
 
         
             
