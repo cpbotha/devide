@@ -8,9 +8,9 @@ class PythonShellTest(unittest.TestCase):
     def test_python_shell(self):
         """Test if PythonShell can be opened successfully.
         """
-        self._devide_app.get_interface()._handlerMenuPythonShell(None)
-        self.failUnless(self._devide_app.get_interface()._pythonShell.\
-                        _psFrame.IsShown())
+        self._devide_app.get_interface()._handler_menu_python_shell(None)
+        self.failUnless(self._devide_app.get_interface()._python_shell.\
+                        _frame.IsShown())
 
 
 class HelpContentsTest(unittest.TestCase):

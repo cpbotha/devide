@@ -22,6 +22,10 @@ class WXInterface(wx.App):
     the actual network editor canvas.  As I said, I'm still working on this.
 
     NOTE: I'm leaning towards the latter approach.
+    
+    A third approach would be to factor out a third class responsible for the
+    rest of the main UI.  Then we'd have: WXInterface, GraphEditor, 
+    MysteryClass.
     """
     
     def __init__(self, devide_app):
@@ -56,7 +60,7 @@ class WXInterface(wx.App):
         #wx.EVT_MENU(self._main_frame, self._main_frame.windowGraphEditorId,
         #           self._handlerMenuGraphEditor)
         wx.EVT_MENU(self._main_frame, self._main_frame.window_python_shell_id,
-                    self._handlerMenuPythonShell)
+                    self._handler_menu_python_shell)
 
         #wx.EVT_MENU(self._main_frame, self._main_frame.windowMinimiseChildrenId,
         #            lambda e: self._windowIconizeAllChildren())
@@ -103,10 +107,10 @@ class WXInterface(wx.App):
     def _handlerHelpContents(self, event):
         self.showHelp()
 
-    def _handlerTestingAllTests(self, event):
+    def _handler_test_all(self, event):
         import testing
         reload(testing)
-        dt = testing.devideTesting(self._devide_app)
+        dt = testing.DeVIDETesting(self._devide_app)
         dt.runAllTests()
 
     def handler_post_app_init(self):
@@ -125,7 +129,14 @@ class WXInterface(wx.App):
 
         from helpClass import helpClass
 
-        self.startGraphEditor()
+        self.start_graph_editor()
+        
+        # setup wx-based testing if necessary
+        if self._devide_app.main_config.test:
+            wx.EVT_TIMER(self, 999999, self._handler_test_all)
+            self.timer = wx.Timer(self, 999999)
+            self.timer.Start(150, True)
+            
 
     def quit(self):
         """Event handler for quit request.
@@ -170,7 +181,7 @@ class WXInterface(wx.App):
         if self._helpClass == None:
             self._helpClass = helpClass(self._devide_app.get_appdir())
 
-    def startGraphEditor(self):
+    def start_graph_editor(self):
         if self._graph_editor == None:
             self._graph_editor = GraphEditor(self, self._devide_app)
         else:
@@ -307,9 +318,9 @@ class WXInterface(wx.App):
         self.quit()
 
     def _handlerMenuGraphEditor(self, event):
-        self.startGraphEditor()
+        self.start_graph_editor()
 
-    def _handlerMenuPythonShell(self, event):
+    def _handler_menu_python_shell(self, event):
         self.start_python_shell()
 
     def _windowIconizeAllChildren(self):

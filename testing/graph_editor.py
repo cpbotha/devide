@@ -8,7 +8,10 @@ import unittest
 class GraphEditorTestBase(unittest.TestCase):
     def setUp(self):
         self._iface = self._devide_app.get_interface()
-        self._ge = self._iface._graphEditor
+        self._ge = self._iface._graph_editor
+        # the graph editor frame is now the main frame of the interface
+        self._ge_frame = self._iface._main_frame
+        
         
         # make sure the graphEditor is running
         self._iface._handlerMenuGraphEditor(None)
@@ -20,6 +23,7 @@ class GraphEditorTestBase(unittest.TestCase):
         self._ge.clearAllGlyphsFromCanvas()
         del self._ge
         del self._iface
+        del self._ge_frame
 
 class GraphEditorVolumeTestBase(GraphEditorTestBase):
     """Uses superQuadric, implicitToVolume and doubleThreshold to create
@@ -63,7 +67,7 @@ class GraphEditorVolumeTestBase(GraphEditorTestBase):
         ret = self._ge._connect(ivglyph, 0, dtglyph, 0)
 
         # redraw
-        self._ge._graphEditorFrame.canvas.redraw()
+        self._ge._interface._main_frame.canvas.redraw()
 
         # run the network
         self._ge._handler_execute_network(None)
@@ -83,7 +87,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         """graphEditor startup.
         """
         self.failUnless(
-           self._ge._graphEditorFrame.IsShown())
+           self._ge_frame.IsShown())
 
     def test_module_creation_deletion(self):
         """Creation of simple module and glyph.
@@ -130,7 +134,7 @@ class GraphEditorBasic(GraphEditorTestBase):
             10, 90, 'modules.viewers.slice3dVWR')
 
         ret = self._ge._connect(sqglyph, 1, svglyph, 0)
-        self._ge._graphEditorFrame.canvas.redraw()
+        self._ge_frame.canvas.redraw()
         
         self.failUnless(ret)
 
@@ -279,7 +283,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         self.failUnless(ret)        
         
         # redraw the canvas
-        self._ge._graphEditorFrame.canvas.redraw()
+        self._ge_frame.canvas.redraw()
 
         # execute the network
         self._ge._handler_execute_network(None)
@@ -313,6 +317,11 @@ def get_some_suite(devide_app):
     
 
 def get_suite(devide_app):
+    # only return this suite if wx_kit is available
+    mm = devide_app.get_module_manager()
+    if 'wx_kit' not in mm.module_kits.module_kit_list:
+        return None
+    
     graph_editor_suite = unittest.TestSuite()
 
     graph_editor_suite.addTest(create_geb_test('test_startup', devide_app))
@@ -331,6 +340,7 @@ def get_suite(devide_app):
 
     # only do this if the itk kit is available
     mm = devide_app.get_module_manager()
+    # module_kit_list is up to date with the actual module_kits that were imported
     if 'itk_kit' in mm.module_kits.module_kit_list:
         t = TestITKBasic('test_confidence_seed_connect')
         t._devide_app = devide_app

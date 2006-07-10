@@ -30,6 +30,7 @@ class MainConfigClass(object):
         self.nokits = defaults.NOKITS
         self.interface = 'wx'
         self.stereo = False
+        self.test = False
         
         self._parseCommandLine()
 
@@ -43,13 +44,14 @@ class MainConfigClass(object):
         print "--kits kit1,kit2           : Load the specified kits."
         print "--interface wx|pyro|xmlrpc : Load 'wx' or 'rpc' interface."
         print "--stereo                   : Allocate stereo visuals."
+        print "--test                     : Perform built-in unit testing."
 
     def _parseCommandLine(self):
         try:
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-kits=', 'kits=', 'stereo', 'interface='])
+                ['help', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test'])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -83,6 +85,9 @@ class MainConfigClass(object):
 
             elif o in ('--stereo',):
                 self.stereo = True
+
+            elif o in ('--test',):
+                self.test = True
 
 ############################################################################
 class DeVIDEApp:
