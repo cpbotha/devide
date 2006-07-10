@@ -6,22 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
-    """Performs demons registration on fixed and moving input images, returns
-    deformation field.
-    
-    The intensity difference threshold is absolute, so check the values in 
-    your datasets and adjust it accordingly.  For example, if you find that
-    two regions should match but you see intensity differences of 50 (e.g. 
-    in a CT dataset), the threshold should be approximately 60.
-
-    NOTE: remember to update help w.r.t. inverse direction of vectors in
-    deformation field.
-
-    Also read this thread:
-    http://public.kitware.com/pipermail/insight-users/2004-November/011002.html
-
-    $Revision: 1.6 $
-    """
     
     def __init__(self, moduleManager):
         
@@ -50,7 +34,7 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
         # matcher.SetInput(moving)
         # matcher.SetReferenceImage(fixed)
         
-        self._matcher = itk.itkHistogramMatchingImageFilterF3F3_New()
+        self._matcher = itk.HistogramMatchingImageFilter[if3,if3].New()
         self._matcher.SetNumberOfHistogramLevels(1024)
         self._matcher.SetNumberOfMatchPoints(7)
         self._matcher.ThresholdAtMeanIntensityOn()

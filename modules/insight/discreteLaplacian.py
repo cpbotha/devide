@@ -26,7 +26,8 @@ class discreteLaplacian(noConfigModuleMixin, moduleBase):
         noConfigModuleMixin.__init__(self)
 
         # setup the pipeline
-        self._laplacian = itk.itkLaplacianImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._laplacian = itk.LaplacianImageFilter[if3,if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._laplacian,

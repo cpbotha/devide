@@ -6,20 +6,19 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
-    """Calculates distance image of input image.
-
-    The input image can either contain marked objects or binary objects.
-    """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
         self._config.squared_distance = False
         self._config.binary_input = True
+        self._config.image_spacing = True
 
         configList = [
             ('Squared distance:', 'squared_distance', 'base:bool', 'checkbox',
              'Should the distance output be squared (faster) or true.'),
+            ('Use image spacing:', 'image_spacing', 'base:bool',
+             'checkbox', 'Use image spacing in distance calculation.'),
             ('Binary input:', 'binary_input', 'base:bool', 'checkbox',
              'Does the input contain marked objects, or binary (yes/no) '
              'objects.')]
@@ -32,7 +31,7 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
             imageF3, imageF3].New()
         
         # THIS HAS TO BE ON.  SO THERE.
-        self._dist_filter.SetUseImageSpacing(True)
+        #self._dist_filter.SetUseImageSpacing(True)
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._dist_filter, 'itkDanielssonDistanceMapImageFilter',
@@ -78,8 +77,10 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
     def configToLogic(self):
         self._dist_filter.SetInputIsBinary(self._config.binary_input)
         self._dist_filter.SetSquaredDistance(self._config.squared_distance)
+        self._dist_filter.SetUseImageSpacing(self._config.image_spacing)
 
     def logicToConfig(self):
         self._config.binary_input = self._dist_filter.GetInputIsBinary()
         self._config.squared_distance = self._dist_filter.GetSquaredDistance()
+        self._config._image_spacing = self._dist_filter.GetUseImageSpacing()
         

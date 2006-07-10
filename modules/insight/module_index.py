@@ -50,14 +50,39 @@ class curvatureAnisotropicDiffusion:
 class curvatureFlowDenoising:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Curvature-driven image denoising.
+
+    This uses curvature-based level set techniques to smooth
+    homogeneous regions whilst retaining boundary information.
+    """
+
 
 class DanielssonDistance:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Calculates distance image of input image.
+
+    The input image can either contain marked objects or binary objects.
+    """
 
 class demonsRegistration:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Performs demons registration on fixed and moving input images,
+    returns deformation field.
+    
+    The intensity difference threshold is absolute, so check the values in 
+    your datasets and adjust it accordingly.  For example, if you find that
+    two regions should match but you see intensity differences of 50 (e.g. 
+    in a CT dataset), the threshold should be approximately 60.
+
+    NOTE: remember to update help w.r.t. inverse direction of vectors in
+    deformation field.
+
+    Also read this thread:
+    http://public.kitware.com/pipermail/insight-users/2004-November/011002.html
+    """
+
 
 class discreteLaplacian:
     kits = ['itk_kit']

@@ -6,13 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
-    """Curvature-driven image denoising.
-
-    This uses curvature-based level set techniques to smooth
-    homogeneous regions whilst retaining boundary information.
-    
-    $Revision: 1.2 $
-    """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -33,7 +26,8 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
 
 
         # setup the pipeline
-        self._cfif = itk.itkCurvatureFlowImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._cfif = itk.CurvatureFlowImageFilter[if3, if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._cfif, 'itkCurvatureFlowImageFilter',
