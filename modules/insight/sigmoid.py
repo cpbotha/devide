@@ -6,13 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class sigmoid(scriptedConfigModuleMixin, moduleBase):
-    """Perform sigmoid transformation on all input voxels.
-
-    f(x) = (max - min) frac{1}{1 + exp(- frac{x - beta}{alpha})} + min
-
-    $Revision: 1.3 $
-    """
-    
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
@@ -33,7 +26,8 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
         
         scriptedConfigModuleMixin.__init__(self, configList)
 
-        self._sigmoid = itk.itkSigmoidImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._sigmoid = itk.SigmoidImageFilter[if3,if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._sigmoid,

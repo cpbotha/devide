@@ -46,7 +46,8 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
         self._inputPoints = None
         
         # setup the pipeline
-        self._nbhCIF = itk.itkNeighborhoodConnectedImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._nbhCIF = itk.NeighborhoodConnectedImageFilter[if3,if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._nbhCIF, 'itkNeighborhoodConnectedImageFilter',

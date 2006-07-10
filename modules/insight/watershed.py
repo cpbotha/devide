@@ -8,13 +8,6 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class watershed(scriptedConfigModuleMixin, moduleBase):
 
-    """Perform watershed segmentation on input.
-
-    Typically, the input will be the gradient magnitude image.  Often, data
-    is smoothed with one of the anisotropic diffusion filters and then the
-    gradient magnitude image is calculated.  This serves as input to the
-    watershed module.
-    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -34,7 +27,8 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
 
 
         # setup the pipeline
-        self._watershed = itk.itkWatershedImageFilterF3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._watershed = itk.WatershedImageFilter[if3].New()
         
         module_kits.itk_kit.utils.setupITKObjectProgress(
             self, self._watershed, 'itkWatershedImageFilter',

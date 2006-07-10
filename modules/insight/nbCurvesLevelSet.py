@@ -8,20 +8,6 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
 
-    """Narrow band level set implementation.
-
-    The input feature image is an edge potential map with values close to 0 in
-    regions close to the edges and values close to 1 otherwise.  The level set
-    speed function is based on this.  For example: smooth an input image,
-    determine the gradient magnitude and then pass it through a sigmoid
-    transformation to create an edge potential map.
-
-    The initial level set is a volume with the initial surface embedded as the
-    0 level set, i.e. the 0-value iso-contour (more or less).
-
-    $Revision: 1.4 $
-    """
-
     def __init__(self, moduleManager):
 
         moduleBase.__init__(self, moduleManager)
@@ -107,7 +93,8 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         # input: smoothing.SetInput()
         # output: thresholder.GetOutput()
 
-        self._nbcLS = itk.itkNarrowBandCurvesLevelSetImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._nbcLS = itk.NarrowBandCurvesLevelSetImageFilter[if3,if3].New()
         #self._nbcLS.SetMaximumRMSError( 0.1 );
         self._nbcLS.SetNumberOfIterations( 500 );
 

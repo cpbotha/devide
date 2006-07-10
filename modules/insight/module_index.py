@@ -104,7 +104,23 @@ class gaussianConvolve:
 
 class geodesicActiveContour:
     kits = ['itk_kit']
-    cats = ['Insight']
+    cats = ['Insight', 'Level Set']
+    keywords = ['level set']
+    help = """Module for performing Geodesic Active Contour-based segmentation
+    on 3D data.
+
+    The input feature image is an edge potential map with values close to 0 in
+    regions close to the edges and values close to 1 otherwise.  The level set
+    speed function is based on this.  For example: smooth an input image,
+    determine the gradient magnitude and then pass it through a sigmoid
+    transformation to create an edge potential map.
+
+    The initial level set is a volume with the initial surface embedded as the
+    0 level set, i.e. the 0-value iso-contour (more or less).
+
+    Also see figure 9.18 in the ITK Software Guide.
+    """
+
 
 class gradientAnisotropicDiffusion:
     kits = ['itk_kit']
@@ -143,9 +159,22 @@ class itkWRT:
 #    kits = ['itk_kit']
 #    cats = ['Insight']
 
-class nbCurvesLevelSet:
-    kits = ['itk_kit']
-    cats = ['Insight']
+# not wrapped by WrapITK 20060710
+# class nbCurvesLevelSet:
+#     kits = ['itk_kit']
+#     cats = ['Insight', 'Level Set']
+#     keywords = ['level set']
+#     help = """Narrow band level set implementation.
+
+#     The input feature image is an edge potential map with values close to 0 in
+#     regions close to the edges and values close to 1 otherwise.  The level set
+#     speed function is based on this.  For example: smooth an input image,
+#     determine the gradient magnitude and then pass it through a sigmoid
+#     transformation to create an edge potential map.
+
+#     The initial level set is a volume with the initial surface embedded as the
+#     0 level set, i.e. the 0-value iso-contour (more or less).
+#     """
 
 class nbhSeedConnect:
     kits = ['itk_kit']
@@ -159,6 +188,10 @@ class nbhSeedConnect:
 class sigmoid:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Perform sigmoid transformation on all input voxels.
+
+    f(x) = (max - min) frac{1}{1 + exp(- frac{x - beta}{alpha})} + min
+    """
 
 class symmetricDemonsRegistration:
     kits = ['itk_kit']
@@ -184,4 +217,12 @@ class tpgac:
 class watershed:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Perform watershed segmentation on input.
+
+    Typically, the input will be the gradient magnitude image.  Often, data
+    is smoothed with one of the anisotropic diffusion filters and then the
+    gradient magnitude image is calculated.  This serves as input to the
+    watershed module.
+    """
+
 

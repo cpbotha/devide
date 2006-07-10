@@ -42,7 +42,8 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
 
 
         # setup the pipeline
-        self._gaussian = itk.itkRecursiveGaussianImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._gaussian = itk.RecursiveGaussianImageFilter[if3,if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._gaussian, 'itkRecursiveGaussianImageFilter',

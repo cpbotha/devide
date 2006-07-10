@@ -8,22 +8,6 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
 
-    """Module for performing Geodesic Active Contour-based segmentation on
-    3D data.
-
-    The input feature image is an edge potential map with values close to 0 in
-    regions close to the edges and values close to 1 otherwise.  The level set
-    speed function is based on this.  For example: smooth an input image,
-    determine the gradient magnitude and then pass it through a sigmoid
-    transformation to create an edge potential map.
-
-    The initial level set is a volume with the initial surface embedded as the
-    0 level set, i.e. the 0-value iso-contour (more or less).
-
-    Also see figure 9.18 in the ITK Software Guide.
-
-    $Revision: 1.12 $
-    """
 
     def __init__(self, moduleManager):
 
@@ -122,8 +106,11 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
     def _createITKPipeline(self):
         # input: smoothing.SetInput()
         # output: thresholder.GetOutput()
+
+        if3 = itk.Image[itk.F, 3]
+        gAC = \
+            itk.GeodesicActiveContourLevelSetImageFilter[if3,if3,itk.F].New()
         
-        gAC = itk.itkGeodesicActiveContourLevelSetImageFilterF3F3_New()
         geodesicActiveContour = gAC
         #geodesicActiveContour.SetMaximumRMSError( 0.1 );
         self._geodesicActiveContour = geodesicActiveContour
