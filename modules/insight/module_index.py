@@ -23,6 +23,25 @@ class cannyEdgeDetection:
 class confidenceSeedConnect:
     kits = ['itk_kit']
     cats = ['Insight']
+    keywords = ['region growing', 'confidence', 'seed']
+    help = """Confidence-based 3D region growing.
+
+    This module will perform a 3D region growing starting from the
+    user-supplied points.  The mean and standard deviation are calculated in a
+    small initial region around the seed points.  New contiguous points have
+    to have intensities on the range [mean - f*stdDev, mean + f*stdDev] to be
+    included.  f is user-definable.
+
+    After this initial growing iteration, if the user has specified a larger
+    than 0 number of iterations, the mean and standard deviation are
+    recalculated over all the currently selected points and the process is
+    restarted.  This process is repeated for the user-defined number of
+    iterations, or until now new pixels are added.
+
+    Due to weirdness in the underlying ITK filter, deleting all points
+    won't quite work.  In other words, the output of this module can
+    only be trusted if there's at least a single seed point.
+    """
 
 class curvatureAnisotropicDiffusion:
     kits = ['itk_kit']

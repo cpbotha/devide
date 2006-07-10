@@ -7,26 +7,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
-    """Confidence-based 3D region growing.
-
-    This module will perform a 3D region growing starting from the
-    user-supplied points.  The mean and standard deviation are calculated in a
-    small initial region around the seed points.  New contiguous points have
-    to have intensities on the range [mean - f*stdDev, mean + f*stdDev] to be
-    included.  f is user-definable.
-
-    After this initial growing iteration, if the user has specified a larger
-    than 0 number of iterations, the mean and standard deviation are
-    recalculated over all the currently selected points and the process is
-    restarted.  This process is repeated for the user-defined number of
-    iterations, or until now new pixels are added.
-
-    Due to weirdness in the underlying ITK filter, deleting all points
-    won't quite work.  In other words, the output of this module can
-    only be trusted if there's at least a single seed point.
-    
-    $Revision: 1.6 $
-    """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -57,7 +37,8 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         self._seedPoints = []
         
         # setup the pipeline
-        self._cCIF = itk.itkConfidenceConnectedImageFilterF3F3_New()
+        if3 = itk.Image[itk.F, 3]
+        self._cCIF = itk.ConfidenceConnectedImageFilter[if3, if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._cCIF, 'itkConfidenceConnectedImageFilter',
@@ -153,7 +134,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
                 # bugger, it could be that our input dataset has an extent
                 # that doesn't start at 0,0,0... ITK doesn't understand this
                 x,y,z = [int(i) for i in ip]
-                idx = itk.itkIndex3()
+                idx = itk.Index[3]()
                 idx.SetElement(0, x)
                 idx.SetElement(1, y)
                 idx.SetElement(2, z)
