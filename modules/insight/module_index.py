@@ -146,10 +146,6 @@ class gradientAnisotropicDiffusion:
 #    kits = ['itk_kit']
 #    cats = ['Insight']
 
-class itk3RDR:
-    kits = ['itk_kit']
-    cats = ['Insight', 'Readers']
-
 class ITKReader:
     kits = ['itk_kit']
     cats = ['Insight', 'Readers']
