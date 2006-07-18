@@ -168,9 +168,20 @@ class ITKReader:
 
 
 
-class itkWRT:
+class ITKWriter:
     kits = ['itk_kit']
     cats = ['Insight', 'Writers']
+    help = """Writes any of the image formats supported by ITK.
+
+    At least the following file formats are available (a choice is made based
+    on the filename extension that you choose):<br>
+    <ul>
+    <li>.mha: MetaImage all-in-one file</li>
+    <li>.mhd: MetaImage .mhd header file and .raw data file</li>
+    <li>.hdr or .img: Analyze .hdr header and .img data</li>
+    </ul>
+
+    """
 
 # not wrapped by ITK-2-4-1 default wrappings
 #class levelSetMotionRegistration:

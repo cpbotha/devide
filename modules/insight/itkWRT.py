@@ -6,22 +6,7 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import re
 
-class itkWRT(moduleBase, filenameViewModuleMixin):
-    """Writes any of the image formats supported by the ITK
-    itkImageIOFactory.
-
-    At least the following file formats are available (a choice is made based
-    on the filename extension that you choose):<br>
-    <ul>
-    <li>.mha: MetaImage all-in-one file</li>
-    <li>.mhd: MetaImage .mhd header file and .raw data file</li>
-    <li>.hdr or .img: Analyze .hdr header and .img data</li>
-    </ul>
-
-    $Revision: 1.4 $
-    """
-
-
+class ITKWriter(moduleBase, filenameViewModuleMixin):
     def __init__(self, moduleManager):
 
         # call parent constructor
@@ -122,18 +107,19 @@ class itkWRT(moduleBase, filenameViewModuleMixin):
                 
             # this turns 'unsigned_char' into 'UC' and 'float' into 'F'
             itkTypeC = ''.join([i.upper()[0] for i in g[0].split('_')])
+
+            witk_template = getattr(itk, 'ImageFileWriter')
+            witk_type = getattr(itk.Image, '%s%s%s' % \
+                                (vectorString, itkTypeC, g[1]))
             
-            itkClassName = 'itkImageFileWriter%s%s%s_New' % \
-                           (vectorString, itkTypeC, g[1])
-            
-            print itkClassName
-            itkWClass = getattr(itk, itkClassName)
             
             try:
-                self._writer = itkWClass()
+                self._writer = witk_template[witk_type].New()
             except Exception, e:
                 if vectorString == 'V':
                     vType = 'vector'
+                else:
+                    vType = ''
                          
                 raise RuntimeError, 'Unable to instantiate ITK writer with' \
                       '%s type %s and dimensions %s.' % (vType, g[0], g[1])
