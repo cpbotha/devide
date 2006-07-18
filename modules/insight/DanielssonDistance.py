@@ -34,7 +34,7 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
         #self._dist_filter.SetUseImageSpacing(True)
         
         itk_kit.utils.setupITKObjectProgress(
-            self, self._dist_filter, 'itkDanielssonDistanceMapImageFilter',
+            self, self._dist_filter, 'DanielssonDistanceMapImageFilter',
             'Calculating distance map.')
 
         self._createWindow(
