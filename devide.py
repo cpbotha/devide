@@ -232,7 +232,7 @@ class DeVIDEApp:
         
         self._interface.log_warning(message, timeStamp)
 
-    def setProgress(self, progress, message, noTime=False):
+    def set_progress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress
         # 2. only do something if the message or the progress has changed
         # 3. we only perform an update if a second or more has passed
@@ -255,6 +255,8 @@ class DeVIDEApp:
 
             # unset the mutex thingy
             self._inProgress.unlock()
+
+    setProgress = set_progress
         
     def start_main_loop(self):
         """Start the main execution loop.

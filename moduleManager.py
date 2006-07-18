@@ -848,6 +848,8 @@ class moduleManager:
             self._devide_app.log_error_with_exception(str(e))
 
         print "ENDING network execute ------------------------------"
+
+        self.set_progress(100.0, 'Network execution complete.')        
 			      
     def viewModule(self, instance):
         instance.view()
@@ -1333,10 +1335,12 @@ class moduleManager:
         
         self._moduleDict[moduleInstance].modified = value
         
-    def setProgress(self, progress, message, noTime=False):
+    def set_progress(self, progress, message, noTime=False):
         """Progress is in percent.
         """
-        self._devide_app.setProgress(progress, message, noTime)
+        self._devide_app.set_progress(progress, message, noTime)
+
+    setProgress = set_progress
 
     def _makeUniqueInstanceName(self, instanceName=None):
         """Ensure that instanceName is unique or create a new unique

@@ -350,6 +350,8 @@ class GraphEditor:
         except Exception, e:
             self._devide_app.log_error_with_exception(str(e))
 
+        self._interface.set_progress(100.0, 'Network execution complete.')
+
         print "ENDING network execute ------------------------------"
         
 
