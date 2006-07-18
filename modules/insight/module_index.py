@@ -150,6 +150,28 @@ class itk3RDR:
     kits = ['itk_kit']
     cats = ['Insight', 'Readers']
 
+class ITKReader:
+    kits = ['itk_kit']
+    cats = ['Insight', 'Readers']
+    help = """Reads all the 3D formats supported by ITK.  In its default
+    configuration, this module will derive file type, data type and
+    dimensionality from the file itself.  You can manually set the data type
+    and dimensionality, in which case ITK will attempt to cast the data.
+
+    Keep in mind that DeVIDE mostly uses the float versions of ITK components.
+
+    At least the following file formats are available (a choice is made based
+    on the filename extension that you choose):<br>
+    <ul>
+    <li>.mha: MetaImage all-in-one file</li>
+    <li>.mhd: MetaImage .mhd header file and .raw data file</li>
+    <li>.hdr or .img: Analyze .hdr header and .img data</li>
+    </ul>
+
+    """
+
+
+
 class itkWRT:
     kits = ['itk_kit']
     cats = ['Insight', 'Writers']

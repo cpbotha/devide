@@ -22,10 +22,10 @@ class itk3RDR(moduleBase, filenameViewModuleMixin):
     """
 
     _outputTypes = ['Float 3D', 'Double 3D',
-                     'Signed Integer 3D', 'Unsigned Integer 3D',
-                     'Signed Short 3D', 'Unsigned Short 3D',
-                     'Unsigned Char 3D',
-                     'Unsigned Long 3D']
+                    'Signed Integer 3D', 'Unsigned Integer 3D',
+                    'Signed Short 3D', 'Unsigned Short 3D',
+                    'Unsigned Char 3D',
+                    'Unsigned Long 3D']
 
     # turns the above list into ['F3', 'D3', ...] - you have to love
     # nested list expresions
