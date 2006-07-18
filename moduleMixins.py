@@ -518,7 +518,11 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             label = wx.StaticText(panel, -1, configTuple[0])
             gridSizer.Add(label, 0, wx.ALIGN_CENTER_VERTICAL, 0)
             widget = None
-            if configTuple[3] == 'text':
+
+            if configTuple[3] == 'static_text':
+                widget = wx.StaticText(panel, -1, "")
+            
+            elif configTuple[3] == 'text':
                 widget = wx.TextCtrl(panel, -1, "")
 
             elif configTuple[3] == 'tupleText':
@@ -603,8 +607,13 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
     def viewToConfig(self):
         for configTuple in self._configList:
+
             widget = self._widgets[configTuple[0:5]]
             typeD = configTuple[2]
+
+            # some widgets are only for display, we won't process their values
+            if typeD.startswith('display_only'):
+                continue
 
             if configTuple[3] == 'choice':
                 wv = widget.GetStringSelection()
@@ -664,10 +673,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         # long
         
         for configTuple in self._configList:
+            typeD = configTuple[2]
+
+            # some widgets are only for display, we won't process their values
+            if typeD.startswith('display_only'):
+                continue
+            
             widget = self._widgets[configTuple[0:5]]
             val = getattr(self._config, configTuple[1])
-
-            typeD = configTuple[2]
 
             if configTuple[3] == 'text' or configTuple[3] == 'maskedText':
                 if typeD.startswith('base:'):
@@ -733,7 +746,6 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     widget.SetStringSelection(str(val))
                 else:
                     
-                    print "moo: %s = %d" % (configTuple[0], val)
                     widget.SetSelection(int(val))
 
 
