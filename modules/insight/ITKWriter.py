@@ -87,32 +87,13 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
     def executeModule(self):
         
         if len(self._config.filename) and self._input:
-            # g will be e.g. ('float', '3')
-            # note that we use the NON-greedy version so it doesn't break
-            # on vectors
-            g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
-                          self._input.this).groups()
 
-            # see if it's a vector
-            if g[0].startswith('itk__VectorT'):
-                vectorString = 'V'
-                # it's a vector, so let's remove the 'itk__VectorT' bit
-                g = list(g)
-                g[0] = g[0][len('itk__VectorT'):]
-                g = tuple(g)
-                print g
-                
-            else:
-                vectorString = ''
-                
-            # this turns 'unsigned_char' into 'UC' and 'float' into 'F'
-            itkTypeC = ''.join([i.upper()[0] for i in g[0].split('_')])
-
+            shortstring = itk_kit.utils.get_img_type_and_dim_shortstring(
+                self._input)
+            
             witk_template = getattr(itk, 'ImageFileWriter')
-            witk_type = getattr(itk.Image, '%s%s%s' % \
-                                (vectorString, itkTypeC, g[1]))
-            
-            
+            witk_type = getattr(itk.Image, shortstring)
+
             try:
                 self._writer = witk_template[witk_type].New()
             except Exception, e:

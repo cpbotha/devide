@@ -1,4 +1,47 @@
 import itk
+import re
+
+def get_img_type_and_dim(itk_img):
+
+    # g will be e.g. ('float', '3') or ('unsigned_char', '2')
+    # note that we use the NON-greedy version so it doesn't break
+    # on vectors
+    g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
+                  itk_img.this).groups()
+
+    # see if it's a vector
+    if g[0].startswith('itk__VectorT'):
+        vectorString = 'V'
+        # it's a vector, so let's remove the 'itk__VectorT' bit
+        g = list(g)
+        g[0] = g[0][len('itk__VectorT'):]
+        g = tuple(g)
+        
+    else:
+        vectorString = ''
+
+    # this could also be ('float', '3', 'V'), or ('unsigned_char', '2', '')
+    return g + (vectorString,)
+        
+                
+
+def get_img_type_and_dim_shortstring(itk_img):
+
+    tdv = get_img_type_and_dim(itk_img)
+    
+    # this turns 'unsigned_char' into 'UC' and 'float' into 'F'
+    itkTypeC = ''.join([i.upper()[0] for i in tdv[0].split('_')])
+
+    if len(tdv[2]) > 0:
+        # this will be for instance VF33 or VF22
+        shortstring = '%s%s%s%s' % (tdv[2], itkTypeC, tdv[1], tdv[1])
+
+    else:
+        # and this F3 or UC2
+        shortstring = '%s%s' % (itkTypeC, tdv[1])
+
+    return shortstring
+
 
 def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
                            objEvals=None):
