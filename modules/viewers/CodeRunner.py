@@ -143,7 +143,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         hd = md5.md5(self._src_setup).hexdigest
         if hd != self._md5_setup_src:
             self._md5_setup_src = hd
-            self._run_source(self._src_setup, self._view_frame.shell_window)
+            self._run_source(self._src_setup)
             
         self._run_source(self._src_execute)
 
