@@ -6,12 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
-    """Performs symmetric forces demons registration on fixed and moving input
-    images, returns deformation field.
-
-    $Revision: 1.3 $
-    """
-    
     def __init__(self, moduleManager):
         
         moduleBase.__init__(self, moduleManager)
@@ -38,13 +32,15 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
         # input 1 is fixed, input 2 is moving
         # matcher.SetInput(moving)
         # matcher.SetReferenceImage(fixed)
-        
-        self._matcher = itk.itkHistogramMatchingImageFilterF3F3_New()
+
+        if3 = itk.Image.F3
+        self._matcher = itk.HistogramMatchingImageFilter[if3,if3].New()
         self._matcher.SetNumberOfHistogramLevels(1024)
         self._matcher.SetNumberOfMatchPoints(7)
         self._matcher.ThresholdAtMeanIntensityOn()
 
-        self._demons = itk.itkSymmetricForcesDemonsRegistrationFilterF3F3_New()
+        self._demons = itk.SymmetricForcesDemonsRegistrationFilter[
+            itk.Image.F3, itk.Image.F3, itk.Image.VF33].New()
         self._demons.SetStandardDeviations(1.0)
         self._demons.SetMovingImage(self._matcher.GetOutput())
 

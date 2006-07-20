@@ -88,10 +88,6 @@ class discreteLaplacian:
     kits = ['itk_kit']
     cats = ['Insight']
 
-class distanceMap:
-    kits = ['itk_kit']
-    cats = ['Insight']
-
 # had to disable this one due to stupid itkLevelSetNode non-wrapping
 # in ITK-2-4-1
 #class fastMarching:
@@ -225,6 +221,9 @@ class sigmoid:
 class symmetricDemonsRegistration:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Performs symmetric forces demons registration on fixed and
+    moving input images, returns deformation field.
+    """
 
 class tpgac:
     kits = ['itk_kit']
