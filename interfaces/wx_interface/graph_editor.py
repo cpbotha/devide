@@ -519,9 +519,14 @@ class GraphEditor:
                                                     'modules.readers.dicomRDR')
             
             if mod:
-                cfg = mod.getConfig()
-                cfg.dicomFilenames.extend(dcmFilenames)
-                mod.setConfig(cfg)
+                try:
+                    cfg = mod.getConfig()
+                    cfg.dicomFilenames.extend(dcmFilenames)
+                    mod.setConfig(cfg)
+                except Exception, e:
+                    dropFilenameErrors.append(
+                        ('DCM files', 'Error loading DICOM files: %s.' % 
+                         (str(e),)))
 
         return dropFilenameErrors
 
