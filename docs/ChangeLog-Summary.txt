@@ -1,6 +1,6 @@
 Release ng1phase1 6.4.00 - Fri Mar 10 12:01:35 WEST 2006
 
-Changes since ng1phase1 6.3.9:
+Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
  * New unified interface with dockable windows.
  * Module quick search.  (searches in module metadata: name, keywords,
@@ -17,7 +17,9 @@ Changes since ng1phase1 6.3.9:
     - statistics contains a number of useful stats routines
  * Modules can be blocked/unblocked from execution.  Select a module
    or modules and right click to see the block/unblock commands.
- * DICOM support much improved (see also LR|AP|HF block in slice3dVWR).
+ * DICOM support much improved
+   . See also LR|AP|HF block in slice3dVWR
+   . Much more memory efficient
  * New and improved About window.
  * As always, various bug fixes.
 
