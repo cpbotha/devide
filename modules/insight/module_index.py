@@ -124,9 +124,9 @@ class gradientAnisotropicDiffusion:
 
 # had to disable as ITK 2-4-1 has the standard moron-idiot executing without
 # input crashes the whole of your application thank you very much bug
-#class gradientMagnitudeGaussian:
-#    kits = ['itk_kit']
-#    cats = ['Insight']
+class gradientMagnitudeGaussian:
+    kits = ['itk_kit']
+    cats = ['Insight']
 
 # isn't wrapped anymore, no idea why.
 #class gvfgac:
@@ -138,9 +138,9 @@ class gradientAnisotropicDiffusion:
 #    kits = ['itk_kit']
 #    cats = ['Insight']
 
-#class isolatedConnect:
-#    kits = ['itk_kit']
-#    cats = ['Insight']
+class isolatedConnect:
+    kits = ['itk_kit']
+    cats = ['Insight']
 
 class ITKReader:
     kits = ['itk_kit']
@@ -180,9 +180,9 @@ class ITKWriter:
     """
 
 # not wrapped by ITK-2-4-1 default wrappings
-#class levelSetMotionRegistration:
-#    kits = ['itk_kit']
-#    cats = ['Insight']
+class levelSetMotionRegistration:
+    kits = ['itk_kit']
+    cats = ['Insight']
 
 # not wrapped by WrapITK 20060710
 # class nbCurvesLevelSet:
