@@ -127,6 +127,9 @@ class gradientAnisotropicDiffusion:
 class gradientMagnitudeGaussian:
     kits = ['itk_kit']
     cats = ['Insight']
+    help =  """Calculates gradient magnitude of an image by convolving with the
+    derivative of a Gaussian.
+    """
 
 # isn't wrapped anymore, no idea why.
 #class gvfgac:

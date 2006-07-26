@@ -1,14 +1,11 @@
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
-import moduleUtils
-import vtk
-import InsightToolkit as itk
-import ConnectVTKITKPython as CVIPy
+from moduleMixins import scriptedConfigModuleMixin
+import itk
+import module_kits.itk_kit as itk_kit
 
 class isolatedConnect(moduleBase):
 
     def __init__(self, moduleManager):
-
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
 

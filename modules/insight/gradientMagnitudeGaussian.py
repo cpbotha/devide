@@ -6,12 +6,7 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
-    """Calculates gradient magnitude of an image by convolving with the
-    derivative of a Gaussian.
 
-    $Revision: 1.4 $
-    """
-    
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 
@@ -27,11 +22,11 @@ class gradientMagnitudeGaussian(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.__init__(self, configList)
 
         # setup the pipeline
-        g = itk.itkGradientMagnitudeRecursiveGaussianImageFilterF3F3_New()
-        self._gradientMagnitude = g
+        c = itk.GradientMagnitudeRecursiveGaussianImageFilter
+        self._gradientMagnitude = c[itk.Image.F3, itk.Image.F3].New()
         
         itk_kit.utils.setupITKObjectProgress(
-            self, g,
+            self, self._gradientMagnitude,
             'itkGradientMagnitudeRecursiveGaussianImageFilter',
             'Calculating gradient image')
 
