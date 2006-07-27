@@ -6,12 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
-    """Performs deformable registration between two input volumes using
-    level set motion.
-
-    $Revision: 1.4 $
-    """
-    
     def __init__(self, moduleManager):
         
         moduleBase.__init__(self, moduleManager)
@@ -43,14 +37,18 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         # input 1 is fixed, input 2 is moving
         # matcher.SetInput(moving)
         # matcher.SetReferenceImage(fixed)
+
+        if3 = itk.Image.F3
         
-        self._matcher = itk.itkHistogramMatchingImageFilterF3F3_New()
+        self._matcher = itk.HistogramMatchingImageFilter[if3,if3].New()
         self._matcher.SetNumberOfHistogramLevels(1024)
         self._matcher.SetNumberOfMatchPoints(7)
         self._matcher.ThresholdAtMeanIntensityOn()
 
-        self._levelSetMotion = \
-                             itk.itkLevelSetMotionRegistrationFilterF3F3_New()
+        ivf3 = itk.Image.VF33
+        ls = itk.LevelSetMotionRegistrationFilter[if3, if3, ivf3].New()
+        self._levelSetMotion = ls
+                             
         self._levelSetMotion.SetMovingImage(self._matcher.GetOutput())
 
         # we should get a hold of GetElapsedIterations...
@@ -58,13 +56,13 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         # Dense still has it, PDE onwards doesn't.  Dense is templated on
         # input and output, PDE on two image types and a deformation field...
         itk_kit.utils.setupITKObjectProgress(
-            self, self._levelSetMotion, 'itkLevelSetMotionRegistrationFilter',
+            self, self._levelSetMotion, 'LevelSetMotionRegistrationFilter',
             'Performing registration, metric = %.2f',
             ('GetMetric()',))
 
         self._createWindow(
             {'Module (self)' : self,
-             'itkLevelSetMotionRegistrationFilter' : self._levelSetMotion,
+             'LevelSetMotionRegistrationFilter' : self._levelSetMotion,
              'itkHistogramMatchingImageFilter' : self._matcher})
 
         self.configToLogic()

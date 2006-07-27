@@ -203,7 +203,11 @@ class ITKWriter:
 # not wrapped by ITK-2-4-1 default wrappings
 class levelSetMotionRegistration:
     kits = ['itk_kit']
-    cats = ['Insight']
+    cats = ['Insight', 'Registration']
+    keywords = ['level set', 'registration', 'deformable', 'non-rigid']
+    help = """Performs deformable registration between two input volumes using
+    level set motion.
+    """
 
 # not wrapped by WrapITK 20060710
 # class nbCurvesLevelSet:
