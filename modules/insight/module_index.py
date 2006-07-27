@@ -144,6 +144,24 @@ class gradientMagnitudeGaussian:
 class isolatedConnect:
     kits = ['itk_kit']
     cats = ['Insight']
+    keywords = ['segment']
+    help = """Voxels connected to the first group of seeds and NOT connected
+    to the second group of seeds are segmented by optimising an upper or
+    lower threshold.
+
+    For example, to separate two non-touching light objects, you would do the
+    following:
+    <ul>
+    <li>Select point(s) in the first object with slice3dVWR 1</li>
+    <li>Select point(s) in the second object with slice3dVWR 2</li>
+    <li>Connect up the three inputs of isolatedConnect as follows: input
+    image, point(s) of object 1, point(s) of object 2</li>
+    <li>isolatedConnect will now calculate a threshold so that when this
+    threshold is applied to the image and a region growing is performed using
+    the first set of points, only object 1 will be separated.</li>
+    </il>
+    </ul>
+    """
 
 class ITKReader:
     kits = ['itk_kit']

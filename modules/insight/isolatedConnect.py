@@ -3,126 +3,127 @@ from moduleMixins import scriptedConfigModuleMixin
 import itk
 import module_kits.itk_kit as itk_kit
 
-class isolatedConnect(moduleBase):
+class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
 
-        # this will be the input module for now
-        # (we still have to make a vtk->itk and an itk->vtk module)
-        self._imageCast = vtk.vtkImageCast()
-        self._imageCast.SetOutputScalarTypeToFloat()
-
-        self._vtkExporter = vtk.vtkImageExport()
-        self._vtkExporter.SetInput(self._imageCast.GetOutput())
-
-        self._itkImporter = itk.itkVTKImageImportF3_New()
-        CVIPy.ConnectVTKToITKF3(
-            self._vtkExporter, self._itkImporter.GetPointer())
-
-        # we're finally in ITK land now
-        self._isolatedConnect = itk.itkIsolatedConnectedImageFilterF3F3_New()
-        self._isolatedConnect.SetInput(self._itkImporter.GetOutput())
-        # lower threshold, not configurable right now
-        self._isolatedConnect.SetLower(0.9)
-
-
-        self._itkExporter = itk.itkVTKImageExportF3_New()
-        self._itkExporter.SetInput(self._isolatedConnect.GetOutput())
-
-        self._vtkImporter = vtk.vtkImageImport()
-        CVIPy.ConnectITKF3ToVTK(
-            self._itkExporter.GetPointer(), self._vtkImporter)
+        self._config.replace_value = 1.0
+        self._config.upper_threshold = False
         
-        #moduleUtils.setupVTKObjectProgress(self, self._seedConnect,
-        #                                   'Performing region growing')
-        #moduleUtils.setupVTKObjectProgress(self, self._imageCast,
-        #                                   'Casting data to unsigned char')
+
+        config_list = [
+            ('Replace value:', 'replace_value', 'base:float', 'text',
+             'Voxels touching the first set of seeds will be set to this '
+             'value.'),
+            ('Upper threshold:', 'upper_threshold', 'base:bool', 'checkbox',
+            'Derive upper threshold (for dark areas) or lower threshold '
+            '(for lighter areas).')]
+
+        scriptedConfigModuleMixin.__init__(self, config_list)
         
-        # we'll use this to keep a binding (reference) to the passed object
-        self._inputPoints = None
-        # inputPoints observer ID
-        self._inputPointsOID = None
+        if3 = itk.Image.F3
+        self._isol_connect = \
+                              itk.IsolatedConnectedImageFilter[if3,if3].New()
+
         # this will be our internal list of points
-        self._seedPoints = []
+        self._seeds1 = []
+        self._seeds2 = []
 
-        # now setup some defaults before our sync
-        #self._config.inputConnectValue = 1
-        #self._config.outputConnectedValue = 1
-        #self._config.outputUnconnectedValue = 0
+        itk_kit.utils.setupITKObjectProgress(
+            self, self._isol_connect,
+            'IsolatedConnectedImageFilter', 'Performing isolated connect')
 
-        self._viewFrame = None
-        #self._createViewFrame()
-
-        # transfer these defaults to the logic
+        self._createWindow(
+            {'Module (self)' : self,
+             'IsolatedConnectedImageFilter' :
+             self._isol_connect})
+        
         self.configToLogic()
-
-        # then make sure they come all the way back up via self._config
         self.logicToConfig()
         self.configToView()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
-        self.setInput(1, None)
-        # take out our view interface
-        #self._viewFrame.Destroy()
-        # get rid of our reference
-        del self._imageCast
-        del self._vtkExporter
-        del self._itkImporter
-        del self._isolatedConnect
+        for inputIdx in range(len(self.getInputDescriptions())):
+            self.setInput(inputIdx, None)
+
+        # this will take care of all display thingies
+        scriptedConfigModuleMixin.close(self)
+        # and the baseclass close
+        moduleBase.close(self)
+
+        del self._isol_connect
 
     def getInputDescriptions(self):
-	return ('3D vtkImageData', 'Seed points')
+	return ('ITK Image data', 'Seed points 1', 'Seed points 2')
     
-    def setInput(self, idx, inputStream):
+    def setInput(self, idx, input_stream):
         if idx == 0:
-            # will work for None and not-None
-            self._imageCast.SetInput(inputStream)
+            self._isol_connect.SetInput(input_stream)
+
         else:
-            if inputStream is not self._inputPoints:
-                if self._inputPoints:
-                    self._inputPoints.removeObserver(self._inputPointsOID)
 
-                if inputStream:
-                    self._inputPointsOID = inputStream.addObserver(
-                        self._inputPointsObserver)
+            seeds = [self._seeds1, self._seeds2]
+            conn_map = {'ClearSeeds' : [self._isol_connect.ClearSeeds1,
+                                        self._isol_connect.ClearSeeds2],
+                        'AddSeeds' : [self._isol_connect.AddSeed1,
+                                      self._isol_connect.AddSeed2],
+                        'seeds' : [self._seeds1, self._seeds2]}
+                          
+            if input_stream == None:
+                # this means we get to nuke all seeds
+                conn_map['ClearSeeds'][idx-1]()
 
-                self._inputPoints = inputStream
+            elif hasattr(input_stream, 'devideType') and \
+                 input_stream.devideType == 'namedPoints':
 
-                # initial update
-                self._inputPointsObserver(None)
-            
+                dpoints = [i['discrete'] for i in input_stream]
+                our_list = conn_map['seeds'][idx-1]
+                # if the new list differs from ours, copy it
+                if dpoints != our_list:
+                    print "isolatedConnect: copying new list"
+                    del our_list[:]
+                    our_list.extend(dpoints)
+                    conn_map['ClearSeeds'][idx-1]()
+
+                    for p in our_list:
+                        index = itk.Index[3]()
+                        for ei in range(3):
+                            index.SetElement(ei, int(p[ei]))
+                            
+                        conn_map['AddSeeds'][idx-1](index)
+
+            else:
+                raise TypeError, 'This input requires a named points type.'
+
     
     def getOutputDescriptions(self):
-	return (self._vtkImporter.GetOutput().GetClassName(),)
+	return ('Segmented ITK image', 'Derived threshold')
     
     def getOutput(self, idx):
-        return self._vtkImporter.GetOutput()
+        if idx == 0:
+            return self._isol_connect.GetOutput()
+        else:
+            return self._isol_connect.GetIsolatedValue()
 
     def logicToConfig(self):
-        pass
+        self._config.upper_threshold = \
+                                     self._isol_connect.GetFindUpperThreshold()
+
+        self._config.replace_value = self._isol_connect.GetReplaceValue()
+        
     
     def configToLogic(self):
-        pass
-    
-    def viewToConfig(self):
-        pass
-    
-    def configToView(self):
-        pass
+        self._isol_connect.SetFindUpperThreshold(self._config.upper_threshold)
+        self._isol_connect.SetReplaceValue(self._config.replace_value)
+        
     
     def executeModule(self):
-        self._isolatedConnect.Update()
+        self._isol_connect.Update()
 
-    def view(self, parent_window=None):
-        pass
-    
-    def _createViewFrame(self):
-        pass
     
     def _inputPointsObserver(self, obj):
         # extract a list from the input points
@@ -142,8 +143,8 @@ class isolatedConnect(moduleBase):
                 idx1.SetElement(ei, self._seedPoints[0][ei])
                 idx2.SetElement(ei, self._seedPoints[1][ei])
 
-            self._isolatedConnect.SetSeed1(idx1)
-            self._isolatedConnect.SetSeed2(idx2)
+            self._isol_connect.SetSeed1(idx1)
+            self._isol_connect.SetSeed2(idx2)
 
 
 
