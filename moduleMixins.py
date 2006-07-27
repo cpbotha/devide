@@ -457,12 +457,16 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
     'A tooltip for the initial distance text thingy.')
 
     typeDescription: basetype:subtype
-     basetype: base, tuple, list (list not implemented yet)
+     basetype: base, tuple, list (list not implemented yet), display_only
      subtype: in the case of scalar, the actual cast, e.g. float or int
               in the case of tuple, the actual cast followed by a comma
-              and the number of elements
+              and the number of elements.  in the case of display_only,
+              leave empty.
 
     widgetType: text,
+                static_text - primarily for display_only
+                              use for things you want to give feedback on
+                              but not integrate with config
                 tupleText - your type spec HAS to be a tuple; text boxes
                             are created in a horizontal sizer
                 checkbox,
