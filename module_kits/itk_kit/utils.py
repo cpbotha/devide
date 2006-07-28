@@ -9,6 +9,9 @@ def get_img_type_and_dim(itk_img):
     g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
                   itk_img.this).groups()
 
+    if not g:
+        raise TypeError, 'This method requires an ITK Image as input.'
+        
     # see if it's a vector
     if g[0].startswith('itk__VectorT'):
         vectorString = 'V'
