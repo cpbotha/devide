@@ -252,11 +252,11 @@ class GraphEditor:
         
         # bind events on the canvas
         mf.canvas.addObserver('buttonDown',
-                                            self._canvasButtonDown)
+                              self._canvasButtonDown)
         mf.canvas.addObserver('buttonUp',
-                                            self._canvasButtonUp)
+                              self._canvasButtonUp)
         mf.canvas.addObserver('drag',
-                                            self._canvasDrag)
+                              self._canvasDrag)
 
         # initialise selection
         self._selected_glyphs = GlyphSelection(mf.canvas,
@@ -1104,7 +1104,8 @@ class GraphEditor:
             'Rename Module',
             self._devide_app.getModuleManager().get_instance_name(module))
 
-        self._renameModule(module, glyph, newModuleName)
+        if newModuleName:
+            self._renameModule(module, glyph, newModuleName)
 
     def _handlerModulesListBoxSelected(self, event):
         mlb = self._interface._main_frame.module_list_box
