@@ -8,24 +8,6 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class tpgac(scriptedConfigModuleMixin, moduleBase):
 
-    """Module for performing topology-preserving Geodesic Active
-    Contour-based segmentation on 3D data.
-
-    This module requires a DeVIDE-specific ITK class.
-
-    The input feature image is an edge potential map with values close to 0 in
-    regions close to the edges and values close to 1 otherwise.  The level set
-    speed function is based on this.  For example: smooth an input image,
-    determine the gradient magnitude and then pass it through a sigmoid
-    transformation to create an edge potential map.
-
-    The initial level set is a volume with the initial surface embedded as the
-    0 level set, i.e. the 0-value iso-contour (more or less).
-
-    Also see figure 9.18 in the ITK Software Guide.
-
-    $Revision: 1.3 $
-    """
 
     def __init__(self, moduleManager):
 
@@ -124,8 +106,9 @@ class tpgac(scriptedConfigModuleMixin, moduleBase):
     def _createITKPipeline(self):
         # input: smoothing.SetInput()
         # output: thresholder.GetOutput()
-        
-        self._tpgac = itk.itkTPGACLevelSetImageFilterF3F3_New()
+
+        if3 = itk.Image.F3
+        self._tpgac = itk.TPGACLevelSetImageFilter[if3, if3, itk.F].New()
         #geodesicActiveContour.SetMaximumRMSError( 0.1 );
 
         itk_kit.utils.setupITKObjectProgress(
