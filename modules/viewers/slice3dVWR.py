@@ -565,6 +565,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                       threedFrame
         self.threedFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, threedFrame)
+        self.threedFrame.SetTitle('slice3dVWR 3D view')
             
         # see about stereo
         #self.threedFrame.threedRWI.GetRenderWindow().SetStereoCapableWindow(1)
@@ -580,6 +581,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                        controlFrame
         self.controlFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, controlFrame)
+        self.controlFrame.SetTitle('slice3dVWR Controls')
 
         # fix for the grid
         #self.controlFrame.spointsGrid.SetSelectionMode(wx.Grid.wxGridSelectRows)
