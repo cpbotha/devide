@@ -1,5 +1,9 @@
 # $Id$
 
+class ITKtoVTK:
+    kits = ['itk_kit']
+    cats = ['Insight']
+
 class ITKF3toVTK:
     kits = ['itk_kit']
     cats = ['Insight']
