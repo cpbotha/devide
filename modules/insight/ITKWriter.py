@@ -68,15 +68,9 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
     
     def logicToConfig(self):
         pass
-        #filename = self._writer.GetFileName()
-        #if filename == None:
-        #    filename = ''
-
-        #self._config.filename = filename
 
     def configToLogic(self):
         pass
-        #self._writer.SetFileName(self._config.filename)
 
     def viewToConfig(self):
         self._config.filename = self._getViewFrameFilename()
@@ -103,7 +97,7 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
                     vType = ''
                          
                 raise RuntimeError, 'Unable to instantiate ITK writer with' \
-                      '%s type %s and dimensions %s.' % (vType, g[0], g[1])
+                      'type %s.' % (shortstring,)
             else:
                 self._input.UpdateOutputInformation()
                 self._input.SetBufferedRegion(
@@ -117,10 +111,13 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
                 
                 self._writer.SetInput(self._input)
                 self._writer.SetFileName(self._config.filename)
+                # activating this crashes DeVIDE *BOOM*
+                #self._writer.GetImageIO().SetUseCompression(True)
                 self._writer.Write()
 
-                self._writer.SetInput(None)
-                self._writer = None
+                # if we keep it hanging around, the user can inspect it.
+                #self._writer.SetInput(None)
+                #self._writer = None
         
     def view(self, parent_window=None):
         self._viewFrame.Show(True)
