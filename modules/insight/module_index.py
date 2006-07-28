@@ -250,9 +250,9 @@ class symmetricDemonsRegistration:
     moving input images, returns deformation field.
     """
 
-class tpgac:
-    kits = ['itk_kit']
-    cats = ['Insight']
+#class tpgac:
+#    kits = ['itk_kit']
+#    cats = ['Insight']
 
 # will work on this when I rework the 2D registration
 #class transform2D:
