@@ -16,6 +16,7 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
 
         self._input = None
         self._writer = None
+        self._writer_type = None
 
         wildCardString = 'Meta Image all-in-one (*.mha)|*.mha|' \
                          'Meta Image separate header/data (*.mhd)|*.mhd|' \
@@ -67,10 +68,10 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
         raise Exception
     
     def logicToConfig(self):
-        pass
+        return False
 
     def configToLogic(self):
-        pass
+        return False
 
     def viewToConfig(self):
         self._config.filename = self._getViewFrameFilename()
@@ -84,41 +85,43 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
 
             shortstring = itk_kit.utils.get_img_type_and_dim_shortstring(
                 self._input)
-            
-            witk_template = getattr(itk, 'ImageFileWriter')
-            witk_type = getattr(itk.Image, shortstring)
 
-            try:
-                self._writer = witk_template[witk_type].New()
-            except Exception, e:
-                if vectorString == 'V':
-                    vType = 'vector'
-                else:
-                    vType = ''
+            if shortstring != self._writer_type:
+                print "ITKWriter: creating new writer instance."
+                witk_template = getattr(itk, 'ImageFileWriter')
+                witk_type = getattr(itk.Image, shortstring)
+
+                try:
+                    self._writer = witk_template[witk_type].New()
+                except Exception, e:
+                    if vectorString == 'V':
+                        vType = 'vector'
+                    else:
+                        vType = ''
                          
-                raise RuntimeError, 'Unable to instantiate ITK writer with' \
-                      'type %s.' % (shortstring,)
-            else:
-                self._input.UpdateOutputInformation()
-                self._input.SetBufferedRegion(
-                    self._input.GetLargestPossibleRegion())
-                self._input.Update()
+                        raise RuntimeError, \
+                              'Unable to instantiate ITK writer with' \
+                              'type %s.' % (shortstring,)
 
-                itk_kit.utils.setupITKObjectProgress(
-                    self, self._writer,
-                    'itkImageFileWriter',
-                    'Writing ITK image to disc.')
+                else:
+                    itk_kit.utils.setupITKObjectProgress(
+                        self, self._writer,
+                        'itkImageFileWriter',
+                        'Writing ITK image to disc.')                    
+                    
+                    self._writer_type = shortstring
+
+            self._input.UpdateOutputInformation()
+            self._input.SetBufferedRegion(
+                self._input.GetLargestPossibleRegion())
+            self._input.Update()
                 
-                self._writer.SetInput(self._input)
-                self._writer.SetFileName(self._config.filename)
-                # activating this crashes DeVIDE *BOOM*
-                #self._writer.GetImageIO().SetUseCompression(True)
-                self._writer.Write()
+            self._writer.SetInput(self._input)
+            self._writer.SetFileName(self._config.filename)
+            # activating this crashes DeVIDE *BOOM*
+            #self._writer.GetImageIO().SetUseCompression(True)
+            self._writer.Write()
 
-                # if we keep it hanging around, the user can inspect it.
-                #self._writer.SetInput(None)
-                #self._writer = None
-        
     def view(self, parent_window=None):
         self._viewFrame.Show(True)
         self._viewFrame.Raise()

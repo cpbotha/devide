@@ -89,10 +89,14 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         return self._reader.GetOutput()
 
     def logicToConfig(self):
-        pass
+        # important to return False: logicToConfig can't change and
+        # hasn't changed our config
+        return False
 
     def configToLogic(self):
-        pass
+        # important to return False: logicToConfig can't change and
+        # hasn't changed our internal state
+        return False
 
     def executeModule(self):
         if self._config.autotype:
