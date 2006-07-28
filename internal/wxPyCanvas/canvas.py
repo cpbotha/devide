@@ -73,9 +73,12 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         # mouse leaves the canvas, the rubber band remains and no selection
         # is made.
         if event.ButtonDown():
-            self.CaptureMouse()
+            if not self.HasCapture():
+                self.CaptureMouse()
+                
         elif event.ButtonUp():
-            self.ReleaseMouse()
+            if self.HasCapture():
+                self.ReleaseMouse()
         
         # these coordinates are relative to the visible part of the canvas
         ex, ey = event.GetX(), event.GetY()
