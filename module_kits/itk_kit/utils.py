@@ -45,7 +45,6 @@ def get_img_type_and_dim_shortstring(itk_img):
 
     return shortstring
 
-
 def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
                            objEvals=None):
 
