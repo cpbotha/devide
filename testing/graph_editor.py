@@ -251,9 +251,16 @@ class TestITKBasic(GraphEditorVolumeTestBase):
 
         # connect up the insight bits
         (v2imod, v2iglyph) = self._ge.createModuleAndGlyph(
-            200, 10, 'modules.insight.VTKtoITKF3')
+            200, 10, 'modules.insight.VTKtoITK')
 
         self.failUnless(v2imod and v2iglyph)
+
+        # make sure VTKtoITK will cast to float (because it's getting
+        # double at the input!)
+        c = v2imod.getConfig()
+        c.autotype = False
+        c.type = 'float'
+        v2imod.setConfig(c)
 
         (cscmod, cscglyph) = self._ge.createModuleAndGlyph(
             200, 70, 'modules.insight.confidenceSeedConnect')
@@ -261,7 +268,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         self.failUnless(cscmod and cscglyph)
 
         (i2vmod, i2vglyph) = self._ge.createModuleAndGlyph(
-            200, 130, 'modules.insight.ITKF3toVTK')
+            200, 130, 'modules.insight.ITKtoVTK')
 
         self.failUnless(i2vmod and i2vglyph)
 
