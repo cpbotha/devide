@@ -122,13 +122,14 @@ class gradientAnisotropicDiffusion:
     kits = ['itk_kit']
     cats = ['Insight']
 
-# had to disable as ITK 2-4-1 has the standard moron-idiot executing without
-# input crashes the whole of your application thank you very much bug
 class gradientMagnitudeGaussian:
     kits = ['itk_kit']
     cats = ['Insight']
     help =  """Calculates gradient magnitude of an image by convolving with the
     derivative of a Gaussian.
+
+    The ITK class that this is based on uses a recursive gaussian filter
+    implementation.
     """
 
 # isn't wrapped anymore, no idea why.
