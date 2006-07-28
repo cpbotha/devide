@@ -122,7 +122,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     ge = mm._devide_app.get_interface()._graph_editor
     def helpModule(dvModule):
         if ge:
-            ge._helpModule(dvModule)
+            ge.show_module_help(mm.get_module_spec(dvModule))
     
     # execute
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
@@ -143,7 +143,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
 
     # help
     wx.EVT_BUTTON(viewFrame, viewFrame.helpButtonId,
-               lambda e: helpModule(d3module))
+               lambda e: ge.show_module_help(mm.get_module_spec(d3module)))
 
     # make sure that execute is the default button
     # unless the user specifies otherwise - in frames where we make

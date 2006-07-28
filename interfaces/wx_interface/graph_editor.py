@@ -270,9 +270,6 @@ class GraphEditor:
         # initialise cut/copy/paste buffer
         self._copyBuffer = None
 
-        # we'll use this list to keep track of module help windows
-        self._moduleHelpFrames = {}
-        
         # now display the shebang
         self.show()
         # get it to actually display by calling into the wx event loop
@@ -535,11 +532,6 @@ class GraphEditor:
         called at application shutdown.
         """
 
-        # clear away all moduleHelpFrames
-        for helpFrame in self._moduleHelpFrames.values():
-            helpFrame.Destroy()
-        self._moduleHelpFrames.clear()
-        
         # make sure no refs are stuck in the selection
         self._selected_glyphs.close()
         # this should take care of just about everything!
@@ -761,51 +753,6 @@ class GraphEditor:
         return '<html><body>%s</body></html>' % (htmlDoc,)
         
 	
-    def _helpModule(self, moduleInstance):
-	"""
-	"""
-
-        if not moduleInstance.__doc__:
-            md = wx.MessageDialog(
-                self._interface._main_frame,
-                "This module has no help documentation yet.",
-                "Information",
-                wx.OK | wx.ICON_INFORMATION)
-            md.ShowModal()
-            return
-
-        fullModuleName = moduleInstance.__class__.__module__
-        try:
-            htmlWindowFrame = self._moduleHelpFrames[fullModuleName]
-        except KeyError:
-            import resources.python.htmlWindowFrame
-            htmlWindowFrame = resources.python.htmlWindowFrame.htmlWindowFrame(
-                self._interface.get_main_window(), id=-1,
-                title='dummy')
-
-            # store it in the dict for later use
-            self._moduleHelpFrames[fullModuleName] = htmlWindowFrame
-
-            htmlWindowFrame.SetTitle(
-                'Help documentation for %s' % (fullModuleName,))
-
-            htmlWindowFrame.SetIcon(moduleUtils.getModuleIcon())
-
-            def handlerModuleHelpDestroy(event):
-                htmlWindowFrame.Destroy()
-                del self._moduleHelpFrames[fullModuleName]
-                
-            wx.EVT_BUTTON(htmlWindowFrame, htmlWindowFrame.closeButtonId,
-                       handlerModuleHelpDestroy)
-            wx.EVT_CLOSE(htmlWindowFrame, handlerModuleHelpDestroy)
-
-        htd = self._module_doc_to_html(fullModuleName, moduleInstance.__doc__)
-        htmlWindowFrame.htmlWindow.SetPage(htd)
-
-        # Show and Raise
-        htmlWindowFrame.Show(True)
-        htmlWindowFrame.Raise()
-
 
     def fillModuleLists(self, scan_modules=True):
         """Build up the module tree from the list of available modules
@@ -1965,7 +1912,7 @@ class GraphEditor:
             pmenu.AppendItem(wx.MenuItem(
                 pmenu, help_id, "Help on Module"))
             wx.EVT_MENU(self._interface._main_frame.canvas, help_id,
-                     lambda e: self._helpModule(module))
+                     lambda e: self.show_module_help_from_glyph(glyph))
             
 #             exe_id = wx.NewId()
 #             pmenu.AppendItem(wx.MenuItem(pmenu, exe_id, "Execute Module"))
@@ -2338,6 +2285,13 @@ class GraphEditor:
             canvas.redraw()
 
         return success
+
+    def show_module_help_from_glyph(self, glyph):
+        module_instance = glyph.moduleInstance
+        mm = self._devide_app.getModuleManager()
+
+        spec = mm.get_module_spec(module_instance)
+        self.show_module_help(spec)
 
     def show_module_help(self, module_spec):
         """module_spec is e.g. module:full.module.name

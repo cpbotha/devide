@@ -618,6 +618,11 @@ class moduleManager:
         # this could change
         return self.getModuleViewParentWindow()
 
+    def get_module_spec(self, module_instance):
+        """Given a module instance, return the full module spec.
+        """
+        return 'module:%s' % (module_instance.__class__.__module__,)
+
     def getModuleViewParentWindow(self):
         """Get parent window for module windows.
 
