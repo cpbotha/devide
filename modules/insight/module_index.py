@@ -3,23 +3,20 @@
 class ITKtoVTK:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Use this module to convert from any ITK image type to
+    the corresponding VTK type.
+    """
 
-class ITKF3toVTK:
+class VTKtoITK:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Convert from a VTK image to an ITK image.
 
-class ITKUL3toVTK:
-    kits = ['itk_kit']
-    cats = ['Insight']
-
-class ITKUS3toVTK:
-    kits = ['itk_kit']
-    cats = ['Insight']
-
-class VTKtoITKF3:
-    kits = ['itk_kit']
-    cats = ['Insight']
-
+    By default (AutoType active), the output ITK image has the same pixel
+    type as the input VTK image.  However, if AutoType has been unchecked
+    in the configuration, the output ITK image has 'Data type' as its type.
+    """
+    
 class cannyEdgeDetection:
     kits = ['itk_kit']
     cats = ['Insight']

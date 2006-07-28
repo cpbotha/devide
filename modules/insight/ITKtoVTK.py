@@ -92,10 +92,12 @@ class ITKtoVTK(noConfigModuleMixin, moduleBase):
             return None
 
     def logicToConfig(self):
-        pass
+        # important so that moduleManager doesn't think our state has changed
+        return False
     
     def configToLogic(self):
-        pass
+        # important so that moduleManager doesn't think our state has changed
+        return False
     
     def viewToConfig(self):
         pass

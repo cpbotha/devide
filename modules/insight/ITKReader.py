@@ -1,5 +1,6 @@
 # $Id: itk3RDR.py 1957 2006-03-05 22:49:30Z cpbotha $
 
+import copy
 import itk
 import module_kits.itk_kit as itk_kit
 from moduleBase import moduleBase
@@ -15,6 +16,11 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         self._config.autotype = True
         self._config.type = 'float'
         self._config.dimensionality = '3'
+
+        self._logic = copy.deepcopy(self._config)
+        # we change this one ivar so that configToLogic will return True
+        # the first time
+        self._logic.filename = None
 
         wild_card_string = 'Meta Image all-in-one (*.mha)|*.mha|' \
                          'Meta Image separate header/data (*.mhd)|*.mhd|' \
@@ -89,14 +95,13 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         return self._reader.GetOutput()
 
     def logicToConfig(self):
-        # important to return False: logicToConfig can't change and
+        # important to return False: logicToConfig can't and
         # hasn't changed our config
         return False
 
     def configToLogic(self):
-        # important to return False: logicToConfig can't change and
-        # hasn't changed our internal state
-        return False
+        # if the user has performed an 'Apply', we want to invalidate
+        return True
 
     def executeModule(self):
         if self._config.autotype:

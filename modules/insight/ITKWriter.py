@@ -71,7 +71,9 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
         return False
 
     def configToLogic(self):
-        return False
+        # if the user has Applied, we assume that things have changed
+        # we could check for a change in the filename... (it's only that)
+        return True
 
     def viewToConfig(self):
         self._config.filename = self._getViewFrameFilename()
