@@ -17,6 +17,7 @@ Inserts the following modules in sys.modules: vtk, vtkdevide.
 
 import re
 import sys
+import traceback
 import types
 
 VERSION = ''
@@ -113,7 +114,12 @@ def init(theModuleManager):
     # ErrorEvent or WarningEvent observers
 
     def observer_eow_error(o, e):
-        theModuleManager.log_error(o.GetText())
+        # get a formatted stack trace
+        stk = traceback.format_stack(None, 5)
+        theModuleManager.log_error_list(
+            ['Traceback, most recent call last:'] +
+            stk +
+            [o.GetText()])
 
     def observer_eow_warning(o, e):
         theModuleManager.log_warning(o.GetText())
