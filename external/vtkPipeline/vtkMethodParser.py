@@ -97,7 +97,7 @@ class VtkDirMethodParser:
                     if re.match ("GetNumberOf\w*InFile", method):
                         self.methods.remove (method)
             # no need to check other bugs.
-            return
+            #return
 
 	done = 0            
 	# Bug in vtkRenderWindows:(
@@ -129,6 +129,14 @@ class VtkDirMethodParser:
                 # Infinite loop bug.
                 elif re.match ("GetNumberOf\w*InFile", method):
                     self.methods.remove (method)
+
+        # Writer's don't have outputs, so ReleaseDataFlag is not relevant
+        # these days, VTK 5.0 even complains about access to these methods
+	if vtk_obj.GetClassName().endswith('Writer'):
+	    #self.methods = []
+	    for method in self.methods[:]:
+                if method.find("ReleaseDataFlag") >= 0:
+		    self.methods.remove (method)
 
     def parse_methods (self, vtk_obj):
 	self.initialize_methods (vtk_obj)
