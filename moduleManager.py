@@ -409,6 +409,9 @@ class moduleManager:
         """
         self._devide_app.log_error(message)
 
+    def log_error_list(self, message_list):
+        self._devide_app.log_error_list(message_list)
+
     def log_error_with_exception(self, message):
         """Convenience method that can be used by modules.
         """
