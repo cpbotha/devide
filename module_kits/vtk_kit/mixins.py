@@ -360,10 +360,10 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         if hasattr(self._theFilter, 'Write') and \
            callable(self._theFilter.Write):
             self._theFilter.Write()
-
+            
         else:
             self._theFilter.Update()
-
+ 
         self.check_vtk_error()
 
     def view(self):
@@ -378,6 +378,9 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         # the same state from the LOGIC straight up to the VIEW
         self._configVtkObj.update_gui()
 
+        # the vtk object could have an error here
+        self.check_vtk_error()
+
     def viewToConfig(self):
         # same thing here: user clicks "apply", viewToConfig is called which
         # zaps UI changes straight to the LOGIC.  Then we have to call
@@ -387,6 +390,9 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         # from the config to the logic
         self._configVtkObj.apply_changes()
         self.logicToConfig()
+
+        # the vtk object could experience an error here as well
+        self.check_vtk_error()
     
 
 #########################################################################
