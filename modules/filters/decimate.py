@@ -7,9 +7,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class decimate(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class decimate(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 
@@ -25,10 +25,10 @@ class decimate(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._triFilter,
                                            'Converting to triangles')
-        self.add_vtk_error_handler(self._triFilter)
+        
         moduleUtils.setupVTKObjectProgress(self, self._decimate,
                                            'Decimating mesh')
-        self.add_vtk_error_handler(self._decimate)
+        
                                            
         # now setup some defaults before our sync
         self._config.target_reduction = self._decimate.GetTargetReduction() \
@@ -87,7 +87,7 @@ class decimate(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     def executeModule(self):
         # get the filter doing its thing
         self._triFilter.Update()
-        self.check_vtk_error()
+        
         self._decimate.Update()
-        self.check_vtk_error()
+        
 

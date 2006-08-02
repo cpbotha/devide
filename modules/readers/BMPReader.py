@@ -5,9 +5,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import wx
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class BMPReader(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class BMPReader(scriptedConfigModuleMixin, moduleBase):
     """Reads a series of BMP files.
 
     Set the file pattern by making use of the file browsing dialog.  Replace
@@ -29,7 +29,7 @@ class BMPReader(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading BMP images.')
 
-        self.add_vtk_error_handler(self._reader)
+        
 
         self._config.filePattern = '%03d.bmp'
         self._config.firstSlice = 0
@@ -109,7 +109,7 @@ class BMPReader(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
     def executeModule(self):
         self._reader.Update()
-        self.check_vtk_error()
+        
 
         
         

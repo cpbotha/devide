@@ -1,5 +1,5 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
-# $Id: muscleLinesToSurface.py,v 1.1 2006/01/05 14:58:32 cpbotha Exp $
+# $Id$
 
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin

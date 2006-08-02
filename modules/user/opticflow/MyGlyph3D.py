@@ -4,10 +4,8 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtktud
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class MyGlyph3D(scriptedConfigModuleMixin, moduleBase,
-                VTKErrorFuncMixin):
+class MyGlyph3D(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -18,7 +16,7 @@ class MyGlyph3D(scriptedConfigModuleMixin, moduleBase,
         
         moduleUtils.setupVTKObjectProgress(self, self._glyph3d,
                                            'Making 3D glyphs')
-        self.add_vtk_error_handler(self._glyph3d)
+        
                                            
         self._config.scaling = 1.0
 
@@ -73,6 +71,6 @@ class MyGlyph3D(scriptedConfigModuleMixin, moduleBase,
     
     def executeModule(self):
         self._glyph3d.Update()
-        self.check_vtk_error()
+        
 
 

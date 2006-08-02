@@ -3,11 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
 class doubleThreshold(moduleBase,
-                      vtkPipelineConfigModuleMixin,
-                      VTKErrorFuncMixin):
+                      vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -18,7 +16,7 @@ class doubleThreshold(moduleBase,
 
         moduleUtils.setupVTKObjectProgress(self, self._imageThreshold,
                                            'Thresholding data')
-        self.add_vtk_error_handler(self._imageThreshold)
+        
 
         self._outputTypes = {'Double': 'VTK_DOUBLE',
                              'Float' : 'VTK_FLOAT',
@@ -171,7 +169,7 @@ class doubleThreshold(moduleBase,
         self._imageThreshold.Update()
         #self._imageThreshold.Update()
 
-        self.check_vtk_error()
+        
 
         # fixed it now by adding observer to EndEvent of source of data
         # input in sliceviewer

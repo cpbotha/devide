@@ -1,4 +1,4 @@
-# $Id: reconstructionRDR.py,v 1.1 2006/01/05 14:58:32 cpbotha Exp $
+# $Id$
 
 # workaround to use adodbapi and other modules not
 # included with DeVIDE

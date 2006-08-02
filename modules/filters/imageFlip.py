@@ -4,9 +4,9 @@ from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageFlip(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
+
+class imageFlip(moduleBase, noConfigModuleMixin):
 
     """Flips image (volume) with regards to a single axis.
 
@@ -26,7 +26,7 @@ class imageFlip(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageFlip,
                                            'Flipping image')
-        self.add_vtk_error_handler(self._imageFlip)
+        
 
         self._viewFrame = self._createViewFrame(
             {'vtkImageFlip' : self._imageFlip})
@@ -75,7 +75,7 @@ class imageFlip(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._imageFlip.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

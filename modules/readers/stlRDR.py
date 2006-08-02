@@ -5,9 +5,9 @@ from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 import os
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class stlRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class stlRDR(moduleBase, filenameViewModuleMixin):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
@@ -27,7 +27,7 @@ class stlRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading STL data')
 
-        self.add_vtk_error_handler(self._reader)
+        
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -79,7 +79,7 @@ class stlRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
         # get the vtkSTLReader to try and execute (if there's a filename)
         if len(self._reader.GetFileName()):        
             self._reader.Update()
-            self.check_vtk_error()
+            
             
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

@@ -7,10 +7,8 @@ from moduleBase import moduleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class resampleImage(moduleBase, vtkPipelineConfigModuleMixin,
-                    VTKErrorFuncMixin):
+class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -19,7 +17,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin,
 
         moduleUtils.setupVTKObjectProgress(self, self._imageResample,
                                            'Resampling image.')
-        self.add_vtk_error_handler(self._imageResample)
+        
 
 
         # 0: nearest neighbour
@@ -116,7 +114,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin,
     
     def executeModule(self):
         self._imageResample.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

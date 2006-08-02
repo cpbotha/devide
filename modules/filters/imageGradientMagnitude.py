@@ -4,10 +4,8 @@ from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageGradientMagnitude(moduleBase, noConfigModuleMixin,
-                             VTKErrorFuncMixin):
+class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
 
     """Calculates the gradient magnitude of the input volume using central
     differences.
@@ -25,7 +23,7 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin,
         
         moduleUtils.setupVTKObjectProgress(self, self._imageGradientMagnitude,
                                            'Calculating gradient magnitude')
-        self.add_vtk_error_handler(self._imageGradientMagnitude)
+        
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self,
@@ -77,7 +75,7 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin,
     
     def executeModule(self):
         self._imageGradientMagnitude.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class seedConnect(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class seedConnect(scriptedConfigModuleMixin, moduleBase):
     """3D region growing.
 
     Finds all points connected to the seed points that also have values
@@ -27,11 +27,11 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._seedConnect,
                                            'Performing region growing')
-        self.add_vtk_error_handler(self._seedConnect)
+        
         
         moduleUtils.setupVTKObjectProgress(self, self._imageCast,
                                            'Casting data to unsigned char')
-        self.add_vtk_error_handler(self._imageCast)
+        
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
@@ -115,7 +115,7 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     def executeModule(self):
         self._sync_to_input_points()
         self._seedConnect.Update()
-        self.check_vtk_error()
+        
 
     def _sync_to_input_points(self):
         # extract a list from the input points

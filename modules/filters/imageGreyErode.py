@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageGreyErode(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class imageGreyErode(scriptedConfigModuleMixin, moduleBase):
 
     """Performs a greyscale 3D erosion on the input.
     
@@ -21,7 +21,7 @@ class imageGreyErode(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
-        self.add_vtk_error_handler(self._imageErode)
+        
                                            
         self._config.kernelSize = (3, 3, 3)
 
@@ -77,7 +77,7 @@ class imageGreyErode(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._imageErode.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

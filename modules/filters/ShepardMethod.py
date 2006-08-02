@@ -2,10 +2,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class ShephardMethod(scriptedConfigModuleMixin, moduleBase,
-                     VTKErrorFuncMixin):
+
+class ShephardMethod(scriptedConfigModuleMixin, moduleBase):
 
     """Apply Shepard Method to input.
     
@@ -20,7 +19,7 @@ class ShephardMethod(scriptedConfigModuleMixin, moduleBase,
         
         moduleUtils.setupVTKObjectProgress(self, self._shepardFilter,
                                            'Applying Shepard Method.')
-        self.add_vtk_error_handler(self._shepardFilter)
+        
                                            
         self._config.maximum_distance = 1.0
         
@@ -78,7 +77,7 @@ class ShephardMethod(scriptedConfigModuleMixin, moduleBase,
     
     def executeModule(self):
         self._imageDilate.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

@@ -2,10 +2,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class ImageLogic(scriptedConfigModuleMixin, moduleBase,
-                 VTKErrorFuncMixin):
+
+class ImageLogic(scriptedConfigModuleMixin, moduleBase):
 
     """Performs pointwise boolean logic operations on input images.
 
@@ -26,13 +25,13 @@ class ImageLogic(scriptedConfigModuleMixin, moduleBase,
         
         moduleUtils.setupVTKObjectProgress(self, self._image_logic,
                                            'Performing image logic')
-        self.add_vtk_error_handler(self._image_logic)
+        
 
         self._image_cast = vtk.vtkImageCast()
         moduleUtils.setupVTKObjectProgress(
             self, self._image_cast,
             'Casting scalar type before image logic')
-        self.add_vtk_error_handler(self._image_cast)
+        
 
         self._config.operation = 0
         self._config.output_true_value = 1.0
@@ -116,7 +115,7 @@ class ImageLogic(scriptedConfigModuleMixin, moduleBase,
             
             
         self._image_logic.Update()
-        self.check_vtk_error()
+        
 
 
 

@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class stlWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class stlWRT(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -33,7 +33,7 @@ class stlWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             moduleUtils.setupVTKObjectProgress(self, textobj[1],
                                                textobj[0])
 
-            self.add_vtk_error_handler(textobj[1])
+            
         
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -85,7 +85,7 @@ class stlWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     def executeModule(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
-            self.check_vtk_error()
+            
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

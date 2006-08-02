@@ -1,5 +1,5 @@
 # ifdocVWR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocVWR.py,v 1.3 2005/06/03 09:34:39 cpbotha Exp $
+# $Id$
 # module to interact with the ifdoc shoulder model
 
 # TODO:

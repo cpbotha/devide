@@ -3,9 +3,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class extractGrid(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class extractGrid(scriptedConfigModuleMixin, moduleBase):
     """Subsamples input dataset.
 
     This module makes use of the ParaView vtkPVExtractVOI class, which can
@@ -29,7 +29,7 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._extractGrid,
                                            'Subsampling structured grid.')
-        self.add_vtk_error_handler(self._extractGrid)
+        
 
         self._createWindow(
             {'Module (self)' : self,
@@ -55,7 +55,7 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
     def executeModule(self):
         self._extractGrid.Update()
-        self.check_vtk_error()
+        
 
     def getInputDescriptions(self):
         return ('VTK Dataset',)

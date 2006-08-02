@@ -4,9 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtiWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class vtiWRT(moduleBase, filenameViewModuleMixin):
     """Writes VTK image data or structured points in the VTK XML format.
     The data attribute is compressed.
 
@@ -26,7 +26,7 @@ class vtiWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self, self._writer,
             'Writing VTK ImageData')
 
-        self.add_vtk_error_handler(self._writer)
+        
 
         self._writer.SetDataModeToBinary()
 
@@ -84,7 +84,7 @@ class vtiWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self._writer.GetInput().Update()
             self._writer.Write()
 
-            self.check_vtk_error()
+            
 
     def view(self, parent_window=None):
         self._viewFrame.Show(True)

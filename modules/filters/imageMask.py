@@ -2,9 +2,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageMask(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class imageMask(scriptedConfigModuleMixin, moduleBase):
 
     """The input data (input 1) is masked with the mask (input 2).
 
@@ -26,7 +26,7 @@ class imageMask(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         moduleUtils.setupVTKObjectProgress(self, self._imageMask,
                                            'Masking image')
         
-        self.add_vtk_error_handler(self._imageMask)
+        
 
         # 2. vtkImageCast
         self._image_cast = vtk.vtkImageCast()
@@ -39,7 +39,7 @@ class imageMask(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
             self, self._image_cast,
             'Casting mask image to unsigned char')
         
-        self.add_vtk_error_handler(self._image_cast)
+        
 
         ###############################################################
         
@@ -111,6 +111,6 @@ class imageMask(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._imageMask.Update()
-        self.check_vtk_error()
+        
 
 

@@ -5,11 +5,11 @@ import moduleUtils
 import vtk
 import vtkdevide
 import wx
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
+
 from moduleMixins import colourDialogMixin
 
 class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
-                       VTKErrorFuncMixin, colourDialogMixin):
+                       colourDialogMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -27,9 +27,6 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
                             'colour TF' : self._ctf,
                             'volumeProp' : self._volumeProperty,
                             'volume' : self._volume}
-
-        for o in self._objectDict.values():
-            self.add_vtk_error_handler(o)
 
         # setup some config defaults
         # for segmetented data
@@ -191,7 +188,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
 
     def executeModule(self):
         self._splatMapper.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

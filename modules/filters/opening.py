@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class opening(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class opening(scriptedConfigModuleMixin, moduleBase):
 
     """Performs a greyscale morphological opening on the input image.
 
@@ -26,11 +26,11 @@ class opening(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
-        self.add_vtk_error_handler(self._imageDilate)
+        
 
         moduleUtils.setupVTKObjectProgress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
-        self.add_vtk_error_handler(self._imageErode)
+        
 
         self._config.kernelSize = (3, 3, 3)
 
@@ -91,8 +91,8 @@ class opening(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._imageErode.Update()
-        self.check_vtk_error()
+        
         self._imageDilate.Update()
-        self.check_vtk_error()
+        
 
 

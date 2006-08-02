@@ -5,17 +5,17 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
+
 
 class MIPRender(
-    scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+    scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
 
         #for o in self._objectDict.values():
-        #    self.add_vtk_error_handler(o)
+        #    
 
         # setup some config defaults
         self._config.threshold = 1250
@@ -99,7 +99,7 @@ class MIPRender(
 
     def executeModule(self):
         self._volume_mapper.Update()
-        self.check_vtk_error()
+        
 
 
     def _create_pipeline(self):
@@ -127,7 +127,7 @@ class MIPRender(
         self._volume_mapper.SetVolumeRayCastFunction(
             self._volume_raycast_function)
 
-        self.add_vtk_error_handler(self._volume_mapper)
+        
         moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 

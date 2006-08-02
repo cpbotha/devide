@@ -1,4 +1,4 @@
-# $Id: hessianDoG.py,v 1.1 2006/01/05 14:58:32 cpbotha Exp $
+# $Id$
 
 import fixitk as itk
 import genUtils

@@ -1,5 +1,5 @@
 # ifdocRDR copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id: ifdocRDR.py,v 1.5 2005/11/04 10:35:03 cpbotha Exp $
+# $Id$
 # module to read and interpret data from ifdoc output
 
 from genMixins import subjectMixin, updateCallsExecuteModuleMixin

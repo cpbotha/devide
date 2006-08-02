@@ -6,7 +6,7 @@ from moduleBase import moduleBase
 from moduleMixins import \
      vtkPipelineConfigModuleMixin, fileOpenDialogModuleMixin
 import moduleUtils
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
+
 
 import stat
 import wx
@@ -16,8 +16,7 @@ import moduleUtils
 
 class dicomRDR(moduleBase,
                vtkPipelineConfigModuleMixin,
-               fileOpenDialogModuleMixin,
-               VTKErrorFuncMixin):
+               fileOpenDialogModuleMixin):
 
     """Module for reading DICOM data.
 
@@ -37,7 +36,7 @@ class dicomRDR(moduleBase,
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
-        self.add_vtk_error_handler(self._reader)
+        
 
         self._viewFrame = ""
         self._createViewFrame()
@@ -152,7 +151,7 @@ class dicomRDR(moduleBase,
         # we're going to be reading some information from the _reader which
         # is only up to date after this call
         self._reader.UpdateInformation()
-        self.check_vtk_error()
+        
 
         # get current SeriesInstanceIdx from the DICOMReader
         # FIXME: the frikking SpinCtrl does not want to update when we call
@@ -239,7 +238,7 @@ class dicomRDR(moduleBase,
     def executeModule(self):
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
-        self.check_vtk_error()
+        
 
         # now get some metadata out and insert it in our output stream
 

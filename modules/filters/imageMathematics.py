@@ -3,10 +3,8 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageMathematics(scriptedConfigModuleMixin, moduleBase,
-                       VTKErrorFuncMixin):
+class imageMathematics(scriptedConfigModuleMixin, moduleBase):
 
     """Performs point-wise mathematical operations on one or two images.
 
@@ -33,7 +31,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase,
         
         moduleUtils.setupVTKObjectProgress(self, self._imageMath,
                                            'Performing image math')
-        self.add_vtk_error_handler(self._imageMath)
+        
                                            
         self._config.operation = 'Subtract'
         self._config.constantC = 0.0
@@ -115,7 +113,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase,
     
     def executeModule(self):
         self._imageMath.Update()
-        self.check_vtk_error()
+        
 
 
 

@@ -5,9 +5,9 @@ from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 import os
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
@@ -28,7 +28,7 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self, self._reader,
             'Reading vtk polydata')
 
-        self.add_vtk_error_handler(self._reader)
+        
 
         
         # we now have a viewFrame in self._viewFrame
@@ -84,7 +84,7 @@ class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
         # get the vtkPolyDataReader to try and execute (if there's a filename)
         if len(self._reader.GetFileName()):        
             self._reader.Update()
-            self.check_vtk_error()
+            
             
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

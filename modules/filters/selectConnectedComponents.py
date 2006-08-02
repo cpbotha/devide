@@ -3,10 +3,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase,
-                                VTKErrorFuncMixin):
+class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
+
     """3D region growing.
 
     Finds all points connected to the seed points that have the same values
@@ -26,11 +25,11 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase,
 
         moduleUtils.setupVTKObjectProgress(self, self._selectccs,
                                            'Marking selected components')
-        self.add_vtk_error_handler(self._selectccs)
+        
         
         moduleUtils.setupVTKObjectProgress(self, self._imageCast,
                                            'Casting data to unsigned long')
-        self.add_vtk_error_handler(self._imageCast)
+        
         
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
@@ -111,10 +110,10 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase,
         self._sync_to_input_points()
 
         self._imageCast.Update()
-        self.check_vtk_error()
+        
         
         self._selectccs.Update()
-        self.check_vtk_error()
+        
 
     def _sync_to_input_points(self):
         # extract a list from the input points

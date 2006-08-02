@@ -4,9 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class superQuadric(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class superQuadric(scriptedConfigModuleMixin, moduleBase):
     """Generates a SuperQuadric implicit function and polydata as outputs.
     
     $Revision: 1.6 $
@@ -61,7 +61,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         # setup progress for the processObject
         moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,
                                            "Synthesizing polydata.")
-        self.add_vtk_error_handler(self._superquadricSource)
+        
 
         self._createWindow(
             {'Module (self)' : self,
@@ -92,7 +92,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     def executeModule(self):
         # when we're executed, outputs become active
         self._superquadricSource.Update()
-        self.check_vtk_error()
+        
 
         # self._outputs[0] (the superquadric implicit) is always ready
 

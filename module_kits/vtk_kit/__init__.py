@@ -113,7 +113,7 @@ def init(theModuleManager):
     # setup some default error handling for VTK objects that have neither
     # ErrorEvent or WarningEvent observers
 
-    def observer_eow_error(o, e):
+    def observer_eow_error_DEPRECATED(o, e):
         # get a formatted stack trace
         stk = traceback.format_stack(None, 5)
         theModuleManager.log_error_list(
@@ -125,7 +125,8 @@ def init(theModuleManager):
         theModuleManager.log_warning(o.GetText())
     
     eow = vtkdevide.vtkEventOutputWindow()
-    eow.AddObserver('ErrorEvent', observer_eow_error)
+    # the new vtkPythonUtil wrapping code will turn this into an exception!
+    #eow.AddObserver('ErrorEvent', observer_eow_error)
     eow.AddObserver('WarningEvent', observer_eow_warning)
     
     eow.SetInstance(eow)

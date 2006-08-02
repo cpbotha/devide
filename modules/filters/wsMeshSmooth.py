@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
     """Module that runs vtkWindowedSincPolyDataFilter on its input data for
     mesh smoothing.
     """
@@ -19,7 +19,7 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._wsPDFilter,
                                            'Smoothing polydata')
-        self.add_vtk_error_handler(self._wsPDFilter)
+        
 
         # setup some defaults
         self._config.numberOfIterations = 20
@@ -96,5 +96,5 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
     def executeModule(self):
         self._wsPDFilter.Update()
-        self.check_vtk_error()
+        
 

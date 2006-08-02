@@ -2,9 +2,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class marchingCubes(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class marchingCubes(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 
@@ -15,7 +15,7 @@ class marchingCubes(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._contourFilter,
                                            'Extracting iso-surface')
-        self.add_vtk_error_handler(self._contourFilter)
+        
 
         # now setup some defaults before our sync
         self._config.iso_value = 128
@@ -69,5 +69,5 @@ class marchingCubes(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
     def executeModule(self):
         self._contourFilter.Update()
-        self.check_vtk_error()
+        
 

@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class probeFilter(noConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class probeFilter(noConfigModuleMixin, moduleBase):
     """
     Maps source values onto input dataset.
 
@@ -38,7 +38,7 @@ class probeFilter(noConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._probeFilter,
                                            'Mapping source on input')
-        self.add_vtk_error_handler(self._probeFilter)
+        
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self,
@@ -98,6 +98,6 @@ class probeFilter(noConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._probeFilter.Update()
-        self.check_vtk_error()
+        
 
         

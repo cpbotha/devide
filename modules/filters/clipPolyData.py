@@ -4,9 +4,9 @@ from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class clipPolyData(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
+
+class clipPolyData(moduleBase, noConfigModuleMixin):
     """Given an input polydata and an implicitFunction, this will clip
     the polydata.
 
@@ -23,7 +23,7 @@ class clipPolyData(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
         self._clipPolyData = vtk.vtkClipPolyData()
         moduleUtils.setupVTKObjectProgress(self, self._clipPolyData,
                                            'Calculating normals')
-        self.add_vtk_error_handler(self._clipPolyData)
+        
 
         self._viewFrame = self._createViewFrame(
             {'vtkClipPolyData' : self._clipPolyData})
@@ -76,7 +76,7 @@ class clipPolyData(moduleBase, noConfigModuleMixin, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._clipPolyData.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

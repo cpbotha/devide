@@ -4,9 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtpRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class vtpRDR(moduleBase, filenameViewModuleMixin):
     """Reads VTK PolyData in the VTK XML format.
 
     VTP is the preferred format for DeVIDE PolyData.
@@ -25,7 +25,7 @@ class vtpRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self, self._reader,
             'Reading VTK PolyData')
 
-        self.add_vtk_error_handler(self._reader)
+        
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -75,7 +75,7 @@ class vtpRDR(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
         # get the vtkPolyDataReader to try and execute
         if len(self._reader.GetFileName()):
             self._reader.Update()
-            self.check_vtk_error()
+            
 
     def view(self, parent_window=None):
         self._viewFrame.Show(True)

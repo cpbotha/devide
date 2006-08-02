@@ -3,10 +3,8 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageGreyDilate(scriptedConfigModuleMixin, moduleBase,
-                      VTKErrorFuncMixin):
+class imageGreyDilate(scriptedConfigModuleMixin, moduleBase):
 
     """Performs a greyscale 3D dilation on the input.
     
@@ -22,7 +20,7 @@ class imageGreyDilate(scriptedConfigModuleMixin, moduleBase,
         
         moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
-        self.add_vtk_error_handler(self._imageDilate)
+        
                                            
         self._config.kernelSize = (3, 3, 3)
 
@@ -78,7 +76,7 @@ class imageGreyDilate(scriptedConfigModuleMixin, moduleBase,
     
     def executeModule(self):
         self._imageDilate.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

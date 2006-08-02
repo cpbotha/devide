@@ -3,9 +3,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class imageMedian3D(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
     """Performs 3D morphological median on input data.
     
     $Revision: 1.5 $
@@ -28,7 +28,7 @@ class imageMedian3D(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageMedian3D,
                                            'Filtering with median')
-        self.add_vtk_error_handler(self._imageMedian3D)
+        
 
         self._createWindow(
             {'Module (self)' : self,
@@ -54,7 +54,7 @@ class imageMedian3D(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
 
     def executeModule(self):
         self._imageMedian3D.Update()
-        self.check_vtk_error()
+        
 
     def getInputDescriptions(self):
         return ('vtkImageData',)

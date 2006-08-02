@@ -7,10 +7,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class landmarkTransform(scriptedConfigModuleMixin, moduleBase,
-                        VTKErrorFuncMixin):
+class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
+
     """The landmarkTransform will calculate a 4x4 linear transform that maps
     from a set of source landmarks to a set of target landmarks.
 
@@ -42,7 +41,7 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase,
         scriptedConfigModuleMixin.__init__(self, configList)
 
         self._landmarkTransform = vtk.vtkLandmarkTransform()
-        self.add_vtk_error_handler(self._landmarkTransform)
+        
 
         self._createWindow(
             {'Module (self)' : self,
@@ -104,7 +103,7 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase,
     def executeModule(self):
         self._sync_with_input_points()
         self._landmarkTransform.Update()
-        self.check_vtk_error()
+        
 
     def view(self, parent_window=None):
         # if the window was visible already. just raise it

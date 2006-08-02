@@ -4,9 +4,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class closing(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
+
+class closing(scriptedConfigModuleMixin, moduleBase):
 
     """Performs a greyscale morphological closing on the input image.
 
@@ -27,11 +27,11 @@ class closing(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
-        self.add_vtk_error_handler(self._imageDilate)
+        
 
         moduleUtils.setupVTKObjectProgress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
-        self.add_vtk_error_handler(self._imageErode)
+        
 
         self._config.kernelSize = (3, 3, 3)
 
@@ -92,6 +92,6 @@ class closing(scriptedConfigModuleMixin, moduleBase, VTKErrorFuncMixin):
     
     def executeModule(self):
         self._imageDilate.Update()
-        self.check_vtk_error()
+        
         self._imageErode.Update()
-        self.check_vtk_error()
+        

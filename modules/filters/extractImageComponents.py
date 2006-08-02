@@ -4,10 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class extractImageComponents(scriptedConfigModuleMixin, moduleBase,
-                             VTKErrorFuncMixin):
+class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
+    
     """Extracts one, two or three components from multi-component image data.
 
     Specify the indices of the components you wish to extract and the number
@@ -23,7 +22,7 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase,
 
         moduleUtils.setupVTKObjectProgress(self, self._extract,
                                            'Extracting components.')
-        self.add_vtk_error_handler(self._extract)
+        
 
         self._config.component1 = 0
         self._config.component2 = 1
@@ -109,7 +108,7 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase,
         
     def executeModule(self):
         self._extract.Update()
-        self.check_vtk_error()
+        
 
         
         

@@ -4,9 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
 
@@ -21,7 +21,7 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self, self._writer,
             'Writing vtk structured points data')
 
-        self.add_vtk_error_handler(self._writer)
+        
 
         # we do this to save space - if you're going to be transporting files
         # to other architectures, change this to ASCII
@@ -77,7 +77,7 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
     def executeModule(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
-            self.check_vtk_error()
+            
 
     def view(self, parent_window=None):
         # if the frame is already visible, bring it to the top; this makes

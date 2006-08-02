@@ -4,9 +4,9 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.mixins import VTKErrorFuncMixin
 
-class metaImageWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
+
+class metaImageWRT(moduleBase, filenameViewModuleMixin):
     """Writes VTK image data or structured points in MetaImage format.
 
     """
@@ -24,7 +24,7 @@ class metaImageWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self, self._writer,
             'Writing VTK ImageData')
 
-        self.add_vtk_error_handler(self._writer)
+        
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
@@ -80,7 +80,7 @@ class metaImageWRT(moduleBase, filenameViewModuleMixin, VTKErrorFuncMixin):
             self._writer.GetInput().Update()
             self._writer.Write()
 
-            self.check_vtk_error()
+            
 
     def view(self, parent_window=None):
         self._viewFrame.Show(True)
