@@ -7,12 +7,6 @@ import vtk
 
 
 class vtiWRT(moduleBase, filenameViewModuleMixin):
-    """Writes VTK image data or structured points in the VTK XML format.
-    The data attribute is compressed.
-
-    This is the preferred way of saving image data in DeVIDE.
-    """
-
     def __init__(self, moduleManager):
 
         # call parent constructor
