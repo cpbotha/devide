@@ -55,16 +55,16 @@ class Tabs:
         
 
     def close_current(self):
-        if self.notebook.GetPageCount() < 2:
-            wx.LogWarning('You can not close the last remaining tab.')
-            wx.Log_FlushActive()
+        sel = self.notebook.GetSelection()
+        if sel >= 0:
+            if self.can_close(sel):
+                # save this in case we need it for the new tab
+                interp = self.tab_list[sel].editwindow.interp
+                self.notebook.DeletePage(sel)
+                del self.tab_list[sel]
 
-        else:
-            sel = self.notebook.GetSelection()
-            if sel >= 0:
-                if self.can_close(sel):
-                    self.notebook.DeletePage(sel)
-                    del self.tab_list[sel]
+            if self.notebook.GetPageCount() == 0:
+                self.create_new(interp)
 
     def create_new(self, interp):
         pane = wx.Panel(self.notebook, -1)

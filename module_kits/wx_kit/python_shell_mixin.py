@@ -180,7 +180,7 @@ class PythonShellMixin:
             """
             pylab.close(handle)
             if handle in self.mpl_figure_handles:
-                idx = self.mpl_figure_handles(handle)
+                idx = self.mpl_figure_handles.index(handle)
                 del self.mpl_figure_handles[idx]
 
         # replace our hook's documentation with the 'real' documentation
