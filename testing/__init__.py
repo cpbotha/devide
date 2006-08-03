@@ -6,10 +6,11 @@ import os
 import time
 import unittest
 
+from testing import basic_vtk
 from testing import basic_wx
 from testing import graph_editor
 
-module_list = [basic_wx, graph_editor]
+module_list = [basic_vtk, basic_wx, graph_editor]
 for m in module_list:
     reload(m)
 
@@ -20,7 +21,8 @@ class DeVIDETesting:
 
         self._devide_app = devide_app
         
-        suite_list = [basic_wx.get_suite(devide_app),
+        suite_list = [basic_vtk.get_suite(devide_app),
+                      basic_wx.get_suite(devide_app),
                       graph_editor.get_suite(devide_app)]
 
         # do check for presence of itk_kit
