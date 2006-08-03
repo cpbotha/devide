@@ -809,6 +809,7 @@ class sliceDirection:
             self._primaryCopyPlaneSource.SetOrigin(ps.GetOrigin())
             self._primaryCopyPlaneSource.SetPoint1(ps.GetPoint1())
             self._primaryCopyPlaneSource.SetPoint2(ps.GetPoint2())
+            self._primaryCopyPlaneSource.Update()
 
     def _syncOverlays(self):
         """Synchronise overlays to current main IPW.
@@ -894,7 +895,7 @@ class sliceDirection:
         # been modified, but we only do it for the output part that's
         # responsible for the slices polydata
         m = self.sliceDirections.slice3dVWR
-        m._moduleManager.modifyModule(m, 2) # part 2 does the slices
+        m._moduleManager.modifyModule(m, 3) # part 3 does the slices
         m._moduleManager.requestAutoExecuteNetwork(m)
 
 

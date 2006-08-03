@@ -57,7 +57,8 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     #PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0, 1, 2)}
     PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0,), 2 : (1,), 3 : (2,)}
     # part 1 does the points, part 2 does the implicit function,
-    # part 2 does the slices polydata.
+    # part 2 does the implicits
+    # part 3 does the slices polydata
     # this makes it possible for various parts of the slice3dVWR to trigger
     # only bits of the network that are necessary
 

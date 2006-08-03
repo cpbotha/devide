@@ -712,6 +712,8 @@ class implicits(s3dcGridMixin):
             # FIXME: incorporate "sense" setting
             ii.function.SetNormal(ii.widget.GetNormal())
 
+            self._auto_execute()
+
             # as a convenience, we return the name and ii
             return name, ii
         
@@ -728,8 +730,22 @@ class implicits(s3dcGridMixin):
             ii.function.SetCenter(ii.widget.GetCenter())
             ii.function.SetRadius(ii.widget.GetRadius())
 
+            self._auto_execute()
+
             # as a convenience, we return the name and ii
             return name, ii
         
         else:
             return None
+
+    def _auto_execute(self):
+        """Invalidate part 2 of the slice3dVWR module (the implicits part) and
+        request an auto execution.
+
+        This method should be called when any of the implicits is modified.
+        """
+        
+        mm = self.slice3dVWR._moduleManager
+        # part 2 is responsible for the implicit output
+        mm.modifyModule(self.slice3dVWR, 2)
+        mm.requestAutoExecuteNetwork(self.slice3dVWR)
