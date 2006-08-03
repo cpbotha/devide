@@ -3,11 +3,16 @@ import re
 
 def get_img_type_and_dim(itk_img):
 
-    # g will be e.g. ('float', '3') or ('unsigned_char', '2')
-    # note that we use the NON-greedy version so it doesn't break
-    # on vectors
-    g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
-                  itk_img.this).groups()
+    try:
+        t = itk_img.this
+    except AttributeError, e:
+        g = None
+    else:
+        # g will be e.g. ('float', '3') or ('unsigned_char', '2')
+        # note that we use the NON-greedy version so it doesn't break
+        # on vectors
+        g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
+                      itk_img.this).groups()
 
     if not g:
         raise TypeError, 'This method requires an ITK Image as input.'
