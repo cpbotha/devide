@@ -20,6 +20,7 @@ Changes since ng1phase1 6.3.9 (released on 9 march 2006):
  * DICOM support much improved
    . See also LR|AP|HF block in slice3dVWR
    . Much more memory efficient
+ * Better VTK error handling.
  * Much improved ITK to to VTK conversion.
  * New and improved About window.
  * As always, various bug fixes.
