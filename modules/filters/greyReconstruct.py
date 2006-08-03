@@ -8,19 +8,6 @@ import vtkdevide
 
 
 class greyReconstruct(noConfigModuleMixin, moduleBase):
-    """
-    Performs grey value reconstruction of mask I from marker J.
-
-    Theoretically, marker J is dilated and the infimum with mask I is
-    determined.  This infimum now takes the place of J.  This process is
-    repeated until stability.
-
-    This module uses a DeVIDE specific implementation of Luc Vincent's fast
-    hybrid algorithm for greyscale reconstruction.
-
-    $Revision: 1.2 $
-    """
-
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

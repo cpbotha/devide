@@ -7,14 +7,6 @@ import vtk
 
 class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
     
-    """Extracts one, two or three components from multi-component image data.
-
-    Specify the indices of the components you wish to extract and the number
-    of components.
-
-    $Revision: 1.3 $
-    """
-    
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

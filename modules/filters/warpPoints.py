@@ -6,11 +6,6 @@ import vtk
 
 
 class warpPoints(scriptedConfigModuleMixin, moduleBase):
-    """Warp input points according to their associated vectors.
-
-    $Revision: 1.4 $
-    """
-
     _defaultVectorsSelectionString = 'Default Active Vectors'
     _userDefinedString = 'User Defined'
 

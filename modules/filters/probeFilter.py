@@ -6,17 +6,6 @@ import vtk
 
 
 class probeFilter(noConfigModuleMixin, moduleBase):
-    """
-    Maps source values onto input dataset.
-
-    Input can be e.g. polydata and source a volume, in which case interpolated
-    values from the volume will be mapped on the vertices of the polydata,
-    i.e. the interpolated values will be associated as the attributes of the
-    polydata points.
-
-    $Revision: 1.4 $
-    """
-
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

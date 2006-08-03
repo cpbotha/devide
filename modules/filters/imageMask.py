@@ -6,11 +6,6 @@ import vtk
 
 class imageMask(scriptedConfigModuleMixin, moduleBase):
 
-    """The input data (input 1) is masked with the mask (input 2).
-
-    The output image is identical to the input image wherever the mask has
-    a value.  The output image is 0 everywhere else.
-    """
     
     def __init__(self, moduleManager):
         # initialise our base class

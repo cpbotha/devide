@@ -10,9 +10,6 @@ import vtk
 
 class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
 
-    """Performs 3D Gaussian filtering of the input volume.
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

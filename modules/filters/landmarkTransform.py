@@ -10,19 +10,6 @@ import vtk
 
 class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
 
-    """The landmarkTransform will calculate a 4x4 linear transform that maps
-    from a set of source landmarks to a set of target landmarks.
-
-    The mapping is optimised with a least-squares metric.  You have to supply
-    two sets of points, all points names in the source set have to start with
-    'Source' and all the points names in the target set have to start with
-    'Target'.
-
-    This module will supply a vtkTransform at its output.  By
-    connecting the vtkTransform to a transformPolyData module, you'll
-    be able to perform the actual transformation.
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

@@ -6,11 +6,6 @@ import vtk
 
 class imageGreyDilate(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs a greyscale 3D dilation on the input.
-    
-    $Revision: 1.2 $
-    """
-    
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

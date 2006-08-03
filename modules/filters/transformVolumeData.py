@@ -4,11 +4,6 @@ import moduleUtils
 import vtk
 
 class transformVolumeData(noConfigModuleMixin, moduleBase):
-    """Transform volume according to 4x4 homogeneous transform.
-
-    $Revision: 1.5 $
-    """
-
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

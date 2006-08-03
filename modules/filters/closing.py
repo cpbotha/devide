@@ -8,14 +8,6 @@ import vtk
 
 class closing(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs a greyscale morphological closing on the input image.
-
-    Dilation is followed by erosion.  The structuring element is ellipsoidal
-    with user specified sizes in 3 dimensions.  Specifying a size of 1 in any
-    dimension will disable processing in that dimension.
-
-    $Revision: 1.2 $
-    """
     
     def __init__(self, moduleManager):
         # initialise our base class

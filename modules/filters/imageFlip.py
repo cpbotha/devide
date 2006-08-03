@@ -8,12 +8,6 @@ import vtk
 
 class imageFlip(moduleBase, noConfigModuleMixin):
 
-    """Flips image (volume) with regards to a single axis.
-
-    At the moment, this flips by default about Z.  You can change this by
-    introspecting and calling the SetFilteredAxis() method via the
-    object inspection.
-    """
     
     def __init__(self, moduleManager):
         # initialise our base class

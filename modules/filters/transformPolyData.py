@@ -6,9 +6,6 @@ import wx
 import vtk
 
 class transformPolyData(moduleBase, noConfigModuleMixin):
-    """Given a tranform, this module will transform its input polydata.
-    """
-    
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

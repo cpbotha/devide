@@ -6,13 +6,6 @@ import vtk
 
 class ImageLogic(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs pointwise boolean logic operations on input images.
-
-    WARNING: vtkImageLogic in VTK 5.0 has a bug where it does require two
-    inputs even if performing a NOT or a NOP.  This has been fixed in VTK CVS.
-    DeVIDE will upgrade to > 5.0 as soon as a new stable VTK is released.
-    
-    """
 
     # get these values from vtkImageMathematics.h
     _operations = ('AND', 'OR', 'XOR', 'NAND', 'NOR', 'NOT', 'NOP')

@@ -6,11 +6,6 @@ import vtk
 
 
 class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
-    """Performs 3D morphological median on input data.
-    
-    $Revision: 1.5 $
-    """
-    
     
     def __init__(self, moduleManager):
         # initialise our base class

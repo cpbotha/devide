@@ -6,14 +6,6 @@ import vtk
 
 
 class appendPolyData(moduleBase, noConfigModuleMixin):
-    """DeVIDE encapsulation of the vtkAppendPolyDataFilter that enables us
-    to combine multiple PolyData structures into one.
-
-    DANGER WILL ROBINSON: contact the author, this module is BROKEN.
-
-    $Revision: 1.6 $
-    """
-
     _numInputs = 5
     
     def __init__(self, moduleManager):

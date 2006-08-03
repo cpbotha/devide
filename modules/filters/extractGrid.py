@@ -6,14 +6,6 @@ import vtkdevide
 
 
 class extractGrid(scriptedConfigModuleMixin, moduleBase):
-    """Subsamples input dataset.
-
-    This module makes use of the ParaView vtkPVExtractVOI class, which can
-    handle structured points, structured grids and rectilinear grids.
-
-    $Revision: 1.4 $
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

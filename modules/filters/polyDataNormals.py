@@ -6,10 +6,6 @@ import vtk
 
 
 class polyDataNormals(moduleBase, noConfigModuleMixin):
-    """Module that runs vtkWindowedSincPolyDataFilter on its input data for
-    mesh smoothing.
-    """
-    
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

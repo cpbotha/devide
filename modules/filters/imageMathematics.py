@@ -6,14 +6,6 @@ import vtk
 
 class imageMathematics(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs point-wise mathematical operations on one or two images.
-
-    The underlying logic can do far more than the UI shows at this moment.
-    Please let me know if you require more options.
-    
-    $Revision: 1.6 $
-    """
-
     # get these values from vtkImageMathematics.h
     _operations = {'Add' : 0,
                    'Subtract' : 1,

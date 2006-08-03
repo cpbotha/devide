@@ -6,12 +6,6 @@ import vtkdevide
 
 class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
 
-    """3D region growing.
-
-    Finds all points connected to the seed points that have the same values
-    as at the seed points.  This is primarily useful for selecting connected
-    components.
-    """
 
     def __init__(self, moduleManager):
 

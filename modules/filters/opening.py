@@ -7,15 +7,6 @@ import vtk
 
 class opening(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs a greyscale morphological opening on the input image.
-
-    Erosion is followed by dilation.  The structuring element is ellipsoidal
-    with user specified sizes in 3 dimensions.  Specifying a size of 1 in any
-    dimension will disable processing in that dimension.
-
-    $Revision: 1.2 $
-    """
-    
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)

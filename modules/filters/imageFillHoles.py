@@ -6,22 +6,6 @@ import vtkdevide
 
 
 class imageFillHoles(scriptedConfigModuleMixin, moduleBase):
-    """Filter to fill holes.
-
-    In binary images, holes are image regions with 0-value that are completely
-    surrounded by regions of 1-value.  This module can be used to fill these
-    holes.  This filling also works on greyscale images.
-
-    In addition, the definition of a hole can be adapted by 'deactivating'
-    image borders so that 0-value regions that touch these deactivated borders
-    are still considered to be holes and will be filled. 
-
-    This module is based on two DeVIDE-specific filters: a fast greyscale
-    reconstruction filter as per Luc Vincent and a special image border mask
-    generator filter.
-
-    $Revision: 1.3 $
-    """
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

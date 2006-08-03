@@ -5,20 +5,6 @@ import vtk
 import vtkdevide
 
 class extractHDomes(scriptedConfigModuleMixin, moduleBase):
-    """Extracts light structures, also known as h-domes.
-
-    The user specifies the parameter 'h' that indicates how much brighter the
-    light structures are than their surroundings.  In short, this algorithm
-    performs a fast greyscale reconstruction of the input image from a marker
-    that is the image - h.  The result of this reconstruction is subtracted
-    from the image.
-
-    See 'Morphological Grayscale Reconstruction in Image Analysis:
-    Applications and Efficient Algorithms', Luc Vincent, IEEE Trans. on Image
-    Processing, 1993.
-
-    $Revision: 1.2 $
-    """
 
     def __init__(self, moduleManager):
         

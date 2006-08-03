@@ -7,19 +7,6 @@ import vtk
 
 class morphGradient(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs a greyscale morphological gradient on the input image.
-
-    This is done by performing an erosion and a dilation of the input image
-    and then subtracting the erosion from the dilation.  The structuring
-    element is ellipsoidal with user specified sizes in 3 dimensions.
-    Specifying a size of 1 in any dimension will disable processing in that
-    dimension.
-
-    This module can also return both half gradients: the inner (image -
-    erosion) and the outer (dilation - image).
-    
-    $Revision: 1.3 $
-    """
     
     def __init__(self, moduleManager):
         # initialise our base class

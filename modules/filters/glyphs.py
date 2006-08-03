@@ -36,11 +36,6 @@ glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 
 
 class glyphs(scriptedConfigModuleMixin, moduleBase):
-    """Visualise vector field with glyphs.
-
-    $Revision: 1.4 $
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

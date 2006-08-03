@@ -8,11 +8,6 @@ INTEG_TYPE = ['RK2', 'RK4', 'RK45']
 INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
 
 class streamTracer(scriptedConfigModuleMixin, moduleBase):
-    """Visualise a vector field with stream lines.
-
-    $Revision: 1.2 $
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

@@ -9,17 +9,6 @@ import vtk
 
 class surfaceToDistanceField(scriptedConfigModuleMixin, moduleBase):
 
-    """Given an input surface (vtkPolyData), create an unsigned distance field
-    with the surface at distance 0.
-
-    The user must specify the dimensions and bounds of the output volume.
-
-    WARNING: this filter is *incredibly* slow, even for small volumes and
-    extremely simple geometry.  Only use this if you know exactly what
-    you're doing.
-    
-    $Revision: 1.2 $
-    """
 
     def __init__(self, moduleManager):
         # initialise our base class

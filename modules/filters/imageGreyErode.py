@@ -7,11 +7,6 @@ import vtk
 
 class imageGreyErode(scriptedConfigModuleMixin, moduleBase):
 
-    """Performs a greyscale 3D erosion on the input.
-    
-    $Revision: 1.2 $
-    """
-    
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
