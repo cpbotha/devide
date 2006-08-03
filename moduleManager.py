@@ -381,14 +381,19 @@ class moduleManager:
         """Interface method that can be used by clients to transfer module
         view to underlying logic.
 
-        This is usually called by moduleUtils and thunks through to the
-        relevant metaModule call.
+        This is called by moduleUtils (the ECASH button handlers) and thunks
+        through to the relevant metaModule call.
         """
 
         mModule = self._moduleDict[instance]
-        mModule.applyViewToLogic()
 
-        # execute on change
+        try:
+            mModule.applyViewToLogic()
+        except Exception, e:
+            # we are directly reporting the error, as this is used by
+            # a utility function that is too compact to handle an
+            # exception by itself.  Might change in the future.
+            self._devide_app.log_error_with_exception(str(e))
 
     def syncModuleViewWithLogic(self, instance):
         """Interface method that can be used by clients to transfer config
@@ -396,7 +401,14 @@ class moduleManager:
         """
 
         mModule = self._moduleDict[instance]
-        mModule.syncViewWithLogic()
+
+        try:
+            mModule.syncViewWithLogic()
+        except Exception, e:
+            # we are directly reporting the error, as this is used by
+            # a utility function that is too compact to handle an
+            # exception by itself.  Might change in the future.
+            self._devide_app.log_error_with_exception(str(e))
 
     def blockmodule(self, meta_module):
         meta_module.blocked = True

@@ -123,7 +123,7 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     def helpModule(dvModule):
         if ge:
             ge.show_module_help(mm.get_module_spec(dvModule))
-    
+
     # execute
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
                lambda e: (mm.applyModuleViewToLogic(d3module),
