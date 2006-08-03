@@ -7,12 +7,6 @@ import vtk
 
 
 class vtpWRT(moduleBase, filenameViewModuleMixin):
-    """Writes VTK PolyData in the VTK XML format.  The data attribute is
-    compressed.
-
-    This is the preferred way of saving PolyData in DeVIDE.
-    """
-
     def __init__(self, moduleManager):
 
         # call parent constructor

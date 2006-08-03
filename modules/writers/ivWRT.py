@@ -6,8 +6,6 @@ import vtk
 
 
 class ivWRT(moduleBase, filenameViewModuleMixin):
-    """ivWRT is an Inventor Viewer polygonal data writer devide module.
-    """
     def __init__(self, moduleManager):
 
         # call parent constructor

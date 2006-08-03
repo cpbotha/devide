@@ -7,17 +7,6 @@ import vtk
 
 
 class cptBrepWRT(moduleBase, filenameViewModuleMixin):
-    """Writes polydata to disc in the format required by the Closest
-    Point Transform (CPT) driver software.  Input data is put through
-    a triangle filter first, as that is what the CPT requires.
-
-    See the
-    <a href="http://www.acm.caltech.edu/~seanm/projects/cpt/cpt.html">CPT
-    home page</a> for more information about the algorithm and the
-    software.
-
-    $Revision: 1.3 $
-    """
 
     def __init__(self, moduleManager):
 

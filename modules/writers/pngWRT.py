@@ -9,17 +9,6 @@ import wx # needs this for wx.OPEN, we need to make this constant available
 
 
 class pngWRT(scriptedConfigModuleMixin, moduleBase):
-    """Writes a volume as a series of PNG images.
-
-    Set the file pattern by making use of the file browsing dialog.  Replace
-    the increasing index by a %d format specifier.  %3d can be used for
-    example, in which case %d will be replaced by an integer zero padded to 3
-    digits, i.e. 000, 001, 002 etc.  %d starts from 0.
-
-    Module by Joris van Zwieten.
-
-    $Revision: 1.3 $
-    """
 
     def __init__(self, moduleManager):
 

@@ -7,10 +7,6 @@ import vtk
 
 
 class metaImageWRT(moduleBase, filenameViewModuleMixin):
-    """Writes VTK image data or structured points in MetaImage format.
-
-    """
-
     def __init__(self, moduleManager):
 
         # call parent constructor
