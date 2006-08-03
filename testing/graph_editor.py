@@ -331,10 +331,12 @@ def get_some_suite(devide_app):
 def get_suite(devide_app):
     # only return this suite if wx_kit is available
     mm = devide_app.get_module_manager()
-    if 'wx_kit' not in mm.module_kits.module_kit_list:
-        return None
-    
+
     graph_editor_suite = unittest.TestSuite()
+
+    # all of these tests require the wx_kit
+    if 'wx_kit' not in mm.module_kits.module_kit_list:
+        return graph_editor_suite
 
     graph_editor_suite.addTest(create_geb_test('test_startup', devide_app))
     graph_editor_suite.addTest(
@@ -350,9 +352,8 @@ def get_suite(devide_app):
     t._devide_app = devide_app
     graph_editor_suite.addTest(t)
 
-    # only do this if the itk kit is available
-    mm = devide_app.get_module_manager()
-    # module_kit_list is up to date with the actual module_kits that were imported
+    # module_kit_list is up to date with the actual module_kits that
+    # were imported
     if 'itk_kit' in mm.module_kits.module_kit_list:
         t = TestITKBasic('test_confidence_seed_connect')
         t._devide_app = devide_app

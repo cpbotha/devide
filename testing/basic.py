@@ -3,7 +3,6 @@
 
 import unittest
 
-# fixme: these are WX-interface-specific tests and should be treated as such.
 class PythonShellTest(unittest.TestCase):
     def test_python_shell(self):
         """Test if PythonShell can be opened successfully.
@@ -23,15 +22,19 @@ class HelpContentsTest(unittest.TestCase):
             GetFrame().IsShown())
 
 def get_suite(devide_app):
-    basic_suite = unittest.TestSuite()
-    
-    t = PythonShellTest('test_python_shell')
-    t._devide_app = devide_app
-    basic_suite.addTest(t)
+    # both of these tests require wx
+    mm = devide_app.get_module_manager()
 
-    t = HelpContentsTest('test_help_contents')
-    t._devide_app = devide_app
-    basic_suite.addTest(t)
+    basic_suite = unittest.TestSuite()
+
+    if 'wx_kit' in mm.module_kits.module_kit_list:
+        t = PythonShellTest('test_python_shell')
+        t._devide_app = devide_app
+        basic_suite.addTest(t)
+
+        t = HelpContentsTest('test_help_contents')
+        t._devide_app = devide_app
+        basic_suite.addTest(t)
 
     return basic_suite
 
