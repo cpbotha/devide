@@ -6,16 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
-    """Neighbourhood-based 3D region growing.
-
-    This module will perform a 3D region growing starting from the
-    user-supplied points.  Only pixels with intensities between the
-    user-configurable thresholds and with complete neighbourhoods where all
-    pixels have intensities between the thresholds are considered valid
-    candidates.  The size of the neighbourhood can be set as well.
-    
-    $Revision: 1.4 $
-    """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)

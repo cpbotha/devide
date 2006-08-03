@@ -6,14 +6,6 @@ import module_kits.itk_kit
 from moduleMixins import scriptedConfigModuleMixin
 
 class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
-    """Performs a gradient-based anisotropic diffusion.
-
-    This will smooth homogeneous areas whilst preserving features
-    (e.g. edges).
-
-    $Revision: 1.4 $
-    """
-    
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

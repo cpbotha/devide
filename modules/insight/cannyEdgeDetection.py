@@ -6,12 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
-    """Performs 3D Canny edge detection on input image.
-
-
-    $Revision: 1.3 $
-    """
-    
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

@@ -6,13 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class fastMarching(scriptedConfigModuleMixin, moduleBase):
-    """Given a set of seed points and a speed image, this module will
-    propagate a moving front out from those points using the fast marching
-    level set formulation.
-
-    $Revision: 1.3 $
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

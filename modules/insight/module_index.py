@@ -20,6 +20,8 @@ class VTKtoITK:
 class cannyEdgeDetection:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Performs 3D Canny edge detection on input image.
+    """
 
 class confidenceSeedConnect:
     kits = ['itk_kit']
@@ -88,16 +90,43 @@ class demonsRegistration:
 class discreteLaplacian:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Calculates Laplacian of input image.
+
+    This makes use of a discrete implementation.  Due to this, the input
+    image should probably be pre-smoothed with e.g. a Gaussian as the
+    Laplacian is very sensitive to noise.
+
+    Note: One could also calculate the Laplacian by convolving with the
+    second derivative of a Gaussian.
+
+    Laplacian == secondPartialDerivative(f,x0) + ... +
+    secondPartialDerivative(f,xn)
+    """
 
 # had to disable this one due to stupid itkLevelSetNode non-wrapping
 # in ITK-2-4-1
 #class fastMarching:
 #    kits = ['itk_kit']
 #    cats = ['Insight']
+#    help = """Given a set of seed points and a speed image, this module will
+#    propagate a moving front out from those points using the fast marching
+#    level set formulation.
+#    """
 
 class gaussianConvolve:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Convolves input with Gaussian, or its first or second
+    derivative.
+    
+    Only a single dimension is convolved (i.e. the filter is separated).
+    Select which dimension in the View/Config window.
+
+    The convolution is implemented as an IIR filter.
+
+    $Revision: 1.4 $
+    """
+
 
 class geodesicActiveContour:
     kits = ['itk_kit']
@@ -122,6 +151,11 @@ class geodesicActiveContour:
 class gradientAnisotropicDiffusion:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Performs a gradient-based anisotropic diffusion.
+
+    This will smooth homogeneous areas whilst preserving features
+    (e.g. edges).
+    """
 
 class gradientMagnitudeGaussian:
     kits = ['itk_kit']
@@ -231,6 +265,15 @@ class levelSetMotionRegistration:
 class nbhSeedConnect:
     kits = ['itk_kit']
     cats = ['Insight']
+    help = """Neighbourhood-based 3D region growing.
+
+    This module will perform a 3D region growing starting from the
+    user-supplied points.  Only pixels with intensities between the
+    user-configurable thresholds and with complete neighbourhoods where all
+    pixels have intensities between the thresholds are considered valid
+    candidates.  The size of the neighbourhood can be set as well.
+    """
+
 
 # reactivate when I rework the registration modules
 #class register2D:

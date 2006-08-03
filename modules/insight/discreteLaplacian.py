@@ -6,20 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 
 class discreteLaplacian(noConfigModuleMixin, moduleBase):
-    """Calculates Laplacian of input image.
-
-    This makes use of a discrete implementation.  Due to this, the input
-    image should probably be pre-smoothed with e.g. a Gaussian as the
-    Laplacian is very sensitive to noise.
-
-    Note: One could also calculate the Laplacian by convolving with the
-    second derivative of a Gaussian.
-
-    Laplacian == secondPartialDerivative(f,x0) + ... +
-    secondPartialDerivative(f,xn)
-
-    $Revision: 1.2 $
-    """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)

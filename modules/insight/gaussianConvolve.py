@@ -6,14 +6,6 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
-    """Convolves input with Gaussian, or its first or second derivative.
-    Only a single dimension is convolved (i.e. the filter is separated).
-    Select which dimension in the View/Config window.
-
-    The convolution is implemented as an IIR filter.
-
-    $Revision: 1.4 $
-    """
 
     _orders = ['Zero', 'First', 'Second']
     
