@@ -105,13 +105,13 @@ class discreteLaplacian:
 
 # had to disable this one due to stupid itkLevelSetNode non-wrapping
 # in ITK-2-4-1
-#class fastMarching:
-#    kits = ['itk_kit']
-#    cats = ['Insight']
-#    help = """Given a set of seed points and a speed image, this module will
-#    propagate a moving front out from those points using the fast marching
-#    level set formulation.
-#    """
+class fastMarching:
+    kits = ['itk_kit']
+    cats = ['Insight']
+    help = """Given a set of seed points and a speed image, this module will
+    propagate a moving front out from those points using the fast marching
+    level set formulation.
+    """
 
 class gaussianConvolve:
     kits = ['itk_kit']

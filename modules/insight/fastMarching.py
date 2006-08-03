@@ -12,14 +12,17 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
         # setup config thingy
         self._config.stoppingValue = 256
         self._config.normalisationFactor = 1.0
+        self._config.initial_distance = 0
 
         configList = [
-            ('Stoping value:', 'stoppingValue', 'base:float', 'text',
+            ('Stopping value:', 'stoppingValue', 'base:float', 'text',
              'When an arrival time is greater than the stopping value, the '
              'algorithm terminates.'),
             ('Normalisation factor:', 'normalisationFactor', 'base:int',
              'text',
-             'Values in the speed image are divide by this factor.')]
+             'Values in the speed image are divide by this factor.'),
+            ('Initial distance:', 'initial_distance', 'base:int', 'text',
+             'Initial distance of fast marching seed points.')]
         
         scriptedConfigModuleMixin.__init__(self, configList)
 
@@ -27,7 +30,8 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
         self._inputPoints = None
         
         # setup the pipeline
-        self._fastMarching = itk.itkFastMarchingImageFilterF3F3_New()
+        if3 = itk.Image.F3
+        self._fastMarching = itk.FastMarchingImageFilter[if3,if3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._fastMarching, 'itkFastMarchingImageFilter',
@@ -104,7 +108,8 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
 
         if len(self._inputPoints) > 0:
 
-            seeds = itk.itkNodeContainerF3_New()
+            seeds = itk.VectorContainer[itk.UI,
+                                        itk.LevelSetNode[itk.F, 3]].New()
             # this will clear it
             seeds.Initialize()
 
@@ -114,20 +119,20 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
                 # that doesn't start at 0,0,0... ITK doesn't understand this
                 x,y,z = [int(i) for i in ip['discrete']]
 
-                idx = itk.itkIndex3()
+                idx = itk.Index[3]()
                 idx.SetElement(0, x)
                 idx.SetElement(1, y)
                 idx.SetElement(2, z)
 
-                node = itk.itkLevelSetNodeF3()
-                node.SetValue(0)
+                node = itk.LevelSetNode[itk.F, 3]()
+                node.SetValue(self._config.initial_distance)
                 node.SetIndex(idx)
 
                 seeds.InsertElement(nodePos, node)
                 
                 print "Added %d,%d,%d at %d" % (x,y,z,nodePos)
 
-            self._fastMarching.SetTrialPoints(seeds.GetPointer())
+            self._fastMarching.SetTrialPoints(seeds)
 
 
 
