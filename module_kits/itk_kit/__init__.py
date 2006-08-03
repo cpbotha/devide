@@ -89,8 +89,8 @@ def init(theModuleManager):
     if hasattr(sys, 'frozen') and sys.frozen:
         # if we're frozen, make sure we grab the wrapitk contained in this kit
         p1 = os.path.dirname(__file__)
-        p2 = os.path.join(p1, 'wrapitk/python')
-        p3 = os.path.join(p1, 'wrapitk/lib')
+        p2 = os.path.join(p1, os.path.join('wrapitk', 'python'))
+        p3 = os.path.join(p1, os.path.join('wrapitk', 'lib'))
         sys.path.insert(0, p2)
         sys.path.insert(0, p3)
 

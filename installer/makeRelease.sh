@@ -70,6 +70,7 @@ if [ `uname` != Linux ]; then
 touch distdevide/NO_ITK
 c:/Program\ Files/NSIS/makensis.exe devide.nsi
 cp devidesetup.exe devidesetup`date +%Y%m%d`.exe
+rm -f distdevide/NO_ITK
 
 else
 
