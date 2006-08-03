@@ -563,10 +563,17 @@ class ConfigVtkObj:
                 else:
                     toolTip = "Type filename or click browse to choose file"
 
+                class_name = self._vtk_obj.GetClassName()
+                if class_name.endswith('Writer'):
+                    file_mode = wx.SAVE
+                else:
+                    file_mode = wx.OPEN
+                
                 fbb = FileBrowseButton(
                     panel, -1,
                     toolTip=toolTip,
                     labelText=None,
+                    fileMode = file_mode,
                     changeCallback=lambda evt, i=i:
                     self.handlerGetSetFileBrowseButton(evt, i))
 
