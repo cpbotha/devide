@@ -96,47 +96,14 @@ class VtkDirMethodParser:
                 for method in self.methods[:]:
                     if re.match ("GetNumberOf\w*InFile", method):
                         self.methods.remove (method)
-            # no need to check other bugs.
-            #return
 
-	done = 0            
-	# Bug in vtkRenderWindows:(
-        if re.match ("vtk\w*RenderWindow", vtk_obj.GetClassName ()):
-	    for method in self.methods[:]:
-		if string.find (method, "FileName") > -1:
-		    self.methods.remove (method)
-		    done = done +1
-		elif string.find (method, "StereoCapableWindow") > -1:
-		    self.methods.remove (method)
-		    done = done +1
-		elif string.find (method, "Position") > -1:
-		    self.methods.remove (method)
-		    done = done + 1
-		elif string.find (method, "EventPending") > -1:
-		    self.methods.remove (method)
-		    done = done + 1		    
-		elif done == 7:
-		    break
 
-	# Severe bug - causes segfault in older VTK releases
-	if re.match ("vtk\w*Reader", vtk_obj.GetClassName ()):
-	    #self.methods = []
-	    for method in self.methods[:]:
-		if string.find (method, "Name") > -1:
-		    self.methods.remove (method)
-                elif string.find (method, "InputString") > -1:
-		    self.methods.remove (method)
-                # Infinite loop bug.
-                elif re.match ("GetNumberOf\w*InFile", method):
-                    self.methods.remove (method)
-
-        # Writer's don't have outputs, so ReleaseDataFlag is not relevant
-        # these days, VTK 5.0 even complains about access to these methods
-	if vtk_obj.GetClassName().endswith('Writer'):
-	    #self.methods = []
-	    for method in self.methods[:]:
-                if method.find("ReleaseDataFlag") >= 0:
-		    self.methods.remove (method)
+            # Writer's don't have outputs, so ReleaseDataFlag is not relevant
+            # these days, VTK 5.0 even complains about access to these methods
+            if vtk_obj.GetClassName().endswith('Writer'):
+                for method in self.methods[:]:
+                    if method.find("ReleaseDataFlag") >= 0:
+                        self.methods.remove (method)
 
     def parse_methods (self, vtk_obj):
 	self.initialize_methods (vtk_obj)
