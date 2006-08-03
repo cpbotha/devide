@@ -182,6 +182,9 @@ numpy_tree = Tree(
     prefix=os.path.join('module_kits/numpy_kit/numpy'), 
     excludes=['*.py', 'doc', 'docs'])
 
+testing_tree = Tree(os.path.join(APP_DIR, 'testing'), 'testing',
+                    ['.svn', '*~', '*.pyc'])
+
 # and some miscellaneous files
 misc_tree = [('defaults.py', '%s/defaults.py' % (APP_DIR,), 'DATA')]
 
@@ -198,7 +201,7 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
 ######################################################################
 # sanitise a.pure
 remove_pure_finds = ['numpy', 'numarray', 'Numeric']
-remove_pure_starts = ['modules.', 'module_kits']
+remove_pure_starts = ['modules.', 'module_kits', 'testing']
 
 for i in range(len(a.pure)-1, -1, -1):
     if helper_remove_finds(a.pure[i][1], remove_pure_finds) or \
@@ -247,7 +250,8 @@ exe = EXE(pyz,
 
 all_binaries = a.binaries + modules_tree + module_kits_tree + vpli + \
     mpl_data_dir + numpy_tree + \
-    extraLibs + segTree + snipTree + dataTree + docsTree + misc_tree
+    extraLibs + segTree + snipTree + dataTree + docsTree + misc_tree + \
+    testing_tree
 
 
 coll = COLLECT(exe,
@@ -255,9 +259,4 @@ coll = COLLECT(exe,
                strip=0,
                name='distdevide')
 
-# now do custom stuff afterwards
-#if 'itk_kit' in module_kit_list:
-#    import wrapitk_tree
-#    wrapitk_tree.install(os.path.join(APP_DIR,'module_kits/itk_kit'))
-#    allBinaries += wrapitk_tree.get_wrapitk_tree()
-
+# wrapitk_tree is packaged completely separately
