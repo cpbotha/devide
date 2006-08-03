@@ -21,7 +21,9 @@ class HelpContentsTest(unittest.TestCase):
             self._devide_app.get_interface()._helpClass._htmlHelpController.\
             GetFrame().IsShown())
 
-def get_suite(devide_app):
+def get_suite(devide_testing):
+    devide_app = devide_testing.devide_app
+    
     # both of these tests require wx
     mm = devide_app.get_module_manager()
 

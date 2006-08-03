@@ -328,8 +328,8 @@ def get_some_suite(devide_app):
     return some_suite
     
 
-def get_suite(devide_app):
-    # only return this suite if wx_kit is available
+def get_suite(devide_testing):
+    devide_app = devide_testing.devide_app
     mm = devide_app.get_module_manager()
 
     graph_editor_suite = unittest.TestSuite()

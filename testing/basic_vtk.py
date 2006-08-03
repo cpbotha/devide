@@ -24,7 +24,9 @@ class BasicVTKTest(unittest.TestCase):
             self.fail('VTK object did not raise Python exception.')
 
 
-def get_suite(devide_app):
+def get_suite(devide_testing):
+    devide_app = devide_testing.devide_app
+    
     mm = devide_app.get_module_manager()
 
     basic_vtk_suite = unittest.TestSuite()

@@ -19,11 +19,11 @@ for m in module_list:
 class DeVIDETesting:
     def __init__(self, devide_app):
 
-        self._devide_app = devide_app
+        self.devide_app = devide_app
         
-        suite_list = [basic_vtk.get_suite(devide_app),
-                      basic_wx.get_suite(devide_app),
-                      graph_editor.get_suite(devide_app)]
+        suite_list = [basic_vtk.get_suite(self),
+                      basic_wx.get_suite(self),
+                      graph_editor.get_suite(self)]
 
         # do check for presence of itk_kit
         #if _devideApp.mainConfig.useInsight:
@@ -36,7 +36,7 @@ class DeVIDETesting:
         runner.run(self.main_suite)
 
     def runSomeTest(self):
-        some_suite = graph_editor.get_some_suite(self._devide_app)
+        some_suite = graph_editor.get_some_suite(self)
 
         runner = unittest.TextTestRunner()
         runner.run(some_suite)
