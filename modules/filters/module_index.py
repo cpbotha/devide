@@ -279,7 +279,7 @@ class morphGradient:
 
 class opening:
     kits = ['vtk_kit']
-    cats = ['Filters',' Morphology']
+    cats = ['Filters', 'Morphology']
     keywords = ['morphology']
     help = """Performs a greyscale morphological opening on the input image.
 
