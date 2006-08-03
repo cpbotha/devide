@@ -18,15 +18,6 @@ class dicomRDR(moduleBase,
                vtkPipelineConfigModuleMixin,
                fileOpenDialogModuleMixin):
 
-    """Module for reading DICOM data.
-
-    Add DICOM files (they may be from multiple series) by using the 'Add'
-    button on the view/config window.  You can select multiple files in
-    the File dialog by holding shift or control whilst clicking.
-
-    $Revision: 1.12 $
-    """
-    
     def __init__(self, moduleManager):
         # call the constructor in the "base"
         moduleBase.__init__(self, moduleManager)

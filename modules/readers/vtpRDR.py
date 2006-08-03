@@ -7,11 +7,6 @@ import vtk
 
 
 class vtpRDR(moduleBase, filenameViewModuleMixin):
-    """Reads VTK PolyData in the VTK XML format.
-
-    VTP is the preferred format for DeVIDE PolyData.
-    """
-
     def __init__(self, moduleManager):
 
         # call parent constructor

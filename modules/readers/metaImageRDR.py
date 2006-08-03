@@ -8,14 +8,6 @@ import wx
 
 
 class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
-    """Reads MetaImage format files.
-
-    MetaImage files have an .mha or .mhd file extension.  .mha files are
-    single files containing header and data, whereas .mhd are separate headers
-    that refer to a separate raw data file.
-
-    $Revision: 1.2 $
-    """
     
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
