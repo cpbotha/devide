@@ -1,4 +1,4 @@
-Release ng1phase1 6.4.00 - Fri Mar 10 12:01:35 WEST 2006
+Release ng1phase1 6.8.00 - Fri Mar 10 12:01:35 WEST 2006
 
 Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
@@ -10,7 +10,9 @@ Changes since ng1phase1 6.3.9 (released on 9 march 2006):
  * the CodeRunner module.  Try it, you'll like it.
  * All DLLs are explicitly rebased on Windows, resulting in faster
    startup and significantly less memory use.
- * Upgraded to ITK 2.8
+ * Upgraded to ITK 2.8, and...
+ * WrapITK integration!  This next-generation wrapping interface makes
+   working with ITK fun.  Really.
  * numpy, matplotlib and statistics kits
     - you can now generate Matlab-quality figures in DeVIDE
       (try some demos out by Main Menu | Window | Python Shell then
