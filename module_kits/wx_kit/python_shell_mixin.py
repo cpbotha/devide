@@ -2,6 +2,17 @@ import code
 import sys
 import wx
 
+def sanitise_text(text):
+    """When we process text before saving or executing, we sanitise it
+    by changing all CR/LF pairs into LF, and then nuking all remaining CRs.
+    This consistency also ensures that the files we save have the correct
+    line-endings depending on the operating system we are running on.
+    """
+    
+    text = text.replace('\r\n', '\n')
+    text = text.replace('\r', '')
+    return text
+
 class PythonShellMixin:
 
     def __init__(self, shell_window, module_manager):
@@ -33,11 +44,7 @@ class PythonShellMixin:
             f = open(filename, 'r')
                 
             t = f.read()
-            # replace stupid DOS CR/LF with newline
-            t = t.replace('\r\n', '\n')
-            # any CRs that are left are nuked
-            t = t.replace('\r', '')
-
+            t = sanitise_text(t)
             f.close()
                 
             return filename, t
@@ -46,6 +53,8 @@ class PythonShellMixin:
             return (None, None)
 
     def _save_python_file(self, filename, text):
+        text = sanitise_text(text)
+        
         f = open(filename, 'w')
         f.write(text)
         f.close()
@@ -78,8 +87,7 @@ class PythonShellMixin:
         runsource.  Python does completely rule.
         """
 
-        text = text.replace('\r\n', '\n')
-        text = text.replace('\r', '\n')
+        text = sanitise_text(text)
         
         interp = self.shell_window.interp
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
