@@ -84,10 +84,14 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
                                      for i in output_type.split()]),
                             dims)
 
-            if short_string != self._vtk2itk_short_string:
-                self._vtk2itk = itk.VTKImageToImageFilter[
-                    getattr(itk.Image, short_string)].New()
-                self._vtk2itk_short_string = short_string
+            # we could cache this as shown below, but experience shows
+            # that the connection module often gets confused when its
+            # input data remains the same w.r.t. type, but changes in
+            # extent for instance.
+            #if short_string != self._vtk2itk_short_string:
+            self._vtk2itk = itk.VTKImageToImageFilter[
+                getattr(itk.Image, short_string)].New()
+            self._vtk2itk_short_string = short_string
                 
             if output_type == input_type:
                 # we don't need the cast
