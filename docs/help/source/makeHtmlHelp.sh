@@ -11,7 +11,7 @@ mkdir build
 if [ `uname` == Linux ]; then
 TEX2RTF='tex2rtf'
 else
-TEX2RTF='tex2rtf.exe'
+TEX2RTF='c:/apps/Tex2RTF/tex2rtf.exe'
 fi
 
 $TEX2RTF devideHelp.tex build/devidehelp -macros devideHelp.ini
