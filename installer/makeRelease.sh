@@ -85,7 +85,8 @@ cp devide.tar.bz2 devide`date +%Y%m%d`.tar.bz2
 fi
 
 echo "===== Creating self-contained WrapITK in itk_kit..."
-python wrapitk_tree.py distdevide/module_kits/itk_kit
+# we need to pass the top-level app dir
+python wrapitk_tree.py distdevide
 
 echo "===== Rebasing all DLLs..."
 sh ./rebase_dlls.sh
