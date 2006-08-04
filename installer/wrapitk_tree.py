@@ -36,8 +36,10 @@ def get_wrapitk_tree2():
     # WrapITK/lib -> itk_kit/wrapitk/lib
     lib_files = glob.glob('%s/*.py' % (itkConfig.swig_lib,))
     lib_files.extend(glob.glob('%s/*.so' % (itkConfig.swig_lib,)))
+
     wrapitk_lib = [('module_kits/itk_kit/wrapitk/lib/%s' %
                     (os.path.basename(i),), i, 'DATA') for i in lib_files]
+
 
     # WrapITK/Python -> itk_kit/wrapitk/python
     py_path = os.path.normpath(os.path.join(itkConfig.config_py, '..'))
@@ -64,6 +66,15 @@ def get_wrapitk_tree():
     # WrapITK/lib -> itk_kit/wrapitk/lib (py files, so/dll files)
     lib_files = glob.glob('%s/*.py' % (itkConfig.swig_lib,))
     lib_files.extend(glob.glob('%s/*.%s' % (itkConfig.swig_lib, SO_EXT)))
+
+    # on Windows we also need the SwigRuntime.dll in c:/opt/WrapITK/bin!
+    # the files above on Windows are in:
+    # C:\\opt\\WrapITK\\lib\\InsightToolkit\\WrapITK\\lib
+    if sys.platform == 'win32':
+        bin_path = os.path.normpath(
+            os.path.join(itkConfig.swig_lib, '../../../../bin'))
+        lib_files.extend(glob.glob('%s/%s' % (bin_path, SO_GLOB)))
+    
     wrapitk_lib = [('lib/%s' %
                     (os.path.basename(i),), i) for i in lib_files]
 
@@ -118,9 +129,11 @@ def copy3(src, dst):
         shutil.copy2(src, dst)
 
 
-def install(itk_kit_dir):
+def install(devide_app_dir):
     """Install a self-contained wrapitk installation in itk_kit_dir.
     """
+
+    itk_kit_dir = os.path.join(devide_app_dir, 'module_kits/itk_kit')
 
     print "Deleting existing wrapitk dir."
     sys.stdout.flush()
@@ -145,11 +158,27 @@ def install(itk_kit_dir):
     sys.stdout.flush()
     for f in itk_so_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
+
+    # on Windows, it's not easy setting the DLL load path in a running
+    # application.  You could try SetDllDirectory, but that only works
+    # since XP SP1.  You could also change the current dir, but our DLLs
+    # are lazy loaded, so no go.  An invoking batchfile is out of the
+    # question.
+    print "Moving all SOs back to main DeVIDE dir [WINDOWS] ..."
+    lib_path = os.path.join(witk_dest_dir, 'lib')
+    so_files = glob.glob(os.path.join(lib_path, SO_GLOB))
+    for so_file in so_files:
+        shutil.move(so_file, devide_app_dir)
+
+    #also write list of DLLs that were moved to lib_path/moved_dlls.txt
+    f = file(os.path.join(lib_path, 'moved_dlls.txt'), 'w')
+    f.writelines(['%s\n' % (os.path.basename(fn),) for fn in so_files])
+    f.close()
     
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "Specify itk_kit dir as argument."
+        print "Specify devide app dir as argument."
 
     else:
         install(sys.argv[1])

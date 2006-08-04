@@ -101,13 +101,12 @@ def init(theModuleManager):
         else:
             so_path_key = 'LD_LIBRARY_PATH'
 
+        # this doesn't work on Linux in anycase
         if so_path_key in os.environ:
             os.environ[so_path_key] = '%s%s%s' % \
                                       (p3, os.pathsep, os.environ[so_path_key])
         else:
             os.environ[so_path_key] = p3
-
-        print os.environ[so_path_key]
 
 
     # with WrapITK, this takes almost no time
