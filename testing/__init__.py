@@ -46,7 +46,7 @@ class DeVIDETesting:
         return os.path.join(os.path.dirname(__file__), 'images')
         
     def compare_png_images(self, image1_filename, image2_filename,
-                           threshold=16):
+                           threshold=16, allow_shift=False):
 
         """Compare two PNG images on disc.  No two pixels may differ with more
         than the default threshold.
@@ -83,6 +83,11 @@ class DeVIDETesting:
 
         idiff = vtk.vtkImageDifference()
         idiff.SetThreshold(threshold)
+
+        if allow_shift:
+            idiff.AllowShiftOn()
+        else:
+            idiff.AllowShiftOff()
 
         idiff.SetImage(ec1.GetOutput())
         idiff.SetInputConnection(ec2.GetOutputPort())

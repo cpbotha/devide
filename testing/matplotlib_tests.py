@@ -28,9 +28,13 @@ class MPLTest(unittest.TestCase):
         xlabel('x')
         ylabel('f(x)')
 
+        # width and height in inches
+        f.set_figwidth(7.9)
+        f.set_figheight(5.28)
+
         # and save it to disc
         filename1 = tempfile.mktemp(suffix='.png', prefix='tmp', dir=None)
-        f.savefig(filename1)
+        f.savefig(filename1, dpi=100)
 
         # get rid of the figure
         python_shell.mpl_close_figure(f)
@@ -41,8 +45,8 @@ class MPLTest(unittest.TestCase):
 
         err = self._devide_testing.compare_png_images(test_fn, filename1)
 
-        self.failUnless(err == 0, '%s differs from %s.' %
-                        (filename1, test_fn))
+        self.failUnless(err == 0, '%s differs from %s, err = %.2f' %
+                        (filename1, test_fn, err))
 
 
 def get_suite(devide_testing):
