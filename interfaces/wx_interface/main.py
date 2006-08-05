@@ -148,6 +148,10 @@ class WXInterface(wx.App):
         self._devide_app.close()
 
     def close(self):
+        # python shell and all its sub-windows need to be closed as well
+        if self._python_shell:
+            self._python_shell.close()
+        
         # take care of the graphEditor if it exists
         if self._graph_editor:
             self._graph_editor.close()

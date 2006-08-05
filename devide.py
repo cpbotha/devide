@@ -181,6 +181,9 @@ class DeVIDEApp:
         self._interface.close()
         self.moduleManager.close()
 
+        # and make 100% we're done
+        sys.exit()
+
     def get_devide_version(self):
         return DEVIDE_VERSION
 
