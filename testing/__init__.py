@@ -57,15 +57,26 @@ class DeVIDETesting:
         r1 = vtk.vtkPNGReader()
         r1.SetFileName(image1_filename)
         r1.Update()
-        # sometimes PNG files have an ALPHA component we have to chuck away
-        ec1 = vtk.vtkImageExtractComponents()
-        ec1.SetComponents(0,1,2)
-        ec1.SetInput(r1.GetOutput())
         
         r2 = vtk.vtkPNGReader()
         r2.SetFileName(image2_filename)
         r2.Update()
+
+        # there's a bug in VTK 5.0.1 where input images of unequal size
+        # (depending on which input is larger) will cause a segfault
+        # see http://www.vtk.org/Bug/bug.php?op=show&bugid=3586
+        # se we check for that situation and bail if it's the case
+        if r1.GetOutput().GetDimensions() != r2.GetOutput().GetDimensions():
+            em = 'Input images %s and %s are not of equal size.' % \
+                 (image1_filename, image2_filename)
+            raise RuntimeError, em
+
         # sometimes PNG files have an ALPHA component we have to chuck away
+        # do this for both images
+        ec1 = vtk.vtkImageExtractComponents()
+        ec1.SetComponents(0,1,2)
+        ec1.SetInput(r1.GetOutput())
+        
         ec2 = vtk.vtkImageExtractComponents()
         ec2.SetComponents(0,1,2)
         ec2.SetInput(r2.GetOutput())
