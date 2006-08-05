@@ -52,7 +52,7 @@ class curvatureAnisotropicDiffusion:
 
 class curvatureFlowDenoising:
     kits = ['itk_kit']
-    cats = ['Insight']
+    cats = ['Insight', 'Level Sets']
     help = """Curvature-driven image denoising.
 
     This uses curvature-based level set techniques to smooth
@@ -70,7 +70,7 @@ class DanielssonDistance:
 
 class demonsRegistration:
     kits = ['itk_kit']
-    cats = ['Insight']
+    cats = ['Insight', 'Registration', 'Optic Flow']
     help = """Performs demons registration on fixed and moving input images,
     returns deformation field.
     
@@ -107,7 +107,7 @@ class discreteLaplacian:
 # in ITK-2-4-1
 class fastMarching:
     kits = ['itk_kit']
-    cats = ['Insight']
+    cats = ['Insight', 'Level Sets']
     help = """Given a set of seed points and a speed image, this module will
     propagate a moving front out from those points using the fast marching
     level set formulation.
@@ -130,7 +130,7 @@ class gaussianConvolve:
 
 class geodesicActiveContour:
     kits = ['itk_kit']
-    cats = ['Insight', 'Level Set']
+    cats = ['Insight', 'Level Sets']
     keywords = ['level set']
     help = """Module for performing Geodesic Active Contour-based segmentation
     on 3D data.
@@ -239,7 +239,7 @@ class ITKWriter:
 # not wrapped by ITK-2-4-1 default wrappings
 class levelSetMotionRegistration:
     kits = ['itk_kit']
-    cats = ['Insight', 'Registration']
+    cats = ['Insight', 'Registration', 'Level Sets']
     keywords = ['level set', 'registration', 'deformable', 'non-rigid']
     help = """Performs deformable registration between two input volumes using
     level set motion.
@@ -290,7 +290,7 @@ class sigmoid:
 
 class symmetricDemonsRegistration:
     kits = ['itk_kit']
-    cats = ['Insight']
+    cats = ['Insight', 'Registration', 'Optic Flow']
     help = """Performs symmetric forces demons registration on fixed and
     moving input images, returns deformation field.
     """
