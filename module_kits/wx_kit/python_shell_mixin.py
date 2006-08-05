@@ -27,7 +27,7 @@ class PythonShellMixin:
                 ch()
             except Exception, e:
                 exception_printer(
-                    'Exception during CodeRunner close_handlers: %s' %
+                    'Exception during PythonShellMixin close_handlers: %s' %
                     (str(e),))
 
         del self.shell_window
@@ -178,8 +178,8 @@ class PythonShellMixin:
 
         # mpl_new_figure hook so that all created figures are registered
         # and will be closed when the module is closed
-        def mpl_new_figure(*args):
-            handle = pylab.figure(*args)
+        def mpl_new_figure(*args, **kwargs):
+            handle = pylab.figure(*args, **kwargs)
             self.mpl_figure_handles.append(handle)
             return handle
 
