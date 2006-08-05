@@ -159,21 +159,22 @@ def install(devide_app_dir):
     for f in itk_so_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
 
-    # on Windows, it's not easy setting the DLL load path in a running
-    # application.  You could try SetDllDirectory, but that only works
-    # since XP SP1.  You could also change the current dir, but our DLLs
-    # are lazy loaded, so no go.  An invoking batchfile is out of the
-    # question.
-    print "Moving all SOs back to main DeVIDE dir [WINDOWS] ..."
-    lib_path = os.path.join(witk_dest_dir, 'lib')
-    so_files = glob.glob(os.path.join(lib_path, SO_GLOB))
-    for so_file in so_files:
-        shutil.move(so_file, devide_app_dir)
+    if sys.platform == 'win32':
+        # on Windows, it's not easy setting the DLL load path in a running
+        # application.  You could try SetDllDirectory, but that only works
+        # since XP SP1.  You could also change the current dir, but our DLLs
+        # are lazy loaded, so no go.  An invoking batchfile is out of the
+        # question.
+        print "Moving all SOs back to main DeVIDE dir [WINDOWS] ..."
+        lib_path = os.path.join(witk_dest_dir, 'lib')
+        so_files = glob.glob(os.path.join(lib_path, SO_GLOB))
+        for so_file in so_files:
+            shutil.move(so_file, devide_app_dir)
 
-    #also write list of DLLs that were moved to lib_path/moved_dlls.txt
-    f = file(os.path.join(lib_path, 'moved_dlls.txt'), 'w')
-    f.writelines(['%s\n' % (os.path.basename(fn),) for fn in so_files])
-    f.close()
+        #also write list of DLLs that were moved to lib_path/moved_dlls.txt
+        f = file(os.path.join(lib_path, 'moved_dlls.txt'), 'w')
+        f.writelines(['%s\n' % (os.path.basename(fn),) for fn in so_files])
+        f.close()
     
 
 if __name__ == '__main__':
