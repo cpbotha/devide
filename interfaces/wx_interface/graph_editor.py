@@ -164,6 +164,9 @@ class GraphEditor:
                                       mf, False)
         
 
+        wx.EVT_MENU(mf, mf.id_modules_search,
+                    self._handler_modules_search)
+
         wx.EVT_MENU(mf, mf.id_rescan_modules,
                     lambda e, s=self: s.fillModuleLists())
 
@@ -211,7 +214,10 @@ class GraphEditor:
 
 
         wx.EVT_TEXT(mf, mf.search_text.GetId(),
-                    self._update_search_results)
+                    self._handler_search_text)
+
+        wx.EVT_CHAR(mf.search_text,
+                    self._handler_search_text_char)
 
         wx.EVT_BUTTON(mf, mf.search_x_button.GetId(),
                       self._handler_search_x_button)
@@ -237,10 +243,6 @@ class GraphEditor:
         wx.EVT_MOUSE_EVENTS(mf.module_list_box,
                             self._handlerModulesListBoxMouseEvents)
 
-        # and also setup the module quick search
-        #self._quickSearchString = ''
-        #wx.EVT_CHAR(mf.canvas, self._handlerCanvasChar)
-        
 
         # setup the canvas...
         mf.canvas.SetVirtualSize((2048, 2048))
@@ -278,10 +280,125 @@ class GraphEditor:
         # method that will shift the SashPosition and thus cause a redraw
         self.show()
 
+    def _handler_modules_search(self, event):
+        self._interface._main_frame.search_text.SetFocus()
+
+    def _handler_search_text(self, event):
+        self._update_search_results()
+
+    def _place_current_module_at_convenient_pos(self):
+        """Place currently selected module (in the Module List subwindow) at
+        an open position on the canvas.
+
+        This method is called when the user double clicks on a module in the
+        module list or when she presses <enter> during module searching.
+        """
+        
+        # place currently selected module below the bottom-most module
+        # on the canvas
+        mlb = self._interface._main_frame.module_list_box
+
+        # _update_search_results() makes sure the first selectable
+        # item is selected
+        sel = mlb.GetSelection()
+
+        shortName, moduleName = (mlb.GetString(sel),
+                                 mlb.GetClientData(sel))
+
+        if moduleName:
+
+            # default position
+            x, y = (10,10)
+
+            canvas = self._interface._main_frame.canvas
+            all_glyphs = canvas.getObjectsOfClass(wxpc.coGlyph)
+
+            # rx and ry will contain the first position to the right of
+            # the bounding box of all glyphs, ry the first position below
+            # the bounding box of all glyphs
+            rx, ry = x, y
+            for glyph in all_glyphs:
+                cx,cy = glyph.getPosition()
+
+                if cx >= rx:
+                    rx = cx + glyph.getBounds()[0] + 20
+                
+                if cy >= ry:
+                    ry = cy + glyph.getBounds()[1] + 20
+
+            # by default we place it under the lowest module, but
+            # if that's not visible, to the right of the right-most module
+            # if that's not visible either, it's under the lowest module
+            if ry > canvas.GetViewStart()[1] + canvas.GetClientSize()[1]:
+                if rx > canvas.GetViewStart()[0] + canvas.GetClientSize()[0]:
+                    y = ry
+                else:
+                    x = rx
+            else:
+                y = ry
+            
+
+            modp = 'module:'
+            segp = 'segment:'
+            if moduleName.startswith(modp):
+                # the coordinates are canvas-absolute already
+                self.createModuleAndGlyph(x, y, moduleName[len(modp):],
+                                          convert_coords=False)
+
+            elif moduleName.startswith(segp):
+                self._loadAndRealiseNetwork(moduleName[len(segp):], (x,y),
+                                            reposition=True)
+
+            else:
+                # this could happen, I've no idea how though.
+                return False
+                
+            # module or segment successfully created
+            return True
+
+        # no module or segment was created
+        return False
+        
+
+    def _handler_search_text_char(self, event):
+        key_code = event.GetKeyCode()
+        
+        if key_code == wx.WXK_ESCAPE:
+            self._interface._main_frame.search_text.SetValue('')
+
+        elif key_code == wx.WXK_RETURN:
+            self._place_current_module_at_convenient_pos()
+            self._interface._main_frame.search_text.SetFocus()
+
+        elif key_code in [wx.WXK_UP, wx.WXK_DOWN]:
+
+            mlb = self._interface._main_frame.module_list_box
+            sel = mlb.GetSelection()
+
+            if sel >= 0:
+                if key_code == wx.WXK_UP:
+                    sel -= 1
+                else:
+                    sel += 1
+
+                if sel >= 0 and sel < mlb.GetCount():
+                    # this SetSelection doesn't seem to call the
+                    # event handlers for the mlb (thus updating the help)
+                    mlb.SetSelection(sel)
+                    # so we call it manually
+                    self._handlerModulesListBoxSelected(None)
+            
+        else:
+            event.Skip()
+
     def _handler_search_x_button(self, event):
         self._interface._main_frame.search_text.SetValue('')
 
     def _handlerModulesListBoxMouseEvents(self, event):
+        if event.ButtonDClick():
+            self._place_current_module_at_convenient_pos()
+            return
+        
         if not event.Dragging():
             # if no dragging is taking place, let somebody else
             # handle this event...
@@ -712,8 +829,8 @@ class GraphEditor:
             if temp_module:
                 # create and draw the actual glyph
                 if convert_coords:
-                    rx, ry = self._interface._main_frame.canvas.eventToRealCoords(
-                        x, y)
+                    rx, ry = self._interface._main_frame.canvas.\
+                             eventToRealCoords(x, y)
                 else:
                     rx, ry = x, y
 
@@ -983,7 +1100,23 @@ class GraphEditor:
                 
                 mlb.Append(shortname, mn, refresh=False)
 
+        # make sure the list is actually updated (we've appended a bunch
+        # of things with refresh=False
         mlb.DoRefresh()
+
+        # and select the first selectable item in the mlb
+        # only the actual modules and segments have module_names
+        sel = -1
+        module_name = None
+        while module_name is None and sel < mlb.GetCount():
+            module_name = mlb.GetClientData(sel)
+            sel += 1
+
+        if module_name:
+            # this setselection does not fire the listbox event
+            mlb.SetSelection(sel-1)
+            # so we call the handler manually (so help is updated)
+            self._handlerModulesListBoxSelected(None)
 
     def _handlerMarkModule(self, instance):
         markedModuleName = wx.GetTextFromUser(
@@ -1125,104 +1258,6 @@ class GraphEditor:
                 self._copyBuffer[0], self._copyBuffer[1], self._copyBuffer[2],
                 position, True)
 
-    def _handlerCanvasChar(self, event):
-
-        def prefixSearch(prefix):
-            # let's search for a module in the module list with this prefix
-            mFound = False
-            idx = 0
-            for m,longname in self._selectedModulesList:
-                if m.lower().startswith(prefix.lower()):
-                    mFound = True
-                    break
-                
-                idx += 1
-
-            if mFound:
-                return idx
-            else:
-                return -1
-            
-        key = event.GetKeyCode()
-        qss = self._quickSearchString
-        idx = -1
-        
-        updateSelectionAndStatusBar = False
-        validKeys = range(ord('A'), ord('Z')) + range(ord('a'), ord('z')) + \
-                    range(ord('0'), ord('9'))
-        
-        if key in validKeys:
-            qss = qss + chr(key)
-
-            idx = prefixSearch(qss)
-            updateSelectionAndStatusBar = True
-            
-
-        elif key == wx.WXK_BACK:   # backspace removes one character and backs up
-            if len(qss) > 0:
-                qss = qss[:-1]
-
-            idx = prefixSearch(qss)
-            updateSelectionAndStatusBar = True
-
-        elif key == wx.WXK_RETURN:
-            # place currently selected module at current mouse pos
-            # and zero current qss
-
-            # first check that we have a valid mouse pos
-            cst = self._interface._main_frame.canvas.GetClientSizeTuple()
-            if event.GetX() < 0 or event.GetX() >= cst[0] or \
-               event.GetY() < 0 or event.GetY() >= cst[1]:
-                # just bail out of this function... the user is trying
-                # to place us ass-backwards out of the canvas
-                return
-            
-
-            mlb = self._interface._main_frame.module_list_box
-            idx = mlb.GetSelection()
-            if idx >= 0:
-                # place just this one
-                self.canvasDropText(event.GetX(), event.GetY(),
-                                    self._selectedModulesList[idx][1])
-
-            # we've placed a module, so we'd probably like to place
-            # another one... let's clear qss but keep the selection
-            qss = ''
-            updateSelectionAndStatusBar = True
-
-        elif key == wx.WXK_ESCAPE:
-            idx = -1
-            qss = ''
-            updateSelectionAndStatusBar = True
-
-        else:
-            # we don't want any other keys, let the others have them
-            event.Skip()
-
-
-        if updateSelectionAndStatusBar:
-            if idx >= 0:
-                # then select what we want
-                self._interface._main_frame.module_list_box.SetSelection(idx)
-                # we only update the string if it was found
-                self._quickSearchString = qss
-
-            else:
-                if qss == '':
-                    # this means the search was cancelled, so we have
-                    # to deselect everything and cancel the status bar disp
-                    sel = self._interface._main_frame.module_list_box.\
-                          GetSelection()
-                    if sel >= 0:
-                        self._interface._main_frame.module_list_box.SetSelection(
-                            sel, False)
-
-                    self._quickSearchString = qss
-
-            self._interface._main_frame.GetStatusBar().SetStatusText(
-                self._quickSearchString)
-
-            
     def _handlerHelpShowHelp(self, event):
         self._interface.showHelp()
             
@@ -1409,7 +1444,8 @@ class GraphEditor:
             self._interface._main_frame.canvas.redraw()
 
     def clearAllGlyphsFromCanvas(self):
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
 
         mm = self._devide_app.getModuleManager()
 
@@ -1809,7 +1845,9 @@ class GraphEditor:
 
     def _fileSaveCallback(self, event):
         # make a list of all glyphs
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
+        
         if allGlyphs:
             filename = wx.FileSelector(
                 "Choose filename for DeVIDE network",
@@ -1880,8 +1918,8 @@ class GraphEditor:
                 # want to reroute all lines!
 
                 # reroute all lines
-                allLines = self._interface._main_frame.canvas.getObjectsOfClass(
-                    wxpc.coLine)
+                allLines = self._interface._main_frame.canvas.\
+                           getObjectsOfClass(wxpc.coLine)
 
                 for line in allLines:
                     self._routeLine(line)
@@ -2113,7 +2151,8 @@ class GraphEditor:
     def _routeLine(self, line):
         
         # we have to get a list of all coGlyphs
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(wxpc.coGlyph)
+        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
 
         # make sure the line is back to 4 points
         line.updateEndPoints()

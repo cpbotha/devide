@@ -41,10 +41,19 @@ class SimpleHTMLListBox(wx.HtmlListBox):
         self.SetItemCount(0)
 
     def GetClientData(self, n):
-        return self.items[n][1]
+        if n >= 0 and n < len(self.items):
+            return self.items[n][1]
+        else:
+            return None
+
+    def GetCount(self):
+        return len(self.items)
 
     def GetString(self, n):
-        return self.items[n][0]
+        if n >= 0 and n < len(self.items):
+            return self.items[n][0]
+        else:
+            return None
         
     def OnGetItem(self, n):
         try:
@@ -282,6 +291,13 @@ class MainWXFrame(wx.Frame):
         self.menubar.Append(self.execution_menu, "E&xecution")
 
         modules_menu = wx.Menu()
+
+        self.id_modules_search = wx.NewId()
+        modules_menu.Append(
+            self.id_modules_search, "Search for modules\tCtrl-F",
+            "Change input "
+            "focus to module search box.", wx.ITEM_NORMAL)
+        
         self.id_rescan_modules = wx.NewId()
         modules_menu.Append(
             self.id_rescan_modules, "Rescan modules", "Recheck all module "
