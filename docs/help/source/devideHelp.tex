@@ -32,7 +32,10 @@
 \chapter*{Copyright notice}%
 \setheader{{\it COPYRIGHT}}{}{}{}{}{{\it COPYRIGHT}}%
 \setfooter{\thepage}{}{}{}{}{\thepage}%
-DeVIDE is copyright (c) 2003-2005 by Charl P. Botha <cpbotha@ieee.org>
+DeVIDE is copyright (c) 2003-2006 by Charl P. Botha
+
+The DeVIDE website is at
+\urlref{http://visualisation.tudelft.nl/Projects/DeVIDE}{http://visualisation.tudelft.nl/Projects/DeVIDE}
 
 This software is licensed exclusively for research use by authorised
 parties.  All unauthorised use or distribution is strictly prohibited.
@@ -74,14 +77,15 @@ module writers and users of the Graph Editor to experiment with for
 example all parameters and even the logic behind a running piece of
 functionality.
 
-DeVIDE is available for the Windows and Linux platforms.  As soon as
-anybody donates an Apple G4 Powerbook, I will make available packages
-for that platform as well.
+DeVIDE is available for the Windows and Linux platforms.  
 
-This manual is in a very early stage of development. :)
+This manual is in a perpetual state of being under heavy construction.
+The \helpref{Graph Editor}{sec_graph_editor} and \helpref{Useful
+Patterns}{sec_useful_patterns} sections are especially useful and
+should be read before you start working with the software.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Graph Editor}
+\chapter{Graph Editor}\label{sec_graph_editor}
 \pagenumbering{arabic}%
 \setheader{{\it CHAPTER \thechapter}}{}{}{}{}{{\it CHAPTER \thechapter}}%
 \setfooter{\thepage}{}{}{}{}{\thepage}%
@@ -93,49 +97,18 @@ DeVIDE, short of directly interfacing with the underlying code.
 
 This chapter will give a brief overview of graph editor usage.
 
-\section{A few important tips}
-Before we start, a few productivity-enhancing secrets of the Graph
-Editor are revealed here.
-
-\subsection{Getting module-specific help}
-Many modules have module-specific help-text built in.  To see this
-help-text, create the relevant module-glyph on the canvas, right click
-on the module, and select ``Help on Module''.
-
-Also remember that selected (special) modules are documented in the
-chapter \helpref{Special Modules}{secSpecialModules}.
-
-\subsection{Reading data, quickly}
-Dragging and dropping certain data-files on the Graph Editor canvas
-will cause the system to automatically create and configure the
-applicable module.  For example: selecting, dragging and dropping a
-collection of DICOM .dcm files on the canvas will result in a dicomRDR
-glyph to be created and pre-configured with the list of files that has
-been dropped.
-
-\subsection{Re-using networks, quickly}
-Dragging and dropping a .dvn (DeVIDE Network) file on the canvas will
-instantly load the network and build it at the mouse position.  This
-will not destroy any of your current networks on the canvas.
-
-\subsection{Quick-type module find}
-Select the module categories that you want to work with.  Now focus
-the canvas by clicking on it with your mouse.  Modules can now be
-quickly selected by typing the first few letters in their names.  Once
-the module you want is highlighted, press the ``Enter'' key to place
-it.
-
 \section{A small sample network}
 The Graph Editor is introduced by putting together a simple network for
 rendering the 3D 0-surface of a Super Quadric.  It's far simpler than
 it sounds.
 
 \subsection{Constructing the network}
-Start by building the network shown in figure \ref{figGFN}.  First
-select the ``Sources'' category on the top left of the Graph Editor.
-Drag and drop the ``superQuadric'' module from the modules list on the
-bottom left to the canvas.  You should see the ``superQuadric'' glyph
-being created.
+Start by building the network shown in figure \ref{figGFN} (the
+interface has been modernised since then, really).  First select the
+``Sources'' category on the top left of the Graph Editor.  Drag and
+drop the ``superQuadric'' module from the modules list on the bottom
+left to the canvas.  You should see the ``superQuadric'' glyph being
+created.
 
 \begin{figure}
 $$\image{5cm;0cm}{figures/gefirstnetwork}$$
@@ -158,6 +131,9 @@ hovering the mouse pointer over any port shows more information about
 that port in the status bar of the Graph Editor.
 
 \subsection{Admiring your results}
+Now press F5 or select Network | Execute from the main menubar to
+execute the network.
+
 Right-click on the slice3dVWR module and select ``View-Configure'' to
 see the 3D surface representing the 0-surface of the generated Super
 Quadric.  Note that this is how one activates the graphical interface
@@ -173,30 +149,88 @@ menu.  The default extension for a DeVIDE network is .dvn.
 The slice3dVWR is a very special DeVIDE module.  Because of this, its
 View/Config interface is non-standard.  Right click on the
 ``superQuadric'' glyph and select ``View-Config'' to see a more
-standard user interface.  This interface is shown in figure
-\ref{figSuperQuadricView}.
+standard user interface (you can also just double-click on the glyph,
+many users find this to be quicker).  This interface is shown in
+figure \ref{figSuperQuadricView}.
 
 \begin{figure}
 $$\image{5cm;0cm}{figures/superquadricview}$$
 \caption{The superQuadric View/Config window.}\label{figSuperQuadricView}
 \end{figure}
 
-Most module View/Config windows have the set of buttons at the
-bottom.  If you make any changes to any of the module parameters, you
-have to click on the ``Apply'' button (in which case the parameters
-will be transferred to the underlying logic) or the ``Execute''
-button, (in which case the new parameters will be transferred to the
-underlying logic and the module will be asked to re-perform its
-executing with the modified paramaters).  Clicking on the ``Sync''
-button will transfer all parameters from the underlying logic to the
-GUI.  In other words, if you've made changes to the parameters but you
-would like to revert them, and you haven't applied them yet, click on
-the ``Sync'' button to revert.
+Most module View/Config windows have the set of buttons at the bottom.
+If you make any changes to any of the module parameters, you have to
+click on the ``Apply'' button (in which case the parameters will be
+transferred to the underlying logic) or the ``Execute'' button, (in
+which case the new parameters will be transferred to the underlying
+logic and the module will be asked to re-perform its execution with
+the modified paramaters).  Clicking on the ``Sync'' button will
+transfer all parameters from the underlying logic to the GUI.  In
+other words, if you've made changes to the parameters but you would
+like to revert them, and you haven't applied them yet, click on the
+``Sync'' button to revert.
 
 Change the ``Phi Roundness'' parameter to $3.0$ and click on
 ``Execute'' or simple press the Enter key.  Pressing ``Enter'' is
 effectively the same as clicking on ``Execute''.  See the results of
 your changes in the slice3dVWR window.
+
+\section{A few important tips}
+Before we start, a few productivity-enhancing secrets of the Graph
+Editor are revealed here.
+
+\subsection{Placing modules}
+You can place modules on the canvas in more than one way.  
+\begin{itemize}
+\item Drag and drop the module name from the module list on the bottom-left
+onto the canvas.  You can narrow down the list of modules by selecting
+one or more categories.  The ``ALL'' category includes all modules
+available.
+\item Double clicking on a module name will place that module on the
+  canvas.
+\item Typing in the module search box on the upper left and then
+  pressing the ENTER-key will place the first automatically selected
+  module in the search results on the canvas.  See the next section
+  for more details on this.
+\end{itemize}
+
+\subsection{Placing modules quickly}
+As mentioned above, modules can be placed by typing in search phrases
+in the module search box in the upper left of the main DeVIDE window.
+Only modules in the currently selected categories will be found,
+therefore it is recommended that you select the ``ALL'' category when
+making use of this functionality.
+
+You can quickly go to the search box by using the Ctrl-F hotkeys.
+Typing any search terms will show search results in real-time in the
+module list box.  Modules are searched by examining their names,
+keywords and the module-specific documentation.  At all times, a
+module will be automatically selected in the search results.  You can
+change the selection by using the up and down cursors.  Pressing the
+ENTER key at any time will place that module on the canvas.
+
+\subsection{Getting module-specific help}
+Many modules have module-specific help-text built in.  To see this
+help, just select this module from the module list at the bottom left
+of the main DeVIDE window.  The module help will appear in the module
+documentation window below the module list.
+
+Also remember that selected (special) modules are documented in the
+chapter \helpref{Special Modules}{secSpecialModules}.
+
+\subsection{Reading data, quickly}
+Dragging and dropping certain data-files on the Graph Editor canvas
+will cause the system to automatically create and configure the
+applicable module.  For example: selecting, dragging and dropping a
+collection of DICOM .dcm files on the canvas will result in a dicomRDR
+glyph to be created and pre-configured with the list of files that has
+been dropped.
+
+\subsection{Re-using networks, quickly}
+Dragging and dropping a .dvn (DeVIDE Network) file on the canvas will
+instantly load the network and build it at the mouse position.  This
+will not destroy any of your current networks on the canvas.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Special modules}\label{secSpecialModules}
@@ -264,7 +298,7 @@ up and down its complete range in order to get a better idea of the
 amount of the image correspondence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Useful patterns}
+\chapter{Useful patterns}\label{sec_useful_patterns}
 This chapter contains a selection of howtos, i.e. very short
 descriptions of how to perform some action with the DeVIDE software.
 
