@@ -78,6 +78,19 @@ else:
                       'BINARY')]
 
     # RHEL3 64 has a static python library.
+
+    #####################################################################
+    # on ubuntu 6.06, libdcmdata.so.1 and libofstd.so.1 could live in
+    # /usr/lib, and are therefore thrown out by the McMillan Installer
+
+    if os.path.exists('/usr/lib/libdcmdata.so.1') and \
+       os.path.exists('/usr/lib/libofstd.so.1'):
+        extraLibs.append(
+            ('libdcmdata.so.1', '/usr/lib/libdcmdata.so.1', 'BINARY'))
+
+        extraLibs.append(
+            ('libofstd.so.1', '/usr/lib/libofstd.so.1','BINARY'))
+    
     
     ######################################################################
     # also add some binary dependencies of numpy that are normally ignored

@@ -49,6 +49,7 @@ def init(theModuleManager):
     # (they get imported implicitly in anycase during usual runs)
     import matplotlib.backends.backend_wxagg
     import matplotlib.numerix.random_array
+    import matplotlib.quiver # needed on linux since matplotlib 0.87.4
     import pytz
     import pytz.zoneinfo
     import pytz.zoneinfo.UTC
