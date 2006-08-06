@@ -54,8 +54,19 @@ class histogramSegment:
 class slice3dVWR:
     kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
+    help = """The all-singing, all-dancing slice3dVWR module.
+
+    You can view almost anything with this module.  Most of its documentation
+    is part of the application-central help.  Press F1 (or select Help from
+    the main application menu) to see it.
+    """
 
 class TFEditor:
-    kits = ['wx_kit']
+    # needs numpy for the wx FloatCanvas
+    kits = ['wx_kit', 'numpy_kit']
     cats = ['Viewers']
+    help = """Transfer function editor.
+
+    Module under heavy development.
+    """
 
