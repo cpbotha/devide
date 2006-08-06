@@ -124,6 +124,30 @@ class GraphEditorBasic(GraphEditorTestBase):
         ret = self._ge._deleteModule(glyph)
         self.failUnless(ret)
 
+    def test_module_search(self):
+        import wx
+        
+        class DummyKeyEvent:
+            def __init__(self, key_code):
+                self._key_code = key_code
+                
+            def GetKeyCode(self):
+                return self._key_code
+                
+        
+        # type some text in the module search box
+        self._ge_frame.search_text.SetValue('fillholes')
+        # now place the module by pressing RETURN (simulated)
+        evt = DummyKeyEvent(wx.WXK_RETURN)
+        self._ge._handler_search_text_char(evt)
+
+        # check that the imageFillHoles module has been placed
+        ag = self._ge._get_all_glyphs()
+        module_name = str(ag[0].moduleInstance.__class__.__name__)
+        expected_name = 'imageFillHoles'
+        self.failUnless(module_name == expected_name, '%s != %s' %
+                        (module_name, expected_name))
+
     def test_simple_network(self):
         """Creation, connection and execution of superQuadric source and
         slice3dVWR.
@@ -315,13 +339,15 @@ def create_geb_test(name, devide_app):
     t._devide_app = devide_app
     return t
 
-def get_some_suite(devide_app):
+def get_some_suite(devide_testing):
+    devide_app = devide_testing.devide_app
+    
     some_suite = unittest.TestSuite()
 
     #t = TestITKBasic('test_confidence_seed_connect')
     #t._devide_app = devide_app
 
-    t = create_geb_test('test_module_help' ,devide_app)
+    t = create_geb_test('test_module_search', devide_app)
     
     some_suite.addTest(t)
 
@@ -343,6 +369,8 @@ def get_suite(devide_testing):
         create_geb_test('test_module_creation_deletion', devide_app))
     graph_editor_suite.addTest(
         create_geb_test('test_module_help', devide_app))
+    graph_editor_suite.addTest(
+        create_geb_test('test_module_search', devide_app))
     graph_editor_suite.addTest(
         create_geb_test('test_simple_network', devide_app))
     graph_editor_suite.addTest(

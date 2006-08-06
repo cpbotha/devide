@@ -33,8 +33,11 @@ class DeVIDETesting:
         runner = unittest.TextTestRunner()
         runner.run(self.main_suite)
 
+        print "Complete suite consists of 12 tests."
+
     def runSomeTest(self):
-        some_suite = matplotlib_tests.get_suite(self)
+        #some_suite = matplotlib_tests.get_suite(self)
+        some_suite = graph_editor.get_some_suite(self)
 
         runner = unittest.TextTestRunner()
         runner.run(some_suite)
