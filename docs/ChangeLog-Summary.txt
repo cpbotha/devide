@@ -4,7 +4,10 @@ Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
  * New unified interface with dockable windows.
  * Module quick search.  (searches in module metadata: name, keywords,
-   help)
+   help).  Create a module by pressing <ENTER> when you've found the 
+   module that you're looking for.  Up and down arrows select other
+   modules in the search results list.  You can hot-key to the module
+   search with Ctrl-F.
  * Revamped Python|Shell introspection facility with multi-file tabbed
    editor.
  * the CodeRunner module.  Try it, you'll like it.
