@@ -1858,6 +1858,14 @@ class GraphEditor:
             if filename:
                 self._saveNetwork(allGlyphs, filename)
 
+    def _get_all_glyphs(self):
+        """Return list with all glyphs on canvas.
+        """
+        ag = self._interface._main_frame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
+        return ag
+        
+
     def _glyphDrag(self, glyph, eventName, event):
 
         canvas = glyph.getCanvas()        
