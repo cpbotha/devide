@@ -18,6 +18,9 @@ class MPLTest(unittest.TestCase):
         f = python_shell.mpl_new_figure()
         import pylab
 
+        # make sure we hardcode the font!
+        pylab.rcParams['font.sans-serif'] = ['Bitstream Vera Sans']
+        pylab.rc('font', family='sans-serif')
 
         from pylab import arange, plot, sin, cos, legend, grid, xlabel, ylabel
         a = arange(-30, 30, 0.01)
