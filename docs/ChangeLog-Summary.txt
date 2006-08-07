@@ -2,7 +2,9 @@ Release ng1phase1 6.8.00 - Fri Mar 10 12:01:35 WEST 2006
 
 Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
- * New unified interface with dockable windows.
+ * New unified interface with dockable windows.  Thanks to Gerwin de
+   Haan (g.dehaan|at|ewi.tudelft.nl) for significant conceptual
+   contributions to the new interface!
  * Module quick search.  (searches in module metadata: name, keywords,
    help).  Create a module by pressing <ENTER> when you've found the 
    module that you're looking for.  Up and down arrows select other
