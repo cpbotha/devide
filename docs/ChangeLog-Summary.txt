@@ -4,7 +4,8 @@ Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
  * New unified interface with dockable windows.  Thanks to Gerwin de
    Haan (g.dehaan|at|ewi.tudelft.nl) for significant conceptual
-   contributions to the new interface!
+   contributions to the new interface and the module quick search
+   described below!
  * Module quick search.  (searches in module metadata: name, keywords,
    help).  Create a module by pressing <ENTER> when you've found the 
    module that you're looking for.  Up and down arrows select other
