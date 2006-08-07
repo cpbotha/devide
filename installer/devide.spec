@@ -90,6 +90,15 @@ else:
 
         extraLibs.append(
             ('libofstd.so.1', '/usr/lib/libofstd.so.1','BINARY'))
+
+    ######################################################################
+    # to get this to work on Debian 3.1, we also need to ship libstdc++
+    # and libXinerama
+
+    stdc = '/usr/lib/libstdc++.so.6'
+    xine = '/usr/lib/libXinerama.so.1'
+    extraLibs.extend([(os.path.basename(stdc), stdc, 'BINARY'),
+                      (os.path.basename(xine), xine, 'BINARY')])
     
     
     ######################################################################
@@ -113,19 +122,20 @@ else:
                  
     # these libs will be removed from the package
     remove_binaries = ['libdl.so', 'libutil.so', 'libm.so', 'libc.so',
-                   'libGLU.so', 'libGL.so', 'libGLcore.so', 
-                   'libnvidia-tls.so',
-                   'ld-linux-x86-64.so.2', 'libgcc_s.so',
-                   'libtermcap',
-                   'libXft.so', 'libXrandr.so', 'libXrender.so',
-                   'libpthread.so', 'libreadline.so',
-                   'libICE.so',
-                   'libSM.so', 'libX11.so',
-                   'libXext.so', 'libXi.so', 
-                   'libXt.so',
-                   'libpango', 'libfontconfig', 'libfreetype',
-                   'libatk', 'libgtk', 'libgdk',
-                   'libglib', 'libgmodule', 'libgobject', 'libgthread']
+                       'libGLU.so', 'libGL.so', 'libGLcore.so', 
+                       'libnvidia-tls.so',
+                       'ld-linux-x86-64.so.2', 'libgcc_s.so',
+                       'libtermcap',
+                       'libXft.so', 'libXrandr.so', 'libXrender.so',
+                       'libpthread.so', 'libreadline.so',
+                       'libICE.so',
+                       'libSM.so', 'libX11.so',
+                       'libXext.so', 'libXi.so', 
+                       'libXt.so',
+                       'libpango', 'libfontconfig', 'libfreetype',
+                       'libatk', 'libgtk', 'libgdk',
+                       'libglib', 'libgmodule', 'libgobject', 'libgthread',
+                       'qt', '_tkinter']
 
     # make sure remove_binaries is lowercase
     remove_binaries = [i.lower() for i in remove_binaries]
