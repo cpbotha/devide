@@ -1,4 +1,4 @@
-Release ng1phase1 6.8.00 - Fri Mar 10 12:01:35 WEST 2006
+Release ng1phase1 6.8.7 T - Mon Aug  7 11:47:16 WEST 2006
 
 Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
@@ -34,6 +34,7 @@ Changes since ng1phase1 6.3.9 (released on 9 march 2006):
  * Better VTK error handling.
  * Much improved ITK to to VTK conversion.
  * New and improved About window.
+ * Central help documentation (F1) ever so slightly updated.
  * As always, various bug fixes.
 
 Changes since 20050330:
