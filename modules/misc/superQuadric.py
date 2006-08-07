@@ -7,11 +7,6 @@ import vtk
 
 
 class superQuadric(scriptedConfigModuleMixin, moduleBase):
-    """Generates a SuperQuadric implicit function and polydata as outputs.
-    
-    $Revision: 1.6 $
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

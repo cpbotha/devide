@@ -6,21 +6,6 @@ import os
 import vtk
 
 class cptDistanceField(noConfigModuleMixin, moduleBase):
-    """Driver module for Mauch's CPT code.
-
-    This takes an image data and a mesh input.  The imagedata is only used
-    to determine the bounds of the output distance field.  The mesh
-    is converted to the CPT brep format using the DeVIDE cptBrepWRT module.
-    A geom file is created.  The CPT driver is executed with the geom and
-    brep files.  The output distance field is read, y-axis is flipped, and
-    the whole shebang is made available at the output.
-
-    The distance will be calculated up to _maxDistance.
-
-    NOTE: This module has to be explicitly executed.
-
-    $Revision: 1.2 $
-    """
 
     _cptDriverExe = '/home/cpbotha/build/cpt/3d/driver/driver.exe'
 

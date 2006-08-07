@@ -10,20 +10,6 @@ import wx
 import vtk
 
 class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
-    """Given a set of selected points (for instance from a slice3dVWR),
-    generate polydata spheres centred at these points with user-specified
-    radius.  The spheres' interiors are filled with smaller spheres.  This is
-    useful when using selected points to generate points for seeding
-    streamlines or calculating advection by a vector field.
-
-    Each point's sphere has an array associated to its pointdata called
-    'VolumeIndex'.  All values in this array are equal to the corresponding
-    point's index in the input points list.
-
-    $Revision: 1.6 $
-
-    @author: Charl P. Botha <http://cpbotha.net/>
-    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)

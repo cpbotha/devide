@@ -7,12 +7,6 @@ import vtk
 
 class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
 
-    """Given an implicit function, this module will evaluate it over a volume
-    and yield that volume as output.
-
-    $Revision: 1.2 $
-    """
-
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
 

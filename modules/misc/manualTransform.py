@@ -4,15 +4,6 @@ import moduleUtils
 import vtk
 
 class manualTransform(scriptedConfigModuleMixin, moduleBase):
-    """Manually create linear transform by entering scale factors, rotation
-    angles and translations.
-
-    Scaling is performed, then rotation, then translation.  It is often easier
-    to chain manualTransform modules than performing all transformations at
-    once.
-
-    $Revision: 1.3 $
-    """
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)

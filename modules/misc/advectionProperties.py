@@ -10,18 +10,6 @@ import vtk
 import wx
 
 class advectionProperties(scriptedConfigModuleMixin, moduleBase):
-    """Given a series of prepared advection volumes (each input is a
-    timestep), calculate a number of metrics.
-
-    The first input HAS to have a VolumeIndex PointData attribute/array.  For
-    example, the output of the pointsToSpheres that you used BEFORE having
-    passed through the first probeFilters.  This first input will NOT be used
-    for the actual calculations, but only for point -> volume lookups.
-    Calculations will be performed for the second input and onwards.
-
-    $Revision: 1.3 $
-    """
-
     _numberOfInputs = 10
 
     def __init__(self, moduleManager):
