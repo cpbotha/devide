@@ -54,8 +54,20 @@ echo "===== Building BASE version..."
 cd installer
 sh ./makePackage.sh
 
+if [ `uname` != Linux ]; then
+
 echo "===== Rebasing all DLLs..."
 sh ./rebase_dlls.sh
+
+else
+
+echo "===== Stripping and chrpathing SOs..."
+# strip all the libraries
+find distdevide/ -name *.so | xargs strip
+# remove rpath information (else the installation doesn't work everywhere)
+find distdevide -name *.so | xargs chrpath --delete
+
+fi
 
 echo "===== Packaging BASE version..."
 
@@ -64,6 +76,7 @@ cat defaults.py | sed -e "s/NOKITS *= *.*/NOKITS = ['itk_kit']/g" > defaultsTemp
 cp defaultsTemp.py defaults.py
 rm defaultsTemp.py
 cd ..
+
 
 if [ `uname` != Linux ]; then
 
@@ -88,8 +101,19 @@ echo "===== Creating self-contained WrapITK in itk_kit..."
 # we need to pass the top-level app dir
 python wrapitk_tree.py distdevide
 
+if [ `uname` != Linux ]; then
 echo "===== Rebasing all DLLs..."
 sh ./rebase_dlls.sh
+
+else
+
+echo "===== Stripping and chrpathing SOs..."
+# strip all the libraries
+find distdevide/ -name *.so | xargs strip
+# remove rpath information (else the installation doesn't work everywhere)
+find distdevide -name *.so | xargs chrpath --delete
+
+fi
 
 echo "===== Packaging FULL (ITK) version..."
 
@@ -99,6 +123,7 @@ cp defaultsTemp.py defaults.py
 rm defaultsTemp.py
 rm -f NO_ITK
 cd ..
+
 
 if [ `uname` != Linux ]; then
 
