@@ -18,18 +18,27 @@ class MPLTest(unittest.TestCase):
         f = python_shell.mpl_new_figure()
         import pylab
 
-        # make sure we hardcode the font!
-        pylab.rcParams['font.sans-serif'] = ['Bitstream Vera Sans']
-        pylab.rc('font', family='sans-serif')
+
+        # unfortunately, it's almost impossible to get pixel-identical
+        # rendering on all platforms, so we can only check that the plot
+        # itself is correct (all font-rendering is disabled)
+
+        # make sure we hardcode the font! (previous experiment)
+        #pylab.rcParams['font.sans-serif'] = ['Bitstream Vera Sans']
+        #pylab.rc('font', family='sans-serif')
 
         from pylab import arange, plot, sin, cos, legend, grid, xlabel, ylabel
         a = arange(-30, 30, 0.01)
         plot(a, sin(a) / a, label='sinc(x)')
         plot(a, cos(a), label='cos(x)')
-        legend()
+        #legend()
         grid()
-        xlabel('x')
-        ylabel('f(x)')
+        #xlabel('x')
+        #ylabel('f(x)')
+
+        # disable x and y ticks (no fonts allowed, remember)
+        pylab.xticks([])
+        pylab.yticks([])
 
         # width and height in inches
         f.set_figwidth(7.9)
