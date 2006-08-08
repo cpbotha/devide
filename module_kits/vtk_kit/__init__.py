@@ -124,12 +124,13 @@ def init(theModuleManager):
     def observer_eow_warning(o, e):
         theModuleManager.log_warning(o.GetText())
     
-    eow = vtkdevide.vtkEventOutputWindow()
+    # new-new pythonutil wrapping will generate exceptions for everything
+    #eow = vtkdevide.vtkEventOutputWindow()
     # the new vtkPythonUtil wrapping code will turn this into an exception!
     #eow.AddObserver('ErrorEvent', observer_eow_error)
-    eow.AddObserver('WarningEvent', observer_eow_warning)
+    #eow.AddObserver('WarningEvent', observer_eow_warning)
     
-    eow.SetInstance(eow)
+    #eow.SetInstance(eow)
 
     # load up some generic functions into this namespace
     # user can, after import of module_kits.vtk_kit, address these as
