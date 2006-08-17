@@ -5,8 +5,6 @@ import moduleUtils
 import vtk
 import vtktud
 
-# test ok
-
 class MyGlyph3D(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
