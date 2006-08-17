@@ -19,11 +19,13 @@ class MyGlyph3D(scriptedConfigModuleMixin, moduleBase):
         
                                            
         self._config.scaling = 1.0
-
+        self._config.scalemode = 1.0
 
         configList = [
             ('Scaling:', 'scaling', 'base:float', 'text',
-             'Glyphs will be scaled by this factor.')]
+             'Glyphs will be scaled by this factor.'),
+            ('Scalemode:', 'scalemode', 'base:int', 'text',
+             'Scaling will occur by scalar, vector direction or magnitude.')]
         scriptedConfigModuleMixin.__init__(self, configList)        
         
 
@@ -65,9 +67,11 @@ class MyGlyph3D(scriptedConfigModuleMixin, moduleBase):
 
     def logicToConfig(self):
         self._config.scaling = self._glyph3d.GetScaling()
+        self._config.scalemode = self._glyph3d.GetScaleMode()
     
     def configToLogic(self):
         self._glyph3d.SetScaling(self._config.scaling)
+        self._glyph3d.SetScaleMode(self._config.scalemode)
     
     def executeModule(self):
         self._glyph3d.Update()
