@@ -40,6 +40,11 @@ def get_img_type_and_dim_shortstring(itk_img):
     # this turns 'unsigned_char' into 'UC' and 'float' into 'F'
     itkTypeC = ''.join([i.upper()[0] for i in tdv[0].split('_')])
 
+    # the 'this' signature contains 'short_int', but the ITK shortstring for
+    # this is SS
+    if itkTypeC == 'SI':
+        itkTypeC = 'SS'
+
     if len(tdv[2]) > 0:
         # this will be for instance VF33 or VF22
         shortstring = '%s%s%s%s' % (tdv[2], itkTypeC, tdv[1], tdv[1])

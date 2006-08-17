@@ -78,11 +78,13 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
 
             dims = self._input.GetDataDimension()
 
-            # see if we need a new converter
-            short_string = '%s%s' % \
-                           (''.join([i[0].upper()
-                                     for i in output_type.split()]),
-                            dims)
+            # create shortstring (e.g. US3, SS2)
+            short_string_type = ''.join([i[0].upper()
+                                         for i in output_type.split()])
+            if short_string_type == 'S':
+                short_string_type = 'SS'
+                
+            short_string = '%s%s' % (short_string_type, dims)
 
             # we could cache this as shown below, but experience shows
             # that the connection module often gets confused when its
