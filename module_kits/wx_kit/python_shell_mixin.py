@@ -1,6 +1,8 @@
 import code
+from code import softspace
 import sys
 import wx
+import new
 
 def sanitise_text(text):
     """When we process text before saving or executing, we sanitise it
@@ -12,6 +14,57 @@ def sanitise_text(text):
     text = text.replace('\r\n', '\n')
     text = text.replace('\r', '')
     return text
+
+def runcode(self, code):
+    """Execute a code object.
+
+    Our extra-special verson of the runcode method.  We use this when we
+    want py_shell_mixin._run_source() to generate real exceptions, and
+    not just output to stdout, for example when CodeRunner is executed
+    as part of a network.  This runcode() is explicitly called by our local
+    runsource() method.
+    """
+    try:
+        exec code in self.locals
+    except SystemExit:
+        raise
+    except:
+        raise
+        #self.showtraceback()
+    else:
+        if softspace(sys.stdout, 0):
+            print
+
+def runsource(self, source, filename="<input>", symbol="single",
+              runcode=runcode):
+    """Compile and run some source in the interpreter.
+
+    Our extra-special verson of the runsource method.  We use this when we
+    want py_shell_mixin._run_source() to generate real exceptions, and
+    not just output to stdout, for example when CodeRunner is executed
+    as part of a network.  This method calls our special runcode() method
+    as well.
+
+    Arguments are as for compile_command(), but pass in interp instance as
+    first parameter!
+
+    """
+    try:
+        # this could raise OverflowError, SyntaxEror, ValueError
+        code = self.compile(source, filename, symbol)
+    except (OverflowError, SyntaxError, ValueError):
+        # Case 1
+        raise
+        #return False
+
+    if code is None:
+        # Case 2
+        return True
+
+    # Case 3
+    runcode(self, code)
+    return False
+
 
 class PythonShellMixin:
 
@@ -74,7 +127,7 @@ class PythonShellMixin:
         
         return None
                 
-    def _run_source(self, text):
+    def _run_source(self, text, raise_exceptions=False):
         """Compile and run the source given in text in the shell interpreter's
         local namespace.
 
@@ -85,27 +138,41 @@ class PythonShellMixin:
 
         Here we do some deep magic (ha ha) to externally override the interp
         runsource.  Python does completely rule.
+
+        We do even deeper magic when raise_exceptions is True: we then
+        raise real exceptions when errors occur instead of just outputting to
+        stederr.
         """
 
         text = sanitise_text(text)
-        
         interp = self.shell_window.interp
-        stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
-        sys.stdin, sys.stdout, sys.stderr = \
-                   interp.stdin, interp.stdout, interp.stderr
 
-        # look: calling class method with interp instance as first parameter
-        # comes down to the same as interp calling runsource() as its
-        # parent method.
-        more = code.InteractiveInterpreter.runsource(
-            interp, text, '<input>', 'exec')
+        if raise_exceptions:
+            # run our local runsource, don't do any stdout/stderr redirection,
+            # this is happening as part of a network.
+            more = runsource(interp, text, '<input>', 'exec')
+            
+        else:
+            # our 'traditional' version for normal in-shell introspection and
+            # execution.  Exceptions are turned into nice stdout/stderr
+            # messages.
+            
+            stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
+            sys.stdin, sys.stdout, sys.stderr = \
+                       interp.stdin, interp.stdout, interp.stderr
+            
+            # look: calling class method with interp instance as first
+            # parameter comes down to the same as interp calling runsource()
+            # as its parent method.
+            more = code.InteractiveInterpreter.runsource(
+                interp, text, '<input>', 'exec')
 
-        # make sure the user can type again
-        self.shell_window.prompt()
+            # make sure the user can type again
+            self.shell_window.prompt()
 
-        sys.stdin = stdin
-        sys.stdout = stdout
-        sys.stderr = stderr
+            sys.stdin = stdin
+            sys.stdout = stdout
+            sys.stderr = stderr
 
         return more
 
