@@ -1,5 +1,14 @@
 Release ng1phase1 6.8.7 T - Mon Aug  7 11:47:16 WEST 2006
 
+Changes since ng1phase1 6.8.7 T
+
+ * WrapITK: threw out unsigned short (0..65535) support, activated
+   signed short (-32768..32767) support.  This makes more sense for
+   for example DICOM datasets.
+ * slice3dVWR passes an instance of itself to its output.  Thanks Paul!
+ * CodeRunner now generates real exceptions during network execution
+   only.
+
 Changes since ng1phase1 6.3.9 (released on 9 march 2006):
 
  * New unified interface with dockable windows.  Thanks to Gerwin de
