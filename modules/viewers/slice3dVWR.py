@@ -55,7 +55,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     # part 0 is "normal", parts 1,2,3 are the input-independent output parts
     PARTS_TO_INPUTS = {0 : (0,1,2,3,4,5,6)}
     #PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0, 1, 2)}
-    PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0,), 2 : (1,), 3 : (2,)}
+    PARTS_TO_OUTPUTS = {0 : (3,4), 1 : (0,4), 2 : (1,4), 3 : (2,4)}
     # part 1 does the points, part 2 does the implicit function,
     # part 2 does the implicits
     # part 3 does the slices polydata
@@ -478,7 +478,8 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         return ('Selected points',
                 'Implicit Function',
                 'Slices polydata',
-                'Slices unstructured grid')
+                'Slices unstructured grid',
+                'self (slice3dVWR object)')
         
 
     def getOutput(self, idx):
@@ -488,8 +489,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             return self._implicits.outputImplicitFunction
         elif idx == 2:
             return self.sliceDirections.ipwAppendPolyData.GetOutput()
-        else:
+        elif idx == 3:
             return self.sliceDirections.ipwAppendFilter.GetOutput()
+        else:
+            return self
         
 #         else:
 #             class RenderInfo:
@@ -506,9 +509,9 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 #             return render_info
                     
     def view(self):
-        self.controlFrame.Show(True)
-        self.controlFrame.Raise()
-
+        # when a view is requested, we only show the 3D window
+        # the user can show the control panel by using the button
+        # made for that purpose.
         self.threedFrame.Show(True)
         self.threedFrame.Raise()
 
