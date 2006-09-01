@@ -6,7 +6,7 @@ class BMPReader:
     help = """Reads a series of BMP files.
 
     Set the file pattern by making use of the file browsing dialog.  Replace
-    the increasing index by a %d format specifier.  %3d can be used for
+    the increasing index by a %d format specifier.  %03d can be used for
     example, in which case %d will be replaced by an integer zero padded to 3
     digits, i.e. 000, 001, 002 etc.  %d counts from the 'First slice' to the
     'Last slice'.
@@ -48,7 +48,7 @@ class pngRDR:
     help = """Reads a series of PNG files.
 
     Set the file pattern by making use of the file browsing dialog.  Replace
-    the increasing index by a %d format specifier.  %3d can be used for
+    the increasing index by a %d format specifier.  %03d can be used for
     example, in which case %d will be replaced by an integer zero padded to 3
     digits, i.e. 000, 001, 002 etc.  %d counts from the 'First slice' to the
     'Last slice'.
