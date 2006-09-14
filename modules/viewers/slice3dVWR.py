@@ -429,6 +429,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 if self._inputs[idx]['Connected'] is None:
                     # our _tdObjects instance likes to do this
                     self._tdObjects.addObject(inputStream)
+
                     # if this worked, we have to make a note that it was
                     # connected as such
                     self._inputs[idx]['Connected'] = 'tdObject'

@@ -102,6 +102,18 @@ class tdObjects(s3dcGridMixin):
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkVolume'}
 
+                    # we have to test this here already... if there's
+                    # a VTK error (for instance volume rendering the wrong
+                    # type) we remove the volume and re-raise the exception
+                    # the calling code will act as if no successful add
+                    # was performed, thus feeding back the error
+                    try:
+                        self.slice3dVWR._threedRenderer.ResetCamera()
+                        self.slice3dVWR.render3D()
+                    except RuntimeError:
+                        self.slice3dVWR._threedRenderer.RemoveVolume(tdObject)
+                        raise
+
                 elif tdObject.GetClassName() == 'vtkPolyData':
                     mapper = vtk.vtkPolyDataMapper()
                     mapper.SetInput(tdObject)
@@ -174,8 +186,6 @@ class tdObjects(s3dcGridMixin):
             else:
                 self._setObjectScalarVisibility(tdObject, False)
 
-            self.slice3dVWR._threedRenderer.ResetCamera()
-            self.slice3dVWR.render3D()
             
         # ends 
         else:
