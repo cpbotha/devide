@@ -5,6 +5,7 @@ from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
+import vtkdevide
 
 class VolumeRender(
     scriptedConfigModuleMixin, moduleBase):
@@ -26,7 +27,7 @@ class VolumeRender(
         config_list = [
             ('Rendering type:', 'rendering_type', 'base:int', 'choice',
              'Direct volume rendering algorithm that will be used.',
-             ('Raycast', '2D Texture', '3D Texture')),
+             ('Raycast', '2D Texture', '3D Texture', 'ShellSplatting')),
             ('Threshold:', 'threshold', 'base:float', 'text',
              'Used to generate transfer function if none is supplied'),
             ('Interpolation:', 'interpolation', 'base:int', 'choice',
@@ -105,9 +106,12 @@ class VolumeRender(
                 # 2d texture
                 self._setup_for_2d_texture()
                 
-            else:
+            elif self._config.rendering_type == 2:
                 # 3d texture
                 self._setup_for_3d_texture()
+
+            else:
+                self._setup_for_shell_splatting()
 
             self._volume.SetMapper(self._volume_mapper)
 
@@ -138,6 +142,28 @@ class VolumeRender(
         moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 
+    def _setup_for_shell_splatting(self):
+        self._volume_mapper = vtkdevide.vtkOpenGLVolumeShellSplatMapper()
+        self._volume_mapper.SetOmegaL(0.9)
+        self._volume_mapper.SetOmegaH(0.9)
+        # high-quality rendermode
+        self._volume_mapper.SetRenderMode(0)
+
+        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+                                           'Preparing render.')
+
+    def _setup_for_fixed_point(self):
+        """This doesn't seem to work.  After processing is complete,
+        it stalls on actually rendering the volume.  No idea.
+        """
+        
+        self._volume_mapper = vtk.vtkFixedPointVolumeRayCastMapper()
+        self._volume_mapper.SetBlendModeToComposite()
+        #self._volume_mapper.SetBlendModeToMaximumIntensity()
+
+        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+                                           'Preparing render.')
+        
     def executeModule(self):
         otf, ctf = self._create_tfs()
         
@@ -168,8 +194,9 @@ class VolumeRender(
         otf.AddPoint(self._config.threshold, 1.0)
         
         ctf.RemoveAllPoints()
-        ctf.AddHSVPoint(p1, 0.0, 0.0, 0.0)
-        ctf.AddHSVPoint(p2, *self._config.mip_colour)
+        ctf.AddHSVPoint(p1, 0.1, 0.7, 1.0)
+        #ctf.AddHSVPoint(p2, *self._config.mip_colour)
+        ctf.AddHSVPoint(p2, 0.65, 0.7, 1.0)
 
         return (otf, ctf)
 
