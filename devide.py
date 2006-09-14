@@ -2,7 +2,7 @@
 # $Id$
 
 # the current main release version
-DEVIDE_VERSION = 'ng1phase1 6.8.18T'
+DEVIDE_VERSION = 'ng1phase1 6.9.15T'
 
 # standard Python imports
 import getopt
