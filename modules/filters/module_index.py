@@ -391,6 +391,16 @@ class transformVolumeData:
     help = """Transform volume according to 4x4 homogeneous transform.
     """
 
+class VolumeRender:
+    kits = ['vtk_kit']
+    cats = ['Volume Rendering']
+    help = """Use direct volume rendering to visualise input volume.
+
+    You can select between traditional raycasting, 2D texturing and 3D
+    texturing.  The raycaster can only handler unsigned short or unsigned char
+    data, so you might have to use a vtkShiftScale module to preprocess.
+    """
+
 class warpPoints:
     kits = ['vtk_kit']
     cats = ['Filters']
