@@ -222,6 +222,9 @@ class tdObjects(s3dcGridMixin):
         elif newObject.GetClassName() == 'vtkPolyData':
             objectDict = self._tdObjectsDict[prevObject]
             del self._tdObjectsDict[prevObject]
+
+            # BUG #67 is HERE!  only the mapper for the object itself is
+            # changed, but not for the tube object.
             
             # record the new object ###################################
             objectDict['tdObject'] = newObject
