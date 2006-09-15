@@ -155,10 +155,14 @@ class selectedPoints(s3dcGridMixin):
 
     def _handlerPointsRename(self, event):
         rslt = wx.GetTextFromUser(
-            'Please enter a new name for the selected points.',
+            'Please enter a new name for the selected points '
+            '("none" = no name).',
             'Points Rename', '')
 
         if rslt:
+            if rslt.lower() == 'none':
+                rslt = ''
+                
             selRows = self._grid.GetSelectedRows()
             self._renamePoints(selRows, rslt)
 
@@ -325,7 +329,7 @@ class selectedPoints(s3dcGridMixin):
         or resync the output list.  You're responsible for that. :)
         """
 
-        if newName and newName != self._pointsList[pointIdx]['name']:
+        if newName != self._pointsList[pointIdx]['name']:
             # we only do something if this has really changed and if the name
             # is not blank
 
@@ -419,7 +423,8 @@ class selectedPoints(s3dcGridMixin):
         ca.BorderOff()
         ca.SetWidth(0.3)
         ca.SetHeight(0.04)
-        #ca.ThreeDimensionalLeaderOff()
+        # if 3D is on, interaction is extremely SLOW on my ATI X1600
+        ca.ThreeDimensionalLeaderOff()
         ca.SetMaximumLeaderGlyphSize(10)
 
         coneSource = vtk.vtkConeSource()
@@ -433,7 +438,7 @@ class selectedPoints(s3dcGridMixin):
             ca.SetCaption(pointName)
             
         else:
-            ca.SetCaption("n/a")
+            ca.SetCaption("")
 
         tdren.AddActor(ca)
 
