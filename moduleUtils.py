@@ -184,7 +184,11 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     
     """
 
-    ocLabel = wx.StaticText(viewFramePanel, -1, "Examine the")
+    introspect_button_id = wx.NewId()
+    introspect_button = wx.Button(viewFramePanel, introspect_button_id, "Introspect")
+
+    ocLabel = wx.StaticText(viewFramePanel, -1, "the")
+    
     objectChoiceId = wx.NewId()
     objectChoice = wx.Choice(viewFramePanel, objectChoiceId, choices=[])
     objectChoice.SetToolTip(wx.ToolTip(
@@ -196,6 +200,7 @@ def createStandardObjectAndPipelineIntrospection(d3module,
         "Show the underlying VTK pipeline."))
 
     hSizer = wx.BoxSizer(wx.HORIZONTAL)
+    hSizer.Add(introspect_button, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(ocLabel, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(objectChoice, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(pbLabel, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
@@ -228,7 +233,7 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     # finally do the actual event setup
     setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
                                         renderWindow,
-                                        objectChoice, objectChoiceId,
+                                        objectChoice, introspect_button_id,
                                         pipelineButtonId)
 
 def getModuleIcon():
@@ -261,7 +266,7 @@ def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
 
 def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
                                         renderWindow,
-                                        objectChoice, objectChoiceId,
+                                        objectChoice, introspect_button_id,
                                         pipelineButtonId):
     """Setup all object and pipeline introspection for standard module
     views with a choice for objects and a button for pipeline
@@ -290,8 +295,8 @@ def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
     objectChoice.SetSelection(0)
 
     # setup the two default callbacks
-    wx.EVT_CHOICE(viewFrame, objectChoiceId,
-               lambda e: d3module._defaultObjectChoiceCallback(
+    wx.EVT_BUTTON(viewFrame, introspect_button_id,
+                  lambda e: d3module._defaultObjectChoiceCallback(
         viewFrame, renderWindow, objectChoice, objectDict))
 
     wx.EVT_BUTTON(viewFrame, pipelineButtonId,
