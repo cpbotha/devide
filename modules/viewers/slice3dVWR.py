@@ -877,7 +877,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             if prop.GetMapper() and prop.GetMapper().GetLookupTable():
                 if not hasattr(self, '_pdScalarBarActor'):
                     self._pdScalarBarActor = vtk.vtkScalarBarActor()
-                    self._threedRenderer.AddProp(self._pdScalarBarActor)
+                    self._threedRenderer.AddViewProp(self._pdScalarBarActor)
 
                 sname = "Unknown"
                 s = prop.GetMapper().GetInput().GetPointData().GetScalars()
@@ -902,7 +902,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 
 
         if destroyScalarBar and hasattr(self, '_pdScalarBarActor'):
-            self._threedRenderer.RemoveProp(self._pdScalarBarActor)
+            self._threedRenderer.RemoveViewProp(self._pdScalarBarActor)
             del self._pdScalarBarActor
         
 
