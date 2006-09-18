@@ -25,7 +25,10 @@ class vtkStructPtsWRT(moduleBase, filenameViewModuleMixin):
 
         # we do this to save space - if you're going to be transporting files
         # to other architectures, change this to ASCII
-        self._writer.SetFileTypeToBinary()
+        # we've set this back to ASCII.  Seems the binary mode is screwed
+        # for some files and manages to produce corrupt files that segfault
+        # VTK on Windows.
+        self._writer.SetFileTypeToASCII()
 
         # we now have a viewFrame in self._viewFrame
         self._createViewFrame('Select a filename',
