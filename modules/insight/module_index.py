@@ -21,6 +21,10 @@ class cannyEdgeDetection:
     kits = ['itk_kit']
     cats = ['Insight']
     help = """Performs 3D Canny edge detection on input image.
+
+    NOTE: due to a bug in ITK, this module will not update correctly when you
+    change parameters and re-execute.  Until I fix or work around the bug,
+    it's best to 'Reload' the module after parameter changes.
     """
 
 class confidenceSeedConnect:

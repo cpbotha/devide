@@ -399,6 +399,10 @@ class VolumeRender:
     You can select between traditional raycasting, 2D texturing and 3D
     texturing.  The raycaster can only handler unsigned short or unsigned char
     data, so you might have to use a vtkShiftScale module to preprocess.
+
+    You can supply your own opacity and colour transfer functions at the
+    second and third inputs.  If you don't supply these, the module will
+    create opacity and/or colour ramps based on the supplied threshold.
     """
 
 class warpPoints:
