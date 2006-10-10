@@ -11,6 +11,9 @@ class XMLRPCInterface(LoggingMixin):
     def __init__(self, devide_app):
         self._devide_app = devide_app
 
+        # initialise logging mixin
+        LoggingMixin.__init__(self)
+
         print "Initialising XMLRPC..."
         # without real IP number, this is only available via localhost
         self.server = SimpleXMLRPCServer(('localhost', 8000))
