@@ -2068,8 +2068,26 @@ class GraphEditor:
     def _cohenSutherLandClip(self,
                              x0, y0, x1, y1,
                              xmin, ymin, xmax, ymax):
+        """Perform Cohen Sutherland line clipping given line defined by
+        endpoints (x0, y0) and (x1, y1) and window (xmin, ymin, xmax, ymax).
+
+        See for e.g.:
+        http://www.cs.fit.edu/~wds/classes/graphics/Clip/clip/clip.html
+
+        @returns: a list of point coordinates where the line is clipped
+        by the window.
+        """
 
         def outCode(x, y, xmin, ymin, xmax, ymax):
+            """Determine Cohen-Sutherland bitcode for a point (x,y) with
+            respect to a window (xmin, ymin, xmax, ymax).
+
+            point left of window (x < xmin): bit 1
+            point right of window (x > xmax): bit 2
+            point below window (y < ymin): bit 3
+            point above window (y > ymax): bit 4
+            
+            """
 
 
             a,b,c,d = (0,0,0,0)
@@ -2086,16 +2104,16 @@ class GraphEditor:
 
             return (a << 3) | (b << 2) | (c << 1) | d
 
-
+        # determine bitcodes / outcodes for line endpoints
         oc0 = outCode(x0, y0, xmin, ymin, xmax, ymax)
         oc1 = outCode(x1, y1, xmin, ymin, xmax, ymax)
 
-        clipped = False
-        accepted = False
+        clipped = False # true when the whole line has been clipped
+        accepted = False # trivial accept (line is inside)
         
         while not clipped:
-
             if oc0 == 0 and oc1 == 0:
+                # the line is completely inside
                 clipped = True
                 accepted = True
                 
@@ -2104,8 +2122,20 @@ class GraphEditor:
                 clipped = True
                 
             else:
-                m = float(y1 - y0 + 0.00000001) / float(x1 - x0 + 0.00000001)
-                mi = 1.0 / m
+                dx = float(x1 - x0)
+                dy = float(y1 - y0)
+                if dx != 0.0:
+                    m = dy / dx
+                else:
+                    # if dx == 0.0, we won't need m in anycase (m is only
+                    # needed to calc intersection with a vertical edge)
+                    m = 0.0
+                if dy != 0.0:
+                    mi = dx / dy
+                else:
+                    # same logic here
+                    mi = 0.0
+                    
                 # this means there COULD be a clip
 
                 # pick "outside" point

@@ -2,6 +2,9 @@ Release ng1phase1 6.8.7 T - Mon Aug  7 11:47:16 WEST 2006
 
 Changes since ng1phase1 6.8.7 T
 
+ * Many fixes and improvements for ASCI A17 course.
+ * Finally fixed ancient 9-pixel offset routing bug thanks to Ork de
+   Rooij, Jorik Blaas and Maarten Löffler.
  * WrapITK: threw out unsigned short (0..65535) support, activated
    signed short (-32768..32767) support.  This makes more sense for
    for example DICOM datasets.
