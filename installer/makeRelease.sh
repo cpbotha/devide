@@ -118,6 +118,12 @@ echo "===== Creating self-contained WrapITK in itk_kit..."
 # we need to pass the top-level app dir
 python wrapitk_tree.py distdevide
 
+if [ "$?" -ne "0" ]; then
+echo "ERROR: Could not create self-contained WrapITK."
+exit 1
+fi
+
+
 if [ `uname` != Linux ]; then
 echo "===== Rebasing all DLLs..."
 sh ./rebase_dlls.sh
