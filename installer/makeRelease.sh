@@ -49,7 +49,7 @@ else
 
 # in the case of package_only, just make sure we go to the devide
 # main directory.
-cd ..
+cd ../
 
 fi
 
