@@ -66,6 +66,11 @@ echo "===== Building BASE version..."
 cd installer
 sh ./makePackage.sh
 
+if [ "$?" -ne "0" ]; then
+echo "ERROR during makePackage.sh."
+exit 1
+fi
+
 if [ `uname` != Linux ]; then
 
 echo "===== Rebasing all DLLs..."
