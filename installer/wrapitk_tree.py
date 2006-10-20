@@ -12,12 +12,19 @@ import sys
 if sys.platform == 'win32':
     SO_EXT = 'dll'
     SO_GLOB = '*.%s' % (SO_EXT,)
+    raise RuntimeError('Finding of ITK_SO_DIR has to be fixed for windows!')
     ITK_SO_DIR = 'c:/opt/ITK/bin'
 
 else:
     SO_EXT = 'so'
     SO_GLOB = '*.%s.*' % (SO_EXT,)
-    ITK_SO_DIR = '/home/cpbotha/opt/ITK/lib/InsightToolkit'
+
+    # first go down to Insight/lib/InsightToolkit/WrapITK/lib
+    os.chdir(itkConfig.swig_lib)
+    # then go up twice
+    os.chdir(os.path.join('..', '..'))
+    # then find the curdir
+    ITK_SO_DIR = os.path.abspath(os.curdir)
 
 
 # Tree() makes a TOC, i.e. a list of tuples with (app_dir relative
