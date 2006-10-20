@@ -1,5 +1,7 @@
 #!/bin/sh
 # $Id$
+# if you want to use your own PyInstaller Build.py, set the full path
+# to this in the ENV variable INSTALLER_SCRIPT
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
@@ -13,7 +15,13 @@ find ../ -name "#*#" -exec rm {} \;
 # run the McMillan Installer
 if [ `uname` == Linux ]; then
 
-INSTALLER='python /home/cpbotha/build/Installer/Build.py'
+# this is so that you can stuff this in the environment
+if [ -z INSTALLER_SCRIPT ]; then
+PYINSTALLER_SCRIPT='/home/cpbotha/build/Installer/Build.py'
+fi
+
+INSTALLER='python $PYINSTALLER_SCRIPT'
+
 $INSTALLER devide.spec
 # strip all the libraries
 find distdevide/ -name *.so | xargs strip
@@ -28,8 +36,13 @@ chmod +x $SCRIPTFILE
 
 else
 
+# this is so that you can stuff this in the environment
+if [ -z INSTALLER_SCRIPT ]; then
+PYINSTALLER_SCRIPT='c:/build/Installer/Build.py'
+fi
+
 # run the installer
-INSTALLER='python c:/build/Installer/Build.py'
+INSTALLER='python $PYINSTALLER_SCRIPT'
 $INSTALLER devide.spec
 
 # also copy the manifest file to distdevide
