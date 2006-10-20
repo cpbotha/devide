@@ -19,12 +19,15 @@ else:
     SO_EXT = 'so'
     SO_GLOB = '*.%s.*' % (SO_EXT,)
 
+    curdir = os.path.abspath(os.curdir)
     # first go down to Insight/lib/InsightToolkit/WrapITK/lib
     os.chdir(itkConfig.swig_lib)
     # then go up twice
     os.chdir(os.path.join('..', '..'))
     # then find the curdir
     ITK_SO_DIR = os.path.abspath(os.curdir)
+    # change back to where we started
+    os.chdir(curdir)
 
 
 # Tree() makes a TOC, i.e. a list of tuples with (app_dir relative
