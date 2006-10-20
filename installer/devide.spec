@@ -3,6 +3,8 @@
 # * remove_pure (startswith and contains)
 
 
+# NB: stay away from any absolute path dependencies!!!
+
 import os
 import fnmatch
 import re
@@ -39,13 +41,18 @@ def helper_remove_regexp(name, remove_regexps):
 
     return False
 
+# argv[0] is the name of the Build.py script
+INSTALLER_DIR = os.path.abspath(os.path.dirname(sys.argv[0]))
+# argv[1] is the name of the spec file
+# first we get the path of the spec file, then we have to go one up
+specpath = os.path.abspath(os.path.dirname(sys.argv[0]))
+APP_DIR = os.path.split(specpath)[0]
+
+from distutils import sysconfig
+MPL_DATA_DIR = os.path.join(sysconfig.get_python_lib(), 'matplotlib/mpl-data')
 
 if sys.platform.startswith('win'):
-    INSTALLER_DIR = 'c:\\build\\Installer'
-    APP_DIR = 'c:\\work\\code\\devide'
     exeName = 'builddevide/devide.exe'
-
-    MPL_DATA_DIR = 'C:\\Python24\\Lib\\site-packages\\matplotlib\\mpl-data'
 
     extraLibs = []
     # we can keep msvcr71.dll and msvcp71.dll, in fact they should just
@@ -56,28 +63,26 @@ if sys.platform.startswith('win'):
                        'netapi32.dll', 'opengl32.dll']
     
 else:
-    INSTALLER_DIR = '/home/cpbotha/build/Installer'
-    APP_DIR = '/home/cpbotha/work/code/devide'
     exeName = 'builddevide/devide'
-
-    MPL_DATA_DIR = '/usr/lib/python2.4/site-packages/matplotlib/mpl-data'
 
     # under some linuxes, libpython is shared -- McMillan installer doesn't 
     # know about this...
     extraLibs = []
-    
-    vi = sys.version_info
-    if (vi[0], vi[1]) == (2,4):
-        # ubuntu hoary
-        extraLibs = [('libpython2.4.so.1.0', '/usr/lib/libpython2.4.so.1.0', 'BINARY')]
 
-    elif (vi[0], vi[1]) == (2,2) and \
-             os.path.exists('/usr/lib/libpython2.2.so.0.0'):
-        # looks like debian woody
-        extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
-                      'BINARY')]
+    # i'm hoping this isn't necessary anymore!
+    if False: 
+        vi = sys.version_info
+        if (vi[0], vi[1]) == (2,4):
+            # ubuntu hoary
+            extraLibs = [('libpython2.4.so.1.0', '/usr/lib/libpython2.4.so.1.0', 'BINARY')]
 
-    # RHEL3 64 has a static python library.
+        elif (vi[0], vi[1]) == (2,2) and \
+                 os.path.exists('/usr/lib/libpython2.2.so.0.0'):
+            # looks like debian woody
+            extraLibs = [('libpython2.2.so.0.0', '/usr/lib/libpython2.2.so.0.0',
+                          'BINARY')]
+
+        # RHEL3 64 has a static python library.
 
     #####################################################################
     # on ubuntu 6.06, libdcmdata.so.1 and libofstd.so.1 could live in
