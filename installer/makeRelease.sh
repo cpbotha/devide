@@ -17,11 +17,15 @@
 #                     zip (from info-zip)
 #                     NSIS installer 2.0 or later
 # parameter(s): "sh makeRelease noitk" won't build itk binaries.
+#               "sh makeRelease package_only" will do everything except
+#                 updating sources and building help
 
 # TODO: rewrite in Python damnit!
 
 # go to the directory that contains makePackage.sh (i.e. devide/installer)
 cd `dirname $0`
+
+if [ "$1" != package_only ]; then
 
 # make sure all our dependencies are up to date
 # first change to the dir containing the correct script (devide/utils)
@@ -40,6 +44,14 @@ echo "===== Building documentation..."
 cd docs/help/source
 sh ./makeHtmlHelp.sh
 cd ../../../
+
+else
+
+# in the case of package_only, just make sure we go to the devide
+# main directory.
+cd ..
+
+fi
 
 echo "===== Cleaning out distdevide and builddevide..."
 cd installer
