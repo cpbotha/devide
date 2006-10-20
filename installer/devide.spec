@@ -45,7 +45,7 @@ def helper_remove_regexp(name, remove_regexps):
 INSTALLER_DIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 # argv[1] is the name of the spec file
 # first we get the path of the spec file, then we have to go one up
-specpath = os.path.abspath(os.path.dirname(sys.argv[0]))
+specpath = os.path.abspath(os.path.dirname(sys.argv[1]))
 APP_DIR = os.path.split(specpath)[0]
 
 from distutils import sysconfig
