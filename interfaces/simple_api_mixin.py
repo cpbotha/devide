@@ -10,11 +10,15 @@ class SimpleAPIMixin:
     def close(self):
         del self.devide_app
 
-    def load_network(self, filename):
-        pass
+    def load_and_realise_network(self, filename):
+        ln = self.devide_app.network_manager.load_network
+        pms_dict, connection_list, glyph_pos_dict = ln(filename)
+        rn = self.devide_app.network_manager.realise_network
+        new_modules_dict, new_connections = rn(pms_dict, connection_list)
+        return new_modules_dict, new_connections
 
-    def execute_network(self):
-        pass
+    def execute_network(self, meta_modules):
+        self.devide_app.network_manager.execute_network(meta_modules)
 
     def clear_network(self):
         pass

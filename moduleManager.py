@@ -852,14 +852,9 @@ class moduleManager:
         @todo: integrate concept of startingModule.
         """
 
-        # convert all metaModules to schedulerModules
-        sms = self._devide_app.scheduler.metaModulesToSchedulerModules(
-            self._moduleDict.values())
-
-        print "STARTING network execute ----------------------------"
-        print time.ctime()
         try:
-            self._devide_app.scheduler.executeModules(sms)
+            self._devide_app.network_manager.execute_network(
+                self._moduleDict.values())
 
         except Exception, e:
             # we are directly reporting the error, as this is used by
@@ -867,9 +862,6 @@ class moduleManager:
             # exception by itself.  Might change in the future.
             self._devide_app.log_error_with_exception(str(e))
 
-        print "ENDING network execute ------------------------------"
-
-        self.set_progress(100.0, 'Network execution complete.')        
 			      
     def viewModule(self, instance):
         instance.view()

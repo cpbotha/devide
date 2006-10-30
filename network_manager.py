@@ -1,4 +1,5 @@
 import cPickle
+import time
 
 class NetworkManager:
     """Contains all logic to do with network handling.
@@ -9,6 +10,26 @@ class NetworkManager:
 
     def __init__(self, devide_app):
         self._devide_app = devide_app
+
+    def execute_network(self, meta_modules):
+        """Execute network represented by all modules in the list
+        meta_modules.
+
+        """
+
+        # convert all metaModules to schedulerModules
+        sms = self._devide_app.scheduler.metaModulesToSchedulerModules(
+            meta_modules)
+
+        print "STARTING network execute ----------------------------"
+        print time.ctime()
+
+        self._devide_app.scheduler.executeModules(sms)
+        
+        self._devide_app.set_progress(100.0, 'Network execution complete.')
+
+        print "ENDING network execute ------------------------------"        
+
 
     def load_network(self, filename):
         """Given a filename, read it as a DVN file and return a tuple with

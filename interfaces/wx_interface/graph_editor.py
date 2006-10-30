@@ -454,20 +454,10 @@ class GraphEditor:
         allMetaModules = [mm._moduleDict[instance]
                           for instance in instances]
 
-        # now ask the scheduler to execute them
-        sms = self._devide_app.scheduler.metaModulesToSchedulerModules(
-            allMetaModules)
-
-        print "STARTING network execute ----------------------------"
         try:
-            self._devide_app.scheduler.executeModules(sms)
+            self._devide_app.network_manager.execute_network(allMetaModules)
         except Exception, e:
             self._devide_app.log_error_with_exception(str(e))
-
-        self._interface.set_progress(100.0, 'Network execution complete.')
-
-        print "ENDING network execute ------------------------------"
-        
 
     def _handler_blockmodules(self, event):
         """Block all selected glyphs and their modules.
