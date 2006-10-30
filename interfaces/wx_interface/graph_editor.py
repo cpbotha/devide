@@ -1550,9 +1550,9 @@ class GraphEditor:
         stored glyph positions before adding the origin.
         """
         
-        # get the module manager to deserialise
-        mm = self._devide_app.getModuleManager()
-        newModulesDict, newConnections = mm.deserialiseModuleInstances(
+        # get the network_manager to realise the network
+        nm = self._devide_app.network_manager
+        newModulesDict, newConnections = nm.realise_network(
             pmsDict, connectionList)
             
         # newModulesDict and newConnections contain the modules and
@@ -1570,6 +1570,7 @@ class GraphEditor:
 
         # store the new glyphs in a dictionary keyed on OLD pickled
         # instanceName so that we can connect them up in the next step
+        mm = self._devide_app.getModuleManager()
         newGlyphDict = {} 
         for newModulePickledName in newModulesDict.keys():
             position = glyphPosDict[newModulePickledName]
@@ -1608,7 +1609,8 @@ class GraphEditor:
         """
 
         try:
-            pmsDict, connectionList, glyphPosDict = self._loadNetwork(filename)
+            ln = self._devide_app.network_manager.load_network
+            pmsDict, connectionList, glyphPosDict = ln(filename)
             self._realiseNetwork(pmsDict, connectionList, glyphPosDict,
                                  position, reposition)
         except Exception, e:
@@ -1621,48 +1623,12 @@ class GraphEditor:
         """
 
         try:
-            pmsDict, connectionList, glyphPosDict = self._loadNetwork(filename)
+            ln = self._devide_app.network_manager.load_network
+            pmsDict, connectionList, glyphPosDict = ln(filename)
             self._copyBuffer = (pmsDict, connectionList, glyphPosDict)
 
         except Exception, e:
             self._devide_app.log_error_with_exception(str(e))
-
-    def _loadNetwork(self, filename):
-        """Given a filename, read it as a DVN file and return a tuple with
-        (pmsDict, connectionList, glyphPosDict) if successful.  If not
-        successful, an exception will be raised.
-        """
-        
-        f = None
-        try:
-            # load the fileData
-            f = open(filename, 'rb')
-            fileData = f.read()
-        except Exception, e:
-            if f:
-                f.close()
-
-            raise RuntimeError, 'Could not load network from %s:\n%s' % \
-                  (filename,str(e))
-
-        f.close()
-
-        try:
-            (headerTuple, dataTuple) = cPickle.loads(fileData)
-            magic, major, minor, patch = headerTuple
-            pmsDict, connectionList, glyphPosDict = dataTuple
-            
-        except Exception, e:
-            raise RuntimeError, 'Could not interpret network from %s:\n%s' % \
-                  (filename,str(e))
-            
-
-        if magic != 'DVN' and magic != 'D3N' or (major,minor,patch) != (1,0,0):
-            raise RuntimeError, '%s is not a valid DeVIDE network file.' % \
-                  (filename,)
-
-        return (pmsDict, connectionList, glyphPosDict)
-
 
 
     def _saveNetwork(self, glyphs, filename):

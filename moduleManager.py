@@ -1031,8 +1031,14 @@ class moduleManager:
 
     def deserialiseModuleInstances(self, pmsDict, connectionList):
         """Given a pickled stream, this method will recreate all modules,
-        configure them and connect them up.  It returns a list of
-        successfully instantiated modules.
+        configure them and connect them up.  
+
+        @returns: (newModulesDict, connectionList) - newModulesDict maps from
+        serialised/OLD instance name to newly created instance; newConnections
+        is a connectionList of the connections taht really were made during
+        the deserialisation.
+
+        @TODO: this should go to NetworkManager.
         """
 
         # store and deactivate auto-execute

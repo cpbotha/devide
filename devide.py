@@ -163,6 +163,11 @@ class DeVIDEApp:
             return False
 
         ####
+        # start network manager
+        import network_manager
+        self.network_manager = network_manager.NetworkManager(self)
+
+        ####
         # start scheduler
         import scheduler
         self.scheduler = scheduler.Scheduler(self)
