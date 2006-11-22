@@ -3,11 +3,11 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 import vtktud
 
-class My4DSourceSimple(SimpleVTKClassModuleBase):
+class MySource4DSimple(SimpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtktud.vtkMy4DSource(), 'Processing.',
+            vtktud.vtkMySource4D(), 'Processing.',
             (), ('vtkPolyData',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)
