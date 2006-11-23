@@ -14,13 +14,6 @@ class MyGlyph3DSimple:
     help = """Example module to illustrate SIMPLE wrapping of VTK class.
     """
 
-class MySource4D:
-    kits = ['vtk_kit']
-    cats = ['User','Optic Flow']
-    keywords = ['4d', 'source']
-    help = """Example module to illustrate wrapping of VTK class.
-    """
-
 class MySource4DSimple:
     kits = ['vtk_kit']
     cats = ['User','Optic Flow']
