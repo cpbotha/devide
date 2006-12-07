@@ -14,10 +14,10 @@ class MyGlyph3DSimple:
     help = """Example module to illustrate SIMPLE wrapping of VTK class.
     """
 
-class MySource4DSimple:
+class MyGaussian:
     kits = ['vtk_kit']
     cats = ['User','Optic Flow']
-    keywords = ['4d', 'source']
+    keywords = ['gaussian', 'source']
     help = """Example module to illustrate SIMPLE wrapping of VTK class.
     """
 
