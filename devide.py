@@ -45,13 +45,15 @@ class MainConfigClass(object):
         print "--interface wx|pyro|xmlrpc : Load 'wx' or 'rpc' interface."
         print "--stereo                   : Allocate stereo visuals."
         print "--test                     : Perform built-in unit testing."
+        print "--script                   : Run specified .py in script mode."
 
     def _parseCommandLine(self):
         try:
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
-                ['help', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test'])
+                ['help', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
+                 'script='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -75,11 +77,12 @@ class MainConfigClass(object):
                         pass
 
             elif o in ('--interface',):
-                print a
                 if a == 'pyro':
                     self.interface = 'pyro'
                 elif a == 'xmlrpc':
                     self.interface = 'xmlrpc'
+                elif a == 'script':
+                    self.interface = 'script'
                 else:
                     self.interface = 'wx'
 
@@ -88,6 +91,9 @@ class MainConfigClass(object):
 
             elif o in ('--test',):
                 self.test = True
+
+            elif o in ('--script',):
+                self.script = a
 
 ############################################################################
 class DeVIDEApp:
@@ -136,6 +142,11 @@ class DeVIDEApp:
             from interfaces.xmlrpc_interface import XMLRPCInterface
             self._interface = XMLRPCInterface(self)
             # this is a GUI-less interface, so wx_kit has to go
+            self.main_config.nokits.append('wx_kit')
+
+        elif self.main_config.interface == 'script':
+            from interfaces.script_interface import ScriptInterface
+            self._interface = ScriptInterface(self)
             self.main_config.nokits.append('wx_kit')
             
         else:

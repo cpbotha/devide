@@ -2,6 +2,8 @@
 # of DeVIDE that require simple methods for speaking to a running
 # instance
 
+import copy
+
 class SimpleAPIMixin:
 
     def __init__(self, devide_app):
@@ -11,11 +13,24 @@ class SimpleAPIMixin:
         del self.devide_app
 
     def load_and_realise_network(self, filename):
+        """
+        @return: dictionary mapping from serialised instance name to
+        meta_module.
+        """
+
         ln = self.devide_app.network_manager.load_network
         pms_dict, connection_list, glyph_pos_dict = ln(filename)
         rn = self.devide_app.network_manager.realise_network
         new_modules_dict, new_connections = rn(pms_dict, connection_list)
-        return new_modules_dict, new_connections
+
+        new_modules_dict2 = copy.deepcopy(new_modules_dict)
+        for k in new_modules_dict2:
+            instance = new_modules_dict2[k]
+            mm = self.devide_app.get_module_manager()
+            meta_module = mm.get_meta_module(instance)
+            new_modules_dict2[k] = meta_module
+        
+        return new_modules_dict2, new_connections
 
     def execute_network(self, meta_modules):
         self.devide_app.network_manager.execute_network(meta_modules)

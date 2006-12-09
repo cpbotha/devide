@@ -1030,7 +1030,8 @@ class moduleManager:
         is a connectionList of the connections taht really were made during
         the deserialisation.
 
-        @TODO: this should go to NetworkManager.
+        @TODO: this should go to NetworkManager and should return meta_modules
+        in the dictionary, not module instances.
         """
 
         # store and deactivate auto-execute
