@@ -21,8 +21,18 @@ class SimpleAPIMixin:
         self.devide_app.network_manager.execute_network(meta_modules)
 
     def clear_network(self):
+        # graphEditor.clearAllGlyphsFromCanvas() - delete network func
+        # has to be moved to NetworkManager
         pass
 
     def get_module_instance(self, module_name):
-        pass
+        mm = self.devide_app.get_module_manager()
+        mm.get_instance(module_name)
 
+    def get_module_config(self, module_name):
+        mi = self.get_instance(module_name)
+        return mi.getConfig()
+
+    def set_module_config(self, module_name, config):
+        mi = self.get_instance(module_name)
+        mi.setConfig(config)
