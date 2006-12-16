@@ -51,12 +51,12 @@ class moduleBase(object):
         # we neatly get rid of some references
         del self._moduleManager
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	"""Returns tuple of input descriptions, mostly used by the graph editor
 	to make a nice glyph for this module."""
 	raise NotImplementedError
     
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
 	"""Attaches input_stream (which is e.g. the output of a previous
         module) to this module's input at position idx.
 
@@ -78,7 +78,7 @@ class moduleBase(object):
         
 	raise NotImplementedError
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	"""Returns a tuple of output descriptions.
 
         Mostly used by the graph editor to make a nice glyph for this module.
@@ -86,7 +86,7 @@ class moduleBase(object):
         """
 	raise NotImplementedError
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
 	"""Get the n-th output.
 
         This will be used for connecting this output to the input of another
@@ -97,7 +97,7 @@ class moduleBase(object):
         """
 	raise NotImplementedError
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
 
@@ -109,7 +109,7 @@ class moduleBase(object):
         """
         raise NotImplementedError
 
-    def configToLogic(self):
+    def config_to_logic(self):
         """Apply internal configuration information (usually self._config) to
         the underlying logic.
 
@@ -122,7 +122,7 @@ class moduleBase(object):
         
         raise NotImplementedError
 
-    def viewToConfig(self):
+    def view_to_config(self):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
 
@@ -132,7 +132,7 @@ class moduleBase(object):
         raise NotImplementedError
         
     
-    def configToView(self):
+    def config_to_view(self):
         """Make the view reflect the internal configuration information.
 
         You only need to implement this if you make use of the standard ECASH
@@ -140,7 +140,7 @@ class moduleBase(object):
         """
 	raise NotImplementedError
 
-    def executeModule(self):
+    def execute_module(self):
         """This should make the model do whatever processing it was designed
         to do.
 
@@ -171,7 +171,7 @@ class moduleBase(object):
         """
 	raise NotImplementedError
 
-    def getConfig(self):
+    def get_config(self):
         """Returns current configuration of module.
 
         This should return a pickle()able object that encapsulates all
@@ -188,7 +188,7 @@ class moduleBase(object):
         # and then return the config struct.
         return self._config
 
-    def setConfig(self, aConfig):
+    def set_config(self, aConfig):
         """Change configuration of module to that stored in aConfig.
 
         If set_config is called with the object previously returned by
@@ -204,6 +204,7 @@ class moduleBase(object):
         self.configToLogic()
         # bring it back all the way up to the view
         self.logicToConfig()
-        self.configToView()
+        # but only if we are in view mode
+        if self._moduleManager._devide_app.view_mode:
+            self.configToView()
 
-        

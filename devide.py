@@ -31,6 +31,7 @@ class MainConfigClass(object):
         self.interface = 'wx'
         self.stereo = False
         self.test = False
+        self.script = None
         
         self._parseCommandLine()
 
@@ -152,6 +153,12 @@ class DeVIDEApp:
         else:
             from interfaces.wx_interface import WXInterface
             self._interface = WXInterface(self)
+
+        if 'wx_kit' in self.main_config.nokits:
+            self.view_mode = False
+        else:
+            self.view_mode = True
+                             
 
         ####
         # now startup module manager

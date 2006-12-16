@@ -85,7 +85,44 @@ class metaModule:
         del self.inputs
         del self.outputs
 
-    def applyViewToLogic(self):
+    def view_to_config(self):
+        """Wrapper method that transfers info from the module view to its
+        config data structure.  The method also takes care of updating the
+        modified time if necessary.
+        """
+        
+        res = self.instance.viewToConfig()
+
+        if res is None or res:
+            must_modify = True
+
+        else:
+            must_modify = False
+
+        if must_modify:
+            for part in range(self.numParts):
+                self.modify(part)
+
+    def config_to_logic(self):
+        """Wrapper method that transfers info from the module config to its
+        underlying logic.  The method also takes care of updating the
+        modified time if necessary.
+        """
+        
+        res = self.instance.configToLogic()
+
+        if res is None or res:
+            must_modify = True
+
+        else:
+            must_modify = False
+
+        if must_modify:
+            for part in range(self.numParts):
+                self.modify(part)
+
+
+    def applyViewToLogic_DEPRECATED(self):
         """Transfer information from module view to its underlying logic
         (model) and all the way back up.
 
@@ -119,17 +156,6 @@ class metaModule:
             # set modified time to now
             for part in range(self.numParts):
                 self.modify(part)
-        
-        self.instance.logicToConfig()
-        self.instance.configToView()
-
-    def syncViewWithLogic(self):
-        """Transfer configuration information from underlying logic, via
-        config datastructure to view.
-
-        At the moment this is only called by the event handlers for the
-        standard ECASH buttons.
-        """
         
         self.instance.logicToConfig()
         self.instance.configToView()

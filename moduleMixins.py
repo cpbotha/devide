@@ -283,6 +283,11 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
         False, it will be a File Save dialog.
         """
 
+        if not self._moduleManager._devide_app.view_mode:
+            raise RuntimeError(
+                'Eror calling view-dependent createViewFrame() in '
+                'backend-type DeVIDE.')
+
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             resources.python.filenameViewModuleMixinFrame.\
@@ -323,6 +328,12 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
 
         if path != None:
             self._viewFrame.filenameText.SetValue(path)
+
+    def view(self):
+        if self._viewFrame is None:
+            self._createViewFrame()
+            self.configToLogic()
+            self._moduleManager.
 
 # ----------------------------------------------------------------------------
 class colourDialogMixin(object):

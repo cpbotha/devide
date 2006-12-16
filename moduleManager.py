@@ -17,7 +17,7 @@ import types
 # * in general, executeModule()/transferOutput()/etc calls do exactly that
 #   when called, i.e. they don't automatically cache.  The scheduler should
 #   take care of caching by making the necessary isModified() or
-#   shouldTransfer() callls.  The reason for this is so that the module
+#   shouldTransfer() calls.  The reason for this is so that the module
 #   actions can be forced
 #
 
@@ -388,27 +388,60 @@ class moduleManager:
         mModule = self._moduleDict[instance]
 
         try:
-            mModule.applyViewToLogic()
+            # these two MetaModule wrapper calls will take care of setting
+            # the modified flag / time correctly
+
+            if self._devide_app.view_mode:
+                # only in view mode do we call this transfer
+                mModule.view_to_config()
+                
+            mModule.config_to_logic()
+
+            # we round-trip so that view variables that are dependent on
+            # the effective changes to logic and/or config can update
+            instance.logicToConfig()
+
+            if self._devide_app.view_mode:
+                instance.configToView()
+
         except Exception, e:
             # we are directly reporting the error, as this is used by
             # a utility function that is too compact to handle an
             # exception by itself.  Might change in the future.
             self._devide_app.log_error_with_exception(str(e))
 
-    def syncModuleViewWithLogic(self, instance):
+    def init_from_module_config(self, instance):
+        """Method that should be called during __init__ for all (view and
+        non-view) modules, after the config structure has been set.
+
+        In the view() method, or after having setup the view in view-modules,
+        also call syncModuleViewWithLogic()
+        """
+        
+        instance.configToLogic()
+        instance.logicToConfig()
+
+    def sync_module_view_with_logic(self, instance):
         """Interface method that can be used by clients to transfer config
         information from the underlying module logic (model) to the view.
+
+        At the moment used by standard ECASH handlers.
         """
 
-        mModule = self._moduleDict[instance]
-
         try:
-            mModule.syncViewWithLogic()
+            instance.logicToConfig()
+
+            # we only do the view transfer if DeVIDE is in the correct mode
+            if self._devide_app.view_mode:
+                instance.configToView()
+            
         except Exception, e:
             # we are directly reporting the error, as this is used by
             # a utility function that is too compact to handle an
             # exception by itself.  Might change in the future.
             self._devide_app.log_error_with_exception(str(e))
+
+    syncModuleViewWithLogic = sync_module_view_with_logic
 
     def blockmodule(self, meta_module):
         meta_module.blocked = True
