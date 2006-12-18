@@ -184,7 +184,7 @@ class moduleBase(object):
         """
 
         # make sure that the config reflects the state of the underlying logic
-        self.logicToConfig()
+        self.logic_to_config()
         # and then return the config struct.
         return self._config
 
