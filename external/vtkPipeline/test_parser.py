@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# $Id: test_parser.py,v 1.1 2002/06/10 16:00:28 cpbotha Exp $
+# $Id$
 #
 # This file helps test the vtkMethodParser by testing if it is able to
 # parse all the objects that vtkpython provides.

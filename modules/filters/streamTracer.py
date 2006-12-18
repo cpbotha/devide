@@ -32,15 +32,15 @@ class streamTracer(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkStreamTracer' : self._streamTracer})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -48,30 +48,30 @@ class streamTracer(scriptedConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._streamTracer
 
-    def executeModule(self):
+    def execute_module(self):
         self._streamTracer.Update()
         
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Vector dataset', 'VTK source geometry')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._streamTracer.SetInput(inputStream)
             
         else:
             self._streamTracer.SetSource(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Streamlines polydata',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._streamTracer.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.integrator = self._streamTracer.GetIntegratorType()
     
-    def configToLogic(self):
+    def config_to_logic(self):
         self._streamTracer.SetIntegratorType(self._config.integrator)
 
         

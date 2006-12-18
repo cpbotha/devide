@@ -278,7 +278,7 @@ class Scheduler:
         scheduleList.reverse()
         return scheduleList
 
-    def executeModules(self, schedulerModules):
+    def execute_modules(self, schedulerModules):
         """Execute the modules in schedulerModules in topological order.
 
         For each module, all output is transferred from its consumers and then
@@ -297,7 +297,7 @@ class Scheduler:
         """
         
 
-        # stop concurrent calls of executeModules.
+        # stop concurrent calls of execute_modules.
         if not self._execute_mutex.testandset():
             return
 
@@ -349,7 +349,7 @@ class Scheduler:
                     print 'executing part %d of %s' % \
                           (sm.part, sm.meta_module.instance.__class__.__name__)
 
-                    mm.executeModule(sm.meta_module, sm.part)
+                    mm.execute_module(sm.meta_module, sm.part)
 
         finally:
             # in whichever way execution terminates, we have to unlock the

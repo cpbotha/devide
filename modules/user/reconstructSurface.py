@@ -54,8 +54,8 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # get rid of our reference
@@ -65,31 +65,31 @@ class reconstructSurface(moduleBase, noConfigModuleMixin):
         del self._iObj
         del self._oObj
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkImageData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._iObj.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return (self._oObj.GetOutput().GetClassName(),)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._oObj.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
-    def executeModule(self):
+    def execute_module(self):
         self._oObj.Update()
 
     def view(self, parent_window=None):

@@ -45,16 +45,16 @@ class ImageLogic(scriptedConfigModuleMixin, moduleBase):
              'vtkImageLogic' : self._image_logic})
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -65,31 +65,31 @@ class ImageLogic(scriptedConfigModuleMixin, moduleBase):
         del self._image_logic
         del self._image_cast
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data 1', 'VTK Image Data 2')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._image_logic.SetInput(0, inputStream)
         else:
             self._image_cast.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('VTK Image Data Result',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._image_logic.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.operation = self._image_logic.GetOperation()
         self._config.output_true_value = \
                                        self._image_logic.GetOutputTrueValue()
     
-    def configToLogic(self):
+    def config_to_logic(self):
         self._image_logic.SetOperation(self._config.operation)
         self._image_logic.SetOutputTrueValue(self._config.output_true_value)
     
-    def executeModule(self):
+    def execute_module(self):
         if self._image_logic.GetInput(0) is not None:
             self._image_cast.SetOutputScalarType(
                 self._image_logic.GetInput(0).GetScalarType())

@@ -64,16 +64,16 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
              'vtkSuperquadricSource' : self._superquadricSource})
 
         # apply config to logic
-        self.configToLogic()
+        self.config_to_logic()
         # then bring it all the way up again
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -84,7 +84,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         del self._superquadricSource
         del self._superquadric
         
-    def executeModule(self):
+    def execute_module(self):
         # when we're executed, outputs become active
         self._superquadricSource.Update()
         
@@ -92,17 +92,17 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         # self._outputs[0] (the superquadric implicit) is always ready
 
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
 	raise Exception
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('Implicit function',
                 'Polydata')
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         #return self._outputs[idx]
         
         if idx == 0:
@@ -111,7 +111,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
             return self._superquadricSource.GetOutput()
 
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # sanity check
         if self._config.thickness < 0.0:
             self._config.thickness = 0.0
@@ -133,7 +133,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         self._superquadricSource.SetPhiResolution(
             self._config.phiResolution)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         s = self._superquadric
         self._config.toroidal = s.GetToroidal()
         self._config.thickness = s.GetThickness()

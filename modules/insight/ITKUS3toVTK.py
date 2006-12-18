@@ -22,16 +22,16 @@ class ITKUS3toVTK(noConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'ImageToVTKImageFilter' : self._itk2vtk})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
@@ -40,31 +40,31 @@ class ITKUS3toVTK(noConfigModuleMixin, moduleBase):
 
         del self._itk2vtk
 
-    def executeModule(self):
+    def execute_module(self):
         self._itk2vtk.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ITK Image (3D, float)',)        
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._itk2vtk.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('VTK Image Data',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._itk2vtk.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
     
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
         

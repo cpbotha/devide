@@ -27,9 +27,9 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
         self._imageFileNamesChanged = True
         #
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
 
@@ -45,25 +45,25 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
         # base classes taken care of
         moduleBase.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         raise Exception
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ITK Image Stack',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageStack
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         count = self._viewFrame.fileNamesListBox.GetCount()
         tempList = []
         for n in range(count):
@@ -76,13 +76,13 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
             # copy...
             self._config._imageFileNames = tempList
             
-    def configToView(self):
+    def config_to_view(self):
         # clear wxListBox
         self._viewFrame.fileNamesListBox.Clear()
         for fileName in self._config._imageFileNames:
             self._viewFrame.fileNamesListBox.Append(fileName)
 
-    def executeModule(self):
+    def execute_module(self):
         if self._imageFileNamesChanged:
             # only if things have changed do we do our thing
             # first take care of old refs

@@ -43,16 +43,16 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         self._createViewFrame()
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # get rid of our reference
         del self._splatMapper
@@ -74,22 +74,22 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         self._viewFrame.Destroy()
         del self._viewFrame
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('input image data', 'optional gradient image data')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._splatMapper.SetInput(inputStream)
         else:
             self._splatMapper.SetGradientImageData(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Shell splat volume (vtkVolume)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._volume
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # we CAN'T derive the threshold and colour from the opacity and colour
         # transfer functions (or we could, but it'd be terribly dirty)
         # but fortunately we don't really have to - logiToConfig is only really
@@ -105,7 +105,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
                                                GetGradientImageIsGradient()
         
 
-    def configToLogic(self):
+    def config_to_logic(self):
 
         # only modify the transfer functions if they've actually changed
         if self._otf.GetSize() != 2 or \
@@ -142,7 +142,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         self._splatMapper.GetShellExtractor().SetGradientImageIsGradient(
             self._config.gradientImageIsGradient)
 
-    def viewToConfig(self):
+    def view_to_config(self):
         # get the threshold
         try:
             threshold = float(self._viewFrame.thresholdText.GetValue())
@@ -176,7 +176,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
                                              gradientImageIsGradientCheckBox.\
                                              GetValue()
 
-    def configToView(self):
+    def config_to_view(self):
         self._viewFrame.thresholdText.SetValue("%.2f" %
                                                (self._config.threshold))
         self._viewFrame.colourText.SetValue(
@@ -186,7 +186,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         self._viewFrame.gradientImageIsGradientCheckBox.SetValue(
             self._config.gradientImageIsGradient)
 
-    def executeModule(self):
+    def execute_module(self):
         self._splatMapper.Update()
         
 

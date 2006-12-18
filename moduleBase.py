@@ -201,10 +201,20 @@ class moduleBase(object):
         
         self._config = aConfig
         # apply the config to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # bring it back all the way up to the view
-        self.logicToConfig()
+        self.logic_to_config()
         # but only if we are in view mode
         if self._moduleManager._devide_app.view_mode:
-            self.configToView()
+            self.config_to_view()
 
+    # convenience functions
+
+    def sync_module_logic_with_config(self):
+        self._moduleManager.sync_module_logic_with_config(self)
+
+    def sync_module_view_with_config(self):
+        self._moduleManager.sync_module_view_with_config(self)
+
+    def sync_module_view_with_logic(self):
+        self._moduleManager.sync_module_view_with_logic(self)

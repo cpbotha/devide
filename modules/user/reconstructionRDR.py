@@ -47,14 +47,14 @@ class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
 
 		self._viewFrame = self._createViewFrame({'Module (self)' : self})
 
-		self.configToLogic()
+		self.config_to_logic()
 		self.syncViewWithLogic()
 
 	def close(self):
 		# we play it safe... (the graph_editor/module_manager should have
 		# disconnected us by now)
-		# for inputIdx in range(len(self.getInputDescriptions())):
-		#    self.setInput(inputIdx, None)
+		# for inputIdx in range(len(self.get_input_descriptions())):
+		#    self.set_input(inputIdx, None)
 
 		# this will take care of all display thingies
 		scriptedConfigModuleMixin.close(self)
@@ -64,19 +64,19 @@ class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
 		# get rid of our reference
 		# del self._reader
 
-	def getInputDescriptions(self):
+	def get_input_descriptions(self):
 		return ()
 
-	def setInput(self, idx, inputStream):
+	def set_input(self, idx, inputStream):
 		raise Exception
 
-	def getOutputDescriptions(self):
+	def get_output_descriptions(self):
 		return ('2D Transform Stack',)
 
-	def getOutput(self, idx):
+	def get_output(self, idx):
 		return self._transformStack
 
-	def logicToConfig(self):
+	def logic_to_config(self):
 		#self._config.filePrefix = self._reader.GetFilePrefix()
 		#self._config.filePattern = self._reader.GetFilePattern()
 		#self._config.firstSlice = self._reader.GetFileNameSliceOffset()
@@ -86,7 +86,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
 		#self._config.fileLowerLeft = bool(self._reader.GetFileLowerLeft())
 		pass
 
-	def configToLogic(self):
+	def config_to_logic(self):
 		# get choice widget binding
 		choiceBind = self._widgets[self._configList[1][0:5]]
 		# abuse
@@ -99,7 +99,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
 			for e in self._getAvailableReconstructions(): 
 				choiceBind.Append( e )
 
-	def executeModule(self):
+	def execute_module(self):
 		if len( self._config.databaseFile ):
 			self._fetchTransformStack()
 

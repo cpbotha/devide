@@ -1,4 +1,4 @@
-# $Id: writeSVSceneAsRIB.py,v 1.2 2005/07/29 11:09:23 cpbotha Exp $
+# $Id$
 
 # to use a shader on an actor, do this first before export:
 # a = vtk.vtkRIBProperty()

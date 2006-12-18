@@ -48,15 +48,15 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'itkConfidenceConnectedImageFilter' : self._cCIF})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -66,14 +66,14 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         # remove all bindings
         del self._cCIF
 
-    def executeModule(self):
+    def execute_module(self):
         self._transferPoints()
         self._cCIF.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ITK Image (3D, float)', 'Seed points')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._cCIF.SetInput(inputStream)
 
@@ -92,19 +92,19 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
  
                 self._inputPoints = inputStream
                 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Segmented ITK Image (3D, float)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._cCIF.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._cCIF.SetMultiplier(self._config.multiplier)
         self._cCIF.SetInitialNeighborhoodRadius(self._config.initialRadius)
         self._cCIF.SetNumberOfIterations(self._config.numberOfIterations)
         self._cCIF.SetReplaceValue(self._config.replaceValue)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.multiplier = self._cCIF.GetMultiplier()
         self._config.initialRadius = self._cCIF.GetInitialNeighborhoodRadius()
         self._config.numberOfIterations = self._cCIF.GetNumberOfIterations()

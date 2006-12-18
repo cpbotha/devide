@@ -41,15 +41,15 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'itkCannyEdgeDetectionImageFilter' : self._canny})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -59,22 +59,22 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
         # remove all bindings
         del self._canny
 
-    def executeModule(self):
+    def execute_module(self):
         self._canny.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ITK Image (3D, float)',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._canny.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ITK Edge Image (3D, float)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._canny.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # VARIANCE
         var = self._canny.GetVariance()
         for i in range(3):
@@ -100,7 +100,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
         # OUTSIDE VALUE
         self._canny.SetOutsideValue(self._config.outsideValue)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # Damnit!  This is returning mostly float parameters (instead of
         # double), so that str() in Python is having a hard time formatting
         # the things nicely.

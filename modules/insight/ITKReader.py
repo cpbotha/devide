@@ -18,7 +18,7 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         self._config.dimensionality = '3'
 
         self._logic = copy.deepcopy(self._config)
-        # we change this one ivar so that configToLogic will return True
+        # we change this one ivar so that config_to_logic will return True
         # the first time
         self._logic.filename = None
 
@@ -62,16 +62,16 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         self._createWindow(
             {'Module (self)' : self})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
         
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -82,28 +82,28 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         del self._autotype_reader
         del self._reader
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
     
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         raise Exception
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ITK Image',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._reader.GetOutput()
 
-    def logicToConfig(self):
-        # important to return False: logicToConfig can't and
+    def logic_to_config(self):
+        # important to return False: logic_to_config can't and
         # hasn't changed our config
         return False
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # if the user has performed an 'Apply', we want to invalidate
         return True
 
-    def executeModule(self):
+    def execute_module(self):
         if self._config.autotype:
             self._autotype_reader.SetFileName(self._config.filename)
             self._autotype_reader.UpdateOutputInformation()

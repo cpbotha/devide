@@ -53,7 +53,7 @@ class ifdocVWR(moduleBase):
 
     def close(self):
         for i in range(self._numInputs):
-            self.setInput(i, None)
+            self.set_input(i, None)
 
         # call close method of base class
         moduleBase.close(self)
@@ -73,10 +73,10 @@ class ifdocVWR(moduleBase):
         self.controlFrame.Destroy()
         del self.controlFrame
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ifdoc m-Data',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         # don't forget to register as an observer
         self._mData = inputStream
 
@@ -103,26 +103,26 @@ class ifdocVWR(moduleBase):
             for key in timeStep:
                 self._outputPoints[key] = timeStep[key]
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('namedWorldPoints',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         #raise Exception
         return self._outputPoints
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
         """
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         """Apply internal configuration information (usually self._config) to
         the underlying logic.
         """
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
 
@@ -130,13 +130,13 @@ class ifdocVWR(moduleBase):
         pass
         
     
-    def configToView(self):
+    def config_to_view(self):
         """Make the view reflect the internal configuration information.
 
         """
         pass
     
-    def executeModule(self):
+    def execute_module(self):
         # we could call animate if the user does an execute
         pass
             

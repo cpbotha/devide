@@ -43,25 +43,25 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
              'vtkImageHistogram2D' : self._histogram})
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
         self._input0 = None
         self._input1 = None
 
     def close(self):
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
 
         scriptedConfigModuleMixin.close(self)
         moduleBase.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Image Data 1', 'Imaga Data 2')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
 
         def checkTypeAndReturnInput(inputStream):
             """Check type of input.  None gets returned.  The input is
@@ -99,22 +99,22 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
             self._histogram.SetInput2(self._input1)
 
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return (self._histogram.GetOutput().GetClassName(),)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         #raise NotImplementedError
         return self._histogram.GetOutput()
 
-    def executeModule(self):
+    def execute_module(self):
         self._histogram.Update()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.input1Bins = self._histogram.GetInput1Bins()
         self._config.input2Bins = self._histogram.GetInput2Bins()
         self._config.maxSamplesPerBin = self._histogram.GetMaxSamplesPerBin()
     
-    def configToLogic(self):
+    def config_to_logic(self):
         self._histogram.SetInput1Bins(self._config.input1Bins)
         self._histogram.SetInput2Bins(self._config.input2Bins)
         self._histogram.SetMaxSamplesPerBin(self._config.maxSamplesPerBin)

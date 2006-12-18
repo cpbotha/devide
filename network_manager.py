@@ -24,7 +24,7 @@ class NetworkManager:
         print "STARTING network execute ----------------------------"
         print time.ctime()
 
-        self._devide_app.scheduler.executeModules(sms)
+        self._devide_app.scheduler.execute_modules(sms)
         
         self._devide_app.set_progress(100.0, 'Network execution complete.')
 

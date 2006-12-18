@@ -14,7 +14,7 @@ class VolumeRender(
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
 
-        # at the first configToLogic (at the end of the ctor), this will
+        # at the first config_to_logic (at the end of the ctor), this will
         # be set to 0
         self._current_rendering_type = -1
 
@@ -47,16 +47,16 @@ class VolumeRender(
         self._create_pipeline()
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of GUI
         scriptedConfigModuleMixin.close(self)
@@ -67,12 +67,12 @@ class VolumeRender(
         del self._volume_mapper
         del self._volume
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('input image data',
                 'opacity transfer function',
                 'colour transfer function')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._input_data = inputStream
             
@@ -82,19 +82,19 @@ class VolumeRender(
         else:
             self._input_ctf = inputStream
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('vtkVolume',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._volume
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.rendering_type = self._current_rendering_type
         
         self._config.interpolation = \
                                    self._volume_property.GetInterpolationType()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._volume_property.SetInterpolationType(self._config.interpolation)
 
         if self._config.rendering_type != self._current_rendering_type:
@@ -164,7 +164,7 @@ class VolumeRender(
         moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
         
-    def executeModule(self):
+    def execute_module(self):
         otf, ctf = self._create_tfs()
         
         if self._input_otf is not None:

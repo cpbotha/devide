@@ -40,9 +40,9 @@ class dicomRDR(moduleBase,
         self._config.estimateSliceThickness = 1
 
         # do the normal thang (down to logic, up again)
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 	
     def close(self):
         del self._fileDialog
@@ -53,20 +53,20 @@ class dicomRDR(moduleBase,
         # also remove the binding we have to our reader
         del self._reader
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ()
     
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
 	raise Exception
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('DICOM data (vtkStructuredPoints)',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
 	return self._reader.GetOutput()
 
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.seriesInstanceIdx = self._reader.GetSeriesInstanceIdx()
         # refresh our list of dicomFilenames
         del self._config.dicomFilenames[:]
@@ -78,7 +78,7 @@ class dicomRDR(moduleBase,
                                               GetEstimateSliceThickness()
         
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._reader.SetSeriesInstanceIdx(self._config.seriesInstanceIdx)
         
         # this will clear only the dicom_filenames_buffer without setting
@@ -98,7 +98,7 @@ class dicomRDR(moduleBase,
             self._config.estimateSliceThickness)
 
 
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.seriesInstanceIdx = self._viewFrame.si_idx_spin.GetValue()
 
         lb = self._viewFrame.dicomFilesListBox
@@ -125,7 +125,7 @@ class dicomRDR(moduleBase,
                                               GetValue()
 
 
-    def configToView(self):
+    def config_to_view(self):
         # first transfer list of files to listbox
         lb = self._viewFrame.dicomFilesListBox
         lb.Clear()
@@ -226,7 +226,7 @@ class dicomRDR(moduleBase,
         else:
             return None
     
-    def executeModule(self):
+    def execute_module(self):
         # get the vtkDICOMVolumeReader to try and execute
 	self._reader.Update()
         

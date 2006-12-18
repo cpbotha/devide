@@ -39,40 +39,40 @@ class transformStackRDR(moduleBase, filenameViewModuleMixin):
 
         # set up some defaults
         self._config.filename = ''
-        self.configToLogic()
+        self.config_to_logic()
         # make sure these filter through from the bottom up
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
         
     def close(self):
         del self._transformStack
         filenameViewModuleMixin.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ()
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         raise Exception
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('2D Transform Stack',)    
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._transformStack
     
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.filename = self._getViewFrameFilename()
 
-    def configToView(self):
+    def config_to_view(self):
         self._setViewFrameFilename(self._config.filename)
 
-    def executeModule(self):
+    def execute_module(self):
         if len(self._config.filename):
             
             self._readTransformStack(self._config.filename)

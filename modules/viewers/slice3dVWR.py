@@ -2,7 +2,7 @@
 # $Id$
 # next-generation of the slicing and dicing devide module
 
-# TODO: 'refresh' handlers in setInput()
+# TODO: 'refresh' handlers in set_input()
 # TODO: front-end / back-end module split (someday)
 
 import cPickle
@@ -170,7 +170,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # this is standard behaviour in the close method:
         # call set_input(idx, None) for all inputs
         for idx in range(self._numDataInputs):
-            self.setInput(idx, None)
+            self.set_input(idx, None)
 
         # take care of the sliceDirections
         self.sliceDirections.close()
@@ -256,16 +256,16 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # to VTK being able to deallocate everything that it has.
         wx.SafeYield()
 
-    def executeModule(self, part=0):
+    def execute_module(self, part=0):
         # part 0 is the "normal" part and part 1 is the input-independent part
         if part == 0:
             self.render3D()
 
         else:
             # and make sure outputs and things are up to date!
-            self.getOutput(2).Update()
+            self.get_output(2).Update()
             
-    def getConfig(self):
+    def get_config(self):
         # implant some stuff into the _config object and return it
         self._config.savedPoints = self.selectedPoints.getSavePoints()
 
@@ -278,7 +278,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         
         return self._config
 
-    def setConfig(self, aConfig):
+    def set_config(self, aConfig):
         self._config = aConfig
 
         savedPoints = self._config.savedPoints
@@ -290,15 +290,15 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         if hasattr(self._config, 'implicitsState'):
             self._implicits.setImplicitsState(self._config.implicitsState)
         
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         # concatenate it num_inputs times (but these are shallow copies!)
         return self._numDataInputs * \
                ('vtkStructuredPoints|vtkImageData|vtkPolyData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         """Attach new input.
 
-        This is the slice3dVWR specialisation of the module API setInput
+        This is the slice3dVWR specialisation of the module API set_input
         call.
         """
 
@@ -475,7 +475,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         else:
             raise TypeError, "Input type not recognised!"
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Selected points',
                 'Implicit Function',
                 'Slices polydata',
@@ -483,7 +483,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                 'self (slice3dVWR object)')
         
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         if idx == 0:
             return self.selectedPoints.outputSelectedPoints
         elif idx == 1:

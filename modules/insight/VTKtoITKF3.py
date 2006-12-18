@@ -23,16 +23,16 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
              'vtkImageCast' : self._imageCast,
              'VTKImageToImageFilter' : self._vtk2itk})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
@@ -42,7 +42,7 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
         del self._imageCast
         del self._vtk2itk
 
-    def executeModule(self):
+    def execute_module(self):
         # the whole connectvtkitk thingy is quite shaky and was really
         # designed for demand-driven use.  using it in an event-driven
         # environment, we have to make sure it does exactly what we want
@@ -56,28 +56,28 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
 
         self._vtk2itk.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._imageCast.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ITK Image (3D, float)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._vtk2itk.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
     
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
     
 

@@ -68,9 +68,9 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         self.support_vtk(self.interp)
         self.support_matplotlib(self.interp)
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
         self.view()
 
@@ -79,41 +79,41 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         PythonShellMixin.close(self,
                                self._moduleManager.log_error_with_exception)
         
-        for i in range(len(self.getInputDescriptions())):
-            self.setInput(i, None)
+        for i in range(len(self.get_input_descriptions())):
+            self.set_input(i, None)
 
         self._view_frame.Destroy()
         del self._view_frame
 
         moduleBase.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Any input',) * NUMBER_OF_INPUTS
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Dynamic output',) * NUMBER_OF_OUTPUTS
 
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         self.inputs[idx] = input_stream
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self.outputs[idx]
 
-    def viewToConfig(self):
+    def view_to_config(self):
         for ew, cn, i in zip(self._editwindows, self._config_srcs,
                              range(len(self._editwindows))):
             
             setattr(self._config, cn, ew.GetText())
             self.set_editwindow_modified(i, False)
         
-    def configToView(self):
+    def config_to_view(self):
         for ew, cn, i in zip(self._editwindows, self._config_srcs,
                              range(len(self._editwindows))):
             
             ew.SetText(getattr(self._config, cn))
             self.set_editwindow_modified(i, False)
 
-    def configToLogic(self):
+    def config_to_logic(self):
         logic_changed = False
 
         for cn,ln in zip(self._config_srcs, self._srcs):
@@ -125,7 +125,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
 
         return logic_changed
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         config_changed = False
 
         for cn,ln in zip(self._config_srcs, self._srcs):
@@ -137,7 +137,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
 
         return config_changed
 
-    def executeModule(self):
+    def execute_module(self):
         # we only attempt running setup_src if its md5 is different from
         # that of the previous setup_src that we attempted to run
         hd = md5.md5(self._src_setup).hexdigest

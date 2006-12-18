@@ -78,7 +78,7 @@ class metaModule:
         self.transferTimes = {}
 
         # this will create self.inputs, self.outputs
-        self.resetInputsOutputs()
+        self.reset_inputsOutputs()
 
     def close(self):
         del self.instance
@@ -91,7 +91,7 @@ class metaModule:
         modified time if necessary.
         """
         
-        res = self.instance.viewToConfig()
+        res = self.instance.view_to_config()
 
         if res is None or res:
             must_modify = True
@@ -109,7 +109,7 @@ class metaModule:
         modified time if necessary.
         """
         
-        res = self.instance.configToLogic()
+        res = self.instance.config_to_logic()
 
         if res is None or res:
             must_modify = True
@@ -134,8 +134,8 @@ class metaModule:
         standard ECASH interface devices.
         """
 
-        vtc_res = self.instance.viewToConfig()
-        ctl_res = self.instance.configToLogic()
+        vtc_res = self.instance.view_to_config()
+        ctl_res = self.instance.config_to_logic()
 
         mustModify = True
         if vtc_res is None and ctl_res is None:
@@ -157,8 +157,8 @@ class metaModule:
             for part in range(self.numParts):
                 self.modify(part)
         
-        self.instance.logicToConfig()
-        self.instance.configToView()
+        self.instance.logic_to_config()
+        self.instance.config_to_view()
 
     def findConsumerInOutputConnections(
         self, outputIdx, consumerInstance, consumerInputIdx=-1):
@@ -281,9 +281,9 @@ class metaModule:
                   "Attempt to disconnect output which isn't connected."
         
 
-    def resetInputsOutputs(self):
-        numIns = len(self.instance.getInputDescriptions())
-        numOuts = len(self.instance.getOutputDescriptions())
+    def reset_inputsOutputs(self):
+        numIns = len(self.instance.get_input_descriptions())
+        numOuts = len(self.instance.get_output_descriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
         # if the input is not connected, that position in the list is None
         # supplierModule is a module instance, not a metaModule
@@ -294,7 +294,7 @@ class metaModule:
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]
 
-    def executeModule(self, part=0):
+    def execute_module(self, part=0):
         """Used by moduleManager to execute module.
 
         This method also takes care of timestamping the execution time if
@@ -306,9 +306,9 @@ class metaModule:
             # if something goes wrong, an exception will be thrown and
             # correctly handled by the invoking module manager
             if part == 0:
-                self.instance.executeModule()
+                self.instance.execute_module()
             else:
-                self.instance.executeModule(part)
+                self.instance.execute_module(part)
 
             # if we get here, everything is okay and we can record
             # the execution time of this part

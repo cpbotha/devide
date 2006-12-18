@@ -46,16 +46,16 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
              'vtkImageMathematics' : self._imageMath})
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -65,22 +65,22 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._imageMath
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data 1', 'VTK Image Data 2')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._imageMath.SetInput1(inputStream)
         else:
             self._imageMath.SetInput2(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('VTK Image Data Result',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageMath.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         o = self._imageMath.GetOperation()
         # search for o in _operations
         for name,idx in self._operations.items():
@@ -96,14 +96,14 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
         self._config.constantC = self._imageMath.GetConstantC()
         self._config.constantK = self._imageMath.GetConstantK()
     
-    def configToLogic(self):
+    def config_to_logic(self):
         idx = self._operations[self._config.operation]
         self._imageMath.SetOperation(idx)
 
         self._imageMath.SetConstantC(self._config.constantC)
         self._imageMath.SetConstantK(self._config.constantK)
     
-    def executeModule(self):
+    def execute_module(self):
         self._imageMath.Update()
         
 

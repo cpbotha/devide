@@ -34,15 +34,15 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkLandmarkTransform': self._landmarkTransform})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -50,10 +50,10 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._landmarkTransform
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Source and Target Points',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if inputStream is not self._inputPoints:
 
             if inputStream == None:
@@ -67,19 +67,19 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
             else:
                 raise TypeError, 'This input requires a named points type.'
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('vtkTransform',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
             return self._landmarkTransform
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         mas = self._landmarkTransform.GetModeAsString()
         if mas == 'RigidBody':
             mas = 'Rigid'
         self._config.mode = mas
     
-    def configToLogic(self):
+    def config_to_logic(self):
         if self._config.mode == 'Rigid':
             self._landmarkTransform.SetModeToRigidBody()
         elif self._config.mode == 'Similarity':
@@ -87,7 +87,7 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
         else:
             self._landmarkTransform.SetModeToAffine()
     
-    def executeModule(self):
+    def execute_module(self):
         self._sync_with_input_points()
         self._landmarkTransform.Update()
         

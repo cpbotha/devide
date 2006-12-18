@@ -533,9 +533,9 @@ class GraphEditor:
             """
             (mod, glyph) = self.createModuleAndGlyph(x, y, moduleName)
             if mod:
-                cfg = mod.getConfig()
+                cfg = mod.get_config()
                 setattr(cfg, configVarName, filename)
-                mod.setConfig(cfg)
+                mod.set_config(cfg)
 
                 if newModuleName:
                     r = self._renameModule(mod, glyph, newModuleName)
@@ -624,9 +624,9 @@ class GraphEditor:
             
             if mod:
                 try:
-                    cfg = mod.getConfig()
+                    cfg = mod.get_config()
                     cfg.dicomFilenames.extend(dcmFilenames)
-                    mod.setConfig(cfg)
+                    mod.set_config(cfg)
                 except Exception, e:
                     dropFilenameErrors.append(
                         ('DCM files', 'Error loading DICOM files: %s.' % 
@@ -768,8 +768,8 @@ class GraphEditor:
         
 
         co = wxpc.coGlyph((rx, ry),
-                          len(moduleInstance.getInputDescriptions()),
-                          len(moduleInstance.getOutputDescriptions()),
+                          len(moduleInstance.get_input_descriptions()),
+                          len(moduleInstance.get_output_descriptions()),
                           labelList, moduleInstance)
         
         canvas = self._interface._main_frame.canvas
@@ -836,13 +836,13 @@ class GraphEditor:
 
                 return (temp_module, glyph)
 
-    def _executeModule(self, moduleInstance):
+    def _execute_module(self, moduleInstance):
         """Ask the moduleManager to execute the devide module represented by
         the parameter moduleInstance.
         """
         
         mm = self._devide_app.getModuleManager()
-        mm.executeModule(moduleInstance)
+        mm.execute_module(moduleInstance)
 
     def _module_doc_to_html(self, full_module_name, doc):
         # do rudimentary __doc__ -> html conversion
@@ -1140,7 +1140,7 @@ class GraphEditor:
         # and the full module spec name
         full_name = meta_module.module_name
         # and get the module state (we make a deep copy just in case)
-        module_config = copy.deepcopy(meta_module.instance.getConfig())
+        module_config = copy.deepcopy(meta_module.instance.get_config())
         # and even the glyph position
         gp_x, gp_y = glyph.getPosition()
 
@@ -1158,7 +1158,7 @@ class GraphEditor:
             try:
                 # and its config (FIXME: we should honour pre- and
                 # post-connect config!)
-                new_instance.setConfig(module_config)
+                new_instance.set_config(module_config)
                 
             except Exception, e:
                 self._devide_app.log_error_with_exception(
@@ -1686,7 +1686,7 @@ class GraphEditor:
             mi = mm.get_instance(connection.sourceInstanceName)
             outputName = ''
             if mi:
-                outputName = mi.getOutputDescriptions()[connection.outputIdx]
+                outputName = mi.get_output_descriptions()[connection.outputIdx]
                 
             connectionLines.append('%s -> %s [label="%s"];\n' % \
                                    (connection.sourceInstanceName,
@@ -1762,19 +1762,19 @@ class GraphEditor:
                draggedObject.draggedPort != (-1, -1):
 
             if draggedObject.draggedPort[0] == 0:
-                pstr = draggedObject.moduleInstance.getInputDescriptions()[
+                pstr = draggedObject.moduleInstance.get_input_descriptions()[
                     draggedObject.draggedPort[1]]
             else:
-                pstr = draggedObject.moduleInstance.getOutputDescriptions()[
+                pstr = draggedObject.moduleInstance.get_output_descriptions()[
                     draggedObject.draggedPort[1]]
 
             msg = '|%s|-[%s] ===>> ' % (draggedObject.getLabel(), pstr)
 
         if currentPort[0] == 0:
-            pstr = currentGlyph.moduleInstance.getInputDescriptions()[
+            pstr = currentGlyph.moduleInstance.get_input_descriptions()[
                 currentPort[1]]
         else:
-            pstr = currentGlyph.moduleInstance.getOutputDescriptions()[
+            pstr = currentGlyph.moduleInstance.get_output_descriptions()[
                 currentPort[1]]
              
         msg += '|%s|-[%s]' % (currentGlyph.getLabel(), pstr)
@@ -1920,7 +1920,7 @@ class GraphEditor:
 #             exe_id = wx.NewId()
 #             pmenu.AppendItem(wx.MenuItem(pmenu, exe_id, "Execute Module"))
 #             wx.EVT_MENU(self._interface._main_frame.canvas, exe_id,
-#                      lambda e: self._executeModule(module))
+#                      lambda e: self._execute_module(module))
 
             reload_id = wx.NewId()
             pmenu.AppendItem(wx.MenuItem(pmenu, reload_id, 'Reload Module'))

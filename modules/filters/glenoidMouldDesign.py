@@ -43,17 +43,17 @@ class glenoidMouldDesign(moduleBase, noConfigModuleMixin):
 
     def close(self):
         # disconnect all inputs
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
         # take care of critical instances
         self._outputPolyData = None
         # mixin close
         noConfigModuleMixin.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return('Scapula vtkPolyData', 'Insertion axis (points)')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             # will work for None and not-None
             self._inputPolyData = inputStream
@@ -72,25 +72,25 @@ class glenoidMouldDesign(moduleBase, noConfigModuleMixin):
                 self._inputPointsObserver(None)
                     
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Mould design (vtkPolyData)',) # for now
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._outputPolyData
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
-    def executeModule(self):
+    def execute_module(self):
         if self._giaHumerus and self._giaGlenoid and \
            len(self._glenoidEdge) >= 6 and self._inputPolyData:
 

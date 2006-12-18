@@ -63,15 +63,15 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkAppendPolyData' : self._appendPolyData})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -81,10 +81,10 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         del self._sphereSources
         del self._output
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Selected points',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if inputStream is not self._inputPoints:
 
             if inputStream == None:
@@ -98,17 +98,17 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
             else:
                 raise TypeError, 'This input requires a named points type.'
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('PolyData spheres',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         #return self._appendPolyData.GetOutput()
         return self._output
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         # if any of the parameters have changed, this affects all the spheres
         # fortunately VTK caches this type of parameter so we don't have to
         # check
@@ -149,7 +149,7 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
                     sphere.SetThetaResolution(self._config.thetaResolution)
                     sphere.SetPhiResolution(self._config.phiResolution)
     
-    def executeModule(self):
+    def execute_module(self):
         # synchronise our balls on the input points (they might have changed)
         self._syncOnInputPoints()
         # run the whole pipeline

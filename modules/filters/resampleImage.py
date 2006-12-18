@@ -29,14 +29,14 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
         self._viewFrame = None
         self._createViewFrame()
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
+        self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         vtkPipelineConfigModuleMixin.close(self)
         # take out our view interface
@@ -46,19 +46,19 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
         # and finally call our base dtor
         moduleBase.close(self)
         
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('vtkImageData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._imageResample.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return (self._imageResample.GetOutput().GetClassName(),)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageResample.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         istr = self._imageResample.GetInterpolationModeAsString()
         # we do it this way so that when the values in vtkImageReslice
         # are changed, we won't be affected
@@ -71,7 +71,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
             mfi = self._imageResample.GetAxisMagnificationFactor(i, None)
             self._config.magFactors[i] = mfi
 
-    def configToLogic(self):
+    def config_to_logic(self):
         if self._config.interpolationMode == 0:
             self._imageResample.SetInterpolationModeToNearestNeighbor()
         elif self._config.interpolationMode == 1:
@@ -83,7 +83,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
             self._imageResample.SetAxisMagnificationFactor(
                 i, self._config.magFactors[i])
 
-    def viewToConfig(self):
+    def view_to_config(self):
         itc = self._viewFrame.interpolationTypeChoice.GetSelection()
         if itc < 0 or itc > 2:
             # default when something weird happens to choice
@@ -100,7 +100,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
                 txtTup[i], self._config.magFactors[i])
             
         
-    def configToView(self):
+    def config_to_view(self):
         self._viewFrame.interpolationTypeChoice.SetSelection(
             self._config.interpolationMode)
 
@@ -112,7 +112,7 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
             txtTup[i].SetValue(str(self._config.magFactors[i]))
         
     
-    def executeModule(self):
+    def execute_module(self):
         self._imageResample.Update()
         
 

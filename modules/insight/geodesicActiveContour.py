@@ -42,24 +42,24 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         self._createITKPipeline()
 
         # send config down to logic and then all the way up to the view
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         self._destroyITKPipeline()
         scriptedConfigModuleMixin.close(self)
         moduleBase.close(self)
 
-    def executeModule(self):
-        self.getOutput(0).Update()
+    def execute_module(self):
+        self.get_output(0).Update()
         self._moduleManager.setProgress(
             100, "Geodesic active contour complete.")
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Feature image (ITK)', 'Initial level set (ITK)' )
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._geodesicActiveContour.SetFeatureImage(inputStream)
             
@@ -67,13 +67,13 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
             self._geodesicActiveContour.SetInput(inputStream)
             
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Final level set (ITK Float 3D)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._geodesicActiveContour.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._geodesicActiveContour.SetPropagationScaling(
             self._config.propagationScaling)
 
@@ -86,7 +86,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
         self._geodesicActiveContour.SetNumberOfIterations(
             self._config.numberOfIterations)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.propagationScaling = self._geodesicActiveContour.\
                                           GetPropagationScaling()
 

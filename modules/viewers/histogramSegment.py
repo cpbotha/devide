@@ -35,8 +35,8 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         
 
     def close(self):
-        for i in range(len(self.getInputDescriptions())):
-            self.setInput(i, None)
+        for i in range(len(self.get_input_descriptions())):
+            self.set_input(i, None)
 
         # call close method of base class
         moduleBase.close(self)
@@ -50,13 +50,13 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         self._viewFrame.Destroy()
         del self._viewFrame
 
-    def getConfig(self):
+    def get_config(self):
         return self._config
 
-    def setConfig(self, config):
+    def set_config(self, config):
         pass
 
-    def setConfigPostConnect(self, config):
+    def set_configPostConnect(self, config):
 
         # first nuke all current selectors (but prevent updates to config
         # and the stencil)
@@ -72,10 +72,10 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         # we've now added all selectors, sync up everything!
         self._postSelectorChange()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Image Data 1', 'Imaga Data 2')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
 
         def checkTypeAndReturnInput(inputStream):
             """Check type of input.  None gets returned.  The input is
@@ -151,28 +151,28 @@ class histogramSegment(introspectModuleMixin, moduleBase):
                         None)
                     self._scalarBarWidget = None
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Segmented vtkImageData', 'Histogram Stencil')
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         if idx == 0:
             return self._lookup.GetOutput()
         else:
             return self._stencil.GetOutput()
 
-    def executeModule(self):
+    def execute_module(self):
         pass
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
     def view(self):
@@ -589,7 +589,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
         if not preventSync:
             # sometimes, we don't want this to be called, as it will cause
             # unnecessary updates, for example when we nuke ALL selectors
-            # during a setConfig
+            # during a set_config
             self._postSelectorChange()
         
     def _render(self):

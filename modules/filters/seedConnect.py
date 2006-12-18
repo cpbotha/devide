@@ -53,17 +53,17 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase):
              'vtkImageCast' : self._imageCast})
 
         # transfer these defaults to the logic
-        self.configToLogic()
+        self.config_to_logic()
 
         # then make sure they come all the way back up via self._config
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         scriptedConfigModuleMixin.close(self)
 
@@ -72,10 +72,10 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase):
         self._seedConnect.SetInput(None)
         del self._seedConnect
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('vtkImageData', 'Seed points')
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             # will work for None and not-None
             self._imageCast.SetInput(inputStream)
@@ -83,13 +83,13 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase):
             if inputStream != self._inputPoints:
                 self._inputPoints = inputStream
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Region growing result (vtkImageData)',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._seedConnect.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.inputConnectValue = self._seedConnect.\
                                          GetInputConnectValue()
         self._config.outputConnectedValue = self._seedConnect.\
@@ -97,14 +97,14 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase):
         self._config.outputUnconnectedValue = self._seedConnect.\
                                               GetOutputUnconnectedValue()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._seedConnect.SetInputConnectValue(self._config.inputConnectValue)
         self._seedConnect.SetOutputConnectedValue(self._config.\
                                                   outputConnectedValue)
         self._seedConnect.SetOutputUnconnectedValue(self._config.\
                                                     outputUnconnectedValue)
 
-    def executeModule(self):
+    def execute_module(self):
         self._sync_to_input_points()
         self._seedConnect.Update()
         

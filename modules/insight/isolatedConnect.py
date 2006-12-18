@@ -40,15 +40,15 @@ class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
              'IsolatedConnectedImageFilter' :
              self._isol_connect})
         
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -57,10 +57,10 @@ class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
 
         del self._isol_connect
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('ITK Image data', 'Seed points 1', 'Seed points 2')
     
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         if idx == 0:
             self._isol_connect.SetInput(input_stream)
 
@@ -100,28 +100,28 @@ class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
                 raise TypeError, 'This input requires a named points type.'
 
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('Segmented ITK image', 'Derived threshold')
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         if idx == 0:
             return self._isol_connect.GetOutput()
         else:
             return self._isol_connect.GetIsolatedValue()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.upper_threshold = \
                                      self._isol_connect.GetFindUpperThreshold()
 
         self._config.replace_value = self._isol_connect.GetReplaceValue()
         
     
-    def configToLogic(self):
+    def config_to_logic(self):
         self._isol_connect.SetFindUpperThreshold(self._config.upper_threshold)
         self._isol_connect.SetReplaceValue(self._config.replace_value)
         
     
-    def executeModule(self):
+    def execute_module(self):
         self._isol_connect.Update()
 
     

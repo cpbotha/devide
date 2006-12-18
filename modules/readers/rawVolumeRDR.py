@@ -49,11 +49,11 @@ class rawVolumeRDR(moduleBase,
         self._config.spacing = (1.0, 1.0, 1.0)
 
         # transfer these defaults to the logic
-        self.configToLogic()
+        self.config_to_logic()
 
         # then make sure they come all the way back up via self._config
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # close down the vtkPipeline stuff
@@ -63,19 +63,19 @@ class rawVolumeRDR(moduleBase,
         # get rid of our reference
         del self._reader
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         raise Exception, 'rawVolumeRDR has no input!'
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return (self._reader.GetOutput().GetClassName(),)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._reader.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # now setup some defaults before our sync
         self._config.filename = self._reader.GetFileName()
         self._config.dataType = self._reader.GetDataScalarType()
@@ -85,7 +85,7 @@ class rawVolumeRDR(moduleBase,
         self._config.extent = self._reader.GetDataExtent()
         self._config.spacing = self._reader.GetDataSpacing()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._reader.SetFileName(self._config.filename)
         self._reader.SetDataScalarType(self._config.dataType)
         self._reader.SetDataByteOrder(self._config.endianness)
@@ -93,7 +93,7 @@ class rawVolumeRDR(moduleBase,
         self._reader.SetDataExtent(self._config.extent)
         self._reader.SetDataSpacing(self._config.spacing)
         
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.filename = self._viewFrame.filenameText.GetValue()
 
         # first get the selected string
@@ -151,7 +151,7 @@ class rawVolumeRDR(moduleBase,
 
         self._config.spacing = spacing
 
-    def configToView(self):
+    def config_to_view(self):
 
         self._viewFrame.filenameText.SetValue(self._config.filename)
 
@@ -169,7 +169,7 @@ class rawVolumeRDR(moduleBase,
         spacingText = "(%.3f, %.3f, %.3f)" % tuple(self._config.spacing)
         self._viewFrame.spacingText.SetValue(spacingText)
 
-    def executeModule(self):
+    def execute_module(self):
         # get the reader to read :)
         self._reader.Update()
         

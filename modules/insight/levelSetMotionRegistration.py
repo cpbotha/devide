@@ -65,15 +65,15 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
              'LevelSetMotionRegistrationFilter' : self._levelSetMotion,
              'itkHistogramMatchingImageFilter' : self._matcher})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -84,13 +84,13 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         del self._levelSetMotion
         del self._matcher
 
-    def executeModule(self):
-        self.getOutput(0).Update()
+    def execute_module(self):
+        self.get_output(0).Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Fixed image (ITK 3D Float)', 'Moving image (ITK 3D Float)')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._matcher.SetReferenceImage(inputStream)
             self._levelSetMotion.SetFixedImage(inputStream)
@@ -98,13 +98,13 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         else:
             self._matcher.SetInput(inputStream)
         
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Deformation field (ITK 3D Float vectors)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._levelSetMotion.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._levelSetMotion.SetNumberOfIterations(
             self._config.numberOfIterations)
         self._levelSetMotion.SetGradientSmoothingStandardDeviations(
@@ -113,7 +113,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, moduleBase):
         self._levelSetMotion.SetIntensityDifferenceThreshold(
             self._config.idiffThresh)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.numberOfIterations = self._levelSetMotion.\
                                           GetNumberOfIterations()
         

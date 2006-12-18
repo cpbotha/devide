@@ -4,11 +4,11 @@
 
 import genUtils
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
-class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
+class imageGaussianSmooth(moduleBase, introspectModuleMixin):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -23,50 +23,50 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         self._config.radiusCutoff = (1.5, 1.5, 1.5)
 
         self._viewFrame = None
-        self._createViewFrame()
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+
+        self._moduleManager.sync_module_logic_with_config(self)
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
+        self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        vtkPipelineConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
         # take out our view interface
-        self._viewFrame.Destroy()
+        if self._viewFrame is not None:
+            self._viewFrame.Destroy()
+            
         # get rid of our reference
         del self._imageGaussianSmooth
         # and finally call our base dtor
         moduleBase.close(self)
         
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('vtkImageData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._imageGaussianSmooth.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return (self._imageGaussianSmooth.GetOutput().GetClassName(),)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageGaussianSmooth.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.standardDeviation = self._imageGaussianSmooth.\
                                          GetStandardDeviations()
         self._config.radiusCutoff = self._imageGaussianSmooth.\
                                     GetRadiusFactors()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._imageGaussianSmooth.SetStandardDeviations(
             self._config.standardDeviation)
         self._imageGaussianSmooth.SetRadiusFactors(
             self._config.radiusCutoff)
 
-    def viewToConfig(self):
+    def view_to_config(self):
         # continue with textToTuple in genUtils
         stdText = self._viewFrame.stdTextCtrl.GetValue()
         self._config.standardDeviation = genUtils.textToTypeTuple(
@@ -76,21 +76,26 @@ class imageGaussianSmooth(moduleBase, vtkPipelineConfigModuleMixin):
         self._config.radiusCutoff = genUtils.textToTypeTuple(
             cutoffText, self._config.radiusCutoff, 3, float)
 
-    def configToView(self):
+    def config_to_view(self):
         stdText = '(%.2f, %.2f, %.2f)' % self._config.standardDeviation
         self._viewFrame.stdTextCtrl.SetValue(stdText)
 
         cutoffText = '(%.2f, %.2f, %.2f)' % self._config.radiusCutoff
         self._viewFrame.radiusCutoffTextCtrl.SetValue(cutoffText)
 
-    def executeModule(self):
+    def execute_module(self):
         self._imageGaussianSmooth.Update()
         
 
     def view(self, parent_window=None):
+        if self._viewFrame is None:
+            self._createViewFrame()
+            # the logic is the bottom line in this case
+            self._moduleManager.sync_module_view_with_logic(self)
+            
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        self._viewFrame.Show(True)
+        self._viewFrame.Raise()
 
     def _createViewFrame(self):
         self._moduleManager.importReload(

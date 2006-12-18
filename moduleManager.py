@@ -14,7 +14,7 @@ import time
 import types
 
 # some notes with regards to extra module state/logic required for scheduling
-# * in general, executeModule()/transferOutput()/etc calls do exactly that
+# * in general, execute_module()/transferOutput()/etc calls do exactly that
 #   when called, i.e. they don't automatically cache.  The scheduler should
 #   take care of caching by making the necessary isModified() or
 #   shouldTransfer() calls.  The reason for this is so that the module
@@ -399,10 +399,10 @@ class moduleManager:
 
             # we round-trip so that view variables that are dependent on
             # the effective changes to logic and/or config can update
-            instance.logicToConfig()
+            instance.logic_to_config()
 
             if self._devide_app.view_mode:
-                instance.configToView()
+                instance.config_to_view()
 
         except Exception, e:
             # we are directly reporting the error, as this is used by
@@ -410,7 +410,7 @@ class moduleManager:
             # exception by itself.  Might change in the future.
             self._devide_app.log_error_with_exception(str(e))
 
-    def init_from_module_config(self, instance):
+    def sync_module_logic_with_config(self, instance):
         """Method that should be called during __init__ for all (view and
         non-view) modules, after the config structure has been set.
 
@@ -418,8 +418,19 @@ class moduleManager:
         also call syncModuleViewWithLogic()
         """
         
-        instance.configToLogic()
-        instance.logicToConfig()
+        instance.config_to_logic()
+        instance.logic_to_config()
+
+    def sync_module_view_with_config(self, instance):
+        """If DeVIDE is in view model, transfor config information to view
+        and back again.  This is called AFTER sync_module_logic_with_config(),
+        usually in the module view() method after createViewFrame().
+        """
+        
+        if self._devide_app.view_mode:
+            # in this case we don't round trip, view shouldn't change
+            # things that affect the config.
+            instance.config_to_view()
 
     def sync_module_view_with_logic(self, instance):
         """Interface method that can be used by clients to transfer config
@@ -429,11 +440,11 @@ class moduleManager:
         """
 
         try:
-            instance.logicToConfig()
+            instance.logic_to_config()
 
             # we only do the view transfer if DeVIDE is in the correct mode
             if self._devide_app.view_mode:
-                instance.configToView()
+                instance.config_to_view()
             
         except Exception, e:
             # we are directly reporting the error, as this is used by
@@ -830,7 +841,7 @@ class moduleManager:
         """
         return hasattr(modules, '__importsub__')
 
-    def executeModule(self, meta_module, part=0):
+    def execute_module(self, meta_module, part=0):
         """Execute module instance.
 
         Important: this method does not result in data being transferred
@@ -847,7 +858,7 @@ class moduleManager:
         try:
             # this goes via the metaModule so that time stamps and the
             # like are correctly reported
-            meta_module.executeModule(part)
+            meta_module.execute_module(part)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -926,8 +937,8 @@ class moduleManager:
                 # we just want to walk through the dictionary tuples
                 for consumer in output:
                     # disconnect all consumers
-                    consumer[0].setInput(consumer[1], None)
-                    # the setInput could fail, which would throw an exception,
+                    consumer[0].set_input(consumer[1], None)
+                    # the set_input could fail, which would throw an exception,
                     # but that's really just too deep: just in case
                     # we set it to None
                     consumer[0] = None
@@ -937,7 +948,7 @@ class moduleManager:
         # and outputIdx of the producer/supplier module
         for inputIdx in range(len(inputs)):
             try:
-                instance.setInput(inputIdx, None)
+                instance.set_input(inputIdx, None)
             except Exception, e:
                 # we can't allow this to prevent a destruction, just log
                 self.log_error_with_exception(
@@ -949,7 +960,7 @@ class moduleManager:
             inputs[inputIdx] = None
 
         # we've disconnected completely - let's reset all lists
-        self._moduleDict[instance].resetInputsOutputs()
+        self._moduleDict[instance].reset_inputsOutputs()
 
         # remove the instance from the markedModules (if it's present)
         # 1. first find all keys that point to it
@@ -1029,7 +1040,7 @@ class moduleManager:
         module_name = meta_module.instance.__class__.__name__
 
         try:
-            input_module.setInput(input_idx, None)
+            input_module.set_input(input_idx, None)
         except Exception, e:
             # if the module errors during disconnect, we have no choice
             # but to continue with deleting it from our metadata
@@ -1100,7 +1111,7 @@ class moduleManager:
                     # thing and load it: note that the two readers are now
                     # reading the same file!
                     configCopy = copy.deepcopy(pmsTuple[1].moduleConfig)
-                    newModule.setConfig(configCopy)
+                    newModule.set_config(configCopy)
                 except Exception, e:
                     # it could be a module with no defined config logic
                     self._devide_app.log_warning(
@@ -1150,9 +1161,9 @@ class moduleManager:
             # take care to deep copy the config
             configCopy = copy.deepcopy(pms.moduleConfig)
 
-            # now try to call setConfigPostConnect
+            # now try to call set_configPostConnect
             try:
-                newModuleInstance.setConfigPostConnect(configCopy)
+                newModuleInstance.set_configPostConnect(configCopy)
             except AttributeError:
                 pass
             except Exception, e:
@@ -1202,8 +1213,8 @@ class moduleManager:
                 try:
                     print "SERIALISE: %s - %s" % \
                           (str(moduleInstance),
-                           str(moduleInstance.getConfig()))
-                    pms.moduleConfig = moduleInstance.getConfig()
+                           str(moduleInstance.get_config()))
+                    pms.moduleConfig = moduleInstance.get_config()
                 except AttributeError, e:
                     self._devide_app.log_warning(
                         'Could not extract state (config) from module %s: %s' \
@@ -1516,7 +1527,7 @@ class moduleManager:
         # and the full module spec name
         full_name = meta_module.module_name
         # and get the module state (we make a deep copy just in case)
-        module_config = copy.deepcopy(meta_module.instance.getConfig())
+        module_config = copy.deepcopy(meta_module.instance.get_config())
 
         # 2. instantiate a new one and give it its old config
         ###############################################################
@@ -1527,7 +1538,7 @@ class moduleManager:
         # instantiate
         new_instance = self.createModule(full_name, instance_name)
         # and give it its old config back
-        new_instance.setConfig(module_config)
+        new_instance.set_config(module_config)
 
         # 3. delete the old module
         #############################################################
@@ -1632,7 +1643,7 @@ class moduleManager:
         
         try:
             # get data from producerModule output
-            od = meta_module.instance.getOutput(output_idx)
+            od = meta_module.instance.get_output(output_idx)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -1650,7 +1661,7 @@ class moduleManager:
             moduleName = meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
-            es = 'Faulty transferOutput (getOutput on module %s (%s)): %s' \
+            es = 'Faulty transferOutput (get_output on module %s (%s)): %s' \
                  % (instanceName, moduleName, str(e))
                  
             # we use the three argument form so that we can add a new
@@ -1679,7 +1690,7 @@ class moduleManager:
         
         try:
             # set on consumerInstance input
-            consumer_meta_module.instance.setInput(consumer_input_idx, od)
+            consumer_meta_module.instance.set_input(consumer_input_idx, od)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -1697,7 +1708,7 @@ class moduleManager:
             moduleName = consumer_meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
-            es = 'Faulty transferOutput (setInput on module %s (%s)): %s' \
+            es = 'Faulty transferOutput (set_input on module %s (%s)): %s' \
                  % (instanceName, moduleName, str(e))
 
             # we use the three argument form so that we can add a new

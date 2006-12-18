@@ -1,7 +1,7 @@
 # snippet to save polydata of all selected objects to disc, transformed with
 # the currently active object motion for that object.  This snippet should be
 # run within a slice3dVWR introspection context.
-# $Id: savePolyDataObjectsWithMotion.py,v 1.1 2004/10/20 16:35:22 cpbotha Exp $
+# $Id$
 
 import os
 import tempfile

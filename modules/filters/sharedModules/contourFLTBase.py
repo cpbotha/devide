@@ -26,16 +26,16 @@ class contourFLTBase(moduleBase, vtkPipelineConfigModuleMixin):
         self._createViewFrame()
 
         # transfer these defaults to the logic
-        self.configToLogic()
+        self.config_to_logic()
 
         # then make sure they come all the way back up via self._config
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
+        self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         vtkPipelineConfigModuleMixin.close(self)
         # take out our view interface
@@ -43,37 +43,37 @@ class contourFLTBase(moduleBase, vtkPipelineConfigModuleMixin):
         # get rid of our reference
         del self._contourFilter
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkImageData',)
     
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._contourFilter.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return (self._contourFilter.GetOutput().GetClassName(),)
     
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._contourFilter.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.isoValue = self._contourFilter.GetValue(0)
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._contourFilter.SetValue(0, self._config.isoValue)
 
-    def viewToConfig(self):
+    def view_to_config(self):
         try:
             self._config.isoValue = float(
                 self._viewFrame.isoValueText.GetValue())
         except:
             pass
         
-    def configToView(self):
+    def config_to_view(self):
         self._viewFrame.isoValueText.SetValue(str(self._config.isoValue))
 
-    def executeModule(self):
+    def execute_module(self):
         self._contourFilter.Update()
 
     def view(self, parent_window=None):

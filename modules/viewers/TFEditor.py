@@ -56,24 +56,24 @@ class TFEditor(introspectModuleMixin, moduleBase):
         
 
     def close(self):
-        for i in range(len(self.getInputDescriptions())):
-            self.setInput(i, None)
+        for i in range(len(self.get_input_descriptions())):
+            self.set_input(i, None)
         
         self._view_frame.Destroy()
         del self._view_frame
 
         moduleBase.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Optional input volume',)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('DeVIDE Transfer Function',)
 
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         self._volume_input = input_stream
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._transfer_function
     
     

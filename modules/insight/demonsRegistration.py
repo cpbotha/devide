@@ -54,15 +54,15 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
              'itkDemonsRegistrationFilter' : self._demons,
              'itkHistogramMatchingImageFilter' : self._matcher})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -73,13 +73,13 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
         del self._demons
         del self._matcher
 
-    def executeModule(self):
-        self.getOutput(0).Update()
+    def execute_module(self):
+        self.get_output(0).Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Fixed image (ITK 3D Float)', 'Moving image (ITK 3D Float)')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._matcher.SetReferenceImage(inputStream)
             self._demons.SetFixedImage(inputStream)
@@ -87,20 +87,20 @@ class demonsRegistration(scriptedConfigModuleMixin, moduleBase):
         else:
             self._matcher.SetInput(inputStream)
         
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Deformation field (ITK 3D Float vectors)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._demons.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._demons.SetNumberOfIterations(self._config.numberOfIterations)
         self._demons.SetStandardDeviations(
             self._config.deformationSmoothingStd)
         self._demons.SetIntensityDifferenceThreshold(
             self._config.idiffThresh)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.numberOfIterations = self._demons.GetNumberOfIterations()
         # we can't get the StandardDeviations back...
         self._config.idiffThresh = \

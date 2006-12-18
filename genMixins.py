@@ -1,5 +1,5 @@
 # genMixins copyright 2003 by Charl P. Botha <http://cpbotha.net/>
-# $Id: genMixins.py,v 1.7 2004/08/12 16:50:21 cpbotha Exp $
+# $Id$
 
 class subjectMixin(object):
 
@@ -43,7 +43,7 @@ class subjectMixin(object):
 class updateCallsExecuteModuleMixin(object):
     """The DeVIDE API requires that calling Update on outputData should
     ensure that that data is current.  This mixin does that by calling
-    executeModule on the generating module when Update is invoked.
+    execute_module on the generating module when Update is invoked.
     """
 
     def __init__(self, d3Module):
@@ -58,7 +58,7 @@ class updateCallsExecuteModuleMixin(object):
         sure that we are current.
         """
         if self._d3Module:
-            self._d3Module._moduleManager.executeModule(self._d3Module)
+            self._d3Module._moduleManager.execute_module(self._d3Module)
 
 
 

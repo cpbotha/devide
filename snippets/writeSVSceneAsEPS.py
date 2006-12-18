@@ -1,4 +1,4 @@
-# $Id: writeSVSceneAsEPS.py,v 1.2 2005/02/11 09:09:55 cpbotha Exp $
+# $Id$
 
 import os
 import tempfile

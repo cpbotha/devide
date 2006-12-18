@@ -35,16 +35,16 @@ class manualTransform(scriptedConfigModuleMixin, moduleBase):
              'vtkTransform' : self._transform})
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -52,28 +52,28 @@ class manualTransform(scriptedConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._transform
 
-    def executeModule(self):
+    def execute_module(self):
         self._transform.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         raise Exception
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('VTK Transform',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._transform
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.scale = self._transform.GetScale()
         self._config.orientation = self._transform.GetOrientation()
         self._config.translation = self._transform.GetPosition()
 
     
-    def configToLogic(self):
+    def config_to_logic(self):
         # we have to reset the transform firstn
         self._transform.Identity()
         self._transform.Scale(self._config.scale)

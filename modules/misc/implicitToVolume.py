@@ -43,15 +43,15 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkSampleFunction' : self._sampleFunction})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -62,7 +62,7 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
         del self._sampleFunction
         del self._example_input
         
-    def executeModule(self):
+    def execute_module(self):
         # if we have an example input volume, copy its bounds and resolution
         i1 = self._example_input
         try:
@@ -71,32 +71,32 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
             
         except AttributeError:
             # if we couldn't get example_input metadata, just use our config
-            self.configToLogic()
+            self.config_to_logic()
 
         self._sampleFunction.Update()
         
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Implicit Function', 'Example vtkImageData')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._sampleFunction.SetImplicitFunction(inputStream)
         else:
             self._example_input = inputStream
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('VTK Image Data (volume)',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._sampleFunction.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._sampleFunction.SetSampleDimensions(self._config.sampleDimensions)
         self._sampleFunction.SetModelBounds(self._config.modelBounds)
         self._sampleFunction.SetComputeNormals(self._config.computeNormals)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         s = self._sampleFunction
         self._config.sampleDimensions = s.GetSampleDimensions()
         self._config.modelBounds = s.GetModelBounds()

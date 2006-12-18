@@ -35,15 +35,15 @@ class histogram1D(introspectModuleMixin, moduleBase):
         self._config.minValue = 0.0
         self._config.maxValue = 256.0
         
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
         self.view()
 
     def close(self):
-        for i in range(len(self.getInputDescriptions())):
-            self.setInput(i, None)
+        for i in range(len(self.get_input_descriptions())):
+            self.set_input(i, None)
 
         self._viewFrame.Destroy()
         del self._viewFrame
@@ -52,17 +52,17 @@ class histogram1D(introspectModuleMixin, moduleBase):
 
         moduleBase.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
 
         self._imageAccumulate.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # for now, we work on the first component (of a maximum of three)
         # we could make this configurable
         
@@ -79,7 +79,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
         self._config.minValue = minValue
         self._config.maxValue = maxValue
 
-    def configToLogic(self):
+    def config_to_logic(self):
         co = list(self._imageAccumulate.GetComponentOrigin())
         co[0] = self._config.minValue
         self._imageAccumulate.SetComponentOrigin(co)
@@ -98,7 +98,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
         
         self._imageAccumulate.SetComponentSpacing(cs)
         
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.numberOfBins = genUtils.textToInt(
             self._viewFrame.numBinsSpinCtrl.GetValue(),
             self._config.numberOfBins)
@@ -114,7 +114,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
         if self._config.minValue > self._config.maxValue:
             self._config.maxValue = self._config.minValue
 
-    def configToView(self):
+    def config_to_view(self):
         self._viewFrame.numBinsSpinCtrl.SetValue(
             self._config.numberOfBins)
 
@@ -124,7 +124,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
         self._viewFrame.maxValueText.SetValue(
             str(self._config.maxValue))
 
-    def executeModule(self):
+    def execute_module(self):
         if self._imageAccumulate.GetInput() == None:
             return
         

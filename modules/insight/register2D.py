@@ -37,8 +37,8 @@ class register2D(moduleBase):
 
     def close(self):
         # we do this just in case...
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
         
         moduleBase.close(self)
 
@@ -69,10 +69,10 @@ class register2D(moduleBase):
         self.controlFrame.Destroy()
         del self.controlFrame
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ITK Image Stack', '2D Transform Stack')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             if inputStream != self._imageStack:
                 # if it's None, we have to take it
@@ -156,13 +156,13 @@ class register2D(moduleBase):
                     self._showImagePair(self._pairNumber)
                           
         
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('2D Transform Stack',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._transformStack
 
-    def executeModule(self):
+    def execute_module(self):
         pass
 
     def view(self, parent_window=None):

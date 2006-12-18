@@ -1,6 +1,6 @@
 # snippet to change the LookupTables (colourmaps) of the selected objects
 # this should be run in the introspection context of a slice3dVWR
-# $Id: changeObjectsLUT.py,v 1.2 2005/01/04 14:32:31 joris Exp $
+# $Id$
 
 import os
 import tempfile

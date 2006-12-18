@@ -38,16 +38,16 @@ class opening(scriptedConfigModuleMixin, moduleBase):
              'vtkImageContinuousErode3D' : self._imageErode})
    
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -58,29 +58,29 @@ class opening(scriptedConfigModuleMixin, moduleBase):
         del self._imageDilate
         del self._imageErode
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('vtkImageData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._imageErode.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Opened image (vtkImageData)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageDilate.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # if the user's futzing around, she knows what she's doing...
         # (we assume that the dilate/erode pair are in sync)
         self._config.kernelSize = self._imageErode.GetKernelSize()
     
-    def configToLogic(self):
+    def config_to_logic(self):
         ks = self._config.kernelSize
         self._imageDilate.SetKernelSize(ks[0], ks[1], ks[2])
         self._imageErode.SetKernelSize(ks[0], ks[1], ks[2])
     
-    def executeModule(self):
+    def execute_module(self):
         self._imageErode.Update()
         
         self._imageDilate.Update()

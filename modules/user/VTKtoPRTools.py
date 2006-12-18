@@ -33,8 +33,8 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -43,7 +43,7 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
 
         del self._inputData
 
-    def executeModule(self):
+    def execute_module(self):
         # this is where the good stuff happens...
 
         if len(self._config.filename) == 0:
@@ -75,10 +75,10 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
                                         'Exporting PRTools data [DONE].')
         
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data (multiple components)',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         try:
             if inputStream == None or inputStream.IsA('vtkImageData'):
                 self._inputData = inputStream
@@ -88,16 +88,16 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
         except AttributeError:
             raise TypeError, 'This module requires a vtkImageData as input.'
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ()
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         raise Exception
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
     

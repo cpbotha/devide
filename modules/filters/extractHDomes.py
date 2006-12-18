@@ -46,15 +46,15 @@ class extractHDomes(scriptedConfigModuleMixin, moduleBase):
              'ImageGreyscaleReconstruct3D' : self._reconstruct,
              'ImageMath Subtract R' : self._imageMathSubtractR})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -66,28 +66,28 @@ class extractHDomes(scriptedConfigModuleMixin, moduleBase):
         del self._reconstruct
         del self._imageMathSubtractR
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Input image (VTK)',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._imageMathSubtractH.SetInput(0, inputStream)
         # first input of the reconstruction is the image
         self._reconstruct.SetInput(0, inputStream)
         self._imageMathSubtractR.SetInput(0, inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('h-dome extraction (VTK image)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageMathSubtractR.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.h = - self._imageMathSubtractH.GetConstantC()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._imageMathSubtractH.SetConstantC( - self._config.h)
 
-    def executeModule(self):
+    def execute_module(self):
         self._imageMathSubtractR.Update()
         
             

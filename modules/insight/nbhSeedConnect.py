@@ -47,15 +47,15 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'itkNeighborhoodConnectedImageFilter' : self._nbhCIF})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -65,14 +65,14 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
         # remove all bindings
         del self._nbhCIF
 
-    def executeModule(self):
+    def execute_module(self):
         self._transferPoints()
         self._nbhCIF.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ITK Image (3D, float)', 'Seed points')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._nbhCIF.SetInput(inputStream)
 
@@ -81,13 +81,13 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
                 self._inputPoints = inputStream
             
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Segmented ITK Image (3D, float)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._nbhCIF.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._nbhCIF.SetLower(self._config.lower)
         self._nbhCIF.SetUpper(self._config.upper)
         self._nbhCIF.SetReplaceValue(self._config.replaceValue)
@@ -99,7 +99,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
         sz.SetElement(2, self._config.radius[2])
         self._nbhCIF.SetRadius(sz)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.lower = self._nbhCIF.GetLower()
         self._config.upper = self._nbhCIF.GetUpper()
         self._config.replaceValue = self._nbhCIF.GetReplaceValue()

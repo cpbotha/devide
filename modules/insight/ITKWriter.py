@@ -30,21 +30,21 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
 
         # set up some defaults
         self._config.filename = ''
-        self.configToLogic()
+        self.config_to_logic()
         # make sure these filter through from the bottom up
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we should disconnect all inputs
-        self.setInput(0, None)
+        self.set_input(0, None)
         del self._writer
         filenameViewModuleMixin.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('ITK Image',)
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         # should we take an explicit ref?
         if inputStream == None:
             # this is a disconnect
@@ -61,27 +61,27 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
             else:
                 self._input = inputStream
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ()
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         raise Exception
     
-    def logicToConfig(self):
+    def logic_to_config(self):
         return False
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # if the user has Applied, we assume that things have changed
         # we could check for a change in the filename... (it's only that)
         return True
 
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.filename = self._getViewFrameFilename()
 
-    def configToView(self):
+    def config_to_view(self):
         self._setViewFrameFilename(self._config.filename)
 
-    def executeModule(self):
+    def execute_module(self):
         
         if len(self._config.filename) and self._input:
 

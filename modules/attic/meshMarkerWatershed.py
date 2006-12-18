@@ -74,8 +74,8 @@ class testModule3(moduleBase, noConfigModuleMixin):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # get rid of our reference
@@ -89,10 +89,10 @@ class testModule3(moduleBase, noConfigModuleMixin):
         del self._outputPolyDataARB
         del self._outputPolyDataHM
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkPolyData', 'Watershed minima')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._inputFilter.SetInput(inputStream)
         else:
@@ -109,29 +109,29 @@ class testModule3(moduleBase, noConfigModuleMixin):
                 # initial update
                 self._inputPointsObserver(None)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ARB PolyData output', 'Homotopically modified polydata')
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         if idx == 0:
             return self._outputPolyDataARB
         else:
             return self._outputPolyDataHM
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
     
 
-    def executeModule(self):
+    def execute_module(self):
         if self._inputFilter.GetInput() and \
                self._outsidePoints and self._giaGlenoid:
             

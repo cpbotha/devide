@@ -36,16 +36,16 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
         self._createWindow(
             {'Module (self)' : self})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -55,7 +55,7 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
         del self._image_cast
         del self._vtk2itk
 
-    def executeModule(self):
+    def execute_module(self):
         if self._input:
 
             # calculate input type
@@ -117,25 +117,25 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
 
         self._vtk2itk.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data',)
 
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         self._input = input_stream
         
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ITK Image (3D',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         if self._vtk2itk:
             return self._vtk2itk.GetOutput()
         else:
             return None
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         return False
     
-    def configToLogic(self):
+    def config_to_logic(self):
         # if the user has pressed on Apply, we change our state
         return True
 

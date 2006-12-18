@@ -46,8 +46,8 @@ class SimpleAPIMixin:
 
     def get_module_config(self, module_name):
         mi = self.get_instance(module_name)
-        return mi.getConfig()
+        return mi.get_config()
 
     def set_module_config(self, module_name, config):
         mi = self.get_instance(module_name)
-        mi.setConfig(config)
+        mi.set_config(config)

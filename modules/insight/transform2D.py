@@ -42,15 +42,15 @@ class transform2D(noConfigModuleMixin, moduleBase):
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self})
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
              
 
     def close(self):
         # just in case
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
 
         # take care of our refs so that things can disappear
         self._destroyPipelines()
@@ -61,10 +61,10 @@ class transform2D(noConfigModuleMixin, moduleBase):
 
         moduleBase.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('ITK Image Stack', '2D Transform Stack')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             if inputStream != self._imageStack:
                 # if it's None, we have to take it
@@ -132,25 +132,25 @@ class transform2D(noConfigModuleMixin, moduleBase):
 
         # closes else
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('vtkImageData',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageAppend.GetOutput()
 
-    def executeModule(self):
+    def execute_module(self):
         pass
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
     
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
     # ----------------------------------------------------------------------

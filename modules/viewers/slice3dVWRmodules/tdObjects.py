@@ -194,7 +194,7 @@ class tdObjects(s3dcGridMixin):
     def updateObject(self, prevObject, newObject):
         """Method used to update new data on a new connection.
 
-        When the moduleManager transfers data, it simply calls setInput()
+        When the moduleManager transfers data, it simply calls set_input()
         with a non-None inputStream on an already non-None connection.  This
         function will take the necessary steps to update just the object and
         keep everything else as is.

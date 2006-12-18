@@ -41,16 +41,16 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
              'vtkWindowedSincPolyDataFilter' : self._wsPDFilter})
    
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -60,19 +60,19 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._wsPDFilter
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('vtkPolyData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._wsPDFilter.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return (self._wsPDFilter.GetOutput().GetClassName(), )
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._wsPDFilter.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.numberOfIterations = self._wsPDFilter.\
                                           GetNumberOfIterations()
         self._config.passBand = self._wsPDFilter.GetPassBand()
@@ -81,7 +81,7 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
         self._config.boundarySmoothing = bool(
             self._wsPDFilter.GetBoundarySmoothing())
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._wsPDFilter.SetNumberOfIterations(self._config.numberOfIterations)
         self._wsPDFilter.SetPassBand(self._config.passBand)
         self._wsPDFilter.SetFeatureEdgeSmoothing(
@@ -90,7 +90,7 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
             self._config.boundarySmoothing)
 
 
-    def executeModule(self):
+    def execute_module(self):
         self._wsPDFilter.Update()
         
 

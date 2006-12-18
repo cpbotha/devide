@@ -52,15 +52,15 @@ class GraphEditorVolumeTestBase(GraphEditorTestBase):
         self.failUnless(dtmod and dtglyph)
 
         # configure the implicitToVolume to have somewhat tighter bounds
-        cfg = ivmod.getConfig()
+        cfg = ivmod.get_config()
         cfg.modelBounds = (-1.0, 1.0, -0.25, 0.25, 0.0, 0.75)
-        ivmod.setConfig(cfg)
+        ivmod.set_config(cfg)
 
         # then configure the doubleThreshold with the correct thresholds
-        cfg = dtmod.getConfig()
+        cfg = dtmod.get_config()
         cfg.lowerThreshold = -99999.00
         cfg.upperThreshold = 0.0
-        dtmod.setConfig(cfg)
+        dtmod.set_config(cfg)
         
         # now connect them all
         ret = self._ge._connect(sqglyph, 0, ivglyph, 0)
@@ -283,10 +283,10 @@ class TestITKBasic(GraphEditorVolumeTestBase):
 
         # make sure VTKtoITK will cast to float (because it's getting
         # double at the input!)
-        c = v2imod.getConfig()
+        c = v2imod.get_config()
         c.autotype = False
         c.type = 'float'
-        v2imod.setConfig(c)
+        v2imod.set_config(c)
 
         (cscmod, cscglyph) = self._ge.createModuleAndGlyph(
             200, 70, 'modules.insight.confidenceSeedConnect')
@@ -324,7 +324,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         # now count the number of voxels in the segmented result
         import vtk
         via = vtk.vtkImageAccumulate()
-        via.SetInput(i2vmod.getOutput(0))
+        via.SetInput(i2vmod.get_output(0))
         via.Update()
         self.failUnless(via.GetVoxelCount() == 262144)
         via.SetInput(None)

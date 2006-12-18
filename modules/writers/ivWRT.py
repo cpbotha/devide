@@ -34,46 +34,46 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
 
         # set up some defaults
         self._config.filename = ''
-        self.configToLogic()
+        self.config_to_logic()
         # make sure these filter through from the bottom up
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
         
     def close(self):
         # we should disconnect all inputs
-        self.setInput(0, None)
+        self.set_input(0, None)
         del self._writer
         filenameViewModuleMixin.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkPolyData',)
     
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         self._writer.SetInput(input_stream)
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ()
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         raise Exception
     
-    def logicToConfig(self):
+    def logic_to_config(self):
         filename = self._writer.GetFileName()
         if filename == None:
             filename = ''
 
         self._config.filename = filename
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._writer.SetFileName(self._config.filename)
 
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.filename = self._getViewFrameFilename()
 
-    def configToView(self):
+    def config_to_view(self):
         self._setViewFrameFilename(self._config.filename)
 
-    def executeModule(self):
+    def execute_module(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
 

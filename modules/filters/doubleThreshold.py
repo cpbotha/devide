@@ -44,16 +44,16 @@ class doubleThreshold(moduleBase,
         self._config.outputScalarType = self._imageThreshold.GetOutputScalarType()
 
         # transfer these defaults to the logic
-        self.configToLogic()
+        self.config_to_logic()
 
         # then make sure they come all the way back up via self._config
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
+        self.set_input(0, None)
         # close down the vtkPipeline stuff
         vtkPipelineConfigModuleMixin.close(self)
         # take out our view interface
@@ -61,24 +61,24 @@ class doubleThreshold(moduleBase,
         # get rid of our reference
         del self._imageThreshold
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkImageData',)
     
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._imageThreshold.SetInput(inputStream)
         if not inputStream is None:
             # get scalar bounds
             minv, maxv = inputStream.GetScalarRange()
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('Thresholded data (vtkImageData)',)
     
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageThreshold.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.lowerThreshold = self._imageThreshold.GetLowerThreshold()
         self._config.upperThreshold = self._imageThreshold.GetUpperThreshold()
         self._config.replaceIn = self._imageThreshold.GetReplaceIn()
@@ -87,7 +87,7 @@ class doubleThreshold(moduleBase,
         self._config.outValue = self._imageThreshold.GetOutValue()
         self._config.outputScalarType = self._imageThreshold.GetOutputScalarType()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._imageThreshold.ThresholdBetween(self._config.lowerThreshold, self._config.upperThreshold)
         # SetInValue HAS to be called before SetReplaceIn(), as SetInValue()
         # always toggles SetReplaceIn() to ON
@@ -99,7 +99,7 @@ class doubleThreshold(moduleBase,
         self._imageThreshold.SetReplaceOut(self._config.replaceOut)
         self._imageThreshold.SetOutputScalarType(self._config.outputScalarType)
 
-    def viewToConfig(self):
+    def view_to_config(self):
         self._config.lowerThreshold = self._sanitiseThresholdTexts(0)
         self._config.upperThreshold = self._sanitiseThresholdTexts(1)
         self._config.replaceIn = self._viewFrame.replaceInCheckBox.GetValue()
@@ -136,7 +136,7 @@ class doubleThreshold(moduleBase,
                     "default.")
                 self._config.outputScalarType = -1
 
-    def configToView(self):
+    def config_to_view(self):
         self._viewFrame.lowerThresholdText.SetValue("%.2f" % (self._config.lowerThreshold))
         self._viewFrame.upperThresholdText.SetValue("%.2f" % (self._config.upperThreshold))
         self._viewFrame.replaceInCheckBox.SetValue(self._config.replaceIn)
@@ -156,7 +156,7 @@ class doubleThreshold(moduleBase,
 
         self._viewFrame.outputDataTypeChoice.SetStringSelection(key)
 
-    def executeModule(self):
+    def execute_module(self):
         # don't ask... we have to call Update() twice here, I _think_
         # due to weirdness in vtkImageThreshold() that I haven't been
         # able to track down.  If update is called only once, a

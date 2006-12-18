@@ -51,15 +51,15 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
              'vtkSelectConnectedComponents' : self._selectccs})
            
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -70,10 +70,10 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
         del self._imageCast
         del self._selectccs
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Connected Components (unsigned long)', 'Seed points')
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             # will work for None and not-None
             self._imageCast.SetInput(inputStream)
@@ -82,25 +82,25 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
             if inputStream != self._inputPoints:
                 self._inputPoints = inputStream
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Selected connected components (vtkImageData)',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._selectccs.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.outputConnectedValue = self._selectccs.\
                                             GetOutputConnectedValue()
         self._config.outputUnconnectedValue = self._selectccs.\
                                               GetOutputUnconnectedValue()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._selectccs.SetOutputConnectedValue(self._config.\
                                                 outputConnectedValue)
         self._selectccs.SetOutputUnconnectedValue(self._config.\
                                                   outputUnconnectedValue)
 
-    def executeModule(self):
+    def execute_module(self):
         self._sync_to_input_points()
 
         self._imageCast.Update()

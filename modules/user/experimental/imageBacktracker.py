@@ -34,8 +34,8 @@ class imageBacktracker(noConfigModuleMixin, moduleBase):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # take out our view interface
@@ -43,10 +43,10 @@ class imageBacktracker(noConfigModuleMixin, moduleBase):
 	moduleBase.close(self)
 
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('vtkImageData', 'Seed points')
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             # will work for None and not-None
             self._imageBacktracker.SetInput(inputStream)
@@ -64,14 +64,14 @@ class imageBacktracker(noConfigModuleMixin, moduleBase):
                 self._inputPointsObserver(None)
             
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Backtracked polylines (vtkPolyData)',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._imageBacktracker.GetOutput()
 
 
-    def executeModule(self):
+    def execute_module(self):
         self._imageBacktracker.Update()
 
     def _inputPointsObserver(self, obj):

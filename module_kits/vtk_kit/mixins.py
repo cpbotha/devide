@@ -38,13 +38,13 @@ class PickleVTKObjectsModuleMixin(object):
 
         # make sure that the state of the vtkObjectNames objects is
         # encapsulated in the initial _config
-        self.logicToConfig()
+        self.logic_to_config()
 
     def close(self):
         # make sure we get rid of these bindings as well
         del self._vtkObjectNames
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         parser = VtkMethodParser()
 
 
@@ -79,7 +79,7 @@ class PickleVTKObjectsModuleMixin(object):
                 end = self.statePattern.search (stateGroup[0]).start ()
                 # so we turn SetBlaatToOne to GetBlaat
                 get_m = 'G'+stateGroup[0][1:end]
-                # we're going to have to be more clever when we setConfig...
+                # we're going to have to be more clever when we set_config...
                 # use a similar trick to get_state in vtkMethodParser
                 val = eval('vtkObj.%s()' % (get_m,))
                 vtkObjPD[1].append((stateGroup, val))
@@ -91,7 +91,7 @@ class PickleVTKObjectsModuleMixin(object):
             # finally set the pickle data in the correct position
             setattr(self._config, vtkObjName, vtkObjPD)
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # go through at least the attributes in self._vtkObjectNames
 
         for vtkObjName in self._vtkObjectNames:
@@ -129,7 +129,7 @@ class PickleVTKObjectsModuleMixin(object):
                     eval('vtkObj.Set%s(val)' % (method,))
 
 #########################################################################    
-# note that the pickle mixin comes first, as its configToLogic/logicToConfig
+# note that the pickle mixin comes first, as its config_to_logic/logic_to_config
 # should be chosen over that of noConfig
 class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
                                introspectModuleMixin,
@@ -157,6 +157,8 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
                  inputDescriptions, outputDescriptions,
                  replaceDoc=True,
                  inputFunctions=None, outputFunctions=None):
+
+        self._viewFrame = None
 
         # first these two mixins
         moduleBase.__init__(self, moduleManager)
@@ -186,11 +188,6 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
 
         self._inputFunctions = inputFunctions
         self._outputFunctions = outputFunctions
-
-        # we have an initial config populated with stuff and in sync
-        # with theFilter.  The viewFrame will also be in sync with the
-        # filter
-        self._viewFrame = self._createViewFrame()
 
     def _createViewFrame(self):
         parentWindow = self._moduleManager.getModuleViewParentWindow()
@@ -225,8 +222,8 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
         
         PickleVTKObjectsModuleMixin.close(self)
         introspectModuleMixin.close(self)
@@ -237,23 +234,23 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         # get rid of our binding to the vtkObject
         del self._theFilter
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return self._outputDescriptions
 
-    def getOutput(self, idx):
-        # this will only every be invoked if your getOutputDescriptions has
+    def get_output(self, idx):
+        # this will only every be invoked if your get_output_descriptions has
         # 1 or more elements
         if self._outputFunctions:
             return eval('self._theFilter.%s' % (self._outputFunctions[idx],))
         else:
             return self._theFilter.GetOutput()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return self._inputDescriptions
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         # this will only be called for a certain idx if you've specified that
-        # many elements in your getInputDescriptions
+        # many elements in your get_input_descriptions
 
         if self._inputFunctions:
             exec('self._theFilter.%s' %
@@ -265,7 +262,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
             else:
                 self._theFilter.SetInput(idx, inputStream)
 
-    def executeModule(self):
+    def execute_module(self):
         # it could be a writer, in that case, call the Write method.
         if hasattr(self._theFilter, 'Write') and \
            callable(self._theFilter.Write):
@@ -275,26 +272,32 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
             self._theFilter.Update()
  
     def view(self):
+        if self._viewFrame is None:
+            # we have an initial config populated with stuff and in sync
+            # with theFilter.  The viewFrame will also be in sync with the
+            # filter
+            self._viewFrame = self._createViewFrame()
+        
         self._viewFrame.Show(True)
         self._viewFrame.Raise()
 
-    def configToView(self):
+    def config_to_view(self):
         # the pickleVTKObjectsModuleMixin does logic <-> config
-        # so when the user clicks "sync", logicToConfig is called
+        # so when the user clicks "sync", logic_to_config is called
         # which transfers picklable state from the LOGIC to the CONFIG
         # then we do double the work and call update_gui, which transfers
         # the same state from the LOGIC straight up to the VIEW
         self._configVtkObj.update_gui()
 
-    def viewToConfig(self):
-        # same thing here: user clicks "apply", viewToConfig is called which
+    def view_to_config(self):
+        # same thing here: user clicks "apply", view_to_config is called which
         # zaps UI changes straight to the LOGIC.  Then we have to call
-        # logicToConfig explicitly which brings the info back up to the
+        # logic_to_config explicitly which brings the info back up to the
         # config... i.e. view -> logic -> config
-        # after that, configToLogic is called which transfers all state AGAIN
+        # after that, config_to_logic is called which transfers all state AGAIN
         # from the config to the logic
         self._configVtkObj.apply_changes()
-        self.logicToConfig()
+        self.logic_to_config()
 
 
 #########################################################################

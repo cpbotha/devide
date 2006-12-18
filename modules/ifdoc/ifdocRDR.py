@@ -69,42 +69,42 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
                               'IFDOC m file (*.m)|*.m|All files (*)|*',
                               None)
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
         
     def close(self):
         filenameViewModuleMixin.close(self)
         self._mData.close()
         del self._mData
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         raise Exception, 'This module does not accept any input.'
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('ifdoc m-Data',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._mData
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
         """
 
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         """Apply internal configuration information (usually self._config) to
         the underlying logic.
         """
         
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
 
@@ -112,7 +112,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         self._config.mFilename = self._getViewFrameFilename()
         
     
-    def configToView(self):
+    def config_to_view(self):
         """Make the view reflect the internal configuration information.
 
         """
@@ -301,7 +301,7 @@ class ifdocRDR(moduleBase, filenameViewModuleMixin):
         # return our payload as a dict
         return variableDict
 
-    def executeModule(self):
+    def execute_module(self):
         mFile = open(self._config.mFilename)
         mBuffer = mFile.read()
         mFile.close()        

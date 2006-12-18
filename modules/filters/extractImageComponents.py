@@ -41,15 +41,15 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkImageExtractComponents' : self._extract})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -59,19 +59,19 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
         # get rid of our reference
         del self._extract
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Multi-component vtkImageData',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._extract.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Extracted component vtkImageData',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._extract.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # numberOfComponents is 0-based !!
         self._config.numberOfComponents = \
                                         self._extract.GetNumberOfComponents()
@@ -83,7 +83,7 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
         self._config.component2 = c[1]
         self._config.component3 = c[2]
         
-    def configToLogic(self):
+    def config_to_logic(self):
         # numberOfComponents is 0-based !!
         nc = self._config.numberOfComponents
         nc += 1
@@ -98,7 +98,7 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
                                         self._config.component2,
                                         self._config.component3)
         
-    def executeModule(self):
+    def execute_module(self):
         self._extract.Update()
         
 

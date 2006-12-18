@@ -50,15 +50,15 @@ class pngWRT(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkPNGWriter' : self._writer})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
 	# we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -69,25 +69,25 @@ class pngWRT(scriptedConfigModuleMixin, moduleBase):
         del self._writer
 
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkImageData',)
     
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         self._shiftScale.SetInput(input_stream)
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ()
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
        	raise Exception
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.filePattern = self._writer.GetFilePattern()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._writer.SetFilePattern(self._config.filePattern)
     
-    def executeModule(self):
+    def execute_module(self):
         if len(self._writer.GetFilePattern()) and self._shiftScale.GetInput():
             inp = self._shiftScale.GetInput()
             inp.Update()

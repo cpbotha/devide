@@ -34,25 +34,25 @@ class polyDataConnect(moduleBase, noConfigModuleMixin):
              self._polyDataConnect})
 
         # transfer these defaults to the logic
-        self.configToLogic()
+        self.config_to_logic()
 
         # then make sure they come all the way back up via self._config
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        self.setInput(0, None)
+        self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         noConfigModuleMixin.close(self)
         # get rid of our reference
         del self._polyDataConnect
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('vtkPolyData', 'Seed points')
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             # will work for None and not-None
             self._polyDataConnect.SetInput(inputStream)
@@ -73,25 +73,25 @@ class polyDataConnect(moduleBase, noConfigModuleMixin):
             # initial update
             self._inputPointsObserver(self._inputPoints)
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return (self._polyDataConnect.GetOutput().GetClassName(),)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._polyDataConnect.GetOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
     
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
     
-    def executeModule(self):
+    def execute_module(self):
         self._polyDataConnect.Update()
         
 

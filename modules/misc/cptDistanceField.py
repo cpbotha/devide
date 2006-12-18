@@ -27,21 +27,21 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
 
         self._createViewFrame({'Module (self)' : self})
         
-        self.configToLogic()
+        self.config_to_logic()
         # make sure these filter through from the bottom up
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we should disconnect all inputs
-        self.setInput(0, None)
-        self.setInput(1, None)
+        self.set_input(0, None)
+        self.set_input(1, None)
         noConfigModuleMixin.close(self)
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('VTK Image', 'VTK Polydata')
     
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             try:
                 if inputStream == None or inputStream.IsA('vtkImageData'):
@@ -63,25 +63,25 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
                 raise TypeError, 'This input requires a vtkPolyData.'
             
         
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
 	return ('Distance field (VTK Image)',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._flipper.GetOutput()
     
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
-    def executeModule(self):
+    def execute_module(self):
         if self._imageInput and self._meshInput:
 
             # basename for all CPT files
@@ -90,15 +90,15 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
             # first convert mesh data to brep
             cbw = self._moduleManager.createModule(
                 'modules.Writers.cptBrepWRT')
-            cbw.setInput(0, self._meshInput)
-            cfg = cbw.getConfig()
+            cbw.set_input(0, self._meshInput)
+            cfg = cbw.get_config()
             brepFilename = '%s.brep' % (cptBaseName,)
             cfg.filename = brepFilename
-            cbw.setConfig(cfg)
+            cbw.set_config(cfg)
             # we're calling it directly... propagations will propagate
             # upwards to our caller (the moduleManager) - execution
             # will be interrupted if cbw flags an error
-            cbw.executeModule()
+            cbw.execute_module()
 
             # now let's write the geom file
             self._imageInput.UpdateInformation()

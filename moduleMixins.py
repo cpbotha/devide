@@ -265,19 +265,26 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
     the end of your object.
     """
 
-    def __init__(self):
-        self._viewFrame = None
+    def __init__(self,
+                 browseMsg="Select a filename",
+                 fileWildcard=
+                 "VTK data (*.vtk)|*.vtk|All files (*)|*",
+                 objectDict=None, fileOpen=True):
+
+        self._browse_msg = browseMsg
+        self._file_wildcard = fileWildcard
+        self._object_dict = objectDict
+        self._file_open = fileOpen
+                 
+        self._view_frame = None
 
     def close(self):
+        del self._object_dict
         vtkPipelineConfigModuleMixin.close(self)
-        self._viewFrame.Destroy()
-        del self._viewFrame
+        self._view_frame.Destroy()
+        del self._view_frame
 
-    def _createViewFrame(self,
-                         browseMsg="Select a filename",
-                         fileWildcard=
-                         "VTK data (*.vtk)|*.vtk|All files (*)|*",
-                         objectDict=None, fileOpen=True):
+    def _create_view_frame(self):
 
         """By default, this will be a File Open dialog.  If fileOpen is
         False, it will be a File Save dialog.
@@ -288,52 +295,54 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                 'Eror calling view-dependent createViewFrame() in '
                 'backend-type DeVIDE.')
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             resources.python.filenameViewModuleMixinFrame.\
             filenameViewModuleMixinFrame)
 
-        self._fileOpen = fileOpen
-                                               
-        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.browseButtonId,
-                   lambda e: self.browseButtonCallback(browseMsg,
-                                                       fileWildcard))
+        wx.EVT_BUTTON(self._view_frame, self._view_frame.browseButtonId,
+                   lambda e: self.browseButtonCallback(self._browse_msg,
+                                                       self._file_wildcard))
         
-        if objectDict != None:
+        if self._object_dict != None:
             moduleUtils.createStandardObjectAndPipelineIntrospection(
                 self,
-                self._viewFrame, self._viewFrame.viewFramePanel,
-                objectDict, None)
+                self._view_frame, self._view_frame.viewFramePanel,
+                self._object_dict, None)
 
         # new style standard ECAS buttons
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.viewFramePanel)
 
     def _getViewFrameFilename(self):
-        return self._viewFrame.filenameText.GetValue()
+        return self._view_frame.filenameText.GetValue()
 
     def _setViewFrameFilename(self, filename):
-        self._viewFrame.filenameText.SetValue(filename)
+        self._view_frame.filenameText.SetValue(filename)
 
-    def browseButtonCallback(self, browseMsg="Select a filename",
+    def browseButtonCallback(self, browse_msg="Select a filename",
                              fileWildcard=
                              "VTK data (*.vtk)|*.vtk|All files (*)|*"):
 
-        if self._fileOpen == 1:
+        if self._file_open == 1:
             path = self.filenameBrowse(
-                self._viewFrame, browseMsg, fileWildcard)
+                self._view_frame, browse_msg, fileWildcard)
         else:
             path = self.filenameBrowse(
-                self._viewFrame, browseMsg, fileWildcard, style=wx.SAVE)
+                self._view_frame, browse_msg, fileWildcard, style=wx.SAVE)
 
         if path != None:
-            self._viewFrame.filenameText.SetValue(path)
+            self._view_frame.filenameText.SetValue(path)
 
     def view(self):
-        if self._viewFrame is None:
-            self._createViewFrame()
-            self.configToLogic()
-            self._moduleManager.
+        if self._view_frame is None:
+            self._create_view_frame()
+            self._moduleManager.sync_module_view_with_logic()
+
+        # and show the UI
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
+            
 
 # ----------------------------------------------------------------------------
 class colourDialogMixin(object):
@@ -378,7 +387,7 @@ class noConfigModuleMixin(introspectModuleMixin):
     views.
 
     Please call __init__() and close() at the appropriate times from your
-    module class.  Call _createViewFrame() at the end of your __init__ and
+    module class.  Call _create_view_frame() at the end of your __init__ and
     Show(1) the resulting frame.
 
     As with most Mixins, remember to call the close() method of this one at
@@ -386,16 +395,16 @@ class noConfigModuleMixin(introspectModuleMixin):
     """
 
     def __init__(self):
-        self._viewFrame = None
+        self._view_frame = None
 
     def close(self):
         introspectModuleMixin.close(self)
-        self._viewFrame.Destroy()
-        del self._viewFrame
+        self._view_frame.Destroy()
+        del self._view_frame
 
-    def _createViewFrame(self, objectDict=None):
+    def _create_view_frame(self, objectDict=None):
 
-        """This will create the self._viewFrame for this module.
+        """This will create the self._view_frame for this module.
 
         objectDict is a dictionary with VTK object descriptions as keys and
         the actual corresponding instances as values.  If you specify
@@ -435,25 +444,34 @@ class noConfigModuleMixin(introspectModuleMixin):
         # set cute icon
         viewFrame.SetIcon(moduleUtils.getModuleIcon())
 
-        self._viewFrame = viewFrame
+        self._view_frame = viewFrame
         return viewFrame
 
-    _createWindow = _createViewFrame
+    _createWindow = _create_view_frame
 
     def view(self):
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
+        if self._view_frame is None:
+            self._create_view_frame()
+            # this will take config from conf structure down to logic and
+            # back up to config again
+            self._moduleManager.sync_module_view_with_logic()
+            
+        # and show the UI
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
+            
+        
 
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
 class scriptedConfigModuleMixin(introspectModuleMixin):
@@ -497,17 +515,18 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
     resolution order.
     """
 
-    def __init__(self, configList):
-        self._viewFrame = None
+    def __init__(self, configList, object_dict=None):
+        self._view_frame = None
         self._configList = configList
         self._widgets = {}
+        self._object_dict = objectDict
 
     def close(self):
         introspectModuleMixin.close(self)
-        self._viewFrame.Destroy()
-        del self._viewFrame
+        self._view_frame.Destroy()
+        del self._view_frame
 
-    def _createViewFrame(self, objectDict=None):
+    def _create_view_frame(self):
         parentWindow = self._moduleManager.getModuleViewParentWindow()
 
         import resources.python.defaultModuleViewFrame
@@ -599,18 +618,19 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
-        if objectDict != None:
+        if self._object_dict != None:
             moduleUtils.createStandardObjectAndPipelineIntrospection(
-                self, viewFrame, viewFrame.viewFramePanel, objectDict, None)
+                self, viewFrame, viewFrame.viewFramePanel,
+                self._object_dict, None)
 
         moduleUtils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
             
-        self._viewFrame = viewFrame
+        self._view_frame = viewFrame
         return viewFrame
 
     # legacy
-    _createWindow = _createViewFrame
+    _createWindow = _create_view_frame
 
     def _getWidget(self, configTupleIndex):
         """Returns widget(s) given the index of the relevant configTuple in
@@ -620,7 +640,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         return self._widgets[self._configList[configTupleIndex][0:5]]
     
 
-    def viewToConfig(self):
+    def view_to_config(self):
         for configTuple in self._configList:
 
             widget = self._widgets[configTuple[0:5]]
@@ -681,7 +701,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
             setattr(self._config, configTuple[1], val)
 
-    def configToView(self):
+    def config_to_view(self):
         # we have to do explicit casting for floats with %f, instead of just
         # using str(), as some filters return parameters as C++ float
         # (i.e. not doubles), and then str() shows us strings that are far too
@@ -765,7 +785,13 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
 
     def view(self):
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
+        if self._view_frame is None:
+            self._create_view_frame()
+            self._moduleManager.sync_module_view_with_logic()
+
+        # and show the UI
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
+            
     
                 

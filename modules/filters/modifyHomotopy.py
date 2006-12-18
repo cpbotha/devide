@@ -58,16 +58,16 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
              'vtkImageGreyscaleReconstruct3D' : self._dualGreyReconstruct})
 
         # pass the data down to the underlying logic
-        self.configToLogic()
+        self.config_to_logic()
         # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
@@ -83,10 +83,10 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         del self._maskSource
         del self._imageThreshold
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('VTK Image Data', 'Minima points', 'Minima image')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             if inputStream != self._inputImage:
                 # if we have a different image input, the seeds will have to
@@ -156,10 +156,10 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
                 self._dualGreyReconstruct.Modified()
 
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Modified VTK Image Data', 'I input', 'J input')
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         if idx == 0:
             return self._dualGreyReconstruct.GetOutput()
         elif idx == 1:
@@ -167,19 +167,19 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         else:
             return self._markerSource.GetStructuredPointsOutput()
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         pass
     
-    def configToLogic(self):
+    def config_to_logic(self):
         pass
 
-    def viewToConfig(self):
+    def view_to_config(self):
         pass
 
-    def configToView(self):
+    def config_to_view(self):
         pass
     
-    def executeModule(self):
+    def execute_module(self):
         self._dualGreyReconstruct.Update()
 
     def _markerSourceExecute(self):

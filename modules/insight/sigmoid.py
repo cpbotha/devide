@@ -39,15 +39,15 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
              'itkSigmoidImageFilter' :
              self._sigmoid})
 
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
@@ -57,27 +57,27 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
         # remove all bindings
         del self._sigmoid
 
-    def executeModule(self):
+    def execute_module(self):
         self._sigmoid.Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Input Image (ITK Image 3D, float)',)
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         self._sigmoid.SetInput(inputStream)
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Sigmoid Image (ITK Image, 3D, float)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._sigmoid.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._sigmoid.SetAlpha(self._config.alpha)
         self._sigmoid.SetBeta(self._config.beta)
         self._sigmoid.SetOutputMinimum(self._config.min)
         self._sigmoid.SetOutputMaximum(self._config.max)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         # there're no getters for alpha, beta, min or max (itk 1.6)
         pass

@@ -38,22 +38,22 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         self._createITKPipeline()
 
         # send config down to logic and then all the way up to the view
-        self.configToLogic()
-        self.logicToConfig()
-        self.configToView()
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
 
     def close(self):
         self._destroyITKPipeline()
         scriptedConfigModuleMixin.close(self)
         moduleBase.close(self)
 
-    def executeModule(self):
-        self.getOutput(0).Update()
+    def execute_module(self):
+        self.get_output(0).Update()
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ('Feature image (ITK)', 'Initial level set (ITK)' )
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._nbcLS.SetFeatureImage(inputStream)
             
@@ -61,13 +61,13 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
             self._nbcLS.SetInput(inputStream)
             
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('Image Data (ITK)',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._nbcLS.GetOutput()
 
-    def configToLogic(self):
+    def config_to_logic(self):
         self._nbcLS.SetPropagationScaling(
             self._config.propagationScaling)
 
@@ -77,7 +77,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, moduleBase):
         self._nbcLS.SetCurvatureScaling(
             self._config.curvatureScaling)
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.propagationScaling = self._nbcLS.\
                                           GetPropagationScaling()
 

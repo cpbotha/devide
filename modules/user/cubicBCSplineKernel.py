@@ -45,7 +45,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkCubicBCSplineKernel' : self._cubicBCSplineKernel})
 
-        self.configToLogic()
+        self.config_to_logic()
         self.syncViewWithLogic()
 
     def close(self):
@@ -58,22 +58,22 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
         # remove all bindings
         del self._cubicBCSplineKernel
         
-    def executeModule(self):
+    def execute_module(self):
         return ()
     
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         raise Exception
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('vtkSeparableKernel',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._cubicBCSplineKernel
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # sanity check
         if self._config.support < 0.0:
             self._config.support = 0.0
@@ -83,7 +83,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
         self._cubicBCSplineKernel.SetC( self._config.C )
         self._cubicBCSplineKernel.SetSupport( self._config.support )
         
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.order = self._cubicBCSplineKernel.GetOrder()
         self._config.B = self._cubicBCSplineKernel.GetB()
         self._config.C = self._cubicBCSplineKernel.GetC()

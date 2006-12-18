@@ -42,7 +42,7 @@ class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
             {'Module (self)' : self,
              'vtkGaussianKernel' : self._gaussianKernel})
 
-        self.configToLogic()
+        self.config_to_logic()
         self.syncViewWithLogic()
 
     def close(self):
@@ -55,22 +55,22 @@ class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
         # remove all bindings
         del self._gaussianKernel
         
-    def executeModule(self):
+    def execute_module(self):
         return ()
     
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
         return ()
 
-    def setInput(self, idx, input_stream):
+    def set_input(self, idx, input_stream):
         raise Exception
     
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('vtkSeparableKernel',)
     
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._gaussianKernel
 
-    def configToLogic(self):
+    def config_to_logic(self):
         # sanity check
         if self._config.standardDeviation < 0.0:
             self._config.standardDeviation = 0.0
@@ -81,7 +81,7 @@ class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
         self._gaussianKernel.SetStandardDeviation( self._config.standardDeviation )
         self._gaussianKernel.SetSupport( self._config.support )
         
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.order = self._gaussianKernel.GetOrder()
         self._config.standardDeviation = self._gaussianKernel.GetStandardDeviation()
         self._config.support = self._gaussianKernel.GetSupport()
