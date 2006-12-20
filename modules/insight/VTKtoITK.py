@@ -31,16 +31,11 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
              'Data will be cast to this type if AutoType is not used.',
              ['float', 'unsigned char', 'unsigned long', 'unsigned short'])]
 
-        scriptedConfigModuleMixin.__init__(self, config_list)
+        scriptedConfigModuleMixin.__init__(self, config_list,
+                                           {'Module (self)' : self})
 
-        self._createWindow(
-            {'Module (self)' : self})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

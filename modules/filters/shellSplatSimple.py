@@ -1,6 +1,6 @@
 import operator
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
@@ -8,8 +8,8 @@ import wx
 
 from moduleMixins import colourDialogMixin
 
-class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
-                       colourDialogMixin):
+class shellSplatSimple(introspectModuleMixin,
+                       colourDialogMixin, moduleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
@@ -22,7 +22,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
 
         # this is a list of all the objects in the pipeline and will
         # be used by the object and pipeline introspection
-        self._objectDict = {'splatMapper' : self._splatMapper,
+        self._object_dict = {'splatMapper' : self._splatMapper,
                             'opacity TF' : self._otf,
                             'colour TF' : self._ctf,
                             'volumeProp' : self._volumeProperty,
@@ -39,14 +39,9 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         self._config.gradientImageIsGradient = 0
 
         # create the gui
-        self._viewFrame = None
-        self._createViewFrame()
+        self._view_frame = None
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -61,18 +56,19 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         del self._volumeProperty
         del self._volume
 
-        del self._objectDict
+        del self._object_dict
 
         colourDialogMixin.close(self)
         # we have to call this mixin close so that all inspection windows
         # can be taken care of.  They should be taken care of in anycase
         # when the viewFrame is destroyed, but we like better safe than
         # sorry
-        vtkPipelineConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
 
         # take care of our own window
-        self._viewFrame.Destroy()
-        del self._viewFrame
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
+            del self._view_frame
 
     def get_input_descriptions(self):
 	return ('input image data', 'optional gradient image data')
@@ -145,7 +141,7 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
     def view_to_config(self):
         # get the threshold
         try:
-            threshold = float(self._viewFrame.thresholdText.GetValue())
+            threshold = float(self._view_frame.thresholdText.GetValue())
         except:
             # this means the user did something stupid, so we revert
             # to what's in the config - this will also turn up back
@@ -162,28 +158,28 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
                               colour.Green() / 255.0,
                               colour.Blue() / 255.0)
         colourTuple = self._convertStringToColour(
-            self._viewFrame.colourText.GetValue(),
+            self._view_frame.colourText.GetValue(),
             defaultColourTuple)
 
         # and put it in the right place
         self._config.colour = colourTuple
         
-        self._config.renderMode = self._viewFrame.\
+        self._config.renderMode = self._view_frame.\
                                   renderingModeChoice.GetSelection()
 
         self._config.gradientImageIsGradient = \
-                                             self._viewFrame.\
+                                             self._view_frame.\
                                              gradientImageIsGradientCheckBox.\
                                              GetValue()
 
     def config_to_view(self):
-        self._viewFrame.thresholdText.SetValue("%.2f" %
+        self._view_frame.thresholdText.SetValue("%.2f" %
                                                (self._config.threshold))
-        self._viewFrame.colourText.SetValue(
+        self._view_frame.colourText.SetValue(
             "(%.3f, %.3f, %.3f)" % self._config.colour)
-        self._viewFrame.renderingModeChoice.SetSelection(
+        self._view_frame.renderingModeChoice.SetSelection(
             self._config.renderMode)
-        self._viewFrame.gradientImageIsGradientCheckBox.SetValue(
+        self._view_frame.gradientImageIsGradientCheckBox.SetValue(
             self._config.gradientImageIsGradient)
 
     def execute_module(self):
@@ -191,9 +187,12 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         
 
     def view(self, parent_window=None):
+        if self._view_frame is None:
+            self._createViewFrame()
+            
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
 
     def _colourButtonCallback(self, evt):
         # first we have to translate the colour which is in the textentry
@@ -204,14 +203,14 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
                               colour.Green() / 255.0,
                               colour.Blue() / 255.0)
         colourTuple = self._convertStringToColour(
-            self._viewFrame.colourText.GetValue(),
+            self._view_frame.colourText.GetValue(),
             defaultColourTuple)
 
         self.setColourDialogColour(colourTuple)
 
         c = self.getColourDialogColour()
         if c:
-            self._viewFrame.colourText.SetValue(
+            self._view_frame.colourText.SetValue(
                 "(%.2f, %.2f, %.2f)" %  c)
 
     def _convertStringToColour(self, colourString, defaultColourTuple):
@@ -278,21 +277,21 @@ class shellSplatSimple(moduleBase, vtkPipelineConfigModuleMixin,
         # requires it and so that it's available in this namespace.
         import modules.filters.resources.python.shellSplatSimpleFLTViewFrame
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, mm,
             modules.filters.resources.python.shellSplatSimpleFLTViewFrame.\
             shellSplatSimpleFLTViewFrame)
 
         # setup introspection with default everythings
         moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._viewFrame, self._viewFrame.viewFramePanel,
-            self._objectDict, None)
+            self, self._view_frame, self._view_frame.viewFramePanel,
+            self._object_dict, None)
 
         # create and configure the standard ECAS buttons
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.viewFramePanel)
 
         
         # now we can finally do our own stuff to
-        wx.EVT_BUTTON(self._viewFrame, self._viewFrame.colourButtonId,
+        wx.EVT_BUTTON(self._view_frame, self._view_frame.colourButtonId,
                       self._colourButtonCallback)

@@ -2,33 +2,27 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
 import vtkdevide
-
 
 class greyReconstruct(noConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
 
         self._greyReconstruct = vtkdevide.vtkImageGreyscaleReconstruct3D()
+
+        noConfigModuleMixin.__init__(
+            self,
+            {'Module (self)' : self,
+             'vtkImageGreyscaleReconstruct3D' : self._greyReconstruct})
         
         moduleUtils.setupVTKObjectProgress(
             self, self._greyReconstruct,
             'Performing greyscale reconstruction')
-        
 
-        self._viewFrame = self._createViewFrame(
-            {'Module (self)' : self,
-             'vtkImageGreyscaleReconstruct3D' : self._greyReconstruct})
-
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

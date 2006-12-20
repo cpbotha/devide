@@ -34,17 +34,12 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
             ('Boundary smoothing', 'boundarySmoothing', 'base:bool',
              'checkbox', 'Smooth boundary edges (edges with only one face).')]
 
-        scriptedConfigModuleMixin.__init__(self, config_list)
-
-        self._viewFrame = self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, config_list,
             {'Module (self)' : self,
              'vtkWindowedSincPolyDataFilter' : self._wsPDFilter})
    
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

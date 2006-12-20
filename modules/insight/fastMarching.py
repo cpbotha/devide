@@ -24,7 +24,7 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
             ('Initial distance:', 'initial_distance', 'base:int', 'text',
              'Initial distance of fast marching seed points.')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         # this will contain our binding to the input points
         self._inputPoints = None
@@ -37,14 +37,13 @@ class fastMarching(scriptedConfigModuleMixin, moduleBase):
             self, self._fastMarching, 'itkFastMarchingImageFilter',
             'Propagating front.')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkFastMarchingImageFilter' : self._fastMarching})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+            
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

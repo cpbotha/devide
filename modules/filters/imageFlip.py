@@ -6,13 +6,14 @@ import wx
 import vtk
 
 
-class imageFlip(moduleBase, noConfigModuleMixin):
+class imageFlip(noConfigModuleMixin, moduleBase):
 
     
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
+        
 
         self._imageFlip = vtk.vtkImageFlip()
         self._imageFlip.SetFilteredAxis(2)
@@ -20,16 +21,12 @@ class imageFlip(moduleBase, noConfigModuleMixin):
         
         moduleUtils.setupVTKObjectProgress(self, self._imageFlip,
                                            'Flipping image')
-        
 
-        self._viewFrame = self._createViewFrame(
+        noConfigModuleMixin.__init__(
+            self,
             {'vtkImageFlip' : self._imageFlip})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -70,10 +67,3 @@ class imageFlip(moduleBase, noConfigModuleMixin):
     def execute_module(self):
         self._imageFlip.Update()
         
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
-
-

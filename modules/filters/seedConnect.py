@@ -45,19 +45,13 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase):
             ('Output unconnected value:', 'outputUnconnectedValue',
              'base:int', 'text', 'Non-included points will get this value.')]
              
-        scriptedConfigModuleMixin.__init__(self, config_list)
-
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, config_list,
             {'Module (self)' : self,
              'vtkImageSeedConnectivity' : self._seedConnect,
              'vtkImageCast' : self._imageCast})
 
-        # transfer these defaults to the logic
-        self.config_to_logic()
-
-        # then make sure they come all the way back up via self._config
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

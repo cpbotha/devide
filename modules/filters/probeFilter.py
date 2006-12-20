@@ -9,7 +9,7 @@ class probeFilter(noConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
 
         # what a lame-assed filter, we have to make dummy inputs!
         # if we don't have a dummy input (but instead a None input) it
@@ -25,19 +25,15 @@ class probeFilter(noConfigModuleMixin, moduleBase):
         self._probeFilter = vtk.vtkProbeFilter()
         self._probeFilter.SetInput(self._dummyInput)
 
-        moduleUtils.setupVTKObjectProgress(self, self._probeFilter,
-                                           'Mapping source on input')
-        
-
-        self._viewFrame = self._createViewFrame(
+        noConfigModuleMixin.__init__(
+            self,
             {'Module (self)' : self,
              'vtkProbeFilter' : self._probeFilter})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        moduleUtils.setupVTKObjectProgress(self, self._probeFilter,
+                                           'Mapping source on input')
+        
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -87,6 +83,3 @@ class probeFilter(noConfigModuleMixin, moduleBase):
     
     def execute_module(self):
         self._probeFilter.Update()
-        
-
-        

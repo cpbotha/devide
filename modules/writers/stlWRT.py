@@ -5,14 +5,12 @@ import moduleUtils
 import vtk
 
 
-class stlWRT(moduleBase, filenameViewModuleMixin):
+class stlWRT(filenameViewModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         # need to make sure that we're all happy triangles and stuff
         self._cleaner = vtk.vtkCleanPolyData()
@@ -34,19 +32,18 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
                                                textobj[0])
 
             
-        
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              'STL data (*.stl)|*.stl|All files (*)|*',
-                              {'vtkSTLWriter': self._writer},
-                              fileOpen=False)
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(
+            self,
+            'Select a filename',
+            'STL data (*.stl)|*.stl|All files (*)|*',
+            {'vtkSTLWriter': self._writer},
+            fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
+
+        self.sync_module_logic_with_config()
         
     def close(self):
         # we should disconnect all inputs
@@ -85,10 +82,3 @@ class stlWRT(moduleBase, filenameViewModuleMixin):
     def execute_module(self):
         if len(self._writer.GetFileName()):
             self._writer.Write()
-            
-
-    def view(self, parent_window=None):
-        # if the frame is already visible, bring it to the top; this makes
-        # it easier for the user to associate a frame with a glyph
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()

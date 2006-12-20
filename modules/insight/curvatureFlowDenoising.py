@@ -22,7 +22,7 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
              'text', 'Timestep between update iterations.')]
 
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
 
         # setup the pipeline
@@ -33,14 +33,13 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, moduleBase):
             self, self._cfif, 'itkCurvatureFlowImageFilter',
             'Denoising data')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkCurvatureFlowImageFilter' : self._cfif})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+            
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

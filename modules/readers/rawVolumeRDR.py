@@ -37,7 +37,6 @@ class rawVolumeRDR(moduleBase,
                            'Unsigned Char' : vtk.VTK_UNSIGNED_CHAR}
 
         self._viewFrame = None
-        self._createViewFrame()
 
         # now setup some defaults before our sync
         self._config.filename = ''
@@ -48,12 +47,7 @@ class rawVolumeRDR(moduleBase,
         self._config.extent = (0, 128, 0, 128, 0, 128)
         self._config.spacing = (1.0, 1.0, 1.0)
 
-        # transfer these defaults to the logic
-        self.config_to_logic()
-
-        # then make sure they come all the way back up via self._config
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # close down the vtkPipeline stuff
@@ -94,6 +88,9 @@ class rawVolumeRDR(moduleBase,
         self._reader.SetDataSpacing(self._config.spacing)
         
     def view_to_config(self):
+        if self._viewFrame is None:
+            self._createViewFrame()
+        
         self._config.filename = self._viewFrame.filenameText.GetValue()
 
         # first get the selected string
@@ -175,6 +172,10 @@ class rawVolumeRDR(moduleBase,
         
 
     def view(self, parent_window=None):
+        if self._viewFrame is None:
+            self._createViewFrame()
+            self.sync_module_view_with_logic()
+        
         # if the window was visible already. just raise it
         if not self._viewFrame.Show(True):
             self._viewFrame.Raise()

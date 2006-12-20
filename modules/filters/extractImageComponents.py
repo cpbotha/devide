@@ -35,15 +35,12 @@ class extractImageComponents(scriptedConfigModuleMixin, moduleBase):
              'above-specified component indices will be used.',
              ('1', '2', '3'))]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
-        self._viewFrame = self._createViewFrame(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImageExtractComponents' : self._extract})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

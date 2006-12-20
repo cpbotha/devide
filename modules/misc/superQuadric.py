@@ -43,9 +43,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
              'The resolution of the output polydata'),
             ('Phi resolution: ', 'phiResolution', 'base:int', 'text',
              'The resolution of the output polydata')]
-        # mixin ctor
-        scriptedConfigModuleMixin.__init__(self, configList)
-        
+
         # now create the necessary VTK modules
         self._superquadric = vtk.vtkSuperquadric()
         self._superquadricSource = vtk.vtkSuperquadricSource()
@@ -56,18 +54,15 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         # setup progress for the processObject
         moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,
                                            "Synthesizing polydata.")
-        
 
-        self._createWindow(
+        # mixin ctor
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkSuperquadric' : self._superquadric,
              'vtkSuperquadricSource' : self._superquadricSource})
 
-        # apply config to logic
-        self.config_to_logic()
-        # then bring it all the way up again
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

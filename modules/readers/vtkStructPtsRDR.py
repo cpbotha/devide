@@ -5,34 +5,30 @@ from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 
-
 class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         self._reader = vtk.vtkStructuredPointsReader()
+        
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(
+            self,
+            'Select a filename',
+            'VTK data (*.vtk)|*.vtk|All files (*)|*',
+            {'vtkStructuredPointsReader': self._reader})
+
 
         moduleUtils.setupVTKObjectProgress(
             self, self._reader,
             'Reading vtk structured points data')
-        
-
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              'VTK data (*.vtk)|*.vtk|All files (*)|*',
-                              {'vtkStructuredPointsReader': self._reader})
 
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
         
     def close(self):
         del self._reader
@@ -71,10 +67,3 @@ class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
         if len(self._reader.GetFileName()):
             self._reader.Update()
             
-
-    def view(self, parent_window=None):
-        # if the frame is already visible, bring it to the top; this makes
-        # it easier for the user to associate a frame with a glyph
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-

@@ -21,7 +21,7 @@ class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
             'Derive upper threshold (for dark areas) or lower threshold '
             '(for lighter areas).')]
 
-        scriptedConfigModuleMixin.__init__(self, config_list)
+
         
         if3 = itk.Image.F3
         self._isol_connect = \
@@ -35,14 +35,13 @@ class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
             self, self._isol_connect,
             'IsolatedConnectedImageFilter', 'Performing isolated connect')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, config_list,
             {'Module (self)' : self,
              'IsolatedConnectedImageFilter' :
              self._isol_connect})
-        
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+
+        self.sync_module_logic_with_config()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

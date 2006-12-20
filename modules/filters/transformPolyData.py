@@ -2,28 +2,22 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
 
-class transformPolyData(moduleBase, noConfigModuleMixin):
+class transformPolyData(noConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
 
         self._transformPolyData = vtk.vtkTransformPolyDataFilter()
+        
+        noConfigModuleMixin.__init__(
+            self, {'vtkTransformPolyDataFilter' : self._transformPolyData})
 
         moduleUtils.setupVTKObjectProgress(self, self._transformPolyData,
                                            'Transforming geometry')
 
-        self._viewFrame = self._createViewFrame(
-            {'vtkTransformPolyDataFilter' : self._transformPolyData})
-
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -66,9 +60,3 @@ class transformPolyData(moduleBase, noConfigModuleMixin):
     
     def execute_module(self):
         self._transformPolyData.Update()
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-

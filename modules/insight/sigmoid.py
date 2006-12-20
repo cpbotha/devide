@@ -24,7 +24,7 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
             ('Maximum:', 'max', 'base:float', 'text',
              'Maximum output of sigmoid transform')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         if3 = itk.Image[itk.F, 3]
         self._sigmoid = itk.SigmoidImageFilter[if3,if3].New()
@@ -34,14 +34,13 @@ class sigmoid(scriptedConfigModuleMixin, moduleBase):
             'itkSigmoidImageFilter',
             'Performing sigmoid transformation')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkSigmoidImageFilter' :
              self._sigmoid})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

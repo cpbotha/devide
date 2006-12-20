@@ -2,11 +2,9 @@ import genUtils
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
-import wx
 import vtk
 
-
-class clipPolyData(moduleBase, noConfigModuleMixin):
+class clipPolyData(noConfigModuleMixin, moduleBase):
     """Given an input polydata and an implicitFunction, this will clip
     the polydata.
 
@@ -18,21 +16,17 @@ class clipPolyData(moduleBase, noConfigModuleMixin):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
 
         self._clipPolyData = vtk.vtkClipPolyData()
         moduleUtils.setupVTKObjectProgress(self, self._clipPolyData,
                                            'Calculating normals')
-        
 
-        self._viewFrame = self._createViewFrame(
+        noConfigModuleMixin.__init__(
+            self,
             {'vtkClipPolyData' : self._clipPolyData})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -77,9 +71,3 @@ class clipPolyData(moduleBase, noConfigModuleMixin):
     def execute_module(self):
         self._clipPolyData.Update()
         
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-

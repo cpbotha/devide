@@ -27,7 +27,7 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
              'Voxels differing with less than this threshold are considered '
              'equal')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         # input 1 is fixed, input 2 is moving
         # matcher.SetInput(moving)
@@ -48,14 +48,13 @@ class symmetricDemonsRegistration(scriptedConfigModuleMixin, moduleBase):
             self, self._demons, 'itkSymmetricForcesDemonsRegistration',
             'Performing registration, metric = %.2f', ('GetMetric()',))
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkSymmetricForcesDemonsRegistrationFilter' : self._demons,
              'itkHistogramMatchingImageFilter' : self._matcher})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

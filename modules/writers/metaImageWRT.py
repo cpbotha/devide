@@ -6,13 +6,11 @@ import moduleUtils
 import vtk
 
 
-class metaImageWRT(moduleBase, filenameViewModuleMixin):
+class metaImageWRT(filenameViewModuleMixin, moduleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         self._writer = vtk.vtkMetaImageWriter()
 
@@ -21,20 +19,18 @@ class metaImageWRT(moduleBase, filenameViewModuleMixin):
             'Writing VTK ImageData')
 
         
-
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              'MetaImage file (*.mha)|*.mha|All files (*)|*',
-                              {'vtkMetaImageWriter': self._writer},
-                              fileOpen=False)
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(
+            self,
+            'Select a filename',
+            'MetaImage file (*.mha)|*.mha|All files (*)|*',
+            {'vtkMetaImageWriter': self._writer},
+            fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we should disconnect all inputs
         self.set_input(0, None)
@@ -76,8 +72,3 @@ class metaImageWRT(moduleBase, filenameViewModuleMixin):
             self._writer.GetInput().Update()
             self._writer.Write()
 
-            
-
-    def view(self, parent_window=None):
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()

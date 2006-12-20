@@ -29,7 +29,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
             ('Replace value:', 'replaceValue', 'base:float', 'text',
              'Segmented pixels will be assigned this value.')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         # this will contain our binding to the input points
         self._inputPoints = None
@@ -44,13 +44,12 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
             self, self._cCIF, 'itkConfidenceConnectedImageFilter',
             'Region growing...')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkConfidenceConnectedImageFilter' : self._cCIF})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+            
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

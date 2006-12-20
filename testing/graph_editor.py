@@ -224,7 +224,8 @@ class TestModulesMisc(GraphEditorTestBase):
         # but this causes trouble on Weendows.
         ml = mm.getAvailableModules().keys()
         ml = [i for i in ml
-              if not i.startswith('modules.vtk_basic')]
+              if not i.startswith('modules.vtk_basic') and
+              not i.startswith('modules.user')]
         
         ml.sort()
         for module_name in ml:

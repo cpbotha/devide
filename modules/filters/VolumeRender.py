@@ -35,9 +35,8 @@ class VolumeRender(
              'quality, faster) interpolation',
              ('Nearest Neighbour', 'Linear'))]
 
-        scriptedConfigModuleMixin.__init__(self, config_list)
-        
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, config_list,
             {'Module (self)' : self})
 
         self._input_data = None
@@ -46,12 +45,8 @@ class VolumeRender(
 
         self._create_pipeline()
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+            
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

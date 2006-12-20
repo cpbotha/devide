@@ -25,18 +25,14 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
                        'Affine: rigid + scaling + shear',
                        ('Rigid', 'Similarity', 'Affine'))]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
         self._landmarkTransform = vtk.vtkLandmarkTransform()
-        
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkLandmarkTransform': self._landmarkTransform})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

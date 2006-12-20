@@ -6,7 +6,6 @@ import vtkdevide
 
 class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
 
-
     def __init__(self, moduleManager):
 
         # call parent constructor
@@ -43,17 +42,13 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
              'selected connected components.')
             ]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-        
-        self._viewFrame = self._createViewFrame(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImageCast' : self._imageCast,
              'vtkSelectConnectedComponents' : self._selectccs})
-           
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

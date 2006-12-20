@@ -23,7 +23,7 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
             ('Level:', 'level', 'base:float', 'text',
              'Initial precipitation level (0.0-1.0).')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
 
         # setup the pipeline
@@ -34,14 +34,13 @@ class watershed(scriptedConfigModuleMixin, moduleBase):
             self, self._watershed, 'itkWatershedImageFilter',
             'Performing watershed')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkWatershedImageFilter' : self._watershed})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

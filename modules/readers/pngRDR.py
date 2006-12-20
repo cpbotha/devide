@@ -18,8 +18,6 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading PNG images.')
 
-        
-
         self._config.filePattern = '%03d.png'
         self._config.firstSlice = 0
         self._config.lastSlice = 1
@@ -41,15 +39,12 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
             ('Lower left:', 'fileLowerLeft', 'base:bool', 'checkbox',
              'Image origin at lower left? (vs. upper left)')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
-        self._viewFrame = self._createViewFrame(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkPNGReader' : self._reader})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

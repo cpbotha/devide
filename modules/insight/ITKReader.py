@@ -41,7 +41,7 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
              'is not used', ['2','3'])]
 
 
-        scriptedConfigModuleMixin.__init__(self, config_list)
+
 
         # create ImageFileReader we'll be using for autotyping
         self._autotype_reader = itk.ImageFileReader[itk.Image.F3].New()
@@ -59,13 +59,10 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
             self, self._reader, 'ImageFileReader',
             'Reading file.')
 
-        self._createWindow(
-            {'Module (self)' : self})
+        scriptedConfigModuleMixin.__init__(self, config_list,
+                                           {'Module (self)' : self})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-        
+        self.sync_module_logic_with_config()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

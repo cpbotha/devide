@@ -1,11 +1,10 @@
 import genUtils
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
-class doubleThreshold(moduleBase,
-                      vtkPipelineConfigModuleMixin):
+class doubleThreshold(introspectModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 
@@ -30,8 +29,7 @@ class doubleThreshold(moduleBase,
                              'Unsigned Char' : 'VTK_UNSIGNED_CHAR',
                              'Same as input' : -1}
 
-        self._viewFrame = None
-        self._createViewFrame()
+        self._view_frame = None
 
         # now setup some defaults before our sync
         self._config.lowerThreshold = 1250
@@ -43,21 +41,18 @@ class doubleThreshold(moduleBase,
         self._config.outValue = 0
         self._config.outputScalarType = self._imageThreshold.GetOutputScalarType()
 
-        # transfer these defaults to the logic
-        self.config_to_logic()
-
-        # then make sure they come all the way back up via self._config
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
         self.set_input(0, None)
         # close down the vtkPipeline stuff
-        vtkPipelineConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
         # take out our view interface
-        self._viewFrame.Destroy()
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
+            
         # get rid of our reference
         del self._imageThreshold
 
@@ -102,12 +97,12 @@ class doubleThreshold(moduleBase,
     def view_to_config(self):
         self._config.lowerThreshold = self._sanitiseThresholdTexts(0)
         self._config.upperThreshold = self._sanitiseThresholdTexts(1)
-        self._config.replaceIn = self._viewFrame.replaceInCheckBox.GetValue()
-        self._config.inValue = float(self._viewFrame.replaceInText.GetValue())
-        self._config.replaceOut = self._viewFrame.replaceOutCheckBox.GetValue()
-        self._config.outValue = float(self._viewFrame.replaceOutText.GetValue())
+        self._config.replaceIn = self._view_frame.replaceInCheckBox.GetValue()
+        self._config.inValue = float(self._view_frame.replaceInText.GetValue())
+        self._config.replaceOut = self._view_frame.replaceOutCheckBox.GetValue()
+        self._config.outValue = float(self._view_frame.replaceOutText.GetValue())
 
-        ocString = self._viewFrame.outputDataTypeChoice.GetStringSelection()
+        ocString = self._view_frame.outputDataTypeChoice.GetStringSelection()
         if len(ocString) == 0:
             self._moduleManager.log_error(
                 "Impossible error with outputType choice in "
@@ -137,12 +132,12 @@ class doubleThreshold(moduleBase,
                 self._config.outputScalarType = -1
 
     def config_to_view(self):
-        self._viewFrame.lowerThresholdText.SetValue("%.2f" % (self._config.lowerThreshold))
-        self._viewFrame.upperThresholdText.SetValue("%.2f" % (self._config.upperThreshold))
-        self._viewFrame.replaceInCheckBox.SetValue(self._config.replaceIn)
-        self._viewFrame.replaceInText.SetValue(str(self._config.inValue))
-        self._viewFrame.replaceOutCheckBox.SetValue(self._config.replaceOut)
-        self._viewFrame.replaceOutText.SetValue(str(self._config.outValue))
+        self._view_frame.lowerThresholdText.SetValue("%.2f" % (self._config.lowerThreshold))
+        self._view_frame.upperThresholdText.SetValue("%.2f" % (self._config.upperThreshold))
+        self._view_frame.replaceInCheckBox.SetValue(self._config.replaceIn)
+        self._view_frame.replaceInText.SetValue(str(self._config.inValue))
+        self._view_frame.replaceOutCheckBox.SetValue(self._config.replaceOut)
+        self._view_frame.replaceOutText.SetValue(str(self._config.outValue))
 
         for key in self._outputTypes.keys():
             symbolicOutputType = self._outputTypes[key]
@@ -154,7 +149,7 @@ class doubleThreshold(moduleBase,
             if self._config.outputScalarType == numericOutputType:
                 break
 
-        self._viewFrame.outputDataTypeChoice.SetStringSelection(key)
+        self._view_frame.outputDataTypeChoice.SetStringSelection(key)
 
     def execute_module(self):
         # don't ask... we have to call Update() twice here, I _think_
@@ -175,9 +170,12 @@ class doubleThreshold(moduleBase,
         # input in sliceviewer
 
     def view(self, parent_window=None):
+        if self._view_frame is None:
+            self._createViewFrame()
+        
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
 
     def _createViewFrame(self):
 
@@ -185,59 +183,59 @@ class doubleThreshold(moduleBase,
         import modules.filters.resources.python.doubleThresholdFLTFrame
         reload(modules.filters.resources.python.doubleThresholdFLTFrame)
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             modules.filters.resources.python.doubleThresholdFLTFrame.\
             doubleThresholdFLTFrame)
 
         objectDict = {'imageThreshold' : self._imageThreshold}
         moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            self, self._view_frame, self._view_frame.viewFramePanel,
             objectDict, None)
 
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.viewFramePanel)
 
         # finish setting up the output datatype choice
-        self._viewFrame.outputDataTypeChoice.Clear()
+        self._view_frame.outputDataTypeChoice.Clear()
         for aType in self._outputTypes.keys():
-            self._viewFrame.outputDataTypeChoice.Append(aType)    
+            self._view_frame.outputDataTypeChoice.Append(aType)    
 
     def _sanitiseThresholdTexts(self, whichText):
         if whichText == 0:
             try:
-                lower = float(self._viewFrame.lowerThresholdText.GetValue())
+                lower = float(self._view_frame.lowerThresholdText.GetValue())
             except ValueError:
                 # this means that the user did something stupid, so we
                 # restore the value to what's in our config
-                self._viewFrame.lowerThresholdText.SetValue(str(
+                self._view_frame.lowerThresholdText.SetValue(str(
                     self._config.lowerThreshold))
                 
                 return self._config.lowerThreshold
                 
             # lower is the new value...
-            upper = float(self._viewFrame.upperThresholdText.GetValue())
+            upper = float(self._view_frame.upperThresholdText.GetValue())
             if lower > upper:
                 lower = upper
-                self._viewFrame.lowerThresholdText.SetValue(str(lower))
+                self._view_frame.lowerThresholdText.SetValue(str(lower))
 
             return lower
 
         else:
             try:
-                upper = float(self._viewFrame.upperThresholdText.GetValue())
+                upper = float(self._view_frame.upperThresholdText.GetValue())
             except ValueError:
                 # this means that the user did something stupid, so we
                 # restore the value to what's in our config
-                self._viewFrame.upperThresholdText.SetValue(str(
+                self._view_frame.upperThresholdText.SetValue(str(
                     self._config.upperThreshold))
                 
                 return self._config.upperThreshold
 
             # upper is the new value
-            lower = float(self._viewFrame.lowerThresholdText.GetValue())
+            lower = float(self._view_frame.lowerThresholdText.GetValue())
             if upper < lower:
                 upper = lower
-                self._viewFrame.upperThresholdText.SetValue(str(upper))
+                self._view_frame.upperThresholdText.SetValue(str(upper))
 
             return upper

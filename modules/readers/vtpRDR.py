@@ -11,28 +11,25 @@ class vtpRDR(moduleBase, filenameViewModuleMixin):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         self._reader = vtk.vtkXMLPolyDataReader()
+
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(
+            self,
+            'Select a filename',
+            'VTK Poly Data (*.vtp)|*.vtp|All files (*)|*',
+            {'vtkXMLPolyDataReader': self._reader})
 
         moduleUtils.setupVTKObjectProgress(
             self, self._reader,
             'Reading VTK PolyData')
 
-        
-
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              'VTK Poly Data (*.vtp)|*.vtp|All files (*)|*',
-                              {'vtkXMLPolyDataReader': self._reader})
+        self._viewFrame = None
 
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
         
     def close(self):
         del self._reader
@@ -71,8 +68,3 @@ class vtpRDR(moduleBase, filenameViewModuleMixin):
         if len(self._reader.GetFileName()):
             self._reader.Update()
             
-
-    def view(self, parent_window=None):
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
-

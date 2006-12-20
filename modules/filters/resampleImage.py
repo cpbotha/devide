@@ -4,11 +4,11 @@
 
 import genUtils
 from moduleBase import moduleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
-class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
+class resampleImage(introspectModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -18,29 +18,27 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
         moduleUtils.setupVTKObjectProgress(self, self._imageResample,
                                            'Resampling image.')
         
-
-
         # 0: nearest neighbour
         # 1: linear
         # 2: cubic
         self._config.interpolationMode = 1
         self._config.magFactors = [1.0, 1.0, 1.0]
 
-        self._viewFrame = None
-        self._createViewFrame()
+        self._view_frame = None
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
         self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        vtkPipelineConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
+
         # take out our view interface
-        self._viewFrame.Destroy()
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
+            
         # get rid of our reference
         del self._imageResample
         # and finally call our base dtor
@@ -84,16 +82,16 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
                 i, self._config.magFactors[i])
 
     def view_to_config(self):
-        itc = self._viewFrame.interpolationTypeChoice.GetSelection()
+        itc = self._view_frame.interpolationTypeChoice.GetSelection()
         if itc < 0 or itc > 2:
             # default when something weird happens to choice
             itc = 1
 
         self._config.interpolationMode = itc
 
-        txtTup = self._viewFrame.magFactorXText.GetValue(), \
-                 self._viewFrame.magFactorYText.GetValue(), \
-                 self._viewFrame.magFactorZText.GetValue()
+        txtTup = self._view_frame.magFactorXText.GetValue(), \
+                 self._view_frame.magFactorYText.GetValue(), \
+                 self._view_frame.magFactorZText.GetValue()
 
         for i in range(3):
             self._config.magFactors[i] = genUtils.textToFloat(
@@ -101,12 +99,12 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
             
         
     def config_to_view(self):
-        self._viewFrame.interpolationTypeChoice.SetSelection(
+        self._view_frame.interpolationTypeChoice.SetSelection(
             self._config.interpolationMode)
 
-        txtTup = self._viewFrame.magFactorXText, \
-                 self._viewFrame.magFactorYText, \
-                 self._viewFrame.magFactorZText
+        txtTup = self._view_frame.magFactorXText, \
+                 self._view_frame.magFactorYText, \
+                 self._view_frame.magFactorZText
         
         for i in range(3):
             txtTup[i].SetValue(str(self._config.magFactors[i]))
@@ -117,24 +115,27 @@ class resampleImage(moduleBase, vtkPipelineConfigModuleMixin):
         
 
     def view(self, parent_window=None):
+        if self._view_frame is None:
+            self._createViewFrame()
+            
         # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
 
     def _createViewFrame(self):
         self._moduleManager.importReload(
             'modules.filters.resources.python.resampleImageViewFrame')
         import modules.filters.resources.python.resampleImageViewFrame
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             modules.filters.resources.python.resampleImageViewFrame.\
             resampleImageViewFrame)
 
         objectDict = {'vtkImageResample' : self._imageResample}
         moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            self, self._view_frame, self._view_frame.viewFramePanel,
             objectDict, None)
 
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.viewFramePanel)

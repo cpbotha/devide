@@ -5,13 +5,13 @@ import moduleUtils
 import vtk
 
 
-class appendPolyData(moduleBase, noConfigModuleMixin):
+class appendPolyData(noConfigModuleMixin, moduleBase):
     _numInputs = 5
     
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
 
         # underlying VTK thingy
         self._appendPolyData = vtk.vtkAppendPolyData()
@@ -20,16 +20,12 @@ class appendPolyData(moduleBase, noConfigModuleMixin):
 
         moduleUtils.setupVTKObjectProgress(self, self._appendPolyData,
                                            'Appending PolyData')
-        
 
-        self._viewFrame = self._createViewFrame(
+        noConfigModuleMixin.__init__(
+            self,
             {'vtkAppendPolyData' : self._appendPolyData})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -81,9 +77,3 @@ class appendPolyData(moduleBase, noConfigModuleMixin):
     def execute_module(self):
         self._appendPolyData.Update()
         
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-

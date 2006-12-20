@@ -30,7 +30,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
              '3D integer radii of neighbourhood around candidate pixel.')]
             
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         # this will contain our binding to the input points
         self._inputPoints = None
@@ -43,13 +43,12 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
             self, self._nbhCIF, 'itkNeighborhoodConnectedImageFilter',
             'Region growing...')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkNeighborhoodConnectedImageFilter' : self._nbhCIF})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

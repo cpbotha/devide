@@ -21,7 +21,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
              'preservation of image features.')]
 
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
 
         # setup the pipeline
@@ -34,14 +34,13 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
             self, self._diffuse, 'itkGradientAnisotropicDiffusionImageFilter',
             'Smoothing data')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkGradientAnisotropicDiffusion' : self._diffuse})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+            
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

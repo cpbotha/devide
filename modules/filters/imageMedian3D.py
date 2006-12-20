@@ -17,24 +17,18 @@ class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
             ('Kernel size:', 'kernelSize', 'tuple:int,3', 'text',
              'Size of structuring element in pixels.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
         self._imageMedian3D = vtk.vtkImageMedian3D()
+
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
+            {'Module (self)' : self,
+             'vtkImageMedian3D' : self._imageMedian3D})
         
         moduleUtils.setupVTKObjectProgress(self, self._imageMedian3D,
                                            'Filtering with median')
+
+        self.sync_module_logic_with_config()
         
-
-        self._createWindow(
-            {'Module (self)' : self,
-             'vtkImageMedian3D' : self._imageMedian3D})
-
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
-
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
@@ -49,7 +43,6 @@ class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
 
     def execute_module(self):
         self._imageMedian3D.Update()
-        
 
     def get_input_descriptions(self):
         return ('vtkImageData',)

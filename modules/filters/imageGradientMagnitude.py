@@ -5,29 +5,25 @@ import moduleUtils
 import wx
 import vtk
 
-class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
+class imageGradientMagnitude(noConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
 
         self._imageGradientMagnitude = vtk.vtkImageGradientMagnitude()
         self._imageGradientMagnitude.SetDimensionality(3)
         
         moduleUtils.setupVTKObjectProgress(self, self._imageGradientMagnitude,
                                            'Calculating gradient magnitude')
-        
 
-        self._viewFrame = self._createViewFrame(
+        noConfigModuleMixin.__init__(
+            self,
             {'Module (self)' : self,
              'vtkImageGradientMagnitude' : self._imageGradientMagnitude})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -70,10 +66,3 @@ class imageGradientMagnitude(moduleBase, noConfigModuleMixin):
     def execute_module(self):
         self._imageGradientMagnitude.Update()
         
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
-
-

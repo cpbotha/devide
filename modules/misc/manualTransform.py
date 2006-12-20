@@ -21,7 +21,7 @@ class manualTransform(scriptedConfigModuleMixin, moduleBase):
             ('Translation:', 'translation', 'tuple:float,3', 'tupleText',
              'Translation in the x,y,z directions.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         self._transform = vtk.vtkTransform()
         # we want changes here to happen AFTER the transformations
@@ -30,16 +30,13 @@ class manualTransform(scriptedConfigModuleMixin, moduleBase):
         
         # has no progress!
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkTransform' : self._transform})
-
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
-
+            
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

@@ -5,13 +5,11 @@ import moduleUtils
 import vtk
 
 
-class ivWRT(moduleBase, filenameViewModuleMixin):
+class ivWRT(filenameViewModuleMixin, moduleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         self._writer = vtk.vtkIVWriter()
         # sorry about this, but the files get REALLY big if we write them
@@ -23,21 +21,17 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
         moduleUtils.setupVTKObjectProgress(
             self, self._writer, 'Writing polydata to Inventor Viewer format')
 
-        
-        
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame(
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(
+            self,
             'Select a filename',
             'InventorViewer data (*.iv)|*.iv|All files (*)|*',
             {'vtkIVWriter': self._writer},
             fileOpen=False)
-
+        
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
         
     def close(self):
         # we should disconnect all inputs
@@ -77,10 +71,3 @@ class ivWRT(moduleBase, filenameViewModuleMixin):
         if len(self._writer.GetFileName()):
             self._writer.Write()
 
-        
-
-    def view(self, parent_window=None):
-        # if the frame is already visible, bring it to the top; this makes
-        # it easier for the user to associate a frame with a glyph
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()

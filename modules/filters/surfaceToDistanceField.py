@@ -9,13 +9,12 @@ import vtk
 
 class surfaceToDistanceField(scriptedConfigModuleMixin, moduleBase):
 
-
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
 
-
         self._implicitModeller = vtk.vtkImplicitModeller()
+
         moduleUtils.setupVTKObjectProgress(
             self, self._implicitModeller,
             'Converting surface to distance field')
@@ -24,7 +23,6 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, moduleBase):
         self._config.dimensions = (64, 64, 64)
         self._config.maxDistance = 0.1
         
-
         configList = [
             ('Bounds:', 'bounds', 'tuple:float,6', 'text',
              'The physical location of the sampled volume in space '
@@ -34,17 +32,12 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, moduleBase):
             ('Maximum distance:', 'maxDistance', 'base:float', 'text',
              'The distance will only be calculated up to this maximum.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)        
-
-        self._viewFrame = self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImplicitModeller' : self._implicitModeller})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

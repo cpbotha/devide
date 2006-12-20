@@ -281,8 +281,9 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
     def close(self):
         del self._object_dict
         vtkPipelineConfigModuleMixin.close(self)
-        self._view_frame.Destroy()
-        del self._view_frame
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
+            del self._view_frame
 
     def _create_view_frame(self):
 
@@ -337,7 +338,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
     def view(self):
         if self._view_frame is None:
             self._create_view_frame()
-            self._moduleManager.sync_module_view_with_logic()
+            self._moduleManager.sync_module_view_with_logic(self)
 
         # and show the UI
         self._view_frame.Show(True)
@@ -394,15 +395,17 @@ class noConfigModuleMixin(introspectModuleMixin):
     the end of your object.
     """
 
-    def __init__(self):
+    def __init__(self, object_dict=None):
         self._view_frame = None
+        self._object_dict = object_dict
 
     def close(self):
         introspectModuleMixin.close(self)
-        self._view_frame.Destroy()
-        del self._view_frame
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
+            del self._view_frame
 
-    def _create_view_frame(self, objectDict=None):
+    def _create_view_frame(self):
 
         """This will create the self._view_frame for this module.
 
@@ -430,9 +433,10 @@ class noConfigModuleMixin(introspectModuleMixin):
         viewFrame.SetAutoLayout(True)
         viewFrame.SetSizer(viewFrameSizer)
 
-        if objectDict != None:
+        if self._object_dict != None:
             moduleUtils.createStandardObjectAndPipelineIntrospection(
-                self, viewFrame, viewFrame.viewFramePanel, objectDict, None)
+                self, viewFrame, viewFrame.viewFramePanel,
+                self._object_dict, None)
 
         moduleUtils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
@@ -452,15 +456,11 @@ class noConfigModuleMixin(introspectModuleMixin):
     def view(self):
         if self._view_frame is None:
             self._create_view_frame()
-            # this will take config from conf structure down to logic and
-            # back up to config again
-            self._moduleManager.sync_module_view_with_logic()
+            self._moduleManager.sync_module_view_with_logic(self)
             
         # and show the UI
         self._view_frame.Show(True)
         self._view_frame.Raise()
-            
-        
 
     def config_to_logic(self):
         pass
@@ -519,12 +519,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         self._view_frame = None
         self._configList = configList
         self._widgets = {}
-        self._object_dict = objectDict
+        self._object_dict = object_dict
 
     def close(self):
         introspectModuleMixin.close(self)
-        self._view_frame.Destroy()
-        del self._view_frame
+
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
+            del self._view_frame
 
     def _create_view_frame(self):
         parentWindow = self._moduleManager.getModuleViewParentWindow()
@@ -636,7 +638,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         """Returns widget(s) given the index of the relevant configTuple in
         the configList structure.
         """
-        
+
         return self._widgets[self._configList[configTupleIndex][0:5]]
     
 
@@ -787,7 +789,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
     def view(self):
         if self._view_frame is None:
             self._create_view_frame()
-            self._moduleManager.sync_module_view_with_logic()
+            self._moduleManager.sync_module_view_with_logic(self)
 
         # and show the UI
         self._view_frame.Show(True)

@@ -8,7 +8,7 @@ from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
-class imageGaussianSmooth(moduleBase, introspectModuleMixin):
+class imageGaussianSmooth(introspectModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -22,7 +22,7 @@ class imageGaussianSmooth(moduleBase, introspectModuleMixin):
         self._config.standardDeviation = (2.0, 2.0, 2.0)
         self._config.radiusCutoff = (1.5, 1.5, 1.5)
 
-        self._viewFrame = None
+        self._view_frame = None
 
 
         self._moduleManager.sync_module_logic_with_config(self)
@@ -34,8 +34,8 @@ class imageGaussianSmooth(moduleBase, introspectModuleMixin):
         # don't forget to call the close() method of the vtkPipeline mixin
         introspectModuleMixin.close(self)
         # take out our view interface
-        if self._viewFrame is not None:
-            self._viewFrame.Destroy()
+        if self._view_frame is not None:
+            self._view_frame.Destroy()
             
         # get rid of our reference
         del self._imageGaussianSmooth
@@ -68,50 +68,50 @@ class imageGaussianSmooth(moduleBase, introspectModuleMixin):
 
     def view_to_config(self):
         # continue with textToTuple in genUtils
-        stdText = self._viewFrame.stdTextCtrl.GetValue()
+        stdText = self._view_frame.stdTextCtrl.GetValue()
         self._config.standardDeviation = genUtils.textToTypeTuple(
             stdText, self._config.standardDeviation, 3, float)
         
-        cutoffText = self._viewFrame.radiusCutoffTextCtrl.GetValue()
+        cutoffText = self._view_frame.radiusCutoffTextCtrl.GetValue()
         self._config.radiusCutoff = genUtils.textToTypeTuple(
             cutoffText, self._config.radiusCutoff, 3, float)
 
     def config_to_view(self):
         stdText = '(%.2f, %.2f, %.2f)' % self._config.standardDeviation
-        self._viewFrame.stdTextCtrl.SetValue(stdText)
+        self._view_frame.stdTextCtrl.SetValue(stdText)
 
         cutoffText = '(%.2f, %.2f, %.2f)' % self._config.radiusCutoff
-        self._viewFrame.radiusCutoffTextCtrl.SetValue(cutoffText)
+        self._view_frame.radiusCutoffTextCtrl.SetValue(cutoffText)
 
     def execute_module(self):
         self._imageGaussianSmooth.Update()
         
 
     def view(self, parent_window=None):
-        if self._viewFrame is None:
+        if self._view_frame is None:
             self._createViewFrame()
             # the logic is the bottom line in this case
             self._moduleManager.sync_module_view_with_logic(self)
             
         # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
 
     def _createViewFrame(self):
         self._moduleManager.importReload(
             'modules.filters.resources.python.imageGaussianSmoothViewFrame')
         import modules.filters.resources.python.imageGaussianSmoothViewFrame
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
             modules.filters.resources.python.imageGaussianSmoothViewFrame.\
             imageGaussianSmoothViewFrame)
 
         objectDict = {'vtkImageGaussianSmooth' : self._imageGaussianSmooth}
         moduleUtils.createStandardObjectAndPipelineIntrospection(
-            self, self._viewFrame, self._viewFrame.viewFramePanel,
+            self, self._view_frame, self._view_frame.viewFramePanel,
             objectDict, None)
 
-        moduleUtils.createECASButtons(self, self._viewFrame,
-                                      self._viewFrame.viewFramePanel)
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.viewFramePanel)
 

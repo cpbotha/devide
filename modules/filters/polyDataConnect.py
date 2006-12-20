@@ -5,14 +5,12 @@ import moduleUtils
 import vtk
 
 
-class polyDataConnect(moduleBase, noConfigModuleMixin):
+class polyDataConnect(noConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # and the mixin constructor
-        noConfigModuleMixin.__init__(self)
 
         self._polyDataConnect = vtk.vtkPolyDataConnectivityFilter()
         # we're not going to use this feature just yet
@@ -23,22 +21,18 @@ class polyDataConnect(moduleBase, noConfigModuleMixin):
         moduleUtils.setupVTKObjectProgress(self, self._polyDataConnect,
                                            'Finding connected surfaces')
         
+        # and the mixin constructor
+        noConfigModuleMixin.__init__(
+            self,
+            {'vtkPolyDataConnectivityFilter' :
+             self._polyDataConnect})
 
         # we'll use this to keep a binding (reference) to the passed object
         self._inputPoints = None
         # this will be our internal list of points
         self._seedIds = []
 
-        self._viewFrame = self._createViewFrame(
-            {'vtkPolyDataConnectivityFilter' :
-             self._polyDataConnect})
-
-        # transfer these defaults to the logic
-        self.config_to_logic()
-
-        # then make sure they come all the way back up via self._config
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
         
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -94,12 +88,6 @@ class polyDataConnect(moduleBase, noConfigModuleMixin):
     def execute_module(self):
         self._polyDataConnect.Update()
         
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
-
     def _inputPointsObserver(self, obj):
         # extract a list from the input points
         tempList = []

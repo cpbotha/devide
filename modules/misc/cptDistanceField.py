@@ -13,7 +13,7 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+        
 
         self._imageInput = None
         self._meshInput = None
@@ -25,13 +25,11 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(
             self, self._flipper, 'Flipping Y axis.')
 
-        self._createViewFrame({'Module (self)' : self})
+        noConfigModuleMixin.__init__(
+            self, {'Module (self)' : self})
+            
+        self.sync_module_logic_with_config()
         
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
-
     def close(self):
         # we should disconnect all inputs
         self.set_input(0, None)

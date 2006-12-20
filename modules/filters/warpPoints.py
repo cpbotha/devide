@@ -3,9 +3,8 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-
-
 class warpPoints(scriptedConfigModuleMixin, moduleBase):
+    
     _defaultVectorsSelectionString = 'Default Active Vectors'
     _userDefinedString = 'User Defined'
 
@@ -15,7 +14,6 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
         self._config.scaleFactor = 1
         self._config.vectorsSelection = self._defaultVectorsSelectionString
 
-
         configList = [
             ('Scale factor:', 'scaleFactor', 'base:float', 'text',
              'The warping will be scaled by this factor'),
@@ -23,23 +21,18 @@ class warpPoints(scriptedConfigModuleMixin, moduleBase):
              'The attribute that will be used as vectors for the warping.',
              (self._defaultVectorsSelectionString, self._userDefinedString))]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
         self._warpVector = vtk.vtkWarpVector()
+
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
+            {'Module (self)' : self,
+             'vtkWarpVector' : self._warpVector})
         
         moduleUtils.setupVTKObjectProgress(self, self._warpVector,
                                            'Warping points.')
         
 
-        self._createWindow(
-            {'Module (self)' : self,
-             'vtkWarpVector' : self._warpVector})
-
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

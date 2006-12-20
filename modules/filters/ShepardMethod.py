@@ -3,7 +3,6 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-
 class ShephardMethod(scriptedConfigModuleMixin, moduleBase):
 
     """Apply Shepard Method to input.
@@ -29,18 +28,13 @@ class ShephardMethod(scriptedConfigModuleMixin, moduleBase):
         configList = [
             ('Kernel size:', 'kernelSize', 'tuple:int,3', 'text',
              'Size of the kernel in x,y,z dimensions.')]
-        scriptedConfigModuleMixin.__init__(self, configList)        
-        
 
-        self._viewFrame = self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImageContinuousDilate3D' : self._imageDilate})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -77,11 +71,3 @@ class ShephardMethod(scriptedConfigModuleMixin, moduleBase):
     
     def execute_module(self):
         self._imageDilate.Update()
-        
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
-
-

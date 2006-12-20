@@ -35,7 +35,7 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
                        'base:int', 'text',
                        'Number of spheres to create in the interior.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         self._appendPolyData = vtk.vtkAppendPolyData()
         # we do need a dummy sphere, else the appender complains
@@ -59,13 +59,12 @@ class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
         # this will hold our shallow-copied output
         self._output = vtk.vtkPolyData()
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkAppendPolyData' : self._appendPolyData})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

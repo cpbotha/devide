@@ -25,8 +25,6 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
             ('Compute normals: ', 'computeNormals', 'base:bool', 'checkbox',
              'Must normals also be calculated and stored.')]
 
-        # mixin ctor
-        scriptedConfigModuleMixin.__init__(self, configList)
         
         # now create the necessary VTK modules
         self._sampleFunction = vtk.vtkSampleFunction()
@@ -39,13 +37,13 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
 
         self._example_input = None
 
-        self._createWindow(
+        # mixin ctor
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkSampleFunction' : self._sampleFunction})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

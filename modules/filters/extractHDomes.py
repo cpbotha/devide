@@ -38,18 +38,15 @@ class extractHDomes(scriptedConfigModuleMixin, moduleBase):
              'The required difference in brightness between an h-dome and\n'
              'its surroundings.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
-        self._viewFrame = self._createViewFrame(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'ImageMath Subtract H' : self._imageMathSubtractH,
              'ImageGreyscaleReconstruct3D' : self._reconstruct,
              'ImageMath Subtract R' : self._imageMathSubtractR})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

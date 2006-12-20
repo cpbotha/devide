@@ -30,24 +30,19 @@ class MIPRender(
              'quality, faster) interpolation',
              ('Nearest Neighbour', 'Linear'))]
 
-        scriptedConfigModuleMixin.__init__(self, config_list)
-        
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, config_list,
             {'Module (self)' : self})
-
+        
         self._create_pipeline()
 
-        # pass the data down to the underlying logic
-        self.configToLogic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logicToConfig()
-        self.configToView()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.getInputDescriptions())):
-            self.setInput(inputIdx, None)
+        for inputIdx in range(len(self.get_input_descriptions())):
+            self.set_input(inputIdx, None)
 
         # this will take care of GUI
         scriptedConfigModuleMixin.close(self)
@@ -60,27 +55,27 @@ class MIPRender(
         del self._volume_mapper
         del self._volume
 
-    def getInputDescriptions(self):
+    def get_input_descriptions(self):
 	return ('input image data', 'transfer functions')
 
-    def setInput(self, idx, inputStream):
+    def set_input(self, idx, inputStream):
         if idx == 0:
             self._volume_mapper.SetInput(inputStream)
             
         else:
             pass
 
-    def getOutputDescriptions(self):
+    def get_output_descriptions(self):
         return ('vtkVolume',)
 
-    def getOutput(self, idx):
+    def get_output(self, idx):
         return self._volume
 
-    def logicToConfig(self):
+    def logic_to_config(self):
         self._config.interpolation = \
                                    self._volume_property.GetInterpolationType()
 
-    def configToLogic(self):
+    def config_to_logic(self):
 
         self._otf.RemoveAllPoints()
         t = self._config.threshold
@@ -97,7 +92,7 @@ class MIPRender(
 
         self._volume_property.SetInterpolationType(self._config.interpolation)
 
-    def executeModule(self):
+    def execute_module(self):
         self._volume_mapper.Update()
         
 

@@ -6,7 +6,7 @@ import moduleUtils
 import vtk
 
 
-class vtiWRT(moduleBase, filenameViewModuleMixin):
+class vtiWRT(filenameViewModuleMixin, moduleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor

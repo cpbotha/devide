@@ -4,10 +4,7 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-
 class morphGradient(scriptedConfigModuleMixin, moduleBase):
-
-    
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
@@ -63,20 +60,14 @@ class morphGradient(scriptedConfigModuleMixin, moduleBase):
         configList = [
             ('Kernel size:', 'kernelSize', 'tuple:int,3', 'text',
              'Size of the kernel in x,y,z dimensions.')]
-        scriptedConfigModuleMixin.__init__(self, configList)        
-        
-
-        self._viewFrame = self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImageContinuousDilate3D' : self._imageDilate,
              'vtkImageContinuousErode3D' : self._imageErode,
              'vtkImageMathematics' : self._imageMath})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

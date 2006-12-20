@@ -4,7 +4,7 @@ import genUtils
 import os
 from moduleBase import moduleBase
 from moduleMixins import \
-     vtkPipelineConfigModuleMixin, fileOpenDialogModuleMixin
+     introspectModuleMixin, fileOpenDialogModuleMixin
 import moduleUtils
 
 
@@ -15,7 +15,7 @@ import vtkdevide
 import moduleUtils
 
 class dicomRDR(moduleBase,
-               vtkPipelineConfigModuleMixin,
+               introspectModuleMixin,
                fileOpenDialogModuleMixin):
 
     def __init__(self, moduleManager):
@@ -29,8 +29,7 @@ class dicomRDR(moduleBase,
                                            'Reading DICOM data')
         
 
-        self._viewFrame = ""
-        self._createViewFrame()
+        self._viewFrame = None
 
         self._fileDialog = None
 
@@ -40,16 +39,19 @@ class dicomRDR(moduleBase,
         self._config.estimateSliceThickness = 1
 
         # do the normal thang (down to logic, up again)
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 	
     def close(self):
-        del self._fileDialog
+        if self._fileDialog is not None:
+            del self._fileDialog
+            
         # this will take care of all the vtkPipeline windows
-        vtkPipelineConfigModuleMixin.close(self)
-        # take care of our own window
-        self._viewFrame.Destroy()
+        introspectModuleMixin.close(self)
+
+        if self._viewFrame is not None:
+            # take care of our own window
+            self._viewFrame.Destroy()
+            
         # also remove the binding we have to our reader
         del self._reader
 
@@ -292,8 +294,12 @@ class dicomRDR(moduleBase,
         
 
     def view(self, parent_window=None):
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
+        if self._viewFrame is None:
+            self._createViewFrame()
+            self.sync_module_view_with_logic()
+            
+        self._viewFrame.Show(True)
+        self._viewFrame.Raise()
         
     def _handlerAddButton(self, event):
 

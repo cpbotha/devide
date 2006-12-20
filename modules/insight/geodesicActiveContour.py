@@ -33,19 +33,15 @@ class geodesicActiveContour(scriptedConfigModuleMixin, moduleBase):
              'text',
              'Number of iterations that the algorithm should be run for')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
-
-        # call into scriptedConfigModuleMixin method
-        self._createWindow({'Module (self)' : self})
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
+            {'Module (self)' : self})
 
         # create all pipeline thingies
         self._createITKPipeline()
 
-        # send config down to logic and then all the way up to the view
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         self._destroyITKPipeline()
         scriptedConfigModuleMixin.close(self)

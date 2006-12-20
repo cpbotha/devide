@@ -7,25 +7,21 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
-        # initialise any mixins we might have
-        noConfigModuleMixin.__init__(self)
-
 
         self._imageReslice = vtk.vtkImageReslice()
         self._imageReslice.SetInterpolationModeToCubic()
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageReslice,
-                                           'Resampling volume')
-
-        self._viewFrame = self._createViewFrame(
+        # initialise any mixins we might have
+        noConfigModuleMixin.__init__(
+            self,
             {'Module (self)' : self,
              'vtkImageReslice' : self._imageReslice})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()     
+
+        moduleUtils.setupVTKObjectProgress(self, self._imageReslice,
+                                           'Resampling volume')
+
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -73,12 +69,5 @@ class transformVolumeData(noConfigModuleMixin, moduleBase):
     def config_to_view(self):
         pass
     
-
     def execute_module(self):
         self._imageReslice.Update()
-
-    
-    
-        
-        
-        

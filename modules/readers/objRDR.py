@@ -7,7 +7,7 @@ import vtk
 import os
 
 
-class objRDR(moduleBase, filenameViewModuleMixin):
+class objRDR(filenameViewModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
@@ -18,30 +18,25 @@ class objRDR(moduleBase, filenameViewModuleMixin):
         
         # call the constructor in the "base"
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         # setup necessary VTK objects
 	self._reader = vtk.vtkOBJReader()
-
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
-                                           'Reading Wavefront OBJ data')
-
         
-
-        # we now have a viewFrame in self._viewFrame
-        self._createViewFrame(
+        # ctor for this specific mixin
+        filenameViewModuleMixin.__init__(
+            self,
             'Select a filename',
             'Wavefront OBJ data (*.obj)|*.obj|All files (*)|*',
             {'vtkOBJReader': self._reader})
 
+        moduleUtils.setupVTKObjectProgress(self, self._reader,
+                                           'Reading Wavefront OBJ data')
+
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
-	
+
+	self.sync_module_logic_with_config()
+        
     def close(self):
         del self._reader
         # call the close method of the mixin
@@ -81,10 +76,4 @@ class objRDR(moduleBase, filenameViewModuleMixin):
         if len(self._reader.GetFileName()):        
             self._reader.Update()
             
-            
-    def view(self, parent_window=None):
-        # if the frame is already visible, bring it to the top; this makes
-        # it easier for the user to associate a frame with a glyph
-        if not self._viewFrame.Show(True):
-            self._viewFrame.Raise()
 

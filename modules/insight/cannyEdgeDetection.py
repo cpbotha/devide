@@ -26,7 +26,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
             ('Outside value:', 'outsideValue', 'base:float', 'text',
              'Pixels lower than threshold will be set to this.')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
 
         # setup the pipeline
@@ -37,14 +37,13 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
             self, self._canny, 'itkCannyEdgeDetectionImageFilter',
             'Performing Canny edge detection')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkCannyEdgeDetectionImageFilter' : self._canny})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+            
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

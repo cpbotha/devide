@@ -11,8 +11,6 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
 
         # call parent constructor
         moduleBase.__init__(self, moduleManager)
-        # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
 
         self._input = None
         self._writer = None
@@ -22,18 +20,19 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
                          'Meta Image separate header/data (*.mhd)|*.mhd|' \
                          'Analyze separate header/data (*.hdr)|*.hdr|' \
                          'All files (*)|*'
+
         # we now have a viewFrame in self._viewFrame
-        self._createViewFrame('Select a filename',
-                              wildCardString,
-                              {'Module (self)': self},
-                              fileOpen=False)
+        filenameViewModuleMixin.__init__(
+            self,
+            'Select a filename',
+            wildCardString,
+            {'Module (self)': self},
+            fileOpen=False)
 
         # set up some defaults
         self._config.filename = ''
-        self.config_to_logic()
-        # make sure these filter through from the bottom up
-        self.logic_to_config()
-        self.config_to_view()
+
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we should disconnect all inputs
@@ -123,7 +122,3 @@ class ITKWriter(moduleBase, filenameViewModuleMixin):
             # activating this crashes DeVIDE *BOOM*
             #self._writer.GetImageIO().SetUseCompression(True)
             self._writer.Write()
-
-    def view(self, parent_window=None):
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()

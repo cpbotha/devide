@@ -23,22 +23,19 @@ class advectionProperties(scriptedConfigModuleMixin, moduleBase):
              {'fileMode' : wx.SAVE,
               'fileMask' : 'CSV files (*.csv)|*.csv|All files (*.*)|*.*'})]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         self._inputs = [None] * self._numberOfInputs
         
         #moduleUtils.setupVTKObjectProgress(self, self._warpVector,
         #                                   'Warping points.')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

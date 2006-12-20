@@ -39,18 +39,13 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
             ('Constant K:', 'constantK', 'base:float', 'text',
              'The constant C used in some operations.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)        
-
-        self._viewFrame = self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImageMathematics' : self._imageMath})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

@@ -23,7 +23,7 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
              'Does the input contain marked objects, or binary (yes/no) '
              'objects.')]
              
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         # setup the pipeline
         imageF3 = itk.Image[itk.F, 3]
@@ -37,14 +37,14 @@ class DanielssonDistance(scriptedConfigModuleMixin, moduleBase):
             self, self._dist_filter, 'DanielssonDistanceMapImageFilter',
             'Calculating distance map.')
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'itkDanielssonDistanceMapImageFilter' : self._dist_filter})
+            
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+        self.sync_module_logic_with_config()
+        
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)

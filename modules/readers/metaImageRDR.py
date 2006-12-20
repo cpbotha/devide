@@ -28,15 +28,12 @@ class metaImageRDR(scriptedConfigModuleMixin, moduleBase):
               'MetaImage single file (*.mha)|*.mha|MetaImage separate header '
               '(*.mhd)|*.mhd|All files (*.*)|*.*'})]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
-        self._viewFrame = self._createViewFrame(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkMetaImageReader' : self._reader})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

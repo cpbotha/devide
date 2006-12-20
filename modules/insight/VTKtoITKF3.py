@@ -9,7 +9,7 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
-        noConfigModuleMixin.__init__(self)
+
 
         # setup the pipeline
         self._imageCast = vtk.vtkImageCast()
@@ -18,15 +18,13 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
         self._vtk2itk = itk.VTKImageToImageFilter[itk.Image[itk.F, 3]].New()
         self._vtk2itk.SetInput(self._imageCast.GetOutput())
 
-        self._viewFrame = self._createViewFrame(
+        noConfigModuleMixin.__init__(
+            self,
             {'Module (self)' : self,
              'vtkImageCast' : self._imageCast,
              'VTKImageToImageFilter' : self._vtk2itk})
-
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
-
+        
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

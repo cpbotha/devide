@@ -3,7 +3,6 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-
 INTEG_TYPE = ['RK2', 'RK4', 'RK45']
 INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
 
@@ -21,20 +20,17 @@ class streamTracer(scriptedConfigModuleMixin, moduleBase):
              'Select an integrator for the streamlines.',
              INTEG_TYPE_TEXTS)]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+        self._streamTracer = vtk.vtkStreamTracer() 
 
-        self._streamTracer = vtk.vtkStreamTracer()
-        moduleUtils.setupVTKObjectProgress(self, self._streamTracer,
-                                           'Tracing stream lines.')
-        
-
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkStreamTracer' : self._streamTracer})
 
-        self.config_to_logic()
-        self.logic_to_config()
-        self.config_to_view()
+        moduleUtils.setupVTKObjectProgress(self, self._streamTracer,
+                                           'Tracing stream lines.')
+        
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

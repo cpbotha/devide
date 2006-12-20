@@ -4,7 +4,6 @@ import moduleUtils
 import vtk
 import vtkdevide
 
-
 class extractGrid(scriptedConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -15,23 +14,19 @@ class extractGrid(scriptedConfigModuleMixin, moduleBase):
             ('Sample rate:', 'sampleRate', 'tuple:int,3', 'tupleText',
              'Subsampling rate.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+
 
         self._extractGrid = vtkdevide.vtkPVExtractVOI()
         
         moduleUtils.setupVTKObjectProgress(self, self._extractGrid,
                                            'Subsampling structured grid.')
-        
 
-        self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkExtractGrid' : self._extractGrid})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have

@@ -159,6 +159,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
                  inputFunctions=None, outputFunctions=None):
 
         self._viewFrame = None
+        self._configVtkObj = None
 
         # first these two mixins
         moduleBase.__init__(self, moduleManager)
@@ -227,9 +228,11 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         
         PickleVTKObjectsModuleMixin.close(self)
         introspectModuleMixin.close(self)
-        self._configVtkObj.close()
-        self._viewFrame.Destroy()
-        #noConfigModuleMixin.close(self)
+
+        if self._viewFrame is not None:
+            self._configVtkObj.close()
+            self._viewFrame.Destroy()
+            
         moduleBase.close(self)
         # get rid of our binding to the vtkObject
         del self._theFilter
