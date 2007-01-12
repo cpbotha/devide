@@ -6,7 +6,7 @@ import moduleUtils
 import vtk
 
 
-class vtiRDR(moduleBase, filenameViewModuleMixin):
+class vtiRDR(filenameViewModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 

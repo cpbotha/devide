@@ -38,6 +38,20 @@ class pngWRT:
     Module by Joris van Zwieten.
     """
 
+class points_writer:
+    # BUG: empty kits list screws up dependency checking
+    kits = ['vtk_kit']
+    cats = ['Writers']
+    help = """TBD
+    """
+
+class points_reader:
+    # BUG: empty kits list screws up dependency checking
+    kits = ['vtk_kit']
+    cats = ['Writers']
+    help = """TBD
+    """
+
 
 class stlWRT:
     kits = ['vtk_kit']

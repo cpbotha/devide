@@ -172,6 +172,7 @@ class doubleThreshold(introspectModuleMixin, moduleBase):
     def view(self, parent_window=None):
         if self._view_frame is None:
             self._createViewFrame()
+            self.sync_module_view_with_logic()
         
         # if the window was visible already. just raise it
         self._view_frame.Show(True)
@@ -188,7 +189,8 @@ class doubleThreshold(introspectModuleMixin, moduleBase):
             modules.filters.resources.python.doubleThresholdFLTFrame.\
             doubleThresholdFLTFrame)
 
-        objectDict = {'imageThreshold' : self._imageThreshold}
+        objectDict = {'imageThreshold' : self._imageThreshold,
+                      'module (self)' : self}
         moduleUtils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.viewFramePanel,
             objectDict, None)
