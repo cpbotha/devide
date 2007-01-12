@@ -204,9 +204,14 @@ class moduleBase(object):
         self.config_to_logic()
         # bring it back all the way up to the view
         self.logic_to_config()
+
+        # FIXME: need to find a generic way to check if a module has
+        # created its interface yet...  or the module developer needs
+        # to check for this.
+        
         # but only if we are in view mode
-        if self._moduleManager._devide_app.view_mode:
-            self.config_to_view()
+        #if self._moduleManager._devide_app.view_mode:
+        #    self.config_to_view()
 
     # convenience functions
 

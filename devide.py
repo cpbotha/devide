@@ -32,6 +32,7 @@ class MainConfigClass(object):
         self.stereo = False
         self.test = False
         self.script = None
+        self.script_params = None
         
         self._parseCommandLine()
 
@@ -40,13 +41,14 @@ class MainConfigClass(object):
             self.nokits = []
 
     def dispUsage(self):
-        print "-h or --help               : Display this message."
-        print "--no-kits kit1,kit2        : Don't load the specified kits."
-        print "--kits kit1,kit2           : Load the specified kits."
-        print "--interface wx|pyro|xmlrpc : Load 'wx' or 'rpc' interface."
-        print "--stereo                   : Allocate stereo visuals."
-        print "--test                     : Perform built-in unit testing."
-        print "--script                   : Run specified .py in script mode."
+        print "-h or --help          : Display this message."
+        print "--no-kits kit1,kit2   : Don't load the specified kits."
+        print "--kits kit1,kit2      : Load the specified kits."
+        print "--interface wx|pyro|xmlrpc|script"
+        print "                      : Load 'wx', 'rpc' or 'script' interface."
+        print "--stereo              : Allocate stereo visuals."
+        print "--test                : Perform built-in unit testing."
+        print "--script              : Run specified .py in script mode."
 
     def _parseCommandLine(self):
         try:
@@ -54,7 +56,7 @@ class MainConfigClass(object):
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
                 ['help', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
-                 'script='])
+                 'script=', 'script-params='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -95,6 +97,9 @@ class MainConfigClass(object):
 
             elif o in ('--script',):
                 self.script = a
+
+            elif o in ('--script-params',):
+                self.script_params = a
 
 ############################################################################
 class DeVIDEApp:

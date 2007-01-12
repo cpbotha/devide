@@ -24,6 +24,7 @@ class ScriptInterface(SimpleAPIMixin, LoggingMixin):
     def start_main_loop(self):
         self.log_message('Starting to execute script.')
         sv = self.devide_app.main_config.script
+        script_params = self.devide_app.main_config.script_params
 
         if sv is None:
             self.log_error('No script name specified with --script.')
@@ -35,6 +36,7 @@ class ScriptInterface(SimpleAPIMixin, LoggingMixin):
             l2 = {}
             l2.update(locals())
             g2['interface'] = self
+            g2['script_params'] = script_params
             execfile(sv, g2, l2)
 
         self.log_message('Shutting down.')

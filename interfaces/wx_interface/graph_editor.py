@@ -1147,6 +1147,7 @@ class GraphEditor:
         # now disconnect and nuke the old module
         self._deleteModule(glyph)
 
+        # FIXME: error checking
         # create a new one (don't convert my coordinates)
         new_instance, new_glyph = self.createModuleAndGlyph(
             gp_x, gp_y, full_name, False)
