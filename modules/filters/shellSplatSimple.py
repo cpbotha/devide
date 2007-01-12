@@ -189,6 +189,7 @@ class shellSplatSimple(introspectModuleMixin,
     def view(self, parent_window=None):
         if self._view_frame is None:
             self._createViewFrame()
+            self.sync_module_view_with_logic()
             
         # if the window was visible already. just raise it
         self._view_frame.Show(True)
