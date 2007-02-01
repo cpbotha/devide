@@ -423,8 +423,11 @@ class selectedPoints(s3dcGridMixin):
         ca.BorderOff()
         ca.SetWidth(0.3)
         ca.SetHeight(0.04)
-        # if 3D is on, interaction is extremely SLOW on my ATI X1600
-        ca.ThreeDimensionalLeaderOff()
+        # I used to have the problem on my ATI X1600 that interaction
+        # was extremely slow of 3D was on... problem seems to have
+        # gone away by itself, or it rather has to do with the slow-
+        # glcontext-things
+        ca.ThreeDimensionalLeaderOn()
         ca.SetMaximumLeaderGlyphSize(10)
 
         coneSource = vtk.vtkConeSource()
