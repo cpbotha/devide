@@ -20,7 +20,8 @@ class vtiRDR(filenameViewModuleMixin, moduleBase):
             self,
             'Select a filename',
             'VTK Image Data (*.vti)|*.vti|All files (*)|*',
-            {'vtkXMLImageDataReader': self._reader})
+            {'vtkXMLImageDataReader': self._reader,
+             'Module (self)' : self})
 
         moduleUtils.setupVTKObjectProgress(
             self, self._reader,

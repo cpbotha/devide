@@ -1467,20 +1467,6 @@ class GraphEditor:
         for glyph in glyphDeletionSchedule:
             self._deleteModule(glyph)
 
-        
-#         safeGlyphs = []
-#         for glyph in allGlyphs:
-#             if glyph.moduleInstance.__class__.__name__ \
-#                in mm.dangerousConsumerModules:
-#                 self._deleteModule(glyph)
-#             else:
-#                 safeGlyphs.append(glyph)
-
-#         # and then the rest
-#         for glyph in safeGlyphs:
-#             # delete each module, do NOT refresh canvas
-#             self._deleteModule(glyph, False)
-
         # only here!
         self._interface._main_frame.canvas.redraw()
 

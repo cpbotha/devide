@@ -33,11 +33,9 @@ class ScriptInterface(SimpleAPIMixin, LoggingMixin):
         else:
             g2 = {}
             g2.update(globals())
-            l2 = {}
-            l2.update(locals())
             g2['interface'] = self
             g2['script_params'] = script_params
-            execfile(sv, g2, l2)
+            execfile(sv, g2)
 
         self.log_message('Shutting down.')
         self.quit()

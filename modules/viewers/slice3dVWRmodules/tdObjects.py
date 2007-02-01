@@ -116,6 +116,7 @@ class tdObjects(s3dcGridMixin):
 
                 elif tdObject.GetClassName() == 'vtkPolyData':
                     mapper = vtk.vtkPolyDataMapper()
+                    mapper.ImmediateModeRenderingOn()
                     mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)

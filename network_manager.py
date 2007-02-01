@@ -83,3 +83,13 @@ class NetworkManager:
 
         return new_modules_dict, new_connections
     
+    def clear_network(self):
+        """Remove/close complete network.
+
+        This method is only called during the non-view mode of operation by
+        the scripting interface for example.
+        """
+        
+        mm = self._devide_app.get_module_manager()
+        mm.delete_all_modules()
+

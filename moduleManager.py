@@ -358,7 +358,15 @@ class moduleManager:
 
         This is only called during devide application shutdown.
         """
+        self.delete_all_modules()
 
+    def delete_all_modules(self):
+        """Deletes all modules.
+
+        This is usually only called during the offline mode of operation.  In
+        view mode, the GraphEditor takes care of the deletion of all networks.
+        """
+        
         # this is fine because .items() makes a copy of the dict
         for mModule in self._moduleDict.values():
             try:

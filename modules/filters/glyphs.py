@@ -134,3 +134,7 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         self._glyphFilter.SetUseMaskPoints(self._config.maskPoints)
         self._glyphFilter.SetMaximumNumberOfPoints(self._config.maskMax)
         self._glyphFilter.SetRandomMode(self._config.maskRandom)
+        
+        # default: idx, port, connection, fieldassociation (points), name
+        self._glyphFilter.SetInputArrayToProcess(0, 0, 0, 0, None)
+
