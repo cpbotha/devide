@@ -12,6 +12,7 @@ from random import choice
 from moduleBase import defaultConfigClass
 import time
 import types
+import traceback
 
 # some notes with regards to extra module state/logic required for scheduling
 # * in general, execute_module()/transferOutput()/etc calls do exactly that
@@ -371,9 +372,14 @@ class moduleManager:
         for mModule in self._moduleDict.values():
             try:
                 self.deleteModule(mModule.instance)
-            except:
+            except Exception, e:
                 # we can't allow a module to stop us
-                pass
+                print "Error deleting %s (%s): %s" % \
+                      (mModule.instanceName,
+                       mModule.instance.__class__.__name__,
+                       str(e))
+                print "FULL TRACE:"
+                traceback.print_exc()
 
     def addNoExcModuleExecError(self, message):
         """Method that can be called by module execute functions to indicate
@@ -945,12 +951,7 @@ class moduleManager:
                 # we just want to walk through the dictionary tuples
                 for consumer in output:
                     # disconnect all consumers
-                    consumer[0].set_input(consumer[1], None)
-                    # the set_input could fail, which would throw an exception,
-                    # but that's really just too deep: just in case
-                    # we set it to None
-                    consumer[0] = None
-                    consumer[1] = -1
+                    self.disconnectModules(consumer[0], consumer[1])
 
         # inputs is a list of tuples, each tuple containing moduleInstance
         # and outputIdx of the producer/supplier module
