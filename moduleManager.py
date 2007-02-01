@@ -370,6 +370,11 @@ class moduleManager:
         
         # this is fine because .items() makes a copy of the dict
         for mModule in self._moduleDict.values():
+
+            print "Deleting %s (%s) >>>>>" % \
+                  (mModule.instanceName,
+                   mModule.instance.__class__.__name__)
+                   
             try:
                 self.deleteModule(mModule.instance)
             except Exception, e:
@@ -957,7 +962,9 @@ class moduleManager:
         # and outputIdx of the producer/supplier module
         for inputIdx in range(len(inputs)):
             try:
-                instance.set_input(inputIdx, None)
+                # also make sure we fully disconnect ourselves from
+                # our producers
+                self.disconnectModules(instance, inputIdx)
             except Exception, e:
                 # we can't allow this to prevent a destruction, just log
                 self.log_error_with_exception(
