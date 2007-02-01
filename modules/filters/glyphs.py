@@ -137,4 +137,5 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         
         # default: idx, port, connection, fieldassociation (points), name
         self._glyphFilter.SetInputArrayToProcess(0, 0, 0, 0, None)
+        # FIXME: last parameter needs to be name of array to process!!
 

@@ -409,6 +409,11 @@ class warpPoints:
     kits = ['vtk_kit']
     cats = ['Filters']
     help = """Warp input points according to their associated vectors.
+
+    After connecting this module up, you have to execute the network, then
+    click on the 'Sync' button to update the Vectors Selection drop down
+    list.  At this point, you can select the correct input array, and
+    'Apply'.  This input array is the one that will be used to warp the input.
     """
 
 class wsMeshSmooth:
