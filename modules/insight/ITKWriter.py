@@ -6,7 +6,7 @@ from moduleBase import moduleBase
 from moduleMixins import filenameViewModuleMixin
 import re
 
-class ITKWriter(moduleBase, filenameViewModuleMixin):
+class ITKWriter(filenameViewModuleMixin, moduleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
