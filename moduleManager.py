@@ -1038,6 +1038,9 @@ class moduleManager:
         disconnecting the link between the provider and input_module at
         the input_idx'th input port of input_module.
 
+        All errors will be handled internally in this function, i.e. no
+        exceptions will be raised.
+
         @todo: factor parts of this out into the metaModule.
         FIXME: continue here...  (we can start converting some of
         the modules to shallow copy their data; especially the slice3dVWR
