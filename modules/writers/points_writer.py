@@ -56,11 +56,9 @@ class points_writer(filenameViewModuleMixin, moduleBase):
         self._setViewFrameFilename(self._config.filename)
 
     def execute_module(self):
-        print self._input_points
-        print type(self._input_points)
-        if self._input_points and hasattr(self._input_points, 'devideType') and \
-           self._input_points.devideType == 'namedPoints' \
-           and self._config.filename:
+        if self._input_points and hasattr(self._input_points, 'devideType') \
+               and self._input_points.devideType == 'namedPoints' \
+               and self._config.filename:
             fh = file(self._config.filename, 'w')
             fh.write(str(self._input_points))
             fh.close()
