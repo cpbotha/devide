@@ -3,7 +3,7 @@ from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
-
+from input_array_choice_mixin import InputArrayChoiceMixin
 
 # scale vector glyph with scalar, vector magnitude, or separately for each
 # direction (using vector components), or don't scale at all
@@ -35,9 +35,10 @@ glyphVectorModeTexts = ['Use vector', 'Use normal', 'Do not orient']
 glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 
 
-class glyphs(scriptedConfigModuleMixin, moduleBase):
+class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, moduleBase):
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
+        InputArrayChoiceMixin.__init__(self)
 
         self._config.scaling = True
         self._config.scaleFactor = 1
@@ -64,6 +65,9 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
             ('Vector mode:', 'vectorMode', 'base:int', 'choice',
              'Should vectors or normals be used for scaling and orientation?',
              glyphVectorModeTexts),
+            ('Vectors selection:', 'vectorsSelection', 'base:str', 'choice',
+             'The attribute that will be used as vectors for the warping.',
+             (self._defaultVectorsSelectionString, self._userDefinedString)),
             ('Mask points:', 'maskPoints', 'base:bool', 'checkbox',
              'Only a selection of the input points will be glyphed.'),
             ('Number of masked points:', 'maskMax', 'base:int', 'text',
@@ -124,7 +128,19 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         self._config.maskMax = \
                              self._glyphFilter.GetMaximumNumberOfPoints()
         self._config.maskRandom = bool(self._glyphFilter.GetRandomMode())
-    
+
+        # this will extract the possible choices
+        InputArrayChoiceMixin.logic_to_config(self, self._glyphFilter)
+
+    def config_to_view(self):
+        # first get our parent mixin to do its thing
+        scriptedConfigModuleMixin.config_to_view(self)
+
+        # the vector choice is the second configTuple
+        choice = self._getWidget(5)
+        InputArrayChoiceMixin.config_to_view(self, choice)
+
+        
     def config_to_logic(self):
         self._glyphFilter.SetScaling(self._config.scaling)
         self._glyphFilter.SetScaleFactor(self._config.scaleFactor)
@@ -134,8 +150,7 @@ class glyphs(scriptedConfigModuleMixin, moduleBase):
         self._glyphFilter.SetUseMaskPoints(self._config.maskPoints)
         self._glyphFilter.SetMaximumNumberOfPoints(self._config.maskMax)
         self._glyphFilter.SetRandomMode(self._config.maskRandom)
-        
-        # default: idx, port, connection, fieldassociation (points), name
-        self._glyphFilter.SetInputArrayToProcess(0, 0, 0, 0, None)
-        # FIXME: last parameter needs to be name of array to process!!
+
+        # for some or other reason, this requires array_idx 1
+        InputArrayChoiceMixin.config_to_logic(self, self._glyphFilter, 1)
 
