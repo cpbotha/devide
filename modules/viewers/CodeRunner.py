@@ -71,6 +71,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         self.config_to_logic()
         self.logic_to_config()
         self.config_to_view()
+        self.view_initialised = True
 
         self.view()
 
@@ -140,7 +141,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
     def execute_module(self):
         # we only attempt running setup_src if its md5 is different from
         # that of the previous setup_src that we attempted to run
-        hd = md5.md5(self._src_setup).hexdigest
+        hd = md5.md5(self._src_setup).hexdigest()
         if hd != self._md5_setup_src:
             self._md5_setup_src = hd
             self._run_source(self._src_setup, raise_exceptions=True)

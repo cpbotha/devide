@@ -11,6 +11,10 @@ class advectionProperties:
     passed through the first probeFilters.  This first input will NOT be used
     for the actual calculations, but only for point -> volume lookups.
     Calculations will be performed for the second input and onwards.
+
+    This module writes a CSV file with the volume centroids over time, and
+    secretly writes a python file with all data as a python nested list.
+    This can easily be loaded in a Python script for further analysis.
     """
     
 class cptDistanceField:

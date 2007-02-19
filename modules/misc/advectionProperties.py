@@ -10,7 +10,7 @@ import vtk
 import wx
 
 class advectionProperties(scriptedConfigModuleMixin, moduleBase):
-    _numberOfInputs = 10
+    _numberOfInputs = 16
 
     def __init__(self, moduleManager):
         moduleBase.__init__(self, moduleManager)
@@ -125,6 +125,11 @@ class advectionProperties(scriptedConfigModuleMixin, moduleBase):
                 # also the sum of motion
                 centroidVectors[-1].append(vtk.vtkMath.Norm(cvec))
 
+        # possible python storage:
+        # [
+        #  [[v0x,v0y,v0z], [v0x,v0y,v0z], ... , [v0x,v0y,v0z]], # timestep0
+        #  [                                                 ]  # timestep1
+        # ]
         if self._config.csvFilename:
             # write centroid vectors
             csvFile = file(self._config.csvFilename, 'w')
@@ -136,6 +141,12 @@ class advectionProperties(scriptedConfigModuleMixin, moduleBase):
             # write label string
             csvFile.write('%s\n' % (labelString,))
 
+            # secretly open python file too (tee hee)
+            py_file = file(self._config.csvFilename + '.py', 'w')
+            py_file.write('# for each volume, all centroids over time\n')
+            py_file.write('centroids = [\n')
+            # end of secret bit (till later)
+
             # first we write the centroids (naughty)
             for tsi in range(len(newInputs) - 1):
                 cline = "'%d'" % (tsi,)
@@ -146,8 +157,21 @@ class advectionProperties(scriptedConfigModuleMixin, moduleBase):
                             (cline, c[0], c[1], c[2])
 
                 csvFile.write('%s\n' % (cline,))
+
+            # secret python bit
+            for volid in volids:
+                centroid_over_time = []
+                for tsi in range(len(newInputs) - 1):
+                    c = centroids[volid][tsi]
+                    centroid_over_time.append('[%.3f, %.3f, %.3f]' % tuple(c))
                     
-            
+
+                py_file.write('[%s],\n' % (','.join(centroid_over_time),))
+
+            py_file.write('\n]\n')
+            py_file.close()
+            # end secret python bit
+                    
             # then we write the centroid motion vectors
             for cvecLine in centroidVectors:
                 # strip off starting and ending []

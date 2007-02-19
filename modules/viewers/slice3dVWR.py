@@ -52,8 +52,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     $Revision: 1.52 $
     """
 
+    NUM_INPUTS = 16
+
     # part 0 is "normal", parts 1,2,3 are the input-independent output parts
-    PARTS_TO_INPUTS = {0 : (0,1,2,3,4,5,6)}
+    PARTS_TO_INPUTS = {0 : tuple(range(NUM_INPUTS))}
     #PARTS_TO_OUTPUTS = {0 : (3,), 1 : (0, 1, 2)}
     PARTS_TO_OUTPUTS = {0 : (3,4), 1 : (0,4), 2 : (1,4), 3 : (2,4)}
     # part 1 does the points, part 2 does the implicit function,
@@ -69,7 +71,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         moduleBase.__init__(self, moduleManager)
         colourDialogMixin.__init__(
             self, moduleManager.get_module_view_parent_window())
-        self._numDataInputs = 7
+        self._numDataInputs = self.NUM_INPUTS
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'inputData' : None,
                          'vtkActor' : None, 'ipw' : None}

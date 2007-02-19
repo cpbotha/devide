@@ -37,6 +37,10 @@ class moduleBase(object):
         
         self._config = defaultConfigClass()
 
+        # modules should toggle this variable to True once they have
+        # initialised and shown their view once.
+        self.view_initialised = False
+
     def close(self):
 	"""Idempotent method for de-initialising module as far as possible.
 
@@ -205,13 +209,9 @@ class moduleBase(object):
         # bring it back all the way up to the view
         self.logic_to_config()
 
-        # FIXME: need to find a generic way to check if a module has
-        # created its interface yet...  or the module developer needs
-        # to check for this.
-        
         # but only if we are in view mode
-        #if self._moduleManager._devide_app.view_mode:
-        #    self.config_to_view()
+        if self.view_initialised:
+            self.config_to_view()
 
     # convenience functions
 

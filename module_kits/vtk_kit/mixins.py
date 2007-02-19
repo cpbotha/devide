@@ -70,6 +70,12 @@ class PickleVTKObjectsModuleMixin(object):
 
 
             for method in parser.toggle_methods():
+                # if you query ReleaseDataFlag on a filter with 0 outputs,
+                # VTK yields an error
+                if vtkObj.GetNumberOfOutputPorts() == 0 and \
+                   method == 'ReleaseDataFlagOn':
+                    continue
+
                 # we need to snip the 'On' off
                 val = eval("vtkObj.Get%s()" % (method[:-2],))
                 vtkObjPD[0].append((method, val))
