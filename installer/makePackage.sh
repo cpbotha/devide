@@ -18,7 +18,7 @@ find ../ -name "*~" -exec rm {} \;
 find ../ -name "#*#" -exec rm {} \;
 
 # run the McMillan Installer
-if [ `uname` == Linux ]; then
+if [ `uname` = Linux ]; then
 
 # this is so that you can stuff this in the environment
 if [ -z "$PYINSTALLER_SCRIPT" ]; then
