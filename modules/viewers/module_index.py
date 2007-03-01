@@ -61,12 +61,12 @@ class slice3dVWR:
     the main application menu) to see it.
     """
 
-class TFEditor:
-    # needs numpy for the wx FloatCanvas
-    kits = ['wx_kit', 'numpy_kit']
-    cats = ['Viewers']
-    help = """Transfer function editor.
-
-    Module under heavy development.
-    """
+#class TFEditor:
+#    # needs numpy for the wx FloatCanvas
+#    kits = ['wx_kit', 'numpy_kit']
+#    cats = ['Viewers']
+#    help = """Transfer function editor.
+#
+#    Module under heavy development.
+#    """
 
