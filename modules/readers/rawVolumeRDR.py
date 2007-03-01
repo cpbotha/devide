@@ -53,7 +53,9 @@ class rawVolumeRDR(moduleBase,
         # close down the vtkPipeline stuff
         vtkPipelineConfigModuleMixin.close(self)
         # take out our view interface
-        self._viewFrame.Destroy()
+        if self._viewFrame is not None:
+            self._viewFrame.Destroy()
+            
         # get rid of our reference
         del self._reader
 

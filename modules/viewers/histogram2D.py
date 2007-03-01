@@ -36,17 +36,12 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
              'The number of samples per 2D bin/class will be truncated to '
              'this value.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
-
-        self._viewFrame = self._createWindow(
+        scriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)' : self,
              'vtkImageHistogram2D' : self._histogram})
 
-        # pass the data down to the underlying logic
-        self.config_to_logic()
-        # and all the way up from logic -> config -> view to make sure
-        self.logic_to_config()
-        self.config_to_view()
+        self.sync_module_logic_with_config()
 
         self._input0 = None
         self._input1 = None
@@ -57,6 +52,8 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
 
         scriptedConfigModuleMixin.close(self)
         moduleBase.close(self)
+
+        del self._histogram
 
     def get_input_descriptions(self):
         return ('Image Data 1', 'Imaga Data 2')

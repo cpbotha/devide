@@ -184,10 +184,10 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         # superQuadric is a standard scriptedConfigModuleMixin, so it has
         # a _viewFrame ivar
-        self.failUnless(sqmod._viewFrame.IsShown())
+        self.failUnless(sqmod._view_frame.IsShown())
 
         # start up the vtkObjectConfigure window for that object
-        sqmod.vtkObjectConfigure(sqmod._viewFrame, None, sqmod._superquadric)
+        sqmod.vtkObjectConfigure(sqmod._view_frame, None, sqmod._superquadric)
 
         # check that it's visible
         # sqmod._vtk_obj_cfs[sqmod._superquadric] is the ConfigVtkObj instance
