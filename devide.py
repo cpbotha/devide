@@ -2,7 +2,7 @@
 # $Id$
 
 # the current main release version
-DEVIDE_VERSION = '7.3.1 (r2444)'
+DEVIDE_VERSION = '2444.2450'
 
 # standard Python imports
 import getopt
