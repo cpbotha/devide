@@ -246,16 +246,16 @@ class TestModulesMisc(GraphEditorTestBase):
                 10, 10, module_name)
 
             print 'Created %s.' % (module_name,)
-            self.failUnless(cmod and cglyph)
+            self.failUnless(cmod and cglyph,
+                            'Error creating %s' % (module_name,))
 
             # destroy
             ret = self._ge._deleteModule(
                 cglyph)
             print 'Destroyed %s.' % (module_name,)
-            self.failUnless(ret)
+            self.failUnless(ret,
+                            'Error destroying %s' % (module_name,))
 
-
-        self.failUnless(1 == 1)
 
     def test_create_view_destroy(self):
         """Create and destroy all core modules, also invoke view window.
@@ -271,17 +271,23 @@ class TestModulesMisc(GraphEditorTestBase):
                 10, 10, module_name)
 
             print 'Created %s.' % (module_name,)
-            self.failUnless(cmod and cglyph)
-
+            self.failUnless(cmod and cglyph,
+                            'Error creating %s' % (module_name,))
+            
             # call up view window
             print 'About to bring up view-conf window'
-            self._ge._viewConfModule(cmod)
+            try:
+                self._ge._viewConfModule(cmod)
+            except Exception, e:
+                self.fail(
+                    'Error invoking view of %s (%s)' % (module_name,str(e)))
 
             # destroy
             ret = self._ge._deleteModule(
                 cglyph)
             print 'Destroyed %s.' % (module_name,)
-            self.failUnless(ret)
+            self.failUnless(ret,
+                            'Error destroying %s' % (module_name,))
 
 # ----------------------------------------------------------------------------
 class TestITKBasic(GraphEditorVolumeTestBase):
