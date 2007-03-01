@@ -5,8 +5,7 @@ from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 
-
-class vtpRDR(moduleBase, filenameViewModuleMixin):
+class vtpRDR(filenameViewModuleMixin, moduleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor

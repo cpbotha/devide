@@ -5,7 +5,7 @@ from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 
-class vtkStructPtsRDR(moduleBase, filenameViewModuleMixin):
+class vtkStructPtsRDR(filenameViewModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 

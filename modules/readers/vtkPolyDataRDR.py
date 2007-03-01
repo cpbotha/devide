@@ -7,7 +7,7 @@ import vtk
 import os
 
 
-class vtkPolyDataRDR(moduleBase, filenameViewModuleMixin):
+class vtkPolyDataRDR(filenameViewModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.

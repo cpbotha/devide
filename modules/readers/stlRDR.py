@@ -7,7 +7,7 @@ import vtk
 import os
 
 
-class stlRDR(moduleBase, filenameViewModuleMixin):
+class stlRDR(filenameViewModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
