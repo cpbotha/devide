@@ -54,6 +54,12 @@ class pngRDR:
     'Last slice'.
     """
 
+class points_reader:
+    # BUG: empty kits list screws up dependency checking
+    kits = ['vtk_kit']
+    cats = ['Writers']
+    help = """TBD
+    """
 
 class rawVolumeRDR:
     kits = ['vtk_kit']
