@@ -213,11 +213,10 @@ class TestReadersWriters(GraphEditorVolumeTestBase):
         self.failUnless(1 == 1)
 
 class TestModulesMisc(GraphEditorTestBase):
-    
-    def test_create_destroy(self):
-        """See if we can create and destroy all core modules.
-        """
 
+    def get_sorted_core_module_list(self):
+        """Utility function to get a sorted list of all core module names.
+        """
         mm = self._devide_app.get_module_manager()
 
         # we tested all the vtk_basic modules once with VTK5.0
@@ -228,6 +227,17 @@ class TestModulesMisc(GraphEditorTestBase):
               not i.startswith('modules.user')]
         
         ml.sort()
+
+        return ml
+        
+    
+    def test_create_destroy(self):
+        """See if we can create and destroy all core modules, without invoking
+        up the view window..
+        """
+
+        ml = self.get_sorted_core_module_list()
+
         for module_name in ml:
             print 'About to create %s.' % (module_name,)
             
@@ -246,6 +256,32 @@ class TestModulesMisc(GraphEditorTestBase):
 
 
         self.failUnless(1 == 1)
+
+    def test_create_view_destroy(self):
+        """Create and destroy all core modules, also invoke view window.
+        """
+
+        ml = self.get_sorted_core_module_list()
+
+        for module_name in ml:
+            print 'About to create %s.' % (module_name,)
+            
+            (cmod, cglyph) = self._ge.\
+                             createModuleAndGlyph(
+                10, 10, module_name)
+
+            print 'Created %s.' % (module_name,)
+            self.failUnless(cmod and cglyph)
+
+            # call up view window
+            print 'About to bring up view-conf window'
+            self._ge._viewConfModule(cmod)
+
+            # destroy
+            ret = self._ge._deleteModule(
+                cglyph)
+            print 'Destroyed %s.' % (module_name,)
+            self.failUnless(ret)
 
 # ----------------------------------------------------------------------------
 class TestITKBasic(GraphEditorVolumeTestBase):
@@ -380,6 +416,11 @@ def get_suite(devide_testing):
     t = TestModulesMisc('test_create_destroy')
     t._devide_app = devide_app
     graph_editor_suite.addTest(t)
+
+    t = TestModulesMisc('test_create_view_destroy')
+    t._devide_app = devide_app
+    graph_editor_suite.addTest(t)
+    
 
     # module_kit_list is up to date with the actual module_kits that
     # were imported

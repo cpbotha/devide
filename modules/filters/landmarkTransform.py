@@ -86,12 +86,6 @@ class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
     def execute_module(self):
         self._sync_with_input_points()
         self._landmarkTransform.Update()
-        
-
-    def view(self, parent_window=None):
-        # if the window was visible already. just raise it
-        self._viewFrame.Show(True)
-        self._viewFrame.Raise()
 
     def _sync_with_input_points(self):
         # the points have changed, let's see if they really have
