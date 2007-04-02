@@ -96,6 +96,17 @@ class extractImageComponents:
     of components.
     """
 
+class FitEllipsoidToMask:
+    kits = ['numpy_kit', 'vtk_kit']
+    cats = ['Filters']
+    keywords = ['PCA', 'eigen-analysis', 'principal components', 'ellipsoid']
+    help = """Given an image mask in VTK image data format, perform eigen-
+    analysis on the world coordinates of 'on' points.
+
+    Returns dictionary with eigen values in 'u', eigen vectors in 'v' and
+    world coordinates centroid of 'on' points.
+    """
+
 class glyphs:
     kits = ['vtk_kit']
     cats = ['Filters']
@@ -320,6 +331,11 @@ class probeFilter:
     polydata points.
 
     """
+
+class RegionGrowing:
+    kits = ['vtk_kit']
+    cats = ['Filters']
+    help = """TBD"""
 
 class resampleImage:
     kits = ['vtk_kit']
