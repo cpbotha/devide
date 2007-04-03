@@ -12,6 +12,15 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
         self._input_data = None
         self._output_dict = {}
 
+        # polydata pipeline to make crosshairs
+        self._ls1 = vtk.vtkLineSource()
+        self._ls2 = vtk.vtkLineSource()
+        self._ls3 = vtk.vtkLineSource()
+        self._append_pd = vtk.vtkAppendPolyData()
+        self._append_pd.AddInput(self._ls1.GetOutput())
+        self._append_pd.AddInput(self._ls2.GetOutput())
+        self._append_pd.AddInput(self._ls3.GetOutput())
+
         noConfigModuleMixin.__init__(
             self, {'Module (self)' : self})
 
@@ -33,10 +42,13 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
         self._input_data = input_stream
 
     def get_output_descriptions(self):
-        return ('Ellipsoid (eigen-analysis) parameters', )
+        return ('Ellipsoid (eigen-analysis) parameters', 'Crosshairs polydata')
 
     def get_output(self, idx):
-        return self._output_dict
+        if idx == 0:
+            return self._output_dict
+        else:
+            return self._append_pd.GetOutput()
 
     def execute_module(self):
         ii = self._input_data
@@ -74,3 +86,14 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
         cx, cy, cz = numpy.average(points2, 1)
 
         self._output_dict.update({'u' :u, 'v' : v, 'c' : (cx,cy,cz)})
+
+        # now modify output polydata #########################
+        lss = [self._ls1, self._ls2, self._ls3]
+        for i in range(len(lss)):
+            half_axis = u[i] * 0.5 * v[i]
+            ca = numpy.array((cx,cy,cz))
+            lss[i].SetPoint1(ca - half_axis)
+            lss[i].SetPoint2(ca + half_axis)
+
+        self._append_pd.Update()
+        
