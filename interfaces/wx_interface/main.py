@@ -113,6 +113,9 @@ class WXInterface(wx.App):
         dt = testing.DeVIDETesting(self._devide_app)
         dt.runAllTests()
 
+        # after testing, we have to quit...
+        self.quit()
+
     def handler_post_app_init(self):
         """AFTER we've started the GUI and performed all pre-imports, this
         method makes sure that all other dependencies are imported into the
