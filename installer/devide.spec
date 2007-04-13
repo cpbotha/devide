@@ -99,12 +99,17 @@ else:
     ######################################################################
     # to get this to work on Debian 3.1, we also need to ship libstdc++
     # and libXinerama
+    # FIXME: figure some other way out to include the CORRECT libstdc++,
+    # the previous hardcoding of this caused problems with the VL-e POC
 
     stdc = '/usr/lib/libstdc++.so.6'
+    if os.path.exists(stdc):
+	extraLibs.append((os.path.basename(stdc), stdc, 'BINARY'))
+
     xine = '/usr/lib/libXinerama.so.1'
-    extraLibs.extend([(os.path.basename(stdc), stdc, 'BINARY'),
-                      (os.path.basename(xine), xine, 'BINARY')])
-    
+    if os.path.exists(xine):
+	extraLibs.append((os.path.basename(xine), xine, 'BINARY'))
+
     
     ######################################################################
     # also add some binary dependencies of numpy that are normally ignored
