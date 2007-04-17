@@ -74,23 +74,33 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
                         wx = x * ispacing[0] + iorigin[0]
                         points.append((wx,wy,wz))
                 
-        # calculate covariance matrix ##############################
-        # we need to give cov a 3 by N matrix, hence the transpose
-        points2 = numpy.array(points).transpose()
-        covariance = numpy.cov(points2)
+        # covariance matrix ##############################
+
+        # determine centre (x,y,z)
+        points2 = numpy.array(points)
+        centre = numpy.average(points2)
+        cx,cy,cz = centre
+        
+        # subtract centre from all points
+        points_c = points2 - centre
+        
+        covariance = numpy.cov(points_c.transpose())
 
         # eigen-analysis (u eigenvalues, v eigenvectors)
         u,v = numpy.linalg.eig(covariance)
 
-        # determine centres (x,y,z)
-        cx, cy, cz = numpy.average(points2, 1)
 
-        self._output_dict.update({'u' :u, 'v' : v, 'c' : (cx,cy,cz)})
+        axis_lengths = [4.0 * numpy.sqrt(eigval) for eigval in u]
+        self._output_dict.update({'u' :u, 'v' : v, 'c' : (cx,cy,cz),
+                                  'axis_lengths' : tuple(axis_lengths)})
 
         # now modify output polydata #########################
         lss = [self._ls1, self._ls2, self._ls3]
         for i in range(len(lss)):
-            half_axis = u[i] * 0.5 * v[i]
+            # some magic: the sqrt came out of my M thesis, but the 2
+            # (actually 4.0, because this is a half-axis) is a mystery
+            #half_axis = 2.0 * numpy.sqrt(u[i]) * v[i]
+            half_axis = axis_lengths[i] / 2.0 * v[i]
             ca = numpy.array((cx,cy,cz))
             lss[i].SetPoint1(ca - half_axis)
             lss[i].SetPoint2(ca + half_axis)
