@@ -1,4 +1,4 @@
-# $Id: __init__.py 1945 2006-03-05 01:06:37Z cpbotha $
+# $Id$
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
