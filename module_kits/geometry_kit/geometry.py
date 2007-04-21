@@ -1,0 +1,89 @@
+import math
+import numpy
+
+def line_sphere_intersection(p1, p2, sc, r):
+    """Calculates intersection between line going through p1 and p2 and
+    sphere determined by centre sc and radius r.
+
+    Requires numpy.
+
+    @param p1: tuple, or 1D matrix, or 1D array with first point defining line.
+    @param p2: tuple, or 1D matrix, or 1D array with second point defining line.
+
+    See http://local.wasp.uwa.edu.au/~pbourke/geometry/sphereline/source.cpp
+    """
+
+    # a is squared distance between the two points defining line
+    p_diff = numpy.array(p2) - numpy.array(p1)
+    a = numpy.sum(numpy.multiply(p_diff, p_diff))
+
+    b = 2 * ( (p2[0] - p1[0]) * (p1[0] - sc[0]) + \
+              (p2[1] - p1[1]) * (p1[1] - sc[1]) + \
+              (p2[2] - p1[2]) * (p1[2] - sc[2]) )
+
+    c = sc[0] ** 2 + sc[1] ** 2 + \
+        sc[2] ** 2 + p1[0] ** 2 + \
+        p1[1] ** 2 + p1[2] ** 2 - \
+        2 * (sc[0] * p1[0] + sc[1] * p1[1] + sc[2]*p1[2]) - r ** 2
+
+    i = b * b - 4 * a * c
+
+    if (i < 0.0):
+        # no intersections
+        return []
+
+    if (i == 0.0):
+        # one intersection
+        mu = -b / (2 * a)
+        return [ (p1[0] + mu * (p2[0] - p1[0]),
+                  p1[1] + mu * (p2[1] - p1[1]),
+                  p1[2] + mu * (p2[2] - p1[2])) ]
+
+    if (i > 0.0):
+        # two intersections
+        mu = (-b + math.sqrt( b ** 2 - 4*a*c )) / (2*a)
+        i1 = (p1[0] + mu * (p2[0] - p1[0]),
+              p1[1] + mu * (p2[1] - p1[1]),
+              p1[2] + mu * (p2[2] - p1[2]))
+                
+        mu = (-b - math.sqrt( b ** 2 - 4*a*c )) / (2*a)
+        i2 = (p1[0] + mu * (p2[0] - p1[0]),
+              p1[1] + mu * (p2[1] - p1[1]),
+              p1[2] + mu * (p2[2] - p1[2]))
+
+        return [i1, i2]
+
+def line_ellipsoid_intersection(p1, p2, ec, radius_vectors):
+    """Determine intersection points between line defined by p1 and p2,
+    and ellipsoid defined by centre ec and three radius vectors (tuple
+    of tuples, each inner tuple is a radius vector).
+
+    This requires numpy.
+    """
+
+
+    # create transformation matrix that has the radius_vectors
+    # as its columns (hence the transpose)
+    rv = numpy.transpose(numpy.matrix(radius_vectors))
+    # calculate its inverse
+    rv_inv = numpy.linalg.pinv(rv)
+    
+    # now transform the two points
+    # all points have to be relative to ellipsoid centre
+    # the [0] at the end and the numpy.array at the start is to make sure
+    # we pass a row vector (array) to the line_sphere_intersection
+    p1_e = numpy.array(numpy.matrixmultiply(rv_inv, numpy.array(p1) - numpy.array(ec)))[0]
+    p2_e = numpy.array(numpy.matrixmultiply(rv_inv, numpy.array(p2) - numpy.array(ec)))[0]
+
+    # now we only have to determine the intersection between the points
+    # (now transformed to ellipsoid space) with the unit sphere centred at 0
+    isects_e = line_sphere_intersection(p1_e, p2_e, (0.0,0.0,0.0), 1.0)
+
+    # transform intersections back to "normal" space
+    isects = []
+    for i in isects_e:
+        # numpy.array(...)[0] is for returning only row of matrix as array
+        itemp = numpy.array(numpy.matrixmultiply(rv, numpy.array(i)))[0]
+        isects.append(itemp + numpy.array(ec))
+
+    return isects
