@@ -363,18 +363,23 @@ class moduleManager:
         """
         
         for module_kit in self.module_kits.module_kit_list:
+            kit = getattr(self.module_kits, module_kit)
             try:
-                reload(getattr(self.module_kits, module_kit))
-                getattr(self.module_kits, module_kit).refresh()
-                self.set_progress(100, 'Refreshed %s.' % (module_kit,))
+                refresh_method = getattr(kit, "refresh")
             except AttributeError:
                 pass
-            except Exception, e:
-                self._devide_app.log_error_with_exception(
-                    'Unable to refresh module_kit %s: '
-                    '%s.  Continuing...' %
-                    (module_kit, str(e)))
-
+            else:
+                try:
+                    reload(kit)
+                    refresh_method()                
+                except Exception, e:
+                    self._devide_app.log_error_with_exception(
+                        'Unable to refresh module_kit %s: '
+                        '%s.  Continuing...' %
+                        (module_kit, str(e)))
+                else:
+                    self.set_progress(100, 'Refreshed %s.' % (module_kit,))
+                    
     def close(self):
         """Iterates through each module and closes it.
 
