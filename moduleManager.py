@@ -353,6 +353,27 @@ class moduleManager:
         # array of no exception module execution errors
         self._noExcModuleExecError = []
 
+    def refresh_module_kits(self):
+        """Go through list of imported module kits, reload each one, and
+        also call its refresh() method if available.
+
+        This means a kit author can work on a module_kit and just refresh
+        when she wants her changes to be available.  However, the kit must
+        have loaded successfully at startup, else no-go.
+        """
+        
+        for module_kit in self.module_kits.module_kit_list:
+            try:
+                reload(getattr(self.module_kits, module_kit))
+                getattr(self.module_kits, module_kit).refresh()
+                self.set_progress(100, 'Refreshed %s.' % (module_kit,))
+            except AttributeError:
+                pass
+            except Exception, e:
+                self._devide_app.log_error_with_exception(
+                    'Unable to refresh module_kit %s: '
+                    '%s.  Continuing...' %
+                    (module_kit, str(e)))
 
     def close(self):
         """Iterates through each module and closes it.

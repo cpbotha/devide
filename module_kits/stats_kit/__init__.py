@@ -28,3 +28,8 @@ def init(theModuleManager):
     sys.modules['stats'] = stats
 
     theModuleManager.setProgress(100, 'Initialising stats_kit: complete.')
+
+def refresh():
+    reload(stats)
+
+    

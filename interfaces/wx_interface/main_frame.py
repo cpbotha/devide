@@ -302,6 +302,12 @@ class MainWXFrame(wx.Frame):
         modules_menu.Append(
             self.id_rescan_modules, "Rescan modules", "Recheck all module "
             "directories for new modules and metadata.", wx.ITEM_NORMAL)
+
+        self.id_refresh_module_kits = wx.NewId()
+        modules_menu.Append(
+            self.id_refresh_module_kits, "Refresh module kits",
+            "Attempt to refresh / reload all module_kits.", wx.ITEM_NORMAL)
+        
         self.menubar.Append(modules_menu, "&Modules")
 
         window_menu = wx.Menu()

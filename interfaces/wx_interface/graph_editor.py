@@ -170,6 +170,9 @@ class GraphEditor:
         wx.EVT_MENU(mf, mf.id_rescan_modules,
                     lambda e, s=self: s.fillModuleLists())
 
+        wx.EVT_MENU(mf, mf.id_refresh_module_kits,
+                    self._handler_refresh_module_kits)
+
         wx.EVT_MENU(mf, mf.fileNewId,
                     self._fileNewCallback)
 
@@ -282,6 +285,10 @@ class GraphEditor:
 
     def _handler_modules_search(self, event):
         self._interface._main_frame.search_text.SetFocus()
+
+    def _handler_refresh_module_kits(self, event):
+        mm = self._devide_app.get_module_manager()
+        mm.refresh_module_kits()
 
     def _handler_search_text(self, event):
         self._update_search_results()
@@ -428,14 +435,14 @@ class GraphEditor:
 
     def _blockmodule(self, glyph):
         # first get the module manager to block this
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         mm.blockmodule(mm.get_meta_module(glyph.moduleInstance))
         # then tell the glyph about it
         self._blocked_glyphs.addGlyph(glyph)
 
     def _unblockmodule(self, glyph):
         # first get the module manager to unblock this
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         mm.unblockmodule(mm.get_meta_module(glyph.moduleInstance))
         # then tell the glyph about it
         self._blocked_glyphs.removeGlyph(glyph)
@@ -450,7 +457,7 @@ class GraphEditor:
         """
         
         instances = [g.moduleInstance for g in glyphs]
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         allMetaModules = [mm._moduleDict[instance]
                           for instance in instances]
 
@@ -807,7 +814,7 @@ class GraphEditor:
         # check that it's a valid module name
         if moduleName in self._availableModules:
             # we have a valid module, we should try and instantiate
-            mm = self._devide_app.getModuleManager()
+            mm = self._devide_app.get_module_manager()
             try:
                 temp_module = mm.createModule(moduleName)
             except ModuleManagerException, e:
@@ -841,7 +848,7 @@ class GraphEditor:
         the parameter moduleInstance.
         """
         
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         mm.execute_module(moduleInstance)
 
     def _module_doc_to_html(self, full_module_name, doc):
@@ -868,7 +875,7 @@ class GraphEditor:
         everything will still work.
         """
 
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         if scan_modules:
             mm.scanModules()
             
@@ -1002,7 +1009,7 @@ class GraphEditor:
         # get complete search results for this search string
         t = mf.search_text.GetValue()
         if t:
-            mm = self._devide_app.getModuleManager()
+            mm = self._devide_app.get_module_manager()
             search_results = mm.module_search.find_matches(t)
             # search_results is dictionary {'name' : {'module.name' : 1,
             # 'other.module.name' : 1}, 'keywords' : ...
@@ -1115,7 +1122,7 @@ class GraphEditor:
             instance.__class__.__name__)
 
         if markedModuleName:
-            self._devide_app.getModuleManager().markModule(
+            self._devide_app.get_module_manager().markModule(
                 instance, markedModuleName)
 
     def _reload_module(self, module_instance, glyph):
@@ -1126,7 +1133,7 @@ class GraphEditor:
         @param glyph: the glyph that represents the module.
         """
         
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         meta_module = mm.get_meta_module(module_instance)
 
         # prod_tuple contains a list of (prod_meta_module, output_idx,
@@ -1188,7 +1195,7 @@ class GraphEditor:
     def _renameModule(self, module, glyph, newModuleName):
         if newModuleName:
             # try to rename the module...
-            if self._devide_app.getModuleManager().renameModule(
+            if self._devide_app.get_module_manager().renameModule(
                 module,newModuleName):
 
                 # if no conflict, set label and redraw
@@ -1208,8 +1215,8 @@ class GraphEditor:
         else:
             # the user has given us a blank or None modulename... we'll rename
             # the module with an internal random name and remove its label
-            uin = self._devide_app.getModuleManager()._makeUniqueInstanceName()
-            rr = self._devide_app.getModuleManager().renameModule(module, uin)
+            uin = self._devide_app.get_module_manager()._makeUniqueInstanceName()
+            rr = self._devide_app.get_module_manager().renameModule(module, uin)
             if rr:
                 glyph.setLabelList([module.__class__.__name__])
                 self._interface._main_frame.canvas.redraw()
@@ -1226,7 +1233,7 @@ class GraphEditor:
         newModuleName = wx.GetTextFromUser(
             'Enter a new name for this module.',
             'Rename Module',
-            self._devide_app.getModuleManager().get_instance_name(module))
+            self._devide_app.get_module_manager().get_instance_name(module))
 
         if newModuleName:
             self._renameModule(module, glyph, newModuleName)
@@ -1331,7 +1338,7 @@ class GraphEditor:
 
         try:
             # first disconnect the actual modules
-            mm = self._devide_app.getModuleManager()
+            mm = self._devide_app.get_module_manager()
             mm.disconnectModules(glyph.moduleInstance, inputIdx)
 
         except Exception, e:
@@ -1438,7 +1445,7 @@ class GraphEditor:
         allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
             wxpc.coGlyph)
 
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
 
         # we take care of the "difficult" modules first, so sort module
         # types from high to low
@@ -1488,7 +1495,7 @@ class GraphEditor:
         success = True
         try:
             # connect the actual modules
-            mm = self._devide_app.getModuleManager()
+            mm = self._devide_app.get_module_manager()
             mm.connectModules(fromObject.moduleInstance, fromOutputIdx,
                               toObject.moduleInstance, toInputIdx)
 
@@ -1547,7 +1554,7 @@ class GraphEditor:
 
         # store the new glyphs in a dictionary keyed on OLD pickled
         # instanceName so that we can connect them up in the next step
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         newGlyphDict = {} 
         for newModulePickledName in newModulesDict.keys():
             position = glyphPosDict[newModulePickledName]
@@ -1666,7 +1673,7 @@ class GraphEditor:
         # connectionList is a list of pickledConnections
 
         connectionLines = []
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         
         for connection in connectionList:
 
@@ -1714,7 +1721,7 @@ class GraphEditor:
         """
 
         moduleInstances = [glyph.moduleInstance for glyph in glyphs]
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
 
         # let the moduleManager serialise what it can
         pmsDict, connectionList = mm.serialiseModuleInstances(
@@ -2259,7 +2266,7 @@ class GraphEditor:
 
 
     def _viewConfModule(self, module):
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         mm.viewModule(module)
 
     def _deleteModule(self, glyph, refreshCanvas=True):
@@ -2283,7 +2290,7 @@ class GraphEditor:
                 self._disconnect(glyph, inputIdx)
             
             # then get the module manager to NUKE the module itself
-            mm = self._devide_app.getModuleManager()
+            mm = self._devide_app.get_module_manager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
             mm.deleteModule(glyph.moduleInstance)
@@ -2309,7 +2316,7 @@ class GraphEditor:
 
     def show_module_help_from_glyph(self, glyph):
         module_instance = glyph.moduleInstance
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
 
         spec = mm.get_module_spec(module_instance)
         self.show_module_help(spec)
@@ -2322,7 +2329,7 @@ class GraphEditor:
             return
         
         module_name = module_spec.split(':')[1]
-        mm = self._devide_app.getModuleManager()
+        mm = self._devide_app.get_module_manager()
         
         try:
             ht = mm._availableModules[module_name].help
