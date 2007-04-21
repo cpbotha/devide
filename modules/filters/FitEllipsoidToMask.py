@@ -89,18 +89,22 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
         # eigen-analysis (u eigenvalues, v eigenvectors)
         u,v = numpy.linalg.eig(covariance)
 
-
+        # some magic: the sqrt came out of my M thesis, but the 2
+        # (actually 4.0, because this is a half-axis) is a mystery
         axis_lengths = [4.0 * numpy.sqrt(eigval) for eigval in u]
+
+        radius_vectors = numpy.zeros((3,3), float)
+        for i in range(3):
+            radius_vectors[i] = v[i] * axis_lengths[i] / 2.0
+            
         self._output_dict.update({'u' :u, 'v' : v, 'c' : (cx,cy,cz),
-                                  'axis_lengths' : tuple(axis_lengths)})
+                                  'axis_lengths' : tuple(axis_lengths),
+                                  'radius_vectors' : radius_vectors})
 
         # now modify output polydata #########################
         lss = [self._ls1, self._ls2, self._ls3]
         for i in range(len(lss)):
-            # some magic: the sqrt came out of my M thesis, but the 2
-            # (actually 4.0, because this is a half-axis) is a mystery
-            #half_axis = 2.0 * numpy.sqrt(u[i]) * v[i]
-            half_axis = axis_lengths[i] / 2.0 * v[i]
+            half_axis = radius_vectors[i] #axis_lengths[i] / 2.0 * v[i]
             ca = numpy.array((cx,cy,cz))
             lss[i].SetPoint1(ca - half_axis)
             lss[i].SetPoint2(ca + half_axis)
