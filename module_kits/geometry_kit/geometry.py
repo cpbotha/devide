@@ -1,7 +1,7 @@
 import math
 import numpy
 
-def line_sphere_intersection(p1, p2, sc, r):
+def intersect_line_sphere(p1, p2, sc, r):
     """Calculates intersection between line going through p1 and p2 and
     sphere determined by centre sc and radius r.
 
@@ -53,7 +53,7 @@ def line_sphere_intersection(p1, p2, sc, r):
 
         return [i1, i2]
 
-def line_ellipsoid_intersection(p1, p2, ec, radius_vectors):
+def intersect_line_ellipsoid(p1, p2, ec, radius_vectors):
     """Determine intersection points between line defined by p1 and p2,
     and ellipsoid defined by centre ec and three radius vectors (tuple
     of tuples, each inner tuple is a radius vector).
@@ -87,3 +87,41 @@ def line_ellipsoid_intersection(p1, p2, ec, radius_vectors):
         isects.append(itemp + numpy.array(ec))
 
     return isects
+
+def intersect_line_mask(p1, p2, mask, incr):
+    """Calculate FIRST intersection of line (p1,p2) with mask, as we walk
+    from p1 to p2 with increments == incr.
+    """
+
+    origin = numpy.array(mask.GetOrigin())
+    spacing = numpy.array(mask.GetSpacing())
+
+    incr = float(incr)
+
+    line_vector = p2 - p1
+    squared_norm = sum(line_vector * line_vector)
+    norm = numpy.sqrt(squared_norm)
+    unit_vec = line_vector / norm
+
+    curp = p1
+
+    intersect = False
+    end_of_line = False
+    i_point = numpy.array((), float) # empty array
+    
+    while not intersect or end_of_line:
+        # get voxel coords
+        voxc = (curp - origin) / spacing
+        val = mask.GetScalarComponentAsDouble(voxc[0], voxc[1], voxc[2], 0)
+        if val > 0.0:
+            intersect = True
+            i_point = curp
+
+        else:
+            curp = curp + unit_vec * incr
+
+        if numpy.sum(numpy.square(curp - p1)) > squared_norm:
+            end_of_line = True
+
+    return i_point
+
