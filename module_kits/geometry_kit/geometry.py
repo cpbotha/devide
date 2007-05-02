@@ -51,7 +51,13 @@ def intersect_line_sphere(p1, p2, sc, r):
               p1[1] + mu * (p2[1] - p1[1]),
               p1[2] + mu * (p2[2] - p1[2]))
 
-        return [i1, i2]
+        # in the case of two intersections, we want to make sure
+        # that the vector i1,i2 has the same orientation as vector p1,p2
+        i_diff = numpy.array(i2) - numpy.array(i1)
+        if numpy.dot(p_diff, i_diff) < 0:
+            return [i2, i1]
+        else:
+            return [i1, i2]
 
 def intersect_line_ellipsoid(p1, p2, ec, radius_vectors):
     """Determine intersection points between line defined by p1 and p2,
@@ -77,7 +83,7 @@ def intersect_line_ellipsoid(p1, p2, ec, radius_vectors):
 
     # now we only have to determine the intersection between the points
     # (now transformed to ellipsoid space) with the unit sphere centred at 0
-    isects_e = line_sphere_intersection(p1_e, p2_e, (0.0,0.0,0.0), 1.0)
+    isects_e = intersect_line_sphere(p1_e, p2_e, (0.0,0.0,0.0), 1.0)
 
     # transform intersections back to "normal" space
     isects = []

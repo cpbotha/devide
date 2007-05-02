@@ -518,6 +518,11 @@ class moduleManager:
         """
         self._devide_app.log_error_with_exception(message)
 
+    def log_info(self, message):
+        """Convenience method that can be used by modules.
+        """
+        self._devide_app.log_info(message)
+
     def log_message(self, message):
         """Convenience method that can be used by modules.
         """

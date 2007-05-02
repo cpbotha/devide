@@ -31,6 +31,8 @@ def init(module_manager):
 
 def refresh():
     # we have none of our own packages yet...
-    pass
+    global geometry
+    reload(geometry)
+
 
     
