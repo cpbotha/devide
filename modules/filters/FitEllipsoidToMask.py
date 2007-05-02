@@ -111,3 +111,39 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
 
         self._append_pd.Update()
         
+def pca(points):
+    """PCA factored out of execute_module and made N-D.  not being used yet.
+
+    points is a list of n-d tuples.
+
+    returns eigenvalues (u), eigenvectors (v), axis_lengths and
+    radius_vectors.
+    """
+    
+    # determine centre (x,y,z)
+    points2 = numpy.array(points)
+    centre = numpy.average(points2)
+
+    # subtract centre from all points
+    points_c = points2 - centre
+        
+    covariance = numpy.cov(points_c.transpose())
+
+    # eigen-analysis (u eigenvalues, v eigenvectors)
+    u,v = numpy.linalg.eig(covariance)
+    
+    # some magic: the sqrt came out of my M thesis, but the 2
+    # (actually 4.0, because this is a half-axis) is a mystery
+    axis_lengths = [4.0 * numpy.sqrt(eigval) for eigval in u]
+
+    N = len(u)
+    radius_vectors = numpy.zeros((N,N), float)
+    for i in range(N):
+        radius_vectors[i] = v[i] * axis_lengths[i] / 2.0
+
+    output_dict = {'u' :u, 'v' : v, 'c' : centre,
+                   'axis_lengths' : tuple(axis_lengths),
+                   'radius_vectors' : radius_vectors}
+
+    return output_dict
+
