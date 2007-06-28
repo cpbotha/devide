@@ -136,7 +136,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self._orientation_widget = vtk.vtkOrientationMarkerWidget()
         
         self._annotated_cube_actor = aca = vtk.vtkAnnotatedCubeActor()
-        aca.TextEdgesOff()
+        #aca.TextEdgesOff()
 
         aca.GetXMinusFaceProperty().SetColor(1,0,0)
         aca.GetXPlusFaceProperty().SetColor(1,0,0)

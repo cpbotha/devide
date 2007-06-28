@@ -439,9 +439,9 @@ class selectedPoints(s3dcGridMixin):
 
         if len(pointName) > 0:
             ca.SetCaption(pointName)
-            
         else:
-            ca.SetCaption("")
+            ca.SetCaption(".")
+            # since VTK 20070628, caption actor doesn't like an empty label
 
         tdren.AddActor(ca)
 
