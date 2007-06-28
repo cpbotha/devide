@@ -76,6 +76,12 @@ class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
                 
         # covariance matrix ##############################
 
+        if len(points) == 0:
+            self._output_dict.update({'u' : None, 'v' : None, 'c' : None,
+                                      'axis_lengths' : None,
+                                      'radius_vectors' : None})
+            return
+
         # determine centre (x,y,z)
         points2 = numpy.array(points)
         centre = numpy.average(points2)
