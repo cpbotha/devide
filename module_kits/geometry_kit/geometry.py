@@ -99,13 +99,16 @@ def intersect_line_mask(p1, p2, mask, incr):
     from p1 to p2 with increments == incr.
     """
 
+    p1 = numpy.array(p1)
+    p2 = numpy.array(p2)
+
     origin = numpy.array(mask.GetOrigin())
     spacing = numpy.array(mask.GetSpacing())
 
     incr = float(incr)
 
     line_vector = p2 - p1
-    squared_norm = sum(line_vector * line_vector)
+    squared_norm = numpy.sum(line_vector * line_vector)
     norm = numpy.sqrt(squared_norm)
     unit_vec = line_vector / norm
 
@@ -115,19 +118,31 @@ def intersect_line_mask(p1, p2, mask, incr):
     end_of_line = False
     i_point = numpy.array((), float) # empty array
     
-    while not intersect or end_of_line:
+    while not intersect and not end_of_line:
         # get voxel coords
         voxc = (curp - origin) / spacing
-        val = mask.GetScalarComponentAsDouble(voxc[0], voxc[1], voxc[2], 0)
+
+        e = mask.GetExtent()
+        if voxc[0] >= e[0] and voxc[0] <= e[1] and \
+           voxc[1] >= e[2] and voxc[1] <= e[3] and \
+           voxc[2] >= e[4] and voxc[2] <= e[5]:
+            val = mask.GetScalarComponentAsDouble(
+                voxc[0], voxc[1], voxc[2], 0)
+        else:
+            val = 0.0
+
         if val > 0.0:
             intersect = True
             i_point = curp
-
-        else:
+        else:    
             curp = curp + unit_vec * incr
 
-        if numpy.sum(numpy.square(curp - p1)) > squared_norm:
+        cur_squared_norm = numpy.sum(numpy.square(curp - p1))
+        if  cur_squared_norm > squared_norm:
             end_of_line = True
 
-    return i_point
+    if end_of_line:
+        return None
+    else:
+        return i_point
 
