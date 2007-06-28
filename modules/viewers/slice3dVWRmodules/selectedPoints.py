@@ -415,8 +415,10 @@ class selectedPoints(s3dcGridMixin):
         #ss.SetRadius((bounds[1] - bounds[0]) / 100.0)
         
         ca = vtk.vtkCaptionActor2D()
-        ca.GetProperty().SetColor(1,0,0)
-        ca.GetCaptionTextProperty().SetColor(1,0,0)
+        ca.GetProperty().SetColor(1,1,0)
+        tp = ca.GetCaptionTextProperty()
+        tp.SetColor(1,1,0)
+        tp.ShadowOff()
         ca.SetPickable(0)
         ca.SetAttachmentPoint(world)
         ca.SetPosition(25,10)
@@ -429,6 +431,7 @@ class selectedPoints(s3dcGridMixin):
         # glcontext-things
         ca.ThreeDimensionalLeaderOn()
         ca.SetMaximumLeaderGlyphSize(10)
+        ca.SetLeaderGlyphSize(0.025)
 
         coneSource = vtk.vtkConeSource()
         coneSource.SetResolution(6)
