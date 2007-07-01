@@ -13,7 +13,7 @@
 # Python Code By:
 #
 # Andrea Gavana, @ 23 Dec 2005
-# Latest Revision: 20 Jun 2006, 20.00 GMT
+# Latest Revision: 30 Jun 2006, 21.00 GMT
 #
 #
 # PyAUI version 0.9.2 Adds:
@@ -35,6 +35,8 @@
 # 1) Reduced Flicker While Drawing The Dock Hint
 # 2) Made Impossoible To Drag The Sash Separator Outside The Main Frame
 # 3) Improved Repaint When Using The Active Pane Option
+# 4) Fixed The Mac Problem (Thanks To David Pratt) And Applied The wxGTK Patches
+#    Suggested By Robin Dunn To Correctly Draw The Dock Hint
 #
 # For All Kind Of Problems, Requests Of Enhancements And Bug Reports, Please
 # Write To Me At:
@@ -97,7 +99,7 @@ class MyFrame(wx.Frame):
 
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
 
-        self._mgr = PyAUI.FrameManager(self)
+        self._mgr = PyAUI.FrameManager()
         
         # notify PyAUI which frame to use
         self._mgr.SetFrame(self)
@@ -157,7 +159,7 @@ License And Version:
 
 PyAUI Library Is Freeware And Distributed Under The wxPython License. 
 
-Latest Revision: Andrea Gavana @ 20 Jun 2006, 20.00 GMT
+Latest Revision: Andrea Gavana @ 30 Jun 2006, 21.00 GMT
 Version 0.9.2. 
 
 """
@@ -850,7 +852,8 @@ class PaneInfo:
     actionPane            = 2**31    # used internally
 
     def __init__(self):
-        
+
+        wx.DefaultSize = wx.Size(-1, -1)        
         self.window = None
         self.frame = None
         self.state = 0
@@ -858,11 +861,11 @@ class PaneInfo:
         self.dock_layer = 0
         self.dock_row = 0
         self.dock_pos = 0
-        self.floating_pos = wx.DefaultPosition
-        self.floating_size = wx.DefaultSize
-        self.best_size = wx.DefaultSize
-        self.min_size = wx.DefaultSize
-        self.max_size = wx.DefaultSize
+        self.floating_pos = wx.Point(-1, -1)
+        self.floating_size = wx.Size(-1, -1)
+        self.best_size = wx.Size(-1, -1)
+        self.min_size = wx.Size(-1, -1)
+        self.max_size = wx.Size(-1, -1)
         self.dock_proportion = 0
         self.caption = ""
         self.buttons = []
@@ -3972,8 +3975,9 @@ class FrameManager(wx.EvtHandler):
                 recta = pane.frame.GetRect()
                 if wx.Platform == "__WXGTK__":
                     # wxGTK returns the client size, not the whole frame size
-                    recta.width = rect.width + 15
-                    recta.height = rect.height + 35
+                    width, height = pane.frame.ClientToScreen((0,0)) - pane.frame.GetPosition()
+                    recta.width = recta.width + width
+                    recta.height = recta.height + height
                     recta.Inflate(5, 5)
                     #endif
 
@@ -4439,7 +4443,6 @@ class FrameManager(wx.EvtHandler):
 
         if part:
             if part.dock and part.dock.dock_direction == AUI_DOCK_CENTER:
-                event.Skip()
                 return
 
             if part.type == DockUIPart.typeDockSizer or \
@@ -4449,12 +4452,10 @@ class FrameManager(wx.EvtHandler):
                 # pane which is not resizable
                 if part.type == DockUIPart.typeDockSizer and part.dock and \
                    len(part.dock.panes) == 1 and part.dock.panes[0].IsFixed():
-                    event.Skip()
                     return
 
                 # panes that may not be resized should be ignored here
                 if part.pane and part.pane.IsFixed():
-                    event.Skip()
                     return
 
                 self._action = actionResize
@@ -4489,7 +4490,8 @@ class FrameManager(wx.EvtHandler):
                                                event.GetY() - part.rect.y)
                 self._frame.CaptureMouse()
 
-        event.Skip()
+        if wx.Platform != "__WXMAC__":
+            event.Skip()
 
 
     def OnLeftUp(self, event):

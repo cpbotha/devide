@@ -51,6 +51,10 @@ class histogramSegment:
     kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
 
+class Measure2D:
+    kits = ['wx_kit', 'vtk_kit']
+    cats = ['Viewers']
+
 class slice3dVWR:
     kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
