@@ -1,4 +1,7 @@
+import vtk
 import wx
+
+
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import external.PyAUI as PyAUI
 
@@ -60,7 +63,7 @@ class Measure2DFrame(wx.Frame):
     def _create_rwi_panel(self):
         #rwi_panel = wx.Panel(self, -1)
         self._rwi = wxVTKRenderWindowInteractor(self, -1, size=(300,100))
-
+        
         #sizer = wx.BoxSizer(wx.VERTICAL)
         #sizer.Add(self._rwi, 1, wx.EXPAND | wx.ALL, 4)
 
