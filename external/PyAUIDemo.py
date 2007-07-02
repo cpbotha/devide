@@ -3,6 +3,7 @@ import wx.grid
 import wx.html
 
 import cStringIO
+import random
 
 import PyAUI
 
@@ -26,9 +27,51 @@ ID_TransparentDrag = ID_CreateTree+17
 ID_NoGradient = ID_CreateTree+18
 ID_VerticalGradient = ID_CreateTree+19
 ID_HorizontalGradient = ID_CreateTree+20
-ID_Settings = ID_CreateTree+21
-ID_About = ID_CreateTree+22
+ID_Art = ID_CreateTree+21
+ID_Settings = ID_CreateTree+22
+ID_About = ID_CreateTree+23
+ID_PaneIcons = ID_CreateTree+24
+ID_LiveResize = ID_CreateTree+25
 ID_FirstPerspective = ID_CreatePerspective+1000
+
+ArtIDs = [ "wx.ART_ADD_BOOKMARK",
+           "wx.ART_DEL_BOOKMARK",
+           "wx.ART_HELP_SIDE_PANEL",
+           "wx.ART_HELP_SETTINGS",
+           "wx.ART_HELP_BOOK",
+           "wx.ART_HELP_FOLDER",
+           "wx.ART_HELP_PAGE",
+           "wx.ART_GO_BACK",
+           "wx.ART_GO_FORWARD",
+           "wx.ART_GO_UP",
+           "wx.ART_GO_DOWN",
+           "wx.ART_GO_TO_PARENT",
+           "wx.ART_GO_HOME",
+           "wx.ART_FILE_OPEN",
+           "wx.ART_PRINT",
+           "wx.ART_HELP",
+           "wx.ART_TIP",
+           "wx.ART_REPORT_VIEW",
+           "wx.ART_LIST_VIEW",
+           "wx.ART_NEW_DIR",
+           "wx.ART_HARDDISK",
+           "wx.ART_FLOPPY",
+           "wx.ART_CDROM",
+           "wx.ART_REMOVABLE",
+           "wx.ART_FOLDER",
+           "wx.ART_FOLDER_OPEN",
+           "wx.ART_GO_DIR_UP",
+           "wx.ART_EXECUTABLE_FILE",
+           "wx.ART_NORMAL_FILE",
+           "wx.ART_TICK_MARK",
+           "wx.ART_CROSS_MARK",
+           "wx.ART_ERROR",
+           "wx.ART_QUESTION",
+           "wx.ART_WARNING",
+           "wx.ART_INFORMATION",
+           "wx.ART_MISSING_IMAGE",
+           ]
+
 
 #----------------------------------------------------------------------
 def GetMondrianData():
@@ -101,11 +144,14 @@ class PyAUIFrame(wx.Frame):
         options_menu.AppendCheckItem(ID_TransparentHintFade, "Transparent Hint Fade-in")
         options_menu.AppendCheckItem(ID_TransparentDrag, "Transparent Drag")
         options_menu.AppendCheckItem(ID_AllowActivePane, "Allow Active Pane")
+        options_menu.AppendCheckItem(ID_PaneIcons, "Set Icons On Panes")
+        options_menu.AppendCheckItem(ID_LiveResize, "Live Resize")
         options_menu.AppendSeparator()
         options_menu.AppendRadioItem(ID_NoGradient, "No Caption Gradient")
         options_menu.AppendRadioItem(ID_VerticalGradient, "Vertical Caption Gradient")
         options_menu.AppendRadioItem(ID_HorizontalGradient, "Horizontal Caption Gradient")
         options_menu.AppendSeparator()
+        options_menu.AppendCheckItem(ID_Art, "Use Modern Dock Art")
         options_menu.Append(ID_Settings, "Settings Pane")
         
         self._perspectives_menu = wx.Menu()
@@ -235,7 +281,7 @@ class PyAUIFrame(wx.Frame):
                           Left().Layer(1))
                       
         self._mgr.AddPane(self.CreateTreeCtrl(), PyAUI.PaneInfo().
-                          Name("test8").Caption("Tree Pane").
+                          Name("test8").Caption("Tree Pane").MaximizeButton().
                           Left().Layer(1).Position(1))
                       
         self._mgr.AddPane(self.CreateSizeReportCtrl(), PyAUI.PaneInfo().
@@ -244,7 +290,7 @@ class PyAUIFrame(wx.Frame):
                           Bottom().Layer(1))
 
         self._mgr.AddPane(self.CreateTextCtrl(), PyAUI.PaneInfo().
-                          Name("test10").Caption("Text Pane").
+                          Name("test10").Caption("Text Pane").MaximizeButton().PinButton().
                           Bottom().Layer(1).Position(1))
                                       
         self._mgr.AddPane(self.CreateSizeReportCtrl(), PyAUI.PaneInfo().
@@ -367,9 +413,12 @@ class PyAUIFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnManagerFlag, id=ID_TransparentHintFade)
         self.Bind(wx.EVT_MENU, self.OnManagerFlag, id=ID_TransparentDrag)
         self.Bind(wx.EVT_MENU, self.OnManagerFlag, id=ID_AllowActivePane)
+        self.Bind(wx.EVT_MENU, self.OnManagerFlag, id=ID_LiveResize)        
+        self.Bind(wx.EVT_MENU, self.OnSetIconsOnPanes, id=ID_PaneIcons)
         self.Bind(wx.EVT_MENU, self.OnGradient, id=ID_NoGradient)
         self.Bind(wx.EVT_MENU, self.OnGradient, id=ID_VerticalGradient)
         self.Bind(wx.EVT_MENU, self.OnGradient, id=ID_HorizontalGradient)
+        self.Bind(wx.EVT_MENU, self.OnDockArt, id=ID_Art)
         self.Bind(wx.EVT_MENU, self.OnSettings, id=ID_Settings)
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_GridContent)
         self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TreeContent)
@@ -386,13 +435,18 @@ class PyAUIFrame(wx.Frame):
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdateUI, id=ID_NoGradient)
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdateUI, id=ID_VerticalGradient)
         self.Bind(wx.EVT_UPDATE_UI, self.OnUpdateUI, id=ID_HorizontalGradient)
-    
+        
         self.Bind(wx.EVT_MENU_RANGE, self.OnRestorePerspective, id=ID_FirstPerspective,
-                  id2=ID_FirstPerspective+1000)
+                  id2=ID_FirstPerspective+1000)        
 
 
     def OnPaneButton(self, event):
 
+        button_id = event.GetButton()
+        if button_id != PyAUI.PaneInfo.buttonClose:
+            event.Skip()
+            return
+        
         caption = event.GetPane().caption
 
         if caption in ["Tree Pane", "Dock Manager Settings", "Fixed Pane"]:
@@ -464,6 +518,23 @@ class PyAUIFrame(wx.Frame):
         self._mgr.Update()
 
 
+    def OnSetIconsOnPanes(self, event):
+
+        panes = self._mgr.GetAllPanes()
+        checked = event.IsChecked()
+        
+        for pane in panes:
+            if checked:
+                randimage = random.randint(0, len(ArtIDs) - 1)
+                bmp = wx.ArtProvider_GetBitmap(eval(ArtIDs[randimage]), wx.ART_OTHER, (16, 16))
+            else:
+                bmp = None
+                
+            pane.SetIcon(bmp)
+
+        self._mgr.Update()            
+
+
     def OnGradient(self, event):
 
         gradient = 0
@@ -479,6 +550,21 @@ class PyAUIFrame(wx.Frame):
         self._mgr.Update()
 
 
+    def OnDockArt(self, event):
+
+        if wx.Platform != "__WXMSW__":
+            wx.MessageBox("This option is presently only available on wxMSW")
+            event.Check(False)
+            return
+           
+        if event.IsChecked():
+            if self._mgr.CanUseModernDockArt():
+                self._mgr.SetArtProvider(PyAUI.ModernDockArt(self._mgr.GetFrame()))
+            else:
+                wx.MessageBox("This option requires Mark Hammond's win32all extensions")
+                event.Check(False)
+                
+                
     def OnManagerFlag(self, event):
 
         flag = 0
@@ -505,7 +591,10 @@ class PyAUIFrame(wx.Frame):
 
         elif event.GetId() == ID_AllowActivePane:
             flag = PyAUI.AUI_MGR_ALLOW_ACTIVE_PANE
-            
+
+        elif event.GetId() == ID_LiveResize:
+            flag = PyAUI.AUI_MGR_LIVE_RESIZE
+                        
         self._mgr.SetFlags(self._mgr.GetFlags() ^ flag)
 
 
@@ -546,7 +635,7 @@ class PyAUIFrame(wx.Frame):
         if dlg.ShowModal() != wx.ID_OK:
             return
         
-        if len(self._perspectives) == 0:
+        if len(self._perspectives) == 3:
             self._perspectives_menu.AppendSeparator()
         
         self._perspectives_menu.Append(ID_FirstPerspective + len(self._perspectives), dlg.GetValue())
@@ -641,7 +730,6 @@ class PyAUIFrame(wx.Frame):
 
         return wx.TextCtrl(self,-1, text, wx.Point(0, 0), wx.Size(150, 90),
                            wx.NO_BORDER | wx.TE_MULTILINE)
-
 
 
     def CreateGrid(self):
@@ -815,7 +903,7 @@ class SizeReportCtrl(wx.PyControl):
         event.Skip()
     
 
-ID_PaneBorderSize = wx.ID_HIGHEST + 1
+ID_PaneBorderSize = wx.NewId()
 ID_SashSize = ID_PaneBorderSize + 1
 ID_CaptionSize = ID_PaneBorderSize + 2
 ID_BackgroundColor = ID_PaneBorderSize + 3
@@ -828,7 +916,8 @@ ID_ActiveCaptionGradientColor = ID_PaneBorderSize + 9
 ID_ActiveCaptionTextColor = ID_PaneBorderSize + 10
 ID_BorderColor = ID_PaneBorderSize + 11
 ID_GripperColor = ID_PaneBorderSize + 12
-    
+ID_SashGrip = ID_PaneBorderSize + 13
+
 class SettingsPanel(wx.Panel):
     
     def __init__(self, parent, frame):
@@ -865,116 +954,126 @@ class SettingsPanel(wx.Panel):
         s3.Add(self._caption_size)
         s3.Add((1, 1), 1, wx.EXPAND)
         s3.SetItemMinSize(1, (180, 20))
+
+        s4 = wx.BoxSizer(wx.HORIZONTAL)
+        self._sash_grip = wx.CheckBox(self, ID_SashGrip, "", wx.DefaultPosition, wx.Size(50,20))
+        s4.Add((1, 1), 1, wx.EXPAND)
+        s4.Add(wx.StaticText(self, -1, "Draw Sash Grip:"))
+        s4.Add(self._sash_grip)
+        s4.Add((1, 1), 1, wx.EXPAND)
+        s4.SetItemMinSize(1, (180, 20))
+        
         #vert.Add(s3, 0, wx.EXPAND | wxLEFT | wxBOTTOM, 5)
 
         #vert.Add(1, 1, 1, wx.EXPAND)
 
         b = self.CreateColorBitmap(wx.BLACK)
 
-        s4 = wx.BoxSizer(wx.HORIZONTAL)
-        self._background_color = wx.BitmapButton(self, ID_BackgroundColor, b, wx.DefaultPosition, wx.Size(50,25))
-        s4.Add((1, 1), 1, wx.EXPAND)
-        s4.Add(wx.StaticText(self, -1, "Background Color:"))
-        s4.Add(self._background_color)
-        s4.Add((1, 1), 1, wx.EXPAND)
-        s4.SetItemMinSize(1, (180, 20))
-
         s5 = wx.BoxSizer(wx.HORIZONTAL)
-        self._sash_color = wx.BitmapButton(self, ID_SashColor, b, wx.DefaultPosition, wx.Size(50,25))
+        self._background_color = wx.BitmapButton(self, ID_BackgroundColor, b, wx.DefaultPosition, wx.Size(50,25))
         s5.Add((1, 1), 1, wx.EXPAND)
-        s5.Add(wx.StaticText(self, -1, "Sash Color:"))
-        s5.Add(self._sash_color)
+        s5.Add(wx.StaticText(self, -1, "Background Color:"))
+        s5.Add(self._background_color)
         s5.Add((1, 1), 1, wx.EXPAND)
         s5.SetItemMinSize(1, (180, 20))
 
         s6 = wx.BoxSizer(wx.HORIZONTAL)
-        self._inactive_caption_color = wx.BitmapButton(self, ID_InactiveCaptionColor, b,
-                                                       wx.DefaultPosition, wx.Size(50,25))
+        self._sash_color = wx.BitmapButton(self, ID_SashColor, b, wx.DefaultPosition, wx.Size(50,25))
         s6.Add((1, 1), 1, wx.EXPAND)
-        s6.Add(wx.StaticText(self, -1, "Normal Caption:"))
-        s6.Add(self._inactive_caption_color)
+        s6.Add(wx.StaticText(self, -1, "Sash Color:"))
+        s6.Add(self._sash_color)
         s6.Add((1, 1), 1, wx.EXPAND)
         s6.SetItemMinSize(1, (180, 20))
 
         s7 = wx.BoxSizer(wx.HORIZONTAL)
-        self._inactive_caption_gradient_color = wx.BitmapButton(self, ID_InactiveCaptionGradientColor,
-                                                                b, wx.DefaultPosition, wx.Size(50,25))
+        self._inactive_caption_color = wx.BitmapButton(self, ID_InactiveCaptionColor, b,
+                                                       wx.DefaultPosition, wx.Size(50,25))
         s7.Add((1, 1), 1, wx.EXPAND)
-        s7.Add(wx.StaticText(self, -1, "Normal Caption Gradient:"))
-        s7.Add(self._inactive_caption_gradient_color)
+        s7.Add(wx.StaticText(self, -1, "Normal Caption:"))
+        s7.Add(self._inactive_caption_color)
         s7.Add((1, 1), 1, wx.EXPAND)
         s7.SetItemMinSize(1, (180, 20))
 
         s8 = wx.BoxSizer(wx.HORIZONTAL)
-        self._inactive_caption_text_color = wx.BitmapButton(self, ID_InactiveCaptionTextColor, b,
-                                                            wx.DefaultPosition, wx.Size(50,25))
+        self._inactive_caption_gradient_color = wx.BitmapButton(self, ID_InactiveCaptionGradientColor,
+                                                                b, wx.DefaultPosition, wx.Size(50,25))
         s8.Add((1, 1), 1, wx.EXPAND)
-        s8.Add(wx.StaticText(self, -1, "Normal Caption Text:"))
-        s8.Add(self._inactive_caption_text_color)
+        s8.Add(wx.StaticText(self, -1, "Normal Caption Gradient:"))
+        s8.Add(self._inactive_caption_gradient_color)
         s8.Add((1, 1), 1, wx.EXPAND)
         s8.SetItemMinSize(1, (180, 20))
 
         s9 = wx.BoxSizer(wx.HORIZONTAL)
-        self._active_caption_color = wx.BitmapButton(self, ID_ActiveCaptionColor, b,
-                                                     wx.DefaultPosition, wx.Size(50,25))
+        self._inactive_caption_text_color = wx.BitmapButton(self, ID_InactiveCaptionTextColor, b,
+                                                            wx.DefaultPosition, wx.Size(50,25))
         s9.Add((1, 1), 1, wx.EXPAND)
-        s9.Add(wx.StaticText(self, -1, "Active Caption:"))
-        s9.Add(self._active_caption_color)
+        s9.Add(wx.StaticText(self, -1, "Normal Caption Text:"))
+        s9.Add(self._inactive_caption_text_color)
         s9.Add((1, 1), 1, wx.EXPAND)
         s9.SetItemMinSize(1, (180, 20))
 
         s10 = wx.BoxSizer(wx.HORIZONTAL)
-        self._active_caption_gradient_color = wx.BitmapButton(self, ID_ActiveCaptionGradientColor,
-                                                              b, wx.DefaultPosition, wx.Size(50,25))
+        self._active_caption_color = wx.BitmapButton(self, ID_ActiveCaptionColor, b,
+                                                     wx.DefaultPosition, wx.Size(50,25))
         s10.Add((1, 1), 1, wx.EXPAND)
-        s10.Add(wx.StaticText(self, -1, "Active Caption Gradient:"))
-        s10.Add(self._active_caption_gradient_color)
+        s10.Add(wx.StaticText(self, -1, "Active Caption:"))
+        s10.Add(self._active_caption_color)
         s10.Add((1, 1), 1, wx.EXPAND)
         s10.SetItemMinSize(1, (180, 20))
 
         s11 = wx.BoxSizer(wx.HORIZONTAL)
-        self._active_caption_text_color = wx.BitmapButton(self, ID_ActiveCaptionTextColor,
-                                                          b, wx.DefaultPosition, wx.Size(50,25))
+        self._active_caption_gradient_color = wx.BitmapButton(self, ID_ActiveCaptionGradientColor,
+                                                              b, wx.DefaultPosition, wx.Size(50,25))
         s11.Add((1, 1), 1, wx.EXPAND)
-        s11.Add(wx.StaticText(self, -1, "Active Caption Text:"))
-        s11.Add(self._active_caption_text_color)
+        s11.Add(wx.StaticText(self, -1, "Active Caption Gradient:"))
+        s11.Add(self._active_caption_gradient_color)
         s11.Add((1, 1), 1, wx.EXPAND)
         s11.SetItemMinSize(1, (180, 20))
 
         s12 = wx.BoxSizer(wx.HORIZONTAL)
-        self._border_color = wx.BitmapButton(self, ID_BorderColor, b, wx.DefaultPosition,
-                                             wx.Size(50,25))
+        self._active_caption_text_color = wx.BitmapButton(self, ID_ActiveCaptionTextColor,
+                                                          b, wx.DefaultPosition, wx.Size(50,25))
         s12.Add((1, 1), 1, wx.EXPAND)
-        s12.Add(wx.StaticText(self, -1, "Border Color:"))
-        s12.Add(self._border_color)
+        s12.Add(wx.StaticText(self, -1, "Active Caption Text:"))
+        s12.Add(self._active_caption_text_color)
         s12.Add((1, 1), 1, wx.EXPAND)
         s12.SetItemMinSize(1, (180, 20))
 
         s13 = wx.BoxSizer(wx.HORIZONTAL)
-        self._gripper_color = wx.BitmapButton(self, ID_GripperColor, b, wx.DefaultPosition,
-                                              wx.Size(50,25))
+        self._border_color = wx.BitmapButton(self, ID_BorderColor, b, wx.DefaultPosition,
+                                             wx.Size(50,25))
         s13.Add((1, 1), 1, wx.EXPAND)
-        s13.Add(wx.StaticText(self, -1, "Gripper Color:"))
-        s13.Add(self._gripper_color)
+        s13.Add(wx.StaticText(self, -1, "Border Color:"))
+        s13.Add(self._border_color)
         s13.Add((1, 1), 1, wx.EXPAND)
         s13.SetItemMinSize(1, (180, 20))
+
+        s14 = wx.BoxSizer(wx.HORIZONTAL)
+        self._gripper_color = wx.BitmapButton(self, ID_GripperColor, b, wx.DefaultPosition,
+                                              wx.Size(50,25))
+        s14.Add((1, 1), 1, wx.EXPAND)
+        s14.Add(wx.StaticText(self, -1, "Gripper Color:"))
+        s14.Add(self._gripper_color)
+        s14.Add((1, 1), 1, wx.EXPAND)
+        s14.SetItemMinSize(1, (180, 20))
         
         grid_sizer = wx.GridSizer(0, 2)
         grid_sizer.SetHGap(5)
         grid_sizer.Add(s1)
-        grid_sizer.Add(s4)
-        grid_sizer.Add(s2)
         grid_sizer.Add(s5)
+        grid_sizer.Add(s2)
+        grid_sizer.Add(s6)
         grid_sizer.Add(s3)
+        grid_sizer.Add(s14)
+        grid_sizer.Add(s4)
         grid_sizer.Add(s13)
         grid_sizer.Add((1, 1))
-        grid_sizer.Add(s12)
-        grid_sizer.Add(s6)
-        grid_sizer.Add(s9)
         grid_sizer.Add(s7)
         grid_sizer.Add(s10)
         grid_sizer.Add(s8)
         grid_sizer.Add(s11)
+        grid_sizer.Add(s9)
+        grid_sizer.Add(s12)
          
         cont_sizer = wx.BoxSizer(wx.VERTICAL)
         cont_sizer.Add(grid_sizer, 1, wx.EXPAND | wx.ALL, 5)
@@ -984,12 +1083,14 @@ class SettingsPanel(wx.Panel):
         self._border_size.SetValue(frame.GetDockArt().GetMetric(PyAUI.AUI_ART_PANE_BORDER_SIZE))
         self._sash_size.SetValue(frame.GetDockArt().GetMetric(PyAUI.AUI_ART_SASH_SIZE))
         self._caption_size.SetValue(frame.GetDockArt().GetMetric(PyAUI.AUI_ART_CAPTION_SIZE))
+        self._sash_grip.SetValue(frame.GetDockArt().GetMetric(PyAUI.AUI_ART_DRAW_SASH_GRIP))
         
         self.UpdateColors()
 
         self.Bind(wx.EVT_SPINCTRL, self.OnPaneBorderSize, id=ID_PaneBorderSize)
         self.Bind(wx.EVT_SPINCTRL, self.OnSashSize, id=ID_SashSize)
         self.Bind(wx.EVT_SPINCTRL, self.OnCaptionSize, id=ID_CaptionSize)
+        self.Bind(wx.EVT_CHECKBOX, self.OnDrawSashGrip, id=ID_SashGrip)
         self.Bind(wx.EVT_BUTTON, self.OnSetColor, id=ID_BackgroundColor)
         self.Bind(wx.EVT_BUTTON, self.OnSetColor, id=ID_SashColor)
         self.Bind(wx.EVT_BUTTON, self.OnSetColor, id=ID_InactiveCaptionColor)
@@ -1067,6 +1168,13 @@ class SettingsPanel(wx.Panel):
     def OnCaptionSize(self, event):
     
         self._frame.GetDockArt().SetMetric(PyAUI.AUI_ART_CAPTION_SIZE,
+                                           event.GetInt())
+        self._frame.DoUpdate()
+
+
+    def OnDrawSashGrip(self, event):
+
+        self._frame.GetDockArt().SetMetric(PyAUI.AUI_ART_DRAW_SASH_GRIP,
                                            event.GetInt())
         self._frame.DoUpdate()
     

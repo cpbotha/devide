@@ -35,21 +35,36 @@ class Measure2DFrame(wx.Frame):
         self._mgr.AddPane(self._rwi_panel,
                           PyAUI.PaneInfo().Name('rwi').
                           Caption('Image View').Center().
-                          MinSize(self._rwi_panel.GetSize()).
-                          CloseButton(False))
+                          MinSize(self._rwi_panel.GetSize()))
+        
+        self._image_control_panel = self._create_image_control_panel()
+        self._mgr.AddPane(self._image_control_panel,
+                          PyAUI.PaneInfo().Name('image_control').
+                          Caption('Controls').Bottom().
+                          MinSize(self._image_control_panel.GetSize()))
+        
+        self._measurement_panel = self._create_measurement_panel()
+        self._mgr.AddPane(self._measurement_panel,
+                          PyAUI.PaneInfo().Name('measurement').
+                          Caption('Measurements').Bottom().
+                          MinSize(self._measurement_panel.GetSize()))
+                          
         
         # post-pane setup
         self._mgr.Update()
 
         self.perspective_default = self._mgr.SavePerspective()
 
+        # these come from the demo
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         self.Bind(wx.EVT_SIZE, self.OnSize)
+        
         #self.Bind(wx.EVT_CLOSE, self.OnClose)
 
         # even although we disable the close button, when a window floats
         # it gets a close button back, so we have to make sure that when
         # the user activates that the windows is merely hidden
+
         self.Bind(PyAUI.EVT_AUI_PANEBUTTON, self.OnPaneButton)
 
         wx.EVT_MENU(self, self.window_default_view_id,
@@ -74,7 +89,34 @@ class Measure2DFrame(wx.Frame):
 
         #return rwi_panel
         return self._rwi
-
+    
+    def _create_image_control_panel(self):
+        panel = wx.Panel(self, -1)
+        #wx.Label(panel, -1, "")
+        panel.slider = wx.Slider(panel, -1, 0, 0, 64, style=wx.SL_LABELS)
+        slider_box = wx.BoxSizer(wx.HORIZONTAL)
+        slider_box.Add(panel.slider, 1, wx.ALL)
+        
+        tl_sizer = wx.BoxSizer(wx.VERTICAL)
+        tl_sizer.Add(slider_box, 0, wx.EXPAND, 4)
+        
+        panel.SetAutoLayout(True)
+        panel.SetSizer(tl_sizer)
+        panel.GetSizer().Fit(panel)
+        panel.GetSizer().SetSizeHints(panel)
+        
+        return panel
+    
+    def _create_measurement_panel(self):
+        # drop-down box with type, name, create button
+        # grid / list with names and measured data
+        # also delete button to get rid of things we don't want
+        
+        panel = wx.Panel(self, -1)
+        panel.new_button = wx.Button(panel, -1, "Create")
+        return panel
+                       
+                    
     def _make_menu(self):
         # Menu Bar
         self.menubar = wx.MenuBar()
