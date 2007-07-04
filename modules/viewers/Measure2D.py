@@ -142,8 +142,6 @@ class Measure2D(introspectModuleMixin, moduleBase):
                 # determine halfway between pair1, move pair2 along pair1
                 # determine halfway between pair2, move pair1 along pair2
                 # motion by definition orthogonal, so it converges
-                epsilon = 0.0000001
-                 
                 l1n, l1m, l1 = geometry.normalise_line(p1w, p2w)
                 l2n, l2m, l2 = geometry.normalise_line(p3w, p4w)
 
@@ -153,30 +151,38 @@ class Measure2D(introspectModuleMixin, moduleBase):
                 p3w, p4w = geometry.move_line_to_target_along_normal(p3w, p4w, l1n, tc1)
                 p1w, p2w = geometry.move_line_to_target_along_normal(p1w, p2w, l2n, tc2)
 
-                rep.SetPoint1WorldPosition(p1w)
-                rep.SetPoint2WorldPosition(p2w)
-                rep.SetPoint3WorldPosition(p3w)
-                rep.SetPoint4WorldPosition(p4w)
+                l1n, l1m, l1 = geometry.normalise_line(p1w, p2w)
+                l2n, l2m, l2 = geometry.normalise_line(p3w, p4w)
 
-                
-                
-                # constrain to ellipse right here...
+                # the new system has to be orthogonal (more or less), else
+                # we don't apply it.
+                if geometry.abs(geometry.dot(l1n, l2n)) < geometry.epsilon:
+                    rep.SetPoint1WorldPosition(p1w)
+                    rep.SetPoint2WorldPosition(p2w)
+                    rep.SetPoint3WorldPosition(p3w)
+                    rep.SetPoint4WorldPosition(p4w)
+
             
             rep = vtk.vtkBiDimensionalRepresentation2D()
             widget = vtk.vtkBiDimensionalWidget()
             widget.SetInteractor(self._view_frame._rwi)
             widget.SetRepresentation(rep)
-            widget.AddObserver("InteractionEvent", lambda o, e: observer_test(widget))
+            widget.AddObserver("EndInteractionEvent", lambda o, e: observer_test(widget))
             
             #widget.CreateDefaultRepresentation()
             
             widget.SetEnabled(1)
             self._widgets.append(widget)
+
+        self.render()
             
     def _handler_slice_slider(self, event):
         if not self._input_image is None:
             val = self._view_frame._image_control_panel.slider.GetValue()
             self._viewer.SetSlice(val)
+
+    def render(self):
+        self._view_frame._rwi.GetRenderWindow().Render()
                 
     def _setup_new_image(self):
         """Based on the current self._input_image and the viewer, this thing will make sure
@@ -206,6 +212,7 @@ class Measure2D(introspectModuleMixin, moduleBase):
             
             #self._viewer.UpdateDisplayExtent()
             self._viewer.GetRenderer().ResetCamera()
-            self._view_frame._rwi.Render()
+
+            self.render()
 
 

@@ -1,6 +1,19 @@
 import math
 import numpy
 
+epsilon = 1e-12
+
+def abs(v1):
+    return numpy.absolute(v1)
+
+def norm(v1):
+    """Given vector v1, return its norm.
+    """
+
+    v1a = numpy.array(v1)
+    norm = numpy.sqrt(numpy.sum(v1a * v1a))
+    return norm
+
 def normalise_line(p1, p2):
     """Given two points, return normal vector, magnitude and original
     line vector.
@@ -12,9 +25,17 @@ def normalise_line(p1, p2):
 
     squared_norm = numpy.sum(line_vector * line_vector)
     norm = numpy.sqrt(squared_norm)
-    unit_vec = line_vector / norm
+
+    if norm != 0.0:
+        unit_vec = line_vector / norm
+    else:
+        unit_vec = line_vector
 
     return (unit_vec, norm, line_vector)
+
+def points_to_vector(p1, p2):
+    v = numpy.array(p2) - numpy.array(p1)
+    return v
 
 def dot(v1, v2):
     """Return dot-product between vectors v1 and v2.
@@ -30,6 +51,10 @@ def move_line_to_target_along_normal(p1, p2, n, target):
     @returns: Adjusted p1,p2
     """
 
+    # n has to be a normal vector, mmmkay?
+    if norm(n) - 1.0 > epsilon:
+        raise RuntimeError('normal vector not unit size.')
+
     p1a = numpy.array(p1)
     p2a = numpy.array(p2)
     ta = numpy.array(target)
@@ -38,7 +63,7 @@ def move_line_to_target_along_normal(p1, p2, n, target):
     dp = dot(p2a - ta, n)
 
     # better to use an epsilon?
-    if numpy.absolute(dp) > 0.0:
+    if numpy.absolute(dp) > epsilon:
         # calculate vector needed to correct along n
         dvec = - dp * n
         p1a = p1a + dvec
