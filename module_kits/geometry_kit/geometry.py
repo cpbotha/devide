@@ -1,6 +1,52 @@
 import math
 import numpy
 
+def normalise_line(p1, p2):
+    """Given two points, return normal vector, magnitude and original
+    line vector.
+
+    Example: normal_vec, mag, line_vec = normalize_line(p1_tuple, p2_tuple)
+    """
+
+    line_vector = numpy.array(p2) - numpy.array(p1)
+
+    squared_norm = numpy.sum(line_vector * line_vector)
+    norm = numpy.sqrt(squared_norm)
+    unit_vec = line_vector / norm
+
+    return (unit_vec, norm, line_vector)
+
+def dot(v1, v2):
+    """Return dot-product between vectors v1 and v2.
+    """
+
+    dot_product = numpy.sum(numpy.array(v1) * numpy.array(v2))
+    return dot_product
+
+def move_line_to_target_along_normal(p1, p2, n, target):
+    """Move the line (p1,p2) along normal vector n until it intersects 
+    with target.
+
+    @returns: Adjusted p1,p2
+    """
+
+    p1a = numpy.array(p1)
+    p2a = numpy.array(p2)
+    ta = numpy.array(target)
+
+    # see how far p2a is from ta measured along n
+    dp = dot(p2a - ta, n)
+
+    # better to use an epsilon?
+    if numpy.absolute(dp) > 0.0:
+        # calculate vector needed to correct along n
+        dvec = - dp * n
+        p1a = p1a + dvec
+        p2a = p2a + dvec
+
+    return (p1a, p2a)
+
+
 def intersect_line_sphere(p1, p2, sc, r):
     """Calculates intersection between line going through p1 and p2 and
     sphere determined by centre sc and radius r.

@@ -1,3 +1,4 @@
+import geometry
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
@@ -90,31 +91,87 @@ class Measure2D(introspectModuleMixin, moduleBase):
             
             # could be that input has already been set, but that view was
             # instantiated later.
-
-            self._viewer = vtk.vtkImageViewer2()
-            self._view_frame._rwi.SetRenderWindow(self._viewer.GetRenderWindow())
-            self._viewer.SetupInteractor(self._view_frame._rwi)
-            self._viewer.GetRenderer().SetBackground(0.3,0.3,0.3)            
+            
+            if True:
+                self._viewer = vtk.vtkImageViewer2()
+                self._viewer.SetupInteractor(self._view_frame._rwi)
+                self._viewer.GetRenderer().SetBackground(0.3,0.3,0.3)
+                
+            else:
+                ren = vtk.vtkRenderer()
+                self._view_frame._rwi.GetRenderWindow().AddRenderer(ren)
             
 
     def _handler_new_measurement_button(self, event):
-        handle = vtk.vtkPointHandleRepresentation2D()
-        handle.GetProperty().SetColor(1,0,0)
-        rep = vtk.vtkDistanceRepresentation2D()
-        rep.SetHandleRepresentation(handle)
-
-        rep.GetAxis().SetNumberOfMinorTicks(4)
-        rep.GetAxis().SetTickLength(9)
-        rep.GetAxis().SetTitlePosition(0.2)
         
-        w = vtk.vtkDistanceWidget()
-        w.SetInteractor(self._view_frame._rwi)        
-        w.CreateDefaultRepresentation()
-        w.SetRepresentation(rep)
+        widget_type = 1
         
-        w.On()
+        if widget_type == 0:
+            handle = vtk.vtkPointHandleRepresentation2D()
+            handle.GetProperty().SetColor(1,0,0)
 
-        self._widgets.append(w)
+            rep = vtk.vtkDistanceRepresentation2D()
+            rep.SetHandleRepresentation(handle)
+            rep.GetAxis().SetNumberOfMinorTicks(4)
+            rep.GetAxis().SetTickLength(9)
+            rep.GetAxis().SetTitlePosition(0.2)
+        
+            w = vtk.vtkDistanceWidget()
+            w.SetInteractor(self._view_frame._rwi)        
+            #w.CreateDefaultRepresentation()
+            w.SetRepresentation(rep)
+        
+            w.SetEnabled(1)
+
+            self._widgets.append(w)
+            
+        else:
+            def observer_test(widget):
+                rep = widget.GetRepresentation()
+                
+                # get four world points
+                p1w = [0.0,0.0,0.0]
+                rep.GetPoint1WorldPosition(p1w)
+                p2w = [0.0,0.0,0.0]
+                rep.GetPoint2WorldPosition(p2w)
+                p3w = [0.0,0.0,0.0]
+                rep.GetPoint3WorldPosition(p3w)
+                p4w = [0.0,0.0,0.0]
+                rep.GetPoint4WorldPosition(p4w)
+
+                # determine halfway between pair1, move pair2 along pair1
+                # determine halfway between pair2, move pair1 along pair2
+                # motion by definition orthogonal, so it converges
+                epsilon = 0.0000001
+                 
+                l1n, l1m, l1 = geometry.normalise_line(p1w, p2w)
+                l2n, l2m, l2 = geometry.normalise_line(p3w, p4w)
+
+                tc1 = p1w + l1m / 2.0 * l1n # target center 1
+                tc2 = p3w + l2m / 2.0 * l2n # target center 2
+
+                p3w, p4w = geometry.move_line_to_target_along_normal(p3w, p4w, l1n, tc1)
+                p1w, p2w = geometry.move_line_to_target_along_normal(p1w, p2w, l2n, tc2)
+
+                rep.SetPoint1WorldPosition(p1w)
+                rep.SetPoint2WorldPosition(p2w)
+                rep.SetPoint3WorldPosition(p3w)
+                rep.SetPoint4WorldPosition(p4w)
+
+                
+                
+                # constrain to ellipse right here...
+            
+            rep = vtk.vtkBiDimensionalRepresentation2D()
+            widget = vtk.vtkBiDimensionalWidget()
+            widget.SetInteractor(self._view_frame._rwi)
+            widget.SetRepresentation(rep)
+            widget.AddObserver("InteractionEvent", lambda o, e: observer_test(widget))
+            
+            #widget.CreateDefaultRepresentation()
+            
+            widget.SetEnabled(1)
+            self._widgets.append(widget)
             
     def _handler_slice_slider(self, event):
         if not self._input_image is None:
@@ -151,4 +208,4 @@ class Measure2D(introspectModuleMixin, moduleBase):
             self._viewer.GetRenderer().ResetCamera()
             self._view_frame._rwi.Render()
 
-            
+

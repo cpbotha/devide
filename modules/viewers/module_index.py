@@ -52,8 +52,10 @@ class histogramSegment:
     cats = ['Viewers']
 
 class Measure2D:
-    kits = ['wx_kit', 'vtk_kit']
+    kits = ['wx_kit', 'vtk_kit', 'geometry_kit']
     cats = ['Viewers']
+    help = """Module for performing 2D measurements on image slices.
+    """
 
 class slice3dVWR:
     kits = ['wx_kit', 'vtk_kit']
