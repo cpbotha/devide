@@ -6,6 +6,7 @@ import Measure2DFrame
 reload(Measure2DFrame)
 
 import vtk
+import vtktud
 import wx
 
 class Measure2D(introspectModuleMixin, moduleBase):
@@ -104,9 +105,17 @@ class Measure2D(introspectModuleMixin, moduleBase):
 
     def _handler_new_measurement_button(self, event):
         
-        widget_type = 1
-        
+        widget_type = 0
+
+
         if widget_type == 0:
+            w = vtktud.vtkEllipseWidget()
+            w.SetInteractor(self._view_frame._rwi)
+            #w.PlaceWidget(0, 50, 0, 50, 0, 0)
+            w.SetEnabled(1)
+            self._widgets.append(w)
+        
+        elif widget_type == 1:
             handle = vtk.vtkPointHandleRepresentation2D()
             handle.GetProperty().SetColor(1,0,0)
 
