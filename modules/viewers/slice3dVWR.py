@@ -518,6 +518,13 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         self.threedFrame.Show(True)
         self.threedFrame.Raise()
 
+        # need to call this so that the window is actually refreshed
+        wx.SafeYield()
+
+        # and then make sure the 3D renderer is working (else we
+        # get empty windows)
+        self.render3D()
+
     #################################################################
     # miscellaneous public methods
     #################################################################

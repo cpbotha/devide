@@ -55,6 +55,9 @@ class Measure2D:
     kits = ['wx_kit', 'vtk_kit', 'geometry_kit']
     cats = ['Viewers']
     help = """Module for performing 2D measurements on image slices.
+
+    This is a viewer module and can not be used in an offline batch
+    processing setting.
     """
 
 class slice3dVWR:

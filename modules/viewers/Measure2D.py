@@ -10,35 +10,52 @@ import vtktud
 import wx
 
 class Measure2D(introspectModuleMixin, moduleBase):
-
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
         self._view_frame = None
         self._viewer = None
         self._input_image = None
+        self._dummy_image_source = vtk.vtkImageMandelbrotSource()
         
         self._widgets = []
-        
+
+        # build frame
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, Measure2DFrame.Measure2DFrame)
+
+        # now link up all event handlers
+        self._bind_events()
+
+        # then build VTK pipeline
+        self._create_vtk_pipeline()
+
+        # set us up with dummy input
+        self._setup_new_image()
+
+        # show everything
         self.view()
+
         
     def close(self):
         if self._view_frame is not None:
             self._view_frame.close()
             
     def view(self):
-        if self._view_frame is None:
-            self._view_frame = moduleUtils.instantiateModuleViewFrame(
-                self, self._moduleManager, Measure2DFrame.Measure2DFrame)
-
-            self._create_vtk_pipeline()
-            
-            # now link up all event handlers
-            self._bind_events()
-            
         self._view_frame.Show()
         self._view_frame.Raise()
-        
+
+        # GOTCHA!! (finally)
+        # we need to do this to make sure that the Show() and Raise() above
+        # are actually performed.  Not doing this is what resulted in the
+        # "empty renderwindow" bug after module reloading, and also in the
+        # fact that shortly after module creation dummy data rendered outside
+        # the module frame.
+        # YEAH.
+        wx.SafeYield()
+
+        self.render()
+
         # so if we bring up the view after having executed the network once,
         # re-executing will not do a set_input()!  (the scheduler doesn't
         # know that the module is now dirty)  Two solutions:
@@ -74,9 +91,6 @@ class Measure2D(introspectModuleMixin, moduleBase):
         
         new_measurement_button = self._view_frame._measurement_panel.new_button
         new_measurement_button.Bind(wx.EVT_BUTTON, self._handler_new_measurement_button)
-        
-        
-        
 
     def _create_vtk_pipeline(self):
         """Create pipeline for viewing 2D image data.
@@ -191,26 +205,24 @@ class Measure2D(introspectModuleMixin, moduleBase):
             self._viewer.SetSlice(val)
 
     def render(self):
-        self._view_frame._rwi.GetRenderWindow().Render()
+        self._view_frame._rwi.Render()
                 
     def _setup_new_image(self):
-        """Based on the current self._input_image and the viewer, this thing will make sure
-        that we reset to some usable default.
+        """Based on the current self._input_image and the viewer, this thing
+        will make sure that we reset to some usable default.
         """
-        
-        if not self._input_image is None and not self._viewer is None:
-            self._viewer.SetInput(self._input_image)
+
+        if not self._viewer is None:
+            if not self._input_image is None:
+                self._viewer.SetInput(self._input_image)
+            else:
+                self._viewer.SetInput(self._dummy_image_source.GetOutput())
+
+            ii = self._viewer.GetInput()
             
-            self._input_image.UpdateInformation()
-            self._input_image.Update()
-            range = self._input_image.GetScalarRange()
-            self._viewer.SetColorWindow(range[1] - range[0])
-            self._viewer.SetColorLevel(0.5 * (range[1] + range[0]))
-            
-            
-            self._input_image.UpdateInformation()
-            self._input_image.Update()
-            range = self._input_image.GetScalarRange()
+            ii.UpdateInformation()
+            ii.Update()
+            range = ii.GetScalarRange()
             self._viewer.SetColorWindow(range[1] - range[0])
             self._viewer.SetColorLevel(0.5 * (range[1] + range[0]))
             
@@ -222,6 +234,5 @@ class Measure2D(introspectModuleMixin, moduleBase):
             #self._viewer.UpdateDisplayExtent()
             self._viewer.GetRenderer().ResetCamera()
 
-            self.render()
 
 
