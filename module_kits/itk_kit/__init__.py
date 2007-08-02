@@ -12,7 +12,7 @@ import re
 import sys
 
 VERSION = ''
-ITK_VERSION_EXTRA = '-D 20061012'
+ITK_VERSION_EXTRA = '-r ITK-3-2'
 
 def preImportITK(progressMethod):
     itkImportList = [('VXLNumericsPython', 'VXL Numerics'),

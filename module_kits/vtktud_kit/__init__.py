@@ -21,5 +21,13 @@ VERSION = 'SVN'
 def init(theModuleManager):
     # import the main module itself
     import vtktud
+
+    # I added the version variable on 20070802
+    try:
+        global VERSION
+        VERSION = vtktud.version
+    except AttributeError:
+        pass
+    
     theModuleManager.setProgress(100, 'Initialising vtktud_kit')
 

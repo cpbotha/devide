@@ -21,7 +21,7 @@ import traceback
 import types
 
 VERSION = ''
-VTK_VERSION_EXTRA = '-r VTK-5-0'
+VTK_VERSION_EXTRA = '-r Paraview-3-0'
 
 def preImportVTK(progressMethod):
     vtkImportList = [('vtk.common', 'VTK Common.'),
