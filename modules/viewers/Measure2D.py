@@ -161,7 +161,7 @@ class Measure2D(introspectModuleMixin, moduleBase):
         return ('Image data',)
 
     def get_output_descriptions(self):
-        return ()
+        return ('self',)
 
     def execute_module(self):
         pass
@@ -196,6 +196,14 @@ class Measure2D(introspectModuleMixin, moduleBase):
         db.Bind(wx.EVT_BUTTON,
                 self._handler_delete_measurement_button)
 
+        eb = self._view_frame._measurement_panel.enable_button
+        eb.Bind(wx.EVT_BUTTON,
+                self._handler_enable_measurement_button)
+
+        db = self._view_frame._measurement_panel.disable_button
+        db.Bind(wx.EVT_BUTTON,
+                self._handler_disable_measurement_button)
+
     def _create_vtk_pipeline(self):
         """Create pipeline for viewing 2D image data.
         
@@ -210,7 +218,37 @@ class Measure2D(introspectModuleMixin, moduleBase):
             else:
                 ren = vtk.vtkRenderer()
                 self._view_frame._rwi.GetRenderWindow().AddRenderer(ren)
-            
+
+    def _get_selected_measurement_names(self):
+        """Return list of names of selected measurement widgets.
+        """
+    
+        grid = self._view_frame._measurement_panel.measurement_grid
+        sr = grid.GetSelectedRows()
+
+        return [grid.GetCellValue(idx,0) for idx in sr]
+
+    def _handler_enable_measurement_button(self, event):
+
+        snames = self._get_selected_measurement_names()
+        for sname in snames:
+            w = self._widgets.get_widget(sname)
+            print "about to enable ", w.name
+            w.widget.SetEnabled(1)
+
+        self.render()
+
+
+
+    def _handler_disable_measurement_button(self, event):
+      
+        snames = self._get_selected_measurement_names()
+        for sname in snames:
+            w = self._widgets.get_widget(sname)
+            print "about to disable ", w.name
+            w.widget.SetEnabled(0)
+
+        self.render()
 
     def _handler_rename_measurement_button(self, event):
         # FIXME: abstract method that returns list of names of
@@ -372,3 +410,10 @@ class Measure2D(introspectModuleMixin, moduleBase):
             grid.SetCellValue(cur_row, 0, w.name)
             grid.SetCellValue(cur_row, 1, w.type_string)
             grid.SetCellValue(cur_row, 2, w.measure_string)
+
+        # in general when we sync, the module is dirty, so we should
+        # flag this in the module manager.  when the user sees this
+        # and schedules an execute, the scheduler will execute us and
+        # all parts of the network that are dependent on us.
+        self._moduleManager.modify_module(self)
+

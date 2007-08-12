@@ -1433,7 +1433,7 @@ class moduleManager:
 
         return producers
 
-    def setModified(self, moduleInstance):
+    def setModified_DEPRECATED(self, moduleInstance):
         """Changed modified ivar in metaModule.
 
         This ivar is used to determine whether moduleInstance needs to be
@@ -1446,8 +1446,8 @@ class moduleManager:
         @param value: the new value of the modified ivar, True or False.
         """
         
-        self._moduleDict[moduleInstance].modified = value
-        
+        self._moduleDict[moduleInstance].modified = True 
+
     def set_progress(self, progress, message, noTime=False):
         """Progress is in percent.
         """
@@ -1543,13 +1543,15 @@ class moduleManager:
         # everything proceeded according to plan.        
         return True
 
-    def modifyModule(self, moduleInstance, part=0):
+    def modify_module(self, moduleInstance, part=0):
         """Call this whenever module state has changed in such a way that
         necessitates a re-execution, for instance when parameters have been
         changed or when new input data has been transferred.
         """
 
         self._moduleDict[moduleInstance].modify(part)
+
+    modifyModule = modify_module
 
     def recreate_module_in_place(self, meta_module):
         """Destroy, create and reconnect a module in place.

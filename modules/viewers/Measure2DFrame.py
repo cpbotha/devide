@@ -166,6 +166,8 @@ class Measure2DFrame(wx.Frame):
         panel.name_cb = dmf.name_cb
         panel.rename_button = dmf.rename_button
         panel.delete_button = dmf.delete_button
+        panel.enable_button = dmf.enable_button
+        panel.disable_button = dmf.disable_button
 
         # need this handler to fix brain-dead selection handling
         panel.measurement_grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT,
