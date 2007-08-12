@@ -23,19 +23,16 @@ class M2DWidget:
         self.type_string = type_string
         self.measure_string = ""
 
-        
 
-
-class M2DWidgetList(SubjectMixin):
+class M2DWidgetList:
     """List of M2DWidgets that can be queried by name or type.
     """
 
     def __init__(self):
         self._wdict = {}
-        SubjectMixin.__init__(self)
 
     def close(self):
-        SubjectMixin.close(self)
+        pass
 
     def add(self, widget):
         """widget is an instance of M2DWidget.
@@ -49,8 +46,6 @@ class M2DWidgetList(SubjectMixin):
 
         self._wdict[widget.name] = widget
 
-        # notify all observers that something has changed
-        self.notify()
 
     def get_names(self):
         return self._wdict.keys()
@@ -78,10 +73,29 @@ class M2DWidgetList(SubjectMixin):
         w = self._wdict[name]
         del(self._wdict[name])
         
-        # notify all observers that something has changed
-        self.notify()
         
         return w
+    
+    def rename_widget(self, old_name, new_name):
+        """After profuse error-checking, rename widget with old_name
+        to new_name.
+        """
+
+        if not new_name:
+            raise KeyError('Widget cannot have empty name.')
+
+        if old_name not in self._wdict:
+            raise KeyError('widget %s not in list.' % (old_name,))
+
+        if new_name in self._wdict:
+            raise KeyError('widget with name %s alread exists.' %
+                    (new_name,))
+
+        w = self.get_widget(old_name)
+        self.remove(old_name)
+        w.name = new_name
+        self.add(w)
+        
 
     def __contains__(self, name):
         """Returns true if there's a widget with that name already in
@@ -174,6 +188,14 @@ class Measure2D(introspectModuleMixin, moduleBase):
             self._view_frame._measurement_panel.create_button
         new_measurement_button.Bind(wx.EVT_BUTTON, self._handler_new_measurement_button)
 
+        rb = self._view_frame._measurement_panel.rename_button
+        rb.Bind(wx.EVT_BUTTON,
+                self._handler_rename_measurement_button)
+
+        db = self._view_frame._measurement_panel.delete_button
+        db.Bind(wx.EVT_BUTTON,
+                self._handler_delete_measurement_button)
+
     def _create_vtk_pipeline(self):
         """Create pipeline for viewing 2D image data.
         
@@ -189,6 +211,51 @@ class Measure2D(introspectModuleMixin, moduleBase):
                 ren = vtk.vtkRenderer()
                 self._view_frame._rwi.GetRenderWindow().AddRenderer(ren)
             
+
+    def _handler_rename_measurement_button(self, event):
+        # FIXME: abstract method that returns list of names of
+        # selected measurement widgets
+
+        grid = self._view_frame._measurement_panel.measurement_grid
+        
+        # returns list of selected row indices, we're only going to
+        # rename the first one
+        sr = grid.GetSelectedRows()
+
+        if not sr:
+            return
+
+        idx = sr[0]
+        name = grid.GetCellValue(idx, 0)
+    
+        new_name = wx.GetTextFromUser(
+            'Enter a new name for this measurement.',
+            'Rename Module',
+            name)
+
+        if new_name:
+            w = self._widgets.get_widget(name)
+            self._widgets.rename_widget(name, new_name)
+            self._sync_measurement_grid()
+
+    def _handler_delete_measurement_button(self, event):
+        grid = self._view_frame._measurement_panel.measurement_grid
+
+        sr = grid.GetSelectedRows()
+
+        if not sr:
+            return
+
+        for idx in sr:
+            name = grid.GetCellValue(idx, 0)
+
+            w = self._widgets.get_widget(name)
+            w.widget.SetEnabled(0)
+            w.widget.SetInteractor(None)
+
+            self._widgets.remove(name)
+
+        self._sync_measurement_grid()
 
     def _handler_new_measurement_button(self, event):
         
@@ -296,7 +363,9 @@ class Measure2D(introspectModuleMixin, moduleBase):
         if grid.GetNumberRows() > 0:
             grid.DeleteRows(0, grid.GetNumberRows())
 
-        for wname in self._widgets.get_names():
+        wname_list = self._widgets.get_names()
+        wname_list.sort()
+        for wname in wname_list:
             w = self._widgets.get_widget(wname)
             grid.AppendRows()   
             cur_row = grid.GetNumberRows() - 1

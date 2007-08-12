@@ -110,28 +110,48 @@ class Measure2DFrame(wx.Frame):
         panel.GetSizer().SetSizeHints(panel)
         
         return panel
+
+    def _handler_grid_range_select(self, event):
+
+        """This event handler is a fix for the fact that the row
+        selection in the wxGrid is deliberately broken.  It's also
+        used to activate and deactivate relevant menubar items.
+        
+        Whenever a user clicks on a cell, the grid SHOWS its row
+        to be selected, but GetSelectedRows() doesn't think so.
+        This event handler will travel through the Selected Blocks
+        and make sure the correct rows are actually selected.
+        
+        Strangely enough, this event always gets called, but the
+        selection is empty when the user has EXPLICITLY selected
+        rows.  This is not a problem, as then the GetSelectedRows()
+        does return the correct information.
+        """
+        g = event.GetEventObject()
+
+        # both of these are lists of (row, column) tuples
+        tl = g.GetSelectionBlockTopLeft()
+        br = g.GetSelectionBlockBottomRight()
+
+        # this means that the user has most probably clicked on the little
+        # block at the top-left corner of the grid... in this case,
+        # SelectRow has no frikking effect (up to wxPython 2.4.2.4) so we
+        # detect this situation and clear the selection (we're going to be
+        # selecting the whole grid in anycase.
+        if tl == [(0,0)] and br == [(g.GetNumberRows() - 1,
+                                     g.GetNumberCols() - 1)]:
+            g.ClearSelection()
+
+        for (tlrow, tlcolumn), (brrow, brcolumn) in zip(tl, br):
+            for row in range(tlrow,brrow + 1):
+                g.SelectRow(row, True)
+
+
     
     def _create_measurement_panel(self):
         # drop-down box with type, name, create button
         # grid / list with names and measured data
         # also delete button to get rid of things we don't want
-
-        if 0:
-            panel = wx.Panel(self, -1)
-            panel.new_button = wx.Button(panel, -1, "Create")
-            panel.name_cb = wx.ComboBox(panel, -1, "def 1",
-                                        choices = ["def 2", "def 2"],
-                                        style=wx.CB_DROPDOWN|wx.CB_SORT,
-                                        size=wx.Size(400,-1))
-            hsizer = wx.BoxSizer(wx.HORIZONTAL)
-            hsizer.Add(panel.new_button, 0)
-            hsizer.Add(panel.name_cb, 1, wx.EXPAND)
-
-            panel.SetAutoLayout(True)
-            panel.SetSizer(hsizer)
-            panel.GetSizer().Fit(panel)
-            panel.GetSizer().SetSizeHints(panel)
-
 
         # start nasty trick: load wxGlade created frame
         mpf = measure2d_panels.MeasurementPanelFrame
@@ -144,6 +164,12 @@ class Measure2DFrame(wx.Frame):
         panel.create_button = dmf.create_button
         panel.measurement_grid = dmf.measurement_grid
         panel.name_cb = dmf.name_cb
+        panel.rename_button = dmf.rename_button
+        panel.delete_button = dmf.delete_button
+
+        # need this handler to fix brain-dead selection handling
+        panel.measurement_grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT,
+                self._handler_grid_range_select)
 
         # destroy wxGlade created frame
         dmf.Destroy()

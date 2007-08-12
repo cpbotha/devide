@@ -15,6 +15,8 @@ class MeasurementPanelFrame(wx.Frame):
         self.label_1 = wx.StaticText(self.panel, -1, "Name")
         self.name_cb = wx.ComboBox(self.panel, -1, choices=[], style=wx.CB_DROPDOWN)
         self.measurement_grid = wx.grid.Grid(self.panel, -1, size=(1, 1))
+        self.rename_button = wx.Button(self.panel, -1, "Rename")
+        self.delete_button = wx.Button(self.panel, -1, "Delete")
 
         self.__set_properties()
         self.__do_layout()
@@ -36,6 +38,7 @@ class MeasurementPanelFrame(wx.Frame):
         # begin wxGlade: MeasurementPanelFrame.__do_layout
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
+        sizer_5 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_3.Add(self.create_button, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 7)
@@ -44,7 +47,10 @@ class MeasurementPanelFrame(wx.Frame):
         sizer_2.Add(sizer_3, 0, wx.ALL|wx.EXPAND, 7)
         sizer_4.Add(self.measurement_grid, 1, wx.EXPAND, 0)
         sizer_4.Add((0, 100), 0, wx.ADJUST_MINSIZE, 0)
-        sizer_2.Add(sizer_4, 1, wx.EXPAND, 0)
+        sizer_2.Add(sizer_4, 1, wx.LEFT|wx.RIGHT|wx.EXPAND, 7)
+        sizer_5.Add(self.rename_button, 0, wx.RIGHT|wx.ADJUST_MINSIZE, 4)
+        sizer_5.Add(self.delete_button, 0, wx.ADJUST_MINSIZE, 0)
+        sizer_2.Add(sizer_5, 0, wx.ALL, 7)
         self.panel.SetSizer(sizer_2)
         sizer_1.Add(self.panel, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_1)
