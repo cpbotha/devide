@@ -2,7 +2,7 @@
 # $Id$
 #
 
-from genMixins import subjectMixin
+from gen_mixins import SubjectMixin
 from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
@@ -10,7 +10,7 @@ import wx
 
 # -------------------------------------------------------------------------
 
-class outputSelectedPoints(list, subjectMixin):
+class outputSelectedPoints(list, SubjectMixin):
     """class for passing selected points to an output port.
 
     Derived from list as base and the subject/observer mixin.
@@ -20,10 +20,10 @@ class outputSelectedPoints(list, subjectMixin):
     
     def __init__(self):
         list.__init__(self)
-        subjectMixin.__init__(self)
+        SubjectMixin.__init__(self)
 
     def close(self):
-        subjectMixin.close(self)
+        SubjectMixin.close(self)
         
 # -------------------------------------------------------------------------
 
