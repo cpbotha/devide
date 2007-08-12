@@ -1,3 +1,4 @@
+from gen_mixins import SubjectMixin
 import geometry
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
@@ -9,6 +10,86 @@ import vtk
 import vtktud
 import wx
 
+class M2DWidget:
+    """Class for encapsulating widget binding and all its metadata.
+    """
+
+    def __init__(self, widget, name, type_string):
+        """
+        @param type_string: ellipse
+        """
+        self.widget = widget
+        self.name = name
+        self.type_string = type_string
+        self.measure_string = ""
+
+        
+
+
+class M2DWidgetList(SubjectMixin):
+    """List of M2DWidgets that can be queried by name or type.
+    """
+
+    def __init__(self):
+        self._wdict = {}
+        SubjectMixin.__init__(self)
+
+    def close(self):
+        SubjectMixin.close(self)
+
+    def add(self, widget):
+        """widget is an instance of M2DWidget.
+        """
+
+        if not widget.name:
+            raise KeyError("Widget has to have a name.")
+
+        if widget.name in self._wdict:
+            raise KeyError("Widget with that name already in list.")
+
+        self._wdict[widget.name] = widget
+
+        # notify all observers that something has changed
+        self.notify()
+
+    def get_names(self):
+        return self._wdict.keys()
+
+    def get_widget(self, name):
+        return self._wdict[name]
+
+    def get_widgets_of_type(self, type_string):
+        """Return a list of all widgets of type type_string.
+        """
+
+        wlist = []
+        for wname, w in self._wdict.items():
+            if w.type_string == type_string:
+                wlist.append(w)
+
+        return wlist
+
+    def remove(self, name):
+        """Remove widget with name from internal dict.
+        Return binding to widget that was just removed (so that client
+        can do widget specific finalisation.
+        """
+
+        w = self._wdict[name]
+        del(self._wdict[name])
+        
+        # notify all observers that something has changed
+        self.notify()
+        
+        return w
+
+    def __contains__(self, name):
+        """Returns true if there's a widget with that name already in
+        the list.
+        """
+
+        return name in self._wdict
+
 class Measure2D(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
@@ -18,7 +99,7 @@ class Measure2D(introspectModuleMixin, moduleBase):
         self._input_image = None
         self._dummy_image_source = vtk.vtkImageMandelbrotSource()
         
-        self._widgets = []
+        self._widgets = M2DWidgetList()
 
         # build frame
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
@@ -89,7 +170,8 @@ class Measure2D(introspectModuleMixin, moduleBase):
         slice_slider = self._view_frame._image_control_panel.slider
         slice_slider.Bind(wx.EVT_SLIDER, self._handler_slice_slider)
         
-        new_measurement_button = self._view_frame._measurement_panel.new_button
+        new_measurement_button = \
+            self._view_frame._measurement_panel.create_button
         new_measurement_button.Bind(wx.EVT_BUTTON, self._handler_new_measurement_button)
 
     def _create_vtk_pipeline(self):
@@ -97,15 +179,6 @@ class Measure2D(introspectModuleMixin, moduleBase):
         
         """
         if self._viewer is None and not self._view_frame is None:
-            #self._ren = vtk.vtkRenderer()
-            #self._ren.SetBackground(0.5,0.5,0.5)
-            #self._view_frame._rwi.GetRenderWindow().AddRenderer(self._ren)
-            
-            #self._image_actor = vtk.vtkImageActor()
-            #self._ren.AddViewProp(self._image_actor)
-            
-            # could be that input has already been set, but that view was
-            # instantiated later.
             
             if True:
                 self._viewer = vtk.vtkImageViewer2()
@@ -123,13 +196,37 @@ class Measure2D(introspectModuleMixin, moduleBase):
 
 
         if widget_type == 0:
-            w = vtktud.vtkEllipseWidget()
-            w.SetInteractor(self._view_frame._rwi)
-            #w.PlaceWidget(0, 50, 0, 50, 0, 0)
-            w.SetEnabled(1)
-            self._widgets.append(w)
+
+            # instantiate widget with correct init vars
+            name = self._view_frame._measurement_panel.name_cb.GetValue()
+            if not name or name in self._widgets:
+                # FIXME: add error message here
+                pass
+            else:
+
+
+
+                w = vtktud.vtkEllipseWidget()
+                w.SetInteractor(self._view_frame._rwi)
+                w.SetEnabled(1)
+                
+
+                widget = M2DWidget(w, name, 'ellipse')
+                # add it to the internal list
+                self._widgets.add(widget)
+
+                def observer_interaction(o, e):
+                    s = o.GetRepresentation().GetLabelText()
+                    widget.measure_string = s 
+                    self._sync_measurement_grid()
+
+                w.AddObserver('EndInteractionEvent',
+                        observer_interaction)
+
+                # and then make the display thing sync up
+                self._sync_measurement_grid()
         
-        elif widget_type == 1:
+        else:
             handle = vtk.vtkPointHandleRepresentation2D()
             handle.GetProperty().SetColor(1,0,0)
 
@@ -146,56 +243,10 @@ class Measure2D(introspectModuleMixin, moduleBase):
         
             w.SetEnabled(1)
 
-            self._widgets.append(w)
-            
-        else:
-            def observer_test(widget):
-                rep = widget.GetRepresentation()
-                
-                # get four world points
-                p1w = [0.0,0.0,0.0]
-                rep.GetPoint1WorldPosition(p1w)
-                p2w = [0.0,0.0,0.0]
-                rep.GetPoint2WorldPosition(p2w)
-                p3w = [0.0,0.0,0.0]
-                rep.GetPoint3WorldPosition(p3w)
-                p4w = [0.0,0.0,0.0]
-                rep.GetPoint4WorldPosition(p4w)
-
-                # determine halfway between pair1, move pair2 along pair1
-                # determine halfway between pair2, move pair1 along pair2
-                # motion by definition orthogonal, so it converges
-                l1n, l1m, l1 = geometry.normalise_line(p1w, p2w)
-                l2n, l2m, l2 = geometry.normalise_line(p3w, p4w)
-
-                tc1 = p1w + l1m / 2.0 * l1n # target center 1
-                tc2 = p3w + l2m / 2.0 * l2n # target center 2
-
-                p3w, p4w = geometry.move_line_to_target_along_normal(p3w, p4w, l1n, tc1)
-                p1w, p2w = geometry.move_line_to_target_along_normal(p1w, p2w, l2n, tc2)
-
-                l1n, l1m, l1 = geometry.normalise_line(p1w, p2w)
-                l2n, l2m, l2 = geometry.normalise_line(p3w, p4w)
-
-                # the new system has to be orthogonal (more or less), else
-                # we don't apply it.
-                if geometry.abs(geometry.dot(l1n, l2n)) < geometry.epsilon:
-                    rep.SetPoint1WorldPosition(p1w)
-                    rep.SetPoint2WorldPosition(p2w)
-                    rep.SetPoint3WorldPosition(p3w)
-                    rep.SetPoint4WorldPosition(p4w)
-
-            
-            rep = vtk.vtkBiDimensionalRepresentation2D()
-            widget = vtk.vtkBiDimensionalWidget()
-            widget.SetInteractor(self._view_frame._rwi)
-            widget.SetRepresentation(rep)
-            widget.AddObserver("EndInteractionEvent", lambda o, e: observer_test(widget))
-            
-            #widget.CreateDefaultRepresentation()
-            
-            widget.SetEnabled(1)
-            self._widgets.append(widget)
+            # instantiate widget with correct init vars
+            widget = M2DWidget(w, 'name', 'ellipse')
+            # add it to the internal list
+            self._widgets.add(w)
 
         self.render()
             
@@ -235,4 +286,20 @@ class Measure2D(introspectModuleMixin, moduleBase):
             self._viewer.GetRenderer().ResetCamera()
 
 
+    def _sync_measurement_grid(self):
+        """Synchronise measurement grid with internal list of widgets.
+        """
 
+        # for now we just nuke the whole thing and redo everything
+
+        grid = self._view_frame._measurement_panel.measurement_grid
+        if grid.GetNumberRows() > 0:
+            grid.DeleteRows(0, grid.GetNumberRows())
+
+        for wname in self._widgets.get_names():
+            w = self._widgets.get_widget(wname)
+            grid.AppendRows()   
+            cur_row = grid.GetNumberRows() - 1
+            grid.SetCellValue(cur_row, 0, w.name)
+            grid.SetCellValue(cur_row, 1, w.type_string)
+            grid.SetCellValue(cur_row, 2, w.measure_string)

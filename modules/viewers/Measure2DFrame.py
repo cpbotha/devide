@@ -5,6 +5,9 @@ import wx
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import external.PyAUI as PyAUI
 
+from resources.python import measure2d_panels
+reload(measure2d_panels)
+
 class Measure2DFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="", pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE |
@@ -29,6 +32,7 @@ class Measure2DFrame(wx.Frame):
         self.SetSize(wx.Size(400, 300))
 
         # could make toolbars here
+
 
         # now we need to add panes
         self._rwi_panel = self._create_rwi_panel()
@@ -111,9 +115,39 @@ class Measure2DFrame(wx.Frame):
         # drop-down box with type, name, create button
         # grid / list with names and measured data
         # also delete button to get rid of things we don't want
-        
-        panel = wx.Panel(self, -1)
-        panel.new_button = wx.Button(panel, -1, "Create")
+
+        if 0:
+            panel = wx.Panel(self, -1)
+            panel.new_button = wx.Button(panel, -1, "Create")
+            panel.name_cb = wx.ComboBox(panel, -1, "def 1",
+                                        choices = ["def 2", "def 2"],
+                                        style=wx.CB_DROPDOWN|wx.CB_SORT,
+                                        size=wx.Size(400,-1))
+            hsizer = wx.BoxSizer(wx.HORIZONTAL)
+            hsizer.Add(panel.new_button, 0)
+            hsizer.Add(panel.name_cb, 1, wx.EXPAND)
+
+            panel.SetAutoLayout(True)
+            panel.SetSizer(hsizer)
+            panel.GetSizer().Fit(panel)
+            panel.GetSizer().SetSizeHints(panel)
+
+
+        # start nasty trick: load wxGlade created frame
+        mpf = measure2d_panels.MeasurementPanelFrame
+        self.dummy_measurement_frame = mpf(self, id=-1)
+
+        # take and reparent the panel we want
+        dmf = self.dummy_measurement_frame
+        panel = dmf.panel
+        panel.Reparent(self)
+        panel.create_button = dmf.create_button
+        panel.measurement_grid = dmf.measurement_grid
+        panel.name_cb = dmf.name_cb
+
+        # destroy wxGlade created frame
+        dmf.Destroy()
+
         return panel
                        
                     
