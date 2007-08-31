@@ -53,6 +53,17 @@ class manualTransform:
 
     """
 
+class PassThrough:
+    kits = []
+    cats = ['Filters', 'System']
+    help = """Simple pass-through filter.
+
+    This is quite useful if you have a source that connects to a
+    number of consumers, and you want to be able to change sources
+    easily.  Connect the source to the PassThrough, and the
+    PassThrough output to all the consumers.  Now when you replace the
+    source, you only have to reconnect one module.
+    """
 
 class pointsToSpheres:
     kits = ['vtk_kit']
