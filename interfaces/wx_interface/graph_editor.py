@@ -14,6 +14,9 @@ import string
 import sys
 import wx
 
+# so we're using VTK here for doing the graph layout.
+import vtk
+
 # ----------------------------------------------------------------------------
 class geCanvasDropTarget(wx.PyDropTarget):
     def __init__(self, graphEditor):
@@ -760,6 +763,21 @@ class GraphEditor:
             if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
 
+    def _append_network_commands(self, pmenu, eventWidget, disable=True):
+        """Append copy/cut/paste/delete commands and the default handlers
+        to a given menu.  
+        """
+
+        #############################################################
+        layout_sucky_id = wx.NewId()
+        ni = wx.MenuItem(pmenu, layout_sucky_id, 'Sucky graph layout\tF7',
+                         'Perform SUCKY(tm) graph layout.')
+        pmenu.AppendItem(ni)
+        wx.EVT_MENU(eventWidget, layout_sucky_id,
+                lambda e: self._layout_network_sucky())
+
+
+
 
     def _testSelectedGlyphs(self):
         si = [i.moduleInstance
@@ -1376,6 +1394,11 @@ class GraphEditor:
             pmenu.AppendSeparator()
 
             self._append_execute_commands(pmenu, self._interface._main_frame.canvas)
+
+            pmenu.AppendSeparator()
+
+            self._append_network_commands(pmenu,
+                    self._interface._main_frame.canvas)
             
 
             self._interface._main_frame.canvas.PopupMenu(pmenu, wx.Point(event.GetX(),
@@ -1582,6 +1605,105 @@ class GraphEditor:
         # finally we can let the canvas redraw
         self._interface._main_frame.canvas.redraw()
 
+    def _layout_network_sucky(self):
+
+        # I've done it this way so that I can easily paste this method
+        # into the main DeVIDE introspection window.
+
+        #from internal.wxPyCanvas import wxpc
+        iface = self._interface
+        #iface = devide_app.get_interface()
+        canvas = iface._main_frame.canvas
+        ge = iface._graph_editor
+        mm = self._devide_app.get_module_manager()
+        #mm = devide_app.get_module_manager()
+
+        
+
+        all_glyphs = iface._main_frame.canvas.getObjectsOfClass(
+            wxpc.coGlyph)
+        num_glyphs = len(all_glyphs)
+
+        (pmsDict, connection_list, glyphPosDict) = \
+                  ge._serialiseNetwork(all_glyphs)
+
+        # first convert all glyph positions to points and connections
+        # to polylines.
+        polynet = vtk.vtkPolyData()
+        points = vtk.vtkPoints()
+        points.Allocate(num_glyphs, 10)
+        lines = vtk.vtkCellArray()
+        lines.Allocate(len(connection_list), 10)
+
+        # for each glyph, we store in a dict its pointid in the
+        # polydata
+        name2ptid = {}
+        ptid2glyph = {}
+
+
+        for glyph in all_glyphs:
+            pos = glyph.getPosition()
+
+            new_pos = pos + (0.0,)
+            ptid = points.InsertNextPoint(new_pos)
+            instance_name = mm.get_instance_name(glyph.moduleInstance)
+            name2ptid[instance_name] = ptid
+            ptid2glyph[ptid] = glyph
+
+        condone = {} # we use this dict to add each connection once
+        for connection in connection_list:
+            prod_ptid = name2ptid[connection.sourceInstanceName]
+            cons_ptid = name2ptid[connection.targetInstanceName]
+
+            # we keep this for now, we want the number of connections
+            # between two modules to play a role in the layout.
+            #if (prod_ptid, cons_ptid) in condone:
+            #    continue
+            #else:
+            #    condone[(prod_ptid, cons_ptid)] = 1
+
+            v = vtk.vtkIdList()
+            v.InsertNextId(prod_ptid)
+            v.InsertNextId(cons_ptid)
+            lines.InsertNextCell(v)
+
+        # we can also add an extra connection from each glyph to EVERY
+        # other glyph to keep things more balanced...  (SIGH)
+        for iglyph in all_glyphs:
+            iptid = name2ptid[mm.get_instance_name(iglyph.moduleInstance)]
+            for jglyph in all_glyphs:
+                if iglyph is not jglyph:
+                    jptid = name2ptid[mm.get_instance_name(jglyph.moduleInstance)]
+                    v = vtk.vtkIdList()
+                    v.InsertNextId(iptid)
+                    v.InsertNextId(jptid)
+                    lines.InsertNextCell(v)
+
+
+        polynet.SetPoints(points)
+        polynet.SetLines(lines)
+
+        lf = vtk.vtkGraphLayoutFilter()
+        lf.SetThreeDimensionalLayout(0)
+        lf.SetAutomaticBoundsComputation(0)
+        minx, miny = canvas.GetViewStart()[0] + 50, canvas.GetViewStart()[1] + 50
+
+        maxx, maxy = canvas.GetClientSize()[0] + minx - 100, canvas.GetClientSize()[1] + miny - 100
+        lf.SetGraphBounds(minx, maxx, miny, maxy, 0.0, 0.0)
+
+        # i've tried a number of things, they all suck.
+        lf.SetCoolDownRate(1000) # default 10
+        lf.SetMaxNumberOfIterations(10) # default 50
+
+        lf.SetInput(polynet)
+        lf.Update()
+
+        new_pts = lf.GetOutput()
+        for ptid, glyph in ptid2glyph.items():
+            new_pos = new_pts.GetPoint(ptid)
+            glyph.setPosition(new_pos[0:2]) 
+
+        ge._routeAllLines()
 
     def _loadAndRealiseNetwork(self, filename, position=(0,0),
                                reposition=False):
@@ -1718,6 +1840,15 @@ class GraphEditor:
         connectionList and glyphPosDict.  This can be used to reconstruct the
         whole network from scratch and is used for saving and
         cutting/copying.
+
+        glyphPosDict is a dictionary mapping from instance_name to
+        glyph position.
+        pmsDict maps from instance_name to pickledModuleState, an
+        object with attributes (moduleConfig, moduleName,
+        instanceName)
+        connectionList is a list of pickledConnection, each containing
+        (producer_instance_name, output_idx, consumer_instance_name,
+        input_idx)
         """
 
         moduleInstances = [glyph.moduleInstance for glyph in glyphs]
