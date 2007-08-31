@@ -1624,6 +1624,11 @@ class GraphEditor:
             wxpc.coGlyph)
         num_glyphs = len(all_glyphs)
 
+        # we can only do this if we have more than one glyph to
+        # move around.
+        if num_glyphs <= 1:
+            return
+
         (pmsDict, connection_list, glyphPosDict) = \
                   ge._serialiseNetwork(all_glyphs)
 
