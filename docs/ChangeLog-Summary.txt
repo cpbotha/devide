@@ -10,6 +10,8 @@ Changes since ng1phase1 6.8.7 T
    - PassThrough: can be used as a fan-out cache (see the help)
    - Measure2D: initial work on an interactive measurement tool for 2D
      medical images.
+ * Tuned surface model appearance in slice3dVWR.  Now appears
+   to be completely tuned.
  * More tests in the unit testing framework.
  * Complete build-system (johannes) available on *ix that can build
    DeVIDE from scratch (given a fast network connection).  Use this
