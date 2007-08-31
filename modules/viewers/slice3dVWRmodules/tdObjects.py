@@ -120,6 +120,27 @@ class tdObjects(s3dcGridMixin):
                     mapper.SetInput(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
+
+                    #actor.GetProperty().LoadMaterial('GLSLTwisted')
+                    #actor.GetProperty().ShadingOn()
+                    #actor.GetProperty().AddShaderVariableFloat('Rate', 1.0)
+
+                    # now we are going to set the PERFECT material
+                    p = actor.GetProperty()
+
+                    # i prefer flat shading, okay?
+                    p.SetInterpolationToFlat()
+
+                    # Ka, background lighting coefficient
+                    p.SetAmbient(0.1)
+                    # light reflectance
+                    p.SetDiffuse(0.6)
+                    # the higher Ks, the more intense the highlights
+                    p.SetSpecular(0.4)
+                    # the higher the power, the more localised the
+                    # highlights
+                    p.SetSpecularPower(100)
+
                     self.slice3dVWR._threedRenderer.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
