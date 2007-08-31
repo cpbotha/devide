@@ -10,6 +10,9 @@ import vtk
 import vtktud
 import wx
 
+class M2DMeasurementInfo:
+    pass
+
 class M2DWidget:
     """Class for encapsulating widget binding and all its metadata.
     """
@@ -21,7 +24,10 @@ class M2DWidget:
         self.widget = widget
         self.name = name
         self.type_string = type_string
-        self.measure_string = ""
+        self.measurement_string = ""
+        # we'll use this to pack all widget-specific measurement
+        # information
+        self.measurement_info = M2DMeasurementInfo()
 
 
 class M2DWidgetList:
@@ -161,7 +167,13 @@ class Measure2D(introspectModuleMixin, moduleBase):
         return ('Image data',)
 
     def get_output_descriptions(self):
-        return ('self',)
+        return ('self', 'widget_list')
+
+    def get_output(self, idx):
+        if idx == 0:
+            return self
+        else:
+            return self._widgets
 
     def execute_module(self):
         pass
@@ -321,12 +333,29 @@ class Measure2D(introspectModuleMixin, moduleBase):
                 self._widgets.add(widget)
 
                 def observer_interaction(o, e):
-                    s = o.GetRepresentation().GetLabelText()
-                    widget.measure_string = s 
+                    r = o.GetRepresentation()
+                    s = r.GetLabelText()
+                    widget.measurement_string = s 
+                    # c, axis_lengths, radius_vectors
+                    mi = widget.measurement_info
+                    mi.c = [0.0,0.0,0.0]
+                    r.GetCenterWorldPosition(mi.c)
+                    mi.c[2] = 0.0
+                    mi.axis_lengths = (
+                        r.GetSemiMajorAxisLength() * 2.0,
+                        r.GetSemiMinorAxisLength() * 2.0,
+                        0.0)
+                    mi.radius_vectors = (
+                            [0.0,0.0,0.0],
+                            [0.0,0.0,0.0],
+                            [0.0,0.0,0.0])
+                    r.GetSemiMajorAxisVector(mi.radius_vectors[0])
+                    r.GetSemiMinorAxisVector(mi.radius_vectors[1])
+
                     self._sync_measurement_grid()
 
                 w.AddObserver('EndInteractionEvent',
-                        observer_interaction)
+                              observer_interaction)
 
                 # and then make the display thing sync up
                 self._sync_measurement_grid()
@@ -409,7 +438,7 @@ class Measure2D(introspectModuleMixin, moduleBase):
             cur_row = grid.GetNumberRows() - 1
             grid.SetCellValue(cur_row, 0, w.name)
             grid.SetCellValue(cur_row, 1, w.type_string)
-            grid.SetCellValue(cur_row, 2, w.measure_string)
+            grid.SetCellValue(cur_row, 2, w.measurement_string)
 
         # in general when we sync, the module is dirty, so we should
         # flag this in the module manager.  when the user sees this
