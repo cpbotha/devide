@@ -12,8 +12,9 @@ import sys
 if sys.platform == 'win32':
     SO_EXT = 'dll'
     SO_GLOB = '*.%s' % (SO_EXT,)
-    raise RuntimeError('Finding of ITK_SO_DIR has to be fixed for windows!')
-    ITK_SO_DIR = 'c:/opt/ITK/bin'
+    # this should be c:/opt/ITK/bin
+    ITK_SO_DIR = os.path.normpath(
+            os.path.join(itkConfig.swig_lib, '../../../../bin'))
 
 else:
     SO_EXT = 'so'
@@ -81,9 +82,7 @@ def get_wrapitk_tree():
     # the files above on Windows are in:
     # C:\\opt\\WrapITK\\lib\\InsightToolkit\\WrapITK\\lib
     if sys.platform == 'win32':
-        bin_path = os.path.normpath(
-            os.path.join(itkConfig.swig_lib, '../../../../bin'))
-        lib_files.extend(glob.glob('%s/%s' % (bin_path, SO_GLOB)))
+        lib_files.extend(glob.glob('%s/%s' % (ITK_SO_DIR, SO_GLOB)))
     
     wrapitk_lib = [('lib/%s' %
                     (os.path.basename(i),), i) for i in lib_files]

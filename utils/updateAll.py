@@ -25,7 +25,7 @@ except ImportError, e:
     print 'Error loading updateAllDefaults.py: %s' % (str(e),)
     sys.exit()
 
-# buildcommands for posix and MSVS 7.1 on Windows
+# buildcommands for posix and MSVS 8 (2005) on Windows
 if os.name == 'posix':
     buildCommand = 'make'
     install_command = 'make install'

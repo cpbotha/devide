@@ -278,7 +278,7 @@ exe = EXE(pyz,
           icon=os.path.join(APP_DIR, 'resources/graphics/devidelogo64x64.ico'),
           debug=0,
           strip=0,
-          console=1 )
+          console=True)
 
 
 all_binaries = a.binaries + modules_tree + module_kits_tree + vpli + \
