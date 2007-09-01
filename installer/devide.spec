@@ -15,16 +15,20 @@ def helper_remove_start(name, remove_names):
 
     Returns true of name starts with anything from remove_names.
     """
-    
+    name = name.lower()    
     for r in remove_names:
-        if name.startswith(r):
+        if name.startswith(r.lower()):
             return True
 
     return False
 
 def helper_remove_finds(name, remove_finds):
+    """Helper function that returns true if any item in remove_finds
+    (list) can be string-found in name.  Everything is lowercased.
+    """
+    name = name.lower()
     for r in remove_finds:
-        if name.find(r) >= 0:
+        if name.find(r.lower()) >= 0:
             return True
 
     return False
@@ -60,7 +64,7 @@ if sys.platform.startswith('win'):
     # http://msdn.microsoft.com/library/default.asp?url=/library/en-us/
     # vclib/html/_crt_c_run.2d.time_libraries.asp
     remove_binaries = ['dciman32.dll', 'ddraw.dll', 'glu32.dll', 'msvcp60.dll',
-                       'netapi32.dll', 'opengl32.dll']
+                       'netapi32.dll', 'opengl32.dll', 'uxtheme.dll']
     
 else:
     exeName = 'builddevide/devide'
@@ -256,7 +260,7 @@ for i in range(len(a.binaries)-1, -1, -1):
        helper_remove_start(a.binaries[i][0], remove_binary_finds):
         del a.binaries[i]
 
-#print "===== NEW_BINARIES = %s" % (a.binaries,)
+print "===== NEW_BINARIES = %s" % (a.binaries,)
 
 ######################################################################
 
