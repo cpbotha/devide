@@ -130,11 +130,6 @@ class tdObjects(s3dcGridMixin):
 
                     # i prefer flat shading, okay?
                     p.SetInterpolationToFlat()
-                    # goddammit!  if i do this, my nice gradient
-                    # background disappears.  must be a bug, because
-                    # if i add one extra actor, make that smooth, the
-                    # original can remain flat, AND I have my
-                    # background!
                     
                     # Ka, background lighting coefficient
                     p.SetAmbient(0.1)
