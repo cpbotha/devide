@@ -1,4 +1,4 @@
-Release 2525 - Mon Aug  7 11:47:16 WEST 2006
+Release 2543 - Sun Sep  2 19:15:16 WEST 2007
 
 Changes since ng1phase1 6.8.7 T
 
@@ -12,6 +12,10 @@ Changes since ng1phase1 6.8.7 T
      medical images.
  * Tuned surface model appearance in slice3dVWR.  Now appears
    to be completely tuned.
+ * Funky gradient background in slice3dVWR.  Enhances tuned
+   appearance.
+ * You can now drop files on existing modules: if they have a filename
+   attribute in the config, this will be modified.
  * More tests in the unit testing framework.
  * Complete build-system (johannes) available on *ix that can build
    DeVIDE from scratch (given a fast network connection).  Use this

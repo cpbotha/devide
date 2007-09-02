@@ -13,6 +13,7 @@ except Exception, e:
 
 DEVIDE_VERSION = '%s.0000' % (SVN_REVISION,)
 
+
 # standard Python imports
 import getopt
 import mutex
