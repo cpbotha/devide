@@ -209,6 +209,10 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # take care of all our bindings to renderers
         del self._threedRenderer
 
+        # also do the background renderer
+        self._background_renderer.RemoveAllViewProps()
+        del self._background_renderer
+
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
         # will only disappear when it's reference count reaches 0, and we
@@ -584,62 +588,18 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # see about stereo
         #self.threedFrame.threedRWI.GetRenderWindow().SetStereoCapableWindow(1)
 
-        # add the renderer
+        # create foreground and background renderers 
         self._threedRenderer = vtk.vtkRenderer()
-        self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
+        self._background_renderer = vtk.vtkRenderer()
 
-        # bit of code thanks to 
-        # http://www.bioengineering-research.com/vtk/BackgroundGradient.tcl
-        # for making gradient background...
-        # =================================================================
-        qpts = vtk.vtkPoints()
-        qpts.SetNumberOfPoints(4)
-        qpts.InsertPoint(0, 0, 0, 0)
-        qpts.InsertPoint(1, 1, 0, 0)
-        qpts.InsertPoint(2, 1, 1, 0)
-        qpts.InsertPoint(3, 0, 1, 0)
+        renwin = self.threedFrame.threedRWI.GetRenderWindow()
+   
+        # use function to setup fg and bg renderers so we can have a
+        # nice gradient background.
+        import module_kits.vtk_kit
+        module_kits.vtk_kit.utils.setup_renderers(renwin,
+                self._threedRenderer, self._background_renderer)
 
-        quad = vtk.vtkQuad()
-        quad.GetPointIds().SetId(0,0)
-        quad.GetPointIds().SetId(1,1)
-        quad.GetPointIds().SetId(2,2)
-        quad.GetPointIds().SetId(3,3)
-
-        uc = vtk.vtkUnsignedCharArray()
-        uc.SetNumberOfComponents(4)
-        uc.SetNumberOfTuples(4)
-        uc.SetTuple4(0, 128, 128, 128, 255) # bottom left RGBA
-        uc.SetTuple4(1, 128, 128, 128, 255) # bottom right RGBA
-        uc.SetTuple4(2, 255, 255, 255, 255) # top right RGBA
-        uc.SetTuple4(3, 255, 255, 255, 255) # tob left RGBA
-
-        dta = vtk.vtkPolyData()
-        dta.Allocate(1,1)
-        dta.InsertNextCell(quad.GetCellType(), quad.GetPointIds())
-        dta.SetPoints(qpts)
-        dta.GetPointData().SetScalars(uc)
-
-        coord = vtk.vtkCoordinate()
-        coord.SetCoordinateSystemToNormalizedDisplay()
-
-        mapper2d = vtk.vtkPolyDataMapper2D()
-        mapper2d.SetInput(dta)
-        mapper2d.SetTransformCoordinate(coord)
-
-        actor2d = vtk.vtkActor2D()
-        actor2d.SetMapper(mapper2d)
-        actor2d.GetProperty().SetDisplayLocationToBackground()
-
-        #self._threedRenderer.AddActor(actor2d)
-        # first have to debug this.  For example, transparent actors
-        # completely disappear.
-
-        # end of background gradient code.
-        # =================================================================
-
-        self.threedFrame.threedRWI.GetRenderWindow().AddRenderer(self.
-                                                               _threedRenderer)
-        
         # controlFrame creation and basic setup -------------------
         controlFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                        controlFrame
