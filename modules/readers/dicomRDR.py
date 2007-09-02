@@ -230,8 +230,7 @@ class dicomRDR(moduleBase,
     
     def execute_module(self):
         # get the vtkDICOMVolumeReader to try and execute
-	self._reader.Update()
-        
+        self._reader.Update()
 
         # now get some metadata out and insert it in our output stream
 
@@ -290,6 +289,10 @@ class dicomRDR(moduleBase,
 
         wx.EVT_BUTTON(self._viewFrame, self._viewFrame.removeButton.GetId(),
                       self._handlerRemoveButton)
+
+        # follow moduleBase convention to indicate that we now have
+        # a view
+        self.view_initialised = True
         
         
 
