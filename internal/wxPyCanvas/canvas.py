@@ -67,6 +67,18 @@ class canvas(wx.wxScrolledWindow, canvasSubject):
         dc = wx.wxBufferedDC(cdc, self._buffer)
         return dc
 
+    def get_glyph_on_coords(self, rx, ry):
+        """If rx,ry falls on a glyph, return that glyph, else return
+        None.
+        """
+
+        for cobject in self._cobjects:
+            if cobject.hitTest(rx, ry) and isinstance(cobject,
+                    coGlyph):
+                return cobject
+
+        return None
+
     def OnMouseEvent(self, event):
 
         # this seems to work fine under windows.  If we don't do this, and the

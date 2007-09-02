@@ -566,6 +566,39 @@ class GraphEditor:
         # list of tuples: (filename, errormessage)
         dropFilenameErrors = []
 
+        # filename mod code =========================================
+        # dropping a filename on an existing module will try to change
+        # that module's config.filename (if it exists) to the dropped
+        # filename.  if not successful, the normal logic for dropped
+        # filenames applies.
+
+        if len(filenames) == 1:
+            filename = filenames[0]
+            canvas = self._interface._main_frame.canvas
+            rx, ry = canvas.eventToRealCoords(x,y)
+            g = canvas.get_glyph_on_coords(rx,ry)
+            if g:
+                mi = g.moduleInstance
+                c = mi.get_config()
+                if hasattr(c, 'filename'):
+                    c.filename = filename
+                    mi.set_config(c)
+                    mi.config_to_logic()
+                    mi.logic_to_config()
+                    # try to update view if it exists
+                    try:
+                        if mi._view_frame:
+                            mi.config_to_view()
+                    except AttributeError:
+                        pass
+                    
+                    mm = self._devide_app.get_module_manager()
+                    mm.modify_module(mi)
+                
+                    return dropFilenameErrors
+
+        # end filename mod code
+
         dcmFilenames = []
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
