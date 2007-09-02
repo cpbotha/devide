@@ -315,6 +315,9 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
         moduleUtils.createECASButtons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)
 
+        # following module_base convention
+        self.view_initialised = True
+
     def _getViewFrameFilename(self):
         return self._view_frame.filenameText.GetValue()
 
@@ -447,6 +450,10 @@ class noConfigModuleMixin(introspectModuleMixin):
 
         # set cute icon
         viewFrame.SetIcon(moduleUtils.getModuleIcon())
+
+        # follow moduleBase convention to indicate that view is
+        # available
+        self.view_initialised = True
 
         self._view_frame = viewFrame
         return viewFrame
@@ -627,7 +634,11 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
 
         moduleUtils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
-            
+           
+        # following moduleBase convention to indicate that view is
+        # available.
+        self.view_initialised = True
+
         self._view_frame = viewFrame
         return viewFrame
 
