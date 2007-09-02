@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 # $Id$
 
+import re
+
 # the current main release version
-DEVIDE_VERSION = '2530.0000'
+SVN_REVISION_TEXT = "$Revision$"
+try:
+    SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
+            SVN_REVISION_TEXT).group(1)
+except Exception, e:
+    SVN_REVISION = 'xXx'
+
+DEVIDE_VERSION = '%s.0000' % (SVN_REVISION,)
 
 # standard Python imports
 import getopt
@@ -14,6 +23,10 @@ import string
 import sys
 import time
 import traceback
+
+# we need to import this explicitly, else the installer builder
+# forgets it and the binary has e.g. no help() support.
+import site
 
 # we need these explicit imports for cx_Freeze
 #import encodings
