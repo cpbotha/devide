@@ -176,7 +176,7 @@ class Measure2D(introspectModuleMixin, moduleBase):
             return self._widgets
 
     def execute_module(self):
-        pass
+        self.render()
 
     def logic_to_config(self):
         pass
