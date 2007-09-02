@@ -60,5 +60,13 @@ $INSTALLER devide.spec
 # (we are in the installer directory)
 cp devide.exe.manifest distdevide/
 
+# since MSVS 2005 (8.0) we also need to copy the whole assembly to
+# which some of the runtimes belong to.  At the time of writing
+# (20070901), this is: MSVS 8\VC\redist\x86\Microsoft.VC80.CRT\
+cp msvcm80.dll Microsoft.VC80.CRT.manifest distdevide/
+# pyinstaller already grabs msvcp80.dll and msvcr80.dll, so we only
+# grab the rest of the assembly.  Also see
+# http://channel9.msdn.com/ShowPost.aspx?PostID=23261 for more info.
+
 
 fi
