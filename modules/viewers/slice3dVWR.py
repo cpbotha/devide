@@ -587,6 +587,56 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # add the renderer
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
+
+        # bit of code thanks to 
+        # http://www.bioengineering-research.com/vtk/BackgroundGradient.tcl
+        # for making gradient background...
+        # =================================================================
+        qpts = vtk.vtkPoints()
+        qpts.SetNumberOfPoints(4)
+        qpts.InsertPoint(0, 0, 0, 0)
+        qpts.InsertPoint(1, 1, 0, 0)
+        qpts.InsertPoint(2, 1, 1, 0)
+        qpts.InsertPoint(3, 0, 1, 0)
+
+        quad = vtk.vtkQuad()
+        quad.GetPointIds().SetId(0,0)
+        quad.GetPointIds().SetId(1,1)
+        quad.GetPointIds().SetId(2,2)
+        quad.GetPointIds().SetId(3,3)
+
+        uc = vtk.vtkUnsignedCharArray()
+        uc.SetNumberOfComponents(4)
+        uc.SetNumberOfTuples(4)
+        uc.SetTuple4(0, 128, 128, 128, 255) # bottom left RGBA
+        uc.SetTuple4(1, 128, 128, 128, 255) # bottom right RGBA
+        uc.SetTuple4(2, 255, 255, 255, 255) # top right RGBA
+        uc.SetTuple4(3, 255, 255, 255, 255) # tob left RGBA
+
+        dta = vtk.vtkPolyData()
+        dta.Allocate(1,1)
+        dta.InsertNextCell(quad.GetCellType(), quad.GetPointIds())
+        dta.SetPoints(qpts)
+        dta.GetPointData().SetScalars(uc)
+
+        coord = vtk.vtkCoordinate()
+        coord.SetCoordinateSystemToNormalizedDisplay()
+
+        mapper2d = vtk.vtkPolyDataMapper2D()
+        mapper2d.SetInput(dta)
+        mapper2d.SetTransformCoordinate(coord)
+
+        actor2d = vtk.vtkActor2D()
+        actor2d.SetMapper(mapper2d)
+        actor2d.GetProperty().SetDisplayLocationToBackground()
+
+        #self._threedRenderer.AddActor(actor2d)
+        # first have to debug this.  For example, transparent actors
+        # completely disappear.
+
+        # end of background gradient code.
+        # =================================================================
+
         self.threedFrame.threedRWI.GetRenderWindow().AddRenderer(self.
                                                                _threedRenderer)
         

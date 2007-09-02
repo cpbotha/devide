@@ -130,7 +130,12 @@ class tdObjects(s3dcGridMixin):
 
                     # i prefer flat shading, okay?
                     p.SetInterpolationToFlat()
-
+                    # goddammit!  if i do this, my nice gradient
+                    # background disappears.  must be a bug, because
+                    # if i add one extra actor, make that smooth, the
+                    # original can remain flat, AND I have my
+                    # background!
+                    
                     # Ka, background lighting coefficient
                     p.SetAmbient(0.1)
                     # light reflectance
@@ -141,10 +146,12 @@ class tdObjects(s3dcGridMixin):
                     # highlights
                     p.SetSpecularPower(100)
 
-                    self.slice3dVWR._threedRenderer.AddActor(actor)
+                    ren = self.slice3dVWR._threedRenderer
+                    ren.AddActor(actor)
                     self._tdObjectsDict[tdObject] = {'tdObject' : tdObject,
                                                      'type' : 'vtkPolyData',
                                                      'vtkActor' : actor}
+
 
                     # to get the name of the scalars we need to do this.
                     tdObject.Update()
