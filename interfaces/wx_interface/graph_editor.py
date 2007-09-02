@@ -554,7 +554,40 @@ class GraphEditor:
                     #    i += 1
                     #    r = self._renameModule(mod, glyph, '%s (%d)' %
                     #                           (newModuleName, i))
-                        
+
+        def handle_drop_on_glyph(glyph, filename):
+            """Adds whole list of filenames to dicomRDR list, or adds
+            first filename in list if its any other module with a
+            filename attribute in its config struct.
+            """
+            mi = g.moduleInstance
+            c = mi.get_config()
+            mm = self._devide_app.get_module_manager()
+
+            if mi.__class__.__name__ == 'dicomRDR':
+                c = mi.get_config()
+                del c.dicomFilenames[:] 
+                c.dicomFilenames.extend(filenames)
+                # this will do the whole config -> logic -> view dance
+                # view is only done if view_initialised is True
+                mi.set_config(c)
+
+                mm.modify_module(mi)
+
+                return True
+
+            elif hasattr(c, 'filename'):
+                c = mi.get_config()
+                c.filename = filenames[0]
+                mi.set_config(c)
+
+                mm.modify_module(mi)
+
+                return True
+
+            else:
+                return False
+                       
             
         
         actionDict = {'vti' : ('modules.readers.vtiRDR', 'filename'),
@@ -566,37 +599,23 @@ class GraphEditor:
         # list of tuples: (filename, errormessage)
         dropFilenameErrors = []
 
+        # shortcut for later
+        canvas = self._interface._main_frame.canvas
+
         # filename mod code =========================================
         # dropping a filename on an existing module will try to change
         # that module's config.filename (if it exists) to the dropped
         # filename.  if not successful, the normal logic for dropped
         # filenames applies.
 
-        if len(filenames) == 1:
-            filename = filenames[0]
-            canvas = self._interface._main_frame.canvas
-            rx, ry = canvas.eventToRealCoords(x,y)
-            g = canvas.get_glyph_on_coords(rx,ry)
-            if g:
-                mi = g.moduleInstance
-                c = mi.get_config()
-                if hasattr(c, 'filename'):
-                    c.filename = filename
-                    mi.set_config(c)
-                    mi.config_to_logic()
-                    mi.logic_to_config()
-                    # try to update view if it exists
-                    try:
-                        if mi._view_frame:
-                            mi.config_to_view()
-                    except AttributeError:
-                        pass
-                    
-                    mm = self._devide_app.get_module_manager()
-                    mm.modify_module(mi)
+        rx, ry = canvas.eventToRealCoords(x,y)
+        g = canvas.get_glyph_on_coords(rx,ry)
+        if g:
+            # returns True if glyph did something with drop...
+            ret = handle_drop_on_glyph(g, filenames)
+            if ret:
+                return dropFilenameErrors
                 
-                    return dropFilenameErrors
-
         # end filename mod code
 
         dcmFilenames = []
