@@ -23,7 +23,7 @@ class dicomRDR(moduleBase,
         moduleBase.__init__(self, moduleManager)
 
         # setup necessary VTK objects
-	self._reader = vtkdevide.vtkDICOMVolumeReader()
+        self._reader = vtkdevide.vtkDICOMVolumeReader()
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
@@ -56,16 +56,16 @@ class dicomRDR(moduleBase,
         del self._reader
 
     def get_input_descriptions(self):
-	return ()
+        return ()
     
     def set_input(self, idx, input_stream):
-	raise Exception
+        raise Exception
     
     def get_output_descriptions(self):
-	return ('DICOM data (vtkStructuredPoints)',)
+        return ('DICOM data (vtkStructuredPoints)',)
     
     def get_output(self, idx):
-	return self._reader.GetOutput()
+        return self._reader.GetOutput()
 
 
     def logic_to_config(self):
@@ -231,7 +231,7 @@ class dicomRDR(moduleBase,
     def execute_module(self):
         # get the vtkDICOMVolumeReader to try and execute
         self._reader.Update()
-
+        
         # now get some metadata out and insert it in our output stream
 
         # first determine axis labels based on IOP ####################

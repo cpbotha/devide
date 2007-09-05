@@ -660,20 +660,34 @@ class sliceDirection:
             iwindow = dmax - dmin
             ilevel = 0.5 * (dmin + dmax)
 
+            # this doesn't work anymore.  We'll have to pack the
+            # Window/Level data in a field like we do with the
+            # orientation.
             inputData_source = inputData.GetSource()
-            if hasattr(inputData_source, 'GetWindowCenter') and \
-                   callable(inputData_source.GetWindowCenter):
-                level = inputData_source.GetWindowCenter()
-                print "s3dv: Getting LEVEL from input source"
-            else:
-                level = ilevel
-                print "s3dv: Estimating LEVEL"
 
-            if hasattr(inputData_source, 'GetWindowWidth') and \
-                   callable(inputData_source.GetWindowWidth):
+            try:
                 window = inputData_source.GetWindowWidth()
-            else:
+                print "s3dv: Reading LEVEL from DICOM."
+            except AttributeError:
                 window = iwindow
+                print "s3dv: Estimating LEVEL."
+
+            try:
+                level = inputData_source.GetWindowCenter()
+                print "s3dv: Reading WINDOW from DICOM."
+            except AttributeError:
+                level = ilevel
+                print "s3dv: Estimating WINDOW."
+
+
+            # if window is negative, it means the DICOM reader couldn't
+            # extract that information and we also have to estimate
+            if window < 0.0:
+                window = iwindow
+                level = ilevel
+                print "s3dv: DICOM W/L invalid, estimating."
+
+
 
             # colours of imageplanes; we will use these as keys
             ipw_cols = [(1,0,0), (0,1,0), (0,0,1)]
