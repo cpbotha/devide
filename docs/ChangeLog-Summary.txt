@@ -5,6 +5,7 @@ Changes since Release 2543 - Sun Sep  2 19:15:16 WEST 2007
  * Added unit test for above-mentioned ProgressEvent masks
    RuntimeError bug.
  * Fixes to DICOM reader logic.
+ * Fixes to Measure2D.
 
 Changes since ng1phase1 6.8.7 T
 

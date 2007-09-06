@@ -321,8 +321,6 @@ class Measure2D(introspectModuleMixin, moduleBase):
                 pass
             else:
 
-
-
                 w = vtktud.vtkEllipseWidget()
                 w.SetInteractor(self._view_frame._rwi)
                 w.SetEnabled(1)
@@ -353,6 +351,20 @@ class Measure2D(introspectModuleMixin, moduleBase):
                     r.GetSemiMinorAxisVector(mi.radius_vectors[1])
 
                     self._sync_measurement_grid()
+
+                # make sure state is initialised  (if one just places
+                # the widget without interacting, the observer won't
+                # be invoked and measurement_info won't have the
+                # necessary attributes; if the network then executes,
+                # there will be errors)
+                widget.measurement_string = ''
+                mi = widget.measurement_info
+                mi.c = [0.0,0.0,0.0]
+                mi.axis_lengths = (0.0, 0.0, 0.0)
+                mi.radius_vectors = (
+                        [0.0,0.0,0.0],
+                        [0.0,0.0,0.0],
+                        [0.0,0.0,0.0])
 
                 w.AddObserver('EndInteractionEvent',
                               observer_interaction)
