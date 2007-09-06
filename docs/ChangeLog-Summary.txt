@@ -1,4 +1,4 @@
-Release 2548 - Thu Sep  6 00:03:20 WEST 2007
+Release 2551 - Thu Sep  6 22:53:32 WEST 2007
 
 Changes since Release 2543 - Sun Sep  2 19:15:16 WEST 2007
  * Bug fix to VTK error-to-Python-exception code
