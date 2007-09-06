@@ -23,6 +23,26 @@ class BasicVTKTest(unittest.TestCase):
         else:
             self.fail('VTK object did not raise Python exception.')
 
+    def test_vtk_progress_exception_masking(self):
+        """Ensure progress events are not masking exceptions.
+        """
+
+        import vtk
+        import vtkdevide
+
+        def observer_progress(o, e):
+            print "DICOM progress %s." % (str(o.GetProgress() * 100.0),)
+
+        r = vtkdevide.vtkDICOMVolumeReader()
+        r.AddObserver("ProgressEvent", observer_progress)
+
+        try:
+            r.Update()
+        except RuntimeError, e:
+            pass
+        else:
+            self.fail('ProgressEvent handler masked RuntimeError.')
+
 
 def get_suite(devide_testing):
     devide_app = devide_testing.devide_app
@@ -35,6 +55,9 @@ def get_suite(devide_testing):
         return basic_vtk_suite
 
     t = BasicVTKTest('test_vtk_exceptions')
+    basic_vtk_suite.addTest(t)
+
+    t = BasicVTKTest('test_vtk_progress_exception_masking')
     basic_vtk_suite.addTest(t)
 
     return basic_vtk_suite
