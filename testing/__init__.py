@@ -9,9 +9,10 @@ import unittest
 from testing import basic_vtk
 from testing import basic_wx
 from testing import graph_editor
+from testing import numpy_tests
 from testing import matplotlib_tests
 
-module_list = [basic_vtk, basic_wx, graph_editor, matplotlib_tests]
+module_list = [basic_vtk, basic_wx, graph_editor, numpy_tests, matplotlib_tests]
 for m in module_list:
     reload(m)
 
@@ -25,6 +26,7 @@ class DeVIDETesting:
         suite_list = [basic_vtk.get_suite(self),
                       basic_wx.get_suite(self),
                       graph_editor.get_suite(self),
+                      numpy_tests.get_suite(self),
                       matplotlib_tests.get_suite(self)]
 
         self.main_suite = unittest.TestSuite(tuple(suite_list))
@@ -33,12 +35,13 @@ class DeVIDETesting:
         runner = unittest.TextTestRunner()
         runner.run(self.main_suite)
 
-        print "Complete suite consists of 14 (multi-part) tests."
+        print "Complete suite consists of 16 (multi-part) tests."
 
     def runSomeTest(self):
         #some_suite = matplotlib_tests.get_suite(self)
         #some_suite = graph_editor.get_some_suite(self)
-        some_suite = basic_vtk.get_suite(self)
+        #some_suite = basic_vtk.get_suite(self)
+        some_suite = numpy_tests.get_suite(self)
 
         runner = unittest.TextTestRunner()
         runner.run(some_suite)
