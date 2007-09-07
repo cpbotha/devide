@@ -40,7 +40,7 @@ class helpClass(object):
         if help_type > 0:
             self._htmlHelpController.DisplayContents()
         else:
-            win32help.HtmlHelp(self._frame.GetHandle(),
+            self._w32h_hh = win32help.HtmlHelp(self._frame.GetHandle(),
                     self._help_file, win32help.HH_DISPLAY_TOPIC,
                     'introduction.html')
 

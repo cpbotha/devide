@@ -19,9 +19,15 @@ class HelpContentsTest(unittest.TestCase):
         """Test if Help Contents can be opened successfully.
         """
         self._devide_app.get_interface()._handlerHelpContents(None)
-        self.failUnless(
-            self._devide_app.get_interface()._helpClass._htmlHelpController.\
-            GetFrame().IsShown())
+        hc = self._devide_app.get_interface()._helpClass
+
+        if hasattr(hc, '_htmlHelpController'):
+            self.failUnless(
+                hc._htmlHelpController.GetFrame().IsShown())
+        else:
+            # this is windows, looking for CHM thingy
+            self.failUnless(
+                    hc._w32h_hh)
 
 def get_suite(devide_testing):
     devide_app = devide_testing.devide_app

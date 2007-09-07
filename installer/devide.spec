@@ -177,10 +177,6 @@ sys.path.insert(0, APP_DIR)
 import module_kits
 import defaults
 
-# get a list of module kits
-module_kit_list = module_kits.module_kit_list[:] + ['numpy_kit']
-# remove the no_kits
-module_kit_list = [i for i in module_kit_list if i not in defaults.NOKITS]
 
 #######################################################################
 
@@ -200,6 +196,9 @@ modules_tree = Tree(os.path.join(APP_DIR, 'modules'), 'modules',
 # all module_kits
 module_kits_tree = Tree(os.path.join(APP_DIR, 'module_kits'), 'module_kits',
                     ['.svn', '*~'])
+
+print "===== APP_DIR: ", APP_DIR
+print "===== MKT: ", module_kits_tree
 
 # VTKPIPELINE ICONS
 
@@ -260,7 +259,7 @@ for i in range(len(a.binaries)-1, -1, -1):
        helper_remove_start(a.binaries[i][0], remove_binary_finds):
         del a.binaries[i]
 
-print "===== NEW_BINARIES = %s" % (a.binaries,)
+#print "===== NEW_BINARIES = %s" % (a.binaries,)
 
 ######################################################################
 
