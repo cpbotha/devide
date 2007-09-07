@@ -186,7 +186,7 @@ class WXInterface(wx.App):
 
     def _startHelpClass(self):
         if self._helpClass == None:
-            self._helpClass = helpClass(self._devide_app.get_appdir())
+            self._helpClass = helpClass(self._devide_app)
 
     def start_graph_editor(self):
         if self._graph_editor == None:

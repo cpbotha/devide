@@ -5,7 +5,6 @@
 # script to build a complete release:
 # 1. cvs updates on devide and vtkdevide
 # 2. configure and build vtkdevide
-# 3. make documentation (help)
 # 4. clean out binary directories
 # 5. run package building script (makePackage.sh) to make
 #    devide binaries
@@ -18,7 +17,7 @@
 #                     NSIS installer 2.0 or later
 # parameter(s): "sh makeRelease noitk" won't build itk binaries.
 #               "sh makeRelease package_only" will do everything except
-#                 updating sources and building help
+#                 updating sources
 
 # TODO: rewrite in Python damnit!
 
@@ -38,12 +37,6 @@ python updateAll.py --no-itk
 fi
 # go back to the devide dir
 cd ../
-
-# make documentation
-echo "===== Building documentation..."
-cd docs/help/source
-sh ./makeHtmlHelp.sh
-cd ../../../
 
 else
 

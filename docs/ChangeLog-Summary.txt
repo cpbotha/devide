@@ -1,4 +1,8 @@
-Release 2556 - Thu Sep  6 22:53:32 WEST 2007
+Release ???? 
+
+Changes since Release 2556 - Thu Sep  6 22:53:32 WEST 2007
+ * Using HelpMaker for help file authoring, generating CHM and HTB
+   (kinda) file.  Selects file based on operating system.
 
 Changes since Release 2543 - Sun Sep  2 19:15:16 WEST 2007
  * Bug fix to VTK error-to-Python-exception code
