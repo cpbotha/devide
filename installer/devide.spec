@@ -217,7 +217,7 @@ from distutils import sysconfig
 numpy_tree = Tree(
     os.path.join(sysconfig.get_python_lib(),'numpy'),
     prefix=os.path.join('module_kits/numpy_kit/numpy'), 
-    excludes=['*.py', 'doc', 'docs'])
+    excludes=['*.pyc', '*.pyo', 'doc', 'docs'])
 
 testing_tree = Tree(os.path.join(APP_DIR, 'testing'), 'testing',
                     ['.svn', '*~', '*.pyc'])
