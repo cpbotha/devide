@@ -1,4 +1,4 @@
-Release 2551 - Thu Sep  6 22:53:32 WEST 2007
+Release 2556 - Thu Sep  6 22:53:32 WEST 2007
 
 Changes since Release 2543 - Sun Sep  2 19:15:16 WEST 2007
  * Bug fix to VTK error-to-Python-exception code
@@ -6,6 +6,9 @@ Changes since Release 2543 - Sun Sep  2 19:15:16 WEST 2007
    RuntimeError bug.
  * Fixes to DICOM reader logic.
  * Fixes to Measure2D.
+ * Fixes to numpy_kit: on systems with a Python+numpy installation, it could
+   import modules from the system installation instead of the shipping
+   kit.  Also added tests to make sure this doesn't happen again.
 
 Changes since ng1phase1 6.8.7 T
 
