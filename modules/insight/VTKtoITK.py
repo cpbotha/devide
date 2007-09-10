@@ -29,7 +29,7 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
              'input type.'),
             ('Data type:', 'type', 'base:str', 'choice',
              'Data will be cast to this type if AutoType is not used.',
-             ['float', 'unsigned char', 'unsigned long', 'unsigned short'])]
+             ['float', 'signed short', 'unsigned long'])]
 
         scriptedConfigModuleMixin.__init__(self, config_list,
                                            {'Module (self)' : self})
@@ -78,8 +78,14 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
                                          for i in output_type.split()])
             if short_string_type == 'S':
                 short_string_type = 'SS'
-                
-            short_string = '%s%s' % (short_string_type, dims)
+
+
+            if short_string_type.startswith('V'):
+                short_string = '%s%s%s' % (short_string_type, dims,
+                        dims)
+            else:
+                short_string = '%s%s' % (short_string_type, dims)
+
 
             # we could cache this as shown below, but experience shows
             # that the connection module often gets confused when its
@@ -97,9 +103,19 @@ class VTKtoITK(scriptedConfigModuleMixin, moduleBase):
             else:
                 # we do need the cast
                 self._image_cast.SetInput(self._input)
-                # turn unsgned char into UnsignedChar
-                vtk_type_string = '%s%s' % (output_type[0].upper(),
-                                            output_type[1:])
+
+                # turn unsigned char into UnsignedChar, but signed
+                # short into Short.
+                # output_type is e.g. "signed short"
+                # first break the list up, capitalise first letters
+                captsl = ['%s%s' % (i[0].upper(), i[1:]) 
+                         for i in output_type.split()]
+                # however, VTK doesn't have the Signed bit! (so we
+                # just want "Short")
+                if captsl[0] == "Signed":
+                    del captsl[0]
+                # then join them together
+                vtk_type_string = ''.join(captsl)
                 # cast function
                 cast_function = getattr(
                     self._image_cast,
