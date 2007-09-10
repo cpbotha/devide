@@ -1,4 +1,4 @@
-import time
+import counter
 
 class metaModule:
     """Class used to store module-related information.
@@ -52,12 +52,12 @@ class metaModule:
 
         # time when module was last brought up to date
         # default to 0.0; that will guarantee an initial execution
-        self.executeTimes = self.numParts * [0.0]
+        self.executeTimes = self.numParts * [0]
 
         # time when module was last invalidated (through parameter changes)
         # default is current time.  Along with 0.0 executeTime, this will
         # guarantee initial execution.
-        self.modifiedTimes = self.numParts * [time.time()]
+        self.modifiedTimes = self.numParts * [counter.counter()]
 
         # derive partsTo dictionaries #######################################
         self._inputsToParts = {}
@@ -312,7 +312,8 @@ class metaModule:
 
             # if we get here, everything is okay and we can record
             # the execution time of this part
-            self.executeTimes[part] = time.time()
+            self.executeTimes[part] = counter.counter() 
+            print "exec stamped:", self.executeTimes[part]
 
     def modify(self, part=0):
         """Used by the moduleManager to timestamp the modified time.
@@ -325,12 +326,13 @@ class metaModule:
         @param part: indicates the part that has to be modified.
         """
 
-        self.modifiedTimes[part] = time.time()
+        self.modifiedTimes[part] = counter.counter()
 
     def shouldExecute(self, part=0):
         """Determine whether the encapsulated module needs to be executed.
         """
         
+        print "mod > exec? :", self.modifiedTimes[part], self.executeTimes[part]
         return self.modifiedTimes[part] > self.executeTimes[part]
 
     def shouldTransferOutput(
@@ -387,5 +389,6 @@ class metaModule:
         """
 
         # and set the timestamp
-        self.transferTimes[
-            (outputIndex, consumerInstance, consumerInputIdx)] = time.time()
+        self.transferTimes[ 
+                (outputIndex, consumerInstance, consumerInputIdx)] = \
+                counter.counter()
