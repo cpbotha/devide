@@ -5,6 +5,7 @@ import re
 
 # the current main release version
 SVN_REVISION_TEXT = "$Revision$"
+
 try:
     SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
             SVN_REVISION_TEXT).group(1)
