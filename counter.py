@@ -15,8 +15,9 @@ class CounterBorg:
     """
 
     # we start with 1, so that client code can init to 0 and guarantee
-    # an initial invalid state.
-    __shared_state = {'counter' : 1}
+    # an initial invalid state.  The counter is explicitly long, this
+    # gives us unlimited precision (up to your memory limits, YEAH!)
+    __shared_state = {'counter' : 1L}
 
     def __init__(self):
         self.__dict__ = self.__shared_state
