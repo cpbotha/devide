@@ -1779,6 +1779,8 @@ class moduleManager:
         part = consumer_meta_module.getPartForInput(consumer_input_idx)
         consumer_meta_module.modify(part)
 
+        #print "modified", consumer_meta_module.instance.__class__.__name__
+
         # execute on change
         # we probably shouldn't automatically execute here... transfers
         # mean that some sort of network execution is already running
