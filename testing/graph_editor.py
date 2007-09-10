@@ -292,6 +292,53 @@ class TestModulesMisc(GraphEditorTestBase):
 # ----------------------------------------------------------------------------
 class TestITKBasic(GraphEditorVolumeTestBase):
 
+    def test_vtktoitk_types(self):
+        """Do quick test on vtk -> itk -> vtk + type conversion.
+        """
+
+        # create VTKtoITK, set it to cast to float (we're going to
+        # test signed short and unsigned long as well)
+        (v2imod, v2iglyph) = self._ge.createModuleAndGlyph(
+                200, 10, 'modules.insight.VTKtoITK')
+        self.failUnless(v2imod, v2iglyph)
+
+        
+        (i2vmod, i2vglyph) = self._ge.createModuleAndGlyph(
+                200, 130, 'modules.insight.ITKtoVTK')
+        self.failUnless(i2vmod and i2vglyph)
+
+        ret = self._ge._connect(self.dtglyph, 0, v2iglyph, 0)
+        self.failUnless(ret)
+
+        ret = self._ge._connect(v2iglyph, 0, i2vglyph, 0)
+        self.failUnless(ret)
+
+        # redraw the canvas
+        self._ge_frame.canvas.redraw()
+
+        for t in (('float', 'float'), ('signed short', 'short'),
+                ('unsigned long', 'unsigned long')):
+            c = v2imod.get_config()
+            c.autotype = False
+            c.type = t[0] 
+            v2imod.set_config(c) # this will modify the module
+        
+            # execute the network
+            self._ge._handler_execute_network(None)
+       
+            # each time make sure that the effective data type at the
+            # output of the ITKtoVTK is what we expect.
+            id = i2vmod.get_output(0)
+            self.failUnless(id.GetScalarTypeAsString() == t[1])
+
+            # this is quite nasty: if the next loop is entered too
+            # quickly and the VTKtoITK module is modified before the
+            # ticker has reached the next decisecond, the network
+            # thinks that it has not been modified, and so it won't be
+            # executed.
+            time.sleep(0.01)
+
+
     def test_confidence_seed_connect(self):
         """Test confidenceSeedConnect and VTK<->ITK interconnect.
         """
@@ -387,7 +434,7 @@ def get_some_suite(devide_testing):
     
     some_suite = unittest.TestSuite()
 
-    t = TestITKBasic('test_confidence_seed_connect')
+    t = TestITKBasic('test_vtktoitk_types')
     t._devide_app = devide_app
 
     #t = create_geb_test('test_module_search', devide_app)
@@ -435,4 +482,9 @@ def get_suite(devide_testing):
         t._devide_app = devide_app
         graph_editor_suite.addTest(t)
 
+        t = TestITKBasic('test_vtktoitk_types') 
+        t._devide_app = devide_app
+        graph_editor_suite.addTest(t)
+
     return graph_editor_suite
+
