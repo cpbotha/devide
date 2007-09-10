@@ -1,4 +1,4 @@
-# scheduler.py copyright 2005 Charl P. Botha <http://cpbotha.net/>
+# scheduler.py copyright 2003-2007 Charl P. Botha <http://cpbotha.net/>
 # $Id$
 
 import mutex
@@ -326,6 +326,7 @@ class Scheduler:
             mm = self._devideApp.getModuleManager()
 
             for sm in schedList:
+                print "### sched:", sm.meta_module.instance.__class__.__name__
                 # find all producer modules
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
