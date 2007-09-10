@@ -213,6 +213,10 @@ class moduleBase(object):
         if self.view_initialised:
             self.config_to_view()
 
+        # the config has been set, so we assumem that the module has
+        # now been modified. 
+        self._moduleManager.modify_module(self)
+
     # convenience functions
 
     def sync_module_logic_with_config(self):
