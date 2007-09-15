@@ -10,7 +10,7 @@ class DeVIDECanvasObject(SubjectMixin):
         SubjectMixin.__init__(self)
         
         self._position = position
-        self._canvas = None
+        self.canvas = None
         self._observers = {'enter' : [],
                            'exit' : [],
                            'drag' : [],
@@ -18,6 +18,11 @@ class DeVIDECanvasObject(SubjectMixin):
                            'buttonUp' : [],
                            'buttonDClick' : [],
                            'motion' : []}
+
+        # all canvas objects have a vtk prop that can be added to a
+        # vtk renderer.
+        self.prop = None
+
     def close(self):
         """Take care of any cleanup here.
         """
@@ -33,18 +38,11 @@ class DeVIDECanvasObject(SubjectMixin):
     def set_position(self, destination):
         self._position = destination
 
-    def get_canvas(self):
-        return self._canvas
-
     def hit_test(self, x, y):
         return False
 
     def isInsideRect(self, x, y, width, height):
         return False
-
-    def set_canvas(self, canvas):
-        self._canvas = canvas
-
 
 #############################################################################
 
@@ -56,6 +54,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
     routingOvershoot = 10
 
     def __init__(self, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
+
         """A line object for the canvas.
 
         linePoints is just a list of python tuples, each representing a
@@ -72,50 +71,50 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         colourNames = ['BLUE', 'BROWN', 'MEDIUM FOREST GREEN',
                        'DARKORANGE1']
         self.lineColourName = colourNames[self.toInputIdx % (len(colourNames))]
-        
-
+ 
         # any line begins with 4 (four) points
-
         self.updateEndPoints()
-
-        canvasObject.__init__(self, self._linePoints[0])        
-
+        # now we call the parent ctor
+        DeVIDECanvasObject.__init__(self, self._line_points[0])        
+        
+        self._create_geometry()
+        self.update_geometry()
 
     def close(self):
         # delete things that shouldn't be left hanging around
         del self.fromGlyph
         del self.toGlyph
 
-    def draw(self, dc):
-        # lines are 2 pixels thick
-        dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
+    def _create_geometry(self):
+        self._spline_source = vtk.vtkParametricFunctionSource()
+        s = vtk.vtkParametricSpline()
+        pts = vtk.vtkPoints()
+        s.SetPoints(pts)
+        self._spline_source.SetParametricFunction(s)
+        
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._spline_source.GetOutput())
 
-        # simple mode: just the lines thanks.
-        #dc.DrawLines(self._linePoints)
+        a = vtk.vtkActor()
+        a.SetMapper(m)
 
-        # spline mode for N points:
-        # 1. Only 4 points: drawlines.  DONE
-        # 2. Draw line from 0 to 1
-        # 3. Draw line from N-2 to N-1 (second last to last)
-        # 4. Draw spline from 1 to N-2 (second to second last)
-#         if len(self._linePoints) > 4:
-#             dc.DrawLines(self._linePoints[0:2]) # 0 - 1
-#             dc.DrawLines(self._linePoints[-2:]) # second last to last
-#             dc.DrawSpline(self._linePoints[1:-1])
-#         else:
-#             dc.DrawLines(self._linePoints)
+        self.prop = a
 
-        dc.SetPen(wx.wxPen('BLACK', 4, wx.wxSOLID))
-        dc.DrawSpline(self._linePoints)
-        dc.SetPen(wx.wxPen(self.lineColourName, 2, wx.wxSOLID))
-        dc.DrawSpline(self._linePoints)
+    def update_geometry(self):
+        pts = vtk.vtkPoints()
+        for p in self._line_points:
+            pts.InsertNextPoint(p + (0.0,))
+
+        self._spline_source.GetParametricFunction().SetPoints(pts)
+
+        self._spline_source.Update()
                           
     def getBounds(self):
         # totally hokey: for now we just return the bounding box surrounding
         # the first two points - ideally we should iterate through the lines,
         # find extents and pick a position and bounds accordingly
-        return (self._linePoints[-1][0] - self._linePoints[0][0],
-                self._linePoints[-1][1] - self._linePoints[0][1])
+        return (self._line_points[-1][0] - self._line_points[0][0],
+                self._line_points[-1][1] - self._line_points[0][1])
 
     def getUpperLeftWidthHeight(self):
         """This returns the upperLeft coordinate and the width and height of
@@ -123,8 +122,8 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         This is used for fast intersection checking with rectangles.
         """
 
-        p3 = self._linePoints[-3]
-        p2 = self._linePoints[-2]
+        p3 = self._line_points[-3]
+        p2 = self._line_points[-2]
 
         upperLeftX = [p3[0], p2[0]][bool(p2[0] < p3[0])]
         upperLeftY = [p3[1], p2[1]][bool(p2[1] < p3[1])]
@@ -134,7 +133,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         return ((upperLeftX, upperLeftY), (width,  height))
 
     def getThirdLastSecondLast(self):
-        return (self._linePoints[-3], self._linePoints[-2])
+        return (self._line_points[-3], self._line_points[-2])
             
 
     def hitTest(self, x, y):
@@ -146,8 +145,8 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         """Insert new point x,y before second-last point, i.e. the new point
         becomes the third-last point.
         """
-        if (x,y) not in self._linePoints:
-            self._linePoints.insert(len(self._linePoints) - 2, (x, y))
+        if (x,y) not in self._line_points:
+            self._line_points.insert(len(self._line_points) - 2, (x, y))
             return True
         else:
             return False
@@ -155,20 +154,21 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
     def updateEndPoints(self):
         # first get us just out of the port, then create margin between
         # us and glyph
-        boostFromPort = self._pHeight / 2 + coLine.routingOvershoot
+        dcg = DeVIDECanvasGlyph
+        boostFromPort = dcg._pHeight / 2 + self.routingOvershoot
         
-        self._linePoints = [(), (), (), ()]
+        self._line_points = [(), (), (), ()]
         
-        self._linePoints[0] = self.fromGlyph.getCenterOfPort(
+        self._line_points[0] = self.fromGlyph.get_centre_of_port(
             1, self.fromOutputIdx)
-        self._linePoints[1] = (self._linePoints[0][0],
-                               self._linePoints[0][1] + boostFromPort)
+        self._line_points[1] = (self._line_points[0][0],
+                               self._line_points[0][1] + boostFromPort)
 
         
-        self._linePoints[-1] = self.toGlyph.getCenterOfPort(
+        self._line_points[-1] = self.toGlyph.get_centre_of_port(
             0, self.toInputIdx)
-        self._linePoints[-2] = (self._linePoints[-1][0],
-                                self._linePoints[-1][1] - boostFromPort)
+        self._line_points[-2] = (self._line_points[-1][0],
+                                self._line_points[-1][1] - boostFromPort)
 
 #############################################################################
 class DeVIDECanvasGlyph(DeVIDECanvasObject):
@@ -211,7 +211,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.selected = False
         self.blocked = False
 
-        self._assembly = vtk.vtkAssembly()
+        self.prop = vtk.vtkAssembly()
         self._rbs = vtk.vtkRectangularButtonSource()
         self._rbsa = vtk.vtkActor()
         self._ts = vtk.vtkVectorText()
@@ -225,12 +225,14 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             [(vtk.vtkSphereSource(),vtk.vtkActor()) for _ in
                 range(self._numInputs)]
 
+        self._create_geometry()
+
     def close(self):
         del self.moduleInstance
         del self.inputLines
         del self.outputLines
 
-    def create_assembly(self):
+    def _create_geometry(self):
         normal_colour = (192, 192, 192)
         selected_colour = (255, 0, 246)
         blocked_colour = (16, 16, 16)
@@ -267,7 +269,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         text_width = self._label_scale * (b[1] - b[2]) + \
             2 * self._horizBorder
 
-        self._assembly.AddPart(self._tsa)
+        self.prop.AddPart(self._tsa)
         
         # RECT BUTTON ##############################################
         # calculate our size
@@ -299,7 +301,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         self._rbsa.GetProperty().SetColor((0.0, 1.0, 0.0))
 
-        self._assembly.AddPart(self._rbsa)
+        self.prop.AddPart(self._rbsa)
 
         # INPUTS #################################################### 
         horizOffset = self._horizBorder
@@ -315,7 +317,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             a.SetPosition((horizOffset + i * horizStep,
                 self._size[1], 0))
 
-            self._assembly.AddPart(a)
+            self.prop.AddPart(a)
 
         for i in range(self._numOutputs):
             s,a = self._oportssa[i]
@@ -324,9 +326,12 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             a.SetMapper(m)
             a.SetPosition((horizOffset + i * horizStep, 0, 0))
 
-            self._assembly.AddPart(a)
+            self.prop.AddPart(a)
 
-        self._assembly.SetPosition(self._position + (0.0,))
+        self.prop.SetPosition(self._position + (0.0,))
+
+    def update_geometry(self):
+        self.prop.SetPosition(self._position + (0.0,))
 
     def findPortContainingMouse(self, x, y):
         """Find port that contains the mouse pointer.  Returns tuple
@@ -360,7 +365,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             
         return None
 
-    def getCenterOfPort(self, inOrOut, idx):
+    def get_centre_of_port(self, inOrOut, idx):
 
         horizOffset = self._position[0] + self._horizBorder
         horizStep = self._pWidth + self._horizSpacing

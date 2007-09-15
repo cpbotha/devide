@@ -6,9 +6,10 @@ class DeVIDECanvas(SubjectMixin):
     do the rest.  YEAH.
     """
 
-    def __init__(self, renderwindowinteractor):
+    def __init__(self, renderwindowinteractor, renderer):
 
         self._rwi = renderwindowinteractor
+        self._ren = renderer
 
         # parent 2 ctor
         SubjectMixin.__init__(self)
@@ -34,6 +35,15 @@ class DeVIDECanvas(SubjectMixin):
         
 
         # do initial drawing here.
+
+    def close(self):
+        # first remove all objects
+        # (we could do this more quickly, but we're opting for neatly)
+        for cobj in self._cobjects:
+            self.remove_object(cobj)
+
+        del self._rwi
+        del self._ren
 
     def eventToRealCoords(self, ex, ey):
         """Convert window event coordinates to canvas relative coordinates.
@@ -201,8 +211,9 @@ class DeVIDECanvas(SubjectMixin):
 
     def add_object(self, cobj):
         if cobj and cobj not in self._cobjects:
-            cobj.setCanvas(self)
+            cobj.canvas = self
             self._cobjects.append(cobj)
+            self._ren.AddViewProp(cobj.prop)
             cobj.__hasMouse = False
 
     def redraw(self):
@@ -213,7 +224,8 @@ class DeVIDECanvas(SubjectMixin):
 
     def remove_object(self, cobj):
         if cobj and cobj in self._cobjects:
-            cobj.setCanvas(None)
+            self._ren.RemoveViewProp(cobj.prop)
+            cobj.canvas = None
             if self._draggedObject == cobj:
                 self._draggedObject = None
             del self._cobjects[self._cobjects.index(cobj)]
