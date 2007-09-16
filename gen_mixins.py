@@ -24,6 +24,7 @@ class SubjectMixin(object):
     def notify(self):
         for observer in self._observers:
             if callable(observer):
+                # call observer with the observed subject as param
                 observer(self)
 
     def remove_observer(self, observer):
