@@ -1,6 +1,28 @@
 import vtk
 from gen_mixins import SubjectMixin
 
+# think about turning this into a singleton.
+class DeVIDECanvasEvent:
+    def __init__(self):
+        # last event information ############
+        self.name = None
+        #self.left_button_down = False
+        #self.left_button_up = False
+        #self.middle_button_down = False
+        #self.middle_button_up = False
+        #self.right_button_down = False
+        #self.right_button_up = False
+
+        # state information #################
+        self.left_button = False
+        self.middle_button = False
+        self.right_button = False
+        
+        # which cobject has the mouse
+        self.has_mouse = None
+
+
+
 class DeVIDECanvas(SubjectMixin):
     """Give me a vtkRenderWindowInteractor with a Renderer, and I'll
     do the rest.  YEAH.
@@ -15,6 +37,8 @@ class DeVIDECanvas(SubjectMixin):
         SubjectMixin.__init__(self)
 
         self._cobjects = []
+        # dict for mapping from prop back to cobject
+        self._prop_to_cobject = {}
         self._previousRealCoords = None
         self._mouseDelta = (0,0)
         self._potentiallyDraggedObject = None
@@ -27,11 +51,31 @@ class DeVIDECanvas(SubjectMixin):
         
         #self.SetBackgroundColour("WHITE")
 
-        #wx.EVT_MOUSE_EVENTS(self, self.OnMouseEvent)
-        #wx.EVT_PAINT(self, self.OnPaint)
+        self._observer_ids = []
+        # priority is higher than the default 0.0, so should be called
+        # first
+        self._observer_ids.append(self._rwi.AddObserver(
+                'MouseMoveEvent', self._observer_mme, 0.2))
 
+        self._observer_ids.append(self._rwi.AddObserver(
+            'LeftButtonPressEvent', self._observer_lbpe))
+        self._observer_ids.append(self._rwi.AddObserver(
+            'LeftButtonReleaseEvent', self._observer_lbre))
+
+        self._observer_ids.append(self._rwi.AddObserver(
+            'MiddleButtonPressEvent', self._observer_mbpe))
+        self._observer_ids.append(self._rwi.AddObserver(
+            'MiddleButtonReleaseEvent', self._observer_mbre))
+       
+        self._observer_ids.append(self._rwi.AddObserver(
+            'RightButtonPressEvent', self._observer_rbpe))
+        self._observer_ids.append(self._rwi.AddObserver(
+            'RightButtonReleaseEvent', self._observer_rbre))
+        
         self.virtualWidth = 2048
         self.virtualHeight = 2048
+
+        self.event = DeVIDECanvasEvent()
         
 
         # do initial drawing here.
@@ -39,8 +83,12 @@ class DeVIDECanvas(SubjectMixin):
     def close(self):
         # first remove all objects
         # (we could do this more quickly, but we're opting for neatly)
-        for cobj in self._cobjects:
+        for i in range(len(self._cobjects)-1,-1,-1):
+            cobj = self._cobjects[i]
             self.remove_object(cobj)
+
+        for i in self._observer_ids:
+            self._rwi.RemoveObserver(i)
 
         del self._rwi
         del self._ren
@@ -84,40 +132,126 @@ class DeVIDECanvas(SubjectMixin):
 
         return None
 
-    def OnMouseEvent(self, event):
+    def display_to_world(self, dpt):
+        """Takes 2-D display point as input, returns 3-D world point.
+        """
+        self._ren.SetDisplayPoint(dpt + (0.0,))
+        self._ren.DisplayToWorld()
+        return self._ren.GetWorldPoint()[0:3]
 
-        # this seems to work fine under windows.  If we don't do this, and the
-        # mouse leaves the canvas, the rubber band remains and no selection
-        # is made.
-        if event.ButtonDown():
-            if not self.HasCapture():
-                self.CaptureMouse()
-                
-        elif event.ButtonUp():
-            if self.HasCapture():
-                self.ReleaseMouse()
-        
-        # these coordinates are relative to the visible part of the canvas
-        ex, ey = event.GetX(), event.GetY()
+    def _observer_lbpe(self, o, e):
+        self.event.left_button = True
+        self.event.name = 'left_button_down'
+        self.notify()
 
-        rx, ry = self.eventToRealCoords(ex, ey)
+    def _observer_lbre(self, o, e):
+        self.event.left_button = False
+        self.event.dragging = False
+        self.event.name = 'left_button_up'
+        self.notify()
+
+    def _observer_mbpe(self, o, e):
+        self.event.middle_button = True
+        self.event.name = 'middle_button_down'
+        self.notify()
+
+    def _observer_mbre(self, o, e):
+        self.event.middle_button = False
+        self.event.dragging = False
+        self.event.name = 'middle_button_up'
+        self.notify()
+
+    def _observer_rbpe(self, o, e):
+        self.event.right_button = True
+        self.event.name = 'right_button_down'
+        self.notify()
+
+    def _observer_rbre(self, o, e):
+        self.event.right_button = False
+        self.event.dragging = False
+        self.event.name = 'right_button_up'
+        self.notify()
+
+    def _observer_mme(self, o, e):
+        """MouseMoveEvent observer for RWI.
+
+        o contains a binding to the RWI.
+        """
+
+        # event position is viewport relative (i.e. in pixels,
+        # bottom-left is 0,0)
+        ex, ey = o.GetEventPosition()
+        lex, ley = o.GetLastEventPosition()
+
+        wex, wey, wez = self.display_to_world((ex,ey))
+        lwex, lwey, lwez = self.display_to_world((lex,ley))
 
         # add the "real" coords to the event structure
-        event.realX = rx
-        event.realY = ry
+        self.event.realX = wex 
+        self.event.realY = wey
+        self.event.realZ = wez 
 
-        if self._previousRealCoords:
-            self._mouseDelta = (rx - self._previousRealCoords[0],
-                                ry - self._previousRealCoords[1])
+        # also build into event
+        self._mouseDelta = (wex -lwex, wey - lwey, wez - lwez)
+
+
+        self.event.has_mouse = None # this will be set during this handler
+
+
+        # we need to generate the following events for cobjects:
+        # motion, enter
+
+        p = vtk.vtkPicker()
+        p.SetTolerance(0.001) # this is perhaps still too large
+        ret = p.Pick((ex, ey, 0), self._ren)
+        
+        # use these two lines to limit picking
+        #picker.AddPickList(p)
+        #picker.PickFromListOn()
+
+        if ret:
+            #pc = p.GetProp3Ds()
+            #pc.InitTraversal()
+            #prop = pc.GetNextItemAsObject()
+            prop = p.GetAssembly() # for now we only want this.
+            try:
+                picked_cobject = self._prop_to_cobject[prop]
+            except KeyError:
+                pass
+            else:
+                # need to find out WHICH sub-actor was picked.
+                print p.GetPath().GetNumberOfItems()
+                print p.GetPath().GetItemAsObject(0)
+                print p.GetPath().GetItemAsObject(1)
+                # our assembly is one level deep, so 1 is the one we
+                # want (actor at leaf node)
+
+                #p.GetPath().InitTraversal()
+                #print p.GetPath().GetNextItemAsObject().GetViewProp()
+                #print p.GetPath().GetNextItemAsObject().GetViewProp()
+                self.event.name = 'motion'
+                picked_cobject.notify()
+                if not picked_cobject is self.event.has_mouse:
+                    self.event.has_mouse = picked_cobject
+                    self.event.name = 'enter'
+                    picked_cobject.notify()
+
+                if self.event.left_button:
+                    # through the picking, we can distinguish between
+                    # dragging the glyph itself, or dragging from one
+                    # of its ports...
+                    self.event.name = 'dragging'
+                    picked_cobject.notify()
+
         else:
-            self._mouseDelta = (0,0)
+            # nothing under the mouse...
+            if self.event.has_mouse:
+                self.event.name = 'exit'
+                self.event.has_mouse.notify()
+                self.event.has_mouse = None
 
-        # FIXME: store binding to object which "has" the mouse
-        # on subsequent tries, we DON'T have to check all objects, only the
-        # one which had the mouse on the previous try... only if it "loses"
-        # the mouse, do we enter the mean loop again.
 
-        mouseOnObject = False
+        return
 
         # the following three clauses, i.e. the hitTest, mouseOnObject and
         # draggedObject should be kept in this order, unless you know
@@ -214,6 +348,7 @@ class DeVIDECanvas(SubjectMixin):
             cobj.canvas = self
             self._cobjects.append(cobj)
             self._ren.AddViewProp(cobj.prop)
+            self._prop_to_cobject[cobj.prop] = cobj
             cobj.__hasMouse = False
 
     def redraw(self):
@@ -225,6 +360,7 @@ class DeVIDECanvas(SubjectMixin):
     def remove_object(self, cobj):
         if cobj and cobj in self._cobjects:
             self._ren.RemoveViewProp(cobj.prop)
+            del self._prop_to_cobject[cobj.prop]
             cobj.canvas = None
             if self._draggedObject == cobj:
                 self._draggedObject = None

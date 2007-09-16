@@ -223,7 +223,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         self._oportssa = \
             [(vtk.vtkSphereSource(),vtk.vtkActor()) for _ in
-                range(self._numInputs)]
+                range(self._numOutputs)]
 
         self._create_geometry()
 
