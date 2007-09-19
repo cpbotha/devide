@@ -1,5 +1,6 @@
 import vtk
 from gen_mixins import SubjectMixin
+from devide_canvas_object import DeVIDECanvasGlyph
 
 # think about turning this into a singleton.
 class DeVIDECanvasEvent:
@@ -17,7 +18,9 @@ class DeVIDECanvasEvent:
         self.left_button = False
         self.middle_button = False
         self.right_button = False
-        
+
+        self.clicked_object = None
+
         # which cobject has the mouse
         self.has_mouse = None
 
@@ -38,7 +41,7 @@ class DeVIDECanvas(SubjectMixin):
 
         self._cobjects = []
         # dict for mapping from prop back to cobject
-        self._prop_to_cobject = {}
+        self.prop_to_glyph = {}
         self._previousRealCoords = None
         self._mouseDelta = (0,0)
         self._potentiallyDraggedObject = None
@@ -140,11 +143,29 @@ class DeVIDECanvas(SubjectMixin):
         return self._ren.GetWorldPoint()[0:3]
 
     def _observer_lbpe(self, o, e):
+        ex, ey = o.GetEventPosition()
+        ret = self._pick_glyph(ex,ey)
+        if ret:
+            pc, psp = ret
+            self.event.clicked_object = pc
+            self.event.name = 'buttonDown'
+            pc.notify()
+        else:
+            self.event.clicked_object = None
+
         self.event.left_button = True
         self.event.name = 'left_button_down'
         self.notify()
 
     def _observer_lbre(self, o, e):
+        ex, ey = o.GetEventPosition()
+        ret = self._pick_glyph(ex,ey)
+        if ret:
+            pc, psp = ret
+            self.event.name = 'buttonUp'
+            pc.notify()
+
+        self.event.clicked_object = None
         self.event.left_button = False
         self.event.dragging = False
         self.event.name = 'left_button_up'
@@ -171,6 +192,51 @@ class DeVIDECanvas(SubjectMixin):
         self.event.dragging = False
         self.event.name = 'right_button_up'
         self.notify()
+
+    def _pick_glyph(self, ex, ey):
+        """Give current event coordinate (as returned by
+        rwi.GetEventPosition()) return picked cobject and the picked
+        sub-prop.
+        """
+        p = vtk.vtkPicker()
+        p.SetTolerance(0.001) # this is perhaps still too large
+        ret = p.Pick((ex, ey, 0), self._ren)
+        
+        # use these two lines to limit picking
+        #picker.AddPickList(p)
+        #picker.PickFromListOn()
+
+        if ret:
+            #pc = p.GetProp3Ds()
+            #pc.InitTraversal()
+            #prop = pc.GetNextItemAsObject()
+            prop = p.GetAssembly() # for now we only want this.
+            try:
+                picked_cobject = self.prop_to_glyph[prop]
+            except KeyError:
+                return None
+            else:
+                # need to find out WHICH sub-actor was picked.
+                if p.GetPath().GetNumberOfItems() == 2:
+                    sub_prop = p.GetPath().GetItemAsObject(1)
+
+                else:
+                    sub_prop = None
+
+                #print p.GetPath().GetNumberOfItems()
+                #print p.GetPath().GetItemAsObject(0)
+                #print p.GetPath().GetItemAsObject(1)
+                # our assembly is one level deep, so 1 is the one we
+                # want (actor at leaf node)
+
+                #p.GetPath().InitTraversal()
+                #print p.GetPath().GetNextItemAsObject().GetViewProp()
+                #print p.GetPath().GetNextItemAsObject().GetViewProp()
+
+                return (picked_cobject, sub_prop)
+
+        return None
+
 
     def _observer_mme(self, o, e):
         """MouseMoveEvent observer for RWI.
@@ -200,48 +266,23 @@ class DeVIDECanvas(SubjectMixin):
 
         # we need to generate the following events for cobjects:
         # motion, enter
+        pg_ret = _pick_glyph(ex, ey)
+        if pg_ret:
+            picked_cobject, picked_sub_prop = pg_ret
 
-        p = vtk.vtkPicker()
-        p.SetTolerance(0.001) # this is perhaps still too large
-        ret = p.Pick((ex, ey, 0), self._ren)
-        
-        # use these two lines to limit picking
-        #picker.AddPickList(p)
-        #picker.PickFromListOn()
-
-        if ret:
-            #pc = p.GetProp3Ds()
-            #pc.InitTraversal()
-            #prop = pc.GetNextItemAsObject()
-            prop = p.GetAssembly() # for now we only want this.
-            try:
-                picked_cobject = self._prop_to_cobject[prop]
-            except KeyError:
-                pass
-            else:
-                # need to find out WHICH sub-actor was picked.
-                print p.GetPath().GetNumberOfItems()
-                print p.GetPath().GetItemAsObject(0)
-                print p.GetPath().GetItemAsObject(1)
-                # our assembly is one level deep, so 1 is the one we
-                # want (actor at leaf node)
-
-                #p.GetPath().InitTraversal()
-                #print p.GetPath().GetNextItemAsObject().GetViewProp()
-                #print p.GetPath().GetNextItemAsObject().GetViewProp()
-                self.event.name = 'motion'
+            self.event.name = 'motion'
+            picked_cobject.notify()
+            if not picked_cobject is self.event.has_mouse:
+                self.event.has_mouse = picked_cobject
+                self.event.name = 'enter'
                 picked_cobject.notify()
-                if not picked_cobject is self.event.has_mouse:
-                    self.event.has_mouse = picked_cobject
-                    self.event.name = 'enter'
-                    picked_cobject.notify()
 
-                if self.event.left_button:
-                    # through the picking, we can distinguish between
-                    # dragging the glyph itself, or dragging from one
-                    # of its ports...
-                    self.event.name = 'dragging'
-                    picked_cobject.notify()
+            if self.event.left_button and self.event.clicked_object:
+                # through the picking, we can distinguish between
+                # dragging the glyph itself, or dragging from one
+                # of its ports...
+                self.event.name = 'dragging'
+                picked_cobject.notify()
 
         else:
             # nothing under the mouse...
@@ -250,105 +291,15 @@ class DeVIDECanvas(SubjectMixin):
                 self.event.has_mouse.notify()
                 self.event.has_mouse = None
 
-
-        return
-
-        # the following three clauses, i.e. the hitTest, mouseOnObject and
-        # draggedObject should be kept in this order, unless you know
-        # EXACTLY what you're doing.  If you're going to change anything, test
-        # that connects, disconnects (of all kinds) and rubber-banding still
-        # work.
-        
-        # we need to do this expensive hit test every time, because the user
-        # wants to know when he mouses over the input port of a destination
-        # module
-        for cobject in self._cobjects:
-            if cobject.hitTest(rx, ry):
-                mouseOnObject = True
-
-                cobject.notifyObservers('motion', event)
-
-                if not cobject.__hasMouse:
-                    cobject.__hasMouse = True
-                    cobject.notifyObservers('enter', event)
-                        
-                if event.Dragging():
-                    if not self._draggedObject:
-                        if self._potentiallyDraggedObject == cobject:
-                            # the user is dragging inside an object inside
-                            # of which he has previously clicked... this
-                            # definitely means he's dragging the object
-                            mouseOnObject = True
-                            self._draggedObject = cobject
-                            
-                        else:
-                            # this means the user has dragged the mouse
-                            # over an object... which means mouseOnObject
-                            # is technically true, but because we want the
-                            # canvas to get this kind of dragEvent, we
-                            # set it to false
-                            mouseOnObject = False
-
-                elif event.ButtonUp():
-                    cobject.notifyObservers('buttonUp', event)
-
-                elif event.ButtonDown():
-                    if event.LeftDown():
-                        # this means EVERY buttonDown in an object classifies
-                        # as a potential drag.  if the user now drags, we
-                        # have a winner
-                        self._potentiallyDraggedObject = cobject
-                            
-                    cobject.notifyObservers('buttonDown', event)
-
-                elif event.ButtonDClick():
-                    cobject.notifyObservers('buttonDClick', event)
-
-            # ends if cobject.hitTest(ex, ey)
-            else:
-                if cobject.__hasMouse:
-                    cobject.__hasMouse = False
-                    cobject.notifyObservers('exit', event)
-
-        if not mouseOnObject:
-            # we only get here if the mouse is not inside any canvasObject
-            # (but it could be dragging a canvasObject!)
-            if event.Dragging():
-                self.notifyObservers('drag', event)
-            elif event.ButtonUp():
-                self.notifyObservers('buttonUp', event)
-            elif event.ButtonDown():
-                self.notifyObservers('buttonDown', event)
-            
-        if self._draggedObject:
-            # dragging locks onto an object, even if the mouse pointer
-            # is not inside that object - it will keep receiving drag
-            # events!
-            draggedObject = self._draggedObject
-            if event.ButtonUp():
-                # a button up anywhere cancels any drag
-                self._draggedObject = None
-
-            # so, the object can query canvas.getDraggedObject: if it's
-            # none, it means the drag has ended; if not, the drag is
-            # ongoing
-            draggedObject.notifyObservers('drag', event)
-
-        if event.ButtonUp():
-            # each and every ButtonUp cancels the current potential drag object
-            self._potentiallyDraggedObject = None
-                    
-
-        # store the previous real coordinates for mouse deltas
-        self._previousRealCoords = (rx, ry)
-                    
-
     def add_object(self, cobj):
         if cobj and cobj not in self._cobjects:
             cobj.canvas = self
             self._cobjects.append(cobj)
             self._ren.AddViewProp(cobj.prop)
-            self._prop_to_cobject[cobj.prop] = cobj
+            # we only add prop to cobject if it's a glyph
+            if isinstance(cobj, DeVIDECanvasGlyph):
+                self.prop_to_glyph[cobj.prop] = cobj
+
             cobj.__hasMouse = False
 
     def redraw(self):
@@ -360,7 +311,7 @@ class DeVIDECanvas(SubjectMixin):
     def remove_object(self, cobj):
         if cobj and cobj in self._cobjects:
             self._ren.RemoveViewProp(cobj.prop)
-            del self._prop_to_cobject[cobj.prop]
+            del self.prop_to_glyph[cobj.prop]
             cobj.canvas = None
             if self._draggedObject == cobj:
                 self._draggedObject = None
