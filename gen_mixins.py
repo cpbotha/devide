@@ -4,42 +4,39 @@
 class SubjectMixin(object):
 
     def __init__(self):
-        self._observers = []
+        # dictionary mapping from event name to list of observer
+        # callables
+        self._observers = {}
 
-    def add_observer(self, observer):
+    def add_observer(self, event_name, observer):
         """Add an observer to this subject.
 
         observer is a function that takes the subject instance as parameter.
         """
-        if not observer in self._observers:
-            self._observers.append(observer)
-            return True
 
-        else:
-            return False
+        try:
+            if not observer in self._observers[event_name]:
+                self._observers[event_name].append(observer)
+        except KeyError:
+            self._observers[event_name] = [observer]
 
     def close(self):
-        del self._observers[:]
+        del self._observers
 
-    def notify(self):
-        for observer in self._observers:
-            if callable(observer):
-                # call observer with the observed subject as param
-                observer(self)
+    def notify(self, event_name):
+        try:
+            for observer in self._observers[event_name]:
+                if callable(observer):
+                    # call observer with the observed subject as param
+                    observer(self)
+        except KeyError:
+            # it could be that there are no observers for this event,
+            # in which case we just shut up
+            pass
 
-    def remove_observer(self, observer):
-        if not callable(observer):
-            print "WARNING: subjectMixin.removeObserver() invoked with " \
-                  "non-callable."
-            
-        if observer in self._observers:
-            self._observers.remove(observer)
-            return True
-        
-        print "WARNING: observer %s not removed in " \
-              "subjectMixin.removeObserver()." % (observer,)
+    def remove_observer(self, event_name, observer):
+        self._observers[event_name].remove(observer)
 
-        return False
 
 class updateCallsExecuteModuleMixin(object):
     """The DeVIDE API requires that calling Update on outputData should

@@ -333,37 +333,32 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     def update_geometry(self):
         self.prop.SetPosition(self._position + (0.0,))
 
-    def findPortContainingMouse(self, x, y):
-        """Find port that contains the mouse pointer.  Returns tuple
-        containing inOut and port index.
+    def get_port_containing_mouse(self):
+        """Given the current has_mouse and has_mouse_sub_prop
+        information in canvas.event, determine the port side (input,
+        output) and index of the port represented by the sub_prop.
+        gah.
         """
+        if not self.canvas.event.has_mouse is self:
+            return (-1, -1)
 
-        horizOffset = self._position[0] + self._horizBorder
-        horizStep = self._pWidth + self._horizSpacing
-        
-        bx = horizOffset
-        by = self._position[1]
-        
-        for i in range(self._numInputs):
-            if x >= bx and x <= bx + self._pWidth and \
-               y >= by and y < by + self._pHeight:
+        sp = self.canvas.event.has_mouse_sub_prop
+        if not sp:
+            return (-1, -1)
 
-                return (0, i)
-            
-            bx += horizStep
+        for i in  range(len(self._iportssa)):
+            s, a = self._iportssa[i]
+            if sp is a:
+                return (0,i) 
 
-        bx = horizOffset
-        by = self._position[1] + self._size[1] - self._pHeight
-        
-        for i in range(self._numOutputs):
-            if x >= bx and x <= bx + self._pWidth and \
-               y >= by and y < by + self._pHeight:
 
-                return (1, i)
-            
-            bx += horizStep
-            
-        return None
+        for i in  range(len(self._oportssa)):
+            s, a = self._oportssa[i]
+            if sp is a:
+                return (1,i) 
+
+        return (-1, -1)
+
 
     def get_centre_of_port(self, inOrOut, idx):
 

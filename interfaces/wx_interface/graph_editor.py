@@ -2,9 +2,20 @@
 # $Id$
 # the graph-editor thingy where one gets to connect modules together
 
+# FIXME: def show() should really be moved a level up!!
+
+# left click on glyph: select and drag
+# left click on canvas: rubberband select
+# right click on glyph: glyph context menu
+# right click on canvas: canvas context menu
+# alt-left click: pan
+# alt-right click: zoom in/out
+
 import copy
 import cPickle
-from internal.wxPyCanvas import wxpc
+from internal.devide_canvas.devide_canvas import DeVIDECanvas 
+from internal.devide_canvas.devide_canvas_object import \
+DeVIDECanvasGlyph, DeVIDECanvasLine
 import genUtils
 from moduleManager import ModuleManagerException
 import moduleUtils # for getModuleIcon
@@ -251,26 +262,31 @@ class GraphEditor:
 
 
         # setup the canvas...
-        mf.canvas.SetVirtualSize((2048, 2048))
-        mf.canvas.SetScrollRate(20,20)
+        #mf.canvas.SetVirtualSize((2048, 2048))
+        #mf.canvas.SetScrollRate(20,20)
+
+        self.canvas = DeVIDECanvas(mf._rwi, mf._ren)
 
         # the canvas is a drop target
         self._canvasDropTarget = geCanvasDropTarget(self)
-        mf.canvas.SetDropTarget(self._canvasDropTarget)
+        # the vtkRenderWindowInteractor is also a WX construct.
+        mf._rwi.SetDropTarget(self._canvasDropTarget)
         
         # bind events on the canvas
-        mf.canvas.addObserver('buttonDown',
-                              self._canvasButtonDown)
-        mf.canvas.addObserver('buttonUp',
-                              self._canvasButtonUp)
-        mf.canvas.addObserver('drag',
-                              self._canvasDrag)
+        self.canvas.add_observer('left_button_down',
+                              self._observer_canvas_left_down)
+        self.canvas.add_observer('right_button_down',
+                              self._observer_canvas_right_down)
+        #self.canvas.add_observer('left_button_up',
+        #                      self._canvasButtonUp)
+        #self.canvas.add_observer('dragging',
+        #                      self._canvasDrag)
 
         # initialise selection
-        self._selected_glyphs = GlyphSelection(mf.canvas,
+        self._selected_glyphs = GlyphSelection(self.canvas,
                                               'selected')
 
-        self._blocked_glyphs = GlyphSelection(mf.canvas,
+        self._blocked_glyphs = GlyphSelection(self.canvas,
                                               'blocked')
 
         self._rubberBandCoords = None
@@ -279,11 +295,7 @@ class GraphEditor:
         self._copyBuffer = None
 
         # now display the shebang
-        self.show()
-        # get it to actually display by calling into the wx event loop
-        wx.SafeYield()
-        # now refresh it... we have a work around in the showModulePalette
-        # method that will shift the SashPosition and thus cause a redraw
+        # (GraphEditor controls the GraphEditor bits...)
         self.show()
 
     def _handler_modules_search(self, event):
@@ -320,7 +332,7 @@ class GraphEditor:
             # default position
             x, y = (10,10)
 
-            canvas = self._interface._main_frame.canvas
+            canvas = self.canvas
             all_glyphs = canvas.getObjectsOfClass(wxpc.coGlyph)
 
             # rx and ry will contain the first position to the right of
@@ -352,8 +364,7 @@ class GraphEditor:
             segp = 'segment:'
             if moduleName.startswith(modp):
                 # the coordinates are canvas-absolute already
-                self.createModuleAndGlyph(x, y, moduleName[len(modp):],
-                                          convert_coords=False)
+                self.create_module_and_glyph(x, y, moduleName[len(modp):])
 
             elif moduleName.startswith(segp):
                 self._loadAndRealiseNetwork(moduleName[len(segp):], (x,y),
@@ -490,7 +501,7 @@ class GraphEditor:
         to scheduler modules and requests the scheduler to execute them.
         """
 
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+        allGlyphs = self.canvas.getObjectsOfClass(
             wxpc.coGlyph)
 
         self._execute_modules(allGlyphs)
@@ -508,19 +519,20 @@ class GraphEditor:
         segp = 'segment:'
         
         if itemText.startswith(modp):
-            self.createModuleAndGlyph(x, y, itemText[len(modp):])
+            wx,wy,wz = self.canvas.display_to_world((x,y))
+            self.create_module_and_glyph(wx, wy, itemText[len(modp):])
 
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
-                self._interface._main_frame.canvas.SetFocus()
+                self.canvas.SetFocus()
                 # yield also necessary, else the workaround doesn't
                 wx.SafeYield()
           
 
         elif itemText.startswith(segp):
             # we have to convert the event coords to real coords
-            rx, ry = self._interface._main_frame.canvas.eventToRealCoords(x, y)
+            rx, ry = self.canvas.eventToRealCoords(x, y)
             self._loadAndRealiseNetwork(itemText[len(segp):], (rx,ry),
                                         reposition=True)
 
@@ -541,7 +553,8 @@ class GraphEditor:
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
             """
-            (mod, glyph) = self.createModuleAndGlyph(x, y, moduleName)
+            wx,wy,wz = self.canvas.display_to_world((x,y))
+            (mod, glyph) = self.create_module_and_glyph(wx, wy, moduleName)
             if mod:
                 cfg = mod.get_config()
                 setattr(cfg, configVarName, filename)
@@ -600,7 +613,7 @@ class GraphEditor:
         dropFilenameErrors = []
 
         # shortcut for later
-        canvas = self._interface._main_frame.canvas
+        canvas = self.canvas
 
         # filename mod code =========================================
         # dropping a filename on an existing module will try to change
@@ -622,7 +635,7 @@ class GraphEditor:
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
-                rx, ry = self._interface._main_frame.canvas.eventToRealCoords(x, y)
+                rx, ry = self.canvas.eventToRealCoords(x, y)
                 self._loadAndRealiseNetwork(filename, (rx,ry),
                                             reposition=True)
 
@@ -681,7 +694,8 @@ class GraphEditor:
         # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
-            (mod,glyph) = self.createModuleAndGlyph(x, y,
+            wx,wy,wz = self.canvas.display_to_world((x,y))
+            (mod,glyph) = self.create_module_and_glyph(wx, wy,
                                                     'modules.readers.dicomRDR')
             
             if mod:
@@ -705,6 +719,10 @@ class GraphEditor:
         self._selected_glyphs.close()
         # this should take care of just about everything!
         self.clearAllGlyphsFromCanvas()
+
+        # this will take care of all cleanup (including the VTK stuff)
+        # and then Destroy() the main WX window.
+        self._interface._main_frame.close()
 
     def _appendEditCommands(self, pmenu, eventWidget, origin, disable=True):
         """Append copy/cut/paste/delete commands and the default handlers
@@ -843,39 +861,36 @@ class GraphEditor:
         inside the glyph representation.  The glyph instance is returned.
         """
         
-
-        co = wxpc.coGlyph((rx, ry),
+        co = DeVIDECanvasGlyph((rx, ry),
                           len(moduleInstance.get_input_descriptions()),
                           len(moduleInstance.get_output_descriptions()),
                           labelList, moduleInstance)
         
-        canvas = self._interface._main_frame.canvas
-        canvas.addObject(co)
+        self.canvas.add_object(co)
 
 
-        co.addObserver('motion', self._glyphMotion)
+        co.add_observer('motion', self._observer_glyph_motion)
                     
-        co.addObserver('buttonDown',
-                       self._glyphButtonDown)
-        co.addObserver('buttonUp',
+        co.add_observer('left_button_down',
+                       self._observer_glyph_left_button_down)
+        co.add_observer('right_button_down',
+                       self._observer_glyph_right_button_down)
+        co.add_observer('buttonUp',
                        self._glyphButtonUp)
-        co.addObserver('drag',
+        co.add_observer('drag',
                        self._glyphDrag)
-        co.addObserver('buttonDClick',
+        co.add_observer('buttonDClick',
                        self._glyphButtonDClick)
 
-        # first have to draw the just-placed glyph so it has
-        # time to update its (label-dependent) dimensions
-        dc = self._interface._main_frame.canvas.getDC()
-        co.draw(dc)
+        # make sure we are redrawn.
+        self.canvas.redraw()
 
         # the network loading needs this
         return co
     
-    def createModuleAndGlyph(self, x, y, moduleName, convert_coords=True):
-        """Create a DeVIDE and a corresponding glyph at window event
-        position x,y.  x, y will be converted to real (canvas-absolute)
-        coordinates internally.
+    def create_module_and_glyph(self, x, y, moduleName):
+        """Create a DeVIDE and a corresponding glyph at world
+        coordinates x,y.
 
         @return: a tuple with (module_instance, glyph) if successful, (None,
         None) if not.
@@ -894,22 +909,16 @@ class GraphEditor:
                 
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
-                # create and draw the actual glyph
-                if convert_coords:
-                    rx, ry = self._interface._main_frame.canvas.\
-                             eventToRealCoords(x, y)
-                else:
-                    rx, ry = x, y
 
                 # the modulemanager generates a random module name, which
                 # we can query with mm.get_instance_name(temp_module).  However,
                 # this is a new module, so we don't actually display the name
                 # in the glyph label.
                 gLabel = [moduleName.split('.')[-1]]
-                glyph = self.createGlyph(rx,ry,gLabel,temp_module)
+                glyph = self.createGlyph(x,y,gLabel,temp_module)
 
                 # route all lines
-                self._routeAllLines()
+                self._route_all_lines()
 
                 return (temp_module, glyph)
 
@@ -996,7 +1005,7 @@ class GraphEditor:
         @return: glyph if found, None otherwise.
         """
 
-        all_glyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+        all_glyphs = self.canvas.getObjectsOfClass(
             wxpc.coGlyph)
 
         found = False
@@ -1014,13 +1023,19 @@ class GraphEditor:
         self.hide()
 
     def show(self):
+        # this is BAD.  why is the graph editor doing all of this and
+        # not the interface?
         self._interface._main_frame.Show(True)
         self._interface._main_frame.Iconize(False)
         self._interface._main_frame.Raise()
+        self.canvas.redraw()
+        # we have to call into wx to get everything to actually
+        # display.
+        wx.SafeYield()
 
     def _handlerFileExportAsDOT(self, event):
         # make a list of all glyphs
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+        allGlyphs = self.canvas.getObjectsOfClass(
             wxpc.coGlyph)
         
         if allGlyphs:
@@ -1226,8 +1241,8 @@ class GraphEditor:
 
         # FIXME: error checking
         # create a new one (don't convert my coordinates)
-        new_instance, new_glyph = self.createModuleAndGlyph(
-            gp_x, gp_y, full_name, False)
+        new_instance, new_glyph = self.create_module_and_glyph(
+            gp_x, gp_y, full_name)
 
         if new_instance and new_glyph:
             # give it its name back
@@ -1257,7 +1272,7 @@ class GraphEditor:
                 self._connect(new_glyph, output_idx,
                               consumer_glyph, input_idx)
 
-        self._interface._main_frame.canvas.redraw()
+        self.canvas.redraw()
 
         wx.SafeYield()
 
@@ -1274,7 +1289,7 @@ class GraphEditor:
                     ll.append(newModuleName)
 
                 glyph.setLabelList(ll)
-                self._interface._main_frame.canvas.redraw()
+                self.canvas.redraw()
 
                 return True
             
@@ -1289,7 +1304,7 @@ class GraphEditor:
             rr = self._devide_app.get_module_manager().renameModule(module, uin)
             if rr:
                 glyph.setLabelList([module.__class__.__name__])
-                self._interface._main_frame.canvas.redraw()
+                self.canvas.redraw()
                 return True
 
             else:
@@ -1429,35 +1444,37 @@ class GraphEditor:
             del outlines[outlines.index(deadLine)]
 
             # and from the canvas
-            self._interface._main_frame.canvas.removeObject(deadLine)
+            self.canvas.removeObject(deadLine)
             deadLine.close()
             
             
+    def _observer_canvas_left_down(self, canvas):
+        return
+        #old code:
+        #elif not event.ShiftDown() and not event.ControlDown():
+        #    self._selected_glyphs.removeAllGlyphs()
 
-    def _canvasButtonDown(self, canvas, eventName, event):
-        # we should only get this if there's no glyph involved
-        if event.RightDown():
-            pmenu = wx.Menu('Canvas Menu')
 
-            # fill it out with edit (copy, cut, paste, delete) commands
-            self._appendEditCommands(pmenu, self._interface._main_frame.canvas,
-                                     (event.realX, event.realY))
+    def _observer_canvas_right_down(self, canvas):
+        pmenu = wx.Menu('Canvas Menu')
 
-            pmenu.AppendSeparator()
+        # fill it out with edit (copy, cut, paste, delete) commands
+        self._appendEditCommands(pmenu, canvas._rwi,
+                (canvas.world_pos[0:2]))
 
-            self._append_execute_commands(pmenu, self._interface._main_frame.canvas)
+        pmenu.AppendSeparator()
 
-            pmenu.AppendSeparator()
+        self._append_execute_commands(pmenu, canvas._rwi)
 
-            self._append_network_commands(pmenu,
-                    self._interface._main_frame.canvas)
-            
+        pmenu.AppendSeparator()
 
-            self._interface._main_frame.canvas.PopupMenu(pmenu, wx.Point(event.GetX(),
-                                                             event.GetY()))
-            
-        elif not event.ShiftDown() and not event.ControlDown():
-            self._selected_glyphs.removeAllGlyphs()
+        self._append_network_commands(pmenu, canvas._rwi)
+        
+
+        self.canvas._rwi.PopupMenu(pmenu, 
+                wx.Point(canvas.event.disp_posf[0], 
+                    canvas.event.disp_posf[1]))
+
 
     def _canvasButtonUp(self, canvas, eventName, event):
         if event.LeftUp():
@@ -1517,8 +1534,7 @@ class GraphEditor:
             self._interface._main_frame.canvas.redraw()
 
     def clearAllGlyphsFromCanvas(self):
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+        allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
         mm = self._devide_app.get_module_manager()
 
@@ -1550,19 +1566,19 @@ class GraphEditor:
             self._deleteModule(glyph)
 
         # only here!
-        self._interface._main_frame.canvas.redraw()
+        self.canvas.redraw()
 
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
         l1 = wxpc.coLine(fromObject, fromOutputIdx,
                          toObject, toInputIdx)
-        self._interface._main_frame.canvas.addObject(l1)
+        self._interface._main_frame.canvas.add_object(l1)
             
         # also record the line in the glyphs
         toObject.inputLines[toInputIdx] = l1
         fromObject.outputLines[fromOutputIdx].append(l1)
 
         # REROUTE THIS LINE
-        self._routeLine(l1)
+        self._route_line(l1)
 
     def _connect(self, fromObject, fromOutputIdx,
                  toObject, toInputIdx):
@@ -1760,7 +1776,7 @@ class GraphEditor:
             new_pos = new_pts.GetPoint(ptid)
             glyph.setPosition(new_pos[0:2]) 
 
-        ge._routeAllLines()
+        ge._route_all_lines()
 
     def _loadAndRealiseNetwork(self, filename, position=(0,0),
                                reposition=False):
@@ -1931,13 +1947,15 @@ class GraphEditor:
         return (pmsDict, connectionList, glyphPosDict)
         
 
-    def updatePortInfoStatusBar(self, currentGlyph, currentPort):
+    def update_port_info_statusbar(self, glyph, port_inout, port_idx):
         
         """You can only call this during motion IN a port of a glyph.
         """
         
         msg = ''
-        canvas = currentGlyph.getCanvas()
+        canvas = self.canvas
+
+        return
 
         draggedObject = canvas.getDraggedObject()
         if draggedObject and draggedObject.draggedPort and \
@@ -2006,7 +2024,7 @@ class GraphEditor:
 
     def _glyphDrag(self, glyph, eventName, event):
 
-        canvas = glyph.getCanvas()        
+        canvas = self.canvas
 
         # this clause will execute once at the beginning of a drag...
         if not glyph.draggedPort:
@@ -2068,7 +2086,7 @@ class GraphEditor:
                            getObjectsOfClass(wxpc.coLine)
 
                 for line in allLines:
-                    self._routeLine(line)
+                    self._route_line(line)
 
 
             # switch off the draggedPort
@@ -2076,88 +2094,84 @@ class GraphEditor:
             # redraw everything
             canvas.redraw()
 
-    def _glyphMotion(self, glyph, eventName, event):
-        port = glyph.findPortContainingMouse(event.realX, event.realY)
-        if port:
-            self.updatePortInfoStatusBar(glyph, port)
+    def _observer_glyph_motion(self, glyph):
+        inout, port_idx = glyph.get_port_containing_mouse()
+        if inout >= 0:
+            self.update_port_info_statusbar(glyph, inout, port_idx)
 
-    def _glyphButtonDown(self, glyph, eventName, event):
+    def _observer_glyph_right_button_down(self, glyph):
         module = glyph.moduleInstance
         
-        if event.RightDown():
+        pmenu = wx.Menu(glyph.getLabel())
 
-            pmenu = wx.Menu(glyph.getLabel())
+        vc_id = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, vc_id, "View-Configure"))
+        wx.EVT_MENU(self.canvas._rwi, vc_id,
+                 lambda e: self._viewConfModule(module))
 
-            vc_id = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(pmenu, vc_id, "View-Configure"))
-            wx.EVT_MENU(self._interface._main_frame.canvas, vc_id,
-                     lambda e: self._viewConfModule(module))
+        help_id = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(
+            pmenu, help_id, "Help on Module"))
+        wx.EVT_MENU(self.canvas._rwi, help_id,
+                 lambda e: self.show_module_help_from_glyph(glyph))
+        
+        reload_id = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, reload_id, 'Reload Module'))
+        wx.EVT_MENU(self.canvas._rwi, reload_id,
+                    lambda e: self._handler_reload_module(module,
+                                                          glyph))
 
-            help_id = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(
-                pmenu, help_id, "Help on Module"))
-            wx.EVT_MENU(self._interface._main_frame.canvas, help_id,
-                     lambda e: self.show_module_help_from_glyph(glyph))
-            
-#             exe_id = wx.NewId()
-#             pmenu.AppendItem(wx.MenuItem(pmenu, exe_id, "Execute Module"))
-#             wx.EVT_MENU(self._interface._main_frame.canvas, exe_id,
-#                      lambda e: self._execute_module(module))
+        del_id = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, del_id, 'Delete Module'))
+        wx.EVT_MENU(self.canvas._rwi, del_id,
+                 lambda e: self._deleteModule(glyph))
 
-            reload_id = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(pmenu, reload_id, 'Reload Module'))
-            wx.EVT_MENU(self._interface._main_frame.canvas, reload_id,
-                        lambda e: self._handler_reload_module(module,
-                                                              glyph))
+        renameModuleId = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, renameModuleId, 'Rename Module'))
+        wx.EVT_MENU(self.canvas._rwi, renameModuleId,
+                 lambda e: self._handlerRenameModule(module,glyph))
 
-            del_id = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(pmenu, del_id, 'Delete Module'))
-            wx.EVT_MENU(self._interface._main_frame.canvas, del_id,
-                     lambda e: self._deleteModule(glyph))
+        markModuleId = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, markModuleId, 'Mark Module'))
+        wx.EVT_MENU(self.canvas._rwi, markModuleId,
+                 lambda e: self._handlerMarkModule(module))
 
-            renameModuleId = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(pmenu, renameModuleId, 'Rename Module'))
-            wx.EVT_MENU(self._interface._main_frame.canvas, renameModuleId,
-                     lambda e: self._handlerRenameModule(module,glyph))
+        pmenu.AppendSeparator()
 
-            markModuleId = wx.NewId()
-            pmenu.AppendItem(wx.MenuItem(pmenu, markModuleId, 'Mark Module'))
-            wx.EVT_MENU(self._interface._main_frame.canvas, markModuleId,
-                     lambda e: self._handlerMarkModule(module))
+        self._appendEditCommands(pmenu, self.canvas._rwi,
+                self.canvas.event.world_pos)
 
-            pmenu.AppendSeparator()
+        pmenu.AppendSeparator()
 
-            self._appendEditCommands(pmenu, self._interface._main_frame.canvas,
-                                     (event.GetX(), event.GetY()))
+        self._append_execute_commands(
+            pmenu, self.canvas._rwi)
 
-            pmenu.AppendSeparator()
+        # popup that menu!
+        self.canvas._rwi.PopupMenu(pmenu, 
+                wx.Point(self.canvas.event.disp_posf[0],
+                    self.canvas.event.disp_posf[1]))
 
-            self._append_execute_commands(
-                pmenu, self._interface._main_frame.canvas)
-
-            # popup that menu!
-            self._interface._main_frame.canvas.PopupMenu(pmenu,
-                                                    wx.Point(event.GetX(),
-                                                             event.GetY()))
-        elif event.LeftDown():
-            if event.ControlDown() or event.ShiftDown():
-                # with control or shift you can add or remove that glyph
-                if glyph.selected:
-                    self._selected_glyphs.removeGlyph(glyph)
-                else:
-                    self._selected_glyphs.addGlyph(glyph)
+    def _observer_glyph_left_button_down(self, glyph, eventName, event):
+        module = glyph.moduleInstance
+        
+        if event.ControlDown() or event.ShiftDown():
+            # with control or shift you can add or remove that glyph
+            if glyph.selected:
+                self._selected_glyphs.removeGlyph(glyph)
             else:
-                # if the user already has a selection of which this is a part,
-                # we're not going to muck around with that.
-                if not glyph.selected:
-                    self._selected_glyphs.selectGlyph(glyph)
+                self._selected_glyphs.addGlyph(glyph)
+        else:
+            # if the user already has a selection of which this is a part,
+            # we're not going to muck around with that.
+            if not glyph.selected:
+                self._selected_glyphs.selectGlyph(glyph)
             
     def _glyphButtonUp(self, glyph, eventName, event):
         if event.LeftUp():
             # whatever the case may be, stop rubber banding.
             self._stopRubberBanding(event)
 
-            canvas = glyph.getCanvas()
+            canvas = self.canvas()
 
             # when we receive the ButtonUp that ends the drag event, 
             # canvas.getDraggedObject is still set! - it will be unset
@@ -2312,19 +2326,18 @@ class GraphEditor:
 
         return clipPoints
                 
-    def _routeAllLines(self):
-        canvas = self._interface._main_frame.canvas
+    def _route_all_lines(self):
         # THEN reroute all lines
-        allLines = canvas.getObjectsOfClass(wxpc.coLine)
+        allLines = self.canvas.getObjectsOfClass(DeVIDECanvasLine)
                     
         for line in allLines:
-            self._routeLine(line)
+            self._route_line(line)
             
         # redraw all
-        canvas.redraw()
+        self.canvas.redraw()
         
 
-    def _routeLine(self, line):
+    def _route_line(self, line):
         
         # we have to get a list of all coGlyphs
         allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
@@ -2490,7 +2503,7 @@ class GraphEditor:
                 'Could not delete module (removing from canvas '
                 'anyway): %s' % (str(e)))
 
-        canvas = glyph.getCanvas()
+        canvas = self.canvas()
         # remove it from the canvas
         canvas.removeObject(glyph)
         # take care of possible lyings around

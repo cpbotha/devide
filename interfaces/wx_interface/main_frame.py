@@ -1,4 +1,5 @@
-from internal.wxPyCanvas import wxpc
+import vtk
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import external.PyAUI as PyAUI
 import wx
 from wx.html import HtmlWindow
@@ -101,9 +102,14 @@ class MainWXFrame(wx.Frame):
             PyAUI.PaneInfo().Name('progress_panel').
             Caption('Progress').CenterPane().Top().MinSize(pp.GetSize()))
 
-        self.canvas = wxpc.canvas(self, -1)
+       
+        self._rwi = wxVTKRenderWindowInteractor(self, -1,
+                size=(400,400))
+        self._ren = vtk.vtkRenderer()
+        self._rwi.GetRenderWindow().AddRenderer(self._ren)
+
         self._mgr.AddPane(
-            self.canvas,
+            self._rwi,
             PyAUI.PaneInfo().Name('graph_canvas').
             Caption('Graph Canvas').Center().CloseButton(False))
 
@@ -158,6 +164,14 @@ class MainWXFrame(wx.Frame):
         wx.EVT_MENU(self, self.window_default_view_id,
                     lambda e: self._mgr.LoadPerspective(
             self.perspective_default) and self._mgr.Update())
+
+    def close(self):
+        self._ren.RemoveAllViewProps()
+        del self._ren
+        self._rwi.GetRenderWindow().Finalize()
+        self._rwi.SetRenderWindow(None)
+        del self._rwi
+        self.Destroy()
 
     def _create_documentation_window(self):
         self.doc_window = HtmlWindow(self, -1, size=(200,80))

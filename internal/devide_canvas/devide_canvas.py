@@ -14,6 +14,14 @@ class DeVIDECanvasEvent:
         #self.right_button_down = False
         #self.right_button_up = False
 
+        # this x,y is in VTK display coords
+        # (bottom left of thingy is 0,0)
+        self.disp_pos = (0,0)
+        # we also need to convert the y to wx coordinates (top-left is
+        # 0,0)
+
+        self.world_pos = (0,0,0)
+
         # state information #################
         self.left_button = False
         self.middle_button = False
@@ -23,6 +31,7 @@ class DeVIDECanvasEvent:
 
         # which cobject has the mouse
         self.has_mouse = None
+        self.has_mouse_sub_prop = None
 
 
 
@@ -47,12 +56,11 @@ class DeVIDECanvas(SubjectMixin):
         self._potentiallyDraggedObject = None
         self._draggedObject = None
 
-        self._observers = {'drag' : [],
-                           'buttonDown' : [],
-                           'buttonUp' : []}
-
         
-        #self.SetBackgroundColour("WHITE")
+        self._ren.SetBackground(1.0,1.0,1.0)
+
+        istyle = vtk.vtkInteractorStyleImage()
+        self._rwi.SetInteractorStyle(istyle)
 
         self._observer_ids = []
         # priority is higher than the default 0.0, so should be called
@@ -75,8 +83,6 @@ class DeVIDECanvas(SubjectMixin):
         self._observer_ids.append(self._rwi.AddObserver(
             'RightButtonReleaseEvent', self._observer_rbre))
         
-        self.virtualWidth = 2048
-        self.virtualHeight = 2048
 
         self.event = DeVIDECanvasEvent()
         
@@ -96,9 +102,13 @@ class DeVIDECanvas(SubjectMixin):
         del self._rwi
         del self._ren
 
+    # nuke this function, replace with display_to_world.
+    # events are in display, everything else in world.
+    # go back to graph_editor
     def eventToRealCoords(self, ex, ey):
         """Convert window event coordinates to canvas relative coordinates.
         """
+
         
         # get canvas parameters
         vsx, vsy = self.GetViewStart()
@@ -110,31 +120,6 @@ class DeVIDECanvas(SubjectMixin):
 
         return (rx, ry)
 
-    def getDC(self):
-        """Returns DC which can be used by the outside to draw to our buffer.
-
-        As soon as dc dies (and it will at the end of the calling function)
-        the contents of self._buffer will be blitted to the screen.
-        """
-
-        cdc = wx.wxClientDC(self)
-        # set device origin according to scroll position                
-        self.PrepareDC(cdc)
-        dc = wx.wxBufferedDC(cdc, self._buffer)
-        return dc
-
-    def get_glyph_on_coords(self, rx, ry):
-        """If rx,ry falls on a glyph, return that glyph, else return
-        None.
-        """
-
-        for cobject in self._cobjects:
-            if cobject.hitTest(rx, ry) and isinstance(cobject,
-                    coGlyph):
-                return cobject
-
-        return None
-
     def display_to_world(self, dpt):
         """Takes 2-D display point as input, returns 3-D world point.
         """
@@ -142,56 +127,56 @@ class DeVIDECanvas(SubjectMixin):
         self._ren.DisplayToWorld()
         return self._ren.GetWorldPoint()[0:3]
 
-    def _observer_lbpe(self, o, e):
+    def _helper_glyph_button_down(self, o, event_name):
         ex, ey = o.GetEventPosition()
         ret = self._pick_glyph(ex,ey)
         if ret:
             pc, psp = ret
             self.event.clicked_object = pc
-            self.event.name = 'buttonDown'
-            pc.notify()
+            self.event.name = event_name
+            pc.notify(event_name)
         else:
             self.event.clicked_object = None
 
-        self.event.left_button = True
-        self.event.name = 'left_button_down'
-        self.notify()
-
-    def _observer_lbre(self, o, e):
+        self.event.name = event_name
+        self.notify(event_name)
+            
+    def _helper_glyph_button_up(self, o, event_name):
         ex, ey = o.GetEventPosition()
         ret = self._pick_glyph(ex,ey)
         if ret:
             pc, psp = ret
-            self.event.name = 'buttonUp'
-            pc.notify()
+            self.event.name = event_name
+            pc.notify(event_name)
 
         self.event.clicked_object = None
+        self.event.name = event_name
+        self.notify(event_name)
+
+    def _observer_lbpe(self, o, e):
+        self.event.left_button = True
+        self._helper_glyph_button_down(o, 'left_button_down')
+
+    def _observer_lbre(self, o, e):
         self.event.left_button = False
-        self.event.dragging = False
-        self.event.name = 'left_button_up'
-        self.notify()
+        self._helper_glyph_button_up(o, 'left_button_up')
 
     def _observer_mbpe(self, o, e):
         self.event.middle_button = True
-        self.event.name = 'middle_button_down'
-        self.notify()
+        self._helper_glyph_button_down(o, 'middle_button_down')
 
     def _observer_mbre(self, o, e):
         self.event.middle_button = False
-        self.event.dragging = False
-        self.event.name = 'middle_button_up'
-        self.notify()
+        self._helper_glyph_button_up(o, 'middle_button_up')
 
     def _observer_rbpe(self, o, e):
         self.event.right_button = True
-        self.event.name = 'right_button_down'
-        self.notify()
+        self._helper_glyph_button_down(o, 'right_button_down')
+
 
     def _observer_rbre(self, o, e):
         self.event.right_button = False
-        self.event.dragging = False
-        self.event.name = 'right_button_up'
-        self.notify()
+        self._helper_glyph_button_up(o, 'right_button_up')
 
     def _pick_glyph(self, ex, ey):
         """Give current event coordinate (as returned by
@@ -247,9 +232,15 @@ class DeVIDECanvas(SubjectMixin):
         # event position is viewport relative (i.e. in pixels,
         # bottom-left is 0,0)
         ex, ey = o.GetEventPosition()
+        self.event.disp_pos = ex, ey
+
+        # we need to flip the y for wx-relative coords
+        self.event.disp_posf = ex, o.GetSize()[1] - ey - 1
+
         lex, ley = o.GetLastEventPosition()
 
         wex, wey, wez = self.display_to_world((ex,ey))
+        self.world_pos = wex, wey, wez
         lwex, lwey, lwez = self.display_to_world((lex,ley))
 
         # add the "real" coords to the event structure
@@ -262,33 +253,35 @@ class DeVIDECanvas(SubjectMixin):
 
 
         self.event.has_mouse = None # this will be set during this handler
+        self.event.has_mouse_sub_prop = None
 
 
         # we need to generate the following events for cobjects:
         # motion, enter
-        pg_ret = _pick_glyph(ex, ey)
+        pg_ret = self._pick_glyph(ex, ey)
         if pg_ret:
             picked_cobject, picked_sub_prop = pg_ret
 
-            self.event.name = 'motion'
-            picked_cobject.notify()
             if not picked_cobject is self.event.has_mouse:
                 self.event.has_mouse = picked_cobject
+                self.event.has_mouse_sub_prop = picked_sub_prop
                 self.event.name = 'enter'
-                picked_cobject.notify()
+                picked_cobject.notify('enter')
 
-            if self.event.left_button and self.event.clicked_object:
-                # through the picking, we can distinguish between
-                # dragging the glyph itself, or dragging from one
-                # of its ports...
+            if self.event.left_button and \
+            self.event.clicked_object is picked_cobject:
                 self.event.name = 'dragging'
-                picked_cobject.notify()
+                picked_cobject.notify('dragging')
+
+            else:
+                self.event.name = 'motion'
+                picked_cobject.notify('motion')
 
         else:
             # nothing under the mouse...
             if self.event.has_mouse:
                 self.event.name = 'exit'
-                self.event.has_mouse.notify()
+                self.event.has_mouse.notify('exit')
                 self.event.has_mouse = None
 
     def add_object(self, cobj):
