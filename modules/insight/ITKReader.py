@@ -35,7 +35,7 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
              'automatically.'),
             ('Data type:', 'type', 'base:str', 'choice',
              'Data will be cast to this type if AutoType is not used.',
-             ['float', 'unsigned char', 'unsigned long']),
+             ['float', 'signed short', 'unsigned long']),
             ('Data dimensionality:', 'dimensionality', 'base:str', 'choice',
              'Data will be read using this number of dimensions if AutoType '
              'is not used', ['2','3'])]
@@ -117,6 +117,9 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
             # lc will convert e.g. unsigned char to UC
             comp_type = self._config.type
             short_type = ''.join([i[0].upper() for i in comp_type.split(' ')])
+            if short_type == 'S':
+                short_type = 'SS'
+
             dim = self._config.dimensionality
 
         # if things have changed, make a new reader, else re-use the old
