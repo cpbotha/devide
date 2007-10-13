@@ -2,10 +2,14 @@ import vtk
 from gen_mixins import SubjectMixin
 from devide_canvas_object import DeVIDECanvasGlyph
 
+import wx # we're going to use this for event handling
+
 # think about turning this into a singleton.
 class DeVIDECanvasEvent:
     def __init__(self):
         # last event information ############
+        self.wx_event = None
+
         self.name = None
         #self.left_button_down = False
         #self.left_button_up = False
@@ -13,6 +17,9 @@ class DeVIDECanvasEvent:
         #self.middle_button_up = False
         #self.right_button_down = False
         #self.right_button_up = False
+
+        self.pos = (0,0)
+        self.pos_delta = (0,0)
 
         # this x,y is in VTK display coords
         # (bottom left of thingy is 0,0)
@@ -52,37 +59,36 @@ class DeVIDECanvas(SubjectMixin):
         # dict for mapping from prop back to cobject
         self.prop_to_glyph = {}
         self._previousRealCoords = None
-        self._mouseDelta = (0,0)
         self._potentiallyDraggedObject = None
         self._draggedObject = None
 
         
         self._ren.SetBackground(1.0,1.0,1.0)
 
-        istyle = vtk.vtkInteractorStyleImage()
+        istyle = vtk.vtkInteractorStyleUser()
+        #istyle = vtk.vtkInteractorStyleImage()
         self._rwi.SetInteractorStyle(istyle)
 
+        self._rwi.Bind(wx.EVT_RIGHT_DOWN, self._handler_rd)
+        self._rwi.Bind(wx.EVT_RIGHT_UP, self._handler_ru)
+        self._rwi.Bind(wx.EVT_LEFT_DOWN, self._handler_ld)
+        self._rwi.Bind(wx.EVT_LEFT_UP, self._handler_lu)
+        self._rwi.Bind(wx.EVT_MIDDLE_DOWN, self._handler_md)
+        self._rwi.Bind(wx.EVT_MIDDLE_UP, self._handler_mu)
+        self._rwi.Bind(wx.EVT_MOUSEWHEEL, self._handler_wheel)
+        self._rwi.Bind(wx.EVT_MOTION, self._handler_motion)
+        #self._rwi.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+        #self._rwi.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
+
+        # If we use EVT_KEY_DOWN instead of EVT_CHAR, capital versions
+        # of all characters are always returned.  EVT_CHAR also performs
+        # other necessary keyboard-dependent translations.
+        #self._rwi.Bind(wx.EVT_CHAR, self.OnKeyDown)
+        #self._rwi.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
+
+
+
         self._observer_ids = []
-        # priority is higher than the default 0.0, so should be called
-        # first
-        self._observer_ids.append(self._rwi.AddObserver(
-                'MouseMoveEvent', self._observer_mme, 0.2))
-
-        self._observer_ids.append(self._rwi.AddObserver(
-            'LeftButtonPressEvent', self._observer_lbpe))
-        self._observer_ids.append(self._rwi.AddObserver(
-            'LeftButtonReleaseEvent', self._observer_lbre))
-
-        self._observer_ids.append(self._rwi.AddObserver(
-            'MiddleButtonPressEvent', self._observer_mbpe))
-        self._observer_ids.append(self._rwi.AddObserver(
-            'MiddleButtonReleaseEvent', self._observer_mbre))
-       
-        self._observer_ids.append(self._rwi.AddObserver(
-            'RightButtonPressEvent', self._observer_rbpe))
-        self._observer_ids.append(self._rwi.AddObserver(
-            'RightButtonReleaseEvent', self._observer_rbre))
-        
 
         self.event = DeVIDECanvasEvent()
         
@@ -127,8 +133,17 @@ class DeVIDECanvas(SubjectMixin):
         self._ren.DisplayToWorld()
         return self._ren.GetWorldPoint()[0:3]
 
-    def _helper_glyph_button_down(self, o, event_name):
-        ex, ey = o.GetEventPosition()
+    def _helper_handler_preamble(self, e):
+        e.Skip(False) 
+        # Skip(False) won't search for other event
+        # handlers
+        self.event.wx_event = e
+        # we need to take focus... else some other subwindow keeps it
+        # once we've been there to select a module for example
+        self._rwi.SetFocus()
+
+    def _helper_glyph_button_down(self, event_name):
+        ex, ey = self.event.disp_pos 
         ret = self._pick_glyph(ex,ey)
         if ret:
             pc, psp = ret
@@ -138,45 +153,58 @@ class DeVIDECanvas(SubjectMixin):
         else:
             self.event.clicked_object = None
 
-        self.event.name = event_name
-        self.notify(event_name)
+            # we only give the canvas the event if the glyph didn't
+            # take it
+            self.event.name = event_name
+            self.notify(event_name)
             
-    def _helper_glyph_button_up(self, o, event_name):
-        ex, ey = o.GetEventPosition()
+    def _helper_glyph_button_up(self, event_name):
+        ex, ey = self.event.disp_pos
         ret = self._pick_glyph(ex,ey)
         if ret:
             pc, psp = ret
             self.event.name = event_name
             pc.notify(event_name)
+        else:
+            self.event.clicked_object = None
+            self.event.name = event_name
+            self.notify(event_name)
 
-        self.event.clicked_object = None
-        self.event.name = event_name
-        self.notify(event_name)
+    def _handler_ld(self, e):
+        self._helper_handler_preamble(e)
+        
+        #ctrl, shift = event.ControlDown(), event.ShiftDown()
+        #self._Iren.SetEventInformationFlipY(event.GetX(), event.GetY(),
+        #                                    ctrl, shift, chr(0), 0, None)
 
-    def _observer_lbpe(self, o, e):
         self.event.left_button = True
-        self._helper_glyph_button_down(o, 'left_button_down')
+        self._helper_glyph_button_down('left_button_down')
 
-    def _observer_lbre(self, o, e):
+    def _handler_lu(self, e):
+        self._helper_handler_preamble(e)
         self.event.left_button = False
-        self._helper_glyph_button_up(o, 'left_button_up')
+        self._helper_glyph_button_up('left_button_up')
 
-    def _observer_mbpe(self, o, e):
+    def _handler_md(self, e):
+        self._helper_handler_preamble(e)
         self.event.middle_button = True
-        self._helper_glyph_button_down(o, 'middle_button_down')
+        self._helper_glyph_button_down('middle_button_down')
 
-    def _observer_mbre(self, o, e):
+    def _handler_mu(self, e):
+        self._helper_handler_preamble(e)
         self.event.middle_button = False
-        self._helper_glyph_button_up(o, 'middle_button_up')
+        self._helper_glyph_button_up('middle_button_up')
 
-    def _observer_rbpe(self, o, e):
+    def _handler_rd(self, e):
+        self._helper_handler_preamble(e)
         self.event.right_button = True
-        self._helper_glyph_button_down(o, 'right_button_down')
+        self._helper_glyph_button_down('right_button_down')
 
 
-    def _observer_rbre(self, o, e):
+    def _handler_ru(self, e):
+        self._helper_handler_preamble(e)
         self.event.right_button = False
-        self._helper_glyph_button_up(o, 'right_button_up')
+        self._helper_glyph_button_up('right_button_up')
 
     def _pick_glyph(self, ex, ey):
         """Give current event coordinate (as returned by
@@ -223,33 +251,46 @@ class DeVIDECanvas(SubjectMixin):
         return None
 
 
-    def _observer_mme(self, o, e):
+    def _handler_wheel(self, event):
+        # also see vtkInteractorStyleTrackballCamera::Dolly() for
+        # how to do this with parallel projection
+        
+        factor = [2.0, -2.0][event.GetWheelRotation() > 0.0] 
+        self._ren.GetActiveCamera().Dolly(1.1 ** factor)
+        self._ren.ResetCameraClippingRange()
+        self._ren.UpdateLightsGeometryToFollowCamera()
+        self.redraw()
+        #event.GetWheelDelta()
+
+    def _handler_motion(self, event):
         """MouseMoveEvent observer for RWI.
 
         o contains a binding to the RWI.
         """
 
+        #self._helper_handler_preamble(event)
+        self.event.wx_event = event
+
         # event position is viewport relative (i.e. in pixels,
         # bottom-left is 0,0)
-        ex, ey = o.GetEventPosition()
-        self.event.disp_pos = ex, ey
+        ex, ey = event.GetX(), event.GetY() 
+       
+        # we need to flip Y to get VTK display coords
+        self.event.disp_pos = ex, self._rwi.GetSize()[1] - ey - 1
+       
+        # before setting the new pos, record the delta
+        self.event.pos_delta = (ex - self.event.pos[0], 
+                ey - self.event.pos[1])
+        self.event.pos = ex, ey
 
-        # we need to flip the y for wx-relative coords
-        self.event.disp_posf = ex, o.GetSize()[1] - ey - 1
 
-        lex, ley = o.GetLastEventPosition()
-
-        wex, wey, wez = self.display_to_world((ex,ey))
-        self.world_pos = wex, wey, wez
-        lwex, lwey, lwez = self.display_to_world((lex,ley))
+        wex, wey, wez = self.display_to_world(self.event.disp_pos)
+        self.event.world_pos = wex, wey, wez
 
         # add the "real" coords to the event structure
         self.event.realX = wex 
         self.event.realY = wey
         self.event.realZ = wez 
-
-        # also build into event
-        self._mouseDelta = (wex -lwex, wey - lwey, wez - lwez)
 
 
         self.event.has_mouse = None # this will be set during this handler
@@ -284,6 +325,20 @@ class DeVIDECanvas(SubjectMixin):
                 self.event.has_mouse.notify('exit')
                 self.event.has_mouse = None
 
+        if event.Dragging() and event.MiddleIsDown():
+            # move camera, according to self.event.pos_delta
+            c = self._ren.GetActiveCamera()
+            cfp = list(c.GetFocalPoint())
+            cp = list(c.GetPosition())
+            cfp[0] -= self.event.pos_delta[0]
+            cfp[1] += self.event.pos_delta[1]
+            c.SetFocalPoint(cfp)
+            cp[0] -= self.event.pos_delta[0]
+            cp[1] += self.event.pos_delta[1]
+            c.SetPosition(cp)
+            self.redraw()
+            print self.event.pos_delta
+
     def add_object(self, cobj):
         if cobj and cobj not in self._cobjects:
             cobj.canvas = self
@@ -310,8 +365,6 @@ class DeVIDECanvas(SubjectMixin):
                 self._draggedObject = None
             del self._cobjects[self._cobjects.index(cobj)]
 
-    def getMouseDelta(self):
-        return self._mouseDelta
 
     def getDraggedObject(self):
         return self._draggedObject

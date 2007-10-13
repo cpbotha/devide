@@ -1460,7 +1460,7 @@ class GraphEditor:
 
         # fill it out with edit (copy, cut, paste, delete) commands
         self._appendEditCommands(pmenu, canvas._rwi,
-                (canvas.world_pos[0:2]))
+                (canvas.event.world_pos[0:2]))
 
         pmenu.AppendSeparator()
 
@@ -1472,8 +1472,8 @@ class GraphEditor:
         
 
         self.canvas._rwi.PopupMenu(pmenu, 
-                wx.Point(canvas.event.disp_posf[0], 
-                    canvas.event.disp_posf[1]))
+                wx.Point(canvas.event.pos[0], 
+                    canvas.event.pos[1]))
 
 
     def _canvasButtonUp(self, canvas, eventName, event):
@@ -2148,13 +2148,15 @@ class GraphEditor:
 
         # popup that menu!
         self.canvas._rwi.PopupMenu(pmenu, 
-                wx.Point(self.canvas.event.disp_posf[0],
-                    self.canvas.event.disp_posf[1]))
+                wx.Point(self.canvas.event.pos[0],
+                    self.canvas.event.pos[1]))
 
-    def _observer_glyph_left_button_down(self, glyph, eventName, event):
+    def _observer_glyph_left_button_down(self, glyph):
         module = glyph.moduleInstance
         
-        if event.ControlDown() or event.ShiftDown():
+        
+        if self.canvas.event.wx_event.ControlDown() or \
+                self.canvas.event.wx_event.ShiftDown():
             # with control or shift you can add or remove that glyph
             if glyph.selected:
                 self._selected_glyphs.removeGlyph(glyph)
