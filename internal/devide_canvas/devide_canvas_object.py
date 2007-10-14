@@ -218,14 +218,15 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._tsa = vtk.vtkActor()
 
         self._iportssa = \
-            [(vtk.vtkSphereSource(),vtk.vtkActor()) for _ in
+            [(vtk.vtkRectangularButtonSource(),vtk.vtkActor()) for _ in
                 range(self._numInputs)]
 
         self._oportssa = \
-            [(vtk.vtkSphereSource(),vtk.vtkActor()) for _ in
+            [(vtk.vtkRectangularButtonSource(),vtk.vtkActor()) for _ in
                 range(self._numOutputs)]
 
         self._create_geometry()
+        self.update_geometry()
 
     def close(self):
         del self.moduleInstance
@@ -311,27 +312,59 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         
         for i in range(self._numInputs):
             s,a = self._iportssa[i]
+            s.SetHeight(self._pHeight)
+            s.SetWidth(self._pWidth)
             m = vtk.vtkPolyDataMapper()
             m.SetInput(s.GetOutput())
             a.SetMapper(m)
             a.SetPosition((horizOffset + i * horizStep,
-                self._size[1], 0))
+                self._size[1], 0.1))
 
             self.prop.AddPart(a)
 
         for i in range(self._numOutputs):
             s,a = self._oportssa[i]
+            s.SetHeight(self._pHeight)
+            s.SetWidth(self._pWidth)
             m = vtk.vtkPolyDataMapper()
             m.SetInput(s.GetOutput())
             a.SetMapper(m)
-            a.SetPosition((horizOffset + i * horizStep, 0, 0))
+            a.SetPosition((horizOffset + i * horizStep, 0, 0.1))
 
             self.prop.AddPart(a)
 
         self.prop.SetPosition(self._position + (0.0,))
 
     def update_geometry(self):
+        glyph_normal_col = (0.75, 0.75, 0.75)
+        glyph_selected_col = (1.0, 0.0, 0.96)
+        glyph_blocked_col = (0.06, 0.06, 0.06)
+        port_conn_col = (0.0, 1.0, 0.0)
+        port_disconn_col = (1.0, 0.0, 0.0)
+
         self.prop.SetPosition(self._position + (0.0,))
+
+        if self.selected:
+            gcol = glyph_selected_col
+        elif self.blocked:
+            gcol = glyph_blocked_col
+        else:
+            gcol = glyph_normal_col
+
+        self._rbsa.GetProperty().SetColor(gcol)
+
+        for i in range(self._numInputs):
+            col = [port_conn_col,
+                    port_disconn_col][bool(self.inputLines[i])]
+            s,a = self._iportssa[i]
+            a.GetProperty().SetColor(col)
+
+
+        for i in range(self._numOutputs):
+            col = [port_conn_col,
+                    port_disconn_col][bool(self.outputLines[i])]
+            s,a = self._oportssa[i]
+            a.GetProperty().SetColor(col)
 
     def get_port_containing_mouse(self):
         """Given the current has_mouse and has_mouse_sub_prop
@@ -339,10 +372,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         output) and index of the port represented by the sub_prop.
         gah.
         """
-        if not self.canvas.event.has_mouse is self:
+        if not self.canvas.event.picked_cobject is self:
             return (-1, -1)
 
-        sp = self.canvas.event.has_mouse_sub_prop
+        sp = self.canvas.event.picked_sub_prop
         if not sp:
             return (-1, -1)
 

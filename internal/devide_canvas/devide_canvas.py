@@ -39,8 +39,8 @@ class DeVIDECanvasEvent:
         self.clicked_object = None
 
         # which cobject has the mouse
-        self.has_mouse = None
-        self.has_mouse_sub_prop = None
+        self.picked_cobject = None
+        self.picked_sub_prop = None
 
 
 
@@ -213,12 +213,16 @@ class DeVIDECanvas(SubjectMixin):
 
     def _handler_rd(self, e):
         self._helper_handler_preamble(e)
+        if e.Dragging():
+            return
         self.event.right_button = True
         self._helper_glyph_button_down('right_button_down')
 
 
     def _handler_ru(self, e):
         self._helper_handler_preamble(e)
+        if e.Dragging():
+            return
         self.event.right_button = False
         self._helper_glyph_button_up('right_button_up')
 
@@ -228,7 +232,7 @@ class DeVIDECanvas(SubjectMixin):
         sub-prop.
         """
         p = vtk.vtkPicker()
-        p.SetTolerance(0.001) # this is perhaps still too large
+        p.SetTolerance(0.00001) # this is perhaps still too large
         ret = p.Pick((ex, ey, 0), self._ren)
         
         # use these two lines to limit picking
@@ -247,7 +251,8 @@ class DeVIDECanvas(SubjectMixin):
             else:
                 # need to find out WHICH sub-actor was picked.
                 if p.GetPath().GetNumberOfItems() == 2:
-                    sub_prop = p.GetPath().GetItemAsObject(1)
+                    sub_prop = \
+                        p.GetPath().GetItemAsObject(1).GetViewProp()
 
                 else:
                     sub_prop = None
@@ -266,20 +271,44 @@ class DeVIDECanvas(SubjectMixin):
 
         return None
 
-
-    def _handler_wheel(self, event):
+    def _zoom(self, amount):
         # also see vtkInteractorStyleTrackballCamera::Dolly() for
         # how to do this with parallel projection
-        
-        factor = [2.0, -2.0][event.GetWheelRotation() > 0.0] 
-        self._ren.GetActiveCamera().Dolly(1.1 ** factor)
+        self._ren.GetActiveCamera().Dolly(amount)
         self._ren.ResetCameraClippingRange()
         self._ren.UpdateLightsGeometryToFollowCamera()
         self.redraw()
+
+    def _handler_wheel(self, event):
+        
+        factor = [2.0, -2.0][event.GetWheelRotation() > 0.0] 
+        self._zoom(1.1 ** factor)
         #event.GetWheelDelta()
 
-    def _flip_y(self, y):
+    def flip_y(self, y):
         return self._rwi.GetSize()[1] - y - 1
+
+    def get_motion_vector_world(self, world_depth):
+        """Calculate motion vector in world space represented by last
+        mouse delta.
+        """
+        c = self._ren.GetActiveCamera()
+       
+        display_depth = self.world_to_display((0.0,0.0, world_depth))[2]
+
+        new_pick_pt = self.display_to_world(self.event.disp_pos +
+                (display_depth,))
+
+        fy = self.flip_y(self.event.last_pos[1])
+        old_pick_pt = self.display_to_world((self.event.last_pos[0], fy,
+                display_depth))
+
+        # old_pick_pt - new_pick_pt (reverse of camera!)
+        motion_vector = map(operator.sub, new_pick_pt,
+                old_pick_pt)
+
+        return motion_vector
+
 
     def _handler_motion(self, event):
         """MouseMoveEvent observer for RWI.
@@ -312,40 +341,14 @@ class DeVIDECanvas(SubjectMixin):
         self.event.realY = wey
         self.event.realZ = wez 
 
+        # dragging gets preference...
+        if event.Dragging() and event.MiddleIsDown() and \
+            event.ShiftDown():
+            centre = self._ren.GetCenter()
+            dyf = 10.0 * self.event.pos_delta[1] / centre[1]
+            self._zoom(1.1 ** dyf)
 
-        self.event.has_mouse = None # this will be set during this handler
-        self.event.has_mouse_sub_prop = None
-
-
-        # we need to generate the following events for cobjects:
-        # motion, enter
-        pg_ret = self._pick_glyph(ex, ey)
-        if pg_ret:
-            picked_cobject, picked_sub_prop = pg_ret
-
-            if not picked_cobject is self.event.has_mouse:
-                self.event.has_mouse = picked_cobject
-                self.event.has_mouse_sub_prop = picked_sub_prop
-                self.event.name = 'enter'
-                picked_cobject.notify('enter')
-
-            if self.event.left_button and \
-            self.event.clicked_object is picked_cobject:
-                self.event.name = 'dragging'
-                picked_cobject.notify('dragging')
-
-            else:
-                self.event.name = 'motion'
-                picked_cobject.notify('motion')
-
-        else:
-            # nothing under the mouse...
-            if self.event.has_mouse:
-                self.event.name = 'exit'
-                self.event.has_mouse.notify('exit')
-                self.event.has_mouse = None
-
-        if event.Dragging() and event.MiddleIsDown():
+        elif event.Dragging() and event.MiddleIsDown():
             # move camera, according to self.event.pos_delta
             c = self._ren.GetActiveCamera()
             cfp = list(c.GetFocalPoint())
@@ -356,14 +359,13 @@ class DeVIDECanvas(SubjectMixin):
             new_pick_pt = self.display_to_world(self.event.disp_pos +
                     (focal_depth,))
 
-            fy = self._flip_y(self.event.last_pos[1])
+            fy = self.flip_y(self.event.last_pos[1])
             old_pick_pt = self.display_to_world((self.event.last_pos[0], fy,
                     focal_depth))
 
             # old_pick_pt - new_pick_pt (reverse of camera!)
             motion_vector = map(operator.sub, old_pick_pt,
                     new_pick_pt)
-            print motion_vector
 
             new_cfp = map(operator.add, cfp, motion_vector)
             new_cp = map(operator.add, cp, motion_vector)
@@ -371,6 +373,53 @@ class DeVIDECanvas(SubjectMixin):
             c.SetFocalPoint(new_cfp)
             c.SetPosition(new_cp)
             self.redraw()
+
+
+        
+        else:
+            # we need to generate the following events for cobjects:
+            # motion, enter
+            pg_ret = self._pick_glyph(ex, self.flip_y(ey))
+            if pg_ret:
+                picked_cobject, self.event.picked_sub_prop = pg_ret
+
+                if not picked_cobject is self.event.picked_cobject:
+                    self.event.picked_cobject = picked_cobject
+                    self.event.name = 'enter'
+                    picked_cobject.notify('enter')
+
+                if self.event.left_button and event.Dragging():
+                    self.event.name = 'dragging'
+                    if self._draggedObject is None:
+                        self._draggedObject = picked_cobject
+                    picked_cobject.notify('dragging')
+
+                else:
+                    self.event.name = 'motion'
+                    picked_cobject.notify('motion')
+
+
+            else:
+                # nothing under the mouse...
+                if self.event.picked_cobject:
+                    self.event.name = 'exit'
+                    self.event.picked_cobject.notify('exit')
+                    self.event.picked_cobject = None
+
+                if event.Dragging() and self._draggedObject:
+                    # so we are Dragging() and there is a draggedObject...
+                    # even if the pick goes wrong (mouse moved to fast) we
+                    # still need to keep moving the thing.
+                    self.event.name = 'dragging'
+                    self._draggedObject.notify('dragging')
+
+        
+        if not event.Dragging():
+            # when user stops dragging the mouse, lose the object
+            if not self._draggedObject is None:
+                self._draggedObject.draggedPort = None
+                self._draggedObject = None
+
 
     def add_object(self, cobj):
         if cobj and cobj not in self._cobjects:
@@ -416,31 +465,15 @@ class DeVIDECanvas(SubjectMixin):
 
         return None
 
-    def dragObject(self, cobj, delta):
-        if abs(delta[0]) > 0 or abs(delta[1]) > 0:
-            # calculate new position
-            cpos = cobj.getPosition()
-            npos = (cpos[0] + delta[0], cpos[1] + delta[1])
-            cobj.setPosition(npos)
-            
-            # setup DC
-            dc = self.getDC()
+    def drag_object(self, cobj, delta):
+        """Move object with delta in world space.
+        """
 
-            dc.BeginDrawing()
-
-            # we're only going to draw a dotted outline
-            dc.SetBrush(wx.wxBrush('WHITE', wx.wxTRANSPARENT))
-            dc.SetPen(wx.wxPen('BLACK', 1, wx.wxDOT))
-            dc.SetLogicalFunction(wx.wxINVERT)
-            bounds = cobj.getBounds()
-
-            # first delete the old rectangle
-            dc.DrawRectangle(cpos[0], cpos[1], bounds[0], bounds[1])
-            # then draw the new one
-            dc.DrawRectangle(npos[0], npos[1], bounds[0], bounds[1])
-
-            # thar she goes
-            dc.EndDrawing()
+        cpos = cobj.get_position() # this gives us 2D in world space
+        npos = (cpos[0] + delta[0], cpos[1] + delta[1])
+        print "new pos", npos
+        cobj.set_position(npos)
+        cobj.update_geometry()
 
 
 
