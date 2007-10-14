@@ -1,6 +1,7 @@
 import vtk
 from gen_mixins import SubjectMixin
 from devide_canvas_object import DeVIDECanvasGlyph
+import operator
 
 import wx # we're going to use this for event handling
 
@@ -19,6 +20,7 @@ class DeVIDECanvasEvent:
         #self.right_button_up = False
 
         self.pos = (0,0)
+        self.last_pos = (0,0)
         self.pos_delta = (0,0)
 
         # this x,y is in VTK display coords
@@ -127,11 +129,25 @@ class DeVIDECanvas(SubjectMixin):
         return (rx, ry)
 
     def display_to_world(self, dpt):
-        """Takes 2-D display point as input, returns 3-D world point.
+        """Takes 3-D display point as input, returns 3-D world point.
         """
-        self._ren.SetDisplayPoint(dpt + (0.0,))
+
+        # make sure we have 3 elements 
+        if len(dpt) < 3:
+            dpt = tuple(dpt) + (0.0,)
+        elif len(dpt) > 3:
+            dpt = tuple(dpt[0:3])
+
+        self._ren.SetDisplayPoint(dpt)
         self._ren.DisplayToWorld()
         return self._ren.GetWorldPoint()[0:3]
+
+    def world_to_display(self, wpt):
+        """Takes 3-D world point as input, returns 3-D display point.
+        """
+        self._ren.SetWorldPoint(tuple(wpt) + (0.0,)) # this takes 4-vec
+        self._ren.WorldToDisplay()
+        return self._ren.GetDisplayPoint()
 
     def _helper_handler_preamble(self, e):
         e.Skip(False) 
@@ -262,6 +278,9 @@ class DeVIDECanvas(SubjectMixin):
         self.redraw()
         #event.GetWheelDelta()
 
+    def _flip_y(self, y):
+        return self._rwi.GetSize()[1] - y - 1
+
     def _handler_motion(self, event):
         """MouseMoveEvent observer for RWI.
 
@@ -281,6 +300,7 @@ class DeVIDECanvas(SubjectMixin):
         # before setting the new pos, record the delta
         self.event.pos_delta = (ex - self.event.pos[0], 
                 ey - self.event.pos[1])
+        self.event.last_pos = self.event.pos
         self.event.pos = ex, ey
 
 
@@ -330,14 +350,27 @@ class DeVIDECanvas(SubjectMixin):
             c = self._ren.GetActiveCamera()
             cfp = list(c.GetFocalPoint())
             cp = list(c.GetPosition())
-            cfp[0] -= self.event.pos_delta[0]
-            cfp[1] += self.event.pos_delta[1]
-            c.SetFocalPoint(cfp)
-            cp[0] -= self.event.pos_delta[0]
-            cp[1] += self.event.pos_delta[1]
-            c.SetPosition(cp)
+            
+            focal_depth = self.world_to_display(cfp)[2]
+
+            new_pick_pt = self.display_to_world(self.event.disp_pos +
+                    (focal_depth,))
+
+            fy = self._flip_y(self.event.last_pos[1])
+            old_pick_pt = self.display_to_world((self.event.last_pos[0], fy,
+                    focal_depth))
+
+            # old_pick_pt - new_pick_pt (reverse of camera!)
+            motion_vector = map(operator.sub, old_pick_pt,
+                    new_pick_pt)
+            print motion_vector
+
+            new_cfp = map(operator.add, cfp, motion_vector)
+            new_cp = map(operator.add, cp, motion_vector)
+            
+            c.SetFocalPoint(new_cfp)
+            c.SetPosition(new_cp)
             self.redraw()
-            print self.event.pos_delta
 
     def add_object(self, cobj):
         if cobj and cobj not in self._cobjects:
