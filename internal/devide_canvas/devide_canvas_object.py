@@ -46,6 +46,35 @@ class DeVIDECanvasObject(SubjectMixin):
 
 #############################################################################
 
+class DeVIDECanvasSimpleLine(DeVIDECanvasObject):
+    def __init__(self, src, dst):
+        """src and dst are 3D world space coordinates.
+        """
+        self.src = src
+        self.dst = dst
+
+        # call parent CTOR
+        DeVIDECanvasObject.__init__(self, src)
+
+        self._create_geometry()
+        self.update_geometry()
+
+    def _create_geometry(self):
+        self._line_source = vtk.vtkLineSource()
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._line_source.GetOutput())
+        a = vtk.vtkActor()
+        a.SetMapper(m)
+        a.GetProperty().SetColor(0.0, 0.0, 0.0)
+        self.prop = a
+
+    def update_geometry(self):
+        self._line_source.SetPoint1(self.src)
+        self._line_source.SetPoint2(self.dst)
+        self._line_source.Update() 
+
+
+
 class DeVIDECanvasLine(DeVIDECanvasObject):
 
     # this is used by the routing algorithm to route lines around glyphs
@@ -98,6 +127,8 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         a = vtk.vtkActor()
         a.SetMapper(m)
 
+        a.GetProperty().SetColor(0.0,0.0,0.45)
+
         self.prop = a
 
     def update_geometry(self):
@@ -109,7 +140,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
 
         self._spline_source.Update()
                           
-    def getBounds(self):
+    def get_bounds(self):
         # totally hokey: for now we just return the bounding box surrounding
         # the first two points - ideally we should iterate through the lines,
         # find extents and pick a position and bounds accordingly
@@ -160,18 +191,24 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         self._line_points = [(), (), (), ()]
         
         self._line_points[0] = self.fromGlyph.get_centre_of_port(
-            1, self.fromOutputIdx)
+                1, self.fromOutputIdx)[0:2]
         self._line_points[1] = (self._line_points[0][0],
-                               self._line_points[0][1] + boostFromPort)
+                               self._line_points[0][1] - boostFromPort)
 
         
         self._line_points[-1] = self.toGlyph.get_centre_of_port(
-            0, self.toInputIdx)
+                0, self.toInputIdx)[0:2]
         self._line_points[-2] = (self._line_points[-1][0],
-                                self._line_points[-1][1] - boostFromPort)
+                                self._line_points[-1][1] + boostFromPort)
 
 #############################################################################
 class DeVIDECanvasGlyph(DeVIDECanvasObject):
+    """Object representing glyph on canvas.
+
+    @ivar position: this is the position of the bottom left corner of
+    the glyph in world space.  Remember that (0,0) is also bottom left
+    of the canvas.
+    """
 
     # at start and end of glyph
     _horizBorder = 5
@@ -263,12 +300,16 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # still have to tune inity with the space between lines...
         initx = self._horizSpacing
         # y is the bottom left of the first character
-        self._tsa.SetPosition(initx, inity, 0.1)
+        # 0.2 is 0.1 above the button (the button's depth is 0.1)
+        self._tsa.SetPosition(initx, inity, 0.2)
 
         # we also need the text width for later
         b = self._ts.GetOutput().GetBounds()
         text_width = self._label_scale * (b[1] - b[2]) + \
             2 * self._horizBorder
+
+        # text colour
+        self._tsa.GetProperty().SetColor(0.0, 0.0, 0.0)
 
         self.prop.AddPart(self._tsa)
         
@@ -291,6 +332,11 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._rbs.SetTwoSided(1)
         self._rbs.SetHeight(self._size[1])
         self._rbs.SetWidth(self._size[0])
+        # so bottom is wider than shoulder (beveled)
+        self._rbs.SetBoxRatio(1.1)
+        # remember this depth, others things have to be 'above' this
+        # to be visible (such as the text!)
+        self._rbs.SetDepth(0.1)
 
         m = vtk.vtkPolyDataMapper()
         m.SetInput(self._rbs.GetOutput())
@@ -300,7 +346,22 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._rbsa.SetPosition((self._size[0] / 2.0, 
             self._size[1] / 2.0, 0.0))
 
-        self._rbsa.GetProperty().SetColor((0.0, 1.0, 0.0))
+        p = self._rbsa.GetProperty()
+        p.SetColor((0.0, 1.0, 0.0))
+
+        # i prefer flat shading, okay?
+        p.SetInterpolationToFlat()
+        
+        # Ka, background lighting coefficient
+        p.SetAmbient(0.1)
+        # light reflectance
+        p.SetDiffuse(0.6)
+        # the higher Ks, the more intense the highlights
+        p.SetSpecular(0.4)
+        # the higher the power, the more localised the
+        # highlights
+        p.SetSpecularPower(100)
+
 
         self.prop.AddPart(self._rbsa)
 
@@ -371,6 +432,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         information in canvas.event, determine the port side (input,
         output) and index of the port represented by the sub_prop.
         gah.
+
+        @returns: tuple (inout, idx), where inout is 0 for input (top)
+        and 1 for output (bottom).  Returns (-1,-1) if nothing was
+        found.
         """
         if not self.canvas.event.picked_cobject is self:
             return (-1, -1)
@@ -393,18 +458,40 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         return (-1, -1)
 
 
+    def get_bounds(self):
+        return self._size
+
+
     def get_centre_of_port(self, inOrOut, idx):
+        """Given the side of the module and the index of the port,
+        return the centre of the port in 3-D world coordinates.
+
+        @param inOrOut: 0 is input side (top), 1 is output side
+        (bottom).
+        @param idx: zero-based index of the port.
+        """
+
+            
 
         horizOffset = self._position[0] + self._horizBorder
         horizStep = self._pWidth + self._horizSpacing
-        cy = self._position[1] + self._pHeight / 2
+        cy = self._position[1] #+ self._pHeight / 2
 
-        if inOrOut:
+        # remember, in world-space, y=0 is at the bottom!
+        if inOrOut == 0:
             cy += self._size[1] - self._pHeight 
 
-        cx = horizOffset + idx * horizStep + self._pWidth / 2
+        cx = horizOffset + idx * horizStep #+ self._pWidth / 2
 
-        return (cx, cy)
+        return (cx, cy, 0.0)
+
+    def get_top_left_bottom_right(self):
+         return ((self._position[0], 
+                  self._position[1] + self._size[0]
+             -1),
+                (self._position[0] + self._size[0] - 1,
+                 self._position[1]))
+       
 
     def getLabel(self):
         return ' '.join(self._labelList)

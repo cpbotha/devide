@@ -15,7 +15,7 @@ import copy
 import cPickle
 from internal.devide_canvas.devide_canvas import DeVIDECanvas 
 from internal.devide_canvas.devide_canvas_object import \
-DeVIDECanvasGlyph, DeVIDECanvasLine
+DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine
 import genUtils
 from moduleManager import ModuleManagerException
 import moduleUtils # for getModuleIcon
@@ -27,6 +27,16 @@ import wx
 
 # so we're using VTK here for doing the graph layout.
 import vtk
+
+DEBUG=True
+if DEBUG:
+    def dprint(*msg):
+        print msg
+else:
+    def dprint(*msg):
+        pass
+
+
 
 # ----------------------------------------------------------------------------
 class geCanvasDropTarget(wx.PyDropTarget):
@@ -124,7 +134,7 @@ class GlyphSelection:
         setattr(glyph, self._glyph_flag, True)
         #glyph.selected = True
         # redraw it
-        self._canvas.drawObject(glyph)
+        glyph.update_geometry()
 
     def getSelectedGlyphs(self):
         """Returns a list with the selected glyphs.  Do not modify externally.
@@ -141,14 +151,14 @@ class GlyphSelection:
         del self._selectedGlyphs[self._selectedGlyphs.index(glyph)]
         setattr(glyph, self._glyph_flag, False)
         #glyph.selected = False
-        self._canvas.drawObject(glyph)
+        glyph.update_geometry()
 
     def removeAllGlyphs(self):
         """Remove all glyphs from selection.
         """
         for glyph in self._selectedGlyphs:
             glyph.selected = False
-            self._canvas.drawObject(glyph)
+            glyph.update_geometry()
 
         self._selectedGlyphs = []
         
@@ -277,8 +287,8 @@ class GraphEditor:
                               self._observer_canvas_left_down)
         self.canvas.add_observer('right_button_down',
                               self._observer_canvas_right_down)
-        #self.canvas.add_observer('left_button_up',
-        #                      self._canvasButtonUp)
+        self.canvas.add_observer('left_button_up',
+                                 self._observer_canvas_left_up)
         #self.canvas.add_observer('dragging',
         #                      self._canvasDrag)
 
@@ -290,6 +300,9 @@ class GraphEditor:
                                               'blocked')
 
         self._rubberBandCoords = None
+
+        # line used for previewing possible connections
+        self._preview_line = None
 
         # initialise cut/copy/paste buffer
         self._copyBuffer = None
@@ -314,6 +327,9 @@ class GraphEditor:
 
         This method is called when the user double clicks on a module in the
         module list or when she presses <enter> during module searching.
+
+        FIXME: improve this!!  Just plonk the glyph down in the middle
+        of the canvas, avoiding any other glyph there at this moment.
         """
         
         # place currently selected module below the bottom-most module
@@ -333,32 +349,24 @@ class GraphEditor:
             x, y = (10,10)
 
             canvas = self.canvas
-            all_glyphs = canvas.getObjectsOfClass(wxpc.coGlyph)
+            all_glyphs = canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
             # rx and ry will contain the first position to the right of
             # the bounding box of all glyphs, ry the first position below
             # the bounding box of all glyphs
             rx, ry = x, y
             for glyph in all_glyphs:
-                cx,cy = glyph.getPosition()
+                # this is the bottom right; (0,0) is bottom left
+                cx,cy = glyph.get_position()
 
                 if cx >= rx:
-                    rx = cx + glyph.getBounds()[0] + 20
+                    rx = cx + glyph.get_bounds()[0] + 20
                 
-                if cy >= ry:
-                    ry = cy + glyph.getBounds()[1] + 20
+                if cy <= ry:
+                    ry = cy - glyph.get_bounds()[1] - 20
 
-            # by default we place it under the lowest module, but
-            # if that's not visible, to the right of the right-most module
-            # if that's not visible either, it's under the lowest module
-            if ry > canvas.GetViewStart()[1] + canvas.GetClientSize()[1]:
-                if rx > canvas.GetViewStart()[0] + canvas.GetClientSize()[0]:
-                    y = ry
-                else:
-                    x = rx
-            else:
-                y = ry
-            
+            y = ry
+
 
             modp = 'module:'
             segp = 'segment:'
@@ -501,8 +509,7 @@ class GraphEditor:
         to scheduler modules and requests the scheduler to execute them.
         """
 
-        allGlyphs = self.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+        allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
         self._execute_modules(allGlyphs)
 
@@ -513,13 +520,16 @@ class GraphEditor:
         """itemText is a complete module or segment spec, e.g.
         module:modules.Readers.dicomRDR or
         segment:/home/cpbotha/work/code/devide/networkSegments/blaat.dvn
+
+        x,y are in wx coordinates.
         """
 
         modp = 'module:'
         segp = 'segment:'
         
         if itemText.startswith(modp):
-            wx,wy,wz = self.canvas.display_to_world((x,y))
+            wx,wy,wz = \
+            self.canvas.display_to_world((x,self.canvas.flip_y(y)))
             self.create_module_and_glyph(wx, wy, itemText[len(modp):])
 
             # on GTK we have to SetFocus on the canvas, else the palette
@@ -553,7 +563,8 @@ class GraphEditor:
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
             """
-            wx,wy,wz = self.canvas.display_to_world((x,y))
+            wx,wy,wz = \
+                self.canvas.display_to_world((x,self.canvas.flip_y(y)))
             (mod, glyph) = self.create_module_and_glyph(wx, wy, moduleName)
             if mod:
                 cfg = mod.get_config()
@@ -875,12 +886,12 @@ class GraphEditor:
                        self._observer_glyph_left_button_down)
         co.add_observer('right_button_down',
                        self._observer_glyph_right_button_down)
-        co.add_observer('buttonUp',
-                       self._glyphButtonUp)
-        co.add_observer('drag',
-                       self._glyphDrag)
-        co.add_observer('buttonDClick',
-                       self._glyphButtonDClick)
+        co.add_observer('left_button_up',
+                       self._observer_glyph_left_button_up)
+        co.add_observer('dragging',
+                       self._observer_glyph_dragging)
+        co.add_observer('left_button_dclick',
+                       self._observer_glyph_left_button_dclick)
 
         # make sure we are redrawn.
         self.canvas.redraw()
@@ -1005,8 +1016,7 @@ class GraphEditor:
         @return: glyph if found, None otherwise.
         """
 
-        all_glyphs = self.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+        all_glyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
         found = False
         for glyph in all_glyphs:
@@ -1035,8 +1045,7 @@ class GraphEditor:
 
     def _handlerFileExportAsDOT(self, event):
         # make a list of all glyphs
-        allGlyphs = self.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+        allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
         
         if allGlyphs:
             filename = wx.FileSelector(
@@ -1359,23 +1368,29 @@ class GraphEditor:
     def hide(self):
         self._interface._main_frame.Show(False)
 
-    def _drawPreviewLine(self, beginp, endp0, endp1):
+    def _draw_preview_line(self, src, dst):
+        """Draw / update a preview line from 3-D world position src to
+        dst.
+        """
 
-        # make a DC to draw on
-        dc = self._interface._main_frame.canvas.getDC()        
+        if self._preview_line is None:
+            self._preview_line = DeVIDECanvasSimpleLine(src, dst)
+            self.canvas.add_object(self._preview_line)
 
-        dc.BeginDrawing()
-        
-        # dotted line
-        dc.SetBrush(wx.Brush('WHITE', wx.TRANSPARENT))
-        dc.SetPen(wx.Pen('BLACK', 1, wx.DOT))
-        dc.SetLogicalFunction(wx.INVERT) # NOT dst
+        else:
+            self._preview_line.src = src
+            self._preview_line.dst = dst
+            self._preview_line.update_geometry()
 
-        # nuke the previous line, draw the new one
-        dc.DrawLine(beginp[0], beginp[1], endp0[0], endp0[1])
-        dc.DrawLine(beginp[0], beginp[1], endp1[0], endp1[1])
-        
-        dc.EndDrawing()
+        self.canvas.redraw() # this shouldn't be here...
+
+    def _kill_preview_line(self):
+        if not self._preview_line is None:
+            self.canvas.remove_object(self._preview_line)
+            self._preview_line.close()
+            self._preview_line = None
+
+
 
     def _drawRubberBand(self, event, endRubberBand=False):
         """Set endRubberBand to True if this is the terminating rubberBand,
@@ -1418,7 +1433,8 @@ class GraphEditor:
             dc.EndDrawing()
 
     def _disconnect(self, glyph, inputIdx):
-        """Disconnect inputIdx'th input of glyph.
+        """Disconnect inputIdx'th input of glyph, also remove line
+        from canvas.
         """
 
         try:
@@ -1443,9 +1459,14 @@ class GraphEditor:
                 deadLine.fromOutputIdx]
             del outlines[outlines.index(deadLine)]
 
+            # also update geometry on both glyphs
+            glyph.update_geometry()
+            deadLine.fromGlyph.update_geometry()
+            
             # and from the canvas
-            self.canvas.removeObject(deadLine)
+            self.canvas.remove_object(deadLine)
             deadLine.close()
+
             
             
     def _observer_canvas_left_down(self, canvas):
@@ -1476,23 +1497,30 @@ class GraphEditor:
                     canvas.event.pos[1]))
 
 
-    def _canvasButtonUp(self, canvas, eventName, event):
-        if event.LeftUp():
+    def _observer_canvas_left_up(self, canvas):
+        print "_observer_canvas_left_up::"
+        # whatever the case may be, stop rubber banding
+        #self._stopRubberBanding(event)
+        
+        # any dragged objects?
+        if canvas.getDraggedObject() and \
+               canvas.getDraggedObject().draggedPort and \
+               canvas.getDraggedObject().draggedPort != (-1,-1):
 
-            # whatever the case may be, stop rubber banding
-            self._stopRubberBanding(event)
-            
-            # any dragged objects?
-            if canvas.getDraggedObject() and \
-                   canvas.getDraggedObject().draggedPort and \
-                   canvas.getDraggedObject().draggedPort != (-1,-1):
+            if canvas.getDraggedObject().draggedPort[0] == 0:
+                # the user was dragging an input port and dropped it
+                # on the canvas, so she probably wants us to disconnect
+                inputIdx = canvas.getDraggedObject().draggedPort[1]
+                self._disconnect(canvas.getDraggedObject(),
+                                 inputIdx)
 
-                if canvas.getDraggedObject().draggedPort[0] == 0:
-                    # the user was dragging an input port and dropped it
-                    # on the canvas, so she probably wants us to disconnect
-                    inputIdx = canvas.getDraggedObject().draggedPort[1]
-                    self._disconnect(canvas.getDraggedObject(),
-                                     inputIdx)
+            # we were dragging a port, so there was a preview line,
+            # which we now can discard
+            self._kill_preview_line()
+
+            self.canvas.redraw()
+
+
 
     def _canvasDrag(self, canvas, eventName, event):
         if event.LeftIsDown() and not canvas.getDraggedObject():
@@ -1500,6 +1528,10 @@ class GraphEditor:
 
     def _checkAndConnect(self, draggedObject, draggedPort,
                          droppedObject, droppedInputPort):
+        """Check whether the proposed connection can be made and make
+        it.  Also takes care of putting a new connection line on the
+        canvas, and redrawing.
+        """
 
         if droppedObject.inputLines[droppedInputPort]:
             # the user dropped us on a connected input, we can just bail
@@ -1510,7 +1542,7 @@ class GraphEditor:
             self._connect(draggedObject, draggedPort[1],
                           droppedObject, droppedInputPort)
             
-            self._interface._main_frame.canvas.redraw()
+            self.canvas.redraw()
 
         elif draggedObject.inputLines[draggedPort[1]]:
             # this means the user was dragging a connected input port and has
@@ -1531,7 +1563,7 @@ class GraphEditor:
             self._connect(fromGlyph, fromOutputIdx,
                           droppedObject, droppedInputPort)
 
-            self._interface._main_frame.canvas.redraw()
+            self.canvas.redraw()
 
     def clearAllGlyphsFromCanvas(self):
         allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
@@ -1569,9 +1601,10 @@ class GraphEditor:
         self.canvas.redraw()
 
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
-        l1 = wxpc.coLine(fromObject, fromOutputIdx,
+        l1 = DeVIDECanvasLine(fromObject, fromOutputIdx,
                          toObject, toInputIdx)
-        self._interface._main_frame.canvas.add_object(l1)
+        print "_createLine:: calling canvas.add_object"
+        self.canvas.add_object(l1)
             
         # also record the line in the glyphs
         toObject.inputLines[toInputIdx] = l1
@@ -1592,6 +1625,11 @@ class GraphEditor:
 
             # if that worked, we can make a linypoo
             self._createLine(fromObject, fromOutputIdx, toObject, toInputIdx)
+
+            # have to call update_geometry (the glyphs have new
+            # colours!)
+            fromObject.update_geometry()
+            toObject.update_geometry()
 
         except Exception, e:
             success = False
@@ -1614,7 +1652,7 @@ class GraphEditor:
             self._deleteModule(glyph, False)
 
         # finally we can let the canvas redraw
-        self._interface._main_frame.canvas.redraw()
+        self.canvas.redraw()
 
     def _realiseNetwork(self, pmsDict, connectionList, glyphPosDict,
                         origin=(0,0), reposition=False):
@@ -1688,8 +1726,8 @@ class GraphEditor:
 
         
 
-        all_glyphs = iface._main_frame.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+        all_glyphs = self.canvas.getObjectsOfClass(
+            DeVIDECanvasGlyph)
         num_glyphs = len(all_glyphs)
 
         # we can only do this if we have more than one glyph to
@@ -2002,7 +2040,7 @@ class GraphEditor:
     def _fileSaveCallback(self, event):
         # make a list of all glyphs
         allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+            DeVIDECanvasGlyph)
         
         if allGlyphs:
             filename = wx.FileSelector(
@@ -2018,18 +2056,18 @@ class GraphEditor:
         """Return list with all glyphs on canvas.
         """
         ag = self._interface._main_frame.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+            DeVIDECanvasGlyph)
         return ag
         
 
-    def _glyphDrag(self, glyph, eventName, event):
-
+    def _observer_glyph_dragging(self, glyph):
         canvas = self.canvas
 
         # this clause will execute once at the beginning of a drag...
         if not glyph.draggedPort:
             # we're dragging, but we don't know if we're dragging a port yet
-            port = glyph.findPortContainingMouse(event.realX, event.realY)
+            port = glyph.get_port_containing_mouse()
+            print "_observer_glyph_dragging:: port", port
             if port:
                 # 
                 glyph.draggedPort = port
@@ -2047,52 +2085,56 @@ class GraphEditor:
                 # err, kick yerself in the nads: you CAN'T use glyph
                 # as iteration variable, it'll overwrite the current glyph
                 for sglyph in self._selected_glyphs.getSelectedGlyphs():
-                    canvas.dragObject(sglyph, canvas.getMouseDelta())
+                    canvas.drag_object(sglyph,
+                            canvas.get_motion_vector_world(0.0))
             else:
                 # or just the glyph under the mouse
                 # this clause should never happen, as the dragged glyph
                 # always has the selection.
-                canvas.dragObject(glyph, canvas.getMouseDelta())
+                canvas.drag_object(glyph,
+                        canvas.get_motion_vector_world(0.0))
+
+            # finished glyph drag event handling, have to redraw.
+            canvas.redraw()
+                
                 
         else:
             if glyph.draggedPort[0] == 1:
                 # the user is attempting a new connection starting with
                 # an output port 
 
-                cop = glyph.getCenterOfPort(glyph.draggedPort[0],
+                cop = glyph.get_centre_of_port(glyph.draggedPort[0],
                                             glyph.draggedPort[1])
-                self._drawPreviewLine(cop,
-                                      canvas._previousRealCoords,
-                                      (event.realX, event.realY))
+                self._draw_preview_line(cop,
+                        canvas.event.world_pos)
 
             elif glyph.inputLines and glyph.inputLines[glyph.draggedPort[1]]:
                 # the user is attempting to relocate or disconnect an input
                 inputLine = glyph.inputLines[glyph.draggedPort[1]]
-                cop = inputLine.fromGlyph.getCenterOfPort(
+                cop = inputLine.fromGlyph.get_centre_of_port(
                     1, inputLine.fromOutputIdx)
 
-                self._drawPreviewLine(cop,
-                                      canvas._previousRealCoords,
-                                      (event.realX, event.realY))
+                self._draw_preview_line(cop,
+                                      canvas.event.world_pos)
 
-        if not canvas.getDraggedObject():
-            # this means that this drag has JUST been cancelled
-            if glyph.draggedPort == (-1, -1):
-                # and we were busy dragging a glyph around, so we probably
-                # want to reroute all lines!
-
-                # reroute all lines
-                allLines = self._interface._main_frame.canvas.\
-                           getObjectsOfClass(wxpc.coLine)
-
-                for line in allLines:
-                    self._route_line(line)
-
-
-            # switch off the draggedPort
-            glyph.draggedPort = None
-            # redraw everything
-            canvas.redraw()
+#        if not canvas.getDraggedObject():
+#            # this means that this drag has JUST been cancelled
+#            if glyph.draggedPort == (-1, -1):
+#                # and we were busy dragging a glyph around, so we probably
+#                # want to reroute all lines!
+#
+#                # reroute all lines
+#                allLines = self._interface._main_frame.canvas.\
+#                           getObjectsOfClass(wxpc.coLine)
+#
+#                for line in allLines:
+#                    self._route_line(line)
+#
+#
+#            # switch off the draggedPort
+#            glyph.draggedPort = None
+#            # redraw everything
+#            canvas.redraw()
 
     def _observer_glyph_motion(self, glyph):
         inout, port_idx = glyph.get_port_containing_mouse()
@@ -2162,59 +2204,91 @@ class GraphEditor:
                 self._selected_glyphs.removeGlyph(glyph)
             else:
                 self._selected_glyphs.addGlyph(glyph)
+
+            self.canvas.redraw()
+
         else:
             # if the user already has a selection of which this is a part,
             # we're not going to muck around with that.
             if not glyph.selected:
                 self._selected_glyphs.selectGlyph(glyph)
+
+                self.canvas.redraw()
             
-    def _glyphButtonUp(self, glyph, eventName, event):
-        if event.LeftUp():
-            # whatever the case may be, stop rubber banding.
-            self._stopRubberBanding(event)
+    def _observer_glyph_left_button_up(self, glyph):
+        dprint("_observer_glyph_left_button_up::")
 
-            canvas = self.canvas()
+        if self.canvas.getDraggedObject():
+            dprint("_observer_glyph_left_button_up:: draggedObject, " + 
+            "draggedPort", self.canvas.getDraggedObject(),
+            self.canvas.getDraggedObject().draggedPort)
+        
 
-            # when we receive the ButtonUp that ends the drag event, 
-            # canvas.getDraggedObject is still set! - it will be unset
-            # right after (by the canvas) and then the final drag event
-            # will be triggered
-            
-            if canvas.getDraggedObject() and \
-                   canvas.getDraggedObject().draggedPort and \
-                   canvas.getDraggedObject().draggedPort != (-1,-1):
-                # this means the user was dragging a port... so we're
-                # interested
-                pcm = glyph.findPortContainingMouse(event.realX, event.realY)
-                if not pcm:
-                    # the user dropped us inside of the glyph, NOT above a port
-                    # if the user was dragging an input port, we have to
-                    # manually disconnect
-                    if canvas.getDraggedObject().draggedPort[0] == 0:
-                        inputIdx = canvas.getDraggedObject().draggedPort[1]
-                        self._disconnect(canvas.getDraggedObject(),
-                                         inputIdx)
+        # whatever the case may be, stop rubber banding.
+        #self._stopRubberBanding(event)
 
-                    else:
-                        # the user was dragging a port and dropped us
-                        # inside a glyph... we do nothing
-                        pass
+        canvas = self.canvas
+
+        # when we receive the ButtonUp that ends the drag event, 
+        # canvas.getDraggedObject is still set! - it will be unset
+        # right after (by the canvas) and then the final drag event
+        # will be triggered
+        if canvas.getDraggedObject() and \
+               canvas.getDraggedObject().draggedPort and \
+               canvas.getDraggedObject().draggedPort != (-1,-1):
+            # this means the user was dragging a port... so we're
+            # interested
+            # first get rid of the preview line...
+            self._kill_preview_line()
+            pcm = glyph.get_port_containing_mouse()
+            dprint("_observer_glyph_left_button_up:: pcm",pcm)
+            if pcm == (-1,-1):
+                # the user dropped us inside of the glyph, NOT above a port
+                # if the user was dragging an input port, we have to
+                # manually disconnect
+                if canvas.getDraggedObject().draggedPort[0] == 0:
+                    inputIdx = canvas.getDraggedObject().draggedPort[1]
+                    self._disconnect(canvas.getDraggedObject(),
+                                     inputIdx)
+                    self.canvas.redraw()
 
                 else:
-                    # this means the drag is ended above a port!
-                    if pcm[0] == 0:
-                        # ended above an INPUT port
-                        self._checkAndConnect(
-                            canvas.getDraggedObject(),
-                            canvas.getDraggedObject().draggedPort,
-                            glyph, pcm[1])
+                    # the user was dragging a port and dropped us
+                    # inside a glyph... we do nothing
+                    pass
 
-                    else:
-                        # ended above an output port... we can't do anything
-                        # (I think)
-                        pass
+            else:
+                # this means the drag is ended above an input port!
+                if pcm[0] == 0:
+                    # ended above an INPUT port
+                    # checkandconnect will route lines and redraw if
+                    # required
+                    self._checkAndConnect(
+                        canvas.getDraggedObject(),
+                        canvas.getDraggedObject().draggedPort,
+                        glyph, pcm[1])
 
-    def _glyphButtonDClick(self, glyph, eventName, event):
+                else:
+                    # ended above an output port... we can't do anything
+                    # (I think)
+                    pass
+
+        if canvas.getDraggedObject() and \
+        canvas.getDraggedObject().draggedPort == (-1,-1):
+            print "_observer_glyph_left_button_up:: end of glyph move"
+            # this is the end of a glyph move: there is still a
+            # draggedObject, but the left mouse button is up.
+            # the new VTK canvas event system only switches off draggy
+            # things AFTER the left mouse button up event
+            all_lines = \
+                self.canvas.getObjectsOfClass(DeVIDECanvasLine)
+            for line in all_lines:
+                dprint("+-- routing line", line)
+                self._route_line(line)
+            # the old code also switch off the draggedPort here...
+            self.canvas.redraw()
+
+    def _observer_glyph_left_button_dclick(self, glyph):
         module = glyph.moduleInstance
         # double clicking on a module opens the View/Config.
         self._viewConfModule(module)
@@ -2342,8 +2416,7 @@ class GraphEditor:
     def _route_line(self, line):
         
         # we have to get a list of all coGlyphs
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
-            wxpc.coGlyph)
+        allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
         # make sure the line is back to 4 points
         line.updateEndPoints()
@@ -2353,7 +2426,7 @@ class GraphEditor:
         # the DrawLines -> DrawSplines in coLine as well as
         # coLine.updateEndPoints() (at the moment they use port height
         # to get that bit out of the glyph)
-        overshoot = wxpc.coLine.routingOvershoot
+        overshoot = DeVIDECanvasLine.routingOvershoot
         # sometimes, for instance for spline routing, we need something
         # extra... for straight line drawing, this should be = overshoot
         #moreOvershoot = 2 * overshoot
@@ -2367,7 +2440,7 @@ class GraphEditor:
 
             clips = {}
             for glyph in allGlyphs:
-                (xmin, ymin), (xmax, ymax) = glyph.getTopLeftBottomRight()
+                (xmin, ymin), (xmax, ymax) = glyph.get_top_left_bottom_right()
 
                 clipPoints = self._cohenSutherLandClip(x0, y0, x1, y1,
                                                        xmin, ymin, xmax, ymax)
@@ -2394,7 +2467,7 @@ class GraphEditor:
             # we have the nearest clip point
             if nearestGlyph:
                 (xmin, ymin), (xmax, ymax) = \
-                       nearestGlyph.getTopLeftBottomRight()
+                       nearestGlyph.get_top_left_bottom_right()
 
                 # does it clip the horizontal bar
                 if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
@@ -2415,7 +2488,7 @@ class GraphEditor:
                     # node to avoid those clips!
                     for glyph in allGlyphs:
                         (xmin2, ymin2), (xmax2, ymax2) = \
-                                glyph.getTopLeftBottomRight()
+                                glyph.get_top_left_bottom_right()
                         cp2 = self._cohenSutherLandClip(x0,y0,newX,newY,
                                                         xmin2, ymin2,
                                                         xmax2, ymax2)
@@ -2448,7 +2521,7 @@ class GraphEditor:
                     # node to avoid those clips!
                     for glyph in allGlyphs:
                         (xmin2, ymin2), (xmax2, ymax2) = \
-                                glyph.getTopLeftBottomRight()
+                                glyph.get_top_left_bottom_right()
                         cp2 = self._cohenSutherLandClip(x0,y0,newX,newY,
                                                         xmin2, ymin2,
                                                         xmax2, ymax2)
@@ -2465,6 +2538,8 @@ class GraphEditor:
                 else:
                     print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
                     raise Exception
+
+        line.update_geometry()
 
 
 
@@ -2505,9 +2580,9 @@ class GraphEditor:
                 'Could not delete module (removing from canvas '
                 'anyway): %s' % (str(e)))
 
-        canvas = self.canvas()
+        canvas = self.canvas
         # remove it from the canvas
-        canvas.removeObject(glyph)
+        canvas.remove_object(glyph)
         # take care of possible lyings around
         glyph.close()
 
@@ -2552,7 +2627,7 @@ class GraphEditor:
 
             # now determine all glyphs inside of the rubberBand
             allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
-                wxpc.coGlyph)
+                DeVIDECanvasGlyph)
 
             glyphsInRubberBand = []
             for glyph in allGlyphs:
