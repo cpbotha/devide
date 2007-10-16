@@ -2440,11 +2440,10 @@ class GraphEditor:
 
             clips = {}
             for glyph in allGlyphs:
-                (xmin, ymin), (xmax, ymax) = glyph.get_top_left_bottom_right()
+                (xmin, ymin), (xmax, ymax) = glyph.get_bottom_left_top_right()
 
                 clipPoints = self._cohenSutherLandClip(x0, y0, x1, y1,
                                                        xmin, ymin, xmax, ymax)
-
                 if clipPoints:
                     clips[glyph] = clipPoints
 
@@ -2467,7 +2466,7 @@ class GraphEditor:
             # we have the nearest clip point
             if nearestGlyph:
                 (xmin, ymin), (xmax, ymax) = \
-                       nearestGlyph.get_top_left_bottom_right()
+                       nearestGlyph.get_bottom_left_top_right()
 
                 # does it clip the horizontal bar
                 if nearestClipPoint[1] == ymin or nearestClipPoint[1] == ymax:
@@ -2488,7 +2487,7 @@ class GraphEditor:
                     # node to avoid those clips!
                     for glyph in allGlyphs:
                         (xmin2, ymin2), (xmax2, ymax2) = \
-                                glyph.get_top_left_bottom_right()
+                                glyph.get_bottom_left_top_right()
                         cp2 = self._cohenSutherLandClip(x0,y0,newX,newY,
                                                         xmin2, ymin2,
                                                         xmax2, ymax2)
@@ -2521,7 +2520,7 @@ class GraphEditor:
                     # node to avoid those clips!
                     for glyph in allGlyphs:
                         (xmin2, ymin2), (xmax2, ymax2) = \
-                                glyph.get_top_left_bottom_right()
+                                glyph.get_bottom_left_top_right()
                         cp2 = self._cohenSutherLandClip(x0,y0,newX,newY,
                                                         xmin2, ymin2,
                                                         xmax2, ymax2)

@@ -485,12 +485,11 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         return (cx, cy, 0.0)
 
-    def get_top_left_bottom_right(self):
+    def get_bottom_left_top_right(self):
          return ((self._position[0], 
-                  self._position[1] + self._size[0]
-             -1),
+                  self._position[1]),
                 (self._position[0] + self._size[0] - 1,
-                 self._position[1]))
+                 self._position[1] + self._size[1] - 1))
        
 
     def getLabel(self):
