@@ -549,7 +549,7 @@ class GraphEditor:
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
-                self._interface._main_frame.canvas.SetFocus()
+                self.canvas.SetFocus()
                 # yield also necessary, else the workaround doesn't
                 wx.SafeYield()
             
@@ -1709,7 +1709,7 @@ class GraphEditor:
                              tGlyph, connection.inputIdx)
 
         # finally we can let the canvas redraw
-        self._interface._main_frame.canvas.redraw()
+        self.canvas.redraw()
 
     def _layout_network_sucky(self):
 
@@ -1719,7 +1719,7 @@ class GraphEditor:
         #from internal.wxPyCanvas import wxpc
         iface = self._interface
         #iface = devide_app.get_interface()
-        canvas = iface._main_frame.canvas
+        canvas = self..canvas
         ge = iface._graph_editor
         mm = self._devide_app.get_module_manager()
         #mm = devide_app.get_module_manager()
@@ -2039,7 +2039,7 @@ class GraphEditor:
 
     def _fileSaveCallback(self, event):
         # make a list of all glyphs
-        allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
+        allGlyphs = self.canvas.getObjectsOfClass(
             DeVIDECanvasGlyph)
         
         if allGlyphs:
@@ -2055,7 +2055,7 @@ class GraphEditor:
     def _get_all_glyphs(self):
         """Return list with all glyphs on canvas.
         """
-        ag = self._interface._main_frame.canvas.getObjectsOfClass(
+        ag = self.canvas.getObjectsOfClass(
             DeVIDECanvasGlyph)
         return ag
         
