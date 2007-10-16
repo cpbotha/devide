@@ -128,6 +128,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         a.SetMapper(m)
 
         a.GetProperty().SetColor(0.0,0.0,0.45)
+        a.GetProperty().SetLineWidth(2.5)
 
         self.prop = a
 

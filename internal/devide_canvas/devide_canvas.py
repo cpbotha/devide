@@ -65,6 +65,12 @@ class DeVIDECanvas(SubjectMixin):
         # set a sensible initial zoom
         self._zoom(0.008)
 
+        # make sure everything is smooth...
+        rw = self._ren.GetRenderWindow()
+        rw.PointSmoothingOn()
+        rw.LineSmoothingOn()
+        rw.PolygonSmoothingOn()
+
         istyle = vtk.vtkInteractorStyleUser()
         #istyle = vtk.vtkInteractorStyleImage()
         self._rwi.SetInteractorStyle(istyle)
