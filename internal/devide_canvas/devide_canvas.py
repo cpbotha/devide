@@ -120,7 +120,7 @@ class DeVIDECanvas(SubjectMixin):
     # nuke this function, replace with display_to_world.
     # events are in display, everything else in world.
     # go back to graph_editor
-    def eventToRealCoords(self, ex, ey):
+    def eventToRealCoords_DEPRECATED(self, ex, ey):
         """Convert window event coordinates to canvas relative coordinates.
         """
 
@@ -455,6 +455,18 @@ class DeVIDECanvas(SubjectMixin):
         """
 
         self._rwi.Render()
+
+    def update_all_geometry(self):
+        """Update all geometry.
+
+        This is useful if many of the objects states have been changed
+        (e.g. new connections) and the connection visual states have
+        to be updated.
+        """
+
+        for o in self._cobjects:
+            o.update_geometry()
+
 
     def remove_object(self, cobj):
         if cobj and cobj in self._cobjects:

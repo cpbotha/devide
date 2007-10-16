@@ -556,6 +556,15 @@ class GraphEditor:
 
 
     def canvasDropFilenames(self, x, y, filenames):
+        """Event handler for when the user drops a list of filenames
+        on the canavs.
+
+        @param x,y: coordinates in the wx system.
+        """
+
+        # before we do anything, convert to world coordinates
+        wx,wy,wz = \
+            self.canvas.display_to_world((x,self.canvas.flip_y(y)))
         
         def createModuleOneVar(moduleName, configVarName, configVarValue,
                                newModuleName=None):
@@ -563,8 +572,6 @@ class GraphEditor:
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
             """
-            wx,wy,wz = \
-                self.canvas.display_to_world((x,self.canvas.flip_y(y)))
             (mod, glyph) = self.create_module_and_glyph(wx, wy, moduleName)
             if mod:
                 cfg = mod.get_config()
@@ -632,8 +639,10 @@ class GraphEditor:
         # filename.  if not successful, the normal logic for dropped
         # filenames applies.
 
-        rx, ry = canvas.eventToRealCoords(x,y)
-        g = canvas.get_glyph_on_coords(rx,ry)
+        
+        #g = canvas.get_glyph_on_coords(rx,ry)
+        g = canvas.event.picked_cobject
+        print "canvasDropFilename:: picked_cobject", g
         if g:
             # returns True if glyph did something with drop...
             ret = handle_drop_on_glyph(g, filenames)
@@ -646,8 +655,7 @@ class GraphEditor:
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
-                rx, ry = self.canvas.eventToRealCoords(x, y)
-                self._loadAndRealiseNetwork(filename, (rx,ry),
+                self._loadAndRealiseNetwork(filename, (wx,wy),
                                             reposition=True)
 
             elif filename.lower().endswith('.vtk'):
@@ -705,7 +713,6 @@ class GraphEditor:
         # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
-            wx,wy,wz = self.canvas.display_to_world((x,y))
             (mod,glyph) = self.create_module_and_glyph(wx, wy,
                                                     'modules.readers.dicomRDR')
             
@@ -870,6 +877,8 @@ class GraphEditor:
         """Create only a glyph on the canvas given an already created
         moduleInstance.  labelList is a list of strings that will be printed
         inside the glyph representation.  The glyph instance is returned.
+
+        @param rx,ry: world coordinates of new glyph.
         """
         
         co = DeVIDECanvasGlyph((rx, ry),
@@ -1243,7 +1252,7 @@ class GraphEditor:
         # and get the module state (we make a deep copy just in case)
         module_config = copy.deepcopy(meta_module.instance.get_config())
         # and even the glyph position
-        gp_x, gp_y = glyph.getPosition()
+        gp_x, gp_y = glyph.get_position()
 
         # now disconnect and nuke the old module
         self._deleteModule(glyph)
@@ -1709,6 +1718,7 @@ class GraphEditor:
                              tGlyph, connection.inputIdx)
 
         # finally we can let the canvas redraw
+        self.canvas.update_all_geometry()
         self.canvas.redraw()
 
     def _layout_network_sucky(self):
@@ -1719,7 +1729,7 @@ class GraphEditor:
         #from internal.wxPyCanvas import wxpc
         iface = self._interface
         #iface = devide_app.get_interface()
-        canvas = self..canvas
+        canvas = self.canvas
         ge = iface._graph_editor
         mm = self._devide_app.get_module_manager()
         #mm = devide_app.get_module_manager()
@@ -1753,7 +1763,7 @@ class GraphEditor:
 
 
         for glyph in all_glyphs:
-            pos = glyph.getPosition()
+            pos = glyph.get_position()
 
             new_pos = pos + (0.0,)
             ptid = points.InsertNextPoint(new_pos)
@@ -1821,7 +1831,7 @@ class GraphEditor:
         """Attempt to load (i.e. unpickle) a DVN network file and recreate
         this network on the canvas.
 
-        The position has to be real (i.e. canvas-absolute and NOT event)
+        @param position: start position of new network in world
         coordinates.
         """
 
@@ -1980,7 +1990,7 @@ class GraphEditor:
         glyphPosDict = {}
         for savedGlyph in savedGlyphs:
             instanceName = mm.get_instance_name(savedGlyph.moduleInstance)
-            glyphPosDict[instanceName] = savedGlyph.getPosition()
+            glyphPosDict[instanceName] = savedGlyph.get_position()
 
         return (pmsDict, connectionList, glyphPosDict)
         
