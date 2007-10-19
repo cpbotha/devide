@@ -209,6 +209,9 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     @ivar position: this is the position of the bottom left corner of
     the glyph in world space.  Remember that (0,0) is also bottom left
     of the canvas.
+
+    @FIXME: lots of things (especially text mod) that have to be moved
+    from create_geometry to update_geometry.
     """
 
     # at start and end of glyph
@@ -272,21 +275,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         del self.outputLines
 
     def _create_geometry(self):
-        normal_colour = (192, 192, 192)
-        selected_colour = (255, 0, 246)
-        blocked_colour = (16, 16, 16)
-
-        colour = normal_colour
-
-        if self.selected:
-            colour = [selected_colour[i] * 0.5 + colour[i] * 0.5
-                      for i in range(3)]
-
-        if self.blocked:
-            colour = [blocked_colour[i] * 0.5 + colour[i] * 0.5
-                      for i in range(3)]
-
-        colour = tuple([int(i) for i in colour])
 
         # TEXT LABEL ##############################################
         self._ts.SetText('\n'.join(self._labelList))
@@ -330,7 +318,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                       2 * self._vertBorder)
 
         self._rbs.SetBoxRatio(1.0)
-        self._rbs.SetTwoSided(1)
+        #self._rbs.SetTwoSided(1)
         self._rbs.SetHeight(self._size[1])
         self._rbs.SetWidth(self._size[0])
         # so bottom is wider than shoulder (beveled)
@@ -369,13 +357,12 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # INPUTS #################################################### 
         horizOffset = self._horizBorder
         horizStep = self._pWidth + self._horizSpacing
-        #connBrush = wx.wxBrush("GREEN")
-        #disconnBrush = wx.wxBrush("RED")
         
         for i in range(self._numInputs):
             s,a = self._iportssa[i]
             s.SetHeight(self._pHeight)
             s.SetWidth(self._pWidth)
+            s.SetBoxRatio(1.1)
             m = vtk.vtkPolyDataMapper()
             m.SetInput(s.GetOutput())
             a.SetMapper(m)
@@ -388,6 +375,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             s,a = self._oportssa[i]
             s.SetHeight(self._pHeight)
             s.SetWidth(self._pWidth)
+            s.SetBoxRatio(1.1)
             m = vtk.vtkPolyDataMapper()
             m.SetInput(s.GetOutput())
             a.SetMapper(m)
@@ -404,17 +392,23 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         port_conn_col = (0.0, 1.0, 0.0)
         port_disconn_col = (1.0, 0.0, 0.0)
 
+        # update glyph position ###############################
         self.prop.SetPosition(self._position + (0.0,))
 
+        # calc and update glyph colour ########################
+        gcol = glyph_normal_col
+
         if self.selected:
-            gcol = glyph_selected_col
-        elif self.blocked:
-            gcol = glyph_blocked_col
-        else:
-            gcol = glyph_normal_col
+            gcol = [gcol[i] * 0.5 + glyph_selected_col[i] * 0.5
+                    for i in range(3)]
+
+        if self.blocked:
+            gcol = [gcol[i] * 0.5 + glyph_blockd_col[i] * 0.5
+                    for i in range(3)]
 
         self._rbsa.GetProperty().SetColor(gcol)
 
+        # colour all the inputs and outputs ###################
         for i in range(self._numInputs):
             col = [port_conn_col,
                     port_disconn_col][bool(self.inputLines[i])]
