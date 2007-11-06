@@ -48,6 +48,10 @@ class DeVIDECanvas(SubjectMixin):
         self._rwi = renderwindowinteractor
         self._ren = renderer
 
+        # we can't switch on Line/Point/Polygon smoothing here,
+        # because the renderwindow has already been initialised
+        # we do it in main_frame.py right after we create the RWI
+
         # parent 2 ctor
         SubjectMixin.__init__(self)
 
@@ -65,11 +69,6 @@ class DeVIDECanvas(SubjectMixin):
         # set a sensible initial zoom
         self._zoom(0.008)
 
-        # make sure everything is smooth...
-        rw = self._ren.GetRenderWindow()
-        rw.PointSmoothingOn()
-        rw.LineSmoothingOn()
-        rw.PolygonSmoothingOn()
 
         istyle = vtk.vtkInteractorStyleUser()
         #istyle = vtk.vtkInteractorStyleImage()
