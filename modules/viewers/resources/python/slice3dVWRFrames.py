@@ -10,6 +10,10 @@ import vtk.wx.wxVTKRenderWindowInteractor
 vtk.wx.wxVTKRenderWindowInteractor.WX_USE_X_CAPTURE = 0
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
+# if you want to hide the button panel, do the following
+# sizer_2.Hide(sizer_15, recursive=True)
+# right after sizer_15 is added to sizer_2
+
 # make sure that this variable is defined
 try:
     S3DV_STEREO
@@ -76,6 +80,7 @@ class threedFrame(wxFrame):
         sizer_15.Add((0, 20), 0, 0, 0)
         sizer_15.Add(self.saveImageButton, 0, wxBOTTOM|wxEXPAND, 4)
         sizer_2.Add(sizer_15, 0, wxRIGHT|wxEXPAND, 4)
+        #sizer_2.Hide(sizer_15, recursive=True)
         sizer_2.Add(self.threedRWI, 1, wxEXPAND, 0)
         sizer_8.Add(sizer_2, 1, wxALL|wxEXPAND, 7)
         self.panel_1.SetAutoLayout(True)
