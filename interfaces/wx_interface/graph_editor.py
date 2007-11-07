@@ -881,7 +881,7 @@ class GraphEditor:
         @param rx,ry: world coordinates of new glyph.
         """
         
-        co = DeVIDECanvasGlyph((rx, ry),
+        co = DeVIDECanvasGlyph(self.canvas, (rx, ry),
                           len(moduleInstance.get_input_descriptions()),
                           len(moduleInstance.get_output_descriptions()),
                           labelList, moduleInstance)
@@ -1383,7 +1383,7 @@ class GraphEditor:
         """
 
         if self._preview_line is None:
-            self._preview_line = DeVIDECanvasSimpleLine(src, dst)
+            self._preview_line = DeVIDECanvasSimpleLine(self.canvas, src, dst)
             self.canvas.add_object(self._preview_line)
 
         else:
@@ -1610,7 +1610,7 @@ class GraphEditor:
         self.canvas.redraw()
 
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
-        l1 = DeVIDECanvasLine(fromObject, fromOutputIdx,
+        l1 = DeVIDECanvasLine(self.canvas, fromObject, fromOutputIdx,
                          toObject, toInputIdx)
         print "_createLine:: calling canvas.add_object"
         self.canvas.add_object(l1)

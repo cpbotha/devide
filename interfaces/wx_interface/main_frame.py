@@ -108,6 +108,13 @@ class MainWXFrame(wx.Frame):
         self._ren = vtk.vtkRenderer()
         self._rwi.GetRenderWindow().AddRenderer(self._ren)
 
+        rw = self._rwi.GetRenderWindow()
+        rw.SetLineSmoothing(1)
+        rw.SetPointSmoothing(1)
+        rw.SetPolygonSmoothing(1)
+        # this makes it reaaaally slow.
+        #rw.SetAAFrames(4)
+
         self._mgr.AddPane(
             self._rwi,
             PyAUI.PaneInfo().Name('graph_canvas').

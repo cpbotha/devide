@@ -244,9 +244,12 @@ class DeVIDECanvas(SubjectMixin):
         p = vtk.vtkPicker()
         p.SetTolerance(0.00001) # this is perhaps still too large
 
-        
-        [p.AddPickList(i.prop) for i in self._cobjects if
-                isinstance(i, DeVIDECanvasGlyph)]
+       
+        for i in self._cobjects:
+            if isinstance(i, DeVIDECanvasGlyph):
+                for prop in i.props:
+                    p.AddPickList(prop)
+
         p.PickFromListOn()
 
         ret = p.Pick((ex, ey, 0), self._ren)
@@ -442,10 +445,11 @@ class DeVIDECanvas(SubjectMixin):
         if cobj and cobj not in self._cobjects:
             cobj.canvas = self
             self._cobjects.append(cobj)
-            self._ren.AddViewProp(cobj.prop)
-            # we only add prop to cobject if it's a glyph
-            if isinstance(cobj, DeVIDECanvasGlyph):
-                self.prop_to_glyph[cobj.prop] = cobj
+            for prop in cobj.props:
+                self._ren.AddViewProp(prop)
+                # we only add prop to cobject if it's a glyph
+                if isinstance(cobj, DeVIDECanvasGlyph):
+                    self.prop_to_glyph[prop] = cobj
 
             cobj.__hasMouse = False
 
@@ -469,11 +473,12 @@ class DeVIDECanvas(SubjectMixin):
 
     def remove_object(self, cobj):
         if cobj and cobj in self._cobjects:
-            self._ren.RemoveViewProp(cobj.prop)
+            for prop in cobj.props:
+                self._ren.RemoveViewProp(prop)
             
-            # it's only in here if it's a glyph
-            if isinstance(cobj, DeVIDECanvasGlyph):
-                del self.prop_to_glyph[cobj.prop]
+                # it's only in here if it's a glyph
+                if isinstance(cobj, DeVIDECanvasGlyph):
+                    del self.prop_to_glyph[prop]
 
             cobj.canvas = None
             if self._draggedObject == cobj:

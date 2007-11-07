@@ -1724,7 +1724,8 @@ class moduleManager:
         
 
         # experiment here with making shallowcopies if we're working with
-        # VTK data.
+        # VTK data.  I've double-checked (20071027): calling update on
+        # a shallowcopy is not able to get a VTK pipeline to execute.
         # TODO: somehow this should be part of one of the moduleKits
         # or some other module-related pluggable logic.
         if od and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
@@ -1732,14 +1733,6 @@ class moduleManager:
             nod.ShallowCopy(od)
             od = nod
             
-            # NASTY NASTY NASTY FIXME
-            # also make sure that an output object does not know who
-            # its producer is.  GetSource/SetSource don't work anymore.
-            #if hasattr(od, 'GetPipelineInformation'):
-            #    import vtk
-            #    inf = od.GetPipelineInformation()
-            #    inf.Set(vtk.vtkExecutive.PRODUCER(), None, 0)
-        
         try:
             # set on consumerInstance input
             consumer_meta_module.instance.set_input(consumer_input_idx, od)

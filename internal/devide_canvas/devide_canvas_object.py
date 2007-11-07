@@ -5,12 +5,12 @@ import vtk
 #############################################################################
 class DeVIDECanvasObject(SubjectMixin):
     
-    def __init__(self, position):
+    def __init__(self, canvas, position):
         # call parent ctor
         SubjectMixin.__init__(self)
-        
+       
+        self.canvas = canvas
         self._position = position
-        self.canvas = None
         self._observers = {'enter' : [],
                            'exit' : [],
                            'drag' : [],
@@ -21,7 +21,7 @@ class DeVIDECanvasObject(SubjectMixin):
 
         # all canvas objects have a vtk prop that can be added to a
         # vtk renderer.
-        self.prop = None
+        self.props = []
 
     def close(self):
         """Take care of any cleanup here.
@@ -47,14 +47,14 @@ class DeVIDECanvasObject(SubjectMixin):
 #############################################################################
 
 class DeVIDECanvasSimpleLine(DeVIDECanvasObject):
-    def __init__(self, src, dst):
+    def __init__(self, canvas, src, dst):
         """src and dst are 3D world space coordinates.
         """
         self.src = src
         self.dst = dst
 
         # call parent CTOR
-        DeVIDECanvasObject.__init__(self, src)
+        DeVIDECanvasObject.__init__(self, canvas, src)
 
         self._create_geometry()
         self.update_geometry()
@@ -66,7 +66,7 @@ class DeVIDECanvasSimpleLine(DeVIDECanvasObject):
         a = vtk.vtkActor()
         a.SetMapper(m)
         a.GetProperty().SetColor(0.0, 0.0, 0.0)
-        self.prop = a
+        self.props = [a]
 
     def update_geometry(self):
         self._line_source.SetPoint1(self.src)
@@ -82,7 +82,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
     # the connection out of the connection port initially
     routingOvershoot = 10
 
-    def __init__(self, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
+    def __init__(self, canvas, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
 
         """A line object for the canvas.
 
@@ -104,7 +104,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         # any line begins with 4 (four) points
         self.updateEndPoints()
         # now we call the parent ctor
-        DeVIDECanvasObject.__init__(self, self._line_points[0])        
+        DeVIDECanvasObject.__init__(self, canvas, self._line_points[0])        
         
         self._create_geometry()
         self.update_geometry()
@@ -130,7 +130,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         a.GetProperty().SetColor(0.0,0.0,0.45)
         a.GetProperty().SetLineWidth(2.5)
 
-        self.prop = a
+        self.props = [a]
 
     def update_geometry(self):
         pts = vtk.vtkPoints()
@@ -223,7 +223,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _pWidth = 10
     _pHeight = 10
 
-    _label_height = 10
+    _label_height = 15
+    _char_width = 10
+
+    _text_z = 0.4
 
 
     t = vtk.vtkVectorText()
@@ -232,11 +235,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     b = t.GetOutput().GetBounds()
     _label_scale = _label_height / (b[3] - b[2])
 
-    def __init__(self, position, numInputs, numOutputs,
+    def __init__(self, canvas, position, numInputs, numOutputs,
                  labelList, moduleInstance):
         # parent constructor
-        #coRectangle.__init__(self, position, (0,0))
-        DeVIDECanvasObject.__init__(self, position)
+        DeVIDECanvasObject.__init__(self, canvas, position)
 
         # we'll fill this out later
         self._size = (0,0)
@@ -252,11 +254,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.selected = False
         self.blocked = False
 
-        self.prop = vtk.vtkAssembly()
+        self.prop1 = vtk.vtkAssembly()
         self._rbs = vtk.vtkRectangularButtonSource()
         self._rbsa = vtk.vtkActor()
-        self._ts = vtk.vtkVectorText()
-        self._tsa = vtk.vtkActor()
+        self._tsa = vtk.vtkCaptionActor2D()
 
         self._iportssa = \
             [(vtk.vtkRectangularButtonSource(),vtk.vtkActor()) for _ in
@@ -277,30 +278,40 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     def _create_geometry(self):
 
         # TEXT LABEL ##############################################
-        self._ts.SetText('\n'.join(self._labelList))
-        self._ts.Update()
-        m= vtk.vtkPolyDataMapper()
-        m.SetInput(self._ts.GetOutput())
-        self._tsa.SetMapper(m)
 
-        self._tsa.SetScale(self._label_scale)
+
         inity = self._vertBorder + \
                 self._label_height * (len(self._labelList) - 1)
         # still have to tune inity with the space between lines...
         initx = self._horizSpacing
         # y is the bottom left of the first character
         # 0.2 is 0.1 above the button (the button's depth is 0.1)
-        self._tsa.SetPosition(initx, inity, 0.2)
+        
+        self._tsa.SetCaption('\n'.join(self._labelList))
+        tprop = self._tsa.GetCaptionTextProperty()
+        tprop.SetFontFamilyToArial()
+        tprop.SetVerticalJustificationToCentered()
+        tprop.SetFontSize(16)
+        tprop.SetBold(1)
+        tprop.SetItalic(0)
+        tprop.SetShadow(0)
+        tprop.SetColor((1.0,1.0,1.0))
+
+        # attachmentpoint is in world coordinates
+        # self._position is the bottom left corner of the button face
+        self._tsa.SetAttachmentPoint(self._position + (self._text_z,))
+        # position is relative to attachmentpoint, in display coords
+        self._tsa.GetPositionCoordinate().SetValue(0.0, 0.0)
+        self._tsa.LeaderOff()
+        self._tsa.BorderOff()
 
         # we also need the text width for later
-        b = self._ts.GetOutput().GetBounds()
-        text_width = self._label_scale * (b[1] - b[2]) + \
-            2 * self._horizBorder
+        #b = self._ts.GetOutput().GetBounds()
+        #text_width = self._label_scale * (b[1] - b[2]) + \
+        #    2 * self._horizBorder
 
-        # text colour
-        self._tsa.GetProperty().SetColor(0.0, 0.0, 0.0)
 
-        self.prop.AddPart(self._tsa)
+        #self.prop.AddPart(self._tsa)
         
         # RECT BUTTON ##############################################
         # calculate our size
@@ -312,10 +323,19 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                      (maxPorts - 1 ) * self._horizSpacing
 
 
-        
-        self._size = (max(text_width, portsWidth),
+       
+        #self._size = max(portsWidth, text_width),
+        label_lengths = [len(i) for i in self._labelList]
+        max_label_width = max(label_lengths) * self._char_width
+
+        self._size = max(portsWidth, max_label_width), \
                       self._label_height * len(self._labelList) + \
-                      2 * self._vertBorder)
+                      2 * self._vertBorder
+
+
+        p2c = max_label_width, self._size[1], self._text_z
+        self._tsa.GetPosition2Coordinate().SetCoordinateSystemToWorld()
+        self._tsa.GetPosition2Coordinate().SetValue(p2c)
 
         self._rbs.SetBoxRatio(1.0)
         #self._rbs.SetTwoSided(1)
@@ -352,7 +372,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         p.SetSpecularPower(100)
 
 
-        self.prop.AddPart(self._rbsa)
+        self.prop1.AddPart(self._rbsa)
 
         # INPUTS #################################################### 
         horizOffset = self._horizBorder
@@ -369,7 +389,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             a.SetPosition((horizOffset + i * horizStep,
                 self._size[1], 0.1))
 
-            self.prop.AddPart(a)
+            self.prop1.AddPart(a)
 
         for i in range(self._numOutputs):
             s,a = self._oportssa[i]
@@ -381,9 +401,11 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             a.SetMapper(m)
             a.SetPosition((horizOffset + i * horizStep, 0, 0.1))
 
-            self.prop.AddPart(a)
+            self.prop1.AddPart(a)
 
-        self.prop.SetPosition(self._position + (0.0,))
+        self.prop1.SetPosition(self._position + (0.0,))
+
+        self.props = [self.prop1, self._tsa]
 
     def update_geometry(self):
         glyph_normal_col = (0.75, 0.75, 0.75)
@@ -393,7 +415,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         port_disconn_col = (1.0, 0.0, 0.0)
 
         # update glyph position ###############################
-        self.prop.SetPosition(self._position + (0.0,))
+        self.props[0].SetPosition(self._position + (0.0,))
 
         # calc and update glyph colour ########################
         gcol = glyph_normal_col
