@@ -80,7 +80,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
     # this is used by the routing algorithm to route lines around glyphs
     # with a certain border; this is also used by updateEndPoints to bring
     # the connection out of the connection port initially
-    routingOvershoot = 10
+    routingOvershoot = 5
 
     def __init__(self, canvas, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
 
@@ -278,16 +278,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     def _create_geometry(self):
 
         # TEXT LABEL ##############################################
-
-
-        inity = self._vertBorder + \
-                self._label_height * (len(self._labelList) - 1)
-        # still have to tune inity with the space between lines...
-        initx = self._horizSpacing
-        # y is the bottom left of the first character
-        # 0.2 is 0.1 above the button (the button's depth is 0.1)
-        
-        self._tsa.SetCaption('\n'.join(self._labelList))
         tprop = self._tsa.GetCaptionTextProperty()
         tprop.SetFontFamilyToArial()
         tprop.SetVerticalJustificationToCentered()
@@ -295,25 +285,80 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         tprop.SetBold(1)
         tprop.SetItalic(0)
         tprop.SetShadow(0)
-        tprop.SetColor((1.0,1.0,1.0))
+        #tprop.SetColor((1.0,1.0,1.0))
+        tprop.SetColor((0.2,0.2,0.2))
 
-        # attachmentpoint is in world coordinates
-        # self._position is the bottom left corner of the button face
-        self._tsa.SetAttachmentPoint(self._position + (self._text_z,))
-        # position is relative to attachmentpoint, in display coords
-        self._tsa.GetPositionCoordinate().SetValue(0.0, 0.0)
         self._tsa.LeaderOff()
         self._tsa.BorderOff()
 
-        # we also need the text width for later
-        #b = self._ts.GetOutput().GetBounds()
-        #text_width = self._label_scale * (b[1] - b[2]) + \
-        #    2 * self._horizBorder
-
-
-        #self.prop.AddPart(self._tsa)
-        
         # RECT BUTTON ##############################################
+
+        self._rbs.SetBoxRatio(1.0)
+        #self._rbs.SetTwoSided(1)
+        # so bottom is wider than shoulder (beveled)
+        self._rbs.SetBoxRatio(1.1)
+        # remember this depth, others things have to be 'above' this
+        # to be visible (such as the text!)
+        self._rbs.SetDepth(0.1)
+
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._rbs.GetOutput())
+        self._rbsa.SetMapper(m)
+
+        # i prefer flat shading, okay?
+        p = self._rbsa.GetProperty()
+        p.SetInterpolationToFlat()
+        
+        # Ka, background lighting coefficient
+        p.SetAmbient(0.1)
+        # light reflectance
+        p.SetDiffuse(0.6)
+        # the higher Ks, the more intense the highlights
+        p.SetSpecular(0.4)
+        # the higher the power, the more localised the
+        # highlights
+        p.SetSpecularPower(100)
+
+        self.prop1.AddPart(self._rbsa)
+
+        # INPUTS #################################################### 
+        
+        for i in range(self._numInputs):
+            s,a = self._iportssa[i]
+            s.SetHeight(self._pHeight)
+            s.SetWidth(self._pWidth)
+            s.SetBoxRatio(1.1)
+            m = vtk.vtkPolyDataMapper()
+            m.SetInput(s.GetOutput())
+            a.SetMapper(m)
+
+            self.prop1.AddPart(a)
+
+        for i in range(self._numOutputs):
+            s,a = self._oportssa[i]
+            s.SetHeight(self._pHeight)
+            s.SetWidth(self._pWidth)
+            s.SetBoxRatio(1.1)
+            m = vtk.vtkPolyDataMapper()
+            m.SetInput(s.GetOutput())
+            a.SetMapper(m)
+
+            self.prop1.AddPart(a)
+
+        self.prop1.SetPosition(self._position + (0.0,))
+
+        self.props = [self.prop1, self._tsa]
+
+    def update_geometry(self):
+        glyph_normal_col = (0.75, 0.75, 0.75)
+        glyph_selected_col = (1.0, 0.0, 0.96)
+        glyph_blocked_col = (0.06, 0.06, 0.06)
+        port_conn_col = (0.0, 1.0, 0.0)
+        port_disconn_col = (1.0, 0.0, 0.0)
+
+        # update glyph position and size ######################
+        self.props[0].SetPosition(self._position + (0.0,))
+
         # calculate our size
         # the width is the maximum(textWidth + twice the horizontal border,
         # all ports, horizontal borders and inter-port borders added up)
@@ -332,90 +377,29 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                       self._label_height * len(self._labelList) + \
                       2 * self._vertBorder
 
+        # usually the position is the CENTRE of the button, so we
+        # adjust so that the bottom left corner ends up at 0,0
+        # (this is all relative to the Assembly)
+        self._rbsa.SetPosition((self._size[0] / 2.0, 
+            self._size[1] / 2.0, 0.0))
+        
+        self._rbs.SetHeight(self._size[1])
+        self._rbs.SetWidth(self._size[0])
+
+        # update text label ###################################
+       
+        # update the text caption
+        self._tsa.SetCaption('\n'.join(self._labelList))
+
+        # attachmentpoint is in world coordinates
+        # self._position is the bottom left corner of the button face
+        self._tsa.SetAttachmentPoint(self._position + (self._text_z,))
+        # position is relative to attachmentpoint, in display coords
+        self._tsa.GetPositionCoordinate().SetValue(0.0, 0.0)
 
         p2c = max_label_width, self._size[1], self._text_z
         self._tsa.GetPosition2Coordinate().SetCoordinateSystemToWorld()
         self._tsa.GetPosition2Coordinate().SetValue(p2c)
-
-        self._rbs.SetBoxRatio(1.0)
-        #self._rbs.SetTwoSided(1)
-        self._rbs.SetHeight(self._size[1])
-        self._rbs.SetWidth(self._size[0])
-        # so bottom is wider than shoulder (beveled)
-        self._rbs.SetBoxRatio(1.1)
-        # remember this depth, others things have to be 'above' this
-        # to be visible (such as the text!)
-        self._rbs.SetDepth(0.1)
-
-        m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._rbs.GetOutput())
-        self._rbsa.SetMapper(m)
-        # usually the position is the CENTRE of the button, so we
-        # adjust so that the bottom left corner ends up at 0,0
-        self._rbsa.SetPosition((self._size[0] / 2.0, 
-            self._size[1] / 2.0, 0.0))
-
-        p = self._rbsa.GetProperty()
-        p.SetColor((0.0, 1.0, 0.0))
-
-        # i prefer flat shading, okay?
-        p.SetInterpolationToFlat()
-        
-        # Ka, background lighting coefficient
-        p.SetAmbient(0.1)
-        # light reflectance
-        p.SetDiffuse(0.6)
-        # the higher Ks, the more intense the highlights
-        p.SetSpecular(0.4)
-        # the higher the power, the more localised the
-        # highlights
-        p.SetSpecularPower(100)
-
-
-        self.prop1.AddPart(self._rbsa)
-
-        # INPUTS #################################################### 
-        horizOffset = self._horizBorder
-        horizStep = self._pWidth + self._horizSpacing
-        
-        for i in range(self._numInputs):
-            s,a = self._iportssa[i]
-            s.SetHeight(self._pHeight)
-            s.SetWidth(self._pWidth)
-            s.SetBoxRatio(1.1)
-            m = vtk.vtkPolyDataMapper()
-            m.SetInput(s.GetOutput())
-            a.SetMapper(m)
-            a.SetPosition((horizOffset + i * horizStep,
-                self._size[1], 0.1))
-
-            self.prop1.AddPart(a)
-
-        for i in range(self._numOutputs):
-            s,a = self._oportssa[i]
-            s.SetHeight(self._pHeight)
-            s.SetWidth(self._pWidth)
-            s.SetBoxRatio(1.1)
-            m = vtk.vtkPolyDataMapper()
-            m.SetInput(s.GetOutput())
-            a.SetMapper(m)
-            a.SetPosition((horizOffset + i * horizStep, 0, 0.1))
-
-            self.prop1.AddPart(a)
-
-        self.prop1.SetPosition(self._position + (0.0,))
-
-        self.props = [self.prop1, self._tsa]
-
-    def update_geometry(self):
-        glyph_normal_col = (0.75, 0.75, 0.75)
-        glyph_selected_col = (1.0, 0.0, 0.96)
-        glyph_blocked_col = (0.06, 0.06, 0.06)
-        port_conn_col = (0.0, 1.0, 0.0)
-        port_disconn_col = (1.0, 0.0, 0.0)
-
-        # update glyph position ###############################
-        self.props[0].SetPosition(self._position + (0.0,))
 
         # calc and update glyph colour ########################
         gcol = glyph_normal_col
@@ -430,19 +414,24 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         self._rbsa.GetProperty().SetColor(gcol)
 
-        # colour all the inputs and outputs ###################
+        # position and colour all the inputs and outputs #####
+        horizOffset = self._horizBorder
+        horizStep = self._pWidth + self._horizSpacing
+
         for i in range(self._numInputs):
             col = [port_conn_col,
                     port_disconn_col][bool(self.inputLines[i])]
             s,a = self._iportssa[i]
             a.GetProperty().SetColor(col)
-
+            a.SetPosition((horizOffset + i * horizStep,
+                self._size[1], 0.1))
 
         for i in range(self._numOutputs):
             col = [port_conn_col,
                     port_disconn_col][bool(self.outputLines[i])]
             s,a = self._oportssa[i]
             a.GetProperty().SetColor(col)
+            a.SetPosition((horizOffset + i * horizStep, 0, 0.1))
 
     def get_port_containing_mouse(self):
         """Given the current has_mouse and has_mouse_sub_prop
@@ -496,7 +485,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # remember, in world-space, y=0 is at the bottom!
         if inOrOut == 0:
-            cy += self._size[1] - self._pHeight 
+            cy += self._size[1]
 
         cx = horizOffset + idx * horizStep #+ self._pWidth / 2
 
