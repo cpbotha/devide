@@ -38,6 +38,12 @@ class pngWRT:
     Module by Joris van Zwieten.
     """
 
+class MatlabPointsWriter:
+    kits = ['vtk_kit']
+    cats = ['Writers']
+    help = """Writes slice3dVWR world-points to an m-file.
+    """
+
 class points_writer:
     # BUG: empty kits list screws up dependency checking
     kits = ['vtk_kit']

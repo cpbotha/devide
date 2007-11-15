@@ -32,13 +32,13 @@ class points_writer(filenameViewModuleMixin, moduleBase):
         filenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
-	return ('DeVIDE points',)
+        return ('DeVIDE points',)
     
     def set_input(self, idx, input_stream):
         self._input_points = input_stream
     
     def get_output_descriptions(self):
-	return ()
+        return ()
     
     def get_output(self, idx):
         raise Exception
