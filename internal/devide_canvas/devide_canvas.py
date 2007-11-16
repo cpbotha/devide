@@ -189,9 +189,11 @@ class DeVIDECanvas(SubjectMixin):
             self.event.name = event_name
             pc.notify(event_name)
         else:
-            self.event.clicked_object = None
             self.event.name = event_name
             self.notify(event_name)
+
+        # button goes up, object is not clicked anymore
+        self.event.clicked_object = None
 
     def _handler_ld(self, e):
         self._helper_handler_preamble(e)
@@ -401,11 +403,15 @@ class DeVIDECanvas(SubjectMixin):
             if pg_ret:
                 picked_cobject, self.event.picked_sub_prop = pg_ret
 
-                if self.event.left_button and event.Dragging():
+                if self.event.left_button and event.Dragging() and \
+                        self.event.clicked_object == picked_cobject:
+                    # left dragging on a glyph only works if THAT
+                    # glyph was clicked (and the mouse button is still
+                    # down)
                     self.event.name = 'dragging'
                     if self._draggedObject is None:
                         self._draggedObject = picked_cobject
-                    self._draggedObject.notify('dragging')
+                    # the actual event will be fired further below
 
                 if not picked_cobject is self.event.picked_cobject:
                     self.event.picked_cobject = picked_cobject
@@ -425,12 +431,14 @@ class DeVIDECanvas(SubjectMixin):
                     self.event.picked_cobject.notify('exit')
                     self.event.picked_cobject = None
 
-                if event.Dragging() and self._draggedObject:
-                    # so we are Dragging() and there is a draggedObject...
-                    # even if the pick goes wrong (mouse moved to fast) we
-                    # still need to keep moving the thing.
-                    self.event.name = 'dragging'
-                    self._draggedObject.notify('dragging')
+            if event.Dragging() and self._draggedObject:
+                # so we are Dragging() and there is a draggedObject...
+                # whether draggedObject was set above, or in a
+                # previous call of this event handler, we have to keep
+                # on firing these drag events until draggedObject is
+                # canceled.
+                self.event.name = 'dragging'
+                self._draggedObject.notify('dragging')
 
         
         if not event.Dragging():
