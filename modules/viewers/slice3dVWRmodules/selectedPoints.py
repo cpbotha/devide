@@ -178,8 +178,8 @@ class selectedPoints(s3dcGridMixin):
     def _handlerPointsDelete(self, event):
         selRows = self._grid.GetSelectedRows()
         if len(selRows):
+            # removePoints will call a render
             self.removePoints(selRows)
-            self.slice3dVWR.render3D()
 
     def _handlerPointsInteractionOn(self, event):
         for idx in self._grid.GetSelectedRows():
@@ -524,6 +524,7 @@ class selectedPoints(s3dcGridMixin):
             # make sure that the input-independent part of this module knows
             # that it has been modified
             mm = self.slice3dVWR._moduleManager
+            # sub-part 1 is responsible for producing the points
             mm.modifyModule(self.slice3dVWR, 1)
             mm.requestAutoExecuteNetwork(self.slice3dVWR)
 

@@ -63,6 +63,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
     # part 3 does the slices polydata
     # this makes it possible for various parts of the slice3dVWR to trigger
     # only bits of the network that are necessary
+    # all parts trigger output 4, as that's the 'self' output
 
     gridSelectionBackground = (11, 137, 239)
 
