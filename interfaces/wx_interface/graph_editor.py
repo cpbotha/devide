@@ -1487,10 +1487,14 @@ class GraphEditor:
             
             
     def _observer_canvas_left_down(self, canvas):
-        return
-        #old code:
-        #elif not event.ShiftDown() and not event.ControlDown():
-        #    self._selected_glyphs.removeAllGlyphs()
+        """If user left-clicks on canvas and there's a selection, the
+        selection should be canceled.
+        """
+        
+        if len(self._selected_glyphs.getSelectedGlyphs()) > 0:
+            self._selected_glyphs.removeAllGlyphs()
+            self.canvas.update_all_geometry()
+            self.canvas.redraw()
 
 
     def _observer_canvas_right_down(self, canvas):
