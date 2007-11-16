@@ -223,18 +223,6 @@ class GraphEditor:
                     mf.fileExportSelectedAsDOTId,
                     self._handlerFileExportSelectedAsDOT)
 
-#         wx.EVT_MENU(mf,
-#                     mf.networkExecuteId,
-#                     self._handler_execute_network)
-
-#         wx.EVT_MENU(mf,
-#                     mf.network_blockmodules_id,
-#                     self._handler_blockmodules)
-
-#         wx.EVT_MENU(mf,
-#                     mf.network_unblockmodules_id,
-#                     self._handler_unblockmodules)
-
         wx.EVT_MENU(mf,
                     mf.helpShowHelpId,
                     self._handlerHelpShowHelp)
@@ -271,10 +259,7 @@ class GraphEditor:
                             self._handlerModulesListBoxMouseEvents)
 
 
-        # setup the canvas...
-        #mf.canvas.SetVirtualSize((2048, 2048))
-        #mf.canvas.SetScrollRate(20,20)
-
+        # instantiate the canvas.
         self.canvas = DeVIDECanvas(mf._rwi, mf._ren)
 
         # the canvas is a drop target
@@ -456,18 +441,32 @@ class GraphEditor:
         #event.Skip()
 
     def _blockmodule(self, glyph):
+        """Block the module represented by glyph.
+
+        This does does not invoke a canvas redraw, as these methods
+        can be called in batches.  Invoking code should call redraw. 
+        """
         # first get the module manager to block this
         mm = self._devide_app.get_module_manager()
         mm.blockmodule(mm.get_meta_module(glyph.moduleInstance))
         # then tell the glyph about it
         self._blocked_glyphs.addGlyph(glyph)
+        # finally tell the glyph to update its geometry
+        glyph.update_geometry()
 
     def _unblockmodule(self, glyph):
+        """Unblock the module represented by glyph.
+
+        This does does not invoke a canvas redraw, as these methods
+        can be called in batches.  Invoking code should call redraw. 
+        """
         # first get the module manager to unblock this
         mm = self._devide_app.get_module_manager()
         mm.unblockmodule(mm.get_meta_module(glyph.moduleInstance))
         # then tell the glyph about it
         self._blocked_glyphs.removeGlyph(glyph)
+        # finally tell the glyph to update its geometry
+        glyph.update_geometry()
 
     def _execute_modules(self, glyphs):
         """Given a list of glyphs, request the scheduler to execute only those
@@ -495,12 +494,18 @@ class GraphEditor:
         for glyph in self._selected_glyphs.getSelectedGlyphs():
             self._blockmodule(glyph)
 
+        # then update the display
+        self.canvas.redraw()
+
     def _handler_unblockmodules(self, event):
         """Unblock all selected glyphs and their modules.
         """
 
         for glyph in self._selected_glyphs.getSelectedGlyphs():
             self._unblockmodule(glyph)
+
+        # then update the display
+        self.canvas.redraw()
 
     def _handler_execute_network(self, event):
         """Event handler for 'network|execute' menu call.

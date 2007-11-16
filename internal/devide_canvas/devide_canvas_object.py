@@ -409,7 +409,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                     for i in range(3)]
 
         if self.blocked:
-            gcol = [gcol[i] * 0.5 + glyph_blockd_col[i] * 0.5
+            gcol = [gcol[i] * 0.5 + glyph_blocked_col[i] * 0.5
                     for i in range(3)]
 
         self._rbsa.GetProperty().SetColor(gcol)
