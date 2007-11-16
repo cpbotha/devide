@@ -1306,7 +1306,15 @@ class GraphEditor:
                 if not newModuleName.startswith('dvm'):
                     ll.append(newModuleName)
 
+                # change the list of labels
                 glyph.setLabelList(ll)
+                # which means we have to update the geometry (so they
+                # are actually rendered)
+                glyph.update_geometry()
+                # which means we probably have to reroute lines as the
+                # module might have changed size
+                self._route_all_lines()
+
                 self.canvas.redraw()
 
                 return True
