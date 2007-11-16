@@ -245,11 +245,16 @@ class tdObjects(s3dcGridMixin):
         
         elif newObject.GetClassName() == 'vtkPolyData':
             objectDict = self._tdObjectsDict[prevObject]
+
+            # first remove the contouring (if present) ###############
+            contouring = objectDict['contour']
+            if contouring:
+                self._setObjectContouring(objectDict['tdObject'],
+                        False)
+
+            # remove the old object from the dictionary. 
             del self._tdObjectsDict[prevObject]
 
-            # BUG #67 is HERE!  only the mapper for the object itself is
-            # changed, but not for the tube object.
-            
             # record the new object ###################################
             objectDict['tdObject'] = newObject
             mapper = objectDict['vtkActor'].GetMapper()
@@ -265,8 +270,12 @@ class tdObjects(s3dcGridMixin):
                 
             if scalarsName:
                 mapper.SetScalarRange(newObject.GetScalarRange())
-            
 
+
+            # reactivate the contouring (if it was active before)
+            if contouring:
+                self._setObjectContouring(objectDict['tdObject'],
+                        True)
             
 
     def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
