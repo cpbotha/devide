@@ -1,6 +1,9 @@
 # scheduler.py copyright 2003-2007 Charl P. Botha <http://cpbotha.net/>
 # $Id$
 
+# see page 30 of brown moleskine 200709 for notes on data transfer
+# during streaming execute and also on the data structures
+
 import mutex
 
 #########################################################################
