@@ -4,6 +4,9 @@
 # see page 30 of brown moleskine 200709 for notes on data transfer
 # during streaming execute and also on the data structures
 
+"""
+"""
+
 import mutex
 
 #########################################################################
@@ -55,11 +58,35 @@ class SchedulerModuleWrapper:
 class Scheduler:
     """Coordinates event-driven network execution.
 
+    DeVIDE currently supports two main scheduling modes: event-driven
+    and demand-driven.  [1] contains a concise overview of the
+    scheduling approach, but we'll go into some more detail in this
+    in-code documentation.
+
+    Event-driven scheduling:
+    This is the default scheduling mode - the network is analysed and
+    all modules are iterated through in topological order.  For each
+    module, its inputs are transferred from its producer modules if
+    necessary (i.e. a producer module has been executed since the
+    previous transfer, or this (consumer) module has been newly
+    connected).  All transfers are timestamped.  The module's
+    execute_module() method is then called.
+
+    Hybrid scheduling:
+    This mode of scheduling has to be explicitly invoked by the user.
+    All modules with a streaming_execute_module() are considered
+    streamable.  The largest subsets of streamable modules are found
+    (see [1] for details on this algorithm).  FIXME: continue here...
+
+    Notes:
+    * in the case that illegal cycles are found, network execution is
+      aborted.
+
+    [1] C.P. Botha and F.H. Post, "Hybrid Scheduling in the DeVIDE
+    Dataflow Visualisation Environment", accepted for SimVis 2008
+
     This should be a singleton, as we're using a mutex to protect per-
     process network execution.
-
-    @todo: document the execution model completely, including for example
-    VTK exceptions and when updates are forced, etc.
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """

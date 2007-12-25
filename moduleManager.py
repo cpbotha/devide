@@ -1642,8 +1642,12 @@ class moduleManager:
         moduleInstance via output outputIndex to module consumerInstance.
 
         Output needs to be transferred if:
-         - moduleInstance has new or changed output
-         - consumerInstance does not have the data anymore / yet
+         - moduleInstance has new or changed output (i.e. it has
+           executed after the previous transfer)
+         - consumerInstance does not have the data yet
+        Both of these cases are handled with a transfer timestamp per
+        output connection (defined by output idx, consumer module, and
+        consumer input idx)
 
         @return: True if output should be transferred, False if not.
         """

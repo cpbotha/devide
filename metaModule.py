@@ -341,9 +341,14 @@ class metaModule:
         the given output index to the input index on the given consumer
         module.
         
-        If the transferTime is older than executeTime, we should transfer.
-        Semantics with viewer modules (internal division into source and
-        sink modules by the scheduler) are taken care of by the scheduler.
+        If the transferTime is older than executeTime, we should
+        transfer to our consumer.  This means that if we (the producer
+        module) have executed after the previous transfer, we should
+        transfer again.  When a new consumer module is connected to
+        us, transfer time is set to 0, so it will always get a
+        transfer initially.  Semantics with viewer modules (internal
+        division into source and sink modules by the scheduler) are
+        taken care of by the scheduler.
 
         @param output_idx: index of output of this module through which
         output would be transferred
