@@ -69,14 +69,30 @@ class Scheduler:
     module, its inputs are transferred from its producer modules if
     necessary (i.e. a producer module has been executed since the
     previous transfer, or this (consumer) module has been newly
-    connected).  All transfers are timestamped.  The module's
+    connected).  All transfers are timestamped.  If the module has
+    been modified, or inputs have been transferred to it, its
     execute_module() method is then called.
 
     Hybrid scheduling:
     This mode of scheduling has to be explicitly invoked by the user.
     All modules with a streaming_execute_module() are considered
     streamable.  The largest subsets of streamable modules are found
-    (see [1] for details on this algorithm).  FIXME: continue here...
+    (see [1] for details on this algorithm).  All modules are iterated
+    through in topological order and execution continues as for
+    event-driven scheduling, except when a streamable module is
+    encountered.  In that case, ALL of its producers' output data
+    pointers are passed to it.  Importantly, timestamps for these
+    transfers are all set to 0 so that subsequent event-driven
+    scheduling will re-transfer.  The module's modification time-stamp
+    is set to the current 'time' so that subsequent event-driven
+    scheduling will re-execute all streaming modules.  If the current
+    streamable module is at one of the end points of the streamable
+    subset, its streaming_execute_module() method is called, and its
+    execute time stamp is set.
+
+    FIXME: what about timestamp setting to ensure that streamable
+    modules are ALL re-executed during next event-driven scheduling
+    pass?
 
     Notes:
     * in the case that illegal cycles are found, network execution is
