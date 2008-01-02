@@ -69,8 +69,13 @@ class Scheduler:
     module, its inputs are transferred from its producer modules if
     necessary (i.e. a producer module has been executed since the
     previous transfer, or this (consumer) module has been newly
-    connected).  All transfers are timestamped.  If the module has
-    been modified, or inputs have been transferred to it, its
+    connected (in which case the producer module's output t-time to
+    this module is set to 0)).  All transfers are timestamped.  In
+    event-driven mode, after every transfer, the streaming transfer
+    timestamp for that connection is set to 0 so that subsequent
+    hybrid scheduling runs will re-transfer all relevant data.  If the
+    module has been modified, or inputs have been transferred to it
+    (in which case it is also explicitly modified), its
     execute_module() method is then called.
 
     Hybrid scheduling:
@@ -80,21 +85,23 @@ class Scheduler:
     (see [1] for details on this algorithm).  All modules are iterated
     through in topological order and execution continues as for
     event-driven scheduling, except when a streamable module is
-    encountered.  In that case, ALL of its producers' output data
-    pointers are passed to it.  Importantly, timestamps for these
-    transfers are all set to 0 so that subsequent event-driven
-    scheduling will re-transfer.  The module's modification time-stamp
-    is set to the current 'time' so that subsequent event-driven
-    scheduling will re-execute all streaming modules.  If the current
-    streamable module is at one of the end points of the streamable
-    subset, its streaming_execute_module() method is called, and its
-    execute time stamp is set.
-
-    FIXME: what about timestamp setting to ensure that streamable
-    modules are ALL re-executed during next event-driven scheduling
-    pass?
+    encountered.  In that case, we use a different set of
+    streaming_transfer_times to check whether we should transfer its
+    producers' output data pointers (WITHOUT disconnect workaround).
+    In every case that we do a transfer, the usual transfer timestamps
+    are sot to 0 so that any subsequent event-driven scheduling will
+    re-transfer.  For each re-transfer, the module will be modified,
+    thus also causing a re-execute if we change to event-driven mode.
+    Only if the current streamable module is at one of the end points
+    of the streamable subset and its streaming_execute_timestamp is
+    older than the normal modification time-stamp, is its
+    streaming_execute_module() method called and the
+    streaming_execute_timestamp touched.
 
     Notes:
+    * there are two sets of transfer_time and execute_time timestamps,
+      one set each for event-driven and hybrid
+    * there is only ONE set of modified times.
     * in the case that illegal cycles are found, network execution is
       aborted.
 
@@ -107,6 +114,8 @@ class Scheduler:
     @author: Charl P. Botha <http://cpbotha.net/>
     """
 
+    _execute_mutex = mutex.mutex()
+
     def __init__(self, devideApp):
         """Initialise scheduler instance.
 
@@ -116,7 +125,6 @@ class Scheduler:
         """
         
         self._devideApp = devideApp
-        self._execute_mutex = mutex.mutex()
 
     def metaModulesToSchedulerModules(self, metaModules):
         """Preprocess module instance list before cycle detection or
@@ -344,7 +352,7 @@ class Scheduler:
         
 
         # stop concurrent calls of execute_modules.
-        if not self._execute_mutex.testandset():
+        if not Scheduler._execute_mutex.testandset():
             return
 
         # first remove all blocked modules from the list, before we do any
@@ -401,6 +409,13 @@ class Scheduler:
         finally:
             # in whichever way execution terminates, we have to unlock the
             # mutex.
-            self._execute_mutex.unlock()
+            Scheduler._execute_mutex.unlock()
                 
+#########################################################################
+class EventDrivenScheduler(Scheduler):
+    pass
+
+#########################################################################
+class HybridScheduler(Scheduler):
+    pass
 
