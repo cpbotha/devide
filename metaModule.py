@@ -54,6 +54,10 @@ class metaModule:
         # default to 0.0; that will guarantee an initial execution
         self.executeTimes = self.numParts * [0]
 
+        # special execute timestamp only used during streaming execute
+        # for terminating streaming modules.
+        self.streaming_execute_times = self.numParts * [0]
+
         # time when module was last invalidated (through parameter changes)
         # default is current time.  Along with 0.0 executeTime, this will
         # guarantee initial execution.
@@ -76,6 +80,10 @@ class metaModule:
         # to the time when data was last transferred from the encapsulated
         # instance through this path
         self.transferTimes = {}
+
+        # dict containing timestamps when last transfer was done from
+        # the encapsulated module to each of its consumer connections
+        self.streaming_transfer_times = {}
 
         # this will create self.inputs, self.outputs
         self.reset_inputsOutputs()
@@ -257,6 +265,10 @@ class metaModule:
         self.transferTimes[
             (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
 
+        # also reset streaming transfers
+        self.streaming_transfer_times[
+            (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
+
     def disconnectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
         """Record disconnection on the given output of the encapsulated module.
         """
@@ -273,6 +285,9 @@ class metaModule:
 
             # also remove the relevant slot from our transferTimes
             del self.transferTimes[
+                (outputIdx, consumerInstance, consumerInputIdx)]
+
+            del self.streaming_transfer_times[
                 (outputIdx, consumerInstance, consumerInputIdx)]
 
         else:
@@ -294,7 +309,7 @@ class metaModule:
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]
 
-    def execute_module(self, part=0):
+    def execute_module(self, part=0, streaming=False):
         """Used by moduleManager to execute module.
 
         This method also takes care of timestamping the execution time if
@@ -305,15 +320,28 @@ class metaModule:
             # this is the actual user function.
             # if something goes wrong, an exception will be thrown and
             # correctly handled by the invoking module manager
-            if part == 0:
-                self.instance.execute_module()
-            else:
-                self.instance.execute_module(part)
+            if streaming:
+                if part == 0:
+                    self.instance.streaming_execute_module()
+                else:
+                    self.instance.streaming_execute_module(part)
+           
+                # if we get here, everything is okay and we can record
+                # the execution time of this part
+                self.streaming_execute_times[part] = counter.counter() 
+                print "streaming exec stamped:", self.streaming_execute_times[part]
 
-            # if we get here, everything is okay and we can record
-            # the execution time of this part
-            self.executeTimes[part] = counter.counter() 
-            print "exec stamped:", self.executeTimes[part]
+            else:
+                if part == 0:
+                    self.instance.execute_module()
+                else:
+                    self.instance.execute_module(part)
+
+                # if we get here, everything is okay and we can record
+                # the execution time of this part
+                self.executeTimes[part] = counter.counter() 
+                print "exec stamped:", self.executeTimes[part]
+
 
     def modify(self, part=0):
         """Used by the moduleManager to timestamp the modified time.
@@ -328,15 +356,21 @@ class metaModule:
 
         self.modifiedTimes[part] = counter.counter()
 
-    def shouldExecute(self, part=0):
+    def shouldExecute(self, part=0, streaming=False):
         """Determine whether the encapsulated module needs to be executed.
         """
-        
-        print "mod > exec? :", self.modifiedTimes[part], self.executeTimes[part]
-        return self.modifiedTimes[part] > self.executeTimes[part]
+       
+        if streaming:
+            print "mod > exec? :", self.modifiedTimes[part], self.streaming_execute_times[part]
+            return self.modifiedTimes[part] > self.streaming_execute_times[part]
+
+        else:
+            print "mod > exec? :", self.modifiedTimes[part], self.executeTimes[part]
+            return self.modifiedTimes[part] > self.executeTimes[part]
 
     def shouldTransferOutput(
-        self, output_idx, consumer_meta_module, consumer_input_idx):
+        self, output_idx, consumer_meta_module, consumer_input_idx,
+        streaming=False):
         """Determine whether output should be transferred through
         the given output index to the input index on the given consumer
         module.
@@ -356,13 +390,13 @@ class metaModule:
         consumer that's connected to us.
         @param consumer_input_idx: the input connection on the consumer
         module that we want to transfer to
+        @param streaming: indicates whether this is to be a streaming
+        transfer.  If so, a different transfer timestamp is used.
+
         """
 
 
         consumer_instance = consumer_meta_module.instance
-
-        #import pdb
-        #pdb.set_trace()
 
         # first double check that we're actually connected on this output
         # to the given consumerModule
@@ -375,25 +409,53 @@ class metaModule:
             consumerFound = False
 
         if consumerFound:
-            tTime = self.transferTimes[
-                (output_idx, consumer_instance, consumer_input_idx)]
-
             # determine which part is responsible for this output
             part = self.getPartForOutput(output_idx)
 
-            return tTime < self.executeTimes[part]
+            if streaming:
+                tTime = self.streaming_transfer_times[
+                    (output_idx, consumer_instance, consumer_input_idx)]
+                should_transfer = bool(tTime <
+                        self.streaming_execute_times[part])
+
+            else:
+                tTime = self.transferTimes[
+                    (output_idx, consumer_instance, consumer_input_idx)]
+                should_transfer = bool(tTime < self.executeTimes[part])
+
+            return should_transfer
 
         else:
             return False
 
     def timeStampTransferTime(
-        self, outputIndex, consumerInstance, consumerInputIdx):
+        self, outputIndex, consumerInstance, consumerInputIdx,
+        streaming=False):
         """Timestamp given transfer time with current time.
 
-        This method is called right after a successful transfer has been made.
+        This method is called right after a successful transfer has
+        been made.  Depending on the scheduling mode (event-driven or
+        hybrid) and whether it's a streaming module that's being
+        transferred to, the timestamps are set differently to make
+        sure that after a switch between modes, all transfers are
+        redone.  Please see the documentation in the scheduler module.
+
+        @param streaming: determines whether a streaming transfer or a
+        normal transfer has just occurred.
         """
+
+        if streaming:
+            streaming_transfer_time = counter.counter()
+            transfer_time = 0
+        else:
+            transfer_time = counter.counter()
+            streaming_transfer_time = 0
 
         # and set the timestamp
         self.transferTimes[ 
                 (outputIndex, consumerInstance, consumerInputIdx)] = \
-                counter.counter()
+                transfer_time
+
+        self.streaming_transfer_times[ 
+                (outputIndex, consumerInstance, consumerInputIdx)] = \
+                streaming_transfer_time
