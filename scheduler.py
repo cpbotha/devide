@@ -89,9 +89,9 @@ class Scheduler:
     streaming_transfer_times to check whether we should transfer its
     producers' output data pointers (WITHOUT disconnect workaround).
     In every case that we do a transfer, the usual transfer timestamps
-    are sot to 0 so that any subsequent event-driven scheduling will
+    are set to 0 so that any subsequent event-driven scheduling will
     re-transfer.  For each re-transfer, the module will be modified,
-    thus also causing a re-execute if we change to event-driven mode.
+    thus also causing a re-execute when we change to event-driven mode.
     Only if the current streamable module is at one of the end points
     of the streamable subset and its streaming_execute_timestamp is
     older than the normal modification time-stamp, is its
@@ -417,5 +417,11 @@ class EventDrivenScheduler(Scheduler):
 
 #########################################################################
 class HybridScheduler(Scheduler):
-    pass
 
+    def find_streamable_subsets(self, scheduler_modules):
+        """
+        @param scheduler_modules: topologically sorted list of
+        SchedulerModuleWrapper instances.
+        """
+
+        pass
