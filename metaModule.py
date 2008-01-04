@@ -6,11 +6,11 @@ class metaModule:
     Every instance is contained in a single metaModule.  This is why the
     cycle-proof module split has not been implemented as metaModules.
 
-    @todo: The functionality of this class has grown with the event-driven
-    conversion.  Think about what exactly its current function is and how
-    we should factor it out of the moduleManager.
     @todo: at the moment, some interfaces work with a real module instance
     as well as a metaModule.  Should be consistent and use all metaModules.
+
+    @todo: document all timestamp logic here, link to scheduler
+    documentation
 
     @author: Charl P. Botha <http://cpbotha.net/>
     """

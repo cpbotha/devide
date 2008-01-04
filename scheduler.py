@@ -421,7 +421,29 @@ class HybridScheduler(Scheduler):
     def find_streamable_subsets(self, scheduler_modules):
         """
         @param scheduler_modules: topologically sorted list of
-        SchedulerModuleWrapper instances.
+        SchedulerModuleWrapper instances (S).
+
         """
 
-        pass
+        # get all streaming modules from S and keep topological
+        # ordering (S_s == streaming_scheduler_modules)
+        streaming_scheduler_moudules = []
+        for sm in scheduler_modules:
+            if hasattr(sm.meta_module.instance,
+                    'streaming_execute_module'):
+                streaming_scheduler_modules.append(sm)
+
+        # now the fun begins:
+        streamables_dict = {}
+        streamable_subsets_dict = {}
+        for sm in streaming_scheduler_modules:
+            if not sm in streamables_dict:
+                # this is a NEW streamable module!
+                # create new streamable subset
+                streamable_subset = [sm]
+                # get all consumers of sm
+                consumers = self.getConsumerModules(sm)
+
+                
+
+

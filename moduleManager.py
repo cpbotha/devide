@@ -1649,6 +1649,8 @@ class moduleManager:
         output connection (defined by output idx, consumer module, and
         consumer input idx)
 
+        This method is used by the scheduler.
+
         @return: True if output should be transferred, False if not.
         """
         
