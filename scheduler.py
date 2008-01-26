@@ -98,10 +98,32 @@ class Scheduler:
     streaming_execute_module() method called and the
     streaming_execute_timestamp touched.
 
+    Timestamps:
+    There are three collections of timestamps:
+    1. per module modified_time (initvalue 0)
+    2. per module execute_time (initvalue 0)
+    3. per output connection transfer_time
+
+    When a module's configuration is changed by the user (the user
+    somehow interacts with the module), the module's modified_time is
+    set to current_time.
+
+    When a module execution is scheduled:
+    * For each supplying connection, the data is transferred if
+      transfer_time(connection) < execute_time(producer_module).
+    * If data is transferred to a module, that module's modified_time
+      is set to current_time.
+    * The module is then executed if modified_time > execute_time.
+    * If the module is executed, execute_time is set to current_time.
+
     Notes:
     * there are two sets of transfer_time and execute_time timestamps,
       one set each for event-driven and hybrid
     * there is only ONE set of modified times.
+    * See the timestamp description above, as well as the descriptions
+      for hybrid and event-driven to see how the scheduler makes sure
+      that switching between execution models automatically results in
+      re-execution of modules that are adaptively scheduled.
     * in the case that illegal cycles are found, network execution is
       aborted.
 
@@ -418,6 +440,82 @@ class EventDrivenScheduler(Scheduler):
 #########################################################################
 class HybridScheduler(Scheduler):
 
+    # FIXME: continue here...
+
+    def execute_modules(self, schedulerModules):
+        """Execute the modules in schedulerModules in topological order.
+
+        @param schedulerModules: list of modules that should be executed in
+        order.
+        @raise CyclesDetectedException: This exception is raised if any
+        cycles are detected in the modules that have to be executed.
+
+        @todo: add start_module parameter, execution skips all modules before
+        this module in the topologically sorted execution list.
+        
+        """
+        
+
+        # stop concurrent calls of execute_modules.
+        if not Scheduler._execute_mutex.testandset():
+            return
+
+        # first remove all blocked modules from the list, before we do any
+        # kind of analysis.
+        blocked_module_indices = []
+        for i in range(len(schedulerModules)):
+            if schedulerModules[i].meta_module.blocked:
+                blocked_module_indices.append(i)
+
+        blocked_module_indices.reverse()
+
+        for i in blocked_module_indices:
+            del(schedulerModules[i])
+          
+
+        # finally start with execution.
+        try:
+            if self.detectCycles(schedulerModules):
+                raise CyclesDetectedException(
+                    'Cycles detected in selected network modules.  '
+                    'Unable to execute.')
+
+            # this will also check for cycles...
+            schedList = self.topoSort(schedulerModules)
+            mm = self._devideApp.getModuleManager()
+
+            for sm in schedList:
+                print "### sched:", sm.meta_module.instance.__class__.__name__
+                # find all producer modules
+                producers = self.getProducerModules(sm)
+                # transfer relevant data
+                for pmodule, output_index, input_index in producers:
+                    if mm.shouldTransferOutput(
+                        pmodule.meta_module, output_index,
+                        sm.meta_module, input_index):
+
+                        print 'transferring output: %s:%d to %s:%d' % \
+                              (pmodule.meta_module.instance.__class__.__name__,
+                               output_index,
+                               sm.meta_module.instance.__class__.__name__,
+                               input_index)
+
+                        mm.transferOutput(pmodule.meta_module, output_index,
+                                          sm.meta_module, input_index)
+
+                # finally: execute module if
+                # moduleManager thinks it's necessary
+                if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                    print 'executing part %d of %s' % \
+                          (sm.part, sm.meta_module.instance.__class__.__name__)
+
+                    mm.execute_module(sm.meta_module, sm.part)
+
+        finally:
+            # in whichever way execution terminates, we have to unlock the
+            # mutex.
+            Scheduler._execute_mutex.unlock()
+
     def find_streamable_subsets(self, scheduler_modules):
         """
         @param scheduler_modules: topologically sorted list of
@@ -427,22 +525,60 @@ class HybridScheduler(Scheduler):
 
         # get all streaming modules from S and keep topological
         # ordering (S_s == streaming_scheduler_modules)
-        streaming_scheduler_moudules = []
+        streamable_scheduler_modules = []
+        streamable_scheduler_modules_dict = {}
         for sm in scheduler_modules:
             if hasattr(sm.meta_module.instance,
                     'streaming_execute_module'):
-                streaming_scheduler_modules.append(sm)
+                streamable_scheduler_modules.append(sm)
+                # we want to use this to check for streamability later
+                streamable_scheduler_modules_dict[sm] = 1
 
         # now the fun begins:
-        streamables_dict = {}
-        streamable_subsets_dict = {}
+        streamables_dict = {} # this is V_ss
+        streamable_subsets_dict = {} # M_ss
+
+        def handle_new_streamable(sm, streamable_subset):
+            """Recursive method to do depth-first search for largest
+            streamable subset.
+
+            This is actually the infamous line 9 in the article.
+            """
+            # get all consumers of sm
+            consumers = self.getConsumerModules(sm)
+            # check if ANY of them is non-streamable
+            terminating = False
+            for c in consumers:
+                if c not in streamable_scheduler_modules_dict:
+                    terminating = True
+                    break
+
+            if terminating:
+                # set sm as the terminating module
+                streamables_dict[sm] = 2
+            else:
+                # add all consumers to streamable_subset M
+                streamable_subset.append(consumers)
+                # also add them all to V_ss
+                streamables_dict.from_keys(consumers, 1)
+                for c in consumers:
+                    handle_new_streamable(c, streamable_subset)
+
+            streamable_subsets_dict[streamable_subset] = 1
+
+
         for sm in streaming_scheduler_modules:
             if not sm in streamables_dict:
                 # this is a NEW streamable module!
                 # create new streamable subset
                 streamable_subset = [sm]
-                # get all consumers of sm
-                consumers = self.getConsumerModules(sm)
+                streamables_dict[sm] = 1
+                # handle this new streamable
+                handle_new_streamable(sm, streamable_subset)
+
+        return streamables_dict, streamable_subsets_dict
+
+
 
                 
 
