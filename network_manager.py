@@ -18,7 +18,7 @@ class NetworkManager:
         """
 
         # convert all metaModules to schedulerModules
-        sms = self._devide_app.scheduler.metaModulesToSchedulerModules(
+        sms = self._devide_app.scheduler.meta_modules_to_scheduler_modules(
             meta_modules)
 
         print "STARTING network execute ----------------------------"

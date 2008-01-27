@@ -148,7 +148,7 @@ class Scheduler:
         
         self._devideApp = devideApp
 
-    def metaModulesToSchedulerModules(self, metaModules):
+    def meta_modules_to_scheduler_modules(self, metaModules):
         """Preprocess module instance list before cycle detection or
         topological sorting to take care of exceptions.
         
@@ -484,12 +484,17 @@ class HybridScheduler(Scheduler):
             schedList = self.topoSort(schedulerModules)
             mm = self._devideApp.getModuleManager()
 
+            # find largest streamable subsets
+            streamables_dict, streamable_subsets_dict = \
+                    self.find_streamable_subsets(schedulerModules)
+
             for sm in schedList:
                 print "### sched:", sm.meta_module.instance.__class__.__name__
                 # find all producer modules
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
                 for pmodule, output_index, input_index in producers:
+                    # FIXME: use the meta_module shouldTransferOutput
                     if mm.shouldTransferOutput(
                         pmodule.meta_module, output_index,
                         sm.meta_module, input_index):
@@ -579,7 +584,36 @@ class HybridScheduler(Scheduler):
         return streamables_dict, streamable_subsets_dict
 
 
+#########################################################################
+class SchedulerProxy:
+    """Proxy class for all schedulers.
 
-                
+    Each scheduler mode is represented by a different class, but we
+    want to use a common instance to access functionality, hence this
+    proxy.
+    """
 
 
+    EVENT_DRIVEN_MODE = 0
+    HYBRID_MODE = 1
+
+    def __init__(self, devide_app):
+        self.event_driven_scheduler = EventDrivenScheduler(devide_app)
+        self.hybrid_scheduler = HybridScheduler(devide_app)
+        # default mode
+        self.mode = SchedulerProxy.EVENT_DRIVEN_MODE
+
+    def get_scheduler(self):
+        """Return the correct scheduler instance, dependent on the
+        current mode.
+        """
+        s = [self.event_driven_scheduler, self.hybrid_scheduler][self.mode]
+        return s
+
+    def execute_modules(self, scheduler_modules):
+        self.get_scheduler().execute_modules(scheduler_modules)
+
+    def meta_modules_to_scheduler_modules(self, meta_modules):
+        return self.get_scheduler().meta_modules_to_scheduler_modules(meta_modules)
+
+    

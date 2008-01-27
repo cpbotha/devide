@@ -208,8 +208,7 @@ class DeVIDEApp:
         ####
         # start scheduler
         import scheduler
-        self.scheduler = scheduler.EventDrivenScheduler(self)
-        self.hybrid_scheduler = scheduler.HybridScheduler(self)
+        self.scheduler = scheduler.SchedulerProxy(self)
 
         ####
         # call post-module manager interface hook
