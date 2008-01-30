@@ -440,8 +440,6 @@ class EventDrivenScheduler(Scheduler):
 #########################################################################
 class HybridScheduler(Scheduler):
 
-    # FIXME: continue here...
-
     def execute_modules(self, schedulerModules):
         """Execute the modules in schedulerModules in topological order.
 
@@ -489,15 +487,30 @@ class HybridScheduler(Scheduler):
                     self.find_streamable_subsets(schedulerModules)
 
             for sm in schedList:
+                if sm in streamables_dict:
+                    streaming_module = True
+                    print "streaming ",
+                else:
+                    streaming_module = False
+
                 print "### sched:", sm.meta_module.instance.__class__.__name__
                 # find all producer modules
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
                 for pmodule, output_index, input_index in producers:
-                    # FIXME: use the meta_module shouldTransferOutput
+                    if streaming_module and pmodule in streamables_dict:
+                        streaming_transfer = True
+                    else:
+                        streaming_transfer = False
+
+
                     if mm.shouldTransferOutput(
-                        pmodule.meta_module, output_index,
-                        sm.meta_module, input_index):
+                            pmodule.meta_module, output_index, 
+                            sm.meta_module, input_index,
+                            streaming_transfer):
+
+                        if streaming_transfer:
+                            print 'streaming ',
 
                         print 'transferring output: %s:%d to %s:%d' % \
                               (pmodule.meta_module.instance.__class__.__name__,
@@ -506,15 +519,33 @@ class HybridScheduler(Scheduler):
                                input_index)
 
                         mm.transferOutput(pmodule.meta_module, output_index,
-                                          sm.meta_module, input_index)
+                                          sm.meta_module, input_index,
+                                          streaming_transfer)
 
                 # finally: execute module if
                 # moduleManager thinks it's necessary
-                if mm.shouldExecuteModule(sm.meta_module, sm.part):
-                    print 'executing part %d of %s' % \
-                          (sm.part, sm.meta_module.instance.__class__.__name__)
+                if streaming_module: 
+                    if streamables_dict[sm] == 2:
+                        # terminating module in streamable subset
+                        if mm.shouldExecuteModule(sm.meta_module, sm.part,
+                                streaming=True):
+                            print 'streaming executing part %d of %s' % \
+                                  (sm.part, \
+                                   sm.meta_module.instance.__class__.__name__)
+                            
+                            mm.execute_module(sm.meta_module, sm.part,
+                                    streaming=True)
 
-                    mm.execute_module(sm.meta_module, sm.part)
+
+                else:
+                    # this is not a streaming module, normal semantics
+                    if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                        print 'executing part %d of %s' % \
+                              (sm.part, \
+                               sm.meta_module.instance.__class__.__name__)
+                        
+                        mm.execute_module(sm.meta_module, sm.part)
+                                
 
         finally:
             # in whichever way execution terminates, we have to unlock the
@@ -572,7 +603,7 @@ class HybridScheduler(Scheduler):
             streamable_subsets_dict[streamable_subset] = 1
 
 
-        for sm in streaming_scheduler_modules:
+        for sm in streamable_scheduler_modules:
             if not sm in streamables_dict:
                 # this is a NEW streamable module!
                 # create new streamable subset

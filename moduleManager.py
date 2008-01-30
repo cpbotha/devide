@@ -891,7 +891,7 @@ class moduleManager:
         """
         return hasattr(modules, '__importsub__')
 
-    def execute_module(self, meta_module, part=0):
+    def execute_module(self, meta_module, part=0, streaming=False):
         """Execute module instance.
 
         Important: this method does not result in data being transferred
@@ -908,7 +908,7 @@ class moduleManager:
         try:
             # this goes via the metaModule so that time stamps and the
             # like are correctly reported
-            meta_module.execute_module(part)
+            meta_module.execute_module(part, streaming)
 
             # some modules don't raise exceptions, but rather set an error
             # flag in the moduleManager.
@@ -1620,7 +1620,7 @@ class moduleManager:
         return meta_module
         
 
-    def shouldExecuteModule(self, meta_module, part=0):
+    def shouldExecuteModule(self, meta_module, part=0, streaming=False):
 
         """Determine whether moduleInstance requires execution to become
         up to date.
@@ -1632,11 +1632,12 @@ class moduleManager:
         @return: True if execution required, False if not.
         """
 
-        return meta_module.shouldExecute(part)
+        return meta_module.shouldExecute(part, streaming)
 
     def shouldTransferOutput(
         self,
-        meta_module, output_idx, consumer_meta_module, consumer_input_idx):
+        meta_module, output_idx, consumer_meta_module,
+        consumer_input_idx, streaming=False):
         
         """Determine whether output data has to be transferred from
         moduleInstance via output outputIndex to module consumerInstance.
@@ -1655,12 +1656,14 @@ class moduleManager:
         """
         
         return meta_module.shouldTransferOutput(
-            output_idx, consumer_meta_module, consumer_input_idx)
+            output_idx, consumer_meta_module, consumer_input_idx,
+            streaming)
 
         
     def transferOutput(
         self,
-        meta_module, output_idx, consumer_meta_module, consumer_input_idx):
+        meta_module, output_idx, consumer_meta_module,
+        consumer_input_idx, streaming=False):
 
         """Transfer output data from moduleInstance to the consumer modules
         connected to its specified output indexes.
@@ -1726,18 +1729,18 @@ class moduleManager:
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
             raise ModuleManagerException, es, sys.exc_info()[2]
-        
-        
 
-        # experiment here with making shallowcopies if we're working with
-        # VTK data.  I've double-checked (20071027): calling update on
-        # a shallowcopy is not able to get a VTK pipeline to execute.
-        # TODO: somehow this should be part of one of the moduleKits
-        # or some other module-related pluggable logic.
-        if od and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
-            nod = od.__class__()
-            nod.ShallowCopy(od)
-            od = nod
+        # we only disconnect if we're NOT streaming!
+        if not streaming:
+            # experiment here with making shallowcopies if we're working with
+            # VTK data.  I've double-checked (20071027): calling update on
+            # a shallowcopy is not able to get a VTK pipeline to execute.
+            # TODO: somehow this should be part of one of the moduleKits
+            # or some other module-related pluggable logic.
+            if od and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
+                nod = od.__class__()
+                nod.ShallowCopy(od)
+                od = nod
             
         try:
             # set on consumerInstance input
