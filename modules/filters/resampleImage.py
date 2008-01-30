@@ -112,7 +112,9 @@ class resampleImage(introspectModuleMixin, moduleBase):
     
     def execute_module(self):
         self._imageResample.Update()
-        
+
+    def streaming_execute_module(self):
+        self._imageResample.GetOutput().Update()
 
     def view(self, parent_window=None):
         if self._view_frame is None:

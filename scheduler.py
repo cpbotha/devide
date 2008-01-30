@@ -483,17 +483,18 @@ class HybridScheduler(Scheduler):
             mm = self._devideApp.getModuleManager()
 
             # find largest streamable subsets
-            streamables_dict, streamable_subsets_dict = \
+            streamables_dict, streamable_subsets = \
                     self.find_streamable_subsets(schedulerModules)
 
             for sm in schedList:
                 if sm in streamables_dict:
                     streaming_module = True
-                    print "streaming ",
+                    print "### streaming ",
                 else:
                     streaming_module = False
+                    print "### ",
 
-                print "### sched:", sm.meta_module.instance.__class__.__name__
+                print "sched:", sm.meta_module.instance.__class__.__name__
                 # find all producer modules
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
@@ -572,7 +573,7 @@ class HybridScheduler(Scheduler):
 
         # now the fun begins:
         streamables_dict = {} # this is V_ss
-        streamable_subsets_dict = {} # M_ss
+        streamable_subsets = [] # M_ss
 
         def handle_new_streamable(sm, streamable_subset):
             """Recursive method to do depth-first search for largest
@@ -582,12 +583,18 @@ class HybridScheduler(Scheduler):
             """
             # get all consumers of sm
             consumers = self.getConsumerModules(sm)
-            # check if ANY of them is non-streamable
-            terminating = False
-            for c in consumers:
-                if c not in streamable_scheduler_modules_dict:
-                    terminating = True
-                    break
+
+            # if there are no consumers, per def a terminating module
+            if len(consumers) == 0:
+                terminating = True
+            else:
+                # check if ANY of the the consumers is non-streamable
+                # in which case sm is also terminating
+                terminating = False
+                for c in consumers:
+                    if c not in streamable_scheduler_modules_dict:
+                        terminating = True
+                        break
 
             if terminating:
                 # set sm as the terminating module
@@ -596,11 +603,11 @@ class HybridScheduler(Scheduler):
                 # add all consumers to streamable_subset M
                 streamable_subset.append(consumers)
                 # also add them all to V_ss
-                streamables_dict.from_keys(consumers, 1)
+                streamables_dict.fromkeys(consumers, 1)
                 for c in consumers:
                     handle_new_streamable(c, streamable_subset)
 
-            streamable_subsets_dict[streamable_subset] = 1
+            streamable_subsets.append(streamable_subset)
 
 
         for sm in streamable_scheduler_modules:
@@ -612,7 +619,7 @@ class HybridScheduler(Scheduler):
                 # handle this new streamable
                 handle_new_streamable(sm, streamable_subset)
 
-        return streamables_dict, streamable_subsets_dict
+        return streamables_dict, streamable_subsets
 
 
 #########################################################################
