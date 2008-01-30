@@ -350,9 +350,6 @@ class moduleManager:
         # callback... (there SHOULD only be ONE moduleManager instance)
         self._inProgressCallback = mutex.mutex()
 
-        # array of no exception module execution errors
-        self._noExcModuleExecError = []
-
     def refresh_module_kits(self):
         """Go through list of imported module kits, reload each one, and
         also call its refresh() method if available.
@@ -411,16 +408,6 @@ class moduleManager:
                        str(e))
                 print "FULL TRACE:"
                 traceback.print_exc()
-
-    def addNoExcModuleExecError(self, message):
-        """Method that can be called by module execute functions to indicate
-        errors (as an alternative to throwing an exception).
-
-        This method belongs to the per-processing node part of the module
-        manager.
-        """
-        
-        self._noExcModuleExecError.append(message)
 
     def applyModuleViewToLogic(self, instance):
         """Interface method that can be used by clients to transfer module
@@ -910,15 +897,6 @@ class moduleManager:
             # like are correctly reported
             meta_module.execute_module(part, streaming)
 
-            # some modules don't raise exceptions, but rather set an error
-            # flag in the moduleManager.
-            if self._noExcModuleExecError:
-                # so we turn these into an error message
-                msgs = self._noExcModuleExecError[:]
-                # remembering to zero the error messages
-                self._noExcModuleExecError = []
-                # and then raise an exception
-                raise Exception('\n'.join(msgs))
             
         except Exception, e:
             # get details about the errored module
@@ -1706,16 +1684,6 @@ class moduleManager:
             # get data from producerModule output
             od = meta_module.instance.get_output(output_idx)
 
-            # some modules don't raise exceptions, but rather set an error
-            # flag in the moduleManager.
-            if self._noExcModuleExecError:
-                # so we turn these into an error message
-                msgs = self._noExcModuleExecError[:]
-                # remembering to zero the error messages
-                self._noExcModuleExecError = []
-                # and then raise an exception
-                raise Exception('\n'.join(msgs))
-            
         except Exception, e:
             # get details about the errored module
             instanceName = meta_module.instanceName
@@ -1746,15 +1714,6 @@ class moduleManager:
             # set on consumerInstance input
             consumer_meta_module.instance.set_input(consumer_input_idx, od)
 
-            # some modules don't raise exceptions, but rather set an error
-            # flag in the moduleManager.
-            if self._noExcModuleExecError:
-                # so we turn these into an error message
-                msgs = self._noExcModuleExecError[:]
-                # remembering to zero the error messages
-                self._noExcModuleExecError = []
-                # and then raise an exception
-                raise Exception('\n'.join(msgs))
             
         except Exception, e:
             # get details about the errored module
