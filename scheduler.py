@@ -1,9 +1,6 @@
 # scheduler.py copyright 2003-2007 Charl P. Botha <http://cpbotha.net/>
 # $Id$
 
-# see page 30 of brown moleskine 200709 for notes on data transfer
-# during streaming execute and also on the data structures
-
 """
 """
 
@@ -98,16 +95,17 @@ class Scheduler:
     re-transfer.  For each re-transfer, the module will be modified,
     thus also causing a re-execute when we change to event-driven mode.
     Only if the current streamable module is at one of the end points
-    of the streamable subset and its streaming_execute_timestamp is
+    of the streamable subset and its execute_timestamp is
     older than the normal modification time-stamp, is its
     streaming_execute_module() method called and the
     streaming_execute_timestamp touched.
 
     Timestamps:
-    There are three collections of timestamps:
+    There are four collections of timestamps:
     1. per module modified_time (initvalue 0)
     2. per module execute_time (initvalue 0)
     3. per output connection transfer_time
+    4. per module streaming touch time (initvalue 0)
 
     When a module's configuration is changed by the user (the user
     somehow interacts with the module), the module's modified_time is
@@ -115,16 +113,18 @@ class Scheduler:
 
     When a module execution is scheduled:
     * For each supplying connection, the data is transferred if
-      transfer_time(connection) < execute_time(producer_module).
+      transfer_time(connection) < execute_time(producer_module), or in
+      the hybrid case, if transfer_time(connection) <
+      touch_time(producer_module)
     * If data is transferred to a module, that module's modified_time
       is set to current_time.
     * The module is then executed if modified_time > execute_time.
     * If the module is executed, execute_time is set to current_time.
 
     Notes:
-    * there are two sets of transfer_time and execute_time timestamps,
+    * there are two sets of transfer_time timestamps,
       one set each for event-driven and hybrid
-    * there is only ONE set of modified times.
+    * there is only ONE set of modified times and of execute_times
     * See the timestamp description above, as well as the descriptions
       for hybrid and event-driven to see how the scheduler makes sure
       that switching between execution models automatically results in
@@ -446,7 +446,9 @@ class EventDrivenScheduler(Scheduler):
 class HybridScheduler(Scheduler):
 
     def execute_modules(self, schedulerModules):
-        """Execute the modules in schedulerModules in topological order.
+        """Execute the modules in schedulerModules according to hybrid
+        scheduling strategy.  See documentation in Scheduler class and
+        the paper [1] for a complete description.
 
         @param schedulerModules: list of modules that should be executed in
         order.
@@ -535,8 +537,7 @@ class HybridScheduler(Scheduler):
                 if streaming_module: 
                     if streamables_dict[smt] == 2:
                         # terminating module in streamable subset
-                        if mm.shouldExecuteModule(sm.meta_module, sm.part,
-                                streaming=True):
+                        if mm.shouldExecuteModule(sm.meta_module, sm.part):
                             print 'streaming executing part %d of %s' % \
                                   (sm.part, \
                                    sm.meta_module.instance.__class__.__name__)
@@ -572,6 +573,9 @@ class HybridScheduler(Scheduler):
 
     def find_streamable_subsets(self, scheduler_modules):
         """
+        Algorithm for finding streamable subsets in a network.  Also
+        see Algorithm 2 in the paper [1].
+
         @param scheduler_modules: topologically sorted list of
         SchedulerModuleWrapper instances (S).
 

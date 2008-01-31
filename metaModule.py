@@ -52,11 +52,13 @@ class metaModule:
 
         # time when module was last brought up to date
         # default to 0.0; that will guarantee an initial execution
-        self.executeTimes = self.numParts * [0]
+        self.execute_times = self.numParts * [0]
 
-        # special execute timestamp only used during streaming execute
-        # for terminating streaming modules.
-        self.streaming_execute_times = self.numParts * [0]
+        # we use this to record all the times the hybrid scheduler
+        # touches a streaming module but does not call its
+        # streaming_execute (because it's NOT terminating)
+        # this is necessary for the transfer output caching to work;
+        # we compare touch time to output transfer time
         self.streaming_touch_times = self.numParts * [0]
 
         # time when module was last invalidated (through parameter changes)
@@ -334,8 +336,8 @@ class metaModule:
                 else:
                     self.instance.streaming_execute_module(part)
 
-                self.streaming_execute_times[part] = counter.counter() 
-                print "streaming exec stamped:", self.streaming_execute_times[part]
+                self.execute_times[part] = counter.counter() 
+                print "streaming exec stamped:", self.execute_times[part]
 
             else:
                 if part == 0:
@@ -345,8 +347,8 @@ class metaModule:
 
                 # if we get here, everything is okay and we can record
                 # the execution time of this part
-                self.executeTimes[part] = counter.counter() 
-                print "exec stamped:", self.executeTimes[part]
+                self.execute_times[part] = counter.counter() 
+                print "exec stamped:", self.execute_times[part]
 
 
     def modify(self, part=0):
@@ -362,20 +364,15 @@ class metaModule:
 
         self.modifiedTimes[part] = counter.counter()
 
-    def shouldExecute(self, part=0, streaming=False):
+    def shouldExecute(self, part=0):
         """Determine whether the encapsulated module needs to be executed.
         """
        
-        if streaming:
-            print "mod > exec? :", self.modifiedTimes[part], self.streaming_execute_times[part]
-            return self.modifiedTimes[part] > self.streaming_execute_times[part]
-
-        else:
-            print "mod > exec? :", self.modifiedTimes[part], self.executeTimes[part]
-            return self.modifiedTimes[part] > self.executeTimes[part]
+        print "?? mod > exec? :", self.modifiedTimes[part], self.execute_times[part]
+        return self.modifiedTimes[part] > self.execute_times[part]
 
     def should_touch(self, part=0):
-        print "mod > touch? :", self.modifiedTimes[part], self.streaming_touch_times[part]
+        print "?? mod > touch? :", self.modifiedTimes[part], self.streaming_touch_times[part]
         return self.modifiedTimes[part] > self.streaming_touch_times[part]
 
     def shouldTransferOutput(
@@ -428,15 +425,15 @@ class metaModule:
                 # note that we compare with the touch time, and not
                 # the execute time, since only the terminating module
                 # is actually executed.
-                print "? ttime ", tTime, "< touchtime", self.streaming_touch_times[part] 
+                print "?? streaming transfer? ttime ", tTime, "< touchtime", self.streaming_touch_times[part] 
                 should_transfer = bool(tTime <
                         self.streaming_touch_times[part])
 
             else:
                 tTime = self.transferTimes[
                     (output_idx, consumer_instance, consumer_input_idx)]
-                print "? ttime ", tTime, "< executetime", self.executeTimes[part] 
-                should_transfer = bool(tTime < self.executeTimes[part])
+                print "?? transfer? ttime ", tTime, "< executetime", self.execute_times[part] 
+                should_transfer = bool(tTime < self.execute_times[part])
 
             return should_transfer
 

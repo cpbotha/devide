@@ -1598,7 +1598,7 @@ class moduleManager:
         return meta_module
         
 
-    def shouldExecuteModule(self, meta_module, part=0, streaming=False):
+    def shouldExecuteModule(self, meta_module, part=0):
 
         """Determine whether moduleInstance requires execution to become
         up to date.
@@ -1610,7 +1610,7 @@ class moduleManager:
         @return: True if execution required, False if not.
         """
 
-        return meta_module.shouldExecute(part, streaming)
+        return meta_module.shouldExecute(part)
 
     def shouldTransferOutput(
         self,
