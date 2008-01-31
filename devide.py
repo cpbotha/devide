@@ -25,6 +25,7 @@ import string
 import sys
 import time
 import traceback
+import ConfigParser
 
 # we need to import this explicitly, else the installer builder
 # forgets it and the binary has e.g. no help() support.
@@ -40,16 +41,38 @@ import site
 ############################################################################
 class MainConfigClass(object):
 
-    def __init__(self):
-        import defaults
-        self.nokits = defaults.NOKITS
-        self.interface = 'wx'
+    def __init__(self, appdir):
+
+        # first need to parse command-line to get possible --config-profile
+        pcl_data = self._parseCommandLine()
+
+        config_defaults = {
+                'nokits': '', 
+                'interface' : 'wx',
+                'streaming_pieces' : 5,
+                'streaming_memory' : 100000}
+
+        cp = ConfigParser.ConfigParser(config_defaults)
+        cp.read(os.path.join(appdir, 'devide.cfg'))
+        CSEC = pcl_data.config_profile
+
+        # then apply configuration file and defaults #################
+        self.nokits = [i.strip() for i in cp.get(CSEC, \
+                'nokits').split(',')]
+        self.streaming_pieces = cp.get(CSEC, 'streaming_pieces')
+        self.streaming_memory = cp.get(CSEC, 'streaming_memory')
+
+        self.interface = cp.get(CSEC, 'interface') 
         self.stereo = False
         self.test = False
         self.script = None
         self.script_params = None
-        
-        self._parseCommandLine()
+
+        # finally apply command line switches ############################
+        try:
+            self.nokits = pcl_data.nokits
+        except AttributeError:
+            pass
 
         # now sanitise some options
         if type(self.nokits) != type([]):
@@ -57,6 +80,7 @@ class MainConfigClass(object):
 
     def dispUsage(self):
         print "-h or --help          : Display this message."
+        print "--config-profile name : Use config profile with name."
         print "--no-kits kit1,kit2   : Don't load the specified kits."
         print "--kits kit1,kit2      : Load the specified kits."
         print "--interface wx|pyro|xmlrpc|script"
@@ -66,12 +90,22 @@ class MainConfigClass(object):
         print "--script              : Run specified .py in script mode."
 
     def _parseCommandLine(self):
+        """Parse command-line, return all parsed parameters in
+        PCLData class.
+        """
+
+        class PCLData:
+            def __init__(self):
+                self.config_profile = 'DEFAULT'
+
+        pcl_data = PCLData()
+
         try:
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'h',
                 ['help', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
-                 'script=', 'script-params='])
+                 'script=', 'script-params=', 'config-profile='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -82,39 +116,44 @@ class MainConfigClass(object):
                 self.dispUsage()
                 sys.exit(1)
 
+            elif o in ('--config-profile',):
+                pcl_data.config_profile = a
+
             elif o in ('--no-kits',):
-                self.nokits = [i.strip() for i in a.split(',')]
+                pcl_data.nokits = [i.strip() for i in a.split(',')]
 
             elif o in ('--kits',):
                 # this actually removes the listed kits from the nokits list
                 kits = [i.strip() for i in a.split(',')]
                 for kit in kits:
                     try:
-                        del self.nokits[self.nokits.index(kit)]
+                        del pcl_data.nokits[pcl_data.nokits.index(kit)]
                     except ValueError:
                         pass
 
             elif o in ('--interface',):
                 if a == 'pyro':
-                    self.interface = 'pyro'
+                    pcl_data.interface = 'pyro'
                 elif a == 'xmlrpc':
-                    self.interface = 'xmlrpc'
+                    pcl_data.interface = 'xmlrpc'
                 elif a == 'script':
-                    self.interface = 'script'
+                    pcl_data.interface = 'script'
                 else:
-                    self.interface = 'wx'
+                    pcl_data.interface = 'wx'
 
             elif o in ('--stereo',):
-                self.stereo = True
+                pcl_data.stereo = True
 
             elif o in ('--test',):
-                self.test = True
+                pcl_data.test = True
 
             elif o in ('--script',):
-                self.script = a
+                pcl_data.script = a
 
             elif o in ('--script-params',):
-                self.script_params = a
+                pcl_data.script_params = a
+
+        return pcl_data
 
 ############################################################################
 class DeVIDEApp:
@@ -132,7 +171,6 @@ class DeVIDEApp:
         configure relevant main-loop / interface class.
         """
         
-        self.main_config = MainConfigClass()
         
         self._inProgress = mutex.mutex()
         self._previousProgressTime = 0
@@ -150,6 +188,9 @@ class DeVIDEApp:
                 self._appdir = os.getcwd()
 
         sys.path.insert(0, self._appdir) # for cx_Freeze
+
+        # before this is instantiated, we need to have the paths
+        self.main_config = MainConfigClass(self._appdir)
 
         ####
         # startup relevant interface instance
