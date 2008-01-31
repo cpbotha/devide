@@ -1732,7 +1732,8 @@ class moduleManager:
 
         # record that the transfer has just happened
         meta_module.timeStampTransferTime(
-            output_idx, consumer_instance, consumer_input_idx)
+            output_idx, consumer_instance, consumer_input_idx,
+            streaming)
 
         # also invalidate the consumerModule: it should re-execute when
         # a transfer has been made.  We only invalidate the part that

@@ -57,6 +57,7 @@ class metaModule:
         # special execute timestamp only used during streaming execute
         # for terminating streaming modules.
         self.streaming_execute_times = self.numParts * [0]
+        self.streaming_touch_times = self.numParts * [0]
 
         # time when module was last invalidated (through parameter changes)
         # default is current time.  Along with 0.0 executeTime, this will
@@ -263,11 +264,11 @@ class metaModule:
 
         # this is a new connection, so set the transfer times to 0
         self.transferTimes[
-            (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
+            (outputIdx, consumerInstance, consumerInputIdx)] = 0
 
         # also reset streaming transfers
         self.streaming_transfer_times[
-            (outputIdx, consumerInstance, consumerInputIdx)] = 0.0
+            (outputIdx, consumerInstance, consumerInputIdx)] = 0
 
     def disconnectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
         """Record disconnection on the given output of the encapsulated module.
@@ -309,12 +310,12 @@ class metaModule:
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]
 
-    def streaming_execute_timestamp_module(self, part=0):
+    def streaming_touch_timestamp_module(self, part=0):
         """
         @todo: should change the name of this timestamp.
         """
-        self.streaming_execute_times[part] = counter.counter() 
-        print "streaming exec stamped:", self.streaming_execute_times[part]
+        self.streaming_touch_times[part] = counter.counter()
+        print "streaming touch stamped:", self.streaming_touch_times[part]
 
     def execute_module(self, part=0, streaming=False):
         """Used by moduleManager to execute module.
@@ -332,11 +333,9 @@ class metaModule:
                     self.instance.streaming_execute_module()
                 else:
                     self.instance.streaming_execute_module(part)
-           
-                # we don't have to timestamp, the scheduler does that
-                # for EVERY streaming subset module it touches, even
-                # if it's not terminating and hence does not need to
-                # execute.
+
+                self.streaming_execute_times[part] = counter.counter() 
+                print "streaming exec stamped:", self.streaming_execute_times[part]
 
             else:
                 if part == 0:
@@ -374,6 +373,10 @@ class metaModule:
         else:
             print "mod > exec? :", self.modifiedTimes[part], self.executeTimes[part]
             return self.modifiedTimes[part] > self.executeTimes[part]
+
+    def should_touch(self, part=0):
+        print "mod > touch? :", self.modifiedTimes[part], self.streaming_touch_times[part]
+        return self.modifiedTimes[part] > self.streaming_touch_times[part]
 
     def shouldTransferOutput(
         self, output_idx, consumer_meta_module, consumer_input_idx,
@@ -422,12 +425,17 @@ class metaModule:
             if streaming:
                 tTime = self.streaming_transfer_times[
                     (output_idx, consumer_instance, consumer_input_idx)]
+                # note that we compare with the touch time, and not
+                # the execute time, since only the terminating module
+                # is actually executed.
+                print "? ttime ", tTime, "< touchtime", self.streaming_touch_times[part] 
                 should_transfer = bool(tTime <
-                        self.streaming_execute_times[part])
+                        self.streaming_touch_times[part])
 
             else:
                 tTime = self.transferTimes[
                     (output_idx, consumer_instance, consumer_input_idx)]
+                print "? ttime ", tTime, "< executetime", self.executeTimes[part] 
                 should_transfer = bool(tTime < self.executeTimes[part])
 
             return should_transfer

@@ -279,6 +279,18 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
             
         else:
             self._theFilter.Update()
+
+    def streaming_execute_module(self):
+        """All VTK classes should be streamable.
+        """
+        # it could be a writer, in that case, call the Write method.
+        if hasattr(self._theFilter, 'Write') and \
+           callable(self._theFilter.Write):
+            self._theFilter.Write()
+            
+        else:
+            self._theFilter.Update()
+
  
     def view(self):
         if self._viewFrame is None:

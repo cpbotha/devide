@@ -72,6 +72,8 @@ class vtiRDR(filenameViewModuleMixin, moduleBase):
 
     def streaming_execute_module(self):
         if len(self._reader.GetFileName()):
+            self._reader.UpdateInformation()
+            self._reader.GetOutput().SetUpdateExtentToWholeExtent()
             self._reader.Update()
 
             

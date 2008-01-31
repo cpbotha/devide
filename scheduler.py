@@ -543,12 +543,16 @@ class HybridScheduler(Scheduler):
                             
                             mm.execute_module(sm.meta_module, sm.part,
                                     streaming=True)
+                            # if the module has been
+                            # streaming_executed, it has also been
+                            # touched.
+                            sm.meta_module.streaming_touch_timestamp_module(sm.part)
 
-                    # if it's a streaming module, and we've skipped
-                    # execution because it's not terminating, we still
-                    # have to timestamp so that the data transfer
-                    # caching works!
-                    sm.meta_module.streaming_execute_timestamp_module(sm.part)  
+                    # make sure we touch the module even if we don't
+                    # execute it.  this is used in the transfer
+                    # caching
+                    elif sm.meta_module.should_touch(sm.part):
+                        sm.meta_module.streaming_touch_timestamp_module(sm.part)
 
 
                 else:
