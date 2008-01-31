@@ -77,6 +77,7 @@ class vtiWRT(filenameViewModuleMixin, moduleBase):
 
     def streaming_execute_module(self):
         if len(self._writer.GetFileName()) and self._writer.GetInput():
-            self._writer.SetNumberOfPieces(20)
+            sp = self._moduleManager.get_app_main_config().streaming_pieces
+            self._writer.SetNumberOfPieces(sp)
             self._writer.Write()
 

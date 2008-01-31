@@ -31,12 +31,6 @@ import ConfigParser
 # forgets it and the binary has e.g. no help() support.
 import site
 
-# we need these explicit imports for cx_Freeze
-#import encodings
-#import encodings.ascii
-#import encodings.cp437
-#import encodings.utf_8
-#import encodings.idna
 
 ############################################################################
 class MainConfigClass(object):
