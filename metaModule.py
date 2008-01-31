@@ -309,6 +309,13 @@ class metaModule:
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]
 
+    def streaming_execute_timestamp_module(self, part=0):
+        """
+        @todo: should change the name of this timestamp.
+        """
+        self.streaming_execute_times[part] = counter.counter() 
+        print "streaming exec stamped:", self.streaming_execute_times[part]
+
     def execute_module(self, part=0, streaming=False):
         """Used by moduleManager to execute module.
 
@@ -326,10 +333,10 @@ class metaModule:
                 else:
                     self.instance.streaming_execute_module(part)
            
-                # if we get here, everything is okay and we can record
-                # the execution time of this part
-                self.streaming_execute_times[part] = counter.counter() 
-                print "streaming exec stamped:", self.streaming_execute_times[part]
+                # we don't have to timestamp, the scheduler does that
+                # for EVERY streaming subset module it touches, even
+                # if it's not terminating and hence does not need to
+                # execute.
 
             else:
                 if part == 0:

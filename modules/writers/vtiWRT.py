@@ -74,3 +74,9 @@ class vtiWRT(filenameViewModuleMixin, moduleBase):
             self._writer.GetInput().SetUpdateExtentToWholeExtent()
             self._writer.GetInput().Update()
             self._writer.Write()
+
+    def streaming_execute_module(self):
+        if len(self._writer.GetFileName()) and self._writer.GetInput():
+            self._writer.SetNumberOfPieces(20)
+            self._writer.Write()
+

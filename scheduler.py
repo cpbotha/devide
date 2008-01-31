@@ -492,7 +492,8 @@ class HybridScheduler(Scheduler):
                     self.find_streamable_subsets(schedulerModules)
 
             for sm in schedList:
-                if sm in streamables_dict:
+                smt = (sm.meta_module, sm.part)
+                if smt in streamables_dict:
                     streaming_module = True
                     print "### streaming ",
                 else:
@@ -504,7 +505,8 @@ class HybridScheduler(Scheduler):
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
                 for pmodule, output_index, input_index in producers:
-                    if streaming_module and pmodule in streamables_dict:
+                    pmt = (pmodule.meta_module, pmodule.part)
+                    if streaming_module and pmt in streamables_dict:
                         streaming_transfer = True
                     else:
                         streaming_transfer = False
@@ -531,7 +533,7 @@ class HybridScheduler(Scheduler):
                 # finally: execute module if
                 # moduleManager thinks it's necessary
                 if streaming_module: 
-                    if streamables_dict[sm] == 2:
+                    if streamables_dict[smt] == 2:
                         # terminating module in streamable subset
                         if mm.shouldExecuteModule(sm.meta_module, sm.part,
                                 streaming=True):
@@ -541,6 +543,12 @@ class HybridScheduler(Scheduler):
                             
                             mm.execute_module(sm.meta_module, sm.part,
                                     streaming=True)
+
+                    # if it's a streaming module, and we've skipped
+                    # execution because it's not terminating, we still
+                    # have to timestamp so that the data transfer
+                    # caching works!
+                    sm.meta_module.streaming_execute_timestamp_module(sm.part)  
 
 
                 else:
@@ -624,7 +632,6 @@ class HybridScheduler(Scheduler):
                     handle_new_streamable((c.meta_module, c.part), 
                             streamable_subset)
 
-            streamable_subsets.append(streamable_subset)
 
 
         # smt is a streamable module tuple (meta_module, part)
@@ -637,8 +644,10 @@ class HybridScheduler(Scheduler):
                 # handle this new streamable
                 handle_new_streamable(smt, streamable_subset)
 
-        import pdb
-        pdb.set_trace()
+                # handle_new_streamable recursion is done, add 
+                # this subset list of subsets
+                streamable_subsets.append(streamable_subset)
+
         return streamables_dict, streamable_subsets
 
 
