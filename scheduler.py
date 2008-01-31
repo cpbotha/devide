@@ -31,6 +31,11 @@ class SchedulerModuleWrapper:
     e.g. in the case of purely interaction-dependent outputs
     @ivar input_independent_outputs: list of outputs that are input-dependent.
     This has to be set for both dependent and independent parts of a module.
+
+    @todo: functionality in this class has been reduced to such an
+    extent that we should throw it OUT in favour of just working with
+    (meta_module, part) tuples.  These we CAN use for hashing and
+    equality tests.
     
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -558,30 +563,39 @@ class HybridScheduler(Scheduler):
         @param scheduler_modules: topologically sorted list of
         SchedulerModuleWrapper instances (S).
 
+        @return: dictionary of streamable MetaModule bindings (V_ss)
+        mapping to 1 (non-terminating) or 2 (terminating) and list of
+        streamable subsets, each an array (M_ss).
+
         """
 
         # get all streaming modules from S and keep topological
         # ordering (S_s == streaming_scheduler_modules)
-        streamable_scheduler_modules = []
-        streamable_scheduler_modules_dict = {}
+        streamable_modules = []
+        streamable_modules_dict = {}
         for sm in scheduler_modules:
             if hasattr(sm.meta_module.instance,
                     'streaming_execute_module'):
-                streamable_scheduler_modules.append(sm)
+                streamable_modules.append((sm.meta_module, sm.part))
                 # we want to use this to check for streamability later
-                streamable_scheduler_modules_dict[sm] = 1
+                streamable_modules_dict[(sm.meta_module, sm.part)] = 1
 
         # now the fun begins:
         streamables_dict = {} # this is V_ss
         streamable_subsets = [] # M_ss
 
-        def handle_new_streamable(sm, streamable_subset):
+        def handle_new_streamable(smt, streamable_subset):
             """Recursive method to do depth-first search for largest
             streamable subset.
 
             This is actually the infamous line 9 in the article.
+
+            @param: smt is a streamable module tuple (meta_module,
+            part)
             """
             # get all consumers of sm
+            # getConsumerModules returns ad hoc wrappings!
+            sm = SchedulerModuleWrapper(smt[0], smt[1])
             consumers = self.getConsumerModules(sm)
 
             # if there are no consumers, per def a terminating module
@@ -592,33 +606,39 @@ class HybridScheduler(Scheduler):
                 # in which case sm is also terminating
                 terminating = False
                 for c in consumers:
-                    if c not in streamable_scheduler_modules_dict:
+                    if (c.meta_module,c.part) not in \
+                            streamable_modules_dict:
                         terminating = True
                         break
 
             if terminating:
                 # set sm as the terminating module
-                streamables_dict[sm] = 2
+                streamables_dict[smt] = 2
             else:
                 # add all consumers to streamable_subset M
-                streamable_subset.append(consumers)
+                ctuples = [(i.meta_module, i.part) for i in consumers]
+                streamable_subset.append(ctuples)
                 # also add them all to V_ss
-                streamables_dict.fromkeys(consumers, 1)
+                streamables_dict.fromkeys(ctuples, 1)
                 for c in consumers:
-                    handle_new_streamable(c, streamable_subset)
+                    handle_new_streamable((c.meta_module, c.part), 
+                            streamable_subset)
 
             streamable_subsets.append(streamable_subset)
 
 
-        for sm in streamable_scheduler_modules:
-            if not sm in streamables_dict:
+        # smt is a streamable module tuple (meta_module, part)
+        for smt in streamable_modules:
+            if not smt in streamables_dict:
                 # this is a NEW streamable module!
                 # create new streamable subset
-                streamable_subset = [sm]
-                streamables_dict[sm] = 1
+                streamable_subset = [smt]
+                streamables_dict[smt] = 1
                 # handle this new streamable
-                handle_new_streamable(sm, streamable_subset)
+                handle_new_streamable(smt, streamable_subset)
 
+        import pdb
+        pdb.set_trace()
         return streamables_dict, streamable_subsets
 
 

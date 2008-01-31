@@ -69,5 +69,10 @@ class vtiRDR(filenameViewModuleMixin, moduleBase):
         # get the vtkPolyDataReader to try and execute
         if len(self._reader.GetFileName()):
             self._reader.Update()
+
+    def streaming_execute_module(self):
+        if len(self._reader.GetFileName()):
+            self._reader.Update()
+
             
 
