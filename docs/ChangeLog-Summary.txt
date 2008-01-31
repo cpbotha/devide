@@ -1,5 +1,11 @@
 Release 2571 - Mon Sep 10 14:35:31 WEST 2007
 
+Changes since Release 2571 - Mon Sep 10 14:35:31 WEST 2007
+ * First open source release!
+ * Hybrid scheduler.
+ * Switched to config file instead of python file for storing default
+   options.
+
 Changes since Release 2556 - Thu Sep  6 22:53:32 WEST 2007
  * Scheduler now uses monotonically increasing counter instead of
    system timer for keeping track of dirty modules.  The old way could
