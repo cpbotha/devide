@@ -17,14 +17,14 @@ call, this is ignored and DeVIDE starts up as usual.  However, if the module
 is in the crucial_kit_list, DeVIDE will refuse to start up.
 """
 
-module_kit_list = ['wx_kit', 'vtk_kit', 'vtktud_kit',
-                   'itk_kit', 'itktud_kit',
+module_kit_list = ['wx_kit', 'vtk_kit', 'vtktudoss_kit',
+                   'itk_kit', 'itktudoss_kit',
                    'numpy_kit', 'matplotlib_kit', 'stats_kit',
                    'geometry_kit']
 
-dependencies_dict = {'vtktud_kit' : ['vtk_kit'],
+dependencies_dict = {'vtktudoss_kit' : ['vtk_kit'],
                      'matplotlib_kit' : ['numpy_kit'],
-                     'itktud_kit' : ['itk_kit'],
+                     'itktudoss_kit' : ['itk_kit'],
                      'geometry_kit' : ['numpy_kit']}
 
 crucial_kit_list = ['wx_kit', 'vtk_kit']

@@ -4,10 +4,9 @@
 # do large imports in the init() hook so that you can call back to the
 # moduleManager progress handler methods.
 
-"""itktud_kit package driver file.
+"""vtktudoss_kit package driver file.
 
-This driver makes sure that itktud has been integrated with the main WrapITK
-instalation.
+Inserts the following modules in sys.modules: vtktudoss.
 
 @author: Charl P. Botha <http://cpbotha.net/>
 """
@@ -20,8 +19,15 @@ import types
 VERSION = 'SVN'
 
 def init(theModuleManager):
-    theModuleManager.setProgress(80, 'Initialising itktud_kit: TPGAC')
-    import itk # this will have been pre-imported by the itk_kit
-    a = itk.TPGACLevelSetImageFilter
-    theModuleManager.setProgress(100, 'Initialising itktud_kit: DONE')
+    # import the main module itself
+    import vtktudoss
+
+    # I added the version variable on 20070802
+    try:
+        global VERSION
+        VERSION = vtktudoss.version
+    except AttributeError:
+        pass
+    
+    theModuleManager.setProgress(100, 'Initialising vtktudoss_kit')
 
