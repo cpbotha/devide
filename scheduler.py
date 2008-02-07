@@ -1,5 +1,6 @@
-# scheduler.py copyright 2003-2007 Charl P. Botha <http://cpbotha.net/>
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 """
 """

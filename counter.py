@@ -1,5 +1,6 @@
-# moduleManager.py copyright (c) 2007 Charl P. Botha http://cpbotha.net/
-# $Id: moduleManager.py 2520 2007-08-12 20:41:25Z cpbotha $
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # I could have done this with just a module variable, but I found this
 # Borg thingy too nice not to use.  See:

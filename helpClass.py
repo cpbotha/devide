@@ -1,3 +1,8 @@
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
+
+
 import os
 
 # on windows, use win32help to show the chm file

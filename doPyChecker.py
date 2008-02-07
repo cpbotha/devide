@@ -1,5 +1,8 @@
-# doPyChecker.py copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
+
+
 # Run python on this file to allow PyChecker to check devide
 
 #__pychecker__ = '--config pycheckrc'

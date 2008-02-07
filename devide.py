@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-# $Id$
+
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import re
 

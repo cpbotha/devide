@@ -1,5 +1,6 @@
-# genMixins copyright 2003 by Charl P. Botha <http://cpbotha.net/>
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 class SubjectMixin(object):
 

@@ -1,5 +1,6 @@
-# moduleManager.py copyright (c) 2005 Charl P. Botha http://cpbotha.net/
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import sys, os, fnmatch
 import re

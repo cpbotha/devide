@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
+
 import wx # todo: this should go away...
 import string
 import sys
