@@ -6,6 +6,7 @@ import wx
 # with the very ugly two lines below, make sure x capture is not used
 # this should rather be an ivar of the wxVTKRenderWindowInteractor!
 import vtk.wx.wxVTKRenderWindowInteractor
+reload(vtk.wx.wxVTKRenderWindowInteractor)
 vtk.wx.wxVTKRenderWindowInteractor.WX_USE_X_CAPTURE = 0
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
