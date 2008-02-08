@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import external.PyAUI as PyAUI
@@ -105,6 +109,14 @@ class MainWXFrame(wx.Frame):
        
         self._rwi = wxVTKRenderWindowInteractor(self, -1,
                 size=(400,400))
+
+        # we have to call this, else moving a modal dialogue over the
+        # graph editor will result in trails.  Usually, a wxVTKRWI
+        # refuses to render if its top-level parent is disabled.  This
+        # is to stop VTK pipeline updates whilst wx.SafeYield() is
+        # being called.  In _this_ case, the VTK pipeline is safe, so
+        # we can disable this check.
+        self._rwi.SetRenderWhenDisabled(True)
         self._ren = vtk.vtkRenderer()
         self._rwi.GetRenderWindow().AddRenderer(self._ren)
 
