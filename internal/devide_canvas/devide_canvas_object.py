@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 from gen_mixins import SubjectMixin
 import vtk
 
@@ -215,7 +219,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     """
 
     # at start and end of glyph
-    _horizBorder = 5
+    _horizBorder = 5 
     # between ports
     _horizSpacing = 5
     # at top and bottom of glyph
@@ -255,16 +259,16 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.blocked = False
 
         self.prop1 = vtk.vtkAssembly()
-        self._rbs = vtk.vtkRectangularButtonSource()
+        self._cs = vtk.vtkCubeSource()
         self._rbsa = vtk.vtkActor()
         self._tsa = vtk.vtkCaptionActor2D()
 
         self._iportssa = \
-            [(vtk.vtkRectangularButtonSource(),vtk.vtkActor()) for _ in
+            [(vtk.vtkCubeSource(),vtk.vtkActor()) for _ in
                 range(self._numInputs)]
 
         self._oportssa = \
-            [(vtk.vtkRectangularButtonSource(),vtk.vtkActor()) for _ in
+            [(vtk.vtkCubeSource(),vtk.vtkActor()) for _ in
                 range(self._numOutputs)]
 
         self._create_geometry()
@@ -293,16 +297,12 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # RECT BUTTON ##############################################
 
-        self._rbs.SetBoxRatio(1.0)
-        #self._rbs.SetTwoSided(1)
-        # so bottom is wider than shoulder (beveled)
-        self._rbs.SetBoxRatio(1.1)
         # remember this depth, others things have to be 'above' this
         # to be visible (such as the text!)
-        self._rbs.SetDepth(0.1)
+        self._cs.SetZLength(0.1)
 
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._rbs.GetOutput())
+        m.SetInput(self._cs.GetOutput())
         self._rbsa.SetMapper(m)
 
         # i prefer flat shading, okay?
@@ -325,9 +325,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         
         for i in range(self._numInputs):
             s,a = self._iportssa[i]
-            s.SetHeight(self._pHeight)
-            s.SetWidth(self._pWidth)
-            s.SetBoxRatio(1.1)
+            s.SetYLength(self._pHeight)
+            s.SetXLength(self._pWidth)
             m = vtk.vtkPolyDataMapper()
             m.SetInput(s.GetOutput())
             a.SetMapper(m)
@@ -336,9 +335,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         for i in range(self._numOutputs):
             s,a = self._oportssa[i]
-            s.SetHeight(self._pHeight)
-            s.SetWidth(self._pWidth)
-            s.SetBoxRatio(1.1)
+            s.SetYLength(self._pHeight)
+            s.SetXLength(self._pWidth)
             m = vtk.vtkPolyDataMapper()
             m.SetInput(s.GetOutput())
             a.SetMapper(m)
@@ -369,22 +367,22 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
 
        
-        #self._size = max(portsWidth, text_width),
         label_lengths = [len(i) for i in self._labelList]
         max_label_width = max(label_lengths) * self._char_width
 
-        self._size = max(portsWidth, max_label_width), \
+        label_and_borders = max_label_width + 2 * self._horizBorder
+        self._size = max(portsWidth, label_and_borders), \
                       self._label_height * len(self._labelList) + \
                       2 * self._vertBorder
 
         # usually the position is the CENTRE of the button, so we
         # adjust so that the bottom left corner ends up at 0,0
         # (this is all relative to the Assembly)
-        self._rbsa.SetPosition((self._size[0] / 2.0, 
+        self._cs.SetCenter((self._size[0] / 2.0, 
             self._size[1] / 2.0, 0.0))
         
-        self._rbs.SetHeight(self._size[1])
-        self._rbs.SetWidth(self._size[0])
+        self._cs.SetYLength(self._size[1])
+        self._cs.SetXLength(self._size[0])
 
         # update text label ###################################
        
@@ -392,12 +390,16 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._tsa.SetCaption('\n'.join(self._labelList))
 
         # attachmentpoint is in world coordinates
-        # self._position is the bottom left corner of the button face
-        self._tsa.SetAttachmentPoint(self._position + (self._text_z,))
+        # self._position is the bottom left corner of the button face,
+        # but the text is centre justified. 
+        ap = self._position[0] + self._horizBorder, \
+            self._position[1], self._text_z
+        self._tsa.SetAttachmentPoint(ap)
         # position is relative to attachmentpoint, in display coords
         self._tsa.GetPositionCoordinate().SetValue(0.0, 0.0)
 
-        p2c = max_label_width, self._size[1], self._text_z
+        p2c = max_label_width, \
+            self._size[1], self._text_z
         self._tsa.GetPosition2Coordinate().SetCoordinateSystemToWorld()
         self._tsa.GetPosition2Coordinate().SetValue(p2c)
 
@@ -423,7 +425,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                     port_disconn_col][bool(self.inputLines[i])]
             s,a = self._iportssa[i]
             a.GetProperty().SetColor(col)
-            a.SetPosition((horizOffset + i * horizStep,
+            a.SetPosition(
+                    (horizOffset + i * horizStep + 0.5 * self._pWidth,
                 self._size[1], 0.1))
 
         for i in range(self._numOutputs):
@@ -431,7 +434,9 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                     port_disconn_col][bool(self.outputLines[i])]
             s,a = self._oportssa[i]
             a.GetProperty().SetColor(col)
-            a.SetPosition((horizOffset + i * horizStep, 0, 0.1))
+            a.SetPosition(
+                    (horizOffset + i * horizStep + 0.5 * self._pWidth, 
+                        0, 0.1))
 
     def get_port_containing_mouse(self):
         """Given the current has_mouse and has_mouse_sub_prop
@@ -487,7 +492,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         if inOrOut == 0:
             cy += self._size[1]
 
-        cx = horizOffset + idx * horizStep #+ self._pWidth / 2
+        cx = horizOffset + idx * horizStep + self._pWidth / 2
 
         return (cx, cy, 0.0)
 
