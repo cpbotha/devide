@@ -2267,6 +2267,12 @@ class GraphEditor:
             # interested
             # first get rid of the preview line...
             self._kill_preview_line()
+            # and redraw the canvas so it really disappears
+            # (this is also necessary when the handler will do nothing
+            # otherwise, for example if the user drops us above a
+            # glyph)
+            self.canvas.redraw()
+
             pcm = glyph.get_port_containing_mouse()
             dprint("_observer_glyph_left_button_up:: pcm",pcm)
             if pcm == (-1,-1):
