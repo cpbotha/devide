@@ -1,6 +1,6 @@
-# graph_editor.py copyright 2002-2006 by Charl P. Botha http://cpbotha.net/
-# $Id$
-# the graph-editor thingy where one gets to connect modules together
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # FIXME: def show() should really be moved a level up!!
 
