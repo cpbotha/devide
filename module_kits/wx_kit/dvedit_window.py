@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 import wx
 from wx import py
 from wx import stc
@@ -43,7 +47,8 @@ class DVEditWindow(py.editwindow.EditWindow):
         Only receives an event if OnKeyDown calls event.Skip() for the
         corresponding event."""
 
-        key = event.KeyCode()
+        # in wxPython this used to be KeyCode().  In 2.8 it's an ivar.
+        key = event.KeyCode
         
         if self.interp is None:
             event.Skip()
