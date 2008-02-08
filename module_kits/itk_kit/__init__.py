@@ -12,7 +12,6 @@ import re
 import sys
 
 VERSION = ''
-ITK_VERSION_EXTRA = '-r ITK-3-2'
 
 def preImportITK(progressMethod):
     itkImportList = [('VXLNumericsPython', 'VXL Numerics'),
@@ -120,8 +119,7 @@ def init(theModuleManager):
     global VERSION
     isv = itk.Version.GetITKSourceVersion()
     ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
-    VERSION = '%s (%s: %s)' % (itk.Version.GetITKVersion(), ind,
-                               ITK_VERSION_EXTRA)
+    VERSION = '%s (%s)' % (itk.Version.GetITKVersion(), ind)
 
     theModuleManager.setProgress(45, 'Initialising ITK: VXLNumerics, Base')
 

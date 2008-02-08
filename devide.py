@@ -6,8 +6,10 @@
 
 import re
 
-# the current main release version
+# the current revision of THIS file
 SVN_REVISION_TEXT = "$Revision$"
+# the main release version (year.month, ubuntu style)
+VERSION = "8.2"
 
 try:
     SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
@@ -15,7 +17,8 @@ try:
 except Exception, e:
     SVN_REVISION = 'xXx'
 
-DEVIDE_VERSION = '%s.0000' % (SVN_REVISION,)
+# if built with johannes, the SVN_REVISION part might be rewritten.
+DEVIDE_VERSION = '%s.%s' % (VERSION, SVN_REVISION)
 
 
 # standard Python imports

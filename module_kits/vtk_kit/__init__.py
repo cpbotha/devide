@@ -21,7 +21,6 @@ import traceback
 import types
 
 VERSION = ''
-VTK_VERSION_EXTRA = '-r Paraview-3-0'
 
 def preImportVTK(progressMethod):
     vtkImportList = [('vtk.common', 'VTK Common.'),
@@ -147,6 +146,5 @@ def init(theModuleManager):
     vsv = vtk.vtkVersion.GetVTKSourceVersion()
     # VTK source nightly date
     vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
-    VERSION = '%s (%s: %s)' % (vtk.vtkVersion.GetVTKVersion(), vnd,
-                               VTK_VERSION_EXTRA)
+    VERSION = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
     
