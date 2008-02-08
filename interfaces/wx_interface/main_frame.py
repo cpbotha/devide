@@ -123,9 +123,12 @@ class MainWXFrame(wx.Frame):
         rw = self._rwi.GetRenderWindow()
         rw.SetLineSmoothing(1)
         rw.SetPointSmoothing(1)
-        rw.SetPolygonSmoothing(1)
-        # this makes it reaaaally slow.
-        #rw.SetAAFrames(4)
+
+        # PolygonSmoothing is not really necessary for the GraphEditor
+        # (yet), and on a GeForce 4600 Ti on Linux with driver version
+        # 1.0-9639, you can see triangle lines bisecting quads.  Not
+        # a nice artifact, so I've disabled this for now.
+        #rw.SetPolygonSmoothing(1)
 
         self._mgr.AddPane(
             self._rwi,
