@@ -100,10 +100,16 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         self.toGlyph = toGlyph
         self.toInputIdx = toInputIdx
 
-        # 'BLACK' removed
-        colourNames = ['BLUE', 'BROWN', 'MEDIUM FOREST GREEN',
-                       'DARKORANGE1']
-        self.lineColourName = colourNames[self.toInputIdx % (len(colourNames))]
+
+        colours = [(0, 128, 255), # blue
+                   (128, 64, 0), # brown
+                   (0, 128, 0), # green
+                   (255, 128, 64), # orange
+                   (128, 0, 255), # purple
+                   (128, 128, 64)] # mustard
+
+        col = colours[self.toInputIdx % (len(colours))]
+        self.line_colour = [i / 255.0 for i in col]
  
         # any line begins with 4 (four) points
         self.updateEndPoints()
@@ -131,7 +137,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         a = vtk.vtkActor()
         a.SetMapper(m)
 
-        a.GetProperty().SetColor(0.0,0.0,0.45)
+        a.GetProperty().SetColor(self.line_colour)
         a.GetProperty().SetLineWidth(2.5)
 
         self.props = [a]
@@ -230,6 +236,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _label_height = 15
     _char_width = 10
 
+    _glyph_z_len = 0.1
     _text_z = 0.4
 
 
@@ -258,9 +265,15 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.selected = False
         self.blocked = False
 
+        # we'll collect the glyph and its ports in this assembly
         self.prop1 = vtk.vtkAssembly()
+        # the main body glyph
         self._cs = vtk.vtkCubeSource()
         self._rbsa = vtk.vtkActor()
+        # a black cube behind it to give it a nice border
+        self._cso = vtk.vtkCubeSource()
+        self._csoa = vtk.vtkActor()
+        # and of course the label
         self._tsa = vtk.vtkCaptionActor2D()
 
         self._iportssa = \
@@ -285,21 +298,21 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         tprop = self._tsa.GetCaptionTextProperty()
         tprop.SetFontFamilyToArial()
         tprop.SetVerticalJustificationToCentered()
-        tprop.SetFontSize(16)
-        tprop.SetBold(1)
+        tprop.SetFontSize(12)
+        tprop.SetBold(0)
         tprop.SetItalic(0)
         tprop.SetShadow(0)
         #tprop.SetColor((1.0,1.0,1.0))
-        tprop.SetColor((0.2,0.2,0.2))
+        tprop.SetColor((0,0,0))
 
         self._tsa.LeaderOff()
         self._tsa.BorderOff()
 
-        # RECT BUTTON ##############################################
+        # GLYPH BLOCK ##############################################
 
         # remember this depth, others things have to be 'above' this
         # to be visible (such as the text!)
-        self._cs.SetZLength(0.1)
+        self._cs.SetZLength(self._glyph_z_len)
 
         m = vtk.vtkPolyDataMapper()
         m.SetInput(self._cs.GetOutput())
@@ -320,6 +333,14 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         p.SetSpecularPower(100)
 
         self.prop1.AddPart(self._rbsa)
+
+        # GLYPH BLOCK BORDER #######################################
+
+        self._cso.SetZLength(self._glyph_z_len / 2.0)
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._cso.GetOutput())
+        self._csoa.SetMapper(m)
+        self.prop1.AddPart(self._csoa)
 
         # INPUTS #################################################### 
         
@@ -378,11 +399,18 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # usually the position is the CENTRE of the button, so we
         # adjust so that the bottom left corner ends up at 0,0
         # (this is all relative to the Assembly)
-        self._cs.SetCenter((self._size[0] / 2.0, 
-            self._size[1] / 2.0, 0.0))
+        gc = (self._size[0] / 2.0, self._size[1] / 2.0, 0.0)
+        self._cs.SetCenter(gc)
         
         self._cs.SetYLength(self._size[1])
         self._cs.SetXLength(self._size[0])
+
+        # now the glyph outline
+        self._cso.SetCenter(gc)
+        self._cso.SetYLength(self._size[1] + 3) # horizontal 1.5
+        self._cso.SetXLength(self._size[0] + 3) # vertical 1.5
+        p = self._csoa.GetProperty()
+        p.SetColor(0.0, 0.0, 0.0) # and it's black
 
         # update text label ###################################
        
@@ -421,8 +449,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         horizStep = self._pWidth + self._horizSpacing
 
         for i in range(self._numInputs):
-            col = [port_conn_col,
-                    port_disconn_col][bool(self.inputLines[i])]
+            col = [port_disconn_col,
+                    port_conn_col][bool(self.inputLines[i])]
             s,a = self._iportssa[i]
             a.GetProperty().SetColor(col)
             a.SetPosition(
@@ -430,8 +458,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                 self._size[1], 0.1))
 
         for i in range(self._numOutputs):
-            col = [port_conn_col,
-                    port_disconn_col][bool(self.outputLines[i])]
+            col = [port_disconn_col,
+                    port_conn_col][bool(self.outputLines[i])]
             s,a = self._oportssa[i]
             a.GetProperty().SetColor(col)
             a.SetPosition(
