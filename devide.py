@@ -59,8 +59,8 @@ class MainConfigClass(object):
         # then apply configuration file and defaults #################
         self.nokits = [i.strip() for i in cp.get(CSEC, \
                 'nokits').split(',')]
-        self.streaming_pieces = cp.get(CSEC, 'streaming_pieces')
-        self.streaming_memory = cp.get(CSEC, 'streaming_memory')
+        self.streaming_pieces = cp.getint(CSEC, 'streaming_pieces')
+        self.streaming_memory = cp.getint(CSEC, 'streaming_memory')
 
         self.interface = cp.get(CSEC, 'interface') 
         self.stereo = False
