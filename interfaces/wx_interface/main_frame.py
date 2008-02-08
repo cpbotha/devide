@@ -219,9 +219,8 @@ class MainWXFrame(wx.Frame):
     def _create_module_search_panel(self):
         search_panel = wx.Panel(self, -1)
 
-        #search_label = wx.StaticText(search_panel, -1, "Search phrase")
-        #search_label = wx.StaticText(search_panel, -1, "&S")
-        self.search_text = wx.TextCtrl(search_panel, -1, "")
+        self.search_text = wx.TextCtrl(search_panel, -1, "", 
+                style=wx.TE_PROCESS_ENTER)
         self.search_x_button = wx.Button(search_panel, -1, "X",
                                     style=wx.BU_EXACTFIT)
 

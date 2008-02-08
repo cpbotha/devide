@@ -376,7 +376,7 @@ class GraphEditor:
 
     def _handler_search_text_char(self, event):
         key_code = event.GetKeyCode()
-        
+
         if key_code == wx.WXK_ESCAPE:
             self._interface._main_frame.search_text.SetValue('')
 
