@@ -63,16 +63,20 @@ class MainConfigClass(object):
         self.streaming_memory = cp.getint(CSEC, 'streaming_memory')
 
         self.interface = cp.get(CSEC, 'interface') 
-        self.stereo = False
-        self.test = False
-        self.script = None
-        self.script_params = None
 
         # finally apply command line switches ############################
         try:
             self.nokits = pcl_data.nokits
         except AttributeError:
             pass
+
+        # command-line only, defaults set in PCLData ctor
+        # so we DON'T have to check if config file has already set
+        # them
+        self.stereo = pcl_data.stereo
+        self.test = pcl_data.test
+        self.script = pcl_data.script
+        self.script_params = pcl_data.script_params
 
         # now sanitise some options
         if type(self.nokits) != type([]):
@@ -97,6 +101,10 @@ class MainConfigClass(object):
         class PCLData:
             def __init__(self):
                 self.config_profile = 'DEFAULT'
+                self.stereo = False
+                self.test = False
+                self.script = None
+                self.script_params = None
 
         pcl_data = PCLData()
 
