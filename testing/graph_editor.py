@@ -36,17 +36,17 @@ class GraphEditorVolumeTestBase(GraphEditorTestBase):
 
         # now let's build a volume we can play with
         # first the three modules
-        (sqmod, sqglyph) = self._ge.createModuleAndGlyph(
+        (sqmod, sqglyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
 
         self.failUnless(sqmod and sqglyph)
 
-        (ivmod, ivglyph) = self._ge.createModuleAndGlyph(
+        (ivmod, ivglyph) = self._ge.create_module_and_glyph(
             10, 70, 'modules.misc.implicitToVolume')
 
         self.failUnless(ivmod and ivglyph)
 
-        (dtmod, dtglyph) = self._ge.createModuleAndGlyph(
+        (dtmod, dtglyph) = self._ge.create_module_and_glyph(
             10, 130, 'modules.filters.doubleThreshold')
 
         self.failUnless(dtmod and dtglyph)
@@ -93,7 +93,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         """Creation of simple module and glyph.
         """
 
-        (mod, glyph) = self._ge.createModuleAndGlyph(
+        (mod, glyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
         self.failUnless(mod and glyph)
 
@@ -105,7 +105,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         """
 
         module_name = 'modules.writers.vtiWRT'
-        (mod, glyph) = self._ge.createModuleAndGlyph(
+        (mod, glyph) = self._ge.create_module_and_glyph(
             10, 10, module_name)
         self.failUnless(mod and glyph)
 
@@ -153,10 +153,10 @@ class GraphEditorBasic(GraphEditorTestBase):
         slice3dVWR.
         """
 
-        (sqmod, sqglyph) = self._ge.createModuleAndGlyph(
+        (sqmod, sqglyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
 
-        (svmod, svglyph) = self._ge.createModuleAndGlyph(
+        (svmod, svglyph) = self._ge.create_module_and_glyph(
             10, 90, 'modules.viewers.slice3dVWR')
 
         ret = self._ge._connect(sqglyph, 1, svglyph, 0)
@@ -175,7 +175,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         """
 
         # first create superQuadric
-        (sqmod, sqglyph) = self._ge.createModuleAndGlyph(
+        (sqmod, sqglyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
 
         self.failUnless(sqmod and sqglyph)
@@ -242,7 +242,7 @@ class TestModulesMisc(GraphEditorTestBase):
             print 'About to create %s.' % (module_name,)
             
             (cmod, cglyph) = self._ge.\
-                             createModuleAndGlyph(
+                             create_module_and_glyph(
                 10, 10, module_name)
 
             print 'Created %s.' % (module_name,)
@@ -267,7 +267,7 @@ class TestModulesMisc(GraphEditorTestBase):
             print 'About to create %s.' % (module_name,)
             
             (cmod, cglyph) = self._ge.\
-                             createModuleAndGlyph(
+                             create_module_and_glyph(
                 10, 10, module_name)
 
             print 'Created %s.' % (module_name,)
@@ -298,12 +298,12 @@ class TestITKBasic(GraphEditorVolumeTestBase):
 
         # create VTKtoITK, set it to cast to float (we're going to
         # test signed short and unsigned long as well)
-        (v2imod, v2iglyph) = self._ge.createModuleAndGlyph(
+        (v2imod, v2iglyph) = self._ge.create_module_and_glyph(
                 200, 10, 'modules.insight.VTKtoITK')
         self.failUnless(v2imod, v2iglyph)
 
         
-        (i2vmod, i2vglyph) = self._ge.createModuleAndGlyph(
+        (i2vmod, i2vglyph) = self._ge.create_module_and_glyph(
                 200, 130, 'modules.insight.ITKtoVTK')
         self.failUnless(i2vmod and i2vglyph)
 
@@ -348,7 +348,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         # though.
 
         # create a slice3dVWR
-        (svmod, svglyph) = self._ge.createModuleAndGlyph(
+        (svmod, svglyph) = self._ge.create_module_and_glyph(
             200, 190, 'modules.viewers.slice3dVWR')
 
         self.failUnless(svmod and svglyph)
@@ -366,7 +366,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         self.failUnless(len(svmod.selectedPoints._pointsList) == 1)
 
         # connect up the insight bits
-        (v2imod, v2iglyph) = self._ge.createModuleAndGlyph(
+        (v2imod, v2iglyph) = self._ge.create_module_and_glyph(
             200, 10, 'modules.insight.VTKtoITK')
 
         self.failUnless(v2imod and v2iglyph)
@@ -378,12 +378,12 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         c.type = 'float'
         v2imod.set_config(c)
 
-        (cscmod, cscglyph) = self._ge.createModuleAndGlyph(
+        (cscmod, cscglyph) = self._ge.create_module_and_glyph(
             200, 70, 'modules.insight.confidenceSeedConnect')
 
         self.failUnless(cscmod and cscglyph)
 
-        (i2vmod, i2vglyph) = self._ge.createModuleAndGlyph(
+        (i2vmod, i2vglyph) = self._ge.create_module_and_glyph(
             200, 130, 'modules.insight.ITKtoVTK')
 
         self.failUnless(i2vmod and i2vglyph)
