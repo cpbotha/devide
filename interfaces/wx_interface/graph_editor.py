@@ -540,7 +540,7 @@ class GraphEditor:
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
-                self.canvas.SetFocus()
+                self.canvas._rwi.SetFocus()
                 # yield also necessary, else the workaround doesn't
                 wx.SafeYield()
           
@@ -554,7 +554,7 @@ class GraphEditor:
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
             if os.name == 'posix':
-                self.canvas.SetFocus()
+                self.canvas._rwi.SetFocus()
                 # yield also necessary, else the workaround doesn't
                 wx.SafeYield()
             
