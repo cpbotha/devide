@@ -7,7 +7,7 @@ import Measure2DFrame
 reload(Measure2DFrame)
 
 import vtk
-import vtktud
+import vtktudoss
 import wx
 
 class M2DMeasurementInfo:
@@ -321,7 +321,7 @@ class Measure2D(introspectModuleMixin, moduleBase):
                 pass
             else:
 
-                w = vtktud.vtkEllipseWidget()
+                w = vtktudoss.vtkEllipseWidget()
                 w.SetInteractor(self._view_frame._rwi)
                 w.SetEnabled(1)
                 

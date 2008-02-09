@@ -67,7 +67,7 @@ class GraphEditorVolumeTestBase(GraphEditorTestBase):
         ret = self._ge._connect(ivglyph, 0, dtglyph, 0)
 
         # redraw
-        self._ge._interface._main_frame.canvas.redraw()
+        self._ge.canvas.redraw()
 
         # run the network
         self._ge._handler_execute_network(None)
@@ -160,7 +160,7 @@ class GraphEditorBasic(GraphEditorTestBase):
             10, 90, 'modules.viewers.slice3dVWR')
 
         ret = self._ge._connect(sqglyph, 1, svglyph, 0)
-        self._ge_frame.canvas.redraw()
+        self._ge.canvas.redraw()
         
         self.failUnless(ret)
 
@@ -314,7 +314,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         self.failUnless(ret)
 
         # redraw the canvas
-        self._ge_frame.canvas.redraw()
+        self._ge.canvas.redraw()
 
         for t in (('float', 'float'), ('signed short', 'short'),
                 ('unsigned long', 'unsigned long')):
@@ -406,7 +406,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         self.failUnless(ret)        
         
         # redraw the canvas
-        self._ge_frame.canvas.redraw()
+        self._ge.canvas.redraw()
 
         # execute the network
         self._ge._handler_execute_network(None)
