@@ -40,7 +40,7 @@ class CodeRunner:
     """
 
 class histogram1D:
-    kits = ['vtk_kit']
+    kits = ['vtk_kit', 'numpy_kit']
     cats = ['Viewers', 'Statistics']
 
 class histogram2D:
