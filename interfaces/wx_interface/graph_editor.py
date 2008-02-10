@@ -533,9 +533,9 @@ class GraphEditor:
         segp = 'segment:'
         
         if itemText.startswith(modp):
-            wx,wy,wz = \
+            w_x,w_y,w_z = \
             self.canvas.display_to_world((x,self.canvas.flip_y(y)))
-            self.create_module_and_glyph(wx, wy, itemText[len(modp):])
+            self.create_module_and_glyph(w_x, w_y, itemText[len(modp):])
 
             # on GTK we have to SetFocus on the canvas, else the palette
             # keeps the mouse and weird things happen
