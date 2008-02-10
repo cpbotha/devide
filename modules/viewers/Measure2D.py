@@ -140,6 +140,19 @@ class Measure2D(introspectModuleMixin, moduleBase):
         
     def close(self):
         if self._view_frame is not None:
+            # with this complicated de-init, we make sure that VTK is 
+            # properly taken care of
+            self._viewer.GetRenderer().RemoveAllViewProps()
+            self._viewer.SetupInteractor(None)
+            self._viewer.SetRenderer(None)
+            # this finalize makes sure we don't get any strange X
+            # errors when we kill the module.
+            self._viewer.GetRenderWindow().Finalize()
+            self._viewer.SetRenderWindow(None)
+            self._viewer.DebugOn()
+            del self._viewer
+            # done with VTK de-init
+
             self._view_frame.close()
             
     def view(self):
