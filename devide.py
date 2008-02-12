@@ -8,8 +8,9 @@ import re
 
 # the current revision of THIS file
 SVN_REVISION_TEXT = "$Revision$"
-# the main release version (year.month, ubuntu style)
-VERSION = "8.2"
+# the main release version: year.month (ubuntu-style) on release
+# branches (the branch is also named vYEAR.MONTH), DEV for trunk
+VERSION = "DEV"
 
 try:
     SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
