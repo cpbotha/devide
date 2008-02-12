@@ -2061,6 +2061,10 @@ class GraphEditor:
         if filename:
             self.clearAllGlyphsFromCanvas()
             self._loadAndRealiseNetwork(filename)
+            # make sure that the newly realised network is nicely in
+            # view
+            self.canvas.reset_view()
+
 
     def _fileSaveCallback(self, event):
         # make a list of all glyphs

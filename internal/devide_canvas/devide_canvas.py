@@ -501,8 +501,13 @@ class DeVIDECanvas(SubjectMixin):
 
 
     def reset_view(self):
+        """Make sure that all actors (glyphs, connections, etc.) are
+        visible.
+        """
         self._ren.ResetCamera()
-        self.redraw()
+        # reset is quite conservative.  This zoom brings objects a bit
+        # closer and also does a redraw.
+        self._zoom(1.5)
 
     def getDraggedObject(self):
         return self._draggedObject
