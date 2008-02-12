@@ -184,7 +184,7 @@ class GraphEditor:
                                  mf,
                                  (0,0), False)
 
-        self._append_execute_commands(mf.execution_menu,
+        self._append_network_commands(mf.network_menu,
                                       mf, False)
         
 
@@ -806,7 +806,7 @@ class GraphEditor:
             if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
 
-    def _append_execute_commands(self, pmenu, eventWidget, disable=True):
+    def _append_network_commands(self, pmenu, eventWidget, disable=True):
         """Append copy/cut/paste/delete commands and the default handlers
         to a given menu.  
         """
@@ -856,20 +856,22 @@ class GraphEditor:
             if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
 
-    def _append_network_commands(self, pmenu, eventWidget, disable=True):
-        """Append copy/cut/paste/delete commands and the default handlers
-        to a given menu.  
-        """
-
         #############################################################
-        layout_sucky_id = wx.NewId()
-        ni = wx.MenuItem(pmenu, layout_sucky_id, 'Sucky graph layout\tF7',
-                         'Perform SUCKY(tm) graph layout.')
+        if False:
+            layout_sucky_id = wx.NewId()
+            ni = wx.MenuItem(pmenu, layout_sucky_id, 'Sucky graph layout\tF7',
+                             'Perform SUCKY(tm) graph layout.')
+            pmenu.AppendItem(ni)
+            wx.EVT_MENU(eventWidget, layout_sucky_id,
+                    lambda e: self._layout_network_sucky())
+
+        reset_graph_view_id = wx.NewId()
+        ni = wx.MenuItem(pmenu, reset_graph_view_id, 
+        'Reset Graph Canvas view\tCtrl-R', 
+        'Reset Graph Canvas view so that whole network is visible.')
         pmenu.AppendItem(ni)
-        wx.EVT_MENU(eventWidget, layout_sucky_id,
-                lambda e: self._layout_network_sucky())
-
-
+        wx.EVT_MENU(eventWidget, reset_graph_view_id,
+                lambda e: self.canvas.reset_view())
 
 
     def _testSelectedGlyphs(self):
@@ -1508,10 +1510,6 @@ class GraphEditor:
         # fill it out with edit (copy, cut, paste, delete) commands
         self._appendEditCommands(pmenu, canvas._rwi,
                 (canvas.event.world_pos[0:2]))
-
-        pmenu.AppendSeparator()
-
-        self._append_execute_commands(pmenu, canvas._rwi)
 
         pmenu.AppendSeparator()
 
@@ -2212,7 +2210,7 @@ class GraphEditor:
 
         pmenu.AppendSeparator()
 
-        self._append_execute_commands(
+        self._append_network_commands(
             pmenu, self.canvas._rwi)
 
         # popup that menu!

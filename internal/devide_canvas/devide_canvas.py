@@ -91,7 +91,7 @@ class DeVIDECanvas(SubjectMixin):
         # If we use EVT_KEY_DOWN instead of EVT_CHAR, capital versions
         # of all characters are always returned.  EVT_CHAR also performs
         # other necessary keyboard-dependent translations.
-        #self._rwi.Bind(wx.EVT_CHAR, self.OnKeyDown)
+        self._rwi.Bind(wx.EVT_CHAR, self._handler_char)
         #self._rwi.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
 
@@ -194,6 +194,12 @@ class DeVIDECanvas(SubjectMixin):
 
         # button goes up, object is not clicked anymore
         self.event.clicked_object = None
+
+    def _handler_char(self, e):
+        # we're disabling all keypresses.  if we don't, the standard
+        # VTK keys such as 'r' (reset), '3' (stereo) and especially
+        # 'f' (fly to) can screw up things quite badly.
+        pass
 
     def _handler_ld(self, e):
         self._helper_handler_preamble(e)
@@ -493,6 +499,10 @@ class DeVIDECanvas(SubjectMixin):
                 self._draggedObject = None
             del self._cobjects[self._cobjects.index(cobj)]
 
+
+    def reset_view(self):
+        self._ren.ResetCamera()
+        self.redraw()
 
     def getDraggedObject(self):
         return self._draggedObject

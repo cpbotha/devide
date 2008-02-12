@@ -322,9 +322,6 @@ class MainWXFrame(wx.Frame):
         self.edit_menu = wx.Menu()
         self.menubar.Append(self.edit_menu, "&Edit")
 
-        self.execution_menu = wx.Menu()
-        self.menubar.Append(self.execution_menu, "E&xecution")
-
         modules_menu = wx.Menu()
 
         self.id_modules_search = wx.NewId()
@@ -344,6 +341,9 @@ class MainWXFrame(wx.Frame):
             "Attempt to refresh / reload all module_kits.", wx.ITEM_NORMAL)
         
         self.menubar.Append(modules_menu, "&Modules")
+
+        self.network_menu = wx.Menu()
+        self.menubar.Append(self.network_menu, "&Network")
 
         window_menu = wx.Menu()
 
