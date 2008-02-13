@@ -27,7 +27,7 @@ class helpClass(object):
         if help_type > 0:
             wx.FileSystem_AddHandler(wx.ZipFSHandler())
             self._htmlHelpController = wx.html.HtmlHelpController()
-       
+            
             self._help_file = os.path.join(helpDir, 'devide.htb')
             self._htmlHelpController.AddBook(self._help_file, True)
 
