@@ -18,14 +18,14 @@ def main():
         glob.glob('devide.hh?') + \
         ['CSHelp.txt']
 
-    zf = zipfile.ZipFile('../../DeVIDE.htb', 'w', zipfile.ZIP_DEFLATED)
+    zf = zipfile.ZipFile('../../devide.htb', 'w', zipfile.ZIP_DEFLATED)
     for fn in htb_list:
         zf.write(fn)
 
     zf.close()
 
     # also copy the CHM file for the windows people.
-    shutil.copy('DeVIDE.chm', '../../')
+    shutil.copy('devide.chm', '../../')
 
 
 if __name__ == '__main__':
