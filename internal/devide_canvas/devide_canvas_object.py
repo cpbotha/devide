@@ -101,7 +101,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         self.toInputIdx = toInputIdx
 
 
-        colours = [(0, 128, 255), # blue
+        colours = [(0, 0, 255), # blue
                    (128, 64, 0), # brown
                    (0, 128, 0), # green
                    (255, 128, 64), # orange
@@ -126,7 +126,25 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
 
     def _create_geometry(self):
         self._spline_source = vtk.vtkParametricFunctionSource()
+
         s = vtk.vtkParametricSpline()
+
+        if False:
+            # these are quite ugly...
+            # later: factor this out into method, so that we can
+            # experiment live with different spline params.  For now
+            # the vtkCardinal spline that is used is muuuch prettier.
+            ksplines = []
+            for i in range(3):
+                ksplines.append(vtk.vtkKochanekSpline())
+                ksplines[-1].SetDefaultTension(0)
+                ksplines[-1].SetDefaultContinuity(0)
+                ksplines[-1].SetDefaultBias(0)
+            
+            s.SetXSpline(ksplines[0])
+            s.SetYSpline(ksplines[1])
+            s.SetZSpline(ksplines[2])
+
         pts = vtk.vtkPoints()
         s.SetPoints(pts)
         self._spline_source.SetParametricFunction(s)
@@ -216,6 +234,11 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
 class DeVIDECanvasGlyph(DeVIDECanvasObject):
     """Object representing glyph on canvas.
 
+    @ivar inputLines: list of self._numInputs DeVIDECanvasLine
+    instances that connect to this glyph's inputs.
+    @ivar outputLines: list of self._numOutputs lists of
+    DeVIDECanvasLine instances that originate from this glyphs
+    outputs.
     @ivar position: this is the position of the bottom left corner of
     the glyph in world space.  Remember that (0,0) is also bottom left
     of the canvas.
