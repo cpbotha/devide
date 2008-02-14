@@ -2116,12 +2116,20 @@ class GraphEditor:
                 for sglyph in self._selected_glyphs.getSelectedGlyphs():
                     canvas.drag_object(sglyph,
                             canvas.get_motion_vector_world(0.0))
+
+                    # we're busy dragging glyphs, do a QUICK reroute
+                    # of all lines connected to this glyph.  quick
+                    # rerouting ignores all other glyphs
+                    self._route_all_glyph_lines_fast(sglyph)
+
             else:
                 # or just the glyph under the mouse
                 # this clause should never happen, as the dragged glyph
                 # always has the selection.
                 canvas.drag_object(glyph,
                         canvas.get_motion_vector_world(0.0))
+
+                self._route_all_glyph_lines_fast(sglyph)
 
             # finished glyph drag event handling, have to redraw.
             canvas.redraw()
@@ -2339,6 +2347,8 @@ class GraphEditor:
 
         @returns: a list of point coordinates where the line is clipped
         by the window.
+
+        @todo: should be moved out into utility module.
         """
 
         def outCode(x, y, xmin, ymin, xmax, ymax):
@@ -2438,6 +2448,10 @@ class GraphEditor:
         return clipPoints
                 
     def _route_all_lines(self):
+        """Call _route_line on each and every line on the canvas.
+        Refresh canvas afterwards.
+        """
+
         # THEN reroute all lines
         allLines = self.canvas.getObjectsOfClass(DeVIDECanvasLine)
                     
@@ -2446,9 +2460,41 @@ class GraphEditor:
             
         # redraw all
         self.canvas.redraw()
+
+    def _route_all_glyph_lines_fast(self, glyph):
+        """Fast route all lines going into and originating from glyph.
+        This is used during glyph drags as a kind of preview.  This
+        will not request a redraw of the canvas, the calling method
+        has to do that.
+
+        @param glyph: glyph whose lines will all be fast routed.
+        """
+
+        for l in glyph.inputLines:
+            if l is not None:
+                self._route_line_fast(l)
+
+        for lines in glyph.outputLines:
+            for l in lines:
+                if l is not None:
+                    self._route_line_fast(l)
+
         
 
     def _route_line(self, line):
+        """Route line around all glyphs on canvas.
+
+        Line is routed by inserting a number of control points to make
+        it go around all glyphs the canvas.  This is not terribly
+        efficient: it's routing a line around ALL glyphs, instead of
+        making use of some space partitioning scheme.  However, in the
+        worst practical case, this comes down to about 40 glyphs
+        
+        If you have some time on your hands, feel free to improve.
+
+        @param line: DeVIDECanvasLine instance representing the line
+        that has to be routed.
+        """
         
         # we have to get a list of all coGlyphs
         allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
@@ -2575,7 +2621,22 @@ class GraphEditor:
 
         line.update_geometry()
 
+    def _route_line_fast(self, line):
+        """Similar to _route_line, but does not take into account any
+        glyphs on the canvas.  Simply route line from starting point
+        to ending point.  This is used for real-time updating during
+        glyph moves.
 
+        Think about changing this: keep all current routing points,
+        only change two points that are attached to the glyph that is
+        being dragged.
+        """
+
+        # make sure the line is back to 4 points
+        line.updateEndPoints()
+        # then get it to update (applying the spline to the control
+        # points)
+        line.update_geometry()
 
     def _viewConfModule(self, module):
         mm = self._devide_app.get_module_manager()
