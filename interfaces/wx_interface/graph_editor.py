@@ -8,8 +8,9 @@
 # left click on canvas: rubberband select
 # right click on glyph: glyph context menu
 # right click on canvas: canvas context menu
-# alt-left click: pan
-# alt-right click: zoom in/out
+# middle click: pan
+# shift-middle click up and down: zoom out and in
+# mouse wheel: zoom
 
 import copy
 import cPickle
@@ -1433,58 +1434,37 @@ class GraphEditor:
 
     def _end_rubberbanding(self):
         """See stopRubberBanding: we need some more data!
+
+        actually we don't: we have self.canvas too (with an
+        event.wx_event)
         """
         
         if not self._rbb_box is None:
-            # story coords of rubber-band box
+            # store coords of rubber-band box
             c_bl = self._rbb_box.corner_bl
-            w = self._rbb_box.w
-            h = self._rbb_box.h
+            w = self._rbb_box.width
+            h = self._rbb_box.height
 
             # remove it from the canvas
             self.canvas.remove_object(self._rbb_box)
             self._rbb_box.close()
             self._rbb_box = None
 
-    def _drawRubberBand(self, event, endRubberBand=False):
-        """Set endRubberBand to True if this is the terminating rubberBand,
-        i.e. the last one that gets drawn to erase the previous one when the
-        user is done playing with us.
-        """
-        
-        # make a DC to draw on
-        dc = self._interface._main_frame.canvas.getDC()
+            # now determine which glyphs were inside
+            all_glyphs = self._get_all_glyphs()
+            glyphs_in_rb = []
+            for g in all_glyphs:
+                if g.is_inside_rect(c_bl, w, h):
+                    glyphs_in_rb.append(g)
 
-        dc.BeginDrawing()
-        
-        # dotted line
-        dc.SetBrush(wx.Brush('WHITE', wx.TRANSPARENT))
-        dc.SetPen(wx.Pen('BLACK', 1, wx.DOT))
-        dc.SetLogicalFunction(wx.INVERT) # NOT dst
+            wxe = self.canvas.event.wx_event
+            if not wxe.ControlDown() and not wxe.ShiftDown():
+                self._selected_glyphs.removeAllGlyphs()
 
-        if not self._rubberBandCoords:
-            # the user is just beginning to rubberBand
-            self._rubberBandCoords = [event.realX, event.realY, 0, 0]
-            dc.DrawRectangle(
-                self._rubberBandCoords[0], self._rubberBandCoords[1],
-                self._rubberBandCoords[2], self._rubberBandCoords[3])
+            for g in glyphs_in_rb:
+                self._selected_glyphs.addGlyph(g)
 
-        else:
-            dc.DrawRectangle(
-                self._rubberBandCoords[0], self._rubberBandCoords[1],
-                self._rubberBandCoords[2], self._rubberBandCoords[3])
 
-            if not endRubberBand:
-                self._rubberBandCoords[2] = event.realX - \
-                                            self._rubberBandCoords[0]
-                self._rubberBandCoords[3] = event.realY - \
-                                            self._rubberBandCoords[1]
-
-                dc.DrawRectangle(
-                    self._rubberBandCoords[0], self._rubberBandCoords[1],
-                    self._rubberBandCoords[2], self._rubberBandCoords[3])
-
-            dc.EndDrawing()
 
     def _disconnect(self, glyph, inputIdx):
         """Disconnect inputIdx'th input of glyph, also remove line
@@ -1525,10 +1505,14 @@ class GraphEditor:
             
     def _observer_canvas_left_down(self, canvas):
         """If user left-clicks on canvas and there's a selection, the
-        selection should be canceled.
+        selection should be canceled.  However, if control or shift is
+        being pressed, it could mean the user is planning to extend a
+        selection with for example a rubber-band drag.
         """
         
-        if len(self._selected_glyphs.getSelectedGlyphs()) > 0:
+        wxe = canvas.event.wx_event
+        if not wxe.ControlDown() and not wxe.ShiftDown() and \
+            len(self._selected_glyphs.getSelectedGlyphs()) > 0:
             self._selected_glyphs.removeAllGlyphs()
             self.canvas.update_all_geometry()
             self.canvas.redraw()
@@ -2751,36 +2735,4 @@ class GraphEditor:
         
         mf.doc_window.SetPage(self._module_doc_to_html(
             module_name, ht))
-        
-    def _stopRubberBanding(self, event):
-        # whatever the case may be, rubberBanding stops
-        if self._rubberBandCoords:
-            # delete the rubberBand (rubberBandCoords should remain intact)
-            self._drawRubberBand(event, endRubberBand=True)
-
-            # now determine all glyphs inside of the rubberBand
-            allGlyphs = self._interface._main_frame.canvas.getObjectsOfClass(
-                DeVIDECanvasGlyph)
-
-            glyphsInRubberBand = []
-            for glyph in allGlyphs:
-                if glyph.isInsideRect(self._rubberBandCoords[0],
-                                      self._rubberBandCoords[1],
-                                      self._rubberBandCoords[2],
-                                      self._rubberBandCoords[3]):
-                    glyphsInRubberBand.append(glyph)
-
-            if not event.ControlDown() and not event.ShiftDown():
-                self._selected_glyphs.removeAllGlyphs()
-
-            # hmmm, can't we be a bit more efficient with this and
-            # dc.BeginDrawing()?
-            for glyph in glyphsInRubberBand:
-                    self._selected_glyphs.addGlyph(glyph)
-                
-            self._rubberBandCoords = None
-        
-            
-            
-
         

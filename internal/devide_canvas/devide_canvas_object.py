@@ -47,7 +47,7 @@ class DeVIDECanvasObject(SubjectMixin):
     def hit_test(self, x, y):
         return False
 
-    def isInsideRect(self, x, y, width, height):
+    def is_inside_rect(self, x, y, width, height):
         return False
 
 class DeVIDECanvasRBBox(DeVIDECanvasObject):
@@ -442,8 +442,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
     def update_geometry(self):
         glyph_normal_col = (0.75, 0.75, 0.75)
-        glyph_selected_col = (0.0, 0.0, 0.7)
+        glyph_selected_col = (0.2, 0.367, 0.656)
         glyph_blocked_col = (0.06, 0.06, 0.06)
+        text_normal_col = (0.0, 0.0, 0.0)
+        text_selected_col = (1.0, 1.0, 1.0)
         port_conn_col = (0.0, 1.0, 0.0)
         port_disconn_col = (1.0, 0.0, 0.0)
 
@@ -502,6 +504,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             self._size[1], self._text_z
         self._tsa.GetPosition2Coordinate().SetCoordinateSystemToWorld()
         self._tsa.GetPosition2Coordinate().SetValue(p2c)
+
+        tprop = self._tsa.GetCaptionTextProperty()
+        tcol = [text_normal_col, text_selected_col][self.selected]
+        tprop.SetColor(tcol)
 
         # calc and update glyph colour ########################
         gcol = glyph_normal_col
@@ -605,6 +611,38 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
     def getLabel(self):
         return ' '.join(self._labelList)
+
+    def is_inside_rect(self, bottom_left, w, h):
+        """Given world coordinates for the bottom left corner and a
+        width and a height, determine if the complete glyph is inside.  
+
+        This method will ensure that bottom-left is bottom-left by
+        swapping coordinates around
+        """
+
+        bl = list(bottom_left)
+        tr = list((bl[0] + w, bl[1] + h))
+
+        if bl[0] > tr[0]:
+            # swap!
+            bl[0],tr[0] = tr[0],bl[0]
+
+        if bl[1] > tr[1]:
+            bl[1],tr[1] = tr[1],bl[1]
+
+        print bl, tr
+        print self._position
+
+        inside = True
+
+        if self._position[0] < bl[0] or self._position[1] < bl[1]:
+            inside = False
+
+        elif (self._position[0] + self._size[0]) > tr[0] or \
+                (self._position[1] + self._size[1]) > tr[1]:
+                    inside = False
+
+        return inside
         
     def setLabelList(self,labelList):
         self._labelList = labelList
