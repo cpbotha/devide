@@ -15,7 +15,8 @@ import copy
 import cPickle
 from internal.devide_canvas.devide_canvas import DeVIDECanvas 
 from internal.devide_canvas.devide_canvas_object import \
-DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine
+DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine, \
+DeVIDECanvasRBBox
 import genUtils
 from moduleManager import ModuleManagerException
 import moduleUtils # for getModuleIcon
@@ -274,8 +275,8 @@ class GraphEditor:
                               self._observer_canvas_right_down)
         self.canvas.add_observer('left_button_up',
                                  self._observer_canvas_left_up)
-        #self.canvas.add_observer('dragging',
-        #                      self._canvasDrag)
+        self.canvas.add_observer('dragging',
+                              self._observer_canvas_drag)
 
         # initialise selection
         self._selected_glyphs = GlyphSelection(self.canvas,
@@ -284,7 +285,8 @@ class GraphEditor:
         self._blocked_glyphs = GlyphSelection(self.canvas,
                                               'blocked')
 
-        self._rubberBandCoords = None
+        # we'll use this to keep track of the rubber-band box
+        self._rbb_box = None
 
         # line used for previewing possible connections
         self._preview_line = None
@@ -1414,7 +1416,35 @@ class GraphEditor:
             self._preview_line.close()
             self._preview_line = None
 
+    def _draw_rubberband(self, cur_pos):
+        if self._rbb_box is None:
+            self._rbb_box = DeVIDECanvasRBBox(self.canvas, cur_pos,
+                    (0.1,0.1))
+            self.canvas.add_object(self._rbb_box)
 
+        else:
+            # just update the width and the height!
+            # (these can be negative)
+            w = cur_pos[0] - self._rbb_box.corner_bl[0]
+            h = cur_pos[1] - self._rbb_box.corner_bl[1]
+            self._rbb_box.width, self._rbb_box.height = w,h
+
+            self._rbb_box.update_geometry()
+
+    def _end_rubberbanding(self):
+        """See stopRubberBanding: we need some more data!
+        """
+        
+        if not self._rbb_box is None:
+            # story coords of rubber-band box
+            c_bl = self._rbb_box.corner_bl
+            w = self._rbb_box.w
+            h = self._rbb_box.h
+
+            # remove it from the canvas
+            self.canvas.remove_object(self._rbb_box)
+            self._rbb_box.close()
+            self._rbb_box = None
 
     def _drawRubberBand(self, event, endRubberBand=False):
         """Set endRubberBand to True if this is the terminating rubberBand,
@@ -1523,9 +1553,13 @@ class GraphEditor:
 
     def _observer_canvas_left_up(self, canvas):
         print "_observer_canvas_left_up::"
-        # whatever the case may be, stop rubber banding
-        #self._stopRubberBanding(event)
         
+        # whatever the case may be, stop rubber banding.
+        if self._rbb_box:
+            self._end_rubberbanding()
+            # this might mean double redraws, cache it?
+            self.canvas.redraw()
+
         # any dragged objects?
         if canvas.getDraggedObject() and \
                canvas.getDraggedObject().draggedPort and \
@@ -1546,9 +1580,10 @@ class GraphEditor:
 
 
 
-    def _canvasDrag(self, canvas, eventName, event):
-        if event.LeftIsDown() and not canvas.getDraggedObject():
-            self._drawRubberBand(event)
+    def _observer_canvas_drag(self, canvas):
+        if canvas.event.left_button:
+            self._draw_rubberband(canvas.event.world_pos)
+            canvas.redraw()
 
     def _checkAndConnect(self, draggedObject, draggedPort,
                          droppedObject, droppedInputPort):
@@ -2262,7 +2297,10 @@ class GraphEditor:
         
 
         # whatever the case may be, stop rubber banding.
-        #self._stopRubberBanding(event)
+        if self._rbb_box:
+            self._end_rubberbanding()
+            # this might mean double redraws, cache it?
+            self.canvas.redraw()
 
         canvas = self.canvas
 

@@ -12,16 +12,15 @@ class DeVIDECanvasEvent:
         self.wx_event = None
 
         self.name = None
-      
+
+        # pos is in wx-coords, i.e. top-left is 0,0
         self.pos = (0,0)
+        # last_pos and pos_delta follow same convention
         self.last_pos = (0,0)
         self.pos_delta = (0,0)
 
-        # this x,y is in VTK display coords
-        # (bottom left of thingy is 0,0)
+        # disp_pos is in VTK display coords: bottom-left is 0,0
         self.disp_pos = (0,0)
-        # we also need to convert the y to wx coordinates (top-left is
-        # 0,0)
 
         self.world_pos = (0,0,0)
 
@@ -402,8 +401,6 @@ class DeVIDECanvas(SubjectMixin):
             c.SetPosition(new_cp)
             self.redraw()
 
-
-        
         else: # none of the preference events want this...
             pg_ret = self._pick_glyph(ex, self.flip_y(ey))
             if pg_ret:
@@ -445,6 +442,11 @@ class DeVIDECanvas(SubjectMixin):
                 # canceled.
                 self.event.name = 'dragging'
                 self._draggedObject.notify('dragging')
+
+            if event.Dragging and not self._draggedObject:
+                # user is dragging on canvas (no draggedObject!)
+                self.event.name = 'dragging'
+                self.notify(self.event.name)
 
         
         if not event.Dragging():

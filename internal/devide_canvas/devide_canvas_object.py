@@ -5,6 +5,8 @@
 from gen_mixins import SubjectMixin
 import vtk
 
+# z-coord of RBB box
+RBBOX_HEIGHT = 0.5 
 
 #############################################################################
 class DeVIDECanvasObject(SubjectMixin):
@@ -48,6 +50,55 @@ class DeVIDECanvasObject(SubjectMixin):
     def isInsideRect(self, x, y, width, height):
         return False
 
+class DeVIDECanvasRBBox(DeVIDECanvasObject):
+    """Rubber-band box that can be used to give feedback rubber-band
+    selection interaction.  Thingy.
+    """
+
+
+    def __init__(self, canvas, corner_bl, (width, height)):
+        """ctor.  corner_bl is the bottom-left corner and corner_tr
+        the top-right corner of the rbbox in world coords.
+        """
+
+        self.corner_bl = corner_bl
+        self.width, self.height = width, height
+
+        DeVIDECanvasObject.__init__(self, canvas, corner_bl)
+
+        self._create_geometry()
+        self.update_geometry()
+
+    def _create_geometry(self):
+        self._plane_source = vtk.vtkPlaneSource()
+        self._plane_source.SetNormal((0.0,0.0,1.0))
+        self._plane_source.SetXResolution(1)
+        self._plane_source.SetYResolution(1)
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._plane_source.GetOutput())
+        a = vtk.vtkActor()
+        a.SetMapper(m)
+        a.GetProperty().SetOpacity(0.3)
+        a.GetProperty().SetColor(0.0, 0.0, 0.7)
+        self.props = [a]
+
+    def update_geometry(self):
+        # bring everything up to the correct height (it should be in
+        # front of all other objects)
+        corner_bl = tuple(self.corner_bl[0:2]) + (RBBOX_HEIGHT,) 
+        self._plane_source.SetOrigin(corner_bl)
+
+        if self.width == 0:
+            self.width = 0.1
+        if self.height == 0:
+            self.height = 0.1
+
+        pos1 = [i+j for i,j in zip(corner_bl, (0.0, self.height, 0.0))]
+        pos2 = [i+j for i,j in zip(corner_bl, (self.width, 0.0, 0.0))]
+        self._plane_source.SetPoint1(pos1)
+        self._plane_source.SetPoint2(pos2)
+
+
 #############################################################################
 
 class DeVIDECanvasSimpleLine(DeVIDECanvasObject):
@@ -79,6 +130,7 @@ class DeVIDECanvasSimpleLine(DeVIDECanvasObject):
 
 
 
+#############################################################################
 class DeVIDECanvasLine(DeVIDECanvasObject):
 
     # this is used by the routing algorithm to route lines around glyphs
@@ -242,9 +294,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     @ivar position: this is the position of the bottom left corner of
     the glyph in world space.  Remember that (0,0) is also bottom left
     of the canvas.
-
-    @FIXME: lots of things (especially text mod) that have to be moved
-    from create_geometry to update_geometry.
     """
 
     # at start and end of glyph
@@ -393,7 +442,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
     def update_geometry(self):
         glyph_normal_col = (0.75, 0.75, 0.75)
-        glyph_selected_col = (1.0, 0.0, 0.96)
+        glyph_selected_col = (0.0, 0.0, 0.7)
         glyph_blocked_col = (0.06, 0.06, 0.06)
         port_conn_col = (0.0, 1.0, 0.0)
         port_disconn_col = (1.0, 0.0, 0.0)
