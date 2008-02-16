@@ -195,10 +195,16 @@ class DeVIDECanvas(SubjectMixin):
         self.event.clicked_object = None
 
     def _handler_char(self, e):
-        # we're disabling all keypresses.  if we don't, the standard
+        # we're disabling all VTK.  if we don't, the standard
         # VTK keys such as 'r' (reset), '3' (stereo) and especially
         # 'f' (fly to) can screw up things quite badly.
-        pass
+       
+        # if ctrl, shift or alt is involved, we should pass it on to
+        # wx (could be menu keys for example).
+        # if not, we just eat up the event.
+        if e.ControlDown() or e.ShiftDown() or e.AltDown():
+            e.Skip()
+
 
     def _handler_ld(self, e):
         self._helper_handler_preamble(e)
