@@ -1,6 +1,8 @@
 #!/bin/sh
-# $Id$
-# makeRelease for devide copyright 2004 Charl P. Botha http://cpbotha.net/
+
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # script to build a complete release:
 # 1. cvs updates on devide and vtkdevide

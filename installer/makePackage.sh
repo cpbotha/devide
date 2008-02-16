@@ -1,5 +1,9 @@
 #!/bin/sh
-# $Id$
+
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
+
 # if you want to use your own PyInstaller Build.py, set the full path
 # to this in the ENV variable INSTALLER_SCRIPT
 
