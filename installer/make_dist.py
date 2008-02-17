@@ -7,6 +7,8 @@ import os
 import shutil
 import sys
 
+PPF = "[*** DeVIDE make_dist ***]"
+
 class MDPaths:
     """Initialise all directories required for building DeVIDE
     distributables.
@@ -17,7 +19,7 @@ class MDPaths:
 
         # devide/installer
         self.specfile_dir = os.path.normpath(
-                self._os.path.dirname(self.specfile))
+                os.path.dirname(self.specfile))
 
         self.pyi_dist_dir = os.path.join(self.specfile_dir,
                 'distdevide')
@@ -44,6 +46,8 @@ contains the devide source that you are using to build the
 distributables.
 """
 
+    print message
+
 def clean_pyinstaller(md_paths):
     """Clean out pyinstaller dist and build directories so that it has
     to do everything from scratch.  We usually do this before building
@@ -51,21 +55,45 @@ def clean_pyinstaller(md_paths):
     """
     
     if os.path.isdir(md_paths.pyi_dist_dir):
-        print "Removing disdevide..."
+        print PPF, "Removing distdevide..."
         shutil.rmtree(md_paths.pyi_dist_dir)
 
     if os.path.isdir(md_paths.pyi_build_dir):
-        print "Removing builddevide..."
-        shutil.rmtree(md_paths.pyi_dist_dir)
+        print PPF, "Removing builddevide..."
+        shutil.rmtree(md_paths.pyi_build_dir)
 
-def run_pyinstaller():
+def run_pyinstaller(md_paths):
     """Run pyinstaller with the given parameters.  This does not clean
     out the dist and build directories before it begins
     """
 
     # old makePackage.sh would remove all *.pyc, *~ and #*# files
-    cmd = '%s %s %s' (sys.executable, md_paths.pyinstaller_script,
+    cmd = '%s %s %s' % (sys.executable, md_paths.pyinstaller_script,
             md_paths.specfile)
+    
+    ret = os.system(cmd)
+
+    if ret != 0:
+       raise RuntimeError('Error running PYINSTALLER.') 
+
+    if os.name == 'nt':
+        for efile in ['devide.exe.manifest', 
+                'msvcm80.dll', 'Microsoft.VC80.CRT.manifest']:
+            print PPF, "WINDOWS: copying", efile
+        
+            src = os.path.join(
+                md_paths.specfile_dir,
+                efile)
+            dst = os.path.join(
+                md_paths.pyi_dist_dir,
+                efile)
+
+            shutil.copyfile(src, dst)
+
+    else:
+        pass
+
+    
 
 def package_dist():
     """After pyinstaller has been executed, do all actions to package
@@ -109,6 +137,8 @@ def main():
 
     md_paths = MDPaths(spec, pyi_script)
 
+    clean_pyinstaller(md_paths)
+    run_pyinstaller(md_paths)
 
 
 if __name__ == '__main__':

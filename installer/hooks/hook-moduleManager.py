@@ -23,7 +23,7 @@ import ConfigParser
 config_defaults = {'nokits': ''}
 cp = ConfigParser.ConfigParser(config_defaults)
 cp.read(os.path.join(devideDir, 'devide.cfg'))
-nokits = [i.strip() for i in cp.get(CSEC, 'nokits').split(',')]
+nokits = [i.strip() for i in cp.get('DEFAULT', 'nokits').split(',')]
 
 # get a list of module kits
 mkl = module_kits.module_kit_list[:] + ['numpy_kit']

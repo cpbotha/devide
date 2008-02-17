@@ -1,3 +1,8 @@
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
+
+
 # RESTRUCTURE:
 # * remove_binaries (startswith and contains)
 # * remove_pure (startswith and contains)
@@ -155,7 +160,7 @@ else:
     remove_binaries = [i.lower() for i in remove_binaries]
 
 # global removes: we want to include this file so that the user can edit it
-remove_binaries += ['defaults.py']
+#remove_binaries += ['defaults.py']
 
 # we have to remove these nasty built-in dependencies EARLY in the game
 dd = config['EXE_dependencies']
@@ -175,8 +180,6 @@ print "[*] mainScript == %s" % (mainScript)
 sys.path.insert(0, APP_DIR)
 
 import module_kits
-import defaults
-
 
 #######################################################################
 
@@ -198,7 +201,6 @@ module_kits_tree = Tree(os.path.join(APP_DIR, 'module_kits'), 'module_kits',
                     ['.svn', '*~'])
 
 print "===== APP_DIR: ", APP_DIR
-print "===== MKT: ", module_kits_tree
 
 # VTKPIPELINE ICONS
 
@@ -212,17 +214,18 @@ vpli = [(os.path.join('Icons', i),
 # MATPLOTLIB data dir
 mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
 
-from distutils import sysconfig
-numpy_tree = Tree(
-    os.path.join(sysconfig.get_python_lib(),'numpy'),
-    prefix=os.path.join('module_kits/numpy_kit/numpy'), 
-    excludes=['*.pyc', '*.pyo', 'doc', 'docs'])
+if False:
+    from distutils import sysconfig
+    numpy_tree = Tree(
+        os.path.join(sysconfig.get_python_lib(),'numpy'),
+        prefix=os.path.join('module_kits','numpy_kit','numpy'), 
+        excludes=['*.pyc', '*.pyo', 'doc', 'docs'])
 
 testing_tree = Tree(os.path.join(APP_DIR, 'testing'), 'testing',
                     ['.svn', '*~', '*.pyc'])
 
 # and some miscellaneous files
-misc_tree = [('defaults.py', '%s/defaults.py' % (APP_DIR,), 'DATA')]
+misc_tree = [('devide.cfg', '%s/devide.cfg' % (APP_DIR,), 'DATA')]
 
 ##########################################################################
 
@@ -232,11 +235,15 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
               os.path.join(SUPPORT_DIR, 'useUnicode.py'),
               mainScript],
              pathex=[],
-             hookspath=[os.path.join(APP_DIR, 'installer/hooks/')])
+             hookspath=[os.path.join(APP_DIR, 'installer', 'hooks')])
 
 ######################################################################
 # sanitise a.pure
-remove_pure_finds = ['numpy', 'numarray', 'Numeric']
+# remove all numpy related things, this is separately handled above
+#remove_pure_finds = ['numpy', 'numarray', 'Numeric']
+remove_pure_finds = []
+# we remove all module and module_kits based things, because they're
+# taken care of by hooks/hook-moduleManager.py
 remove_pure_starts = ['modules.', 'module_kits', 'testing']
 
 for i in range(len(a.pure)-1, -1, -1):
@@ -252,7 +259,8 @@ for i in range(len(a.pure)-1, -1, -1):
 
 # we want to remove all of these from the binaries as well (numpy is
 # separately packaged in its own tree)
-remove_binary_finds = ['numpy', 'numarray', 'Numeric']
+#remove_binary_finds = ['numpy', 'numarray', 'Numeric']
+remove_binary_finds = []
 
 for i in range(len(a.binaries)-1, -1, -1):
     if helper_remove_finds(a.binaries[i][1], remove_binaries) or \
@@ -285,10 +293,10 @@ exe = EXE(pyz,
 
 
 all_binaries = a.binaries + modules_tree + module_kits_tree + vpli + \
-    mpl_data_dir + numpy_tree + \
+    mpl_data_dir + \
     extraLibs + segTree + snipTree + dataTree + docsTree + misc_tree + \
     testing_tree
-
+#   numpy_tree + \
 
 coll = COLLECT(exe,
                all_binaries,
@@ -296,3 +304,4 @@ coll = COLLECT(exe,
                name='distdevide')
 
 # wrapitk_tree is packaged completely separately
+
