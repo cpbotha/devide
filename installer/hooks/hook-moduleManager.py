@@ -17,14 +17,21 @@ devideDir = os.path.normpath(os.path.join(*dd))
 sys.path.insert(0, devideDir)
 
 import module_kits
-import defaults
+
+# now also parse config file
+import ConfigParser
+config_defaults = {'nokits': ''}
+cp = ConfigParser.ConfigParser(config_defaults)
+cp.read(os.path.join(devideDir, 'devide.cfg'))
+nokits = [i.strip() for i in cp.get(CSEC, 'nokits').split(',')]
 
 # get a list of module kits
 mkl = module_kits.module_kit_list[:] + ['numpy_kit']
 # 1. remove the no_kits
 # 2. explicitly remove itk_kit, it's handled completely separately by
 # the makePackage.sh script file
-mkl = [i for i in mkl if i not in defaults.NOKITS and i != 'itk_kit']
+mkl = [i for i in mkl if i not in nokits and i not in
+        ['itk_kit','itktudoss_kit']]
 
 # other imports
 other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
