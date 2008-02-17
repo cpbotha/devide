@@ -4,7 +4,31 @@
 
 import getopt
 import os
+import shutil
 import sys
+
+class MDPaths:
+    """Initialise all directories required for building DeVIDE
+    distributables.
+    """
+    def __init__(self, specfile, pyinstaller_script):
+        self.specfile = os.path.normpath(specfile)
+        self.pyinstaller_script = os.path.normpath(pyinstaller_script)
+
+        # devide/installer
+        self.specfile_dir = os.path.normpath(
+                self._os.path.dirname(self.specfile))
+
+        self.pyi_dist_dir = os.path.join(self.specfile_dir,
+                'distdevide')
+        self.pyi_build_dir = os.path.join(self.specfile_dir,
+                'builddevide')
+
+        # devide
+        self.devide_dir = \
+            os.path.normpath(
+                    os.path.join(self.specfile_dir, '..'))
+        
 
 def usage():
     message = """
@@ -19,6 +43,40 @@ The specfile should be in the directory devide/installer, where devide
 contains the devide source that you are using to build the
 distributables.
 """
+
+def clean_pyinstaller(md_paths):
+    """Clean out pyinstaller dist and build directories so that it has
+    to do everything from scratch.  We usually do this before building
+    full release versions.
+    """
+    
+    if os.path.isdir(md_paths.pyi_dist_dir):
+        print "Removing disdevide..."
+        shutil.rmtree(md_paths.pyi_dist_dir)
+
+    if os.path.isdir(md_paths.pyi_build_dir):
+        print "Removing builddevide..."
+        shutil.rmtree(md_paths.pyi_dist_dir)
+
+def run_pyinstaller():
+    """Run pyinstaller with the given parameters.  This does not clean
+    out the dist and build directories before it begins
+    """
+
+    # old makePackage.sh would remove all *.pyc, *~ and #*# files
+    cmd = '%s %s %s' (sys.executable, md_paths.pyinstaller_script,
+            md_paths.specfile)
+
+def package_dist():
+    """After pyinstaller has been executed, do all actions to package
+    up a distribution.
+
+    1. rebase all DLLs
+    2. posix: strip and chrpath all SOs
+    3. create WrapITK package
+    4. package and timestamp distributables (nsis on win, tar on
+    posix)
+    """
 
 def main():
     try:
@@ -49,7 +107,7 @@ def main():
         usage()
         return
 
-
+    md_paths = MDPaths(spec, pyi_script)
 
 
 
