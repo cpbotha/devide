@@ -91,9 +91,21 @@ def run_pyinstaller(md_paths):
             shutil.copyfile(src, dst)
 
     else:
-        pass
+        # strip all libraries
+        # find distdevide/ -name *.so | xargs strip
 
-    
+        # remove rpath information
+        # find distdevide -name *.so | xargs chrpath --delete
+
+        # rename binary and create invoking script
+        # we only have to set LD_LIBRARY_PATH, PYTHONPATH is correct
+        # mv distdevide/devide distdevide/devide.bin
+        # SCRIPTFILE='distdevide/devide'
+        # cp devideInvokingScript.sh $SCRIPTFILE
+        # chmod +x $SCRIPTFILE
+
+        pass
+   
 
 def package_dist():
     """After pyinstaller has been executed, do all actions to package
