@@ -91,6 +91,8 @@ def run_pyinstaller(md_paths):
             shutil.copyfile(src, dst)
 
     else:
+        # TODO FIXME TODO FIXME!
+
         # strip all libraries
         # find distdevide/ -name *.so | xargs strip
 
@@ -117,6 +119,12 @@ def package_dist():
     4. package and timestamp distributables (nsis on win, tar on
     posix)
     """
+
+    # recursively find all DLLs and PYDs
+    for dirpath, dirnames, filenames in os.walk('.'):
+        for fn in filenames:
+            if fnmatch.fnmatch(fn, '*.pyd') or fnmatch.fnmatch(fn, '*.dll'):
+                print fn
 
 def main():
     try:
