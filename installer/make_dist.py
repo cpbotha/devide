@@ -4,11 +4,14 @@
 
 import getopt
 import os
+import re
 import shutil
 import sys
 
 PPF = "[*** DeVIDE make_dist ***]"
 
+
+####################################################################
 class MDPaths:
     """Initialise all directories required for building DeVIDE
     distributables.
@@ -19,7 +22,7 @@ class MDPaths:
 
         # devide/installer
         self.specfile_dir = os.path.normpath(
-                os.path.dirname(self.specfile))
+                os.path.abspath(os.path.dirname(self.specfile)))
 
         self.pyi_dist_dir = os.path.join(self.specfile_dir,
                 'distdevide')
@@ -30,8 +33,81 @@ class MDPaths:
         self.devide_dir = \
             os.path.normpath(
                     os.path.join(self.specfile_dir, '..'))
-        
 
+
+####################################################################
+# UTILITY METHODS
+####################################################################
+def get_status_output(command):
+    """Run command, return output of command and exit code in status.
+    In general, status is None for success and 1 for command not
+    found.
+
+    Method taken from johannes.utils.
+    """
+
+    ph = os.popen(command)
+    output = ph.read()
+    status = ph.close()
+    return (status, output)
+
+
+def find_command_with_ver(name, command, ver_re):
+    """Try to run command, use ver_re regular expression to parse for
+    the version string.  This will print for example:
+    CVS: version 2.11 found.
+
+    @return: True if command found, False if not or if version could
+    not be parsed. 
+
+    Method taken from johannes.utils.
+    """
+
+    retval = False
+    s,o = get_status_output(command)
+
+    if s:
+        msg2 = 'NOT FOUND!'
+
+    else:
+        mo = re.search(ver_re, o, re.MULTILINE) 
+        if mo:
+            msg2 = 'version %s found.' % (mo.groups()[0],)
+            retval = True
+        else:
+            msg2 = 'could not extract version.'
+
+
+    print PPF, "%s: %s" % (name, msg2)
+
+    return retval
+
+def find_files(start_dir, re_pattern='.*\.(pyd|dll)'):
+    """Recursively find all files (not directories) with filenames 
+    matching given regular expression.  Case is ignored.
+
+    @param start_dir: search starts in this directory
+    @param re_pattern: regular expression with which all found files
+    will be matched. example: re_pattern = '.*\.(pyd|dll)' will match
+    all filenames ending in pyd or dll.
+    @return: list of fully qualified filenames that satisfy the
+    pattern
+    """
+
+    cpat = re.compile(re_pattern, re.IGNORECASE)
+    found_files = []
+
+    for dirpath, dirnames, filenames in os.walk(start_dir):
+        ndirpath = os.path.normpath(os.path.abspath(dirpath))
+        for fn in filenames:
+            if cpat.match(fn):
+                found_files.append(os.path.join(ndirpath,fn))
+
+    return found_files
+
+####################################################################
+# METHODS CALLED FROM MAIN()
+####################################################################
 def usage():
     message = """
 make_dist.py - build DeVIDE distributables.
@@ -107,9 +183,10 @@ def run_pyinstaller(md_paths):
         # chmod +x $SCRIPTFILE
 
         pass
-   
 
-def package_dist():
+  
+
+def package_dist(md_paths):
     """After pyinstaller has been executed, do all actions to package
     up a distribution.
 
@@ -120,11 +197,29 @@ def package_dist():
     posix)
     """
 
-    # recursively find all DLLs and PYDs
-    for dirpath, dirnames, filenames in os.walk('.'):
-        for fn in filenames:
-            if fnmatch.fnmatch(fn, '*.pyd') or fnmatch.fnmatch(fn, '*.dll'):
-                print fn
+    if os.name == 'nt':
+        print PPF, 'Rebasing DLL / PYD files'
+        # get list of pyd / dll files, add newline to each and every
+        # filename
+        so_files = ['%s\n' % (i,) for i in
+                find_files(md_paths.pyi_dist_dir)]
+
+        # open file in specfile_dir, write the whole list
+        dll_list_fn = os.path.join(
+                md_paths.specfile_dir, 'dll_list.txt')
+        dll_list = file(dll_list_fn, 'w')
+        dll_list.writelines(so_files)
+        dll_list.close()
+
+def windows_prereq_check():
+    print PPF, 'WINDOWS prereq check'
+
+    v = find_command_with_ver(
+            'Microsoft Rebase (rebase.exe)', 'rebase /?',
+            '^usage:\s+(REBASE).*$')
+
+    return v
+
 
 def main():
     try:
@@ -153,12 +248,22 @@ def main():
     if spec is None or pyi_script is None:
         # we need BOTH the specfile and pyinstaller script
         usage()
-        return
+        return 1
+
+    # dependency checking
+    if os.name == 'nt':
+        if not windows_prereq_check():
+            print PPF, "ERR: Windows prerequisites do not check out."
+            return 1
+
 
     md_paths = MDPaths(spec, pyi_script)
 
-    clean_pyinstaller(md_paths)
-    run_pyinstaller(md_paths)
+    #clean_pyinstaller(md_paths)
+    #run_pyinstaller(md_paths)
+
+    package_dist(md_paths)    
+
 
 
 if __name__ == '__main__':
