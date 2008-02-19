@@ -214,9 +214,12 @@ def package_dist(md_paths):
 def windows_prereq_check():
     print PPF, 'WINDOWS prereq check'
 
+    # if you give rebase any other command-line switches (even /?) it
+    # exits with return code 99 and outputs its stuff to stderr
+    # with -b it exits with return code 0 (expected) and uses stdout
     v = find_command_with_ver(
-            'Microsoft Rebase (rebase.exe)', 'rebase /?',
-            '^usage:\s+(REBASE).*$')
+            'Microsoft Rebase (rebase.exe)', 'rebase -b 0x60000000',
+            '^(REBASE):\s+Total.*$')
 
     return v
 
