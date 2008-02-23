@@ -9,9 +9,10 @@ import sys
 
 # customise the following variables
 
-if sys.platform == 'win32':
+if os.name == 'nt':
     SO_EXT = 'dll'
     SO_GLOB = '*.%s' % (SO_EXT,)
+    PYE_GLOB = '*.pyd'
     # this should be c:/opt/ITK/bin
     ITK_SO_DIR = os.path.normpath(
             os.path.join(itkConfig.swig_lib, '../../../../bin'))
@@ -19,6 +20,7 @@ if sys.platform == 'win32':
 else:
     SO_EXT = 'so'
     SO_GLOB = '*.%s.*' % (SO_EXT,)
+    PYE_GLOB = SO_GLOB
 
     curdir = os.path.abspath(os.curdir)
     # first go down to Insight/lib/InsightToolkit/WrapITK/lib
@@ -31,44 +33,10 @@ else:
     os.chdir(curdir)
 
 
-# Tree() makes a TOC, i.e. a list of tuples with (app_dir relative
-# destination, full source file path, 'DATA')
-
-# on windows this doesn't work, because the python files are somewhere
-# in RelWithDebInfo...
-
 # we want:
 # itk_kit/wrapitk/py (*.py and Configuration and itkExtras subdirs from 
 #                     WrapITK/Python)
 # itk_kit/wrapitk/lib (*.py and *.so from WrapITK/lib)
-
-def get_wrapitk_tree2():
-
-    # WrapITK/lib -> itk_kit/wrapitk/lib
-    lib_files = glob.glob('%s/*.py' % (itkConfig.swig_lib,))
-    lib_files.extend(glob.glob('%s/*.so' % (itkConfig.swig_lib,)))
-
-    wrapitk_lib = [('module_kits/itk_kit/wrapitk/lib/%s' %
-                    (os.path.basename(i),), i, 'DATA') for i in lib_files]
-
-
-    # WrapITK/Python -> itk_kit/wrapitk/python
-    py_path = os.path.normpath(os.path.join(itkConfig.config_py, '..'))
-    py_files = glob.glob('%s/*.py' % (py_path,))
-    wrapitk_py = [('module_kits/itk_kit/wrapitk/python/%s' %
-                   (os.path.basename(i),), i, 'DATA') for i in py_files]
-
-    # WrapITK/Python/Configuration -> itk_kit/wrapitk/python/Configuration
-    config_files = glob.glob('%s/*.py' %
-                             (os.path.join(py_path,'Configuration'),))
-    wrapitk_config = [('module_kits/itk_kit/wrapitk/python/Configuration/%s' %
-                       (os.path.basename(i),), i, 'DATA')
-                      for i in config_files]
-
-    # complete tree
-    wrapitk_tree = wrapitk_lib + wrapitk_py + wrapitk_config
-
-    return wrapitk_tree
 
 def get_wrapitk_tree():
     """Return tree relative to itk_kit/wrapitk top.
@@ -76,12 +44,14 @@ def get_wrapitk_tree():
     
     # WrapITK/lib -> itk_kit/wrapitk/lib (py files, so/dll files)
     lib_files = glob.glob('%s/*.py' % (itkConfig.swig_lib,))
-    lib_files.extend(glob.glob('%s/*.%s' % (itkConfig.swig_lib, SO_EXT)))
+    # on linux there are Python SO files, on Windows they're actually
+    # all PYDs (and not DLLs) - these are ALL python extension modules
+    lib_files.extend(glob.glob('%s/%s' % (itkConfig.swig_lib, PYE_GLOB)))
 
     # on Windows we also need the SwigRuntime.dll in c:/opt/WrapITK/bin!
     # the files above on Windows are in:
     # C:\\opt\\WrapITK\\lib\\InsightToolkit\\WrapITK\\lib
-    if sys.platform == 'win32':
+    if os.name == 'nt':
         lib_files.extend(glob.glob('%s/%s' % (ITK_SO_DIR, SO_GLOB)))
     
     wrapitk_lib = [('lib/%s' %
@@ -168,7 +138,7 @@ def install(devide_app_dir):
     for f in itk_so_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
 
-    if sys.platform == 'win32':
+    if os.name == 'nt':
         # on Windows, it's not easy setting the DLL load path in a running
         # application.  You could try SetDllDirectory, but that only works
         # since XP SP1.  You could also change the current dir, but our DLLs
@@ -177,6 +147,7 @@ def install(devide_app_dir):
         print "Moving all SOs back to main DeVIDE dir [WINDOWS] ..."
         lib_path = os.path.join(witk_dest_dir, 'lib')
         so_files = glob.glob(os.path.join(lib_path, SO_GLOB))
+        so_files.extend(glob.glob(os.path.join(lib_path, PYE_GLOB)))
         for so_file in so_files:
             shutil.move(so_file, devide_app_dir)
 
