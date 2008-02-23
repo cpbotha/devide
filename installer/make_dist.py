@@ -10,6 +10,9 @@
 REBASE = "rebase"
 MAKE_NSIS = "makensis"
 
+STRIP = "strip"
+CHRPATH = "chrpath"
+
 # end of programmes ###############################################
 
 
@@ -21,6 +24,7 @@ import os
 import re
 import shutil
 import sys
+import tarfile
 
 
 PPF = "[*** DeVIDE make_dist ***]"
@@ -30,10 +34,11 @@ S_CLEAN_PYI = 'clean_pyi'
 S_RUN_PYI = 'run_pyi'
 S_WRAPITK_TREE = 'wrapitk_tree'
 S_REBASE_DLLS = 'rebase_dlls'
+S_POSTPROC_SOS = 'postproc_sos'
 S_PACKAGE_DIST = 'package_dist'
-DEFAULT_STAGES = '%s, %s, %s, %s, %s' % \
+DEFAULT_STAGES = '%s, %s, %s, %s, %s, %s' % \
         (S_CLEAN_PYI, S_RUN_PYI, S_WRAPITK_TREE, 
-                S_REBASE_DLLS, S_PACKAGE_DIST)
+                S_REBASE_DLLS, S_POSTPROC_SOS, S_PACKAGE_DIST)
 
 HELP_MESSAGE = """
 make_dist.py - build DeVIDE distributables.
@@ -205,23 +210,21 @@ def run_pyinstaller(md_paths):
             shutil.copyfile(src, dst)
 
     else:
-        # TODO FIXME TODO FIXME!
-
-        # strip all libraries
-        # find distdevide/ -name *.so | xargs strip
-
-        # remove rpath information
-        # find distdevide -name *.so | xargs chrpath --delete
-
         # rename binary and create invoking script
         # we only have to set LD_LIBRARY_PATH, PYTHONPATH is correct
-        # mv distdevide/devide distdevide/devide.bin
-        # SCRIPTFILE='distdevide/devide'
-        # cp devideInvokingScript.sh $SCRIPTFILE
+        # copy devide binary to devide.bin
+        invoking_fn = os.path.join(md_paths.pyi_dist_dir, 'devide'),
+        os.path.rename(
+                invoking_fn,
+                os.path.join(md_paths.pyi_dist_dir, 'devide.bin'))
+        # copy our own script to devide
+        shutil.copyfile(
+                os.path.join(
+                    md_paths.specfile_dir, 'devideInvokingScript.sh'),
+                invoking_fn)
+
         # chmod +x $SCRIPTFILE
-
-        pass
-
+        os.chmod(invoking_fn,0755)
   
 
 def package_dist(md_paths):
@@ -262,9 +265,41 @@ def package_dist(md_paths):
                 'devidesetup-%s.exe' % (devide_ver,))
 
     else:
-        # TODO FIXME create tarball and stamp it here
-        pass
+        # go to the installer dir
+        os.chdir(md_paths.specfile_dir)
 
+        # rename distdevide to devide-version
+        basename = 'devide-%s' % (devide_ver,)
+        os.rename('distdevide', basename)
+
+        # create tarball with juicy stuff
+        tar = tarfile.open('%s.tar.bz2' % basename, 'w:bz2')
+        # recursively add directory
+        tar.add(basename)
+        # finalize
+        tar.close()
+
+        # rename devide-version back to distdevide
+        os.rename(basename, 'distdevide')
+
+def postproc_sos(md_paths):
+    if os.name == 'posix':
+        print S_PPF, "postproc_sos (strip, chrpath)"
+
+        # strip all libraries
+        so_files = find_files(md_paths.pyi_dist_dir, '.*\.so')
+
+        print PPF, 'strip / chrpath %d SO files.' % (len(so_files),)
+        for so_file in so_files:
+            # strip debug info
+            ret = os.system('%s %s' % (STRIP, so_file))
+            if ret != 0:
+                print "Error stripping %s." % (so_file,)
+            # remove rpath information
+            ret = os.system('%s --delete %s' % (CHRPATH, so_file))
+            if ret != 0:
+                print "Error chrpathing %s." % (so_file,)
+ 
 def rebase_dlls(md_paths):
     """Rebase all DLLs in the distdevide tree on Windows.
     """
@@ -306,9 +341,25 @@ def wrapitk_tree(md_paths):
         raise RuntimeError(
         'Error creating self-contained WrapITK tree.')
 
+def posix_prereq_check():
+    print S_PPF, 'POSIX prereq check'
+
+    # gnu
+    # have the word version anywhere
+    v = find_command_with_ver(
+            'strip',
+            '%s --version' % (STRIP,),
+            '([0-9\.]+)')
+
+    v = v and find_command_with_ver(
+            'chrpath',
+            '%s --version' % (CHRPATH,),
+            'version\s+([0-9\.]+)')
+
+    return v
 
 def windows_prereq_check():
-    print PPF, 'WINDOWS prereq check'
+    print S_PPF, 'WINDOWS prereq check'
 
     # if you give rebase any other command-line switches (even /?) it
     # exits with return code 99 and outputs its stuff to stderr
@@ -367,6 +418,11 @@ def main():
             print PPF, "ERR: Windows prerequisites do not check out."
             return 1
 
+    else:
+        if not posix_prereq_check():
+            print PPF, "ERR: POSIX prerequisites do not check out."
+            return 1
+
 
     md_paths = MDPaths(spec, pyi_script)
 
@@ -380,6 +436,8 @@ def main():
         wrapitk_tree(md_paths)
     if S_REBASE_DLLS in stages:
         rebase_dlls(md_paths)
+    if S_POSTPROC_SOS in stages:
+        postproc_sos(md_paths)
     if S_PACKAGE_DIST in stages:
         package_dist(md_paths)    
 
