@@ -60,21 +60,14 @@ SectionEnd
 Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\DeVIDE"
   CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE.lnk" "$INSTDIR\devide.exe" "" "$INSTDIR\devide.exe" 0
-
-  IfFileExists "$INSTDIR\NO_ITK" PastITKMenu
   CreateShortCut "$SMPROGRAMS\DeVIDE\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe" "--no-kits itk_kit" "$INSTDIR\devide.exe" 0
-  ;Delete "$INSTDIR\NO_ITK"
-PastITKMenu:
   CreateShortCut "$SMPROGRAMS\DeVIDE\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0  
 
 SectionEnd
 
 Section "Desktop Shortcut"
    CreateShortCut "$DESKTOP\DeVIDE.lnk" "$INSTDIR\devide.exe"
-
-   IfFileExists "$INSTDIR\NO_ITK" PastITKShortCut
    CreateShortCut "$DESKTOP\DeVIDE no-itk.lnk" "$INSTDIR\devide.exe" "--no-kits itk_kit"
-PastITKShortCut:
 
 SectionEnd
 
