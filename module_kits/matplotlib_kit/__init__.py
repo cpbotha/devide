@@ -28,8 +28,10 @@ def init(theModuleManager):
         # to make sure that MPL finds its datadir (only if we're frozen)
         mpldir = os.path.join(theModuleManager.get_appdir(), 'matplotlibdata')
         os.environ['MATPLOTLIBDATA'] = mpldir
+
     
     # import the main module itself
+    # this doesn't import numerix yet...
     global matplotlib
     import matplotlib
 
@@ -45,10 +47,27 @@ def init(theModuleManager):
 
     theModuleManager.setProgress(25, 'Initialising matplotlib_kit: config')
 
+    # @PATCH:
+    # this is for the combination numpy 1.0.4 and matplotlib 0.91.2
+    # matplotlib/numerix/ma/__init__.py:
+    # . normal installation fails on "from numpy.ma import *", so "from
+    #   numpy.core.ma import *" is done, thus bringing in e.g. getmask
+    # . pyinstaller binaries for some or other reason succeed on 
+    #   "from numpy.ma import *" (no exception raised), therefore do
+    #   not do "from numpy.core.ma import *", and therefore things like
+    #   getmask are not imported.
+    # solution:
+    # we make sure that "from numpy.ma import *" actually brings in
+    # numpy.core.ma by importing that and associating the module
+    # binding to the global numpy.ma.
+    if hasattr(sys, 'frozen') and sys.frozen:
+        import numpy.core.ma
+        sys.modules['numpy.ma'] = sys.modules['numpy.core.ma']
+
     # import the pylab interface, make sure it's available from this namespace
     global pylab
     import pylab
-    
+
     theModuleManager.setProgress(90, 'Initialising matplotlib_kit: pylab')
 
     # build up VERSION
