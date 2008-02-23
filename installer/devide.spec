@@ -239,8 +239,6 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
 
 ######################################################################
 # sanitise a.pure
-# remove all numpy related things, this is separately handled above
-#remove_pure_finds = ['numpy', 'numarray', 'Numeric']
 remove_pure_finds = []
 # we remove all module and module_kits based things, because they're
 # taken care of by hooks/hook-moduleManager.py
@@ -257,9 +255,6 @@ for i in range(len(a.pure)-1, -1, -1):
 ######################################################################
 # sanitise a.binaries
 
-# we want to remove all of these from the binaries as well (numpy is
-# separately packaged in its own tree)
-#remove_binary_finds = ['numpy', 'numarray', 'Numeric']
 remove_binary_finds = []
 
 for i in range(len(a.binaries)-1, -1, -1):
@@ -279,11 +274,12 @@ pyz = PYZ(a.pure)
 # is deleted after the first invocation!)
 #options = [('f','','OPTION')] # LD_LIBRARY_PATH is correctly set on Linux
 #options = [('v', '', 'OPTION')]     # Python is ran with -v
+options = []
 
 # because we've already modified the config, we won't be pulling in
 # hardcoded dependencies that we don't want.
 exe = EXE(pyz,
-          a.scripts, #+ options,
+          a.scripts + options,
           exclude_binaries=1,
           name=exeName,
           icon=os.path.join(APP_DIR, 'resources/graphics/devidelogo64x64.ico'),
@@ -296,7 +292,6 @@ all_binaries = a.binaries + modules_tree + module_kits_tree + vpli + \
     mpl_data_dir + \
     extraLibs + segTree + snipTree + dataTree + docsTree + misc_tree + \
     testing_tree
-#   numpy_tree + \
 
 coll = COLLECT(exe,
                all_binaries,
