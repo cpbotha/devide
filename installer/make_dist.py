@@ -8,6 +8,7 @@
 
 # Microsoft utility to rebase files.
 REBASE = "rebase"
+MAKE_NSIS = "makensis"
 
 # end of programmes ###############################################
 
@@ -227,14 +228,42 @@ def package_dist(md_paths):
     """After pyinstaller has been executed, do all actions to package
     up a distribution.
 
-    1. rebase all DLLs
-    2. posix: strip and chrpath all SOs
-    3. create WrapITK package
     4. package and timestamp distributables (nsis on win, tar on
     posix)
     """
 
     print S_PPF, "package_dist"
+
+    # get devide version (we need this to stamp the executables)
+    cmd = '%s -v' % (os.path.join(md_paths.pyi_dist_dir, 'devide'),)
+    s,o = get_status_output(cmd)
+   
+    # s == None if DeVIDE has executed successfully
+    if s: 
+        raise RuntimeError('Could not exec DeVIDE to extract version.')
+
+    mo = re.search('^DeVIDE\s+(v.*)$', o, re.MULTILINE)
+    if mo:
+        devide_ver = mo.groups()[0]
+    else:
+        raise RuntimeError('Could not extract DeVIDE version.')
+
+    if os.name == 'nt':
+        # we need to be in the installer directory before starting
+        # makensis
+        os.chdir(md_paths.specfile_dir)
+        cmd = '%s devide.nsi' % (MAKE_NSIS,)
+        ret = os.system(cmd)
+        if ret != 0:
+            raise RuntimeError('Error running NSIS.')
+
+        # nsis creates devidesetup.exe - we're going to rename
+        os.rename('devidesetup.exe', 
+                'devidesetup-%s.exe' % (devide_ver,))
+
+    else:
+        # TODO FIXME create tarball and stamp it here
+        pass
 
 def rebase_dlls(md_paths):
     """Rebase all DLLs in the distdevide tree on Windows.
@@ -288,6 +317,11 @@ def windows_prereq_check():
             'Microsoft Rebase (rebase.exe)', 
             '%s -b 0x60000000' % (REBASE,),
             '^(REBASE):\s+Total.*$')
+
+    v = v and find_command_with_ver(
+            'Nullsoft Installer System (makensis.exe)', 
+            '%s /version' % (MAKE_NSIS,),
+            '^(v[0-9\.]+)$')
 
     return v
 
