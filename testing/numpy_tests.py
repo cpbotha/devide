@@ -2,16 +2,6 @@ import sys
 import unittest
 
 class NumPyTest(unittest.TestCase):
-    def test_local_import(self):
-        """Make sure that if we are frozen, the imported numpy is our
-        own shipping package and not the sys-installed one.  Hmmmm
-        kay?
-        """
-        if hasattr(sys, 'frozen') and sys.frozen:
-            import numpy
-            self.failUnless(numpy.__file__.startswith(
-                self._devide_app.get_appdir()))
-
     def test_import_mixing(self):
         """Test for bug where packaged numpy and installed numpy would
         conflict, causing errors.
@@ -42,11 +32,6 @@ def get_suite(devide_testing):
         t._devide_testing = devide_testing
         numpy_suite.addTest(t)
         
-        t = NumPyTest('test_local_import')
-        t._devide_app = devide_app
-        t._devide_testing = devide_testing
-        numpy_suite.addTest(t)
-
     return numpy_suite
 
 

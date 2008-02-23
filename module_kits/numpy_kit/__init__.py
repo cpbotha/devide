@@ -22,20 +22,7 @@ VERSION = ''
 def init(theModuleManager):
     theModuleManager.setProgress(5, 'Initialising numpy_kit: start')
 
-    # we add the path of this kit and of its numpy subdir so that
-    # the frozen/installed version can import it
-    # with the new pyinstaller 1.3, it IMPORTANT to add this to the
-    # beginning of the sys.path, as on systems where Python is
-    # installed, this somehow also gets added to the sys.path and then
-    # parts of the system numpy are important!!
-    p1 = os.path.dirname(__file__)
-    p2 = os.path.join(p1, 'numpy')
-    sys.path.insert(0, p1)
-    sys.path.insert(0, p2)
-
-    # after this, 'numpy' exists within our namespace, and
-    # sys.modules['numpy'] contains a ref to our import (although it might
-    # still have the default path c:\python24\lib\site-packages\numpy)
+    # import numpy into the global namespace
     global numpy
     import numpy
 
@@ -43,12 +30,6 @@ def init(theModuleManager):
     # work (such as the FloatCanvas)
     sys.modules['Numeric'] = numpy
     sys.modules['numarray'] = numpy
-
-    # remove the two paths that we inserted so we don't confuse anybody
-    # with relative package imports that act strangely
-    # remove from beginning of path
-    del sys.path[0]
-    del sys.path[0]
 
     theModuleManager.setProgress(95, 'Initialising numpy_kit: import done')
 

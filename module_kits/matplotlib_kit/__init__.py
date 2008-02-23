@@ -45,14 +45,6 @@ def init(theModuleManager):
 
     theModuleManager.setProgress(25, 'Initialising matplotlib_kit: config')
 
-    # these explicit imports make it easier for the installer
-    # (they get imported implicitly in anycase during usual runs)
-    import matplotlib.backends.backend_wxagg
-    import matplotlib.numerix.random_array
-    import matplotlib.quiver # needed on linux since matplotlib 0.87.4
-    import pytz
-    # end of installer-specific imports
-
     # import the pylab interface, make sure it's available from this namespace
     global pylab
     import pylab
