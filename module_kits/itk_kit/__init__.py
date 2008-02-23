@@ -13,36 +13,6 @@ import sys
 
 VERSION = ''
 
-def preImportITK(progressMethod):
-    itkImportList = [('VXLNumericsPython', 'VXL Numerics'),
-                     ('ITKCommonAPython', 'ITK Common part A'),
-                     ('ITKCommonBPython', 'ITK Common part B'),
-                     ('ITKBasicFiltersAPython', 'ITK Basic Filters A'),
-                     ('ITKBasicFiltersBPython', 'ITK Basic Filters B'),
-                     ('ITKNumericsPython', 'ITK Numerics'),
-                     ('ITKAlgorithmsPython', 'ITK Algorithms'),
-                     ('ITKIOPython', 'ITK IO Python'),
-                     ('fixitk', 'Other ITK symbols')] # fixitk
-    
-
-    # set the dynamic loading flags.  If we don't do this, we get strange
-    # errors on 64 bit machines.  To see this happen, comment this statement
-    # and then run the VTK->ITK connection test case.
-    oldflags = setDLFlags()
-
-    percentStep = 100.0 / len(itkImportList)
-    currentPercent = 0.0
-
-    # do the imports
-    for module, message in itkImportList:
-        currentPercent += percentStep
-        progressMethod(currentPercent, 'Initialising itk_kit: %s' % (message,),
-                       noTime=True)
-        exec('import %s' % (module,))
-
-    # restore previous dynamic loading flags
-    resetDLFlags(oldflags)
-
 def setDLFlags():
     # brought over from ITK Wrapping/CSwig/Python
 
