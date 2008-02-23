@@ -2,19 +2,25 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+###################################################################
+# the following programmes should either be on your path, or you
+# should specify the full paths here.
+
+# Microsoft utility to rebase files.
+REBASE = "rebase"
+
+# end of programmes ###############################################
+
+
+
+# NOTHING TO CONFIGURE BELOW THIS LINE ############################
+
 import getopt
 import os
 import re
 import shutil
 import sys
 
-###################################################################
-# the following programmes should either be on your path, or you
-# should specify the full paths here.
-# Microsoft utility to rebase files.
-REBASE = "rebase"
-
-# end of programmes ###############################################
 
 PPF = "[*** DeVIDE make_dist ***]"
 S_PPF = "%s =====>>>" % (PPF,) # used for stage headers
@@ -28,8 +34,26 @@ DEFAULT_STAGES = '%s, %s, %s, %s, %s' % \
         (S_CLEAN_PYI, S_RUN_PYI, S_WRAPITK_TREE, 
                 S_REBASE_DLLS, S_PACKAGE_DIST)
 
+HELP_MESSAGE = """
+make_dist.py - build DeVIDE distributables.
 
 
+Invoke as follows:
+
+python make_dist.py -s specfile -i installer_script
+
+where specfile is the pyinstaller spec file and installer_script
+refers to the full path of the pyinstaller Build.py 
+
+The specfile should be in the directory devide/installer, where devide
+is the directory containing the devide source that you are using to
+build the distributables.
+
+Other switches:
+--stages : by default all stages are run.  With this parameter, a
+           subset of the stages can be specified.  The full list is: 
+           %s
+""" % (DEFAULT_STAGES,)
 
 
 ####################################################################
@@ -130,28 +154,8 @@ def find_files(start_dir, re_pattern='.*\.(pyd|dll)'):
 # METHODS CALLED FROM MAIN()
 ####################################################################
 def usage():
-    message = """
-make_dist.py - build DeVIDE distributables.
 
-
-Invoke as follows:
-
-python make_dist.py -s specfile -i installer_script
-
-where specfile is the pyinstaller spec file and installer_script
-refers to the full path of the pyinstaller Build.py 
-
-The specfile should be in the directory devide/installer, where devide
-is the directory containing the devide source that you are using to
-build the distributables.
-
-Other switches:
---stages : by default all stages are run.  With this parameter, a
-           subset of the stages can be specified.  The full list is: 
-           %s
-""" % (DEFAULT_STAGES,)
-
-    print message
+    print HELP_MESSAGE
 
 def clean_pyinstaller(md_paths):
     """Clean out pyinstaller dist and build directories so that it has
