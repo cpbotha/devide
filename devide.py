@@ -84,7 +84,10 @@ class MainConfigClass(object):
             self.nokits = []
 
     def dispUsage(self):
+        self.disp_version()
+        print ""
         print "-h or --help          : Display this message."
+        print "-v or --version       : Display DeVIDE version."
         print "--config-profile name : Use config profile with name."
         print "--no-kits kit1,kit2   : Don't load the specified kits."
         print "--kits kit1,kit2      : Load the specified kits."
@@ -93,6 +96,9 @@ class MainConfigClass(object):
         print "--stereo              : Allocate stereo visuals."
         print "--test                : Perform built-in unit testing."
         print "--script              : Run specified .py in script mode."
+
+    def disp_version(self):
+        print "DeVIDE v%s" % (DEVIDE_VERSION,)
 
     def _parseCommandLine(self):
         """Parse command-line, return all parsed parameters in
@@ -112,8 +118,8 @@ class MainConfigClass(object):
         try:
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
-                sys.argv[1:], 'h',
-                ['help', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
+                sys.argv[1:], 'hv',
+                ['help', 'version', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
                  'script=', 'script-params=', 'config-profile='])
             
         except getopt.GetoptError,e:
@@ -123,7 +129,11 @@ class MainConfigClass(object):
         for o, a in optlist:
             if o in ('-h', '--help'):
                 self.dispUsage()
-                sys.exit(1)
+                sys.exit(0)
+
+            if o in ('-v', '--version'):
+                self.disp_version()
+                sys.exit(0)
 
             elif o in ('--config-profile',):
                 pcl_data.config_profile = a
