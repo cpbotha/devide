@@ -7,8 +7,8 @@ if os.name == 'posix':
     hiddenimports = ['libvtktudossGraphicsPython',
             'libvtktudossWidgetsPython']
 else:
-    hiddenimports = ['vtktudGraphicsPython',
-            'vtktudWidgetsPython']
+    hiddenimports = ['vtktudossGraphicsPython',
+            'vtktudossWidgetsPython']
 
 print "[*] hook-vtktudoss.py - HIDDENIMPORTS"
 print hiddenimports
