@@ -26,6 +26,11 @@ def init(theModuleManager):
     global numpy
     import numpy
 
+    # we add this so that modules using "import Numeric" will probably also
+    # work (such as the FloatCanvas)
+    sys.modules['Numeric'] = numpy
+    sys.modules['numarray'] = numpy
+
     theModuleManager.setProgress(95, 'Initialising numpy_kit: import done')
 
     # build up VERSION
