@@ -242,16 +242,15 @@ a = Analysis([os.path.join(SUPPORT_DIR, '_mountzlib.py'),
 remove_pure_finds = []
 # we remove all module and module_kits based things, because they're
 # taken care of by hooks/hook-moduleManager.py
-remove_pure_starts = ['modules.', 'module_kits', 'testing']
+# we also remove itk (it seems to be slipping in in spite of the fact
+# that I'm explicitly excluding it from module_kits)
+remove_pure_starts = ['modules.', 'module_kits', 'testing', 'itk']
 
 for i in range(len(a.pure)-1, -1, -1):
     if helper_remove_finds(a.pure[i][1], remove_pure_finds) or \
        helper_remove_start(a.pure[i][0], remove_pure_starts):
         del a.pure[i]
         
-        
-#print '===== NEW_PURE = %s' % (a.pure,)
-
 ######################################################################
 # sanitise a.binaries
 
@@ -261,8 +260,6 @@ for i in range(len(a.binaries)-1, -1, -1):
     if helper_remove_finds(a.binaries[i][1], remove_binaries) or \
        helper_remove_start(a.binaries[i][0], remove_binary_finds):
         del a.binaries[i]
-
-#print "===== NEW_BINARIES = %s" % (a.binaries,)
 
 ######################################################################
 

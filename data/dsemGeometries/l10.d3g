@@ -1,5 +1,5 @@
 # dscas3 dsem Geometry description
-# $Id: l10.d3g,v 1.3 2003/10/12 16:43:34 cpbotha Exp $
+# $Id$
 # the bony landmarks and all the surfaces have to be formulated in the same
 # coordinate system.  DSCAS3 will take care of all the back translations.
 

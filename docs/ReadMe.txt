@@ -33,4 +33,4 @@ As is the case with all things Python, this is not absolute, but try
 never to call module methods directly: always work via the
 moduleManager.
 
-$Id: ReadMe.txt,v 1.4 2005/06/30 15:29:44 cpbotha Exp $
+$Id$

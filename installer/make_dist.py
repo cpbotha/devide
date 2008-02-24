@@ -213,9 +213,8 @@ def run_pyinstaller(md_paths):
         # rename binary and create invoking script
         # we only have to set LD_LIBRARY_PATH, PYTHONPATH is correct
         # copy devide binary to devide.bin
-        invoking_fn = os.path.join(md_paths.pyi_dist_dir, 'devide'),
-        os.path.rename(
-                invoking_fn,
+        invoking_fn = os.path.join(md_paths.pyi_dist_dir, 'devide')
+        os.rename(invoking_fn,
                 os.path.join(md_paths.pyi_dist_dir, 'devide.bin'))
         # copy our own script to devide
         shutil.copyfile(
@@ -287,7 +286,7 @@ def postproc_sos(md_paths):
         print S_PPF, "postproc_sos (strip, chrpath)"
 
         # strip all libraries
-        so_files = find_files(md_paths.pyi_dist_dir, '.*\.so')
+        so_files = find_files(md_paths.pyi_dist_dir, '.*\.(so$|so\.)')
 
         print PPF, 'strip / chrpath %d SO files.' % (len(so_files),)
         for so_file in so_files:

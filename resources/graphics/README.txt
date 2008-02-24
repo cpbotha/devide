@@ -1,4 +1,4 @@
-$Id: README.txt,v 1.1 2004/01/15 10:32:53 cpbotha Exp $
+$Id$
 
 * Icon graphics created with gimp.  Layers make this easier.
 * png2ico[1] can convert from png files to an ico file.

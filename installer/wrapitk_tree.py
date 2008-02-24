@@ -20,7 +20,7 @@ if os.name == 'nt':
 else:
     SO_EXT = 'so'
     SO_GLOB = '*.%s.*' % (SO_EXT,)
-    PYE_GLOB = SO_GLOB
+    PYE_GLOB = '*.so'
 
     curdir = os.path.abspath(os.curdir)
     # first go down to Insight/lib/InsightToolkit/WrapITK/lib
