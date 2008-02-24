@@ -21,7 +21,6 @@ except Exception, e:
 # if built with johannes, the SVN_REVISION part might be rewritten.
 DEVIDE_VERSION = '%s.%s' % (VERSION, SVN_REVISION)
 
-
 # standard Python imports
 import getopt
 import mutex
