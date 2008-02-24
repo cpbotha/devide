@@ -1,4 +1,5 @@
-$Id$
+DEPRECATED.  Some of this is important and will be moved out to the
+wiki on googlecode before this file is removed from the repo.
 
 IMPORTANT NOTES:
 ---------------
