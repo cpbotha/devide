@@ -44,11 +44,14 @@ class MainConfigClass(object):
     def __init__(self, appdir):
 
         # first need to parse command-line to get possible --config-profile
+        # we store all parsing results in pcl_data structure
+        ##############################################################
         pcl_data = self._parseCommandLine()
 
         config_defaults = {
                 'nokits': '', 
                 'interface' : 'wx',
+                'scheduler' : 'hybrid',
                 'streaming_pieces' : 5,
                 'streaming_memory' : 100000}
 
@@ -57,6 +60,7 @@ class MainConfigClass(object):
         CSEC = pcl_data.config_profile
 
         # then apply configuration file and defaults #################
+        ##############################################################
         self.nokits = [i.strip() for i in cp.get(CSEC, \
                 'nokits').split(',')]
         self.streaming_pieces = cp.getint(CSEC, 'streaming_pieces')
@@ -64,13 +68,19 @@ class MainConfigClass(object):
 
         self.interface = cp.get(CSEC, 'interface') 
 
+        self.scheduler = cp.get(CSEC, 'scheduler')
+
         # finally apply command line switches ############################
+        ##################################################################
 
         # these ones can be specified in config file or parameters, so
         # we have to check first if parameter has been specified, in
         # which case it overrides config file specs
         if pcl_data.nokits:
             self.nokits = pcl_data.nokits
+
+        if pcl_data.scheduler:
+            self.scheduler = pcl_data.scheduler
 
         # command-line only, defaults set in PCLData ctor
         # so we DON'T have to check if config file has already set
@@ -93,6 +103,8 @@ class MainConfigClass(object):
         print "--config-profile name : Use config profile with name."
         print "--no-kits kit1,kit2   : Don't load the specified kits."
         print "--kits kit1,kit2      : Load the specified kits."
+        print "--scheduler hybrid|event"
+        print "                      : Select scheduler (def: hybrid)"
         print "--interface wx|script"
         print "                      : Load 'wx' or 'script' interface."
         print "--stereo              : Allocate stereo visuals."
@@ -112,6 +124,7 @@ class MainConfigClass(object):
                 self.config_profile = 'DEFAULT'
                 self.nokits = None
                 self.interface = None
+                self.scheduler = None
                 self.stereo = False
                 self.test = False
                 self.script = None
@@ -124,7 +137,8 @@ class MainConfigClass(object):
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'hv',
                 ['help', 'version', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
-                 'script=', 'script-params=', 'config-profile='])
+                 'script=', 'script-params=', 'config-profile=',
+                 'scheduler='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -163,6 +177,12 @@ class MainConfigClass(object):
                     pcl_data.interface = 'script'
                 else:
                     pcl_data.interface = 'wx'
+
+            elif o in ('--scheduler',):
+                if a == 'event':
+                    pcl_data.scheduler = 'event'
+                else:
+                    pcl_data.scheduler = 'hybrid'
 
             elif o in ('--stereo',):
                 pcl_data.stereo = True
@@ -273,7 +293,15 @@ class DeVIDEApp:
         # start scheduler
         import scheduler
         self.scheduler = scheduler.SchedulerProxy(self)
-        self.scheduler.mode = scheduler.SchedulerProxy.HYBRID_MODE
+        if self.main_config.scheduler == 'event':
+            self.scheduler.mode = \
+                    scheduler.SchedulerProxy.EVENT_DRIVEN_MODE
+            self.log_info('Selected event-driven scheduler.')
+
+        else:
+            self.scheduler.mode = \
+                    scheduler.SchedulerProxy.HYBRID_MODE
+            self.log_info('Selected hybrid scheduler.')
 
         ####
         # call post-module manager interface hook
