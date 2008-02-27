@@ -1,9 +1,15 @@
-Release 2571 - Mon Sep 10 14:35:31 WEST 2007
+This is Release 8.2 
 
-Changes since Release 2571 - Mon Sep 10 14:35:31 WEST 2007
- * First open source release!
- * Hybrid scheduler.
- * Switched to config file instead of python file for storing default
+Changes since previous release (2571 - Mon Sep 10 14:35:31 WEST 2007)
+ * 8.2 is the first open source release!
+ * Hybrid scheduler integrated, see our SimVis 2008 paper.
+ * Upgraded to: Python 2.5.1, wxPython 2.8.7.1, VTK 5.1 (ParaView-3-2-1 tag), 
+   ITK 3.4, numpy 1.0.4, matplotlib 0.91.2
+ * Brand-spanking new (read: fullabugs) OpenGL/VTK graph editor.
+   Zooming and panning on your graphics hardware.  150% sexier.
+ * Ported johannes (homegrown DeVIDE build system) to Windows.  DeVIDE builds
+   are now as consistent as possible across all platforms.
+ * Switched to config file instead of Python file for storing default
    options.
 
 Changes since Release 2556 - Thu Sep  6 22:53:32 WEST 2007
