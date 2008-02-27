@@ -65,14 +65,17 @@ class MainConfigClass(object):
         self.interface = cp.get(CSEC, 'interface') 
 
         # finally apply command line switches ############################
-        try:
+
+        # these ones can be specified in config file or parameters, so
+        # we have to check first if parameter has been specified, in
+        # which case it overrides config file specs
+        if pcl_data.nokits:
             self.nokits = pcl_data.nokits
-        except AttributeError:
-            pass
 
         # command-line only, defaults set in PCLData ctor
         # so we DON'T have to check if config file has already set
         # them
+        self.interface = pcl_data.interface
         self.stereo = pcl_data.stereo
         self.test = pcl_data.test
         self.script = pcl_data.script
@@ -90,8 +93,8 @@ class MainConfigClass(object):
         print "--config-profile name : Use config profile with name."
         print "--no-kits kit1,kit2   : Don't load the specified kits."
         print "--kits kit1,kit2      : Load the specified kits."
-        print "--interface wx|pyro|xmlrpc|script"
-        print "                      : Load 'wx', 'rpc' or 'script' interface."
+        print "--interface wx|script"
+        print "                      : Load 'wx' or 'script' interface."
         print "--stereo              : Allocate stereo visuals."
         print "--test                : Perform built-in unit testing."
         print "--script              : Run specified .py in script mode."
@@ -107,6 +110,8 @@ class MainConfigClass(object):
         class PCLData:
             def __init__(self):
                 self.config_profile = 'DEFAULT'
+                self.nokits = None
+                self.interface = None
                 self.stereo = False
                 self.test = False
                 self.script = None
