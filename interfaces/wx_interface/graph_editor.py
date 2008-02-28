@@ -534,10 +534,10 @@ class GraphEditor:
 
         modp = 'module:'
         segp = 'segment:'
+
+        w_x,w_y,w_z = self.canvas.display_to_world((x,self.canvas.flip_y(y)))
         
         if itemText.startswith(modp):
-            w_x,w_y,w_z = \
-            self.canvas.display_to_world((x,self.canvas.flip_y(y)))
             self.create_module_and_glyph(w_x, w_y, itemText[len(modp):])
 
             # on GTK we have to SetFocus on the canvas, else the palette
@@ -549,9 +549,7 @@ class GraphEditor:
           
 
         elif itemText.startswith(segp):
-            # we have to convert the event coords to real coords
-            rx, ry = self.canvas.eventToRealCoords(x, y)
-            self._loadAndRealiseNetwork(itemText[len(segp):], (rx,ry),
+            self._loadAndRealiseNetwork(itemText[len(segp):], (wx,wy),
                                         reposition=True)
 
             # on GTK we have to SetFocus on the canvas, else the palette
@@ -2031,14 +2029,17 @@ class GraphEditor:
 
     def update_port_info_statusbar(self, glyph, port_inout, port_idx):
         
-        """You can only call this during motion IN a port of a glyph.
+        """This is only called if port_inout is >= 0, i.e. there is
+        valid information concerning a glyph, port side and port index
+        under the mouse at the moment.
+
+        Called by _observer_glyph_motion().
         """
         
         msg = ''
         canvas = self.canvas
-
-        return
-
+    
+        from_port = False
         draggedObject = canvas.getDraggedObject()
         if draggedObject and draggedObject.draggedPort and \
                draggedObject.draggedPort != (-1, -1):
@@ -2050,16 +2051,34 @@ class GraphEditor:
                 pstr = draggedObject.moduleInstance.get_output_descriptions()[
                     draggedObject.draggedPort[1]]
 
-            msg = '|%s|-[%s] ===>> ' % (draggedObject.getLabel(), pstr)
+            from_descr = '|%s|-[%s]' % (draggedObject.getLabel(), pstr)
+            from_port = True
 
-        if currentPort[0] == 0:
-            pstr = currentGlyph.moduleInstance.get_input_descriptions()[
-                currentPort[1]]
+            # see if dragged port is the same as the port currently
+            # under the mouse
+            same_port = draggedObject == glyph and \
+                    draggedObject.draggedPort[0] == port_inout and \
+                    draggedObject.draggedPort[1] == port_idx
+
+        if port_inout == 0:
+            pstr = glyph.moduleInstance.get_input_descriptions()[
+                port_idx]
         else:
-            pstr = currentGlyph.moduleInstance.get_output_descriptions()[
-                currentPort[1]]
+            pstr = glyph.moduleInstance.get_output_descriptions()[
+                port_idx]
              
-        msg += '|%s|-[%s]' % (currentGlyph.getLabel(), pstr)
+        to_descr = '|%s|-[%s]' % (glyph.getLabel(), pstr)
+
+        # if we have a dragged port (i.e. a source) and a port
+        # currently under the mouse which is NOT the same port, show
+        # the connection that the user would make if the mouse would
+        # now be released.
+        if from_port and not same_port:
+            msg = '%s ===>> %s' % (from_descr, to_descr)
+
+        # otherwise, just show the port under the mouse at the moment.
+        else:
+            msg = to_descr
 
         self._interface._main_frame.GetStatusBar().SetStatusText(msg)            
                                    
