@@ -374,6 +374,17 @@ class shellSplatSimple:
     information.
     """
 
+class StreamerVTK:
+    kits = ['vtk_kit']
+    cats = ['Streaming']
+    keywords = ['streaming', 'streamer', 'hybrid']
+    help = """Use this module to terminate streaming subsets of
+    networks consisting of VTK modules producing image or poly data.
+    This module requests input in blocks to build up a complete output
+    dataset.  Together with the hybrid scheduling in DeVIDE, this
+    can save loads of memory.
+    """
+
 class streamTracer:
     kits = ['vtk_kit']
     cats = ['Filters']
