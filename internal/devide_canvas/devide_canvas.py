@@ -90,6 +90,9 @@ class DeVIDECanvas(SubjectMixin):
         # If we use EVT_KEY_DOWN instead of EVT_CHAR, capital versions
         # of all characters are always returned.  EVT_CHAR also performs
         # other necessary keyboard-dependent translations.
+        # * we unbind the char handler added by the wxRWI (else alt-w
+        # for example gets interpreted as w for wireframe e.g.)
+        self._rwi.Unbind(wx.EVT_CHAR)
         self._rwi.Bind(wx.EVT_CHAR, self._handler_char)
         #self._rwi.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
 
