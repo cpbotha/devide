@@ -88,7 +88,7 @@ class MainWXFrame(wx.Frame):
 
         # statusbar
         self.statusbar = self.CreateStatusBar(2, wx.ST_SIZEGRIP)
-        self.statusbar.SetStatusWidths([-2, -3])
+        self.statusbar.SetStatusWidths([-4, -1])
         self.statusbar.SetStatusText("Ready", 0)
         self.statusbar.SetStatusText("Welcome To DeVIDE!", 1)
 
