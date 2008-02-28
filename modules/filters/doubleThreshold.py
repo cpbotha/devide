@@ -152,22 +152,10 @@ class doubleThreshold(introspectModuleMixin, moduleBase):
         self._view_frame.outputDataTypeChoice.SetStringSelection(key)
 
     def execute_module(self):
-        # don't ask... we have to call Update() twice here, I _think_
-        # due to weirdness in vtkImageThreshold() that I haven't been
-        # able to track down.  If update is called only once, a
-        # directly connected slice3dVWR will Render() but only show
-        # the PREVIOUS output of the _imageThreshold.  My current
-        # hypothesis is that this is due to the ThreadedExecute
-        # employed by vtkImageThreshold, i.e. Update() is
-        # non-blocking.  This hypothesis is of course still full of
-        # holes. :)
         self._imageThreshold.Update()
-        #self._imageThreshold.Update()
 
-        
-
-        # fixed it now by adding observer to EndEvent of source of data
-        # input in sliceviewer
+    def streaming_execute_module(self):
+        self._imageThreshold.Update()
 
     def view(self, parent_window=None):
         if self._view_frame is None:

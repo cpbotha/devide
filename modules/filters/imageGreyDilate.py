@@ -65,4 +65,8 @@ class imageGreyDilate(scriptedConfigModuleMixin, moduleBase):
     
     def execute_module(self):
         self._imageDilate.Update()
+
+    def streaming_execute_module(self):
+        self._imageDilate.Update()
+
         
