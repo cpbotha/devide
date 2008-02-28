@@ -102,6 +102,8 @@ class seedConnect(scriptedConfigModuleMixin, moduleBase):
         self._sync_to_input_points()
         self._seedConnect.Update()
         
+    # we can't stream this module, as it needs up to date seed points
+    # before it begins.
 
     def _sync_to_input_points(self):
         # extract a list from the input points
