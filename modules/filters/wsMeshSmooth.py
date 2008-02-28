@@ -1,9 +1,7 @@
-import genUtils
 from moduleBase import moduleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
-
 
 class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
