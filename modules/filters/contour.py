@@ -66,4 +66,6 @@ class contour(scriptedConfigModuleMixin, moduleBase):
     def execute_module(self):
         self._contourFilter.Update()
         
+    def streaming_execute_module(self):
+        self._contourFilter.Update()
 

@@ -59,3 +59,6 @@ class polyDataNormals(noConfigModuleMixin, moduleBase):
     def execute_module(self):
         self._pdNormals.Update()
         
+    def streaming_execute_module(self):
+        self._pdNormals.Update()
+

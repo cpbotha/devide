@@ -44,6 +44,9 @@ class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
     def execute_module(self):
         self._imageMedian3D.Update()
 
+    def streaming_execute_module(self):
+        self._imageMedian3D.Update()
+
     def get_input_descriptions(self):
         return ('vtkImageData',)
 

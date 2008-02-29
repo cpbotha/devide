@@ -102,5 +102,7 @@ class imageMathematics(scriptedConfigModuleMixin, moduleBase):
         self._imageMath.Update()
         
 
+    def streaming_execute_module(self):
+        self._imageMath.Update()
 
 
