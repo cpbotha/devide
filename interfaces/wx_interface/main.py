@@ -303,7 +303,7 @@ class WXInterface(wx.App):
 
         # set the main name and version
         about.name_version_text.SetLabel(
-            'DeVIDE %s' % (self._devide_app.get_devide_version(),))
+            'DeVIDE v%s' % (self._devide_app.get_devide_version(),))
 
         # now get all other versions we require
         pyver = string.split(sys.version)[0]
