@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 import string
 import sys
 import time
@@ -49,7 +53,8 @@ class WXInterface(wx.App):
         #self._main_frame = resources.python.mainFrame.mainFrame(
         #    None, -1, "dummy", name="DeVIDE")
 
-        self._main_frame = main_frame.MainWXFrame(None, -1, "DeVIDE", (-1,-1),
+        title = 'DeVIDE v%s' % (self._devide_app.get_devide_version(),)
+        self._main_frame = main_frame.MainWXFrame(None, -1, title, (-1,-1),
                                                   (640,480))
         wx.InitAllImageHandlers()
         self._main_frame.SetIcon(self.getApplicationIcon())
