@@ -84,7 +84,6 @@ class wsMeshSmooth(scriptedConfigModuleMixin, moduleBase):
 
 
     def execute_module(self):
-        self._wsPDFilter.SetPassBand(2)
         self._wsPDFilter.Update()
 
     # no streaming yet :) (underlying filter works with 2 streaming 
