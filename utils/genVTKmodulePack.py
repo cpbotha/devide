@@ -36,7 +36,14 @@ excludeList = ['vtkDataWriter', 'vtkDataReader', # two helper classes
                ]
 
 # regular expression pattern objects that should be excluded as well
-exclude_pos = [re.compile('.*Mapper[2,3]*[D]*$')]
+# these make no sense to be wrapped in modules.
+exclude_pos = [
+        re.compile('.*Mapper[2,3]*[D]*$'),
+        re.compile('.*Representation[2,3,D]*$'),
+        re.compile('.*Widget$'),
+        re.compile('.*InteractorStyle.*$'),
+        re.compile('.*Abstract.*$')
+        ]
 
 def createDeVIDEModuleFromVTKObject(vtkObjName):
     """Returns tuple with first element the name of the module,
@@ -101,7 +108,7 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
         return (moduleName, moduleText, 'VTK basic filters', vtkObj.__doc__)
         
 
-def blaat():
+
     # use GetInputPortInformation() INPUT_REQUIRED_DATA_TYPE
     # GetNumberOfInputPorts()
 
