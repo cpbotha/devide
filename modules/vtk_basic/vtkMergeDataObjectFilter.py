@@ -7,6 +7,6 @@ class vtkMergeDataObjectFilter(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkMergeDataObjectFilter(), 'Processing.',
-            ('vtkDataSet',), ('vtkDataSet',),
+            ('vtkDataSet', 'vtkDataObject'), ('vtkDataSet',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

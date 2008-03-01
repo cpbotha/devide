@@ -7,6 +7,6 @@ class vtkHierarchicalDataExtractDataSets(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkHierarchicalDataExtractDataSets(), 'Processing.',
-            ('vtkDataObject',), ('vtkDataObject',),
+            ('vtkMultiGroupDataSet',), ('vtkMultiGroupDataSet',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

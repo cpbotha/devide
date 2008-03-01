@@ -7,6 +7,6 @@ class vtkStreamTracer(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkStreamTracer(), 'Processing.',
-            ('vtkDataSet', 'vtkDataSet'), ('vtkPolyData',),
+            ('vtkDataObject', 'vtkDataSet'), ('vtkPolyData',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

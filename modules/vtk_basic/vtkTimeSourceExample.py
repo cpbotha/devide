@@ -2,11 +2,11 @@
 from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
-class vtkMPEG2Writer(SimpleVTKClassModuleBase):
+class vtkTimeSourceExample(SimpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtk.vtkMPEG2Writer(), 'Writing vtkMPEG2.',
-            ('vtkMPEG2',), (),
+            vtk.vtkTimeSourceExample(), 'Processing.',
+            (), ('vtkImageData',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

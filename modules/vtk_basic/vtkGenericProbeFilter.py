@@ -7,6 +7,6 @@ class vtkGenericProbeFilter(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkGenericProbeFilter(), 'Processing.',
-            ('vtkDataSet',), ('vtkDataSet',),
+            ('vtkDataSet', 'vtkGenericDataSet'), ('vtkDataSet',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

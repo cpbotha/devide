@@ -7,6 +7,6 @@ class vtkHierarchicalDataSetGeometryFilter(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkHierarchicalDataSetGeometryFilter(), 'Processing.',
-            ('vtkDataObject',), ('vtkPolyData',),
+            ('vtkMultiGroupDataSet',), ('vtkPolyData',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

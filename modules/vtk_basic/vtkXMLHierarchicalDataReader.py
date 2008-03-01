@@ -2,11 +2,11 @@
 from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
-class vtkHierarchicalDataLevelFilter(SimpleVTKClassModuleBase):
+class vtkXMLHierarchicalDataReader(SimpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtk.vtkHierarchicalDataLevelFilter(), 'Processing.',
-            ('vtkMultiGroupDataSet',), ('vtkMultiGroupDataSet',),
+            vtk.vtkXMLHierarchicalDataReader(), 'Reading vtkXMLHierarchicalData.',
+            (), ('vtkXMLHierarchicalData',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

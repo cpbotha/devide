@@ -91,6 +91,22 @@ See Also:
 
 
 """
+class vtkAppendSelection:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkAppendSelection - appends one or more selections together
+
+Super Class:
+
+ vtkSelectionAlgorithm
+
+ vtkAppendSelection is a filter that appends one of more selections into
+ a single selection.  All selections must have the same content type.
+
+
+"""
 class vtkArcPlotter:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -735,7 +751,7 @@ Caveats:
 
  This filter is an abstract filter, that is, the output is an abstract type
  (i.e., vtkDataSet). Use the convenience methods (e.g.,
- vtkGetPolyDataOutput(), GetStructuredPointsOutput(), etc.) to get the type
+ GetPolyDataOutput(), GetStructuredPointsOutput(), etc.) to get the type
  of output you want.
 
 See Also:
@@ -817,10 +833,10 @@ Super Class:
 
  vtkCleanPolyData is a filter that takes polygonal data as input and
  generates polygonal data as output. vtkCleanPolyData can merge duplicate
- points (within specified tolerance and if enabled), eliminate points 
- that are not used, and if enabled, transform degenerate cells into 
- appropriate forms (for example, a triangle is converted into a line 
- if two points of triangle are merged). 
+ points (within specified tolerance and if enabled), eliminate points
+ that are not used, and if enabled, transform degenerate cells into
+ appropriate forms (for example, a triangle is converted into a line
+ if two points of triangle are merged).
 
  Conversion of degenerate cells is controlled by the flags
  ConvertLinesToPoints, ConvertPolysToLines, ConvertStripsToPolys which act
@@ -842,7 +858,7 @@ Super Class:
  vtkQuantizePolyDataPoints.
 
  Note that merging of points can be disabled. In this case, a point locator
- will not be used, and points that are not used by any cells will be 
+ will not be used, and points that are not used by any cells will be
  eliminated, but never merged.
 
 Caveats:
@@ -850,7 +866,7 @@ Caveats:
  Merging points can alter topology, including introducing non-manifold
  forms. The tolerance should be chosen carefully to avoid these problems.
  Subclasses should handle OperateOnBounds as well as OperateOnPoint
- to ensure that the locator is correctly initialized (i.e. all modified 
+ to ensure that the locator is correctly initialized (i.e. all modified
  points must lie inside modified bounds).
 
 
@@ -905,6 +921,61 @@ Super Class:
 Caveats:
 
  vtkClipDataSet will triangulate all types of 3D cells (i.e., create
+ tetrahedra). This is true even if the cell is not actually cut. This
+ is necessary to preserve compatibility across face neighbors. 2D cells
+ will only be triangulated if the cutting function passes through them.
+
+See Also:
+
+ vtkImplicitFunction vtkCutter vtkClipVolume vtkClipPolyData
+
+
+"""
+class vtkClipHyperOctree:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkClipHyperOctree - clip an hyperoctree with user-specified implicit function or input scalar data
+
+Super Class:
+
+ vtkUnstructuredGridAlgorithm
+
+ vtkClipHyperOctree is a filter that clips an hyperoctree using either
+ any subclass of vtkImplicitFunction, or the input scalar
+ data. Clipping means that it actually "cuts" through the leaves (cells) of
+ the hyperoctree, returning everything inside of the specified implicit
+ function (or greater than the scalar value) including "pieces" of
+ a cell. (Compare this with vtkExtractGeometry, which pulls out
+ entire, uncut cells.) The output of this filter is an unstructured
+ grid.
+
+ To use this filter, you must decide if you will be clipping with an
+ implicit function, or whether you will be using the input scalar
+ data.  If you want to clip with an implicit function, you must:
+ 1) define an implicit function
+ 2) set it with the SetClipFunction method
+ 3) apply the GenerateClipScalarsOn method
+ If a ClipFunction is not specified, or GenerateClipScalars is off
+ (the default), then the input's scalar data will be used to clip
+ the polydata.
+
+ You can also specify a scalar value, which is used to decide what is
+ inside and outside of the implicit function. You can also reverse the
+ sense of what inside/outside is by setting the InsideOut instance
+ variable. (The clipping algorithm proceeds by computing an implicit
+ function value or using the input scalar data for each point in the
+ dataset. This is compared to the scalar value to determine
+ inside/outside.)
+
+ This filter can be configured to compute a second output. The
+ second output is the part of the cell that is clipped away. Set the
+ GenerateClippedData boolean on if you wish to access this output data.
+
+Caveats:
+
+ vtkClipHyperOctree will triangulate all types of 3D cells (i.e., create
  tetrahedra). This is true even if the cell is not actually cut. This
  is necessary to preserve compatibility across face neighbors. 2D cells
  will only be triangulated if the cutting function passes through them.
@@ -1129,9 +1200,8 @@ Caveats:
 
 See Also:
 
- vtkMarchingContourFilter vtkKitwareContourFilter
- vtkMarchingCubes vtkSliceCubes vtkDividingCubes vtkMarchingSquares
- vtkImageMarchingCubes
+ vtkMarchingContourFilter vtkMarchingCubes vtkSliceCubes
+ vtkMarchingSquares vtkImageMarchingCubes
 
 
 """
@@ -1179,6 +1249,27 @@ See Also:
 
 
 """
+class vtkConvertSelection:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkConvertSelection - 
+
+Super Class:
+
+ vtkSelectionAlgorithm
+
+ vtkConvertSelection
+
+ .SECTION Thanks
+
+
+See Also:
+
+
+
+"""
 class vtkCubeSource:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -1193,6 +1284,30 @@ Super Class:
  vtkCubeSource creates a cube centered at origin. The cube is represented
  with four-sided polygons. It is possible to specify the length, width, 
  and height of the cube independently.
+
+
+"""
+class vtkCursor2D:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkCursor2D - generate a 2D cursor representation
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkCursor2D is a class that generates a 2D cursor representation.
+ The cursor consists of two intersection axes lines that meet at the
+ cursor focus. Several optional features are available as well. An 
+ optional 2D bounding box may be enabled. An inner radius, centered at
+ the focal point, can be set that erases the intersecting lines (e.g.,
+ it leaves a clear area under the focal point so you can see
+ what you are selecting). And finally, an optional point can be
+ enabled located at the focal point. All of these features can be turned
+ on and off independently.
+
 
 
 """
@@ -1338,11 +1453,20 @@ class vtkDICOMImageReader:
     cats = ['VTK basic readers']
 
     help = \
-         """vtkDICOMImageReader - Reads DICOM images
+         """vtkDICOMImageReader - Reads some DICOM images
 
 Super Class:
 
  vtkImageReader2
+
+ DICOM (stands for Digital Imaging in COmmunications and Medicine)
+ is a medical image file format widely used to exchange data, provided
+ by various modalities.
+ .SECTION Warnings
+ This reader might eventually handle ACR-NEMA file (predecessor of the DICOM
+ format for medical images).
+ This reader does not handle encapsulated format, only plain raw file are
+ handled. This reader also does not handle multi-frames DICOM datasets.
 
 See Also:
 
@@ -1472,6 +1596,22 @@ See Also:
  vtkDataObject vtkFieldData vtkDataSet vtkPolyData vtkStructuredPoints 
  vtkStructuredGrid vtkUnstructuredGrid vtkRectilinearGrid
  vtkDataSetAttributes vtkDataArray
+
+
+"""
+class vtkDataObjectToTable:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkDataObjectToTable - extract field data as a table
+
+Super Class:
+
+ vtkTableAlgorithm
+
+ This filter cen extrac the field, cell or point data of any data object
+ as a table.
 
 
 """
@@ -1915,6 +2055,36 @@ See Also:
 
 
 """
+class vtkDelimitedTextReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkDelimitedTextReader - reader for pulling in flat text files
+
+Super Class:
+
+ vtkTableAlgorithm
+
+ vtkDelimitedTextReader is an interface for pulling in data from a
+ flat, delimited text file (delimiter can be any character).
+
+ This class emits ProgressEvent for every 100 lines it reads.
+
+ .SECTION Thanks
+ Thanks to Andy Wilson and Brian Wylie from Sandia National Laboratories 
+ for implementing this class.
+ 
+
+Caveats:
+
+
+ This reader assumes that the first line in the file (whether that's
+ headers or the first document) contains at least as many fields as
+ any other line in the file.
+
+
+"""
 class vtkDepthSortPolyData:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -1937,6 +2107,39 @@ Caveats:
 
  The sort operation will not work well for long, thin primitives, or cells
  that intersect, overlap, or interpenetrate each other.
+
+
+"""
+class vtkDijkstraGraphGeodesicPath:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkDijkstraGraphGeodesicPath - Dijkstra algorithm to compute the graph geodesic.
+
+Super Class:
+
+ vtkGraphGeodesicPath
+
+ Takes as input a polygonal mesh and performs a single source shortest 
+ path calculation. Dijkstra's algorithm is used. The implementation is 
+ similar to the one described in Introduction to Algorithms (Second Edition)
+ by Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, and 
+ Cliff Stein, published by MIT Press and McGraw-Hill. Some minor 
+ enhancement are added though. All vertices are not pushed on the heap
+ at start, instead a front set is maintained. The heap is implemented as 
+ a binary heap. The output of the filter is a set of lines describing 
+ the shortest path from StartVertex to EndVertex.
+
+
+Caveats:
+
+ The input polydata must have only triangle cells. 
+
+ .SECTION Thanks
+ The class was contributed by Rasmus Paulsen. 
+ www.imm.dtu.dk/~rrp/VTK . Also thanks to Alexandre Gouaillard and Shoaib 
+ Ghias for bug fixes and enhancements.
 
 
 """
@@ -2060,11 +2263,11 @@ Super Class:
 
  vtkDataSetAlgorithm
 
- vtkElevationFilter is a filter to generate scalar values from a dataset.
- The scalar values lie within a user specified range, and are generated
- by computing a projection of each dataset point onto a line. The line
- can be oriented arbitrarily. A typical example is to generate scalars
- based on elevation or height above a plane.
+ vtkElevationFilter is a filter to generate scalar values from a
+ dataset.  The scalar values lie within a user specified range, and
+ are generated by computing a projection of each dataset point onto
+ a line. The line can be oriented arbitrarily. A typical example is
+ to generate scalars based on elevation or height above a plane.
 
 
 """
@@ -2081,7 +2284,7 @@ Super Class:
 
  vtkEllipticalButtonSource creates a ellipsoidal shaped button with
  texture coordinates suitable for application of a texture map. This
- provides a way to make nice looking 3D buttons. The buttons are 
+ provides a way to make nice looking 3D buttons. The buttons are
  represented as vtkPolyData that includes texture coordinates and
  normals. The button lies in the x-y plane.
 
@@ -2095,6 +2298,11 @@ Super Class:
  location of the texture map.) The resolution in the radial direction, the
  texture region, and the shoulder region must also be set. The button can
  be moved by specifying an origin.
+
+
+See Also:
+
+ vtkButtonSource vtkRectangularButtonSource
 
 
 """
@@ -2245,6 +2453,31 @@ None provided.
 
 
 """
+class vtkExodusIIReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkExodusIIReader - Read exodus 2 files .ex2
+
+Super Class:
+
+ vtkUnstructuredGridAlgorithm
+
+ vtkExodusIIReader is a unstructured grid source object that reads ExodusII
+ files.  Most of the meta data associated with the file is loaded when 
+ UpdateInformation is called.  This includes information like Title, number
+ of blocks, number and names of arrays. This data can be retrieved from 
+ methods in this reader. Separate arrays that are meant to be a single 
+ vector, are combined internally for convenience.  To be combined, the array 
+ names have to be identical except for a trailing X,Y and Z (or x,y,z).  By 
+ default cell and point arrays are not loaded.  However, the user can flag 
+ arrays to load with the methods "SetPointArrayStatus" and
+ "SetCellArrayStatus".  The reader DOES NOT respond to piece requests
+ 
+
+
+"""
 class vtkExodusReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -2267,6 +2500,35 @@ Super Class:
  arrays to load with the methods "SetPointArrayStatus" and
  "SetCellArrayStatus".  The reader DOES NOT respond to piece requests
  
+
+
+"""
+class vtkExtractArraysOverTime:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractArraysOverTime - extract point or cell data over time
+
+Super Class:
+
+ vtkRectilinearGridAlgorithm
+
+ vtkExtractArraysOverTime extracts point or cell data of one point or
+ cell over time. The output is a 1D rectilinear grid where the 
+ XCoordinates correspond to time (the same array is also copied to
+ a point array named Time or TimeData (if Time exists in the input).
+ When extracting point data, the input point coordinates are copied
+ to a point array named Point Coordinates or Points (if Point Coordinates
+ exists in the input).
+ This algorithm does not produce a TIME_STEPS or TIME_RANGE information
+ because it works across time. 
+ .Section Caveat
+ vtkExtractArraysOverTime puts a vtkOnePieceExtentTranslator in the
+ output during RequestInformation(). As a result, the same whole 
+ extented is produced independent of the piece request.
+ This algorithm works only with source that produce TIME_STEPS().
+ Continuous time range is not yet supported.
 
 
 """
@@ -2446,6 +2708,206 @@ See Also:
 
 
 """
+class vtkExtractSelectedFrustum:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelectedFrustum - Returns the portion of the input dataset that 
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ This class intersects the input DataSet with a frustum and determines which
+ cells and points lie within the frustum. The frustum is defined with a 
+ vtkPlanes containing six cutting planes. The output is a DataSet that is 
+ either a shallow copy of the input dataset with two new "vtkInsidedness" 
+ attribute arrays, or a completely new UnstructuredGrid that contains only 
+ the cells and points of the input that are inside the frustum. The 
+ PassThrough flag controls which occurs. When PassThrough is off 
+ this filter adds a scalar array called vtkOriginalCellIds that says what 
+ input cell produced each output cell. This is an example of a Pedigree ID 
+ which helps to trace back results.
+
+
+See Also:
+
+ vtkExtractGeometry, vtkAreaPicker, vtkExtractSelection, vtkSelection
+
+
+"""
+class vtkExtractSelectedGraph:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelectedGraph - return a subgraph of a vtkGraph
+
+Super Class:
+
+ vtkGraphAlgorithm
+
+ The first input is a vtkGraph to take a subgraph from.
+ The second input is a vtkSelection containing the selected indices.
+ The vtkSelection may have FIELD_TYPE set to POINTS (a vertex selection)
+ or CELLS (an edge selection).  A vertex selection preserves all edges
+ that connect selected vertices.  An edge selection preserves all vertices
+ that are adjacent to at least one selected edge.  Alternately, you may
+ indicate that an edge selection should maintain the full set of vertices,
+ by turning RemoveIsolatedVertices off.
+
+
+"""
+class vtkExtractSelectedIds:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelectedIds - extract a list of cells from a dataset
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ vtkExtractSelectedIds extracts a set of cells and points from within a
+ vtkDataSet. The set of ids to extract are listed within a vtkSelection.
+ This filter adds a scalar array called vtkOriginalCellIds that says what 
+ input cell produced each output cell. This is an example of a Pedigree ID 
+ which helps to trace back results. Depending on whether the selection has
+ GLOBALIDS, VALUES or INDICES, the selection will use the contents of the
+ array named in the GLOBALIDS DataSetAttribute, and arbitrary array, or the
+ position (tuple id or number) within the cell or point array.
+
+See Also:
+
+ vtkSelection vtkExtractSelection
+
+
+"""
+class vtkExtractSelectedLocations:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelectedLocations - extract cells within a dataset that 
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ vtkExtractSelectedLocations extracts all cells whose volume contain at least 
+ one point listed in the LOCATIONS content of the vtkSelection. This filter 
+ adds a scalar array called vtkOriginalCellIds that says what input cell 
+ produced each output cell. This is an example of a Pedigree ID which helps
+ to trace back results.
+
+See Also:
+
+ vtkSelection vtkExtractSelection
+
+
+"""
+class vtkExtractSelectedPolyDataIds:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelectedPolyDataIds - extract a list of cells from a polydata
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkExtractSelectedPolyDataIds extracts all cells in vtkSelection from a
+ vtkPolyData.
+
+See Also:
+
+ vtkSelection
+
+
+"""
+class vtkExtractSelectedThresholds:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelectedThresholds - extract a cells or points from a 
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ vtkExtractSelectedThresholds extracts all cells and points with attribute 
+ values that lie within a vtkSelection's THRESHOLD contents. The selecion
+ can specify to threshold a particular array within either the point or cell
+ attribute data of the input. This is similar to vtkThreshold
+ but allows mutliple thresholds ranges.
+ This filter adds a scalar array called vtkOriginalCellIds that says what 
+ input cell produced each output cell. This is an example of a Pedigree ID 
+ which helps to trace back results.
+
+See Also:
+
+ vtkSelection vtkExtractSelection vtkThreshold 
+
+
+"""
+class vtkExtractSelection:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractSelection - extract a subset from a vtkDataSet.
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ vtkExtractSelection extracts some subset of cells and points from
+ its input dataset. The subset is described by the contents of the
+ vtkSelection on its first input port. The dataset is given on its 
+ second input port. Depending on the content of the vtkSelection,
+ this will use either a vtkExtractSelectedIds, vtkExtractSelectedFrustum
+ vtkExtractSelectedLocations or a vtkExtractSelectedThreshold to perform
+ the extraction.
+
+See Also:
+
+ vtkSelection vtkExtractSelectedIds vtkExtractSelectedFrustum
+ vtkExtractSelectedLocations vtkExtractSelectedThresholds
+
+
+"""
+class vtkExtractTemporalFieldData:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkExtractTemporalFieldData - Extract temporal arrays from input field data
+
+Super Class:
+
+ vtkRectilinearGridAlgorithm
+
+ vtkExtractTemporalFieldData extracts arrays from the input vtkFieldData. 
+ These arrays are assumed to contain temporal data, where the nth tuple 
+ contains the value for the nth timestep. 
+ The output is a 1D rectilinear grid where the 
+ XCoordinates correspond to time (the same array is also copied to
+ a point array named Time or TimeData (if Time exists in the input).
+ This algorithm does not produce a TIME_STEPS or TIME_RANGE information
+ because it works across time. 
+ .Section Caveat
+ vtkExtractTemporalFieldData puts a vtkOnePieceExtentTranslator in the
+ output during RequestInformation(). As a result, the same whole 
+ extented is produced independent of the piece request.
+ This algorithm works only with source that produce TIME_STEPS().
+ Continuous time range is not yet supported.
+
+
+"""
 class vtkExtractTensorComponents:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -2576,6 +3038,35 @@ Caveats:
 
 
 """
+class vtkFLUENTReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkFLUENTReader - reads a dataset in Fluent file format
+
+Super Class:
+
+ vtkMultiBlockDataSetAlgorithm
+
+ vtkFLUENTReader creates an unstructured grid dataset. It reads .cas and
+ .dat files stored in FLUENT native format.
+
+ .SECTION Thanks
+ Thanks to Brian W. Dotson & Terry E. Jordan (Department of Energy, National
+ Energy Technology Laboratory) & Douglas McCorkle (Iowa State University)
+ who developed this class.
+ Please address all comments to Brian Dotson (brian.dotson@netl.doe.gov) &
+ Terry Jordan (terry.jordan@sa.netl.doe.gov)
+ & Doug McCorkle (mccdo@iastate.edu)
+
+
+See Also:
+
+ vtkGAMBITReader
+
+
+"""
 class vtkFacetReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -2637,6 +3128,39 @@ Super Class:
  p1c1 p2c1 p3c1 ... pnc1 materialnum partnum
  p1c2 p2c2 p3c2 ... pnc2 materialnum partnum
  ...
+
+
+"""
+class vtkFastSplatter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkFastSplatter - A splatter optimized for splatting single kernels.
+
+Super Class:
+
+ vtkImageAlgorithm
+
+
+ vtkFastSplatter takes any vtkPointSet as input (of which vtkPolyData and
+ vtkUnstructuredGrid inherit).  Each point in the data set is considered to be
+ an impulse.  These impulses are convolved with a given splat image.  In other
+ words, the splat image is added to the final image at every place where there
+ is an input point.
+
+ Note that point and cell data are thrown away.  If you want a sampling
+ of unstructured points consider vtkGaussianSplatter or vtkShepardMethod.
+
+ Use input port 0 for the impulse data (vtkPointSet), and input port 1 for
+ the splat image (vtkImageData)
+
+ .SECTION Bugs
+
+ Any point outside of the extents of the image is thrown away, even if it is
+ close enough such that it's convolution with the splat image would overlap
+ the extents.
+
 
 
 """
@@ -2720,6 +3244,38 @@ See Also:
 
  vtkFieldData vtkDataSet vtkDataObjectToDataSetFilter
  vtkDataSetAttributes vtkDataArray
+
+
+"""
+class vtkFixedWidthTextReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkFixedWidthTextReader - reader for pulling in text files with fixed-width fields
+
+Super Class:
+
+ vtkTableAlgorithm
+
+
+ vtkFixedWidthTextReader reads in a table from a text file where
+ each column occupies a certain number of characters.
+ 
+ This class emits ProgressEvent for every 100 lines it reads.
+ 
+
+Caveats:
+
+
+ This first version of the reader will assume that all fields have
+ the same width.  It also assumes that the first line in the file
+ has at least as many fields (i.e. at least as many characters) as
+ any other line in the file.
+
+ .SECTION Thanks
+ Thanks to Andy Wilson from Sandia National Laboratories for
+ implementing this class.
 
 
 """
@@ -2928,24 +3484,14 @@ Super Class:
  To use this filter you must specify one or more contour values.
  You can either use the method SetValue() to specify each contour
  value, or use GenerateValues() to generate a series of evenly
- spaced contours. It is also possible to accelerate the operation of
- this filter (at the cost of extra memory) by using a
- vtkScalarTree. A scalar tree is used to quickly locate cells that
- contain a contour surface. This is especially effective if multiple
- contours are being extracted. If you want to use a scalar tree,
- invoke the method UseScalarTreeOn().
+ spaced contours. You can use ComputeNormalsOn to compute the normals
+ without the need of a vtkPolyDataNormals
 
  This filter has been implemented to operate on generic datasets, rather
  than the typical vtkDataSet (and subclasses). vtkGenericDataSet is a more
  complex cousin of vtkDataSet, typically consisting of nonlinear,
  higher-order cells. To process this type of data, generic cells are
  automatically tessellated into linear cells prior to isocontouring.
-
-Caveats:
-
- For unstructured data or structured grids, normals and gradients
- are not computed. Use vtkPolyDataNormals to compute the surface
- normals.
 
 See Also:
 
@@ -2993,6 +3539,54 @@ See Also:
 
 
 """
+class vtkGenericDataObjectReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkGenericDataObjectReader - class to read any type of vtk data object
+
+Super Class:
+
+ vtkDataReader
+
+ vtkGenericDataObjectReader is a class that provides instance variables and methods
+ to read any type of data object in Visualization Toolkit (vtk) format.  The
+ output type of this class will vary depending upon the type of data
+ file. Convenience methods are provided to return the data as a particular
+ type. (See text for format description details).
+ The superclass of this class, vtkDataReader, provides many methods for
+ controlling the reading of the data file, see vtkDataReader for more
+ information.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
+
+See Also:
+
+ vtkDataReader vtkGraphReader vtkPolyDataReader vtkRectilinearGridReader 
+ vtkStructuredPointsReader vtkStructuredGridReader vtkTableReader
+ vtkTreeReader vtkUnstructuredGridReader
+
+
+"""
+class vtkGenericDataObjectWriter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic writer']
+
+    help = \
+         """vtkGenericDataObjectWriter - writes any type of vtk data object to file
+
+Super Class:
+
+ vtkDataWriter
+
+ vtkGenericDataObjectWriter is a concrete class that writes data objects
+ to disk. The input to this object is any subclass of vtkDataObject.
+
+
+"""
 class vtkGenericDataSetTessellator:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -3006,8 +3600,7 @@ Super Class:
 
 See Also:
 
- vtkGenericDataSetTessellator vtkGenericCellTessellator 
- vtkGenericSubdivisionErrorMetric
+ vtkGenericCellTessellator vtkGenericSubdivisionErrorMetric
 
 
 """
@@ -3020,7 +3613,7 @@ class vtkGenericEnSightReader:
 
 Super Class:
 
- vtkDataSetSource
+ vtkMultiBlockDataSetAlgorithm
 
  The class vtkGenericEnSightReader allows the user to read an EnSight data
  set without a priori knowledge of what type of EnSight data set it is.
@@ -3133,6 +3726,11 @@ Super Class:
  generic dataset bounding box.
 
 
+See Also:
+
+ vtkGenericDataSet
+
+
 """
 class vtkGenericProbeFilter:
     kits = ['vtk_kit']
@@ -3143,7 +3741,7 @@ class vtkGenericProbeFilter:
 
 Super Class:
 
- vtkDataSetToDataSetFilter
+ vtkDataSetAlgorithm
 
  vtkGenericProbeFilter is a filter that computes point attributes (e.g., scalars,
  vectors, etc.) at specified point positions. The filter has two inputs:
@@ -3368,6 +3966,114 @@ Super Class:
 
 
 """
+class vtkGradientFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkGradientFilter - A general filter for gradient estimation.
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ Estimates the gradient of a scalar field in a data set.  This class
+ is basically designed for unstructured data sets (i.e.
+ vtkUnstructuredGrid).  More efficient filters exist for vtkImageData.
+
+
+
+"""
+class vtkGraphAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkGraphAlgorithm - Superclass for algorithms that produce only Graph as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ vtkGraphAlgorithm is a convenience class to make writing algorithms
+ easier. It is also designed to help transition old algorithms to the new
+ pipeline edgehitecture. There are some assumptions and defaults made by this
+ class you should be aware of. This class defaults such that your filter
+ will have one input port and one output port. If that is not the case
+ simply change it with SetNumberOfInputPorts etc. See this class
+ constructor for the default. This class also provides a FillInputPortInfo
+ method that by default says that all inputs will be Graph. If that
+ isn't the case then please override this method in your subclass. This
+ class breaks out the downstream requests into separate functions such as
+ ExecuteData and ExecuteInformation.  For new algorithms you should
+ implement RequestData( request, inputVec, outputVec) but for older filters
+ there is a default implementation that calls the old ExecuteData(output)
+ signature. For even older filters that don't implement ExecuteData the
+ default implementation calls the even older Execute() signature.
+
+ .SECTION Thanks
+ Thanks to Patricia Crossno, Ken Moreland, Andrew Wilson and Brian Wylie from
+ Sandia National Laboratories for their help in developing this class.
+
+
+"""
+class vtkGraphHierarchicalBundle:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkGraphHierarchicalBundle - layout graph arcs in bundles
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ This algorithm creates a vtkPolyData from a vtkAbstractGraph.  As opposed to
+ vtkGraphToPolyData, which converts each arc into a straight line, each arc
+ is converted to a polyline, following a tree structure.  The filter requires
+ both a vtkAbstractGraph and vtkTree as input.  The tree vertices must be a
+ superset of the graph vertices.  A common example is when the graph vertices
+ correspond to the leaves of the tree, but the internal vertices of the tree
+ represent groupings of graph vertices.  The algorithm matches the vertices
+ using the array "PedigreeId".  The user may alternately set the
+ DirectMapping flag to indicate that the two structures must have directly
+ corresponding offsets (i.e. node i in the graph must correspond to node i in
+ the tree).
+
+ The vtkAbstractGraph defines the topology of the output vtkPolyData (i.e.
+ the connections between nodes) while the vtkTree defines the geometry (i.e.
+ the location of nodes and arc routes).  Thus, the tree must have been
+ assigned vertex locations, but the graph does not need locations, in fact
+ they will be ignored.  The edges approximately follow the path from the
+ source to target nodes in the tree.  A bundling parameter controls how
+ closely the edges are bundled together along the tree structure.
+ 
+ You may follow this algorithm with vtkSplineFilter in order to make nicely
+ curved edges.
+
+
+"""
+class vtkGraphLayout:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkGraphLayout - layout a graph in 2 or 3 dimensions
+
+Super Class:
+
+ vtkAbstractGraphAlgorithm
+
+ This class is a shell for many graph layout strategies which may be set
+ using the SetLayoutStrategy() function.  The layout strategies do the
+ actual work.
+
+ .SECION Thanks
+ Thanks to Brian Wylie from Sandia National Laboratories for adding incremental
+ layout capabilities.
+
+
+"""
 class vtkGraphLayoutFilter:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -3392,6 +4098,76 @@ Super Class:
  occur in 2D or 3D; the bounds in which the graph should lie (note that you
  can just use automatic bounds computation); and modify the cool down
  rate (controls the final process of simulated annealing).
+
+
+"""
+class vtkGraphReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkGraphReader - read vtkGraph data file
+
+Super Class:
+
+ vtkDataReader
+
+ vtkGraphReader is a source object that reads ASCII or binary 
+ vtkGraph data files in vtk format. (see text for format details).
+ The output of this reader is a single vtkGraph data object.
+ The superclass of this class, vtkDataReader, provides many methods for
+ controlling the reading of the data file, see vtkDataReader for more
+ information.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
+
+See Also:
+
+ vtkGraph vtkDataReader vtkGraphWriter
+
+
+"""
+class vtkGraphToPolyData:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkGraphToPolyData - convert a vtkGraph to vtkPolyData
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ Converts a vtkGraph to a vtkPolyData.  This assumes that the points
+ of the graph have already been filled (perhaps by vtkGraphLayout),
+ and coverts all the edge of the graph into lines in the polydata.
+ The vertex data is passed along to the point data, and the edge data
+ is passed along to the cell data.
+
+ Only the owned graph edges (i.e. edges with ghost level 0) are copied
+ into the vtkPolyData.
+
+
+"""
+class vtkGraphWriter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic writer']
+
+    help = \
+         """vtkGraphWriter - write vtkGraph data to a file
+
+Super Class:
+
+ vtkDataWriter
+
+ vtkGraphWriter is a sink object that writes ASCII or binary 
+ vtkGraph data files in vtk format. See text for format details.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
 
 
 """
@@ -3482,6 +4258,22 @@ See Also:
 
 
 """
+class vtkGroupLeafVertices:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkGroupLeafVertices - Filter that expands a tree, categorizing leaf vertices
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+ Use SetInputArrayToProcess(0, ...) to set the array to group on.
+ Currently this array must be a vtkStringArray.
+
+
+"""
 class vtkHedgeHog:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -3509,10 +4301,14 @@ class vtkHierarchicalDataExtractDataSets:
 
 Super Class:
 
- vtkHierarchicalDataSetAlgorithm
+ vtkMultiGroupDataExtractDataSets
 
- vtkHierarchicalDataExtractDataSets extracts the user specified list
- of datasets from a hierarchical dataset.
+ Legacy class. Use vtkMultiGroupDataExtractDataSets instead.
+
+
+See Also:
+
+ vtkMultiGroupDataExtractDataSets
 
 
 """
@@ -3525,10 +4321,33 @@ class vtkHierarchicalDataExtractLevel:
 
 Super Class:
 
- vtkHierarchicalDataSetAlgorithm
+ vtkMultiGroupDataExtractGroup
 
- vtkHierarchicalDataExtractLevel is a filter to that extracts levels
- between user specified min and max.
+ Legacy class. Use vtkMultiGroupDataExtractGroup instead.
+
+See Also:
+
+ vtkMultiGroupDataExtractGroup
+
+
+"""
+class vtkHierarchicalDataGroupFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHierarchicalDataGroupFilter - collects multiple inputs into one hierarchical dataset
+
+Super Class:
+
+ vtkMultiGroupDataGroupFilter
+
+ Legacy class. Use vtkMultiGroupDataGroupFilter instead.
+
+
+See Also:
+
+ vtkMultiGroupDataGroupFilter
 
 
 """
@@ -3541,10 +4360,14 @@ class vtkHierarchicalDataLevelFilter:
 
 Super Class:
 
- vtkHierarchicalDataSetAlgorithm
+ vtkMultiGroupDataGroupIdScalars
 
- vtkHierarchicalDataLevelFilter is a filter to that generates scalars 
- using hiearchical data level information.
+ Legacy class. Use vtkMultiGroupDataGroupIdScalars instead.
+
+
+See Also:
+
+ vtkMultiGroupDataGroupIdScalars
 
 
 """
@@ -3574,12 +4397,14 @@ class vtkHierarchicalDataSetGeometryFilter:
 
 Super Class:
 
- vtkPolyDataAlgorithm
+ vtkMultiGroupDataGeometryFilter
 
- vtkHierarchicalDataSetGeometryFilter applies vtkGeometryFilter to all
- blocks in vtkHierarchicalDataSet. Place this filter at the end of a
- pipeline before a polydata consumer such as a polydata mapper to extract
- geometry from all blocks and append them to one polydata object.
+ Legacy class. Use vtkMultiGroupDataGeometryFilter instead.
+
+
+See Also:
+
+ vtkMultiGroupDataGeometryFilter
 
 
 """
@@ -3614,6 +4439,244 @@ Super Class:
  this class is to manually specify the planes, and then generate the
  polyhedron from the planes (without squeezing the planes towards the
  input). The method GenerateHull() is used to do this.
+
+
+"""
+class vtkHyperOctreeContourFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeContourFilter - generate isosurfaces/isolines from scalar values
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkContourFilter is a filter that takes as input any dataset and 
+ generates on output isosurfaces and/or isolines. The exact form 
+ of the output depends upon the dimensionality of the input data. 
+ Data consisting of 3D cells will generate isosurfaces, data 
+ consisting of 2D cells will generate isolines, and data with 1D 
+ or 0D cells will generate isopoints. Combinations of output type 
+ are possible if the input dimension is mixed.
+
+ To use this filter you must specify one or more contour values.
+ You can either use the method SetValue() to specify each contour
+ value, or use GenerateValues() to generate a series of evenly
+ spaced contours. It is also possible to accelerate the operation of
+ this filter (at the cost of extra memory) by using a
+ vtkScalarTree. A scalar tree is used to quickly locate cells that
+ contain a contour surface. This is especially effective if multiple
+ contours are being extracted. If you want to use a scalar tree,
+ invoke the method UseScalarTreeOn().
+
+Caveats:
+
+ For unstructured data or structured grids, normals and gradients
+ are not computed. Use vtkPolyDataNormals to compute the surface
+ normals.
+
+See Also:
+
+ vtkMarchingContourFilter vtkKitwareContourFilter
+ vtkMarchingCubes vtkSliceCubes vtkDividingCubes vtkMarchingSquares
+ vtkImageMarchingCubes
+
+
+"""
+class vtkHyperOctreeCutter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeCutter - Cut vtkHyperOctree with user-specified
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkHyperOctreeCutter is a filter to cut through data using any subclass of 
+ vtkImplicitFunction. That is, a polygonal surface is created
+ corresponding to the implicit function F(x,y,z) = value(s), where
+ you can specify one or more values used to cut with.
+
+ In VTK, cutting means reducing a cell of dimension N to a cut surface
+ of dimension N-1. For example, a tetrahedron when cut by a plane (i.e.,
+ vtkPlane implicit function) will generate triangles. (In comparison,
+ clipping takes a N dimensional cell and creates N dimension primitives.)
+
+ vtkHyperOctreeCutter is generally used to "slice-through" a dataset,
+ generating a surface that can be visualized. It is also possible to use
+ vtkHyperOctreeCutter to do a form of volume rendering. vtkHyperOctreeCutter
+ does this by generating multiple cut surfaces (usually planes) which are
+ ordered (and rendered) from back-to-front. The surfaces are set translucent
+ to give a volumetric rendering effect.
+
+ Note that data can be cut using either 1) the scalar values associated
+ with the dataset or 2) an implicit function associated with this class.
+ By default, if an implicit function is set it is used to cut the data
+ set, otherwise the dataset scalars are used to perform the cut.
+
+See Also:
+
+ vtkImplicitFunction vtkHyperOctree
+
+
+"""
+class vtkHyperOctreeDepth:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeDepth - Assign tree depth attribute to each cell.
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ This filter returns a shallow copy of its input HyperOctree with a new
+ data attribute field containing the depth of each cell.
+
+See Also:
+
+ vtkHyperOctree
+
+
+"""
+class vtkHyperOctreeDualGridContourFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeDualGridContourFilter - generate isosurfaces/isolines from scalar values
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ use of unsigned short to hold level index limits tree depth to 16.
+
+ To use this filter you must specify one or more contour values.
+ You can either use the method SetValue() to specify each contour
+ value, or use GenerateValues() to generate a series of evenly
+ spaced contours. It is also possible to accelerate the operation of
+ this filter (at the cost of extra memory) by using a
+ vtkScalarTree. A scalar tree is used to quickly locate cells that
+ contain a contour surface. This is especially effective if multiple
+ contours are being extracted. If you want to use a scalar tree,
+ invoke the method UseScalarTreeOn().
+
+See Also:
+
+ vtkMarchingContourFilter vtkKitwareContourFilter
+ vtkMarchingCubes vtkSliceCubes vtkDividingCubes vtkMarchingSquares
+ vtkImageMarchingCubes
+
+
+"""
+class vtkHyperOctreeFractalSource:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeFractalSource - Create an octree from a fractal.
+
+Super Class:
+
+ vtkHyperOctreeAlgorithm
+
+
+
+See Also:
+
+ vtkHyperOctreeSampleFunction
+
+
+"""
+class vtkHyperOctreeLimiter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeLimiter - Limit the tree's depth, averaging data
+
+Super Class:
+
+ vtkDataSetAlgorithm
+
+ This filter returns a lower resolution copy of its input vtkHyperOctree.
+ It does a length/area/volume weighted averaging to obtain data at each
+ cut point. Above the cut level, leaf attribute data is simply copied.
+
+See Also:
+
+ vtkHyperOctree
+
+
+"""
+class vtkHyperOctreeSampleFunction:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeSampleFunction - sample an implicit function over an
+
+Super Class:
+
+ vtkHyperOctreeAlgorithm
+
+ vtkHyperOctreeSampleFunction is a source object that evaluates an implicit
+ function to drive the subdivision process. The user can specify
+ the threshold over which a subdivision occurs, the maximum and minimum
+ level of subdivisions and the dimension of the hyperoctree.
+
+
+See Also:
+
+ vtkSampleFunction
+
+
+"""
+class vtkHyperOctreeSurfaceFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeSurfaceFilter - Extracts outer (polygonal) surface.
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkHyperOctreeSurfaceFilter extracts the surface of an hyperoctree.
+
+See Also:
+
+ vtkGeometryFilter vtkStructuredGridGeometryFilter.
+
+
+"""
+class vtkHyperOctreeToUniformGridFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkHyperOctreeToUniformGridFilter - Flat the octree into a uniform
+
+Super Class:
+
+ vtkImageAlgorithm
+
+ vtkHyperOctreeToUniformGridFilter creates a uniform grid with a resolution
+ based on the number of levels of the hyperoctree. Then, it copies celldata
+ in each cell of the uniform grid that belongs to an actual leaf of the
+ hyperoctree.
+
+
+See Also:
+
+ vtkGeometryFilter vtkStructuredGridGeometryFilter.
 
 
 """
@@ -3717,15 +4780,15 @@ Super Class:
  vtkImageAccumulate - This filter divides component space into
  discrete bins.  It then counts the number of pixels associated
  with each bin.  The output is this "scatter plot" (histogram values for 1D).
- The dimensionality of the output depends on how many components the 
+ The dimensionality of the output depends on how many components the
  input pixels have.  Input pixels with one component generate a 1D histogram.
  This filter can only handle images with 1 to 3 scalar components.
  The input can be any type, but the output is always int.
  Some statistics are computed on the pixel values at the same time.
- The SetStencilFunction, SetClippingExtents and ReverseStencil
+ The SetStencil and ReverseStencil
  functions allow the statistics to be computed on an arbitrary
  portion of the input data.
- See the documentation for vtkImageStencil for more information.
+ See the documentation for vtkImageStencilData for more information.
 
 
 """
@@ -3809,8 +4872,8 @@ Super Class:
 
  vtkImageAppend takes the components from multiple inputs and merges
  them into one output. The output images are append along the "AppendAxis".
- Except for the append axis, all inputs must have the same extent.  
- All inputs must have the same number of scalar components.  
+ Except for the append axis, all inputs must have the same extent.
+ All inputs must have the same number of scalar components.
  A future extension might be to pad or clip inputs to have the same extent.
  The output has the same origin and spacing as the first input.
  The origin and spacing of all other inputs are ignored.  All inputs
@@ -3847,7 +4910,7 @@ Super Class:
 
  vtkThreadedImageAlgorithm
 
- vtkImageBlend takes L, LA, RGB, or RGBA images as input and blends them 
+ vtkImageBlend takes L, LA, RGB, or RGBA images as input and blends them
  according to the alpha values and/or the opacity setting for each input.
 
  The spacing, origin, extent, and number of components of the output are
@@ -3859,7 +4922,7 @@ Super Class:
 
  Different blending modes are available:
 
- \em Normal (default) : 
+ \em Normal (default) :
  This is the standard blending mode used by OpenGL and other graphics
  packages.  The output always has the same number of components
  and the same extent as the first input.  The alpha value of the first
@@ -3877,12 +4940,12 @@ Super Class:
  }
  \endcode
 
- \em Compound : 
+ \em Compound :
  Images are compounded together and each component is scaled by the sum of
- the alpha/opacity values. Use the CompoundThreshold method to set 
+ the alpha/opacity values. Use the CompoundThreshold method to set
  specify a threshold in compound mode. Pixels with opacity*alpha less
  or equal than this threshold are ignored.
- The alpha value of the first input, if present, is NOT copied to the alpha 
+ The alpha value of the first input, if present, is NOT copied to the alpha
  value of the output.  The output always has the same number of components
  and the same extent as the first input.
 
@@ -4535,11 +5598,11 @@ Super Class:
 
  vtkThreadedImageAlgorithm
 
- vtkImageGradient computes the gradient vector of an image.  The vector
- results are stored as scalar components. The Dimensionality determines
- whether to perform a 2d or 3d gradient. The default is two dimensional 
- XY gradient.  OutputScalarType is always double. Gradient is computed using
- central differences.
+ vtkImageGradient computes the gradient vector of an image.  The
+ vector results are stored as scalar components. The Dimensionality
+ determines whether to perform a 2d or 3d gradient. The default is
+ two dimensional XY gradient.  OutputScalarType is always
+ double. Gradient is computed using central differences.
 
 
 """
@@ -4746,7 +5809,7 @@ Super Class:
 
  vtkThreadedImageAlgorithm
 
- vtkimageLaplacian computes the Laplacian (like a second derivative)
+ vtkImageLaplacian computes the Laplacian (like a second derivative)
  of a scalar image.  The operation is the same as taking the
  divergence after a gradient.  Boundaries are handled, so the input
  is the same as the output.
@@ -4818,7 +5881,8 @@ Super Class:
  vtkImageMagnify maps each pixel of the input onto a nxmx... region
  of the output.  Location (0,0,...) remains in the same place. The
  magnification occurs via pixel replication, or if Interpolate is on,
- by bilinear interpolation.
+ by bilinear interpolation. Initially, interpolation is off and magnification
+ factors are set to 1 in all directions.
 
 
 """
@@ -4875,7 +5939,7 @@ Super Class:
  scalar type, and map the first component of the image through a
  lookup table.  The result is an image of type VTK_UNSIGNED_CHAR.
  If the lookup table is not set, or is set to NULL, then the input
- data will be passed through if it is already of type UNSIGNED_CHAR.
+ data will be passed through if it is already of type VTK_UNSIGNED_CHAR.
 
 See Also:
 
@@ -4957,7 +6021,7 @@ Caveats:
 
 See Also:
 
- vtkContourFilter vtkSliceCubes vtkMarchingSquares vtkDividingCubes
+ vtkContourFilter vtkSliceCubes vtkMarchingSquares vtkSynchronizedTemplates3D
 
 
 """
@@ -5005,7 +6069,7 @@ class vtkImageMathematics:
     cats = ['VTK basic filters']
 
     help = \
-         """vtkImageMathematics - Add, subtract, multiply, divide, invert, sin, cos, exp, log.
+         """vtkImageMathematics - Add, subtract, multiply, divide, invert, sin,
 
 Super Class:
 
@@ -5615,6 +6679,13 @@ Super Class:
  processing.  This superclass has some logic for handling boundaries.  It
  can split regions into boundary and non-boundary pieces and call different
  execute methods.
+ .SECTION Warning
+ This used to be the parent class for most imaging filter in VTK4.x, now 
+ this role has been replaced by vtkImageSpatialAlgorithm. You should consider
+ using vtkImageSpatialAlgorithm instead, when writing filter for VTK5 and above.
+ This class was kept to ensure full backward compatibility.
+ .SECTION See also
+ vtkSimpleImageToImageFilter vtkImageToImageFilter vtkImageSpatialAlgorithm 
 
 
 """
@@ -5645,7 +6716,7 @@ Super Class:
 
  vtkThreadedImageAlgorithm
 
- vtkImageThreshold Can do binary or continuous thresholding for lower, upper
+ vtkImageThreshold can do binary or continuous thresholding for lower, upper
  or a range of data.  The output data type may be different than the
  output, but defaults to the same type.
 
@@ -5784,6 +6855,25 @@ Super Class:
  The difference between the neighbor values and center value is computed
  and squared for each neighbor.  These values are summed and divided by
  the total number of neighbors to produce the output value.
+
+
+"""
+class vtkImageWeightedSum:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkImageWeightedSum -  adds any number of images, weighting
+
+Super Class:
+
+ vtkThreadedImageAlgorithm
+
+ All weights are normalized so they will sum to 1.
+ Images must have the same extents. Output is 
+
+ .SECTION Thanks
+ The original author of this class is Lauren O'Donnell (MIT) for Slicer
 
 
 """
@@ -6039,6 +7129,69 @@ See Also:
 
 
 """
+class vtkKdTreeSelector:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkKdTreeSelector - Selects point ids using a kd-tree.
+
+Super Class:
+
+ vtkSelectionAlgorithm
+
+ If SetKdTree is used, the filter ignores the input and selects based on that
+ kd-tree.  If SetKdTree is not used, the filter builds a kd-tree using the
+ input point set and uses that tree for selection.  The output is a
+ vtkSelection containing the ids found in the kd-tree using the specified
+ bounds.
+
+
+"""
+class vtkLSDynaReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkLSDynaReader - Read LS-Dyna databases (d3plot)
+
+Super Class:
+
+ vtkMultiBlockDataSetAlgorithm
+
+ This filter reads LS-Dyna databases.
+
+ The Set/GetFileName() routines are actually wrappers around the
+ Set/GetDatabaseDirectory() members; the actual filename you choose is
+ irrelevant -- only the directory name is used.  This is done in order to
+ accommodate ParaView.
+
+ Note that this reader produces 7 output meshes.
+ These meshes are required as several attributes are defined on subsets
+ of the mesh.  Below is a list of meshes in the order they are output and
+ an explanation of which attributes are unique to each mesh:
+ - solid (3D) elements: number of integration points are different than 2D
+ - thick shell elements: number of integration points are different than 
+ planar 2D
+ - shell (2D) elements: number of integration points are different than 3D
+ - rigid surfaces: can't have deflection, only velocity, accel, etc.
+ - road surfaces: have only a "segment ID" (serves as material ID) and a 
+ velocity.
+ - beam elements: have Frenet (TNB) frame and cross-section attributes 
+ (shape and size)
+ - spherical particle hydrodynamics (SPH) elements: have a radius of 
+ influence, internal energy, etc.
+ Because each mesh has its own cell attributes, the vtkLSDynaReader has a
+ rather large API.  Instead of a single set of routines to query and set
+ cell array names and status, one exists for each possible output mesh.
+ Also, GetNumberOfCells() will return the sum of all the cells in all 7
+ meshes.  If you want the number of cells in a specific mesh, there are
+ separate routines for each mesh type.
+
+ .SECTION "Developer Notes"
+
+
+"""
 class vtkLineSource:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -6269,23 +7422,90 @@ See Also:
 
 
 """
-class vtkMPEG2Writer:
+class vtkMFIXReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkMFIXReader - reads a dataset in MFIX file format
+
+Super Class:
+
+ vtkUnstructuredGridAlgorithm
+
+ vtkMFIXReader creates an unstructured grid dataset. It reads a restart
+ file and a set of sp files.  The restart file contains the mesh 
+ information.  MFIX meshes are either cylindrical or rectilinear, but 
+ this reader will convert them to an unstructured grid.  The sp files 
+ contain transient data for the cells.  Each sp file has one or more 
+ variables stored inside it.  
+
+See Also:
+
+ vtkGAMBITReader
+
+
+"""
+class vtkMINCImageReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkMINCImageReader - A reader for MINC files.
+
+Super Class:
+
+ vtkImageReader2
+
+ MINC is a NetCDF-based medical image file format that was developed
+ at the Montreal Neurological Institute in 1992. 
+ This class will read a MINC file into VTK, rearranging the data to
+ match the VTK x, y, and z dimensions, and optionally rescaling
+ real-valued data to VTK_FLOAT if RescaleRealValuesOn() is set.
+ If RescaleRealValues is off, then the data will be stored in its
+ original data type and the GetRescaleSlope(), GetRescaleIntercept()
+ method can be used to retrieve global rescaling parameters.
+ If the original file had a time dimension, the SetTimeStep() method
+ can be used to specify a time step to read.
+ All of the original header information can be accessed though the
+ GetImageAttributes() method.
+
+See Also:
+
+ vtkMINCImageWriter vtkMINCImageAttributes
+ .SECTION Thanks
+ Thanks to David Gobbi for writing this class and Atamai Inc. for
+ contributing it to VTK.
+
+
+"""
+class vtkMINCImageWriter:
     kits = ['vtk_kit']
     cats = ['VTK basic writer']
 
     help = \
-         """vtkMPEG2Writer - Writes MPEG2 Movie files.
+         """vtkMINCImageWriter - A writer for MINC files.
 
 Super Class:
 
- vtkGenericMovieWriter
+ vtkImageWriter
 
- vtkMPEG2Writer writes Movie files. The data type
- of the file is unsigned char regardless of the input type.
+ MINC is a NetCDF-based medical image file format that was developed
+ at the Montreal Neurological Institute in 1992. 
+ The data is written slice-by-slice, and this writer is therefore
+ suitable for streaming MINC data that is larger than the memory
+ size through VTK.  This writer can also produce files with up to
+ 4 dimensions, where the fourth dimension is provided by using
+ AddInput() to specify multiple input data sets.  If you want to
+ set header information for the file, you must supply a
+ vtkMINCImageAttributes 
 
 See Also:
 
- vtkGenericMovieWriter vtkAVIWriter
+ vtkMINCImageReader vtkMINCImageAttributes
+ .SECTION Thanks
+ Thanks to David Gobbi for writing this class and Atamai Inc. for
+ contributing it to VTK.
 
 
 """
@@ -6462,7 +7682,7 @@ Super Class:
  closed surface.  For more details see the following reference
  (Alyassin A.M. et al, "Evaluation of new algorithms for the
  interactive measurement of surface area and volume", Med Phys 21(6)
- 1994.).  
+ 1994.).
 
 Caveats:
 
@@ -6493,6 +7713,35 @@ Super Class:
 See Also:
 
  vtkImageReader2 vtkGESignaReader vtkMedicalImageProperties
+
+
+"""
+class vtkMergeColumns:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMergeColumns - merge two columns into a single column
+
+Super Class:
+
+ vtkTableAlgorithm
+
+ vtkMergeColumns replaces two columns in a table with a single column
+ containing data in both columns.  The columns are set using
+
+   SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_NONE, "col1")
+
+ and
+
+   SetInputArrayToProcess(1, 0, 0, vtkDataObject::FIELD_ASSOCIATION_NONE, "col2")
+
+ where "col1" and "col2" are the names of the columns to merge.
+ The user may also specify the name of the merged column.
+ The arrays must be of the same type.
+ If the arrays are numeric, the values are summed in the merged column.
+ If the arrays are strings, the values are concatenated.  The strings are
+ separated by a space if they are both nonempty.
 
 
 """
@@ -6587,6 +7836,32 @@ Super Class:
 
 
 """
+class vtkMergeTables:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMergeTables - combine two tables
+
+Super Class:
+
+ vtkTableAlgorithm
+
+ Combines the columns of two tables into one larger table.
+ The number of rows in the resulting table is the sum of the number of
+ rows in each of the input tables.
+ The number of columns in the output is generally the sum of the number
+ of columns in each input table, except in the case where column names
+ are duplicated in both tables.
+ In this case, if MergeColumnsByName is on (the default), the two columns
+ will be merged into a single column of the same name.
+ If MergeColumnsByName is off, both columns will exist in the output.
+ You may set the FirstTablePrefix and SecondTablePrefix to define how
+ the columns named are modified.  One of these prefixes may be the empty
+ string, but they must be different.
+
+
+"""
 class vtkMeshQuality:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -6616,11 +7891,16 @@ Super Class:
  this filter will have an entry of 0. Use SaveCellQualityOff() to
  store only the final statistics.
 
- This version of the filter overtakes an older version written by
- Leila Baghdadi, Hanif Ladak, and David Steinman at the Imaging Research
- Labs, Robarts Research Institute. That version focused solely on
- tetrahedra. See the CompatibilityModeOn() member for information on
- how to make this filter behave like the previous implementation.
+ This version of the filter written by Philippe Pebay and David Thompson
+ overtakes an older version written by Leila Baghdadi, Hanif Ladak, and 
+ David Steinman at the Imaging Research Labs, Robarts Research Institute.
+ That version only supported tetrahedral radius ratio. See the 
+ CompatibilityModeOn() member for information on how to make this filter 
+ behave like the previous implementation.
+ For more information on the triangle quality measures of this class, cf.
+ Pebay & Baker 2003, Analysis of triangle quality measures, Math Comp 72:244.
+ For more information on the quadrangle quality measures of this class, cf.
+ Pebay 2004, Planar Quadrangle Quality Measures, Eng Comp 20:2.
 
 
 Caveats:
@@ -6644,7 +7924,7 @@ class vtkMetaImageReader:
 
 Super Class:
 
- vtkImageReader
+ vtkImageReader2
 
  One of the formats for which a reader is already available in the toolkit is
  the MetaImage file format. This is a fairly simple yet powerful format
@@ -6689,7 +7969,6 @@ Caveats:
 
 See Also:
 
- vtkImageReader
 
 
 """
@@ -6751,6 +8030,43 @@ See Also:
 
 
 """
+class vtkMultiBlockDataSetAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiBlockDataSetAlgorithm - Superclass for algorithms that produce only vtkMultiBlockDataSet as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ Algorithms that take any type of data object (including composite dataset)
+ and produce a vtkMultiBlockDataSet in the output can subclass from this
+ class.
+
+
+"""
+class vtkMultiBlockMergeFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiBlockMergeFilter - merges multiblock inputs into a single multiblock output
+
+Super Class:
+
+ vtkMultiBlockDataSetAlgorithm
+
+ vtkMultiBlockMergeFilter is an M to 1 filter similar to 
+ vtkMultiGroupDataGroupFilters. However where as that class creates N groups 
+ in the output for N inputs, this creates 1 group in the output with N 
+ datasets inside it. In actuality if the inputs have M groups, this will 
+ produce M groups, each of which has N datasets. Inside the merged group, 
+ the i'th data set comes from the i'th data set in the i'th input.
+
+
+"""
 class vtkMultiBlockPLOT3DReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -6760,7 +8076,7 @@ class vtkMultiBlockPLOT3DReader:
 
 Super Class:
 
- vtkHierarchicalDataSetAlgorithm
+ vtkMultiBlockDataSetAlgorithm
 
  vtkMultiBlockPLOT3DReader is a reader object that reads PLOT3D formatted
  files and generates structured grid(s) on output. PLOT3D is a computer
@@ -6821,6 +8137,218 @@ See Also:
 
 
 """
+class vtkMultiGroupDataExtractDataSets:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupDataExtractDataSets - extract a number of datasets
+
+Super Class:
+
+ vtkMultiGroupDataSetAlgorithm
+
+ vtkMultiGroupDataExtractDataSets extracts the user specified list
+ of datasets from a multi-group dataset.
+
+
+"""
+class vtkMultiGroupDataExtractGroup:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupDataExtractGroup - extact groups between min and max
+
+Super Class:
+
+ vtkMultiGroupDataSetAlgorithm
+
+ vtkMultiGroupDataExtractGroup is a filter that extracts groups
+ between user specified min and max.
+
+
+"""
+class vtkMultiGroupDataGeometryFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupDataGeometryFilter - extract geometry from multi-group data
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkMultiGroupDataGeometryFilter applies vtkGeometryFilter to all
+ groups in vtkMultiGroupData. Place this filter at the end of a
+ pipeline before a polydata consumer such as a polydata mapper to extract
+ geometry from all blocks and append them to one polydata object.
+
+
+"""
+class vtkMultiGroupDataGroupFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupDataGroupFilter - collects multiple inputs into one multi-group dataset
+
+Super Class:
+
+ vtkMultiGroupDataSetAlgorithm
+
+ vtkMultiGroupDataGroupFilter is an M to 1 filter that merges multiple
+ input into one multi-group dataset. It will assign each input to
+ one group of the multi-group dataset and will assign each update piece
+ as a sub-block. For example, if there are two inputs and four update
+ pieces, the output contains two groups with four datasets each.
+
+
+"""
+class vtkMultiGroupDataGroupIdScalars:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupDataGroupIdScalars - generate scalars from groups
+
+Super Class:
+
+ vtkMultiGroupDataSetAlgorithm
+
+ vtkMultiGroupDataGroupIdScalars is a filter to that generates scalars 
+ using multi-group data group information. For example, it will assign
+ an vtkUnsignedCharArray named GroupIdScalars and of value 0 to all 
+ datasets in group 0.
+
+
+"""
+class vtkMultiGroupDataSetAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupDataSetAlgorithm - Superclass for algorithms that produce only vtkMultiGroupDataSet as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ Algorithms that take any type of data object (including composite dataset)
+ and produce a vtkMultiGroupDataSet in the output can subclass from this
+ class.
+
+
+"""
+class vtkMultiGroupProbeFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiGroupProbeFilter - subclass of vtkProbeFilter which supports
+
+Super Class:
+
+ vtkProbeFilter
+
+ vtkMultiGroupProbeFilter supports probing into multi-group datasets.
+ It sequentially probes through each concrete dataset within the multigroup
+ probing at only those locations at which there were no hits when probing
+ earlier datasets. For Hierarchical datasets, this traversal through leaf
+ datasets is done in reverse order of levels i.e. highest level first.
+
+
+"""
+class vtkMultiThreshold:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkMultiThreshold - Threshold cells within multiple intervals
+
+Super Class:
+
+ vtkMultiBlockDataSetAlgorithm
+
+ This filter can be substituted for a chain of several vtkThreshold filters
+ and can also perform more sophisticated subsetting operations.
+ It generates a vtkMultiBlockDataSet as its output.
+ This multiblock dataset contains a vtkUnstructuredGrid for each thresholded
+ subset you request.
+ A thresholded subset can be a set defined by an interval over a
+ point or cell attribute of the mesh; these subsets are called IntervalSets.
+ A thresholded subset can also be a boolean combination of one or more IntervalSets;
+ these subsets are called BooleanSets.
+ BooleanSets allow complex logic since their output
+ can depend on multiple intervals over multiple variables
+ defined on the input mesh.
+ This is useful because it eliminates the need for thresholding several
+ times and then appending the results, as can be required with vtkThreshold
+ when one wants to remove some range of values (e.g., a notch filter).
+ Cells are not repeated when they belong to more than one interval unless
+ those intervals have different output grids.
+
+ Another advantage this filter provides over vtkThreshold is the ability
+ to threshold on non-scalar (i.e., vector, tensor, etc.) attributes without
+ first computing an array containing some norm of the desired attribute.
+ vtkMultiThreshold provides \f$L_1\f$, \f$L_2\f$, and \f$L_{\infty}\f$ norms.
+
+ This filter makes a distinction between intermediate subsets and
+ subsets that will be output to a grid.
+ Each intermediate subset you create with AddIntervalSet or
+ AddBooleanSet is given a unique integer identifier (via the return
+ values of these member functions).
+ If you wish for a given set to be output, you must call
+ OutputSet and pass it one of these identifiers.
+ The return of OutputSet is the integer index of the output set
+ in the multiblock dataset created by this filter.
+
+ For example, if an input mesh defined three attributes T, P, and s, one might
+ wish to find cells that satisfy "T < 320 [K] && ( P > 101 [kPa] || s < 0.1 [kJ/kg/K] )".
+ To accomplish this with a vtkMultiThreshold filter,
+ <pre>
+ vtkMultiThreshold* thr;
+ int intervalSets[3];
+
+ intervalSets[0] = thr->AddIntervalSet( vtkMath::NegInf(), 320., vtkMultiThreshold::CLOSED, vtkMultiThreshold::OPEN,
+     vtkDataObject::FIELD_ASSOCIATION_POINTS, "T", 0, 1 );
+ intervalSets[1] = thr->AddIntervalSet( 101., vtkMath::Inf(), vtkMultiThreshold::OPEN, vtkMultiThreshold::CLOSED,
+     vtkDataObject::FIELD_ASSOCIATION_CELLS, "P", 0, 1 );
+ intervalSets[2] = thr->AddIntervalSet( vtkMath::NegInf(), 0.1, vtkMultiThreshold::CLOSED, vtkMultiThreshold::OPEN,
+     vtkDataObject::FIELD_ASSOCIATION_POINTS, "s", 0, 1 );
+
+ int intermediate = thr->AddBooleanSet( vtkMultiThreshold::OR, 2, &intervalSets[1] );
+
+ int intersection[2];
+ intersection[0] = intervalSets[0];
+ intersection[1] = intermediate;
+ int outputSet = thr->AddBooleanSet( vtkMultiThreshold::AND, 2, intersection );
+
+ int outputGridIndex = thr->OutputSet( outputSet );
+ thr->Update();
+ </pre>
+ The result of this filter will be a multiblock dataset that contains a single child with the desired cells.
+ If we had also called <code>thr->OutputSet( intervalSets[0] );</code>, there would be two child meshes and
+ one would contain all cells with T < 320 [K].
+ In that case, the output can be represented by this graph
+ \dot
+ digraph MultiThreshold {
+   set0 [shape=rect,style=filled,label="point T(0) in [-Inf,320["]
+   set1 [shape=rect,label="cell P(0) in ]101,Inf]"]
+   set2 [shape=rect,label="point s(0) in [-Inf,0.1["]
+   set3 [shape=rect,label="OR"]
+   set4 [shape=rect,style=filled,label="AND"]
+   set0 -> set4
+   set1 -> set3
+   set2 -> set3
+   set3 -> set4
+ }
+ \enddot
+ The filled rectangles represent sets that are output.
+
+
+"""
 class vtkOBBDicer:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -6863,6 +8391,25 @@ Super Class:
 See Also:
 
  vtkOBJImporter
+
+
+"""
+class vtkOpenFOAMReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkOpenFOAMReader - reads a dataset in OpenFOAM format
+
+Super Class:
+
+ vtkMultiBlockDataSetAlgorithm
+
+ vtkOpenFOAMReader creates an multiblock dataset. It reads a controlDict
+ file, mesh information, and time dependent data.  The controlDict file
+ contains timestep information. The polyMesh folders contain mesh information
+ The time folders contain transient data for the cells  Each folder can
+ contain any number of data files.
 
 
 """
@@ -6971,6 +8518,33 @@ Super Class:
 
 
 """
+class vtkPExodusIIReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkPExodusIIReader - Read Exodus II files (.exii)
+
+Super Class:
+
+ vtkExodusIIReader
+
+ vtkPExodusIIReader is a unstructured grid source object that reads
+ ExodusII files. Most of the meta data associated with the
+ file is loaded when UpdateInformation is called. This includes
+ information like Title, number of blocks, number and names of
+ arrays. This data can be retrieved from methods in this
+ reader. Separate arrays that are meant to be a single vector, are
+ combined internally for convenience. To be combined, the array
+ names have to be identical except for a trailing X,Y and Z (or
+ x,y,z). By default all cell and point arrays are loaded. However,
+ the user can flag arrays not to load with the methods
+ "SetPointDataArrayLoadFlag" and "SetCellDataArrayLoadFlag". The
+ reader responds to piece requests by loading only a range of the
+ possible blocks. Unused points are filtered out internally.
+
+
+"""
 class vtkPLOT3DReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -7054,7 +8628,7 @@ Super Class:
 
  vtkPLYReader is a source object that reads polygonal data in
  Stanford University PLY file format (see 
- http://graphics.stanford.edu/data/3Dscanrep/). It requires that
+ http://graphics.stanford.edu/data/3Dscanrep). It requires that
  the elements "vertex" and "face" are defined. The "vertex" element
  must have the properties "x", "y", and "z". The "face" element must
  have the property "vertex_indices" defined. Optionally, if the "face"
@@ -7081,7 +8655,12 @@ Super Class:
 
  vtkPLYWriter writes polygonal data in Stanford University PLY format
  (see http://graphics.stanford.edu/data/3Dscanrep/). The data can be
- written in either binary (little or big endian) or ASCII representation. 
+ written in either binary (little or big endian) or ASCII representation.
+ As for PointData and CellData, vtkPLYWriter cannot handle normals or
+ vectors. It only handles RGB PointData and CellData. You need to set the
+ name of the array (using SetName for the array and SetArrayName for the
+ writer). If the array is not a vtkUnsignedCharArray with 3 components,
+ you need to specify a vtkLookupTable to map the scalars to RGB.
 
 Caveats:
 
@@ -7350,7 +8929,7 @@ Caveats:
 
  This filter is an abstract filter, that is, the output is an abstract type
  (i.e., vtkDataSet). Use the convenience methods (e.g.,
- vtkGetPolyDataOutput(), GetStructuredPointsOutput(), etc.) to get the type
+ GetPolyDataOutput(), GetStructuredPointsOutput(), etc.) to get the type
  of output you want.
 
 See Also:
@@ -7644,6 +9223,10 @@ Super Class:
  filter. The point attributes are computed at the Input point positions
  by interpolating into the source data. For example, we can compute data
  values on a plane (plane specified as Input) from a volume (Source).
+ The cell data of the source data is copied to the output based on in
+ which source cell each input point is. If an array of the same name exists
+ both in source's point and cell data, only the one from the point data is
+ probed.
 
  This filter can be used to resample data, or convert one dataset form into
  another. For example, an unstructured grid (vtkUnstructuredGrid) can be
@@ -7948,6 +9531,22 @@ Super Class:
 
 
 """
+class vtkPruneTreeFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkPruneTreeFilter - prune a subtree out of a vtkTree
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+ Removes a subtree rooted at a particular vertex in a vtkTree.
+
+
+
+"""
 class vtkQuadricClustering:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -8102,6 +9701,43 @@ See Also:
 
 
 """
+class vtkRTXMLPolyDataReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkRTXMLPolyDataReader - Read RealTime VTK XML PolyData files.
+
+Super Class:
+
+ vtkXMLPolyDataReader
+
+ vtkRTXMLPolyDataReader reads the VTK XML PolyData file format in real time.  
+
+See Also:
+
+
+
+"""
+class vtkRandomGraphSource:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkRandomGraphSource - a graph with random edges
+
+Super Class:
+
+ vtkGraphAlgorithm
+
+ Generates a graph with a specified number of vertices, with the density of
+ edges specified by either an exact number of edges or the probability of
+ an edge.  You may additionally specify whether to begin with a random
+ tree (which enforces graph connectivity).
+
+
+
+"""
 class vtkRearrangeFields:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -8190,7 +9826,7 @@ Caveats:
 
 See Also:
 
- vtkButtonSource vtkRectangularButtonSource
+ vtkButtonSource vtkEllipticalButtonSource
 
 
 """
@@ -8626,6 +10262,27 @@ See Also:
 
 
 """
+class vtkSESAMEReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkSESAMEReader - read SESAME files
+
+Super Class:
+
+ vtkRectilinearGridSource
+
+ vtkSESAMEReader is a source object that reads SESAME files.
+ Currently supported tables include 301, 304, 502, 503, 504, 505, 602
+
+ SESAMEReader creates rectilinear grid datasets. The dimension of the 
+ dataset depends upon the number of densities and temperatures in the table.
+ Values at certain temperatures and densities are stored as scalars.
+
+
+
+"""
 class vtkSLCReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -8640,6 +10297,33 @@ Super Class:
  vtkSLCReader reads an SLC file and creates a structured point dataset.
  The size of the volume and the data spacing is set from the SLC file
  header.
+
+
+"""
+class vtkSQLTableReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkSQLTableReader - executes an sql query and retrieves results into a table
+
+Super Class:
+
+ vtkTableAlgorithm
+
+ vtkSQLTableReader creates a vtkTable with the results of an arbitrary SQL
+ query.  To use this filter, you first need an instance of a vtkSQLDatabase
+ subclass.  You may use the database class to obtain a vtkSQLQuery instance.
+ Set that query on this filter to extract the query as a table.
+
+ .SECTION Thanks
+ Thanks to Andrew Wilson from Sandia National Laboratories for his work
+ on the database classes.
+
+
+See Also:
+
+ vtkSQLDatabase vtkSQLQuery
 
 
 """
@@ -8830,6 +10514,73 @@ Caveats:
 
 
 """
+class vtkSelectionAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkSelectionAlgorithm - Superclass for algorithms that produce only Selection as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ vtkSelectionAlgorithm is a convenience class to make writing algorithms
+ easier. It is also designed to help transition old algorithms to the new
+ pipeline edgehitecture. There are some assumptions and defaults made by this
+ class you should be aware of. This class defaults such that your filter
+ will have one input port and one output port. If that is not the case
+ simply change it with SetNumberOfInputPorts etc. See this class
+ constructor for the default. This class also provides a FillInputPortInfo
+ method that by default says that all inputs will be Selection. If that
+ isn't the case then please override this method in your subclass. This
+ class breaks out the downstream requests into separate functions such as
+ ExecuteData and ExecuteInformation.  For new algorithms you should
+ implement RequestData( request, inputVec, outputVec) but for older filters
+ there is a default implementation that calls the old ExecuteData(output)
+ signature. For even older filters that don't implement ExecuteData the
+ default implementation calls the even older Execute() signature.
+
+ .SECTION Thanks
+ Thanks to Patricia Crossno, Ken Moreland, Andrew Wilson and Brian Wylie from
+ Sandia National Laboratories for their help in developing this class.
+
+
+"""
+class vtkSelectionLink:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkSelectionLink - An algorithm for linking selections among objects
+
+Super Class:
+
+ vtkSelectionAlgorithm
+
+ vtkSelectionLink is a simple source filter which outputs the selection
+ object stored internally.  Multiple objects may share
+ the same selection link filter and connect it to an internal pipeline so
+ that if one object changes the selection, it will be pulled into all
+ the other objects when their pipelines update.
+
+
+"""
+class vtkSelectionSource:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkSelectionSource - Generate selection from given set of ids
+
+Super Class:
+
+ vtkSelectionAlgorithm
+
+None provided.
+
+
+"""
 class vtkShepardMethod:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -8874,11 +10625,11 @@ Super Class:
 
  vtkUnstructuredGridAlgorithm
 
- vtkShrinkFilter shrinks cells composing an arbitrary data set 
- towards their centroid. The centroid of a cell is computed as 
- the average position of the cell points. Shrinking results in 
- disconnecting the cells from one another. The output of this filter is
- of general dataset type vtkUnstructuredGrid.
+ vtkShrinkFilter shrinks cells composing an arbitrary data set
+ towards their centroid. The centroid of a cell is computed as the
+ average position of the cell points. Shrinking results in
+ disconnecting the cells from one another. The output of this filter
+ is of general dataset type vtkUnstructuredGrid.
 
 Caveats:
 
@@ -8962,7 +10713,27 @@ Super Class:
  to it's output (point by point). It shows how templates can be used
  to support various data types.
  .SECTION See also
- vtkSimpleImageFilterExample
+ vtkSimpleImageToImageFilter
+
+
+"""
+class vtkSimplePointsReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkSimplePointsReader - Read a list of points from a file.
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ vtkSimplePointsReader is a source object that reads a list of
+ points from a file.  Each point is specified by three
+ floating-point values in ASCII format.  There is one point per line
+ of the file.  A vertex cell is created for each point in the
+ output.  This reader is meant as an example of how to write a
+ reader in VTK.
 
 
 """
@@ -9365,6 +11136,46 @@ See Also:
 
  vtkRibbonFilter vtkRuledSurfaceFilter vtkInitialValueProblemSolver 
  vtkRungeKutta2 vtkRungeKutta4 vtkRungeKutta45 
+
+
+"""
+class vtkStringToNumeric:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkStringToNumeric - Converts string arrays to numeric arrays
+
+Super Class:
+
+ vtkDataObjectAlgorithm
+
+ vtkStringToNumeric is a filter for converting a string array
+ into a numeric arrays.
+
+
+"""
+class vtkStringToTimePoint:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkStringToTimePoint - Converts a string array to a integral time array
+
+Super Class:
+
+ vtkDataObjectAlgorithm
+
+
+ vtkStringToTimePoint is a filter for converting a string array
+ into a datetime, time or date array.  The input strings must
+ conform to one of the ISO8601 formats defined in vtkTimePointUtility.
+
+ The input array specified by SetInputArrayToProcess(...)
+ indicates the array to process.  This array must be of type
+ vtkStringArray.
+
+ The output array will be of type vtkTypeUInt64Array.
 
 
 """
@@ -9799,6 +11610,251 @@ Super Class:
 
 
 """
+class vtkTableAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTableAlgorithm - Superclass for algorithms that produce only vtkTables as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ vtkTableAlgorithm is a convenience class to make writing algorithms
+ easier. It is also designed to help transition old algorithms to the new
+ pipeline architecture. There are some assumptions and defaults made by this
+ class you should be aware of. This class defaults such that your filter
+ will have one input port and one output port. If that is not the case
+ simply change it with SetNumberOfInputPorts etc. See this class
+ constructor for the default. This class also provides a FillInputPortInfo
+ method that by default says that all inputs will be Tree. If that
+ isn't the case then please override this method in your subclass. This
+ class breaks out the downstream requests into separate functions such as
+ ExecuteData and ExecuteInformation.  For new algorithms you should
+ implement RequestData( request, inputVec, outputVec) but for older filters
+ there is a default implementation that calls the old ExecuteData(output)
+ signature. For even older filters that don't implement ExecuteData the
+ default implementation calls the even older Execute() signature.
+
+ .SECTION Thanks
+ Thanks to Brian Wylie for creating this class.
+
+
+"""
+class vtkTableReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkTableReader - read vtkTable data file
+
+Super Class:
+
+ vtkDataReader
+
+ vtkTableReader is a source object that reads ASCII or binary 
+ vtkTable data files in vtk format. (see text for format details).
+ The output of this reader is a single vtkTable data object.
+ The superclass of this class, vtkDataReader, provides many methods for
+ controlling the reading of the data file, see vtkDataReader for more
+ information.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
+
+See Also:
+
+ vtkTable vtkDataReader vtkTableWriter
+
+
+"""
+class vtkTableToGraphFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTableToGraphFilter - convert a vtkTable into a vtkGraph
+
+Super Class:
+
+ vtkGraphAlgorithm
+
+
+ Creates a vtkGraph using one or two vtkTables.  The first (required)
+ input table must have one row for each arc in the graph.
+ The table must have two columns which represent the source and target
+ node ids.  Use 
+
+ SetInputArrayToProcess(i,0,0,vtkDataObject::FIELD_ASSOCIATION_NONE,"name")
+
+ to specify these fields, where i=0 is the source field, and i=1 is the
+ target field.
+
+ The second (optional) vtkTable has one row for each node in the graph.
+ The table must have a field whose values match those in the arc table.
+ Use 
+
+ SetInputArrayToProcess(2,1,0,vtkDataObject::FIELD_ASSOCIATION_NONE,"name")
+
+ to specify the node index field. If the node table is not given, 
+ a node will be created for each unique source or target identifier 
+ in the arc table.
+
+ Input arrays 0, 1 and 2 must be of the same type, and must be either
+ vtkStringArray or a subclass of vtkDataArray.
+
+ All columns in the tables, including the source, target, and node index
+ fields, are copied into the arc data and node data of the resulting
+ vtkGraph.  If the node table is not given, the node data will contain
+ a single "id" column with the same type as the source/target id arrays.
+
+ If parallel arcs are collected, not all the arc data is not copied into 
+ the output.  Only the source and target id arrays will be transferred.
+ An additional vtkIdTypeArray column called "weight" is created which 
+ contains the number of times each arc appeared in the input.
+
+ If the node table contains positional data, the user may specify these
+ with input arrays 3, 4 and 5 for x, y, and z-coordinates, respectively.
+ These arrays must be data arrays.  The z-coordinate array is optional,
+ and if not given the z-coordinates are set to zero.
+
+
+"""
+class vtkTableToTreeFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTableToTreeFilter - Filter that converts a vtkTable to a vtkTree
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+
+ vtkTableToTreeFilter is a filter for converting a vtkTable data structure
+ into a vtkTree datastructure.  Currently, this will convert the table into
+ a star, with each row of the table as a child of a new root node.
+ The columns of the table are passed as node fields of the tree.
+
+
+"""
+class vtkTableWriter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic writer']
+
+    help = \
+         """vtkTableWriter - write vtkTable to a file
+
+Super Class:
+
+ vtkDataWriter
+
+ vtkTableWriter is a sink object that writes ASCII or binary 
+ vtkTable data files in vtk format. See text for format details.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
+
+
+"""
+class vtkTemporalDataSetAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTemporalDataSetAlgorithm - Superclass for algorithms that produce only vtkTemporalDataSet as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ Algorithms that take any type of data object (including composite dataset)
+ and produce a vtkTemporalDataSet in the output can subclass from this
+ class.
+
+
+"""
+class vtkTemporalDataSetCache:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTemporalDataSetCache - cache time steps
+
+Super Class:
+
+ vtkTemporalDataSetAlgorithm
+
+ vtkTemporalDataSetCache cache time step requests of a temporal dataset,
+ when cached data is requested it is returned using a shallow copy.
+
+
+"""
+class vtkTemporalInterpolator:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTemporalInterpolator - interpolate temporal datasets
+
+Super Class:
+
+ vtkTemporalDataSetAlgorithm
+
+ vtkTemporalInterpolator interpolates between two time steps to
+ produce new data for an arbitrary T.
+ vtkTemporalInterpolator has two modes of operation. The default
+ mode is to produce a continuous range of time values as output
+ which enables a filter downstream to request Any value of T within
+ the range. The interpolator will produce the requested T.
+ The second mode of operation is enabled by setting
+ DiscreteTimeStepInterval to a non zero value. When this mode is
+ activated, the filter will report a finite number of Time steps
+ separated by deltaT between the original range of values.
+ This mode is useful when a dataset of N time steps has one (or more)
+ missing datasets for certain T values and you simply wish to smooth
+ over the missing steps but otherwise use the original data.
+
+
+"""
+class vtkTemporalShiftScale:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTemporalShiftScale - modify the time range/steps of temporal data
+
+Super Class:
+
+ vtkTemporalDataSetAlgorithm
+
+ vtkTemporalShiftScale  modify the time range or time steps of
+ the data without changing the data itself. The data is not resampled
+ by this filter, only the information accompanying the data is modified.
+
+
+"""
+class vtkTemporalSnapToTimeStep:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTemporalSnapToTimeStep - modify the time range/steps of temporal data
+
+Super Class:
+
+ vtkTemporalDataSetAlgorithm
+
+ vtkTemporalSnapToTimeStep  modify the time range or time steps of
+ the data without changing the data itself. The data is not resampled
+ by this filter, only the information accompanying the data is modified.
+
+
+"""
 class vtkTensorGlyph:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -9866,6 +11922,54 @@ Super Class:
 See Also:
 
  vtkGlyph3D vtkPointLoad vtkHyperStreamline
+
+
+"""
+class vtkTessellatorFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTessellatorFilter - approximate nonlinear FEM elements with simplices
+
+Super Class:
+
+ vtkUnstructuredGridAlgorithm
+
+ This class approximates nonlinear FEM elements with linear simplices.
+
+ <b>Warning</b>: This class is temporary and will go away at some point
+ after ParaView 1.4.0.
+
+ This filter rifles through all the cells in an input vtkDataSet. It
+ tesselates each cell and uses the vtkStreamingTessellator and
+ vtkDataSetEdgeSubdivisionCriterion classes to generate simplices that
+ approximate the nonlinear mesh using some approximation metric (encoded
+ in the particular vtkDataSetEdgeSubdivisionCriterion::EvaluateEdge
+ implementation). The simplices are placed into the filter's output
+ vtkDataSet object by the callback routines AddATetrahedron,
+ AddATriangle, and AddALine, which are registered with the triangulator.
+
+ The output mesh will have geometry and any fields specified as
+ attributes in the input mesh's point data.  The attribute's copy flags
+ are honored, except for normals.
+
+ .SECTION Internals
+
+ The filter's main member function is RequestData(). This function first
+ calls SetupOutput() which allocates arrays and some temporary variables
+ for the primitive callbacks (OutputTriangle and OutputLine which are
+ called by AddATriangle and AddALine, respectively).  Each cell is given
+ an initial tesselation, which results in one or more calls to
+ OutputTetrahedron, OutputTriangle or OutputLine to add elements to the
+ OutputMesh. Finally, Teardown() is called to free the filter's working
+ space.
+
+
+See Also:
+
+ vtkDataSetToUnstructuredGridFilter vtkDataSet vtkStreamingTessellator
+ vtkDataSetEdgeSubdivisionCriterion
 
 
 """
@@ -10101,6 +12205,23 @@ See Also:
 
 
 """
+class vtkThresholdTable:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkThresholdTable - Thresholds table rows.
+
+Super Class:
+
+ vtkTableAlgorithm
+
+ vtkThresholdTable uses minimum and/or maximum values to threshold
+ table rows based on the values in a particular column.
+ The column to threshold is specified using SetInputArrayToProcess(0, ...).
+
+
+"""
 class vtkThresholdTextureCoords:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -10131,6 +12252,52 @@ See Also:
 
  vtkThreshold vtkThresholdPoints vtkTextureMapToPlane vtkTextureMapToSphere
  vtkTextureMapToCylinder vtkTextureMapToBox
+
+
+"""
+class vtkTimePointToString:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTimePointToString - Converts a timestamp array to a string array
+
+Super Class:
+
+ vtkDataObjectAlgorithm
+
+
+ vtkTimePointToString is a filter for converting a timestamp array
+ into string array using one of the formats defined in vtkTimePointUtility.h.
+
+ Use SetInputArrayToProcess to indicate the array to process.  
+ This array must be an unsigned 64-bit integer array for 
+ DATETIME formats, and may be either an unsigned 32-bit or 
+ unsigned 64-bit array for DATE and TIME formats.
+
+ If the new array name is not specified, the array name will be
+ the old name appended by " [to string]".
+
+
+"""
+class vtkTimeSourceExample:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTimeSource - creates a simple time varying data set.
+
+Super Class:
+
+ vtkImageAlgorithm
+
+ Creates a small easily understood time varying data set for testing.
+ The output is a vtkImageData in which the point and cell values vary
+ over time in a sin wave. The analytic ivar controls whether the output 
+ corresponds to a step function over time or is continuous.
+ The X and Y Amplitude ivars make the output move in the X and Y directions 
+ over time. The Growing ivar makes the number of cells in the output grow 
+ and then shrink over time.
 
 
 """
@@ -10242,6 +12409,173 @@ Super Class:
 See Also:
 
  vtkGridTransform vtkThinPlateSplineTransform vtkAbstractTransform
+
+
+"""
+class vtkTreeAlgorithm:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTreeAlgorithm - Superclass for algorithms that produce only Tree as output
+
+Super Class:
+
+ vtkAlgorithm
+
+ vtkTreeAlgorithm is a convenience class to make writing algorithms
+ easier. It is also designed to help transition old algorithms to the new
+ pipeline edgehitecture. There are some assumptions and defaults made by this
+ class you should be aware of. This class defaults such that your filter
+ will have one input port and one output port. If that is not the case
+ simply change it with SetNumberOfInputPorts etc. See this class
+ constructor for the default. This class also provides a FillInputPortInfo
+ method that by default says that all inputs will be Tree. If that
+ isn't the case then please override this method in your subclass. This
+ class breaks out the downstream requests into separate functions such as
+ ExecuteData and ExecuteInformation.  For new algorithms you should
+ implement RequestData( request, inputVec, outputVec) but for older filters
+ there is a default implementation that calls the old ExecuteData(output)
+ signature. For even older filters that don't implement ExecuteData the
+ default implementation calls the even older Execute() signature.
+
+
+"""
+class vtkTreeFieldAggregator:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTreeFieldAggregator - aggregate field values from the leaves up the tree
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+ vtkTreeFieldAggregator may be used to assign sizes to all the vertices in the
+ tree, based on the sizes of the leaves.  The size of a vertex will equal
+ the sum of the sizes of the child vertices.  If you have a data array with
+ values for all leaves, you may specify that array, and the values will
+ be filled in for interior tree vertices.  If you do not yet have an array,
+ you may tell the filter to create a new array, assuming that the size
+ of each leaf vertex is 1.  You may optionally set a flag to first take the
+ log of all leaf values before aggregating.
+
+
+"""
+class vtkTreeLevelsFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTreeLevelsFilter - adds level and leaf fields to a vtkTree
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+ The filter currently add two arrays to the incoming vtkTree datastructure.
+ 1) "levels" this is the distance from the root of the vertex. Root = 0
+ and you add 1 for each level down from the root
+ 2) "leaf" this array simply indicates whether the vertex is a leaf or not
+
+ .SECTION Thanks
+ Thanks to Brian Wylie from Sandia National Laboratories for creating this
+ class.
+
+
+"""
+class vtkTreeMapLayout:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTreeMapLayout - layout a vtkTree into a tree map
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+ vtkTreeMapLayout assigns rectangular regions to each vertex in the tree,
+ creating a tree map.  The data is added as a data array with four
+ components per tuple representing the location and size of the
+ rectangle using the format (Xmin, Xmax, Ymin, Ymax).
+
+ This algorithm relies on a helper class to perform the actual layout.
+ This helper class is a subclass of vtkTreeMapLayoutStrategy.
+
+ .SECTION Thanks
+ Thanks to Brian Wylie and Ken Moreland from Sandia National Laboratories
+ for help developing this class.
+ 
+ Tree map concept comes from:
+ Shneiderman, B. 1992. Tree visualization with tree-maps: 2-d space-filling approach. 
+ ACM Trans. Graph. 11, 1 (Jan. 1992), 92-99. 
+
+
+"""
+class vtkTreeMapToPolyData:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkTreeMapToPolyData - converts a tree to a polygonal data representing a tree map
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+ This algorithm requires that the vtkTreeMapLayout filter has already applied to the
+ data in order to create the quadruple array (min x, max x, min y, max y) of
+ bounds for each vertex of the tree.
+
+
+"""
+class vtkTreeReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkTreeReader - read vtkTree data file
+
+Super Class:
+
+ vtkDataReader
+
+ vtkTreeReader is a source object that reads ASCII or binary 
+ vtkTree data files in vtk format. (see text for format details).
+ The output of this reader is a single vtkTree data object.
+ The superclass of this class, vtkDataReader, provides many methods for
+ controlling the reading of the data file, see vtkDataReader for more
+ information.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
+
+See Also:
+
+ vtkTree vtkDataReader vtkTreeWriter
+
+
+"""
+class vtkTreeWriter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic writer']
+
+    help = \
+         """vtkTreeWriter - write vtkTree data to a file
+
+Super Class:
+
+ vtkDataWriter
+
+ vtkTreeWriter is a sink object that writes ASCII or binary 
+ vtkTree data files in vtk format. See text for format details.
+
+Caveats:
+
+ Binary files written on one system may not be readable on other systems.
 
 
 """
@@ -10408,6 +12742,43 @@ Super Class:
 
 
 """
+class vtkUnstructuredGridGeometryFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkUnstructuredGridGeometryFilter - extract geometry from an unstructured grid
+
+Super Class:
+
+ vtkUnstructuredGridAlgorithm
+
+ vtkUnstructuredGridGeometryFilter is a filter to extract
+ geometry (and associated data) from an unstructured grid. It differs from
+ vtkGeometryFilter by not tessellating higher order faces: 2D faces of
+ quadratic 3D cells will be quadratic. A quadratic edge is extracted as a
+ quadratic edge. For that purpose, the output of this filter is an
+ unstructured grid, not a polydata.
+ Also, the face of a voxel is pixel, not a quad.
+ Geometry is obtained as follows: all 0D, 1D, and 2D cells are extracted.
+ All 2D faces that are used by only one 3D cell (i.e., boundary faces) are
+ extracted. It also is possible to specify conditions on point ids, cell ids,
+ and on bounding box (referred to as "Extent") to control the extraction
+ process.
+
+
+Caveats:
+
+ When vtkUnstructuredGridGeometryFilter extracts cells (or boundaries of
+ cells) it will (by default) merge duplicate vertices. This may cause
+ problems in some cases. Turn merging off to prevent this from occurring.
+
+See Also:
+
+ vtkGeometryFilter
+
+
+"""
 class vtkUnstructuredGridReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -10515,7 +12886,71 @@ See Also:
 
 
 """
-    
+class vtkVertexDegree:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkVertexDegree - Adds an attribute array with the degree of each vertex
+
+Super Class:
+
+ vtkAbstractGraphAlgorithm
+
+ Adds an attribute array with the degree of each vertex.
+
+
+"""
+class vtkVertexGlyphFilter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkVertexGlyphFilter - Make a vtkPolyData with a vertex on each point.
+
+Super Class:
+
+ vtkPolyDataAlgorithm
+
+
+ This filter throws away all of the cells in the input and replaces them with
+ a vertex on each point.  The intended use of this filter is roughly
+ equivalent to the vtkGlyph3D filter, except this filter is specifically for
+ data that has many vertices, making the rendered result faster and less
+ cluttered than the glyph filter.
+
+
+
+"""
+class vtkVideoSource:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkVideoSource - Superclass of video input devices for VTK
+
+Super Class:
+
+ vtkImageAlgorithm
+
+ vtkVideoSource is a superclass for video input interfaces for VTK.
+ The goal is to provide an interface which is very similar to the
+ interface of a VCR, where the 'tape' is an internal frame buffer
+ capable of holding a preset number of video frames.  Specialized
+ versions of this class record input from various video input sources.
+ This base class records input from a noise source.
+
+Caveats:
+
+ You must call the ReleaseSystemResources() method before the application
+ exits.  Otherwise the application might hang while trying to exit.
+
+See Also:
+
+ vtkWin32VideoSource vtkMILVideoSource
+
+
+"""
 class vtkVolume16Reader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -10727,7 +13162,34 @@ See Also:
 
 
 """
-    
+class vtkWin32VideoSource:
+    kits = ['vtk_kit']
+    cats = ['VTK basic filters']
+
+    help = \
+         """vtkWin32VideoSource - Video-for-Windows video digitizer
+
+Super Class:
+
+ vtkVideoSource
+
+ vtkWin32VideoSource grabs frames or streaming video from a
+ Video for Windows compatible device on the Win32 platform. 
+
+Caveats:
+
+ With some capture cards, if this class is leaked and ReleaseSystemResources 
+ is not called, you may have to reboot before you can capture again.
+ vtkVideoSource used to keep a global list and delete the video sources
+ if your program leaked, due to exit crashes that was removed.
+
+
+See Also:
+
+ vtkVideoSource vtkMILVideoSource
+
+
+"""
 class vtkWindowToImageFilter:
     kits = ['vtk_kit']
     cats = ['VTK basic filters']
@@ -10763,7 +13225,7 @@ Caveats:
 
 See Also:
 
- vtkWindow
+ vtkWindow vtkRenderLargeImage
 
 
 """
@@ -10925,6 +13387,96 @@ See Also:
 
 
 """
+class vtkXMLHierarchicalBoxDataReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkXMLHierarchicalBoxDataReader - Reader for hierarchical datasets
+
+Super Class:
+
+ vtkXMLHierarchicalDataReader
+
+ vtkXMLHierarchicalBoxDataReader reads the VTK XML hierarchical data file
+ format. XML hierarchical data files are meta-files that point to a list
+ of serial VTK XML files. When reading in parallel, it will distribute
+ sub-blocks among processor. If the number of sub-blocks is less than
+ the number of processors, some processors will not have any sub-blocks
+ for that level. If the number of sub-blocks is larger than the
+ number of processors, each processor will possibly have more than
+ 1 sub-block.
+
+
+"""
+class vtkXMLHierarchicalDataReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkXMLHierarchicalDataReader - Reader for hierarchical datasets
+
+Super Class:
+
+ vtkXMLMultiGroupDataReader
+
+ vtkXMLHierarchicalDataReader reads the VTK XML hierarchical data file
+ format. XML hierarchical data files are meta-files that point to a list
+ of serial VTK XML files. When reading in parallel, it will distribute
+ sub-blocks among processor. If the number of sub-blocks is less than
+ the number of processors, some processors will not have any sub-blocks
+ for that level. If the number of sub-blocks is larger than the
+ number of processors, each processor will possibly have more than
+ 1 sub-block.
+
+
+"""
+class vtkXMLHyperOctreeReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkXMLHyperOctreeReader - Read VTK XML HyperOctree files.
+
+Super Class:
+
+ vtkXMLDataReader
+
+ vtkXMLHyperOctreeReader reads the VTK XML HyperOctree file
+ format.  One rectilinear grid file can be read to produce one
+ output.  Streaming is supported.  The standard extension for this
+ reader's file format is "vto".  This reader is also used to read a
+ single piece of the parallel file format.
+
+See Also:
+
+ vtkXMLPHyperOctreeReader
+
+
+"""
+class vtkXMLHyperOctreeWriter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic writer']
+
+    help = \
+         """vtkXMLHyperOctreeWriter - Write VTK XML HyperOctree files.
+
+Super Class:
+
+ vtkXMLWriter
+
+ vtkXMLHyperOctreeWriter writes the VTK XML HyperOctree file
+ format.  One HyperOctree input can be written into one file in
+ any number of streamed pieces.  The standard extension for this
+ writer's file format is "vto".  This writer is also used to write a
+ single piece of the parallel file format.
+
+See Also:
+
+ vtkXMLPHyperOctreeWriter
+
+
+"""
 class vtkXMLImageDataReader:
     kits = ['vtk_kit']
     cats = ['VTK basic readers']
@@ -10968,6 +13520,71 @@ Super Class:
 See Also:
 
  vtkXMLPImageDataWriter
+
+
+"""
+class vtkXMLMultiBlockDataReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkXMLMultiBlockDataReader - Reader for multi-block datasets
+
+Super Class:
+
+ vtkXMLMultiGroupDataReader
+
+ vtkXMLMultiBlockDataReader reads the VTK XML multi-block data file
+ format. XML multi-block data files are meta-files that point to a list
+ of serial VTK XML files. When reading in parallel, it will distribute
+ sub-blocks among processor. If the number of sub-blocks is less than
+ the number of processors, some processors will not have any sub-blocks
+ for that block. If the number of sub-blocks is larger than the
+ number of processors, each processor will possibly have more than
+ 1 sub-block.
+
+
+"""
+class vtkXMLMultiGroupDataReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkXMLMultiGroupDataReader - Reader for multi-group datasets
+
+Super Class:
+
+ vtkXMLReader
+
+ vtkXMLMultiGroupDataReader reads the VTK XML multi-group data file
+ format. XML multi-group data files are meta-files that point to a list
+ of serial VTK XML files. When reading in parallel, it will distribute
+ sub-blocks among processor. If the number of sub-blocks is less than
+ the number of processors, some processors will not have any sub-blocks
+ for that group. If the number of sub-blocks is larger than the
+ number of processors, each processor will possibly have more than
+ 1 sub-block.
+
+
+"""
+class vtkXMLMultiGroupDataWriter:
+    kits = ['vtk_kit']
+    cats = ['VTK basic writer']
+
+    help = \
+         """vtkXMLMultiGroupDataWriter - Writer for multi-group datasets
+
+Super Class:
+
+ vtkXMLWriter
+
+ vtkXMLMultiGroupDataWriter writes (serially) the VTK XML multi-group,
+ multi-block hierarchical and hierarchical box files. XML multi-group
+ data files are meta-files that point to a list of serial VTK XML files.
+
+See Also:
+
+ vtkXMLPMultiGroupDataWriter
 
 
 """
@@ -11363,6 +13980,73 @@ Super Class:
 See Also:
 
  vtkXMLPStructuredGridWriter
+
+
+"""
+class vtkXMLTreeReader:
+    kits = ['vtk_kit']
+    cats = ['VTK basic readers']
+
+    help = \
+         """vtkXMLTreeReader - reads an XML file into a vtkTree
+
+Super Class:
+
+ vtkTreeAlgorithm
+
+ vtkXMLTreeReader parses an XML file and uses the nesting structure of the
+ XML tags to generate a tree.  Node attributes are assigned to node arrays,
+ and the special arrays .tagname and .chardata contain the tag type and the
+ text internal to the tag, respectively.  The arrays are of type
+ vtkStringArray.  There is an array for each attribute type in the XML file,
+ even if it appears in only one tag.  If an attribute is missing from a tag,
+ its value is the empty string.
+
+ If MaskArrays is on (the default is off), the filter will additionally make bit
+ arrays whose names are prepended with ".valid." which are 1 if the element 
+ contains that attribute, and 0 otherwise. 
+
+ For example, the XML file containing the text:
+ <node name="jeff" age="26">
+   this is text in jeff's node
+   <node name="joe">
+     <node name="al" initials="amb" other="something"/>
+     <node name="dave" age="30"/>
+   </node>
+   <node name="lisa">this is text in lisa's node</node>
+   <node name="darlene" age="29"/>
+ </node>
+
+ would be parsed into a tree with the following node IDs and structure:
+
+ 0 (jeff) - children: 1 (joe), 4 (lisa), 5 (darlene)
+ 1 (joe)  - children: 2 (al), 3 (dave)
+ 2 (al)
+ 3 (dave)
+ 4 (lisa)
+ 5 (darlene)
+
+ and the node data arrays would be as follows:
+
+ name      initials  other     age       .tagname  .chardata
+ ------------------------------------------------------------------------------------------------
+ jeff      (empty)   (empty)   26         node     "  this is text in jeff's node\n  \n  \n  \n"
+ joe       (empty)   (empty)   (empty)    node     "\n    \n    \n  "
+ al        amb       something (empty)    node     (empty)
+ dave      (empty)   (empty)   30         node     (empty)
+ lisa      (empty)   (empty)   (empty)    node     "this is text in lisa's node"
+ darlene   (empty)   (empty)   29         node     (empty)
+
+ There would also be the following bit arrays if MaskArrays is on:
+
+ .valid.name   .valid.initials   .valid.other   .valid.age
+ ---------------------------------------------------------
+ 1             0                 0              1
+ 1             0                 0              0
+ 1             1                 1              0
+ 1             0                 0              1
+ 1             0                 0              0
+ 1             0                 0              1
 
 
 """

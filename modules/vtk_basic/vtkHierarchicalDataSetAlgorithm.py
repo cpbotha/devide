@@ -7,6 +7,6 @@ class vtkHierarchicalDataSetAlgorithm(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkHierarchicalDataSetAlgorithm(), 'Processing.',
-            ('vtkDataObject',), ('vtkDataObject',),
+            ('vtkHierarchicalDataSet',), ('vtkHierarchicalDataSet',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)

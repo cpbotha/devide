@@ -2,11 +2,11 @@
 from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
-class vtkHierarchicalDataLevelFilter(SimpleVTKClassModuleBase):
+class vtkOpenFOAMReader(SimpleVTKClassModuleBase):
     def __init__(self, moduleManager):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
-            vtk.vtkHierarchicalDataLevelFilter(), 'Processing.',
-            ('vtkMultiGroupDataSet',), ('vtkMultiGroupDataSet',),
+            vtk.vtkOpenFOAMReader(), 'Reading vtkOpenFOAM.',
+            (), ('vtkOpenFOAM',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)
