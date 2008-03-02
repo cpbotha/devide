@@ -186,7 +186,13 @@ def run_pyinstaller(md_paths):
 
     print S_PPF, "run_pyinstaller"
 
-    # old makePackage.sh would remove all *.pyc, *~ and #*# files
+    # first get rid of all pre-compiled and backup files.  These HAVE
+    # screwed up our binaries in the past!
+    print PPF, 'Deleting PYC, *~ and #*# files'
+    dead_files = find_files(md_paths.devide_dir, '(.*\.pyc|.*~|#.*#)')
+    for fn in dead_files:
+        os.unlink(fn)
+    
     cmd = '%s %s %s' % (sys.executable, md_paths.pyinstaller_script,
             md_paths.specfile)
     
