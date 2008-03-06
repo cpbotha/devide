@@ -133,7 +133,7 @@ def find_command_with_ver(name, command, ver_re):
 
     return retval
 
-def find_files(start_dir, re_pattern='.*\.(pyd|dll)'):
+def find_files(start_dir, re_pattern='.*\.(pyd|dll)', exclude_pats=[]):
     """Recursively find all files (not directories) with filenames 
     matching given regular expression.  Case is ignored.
 
@@ -141,20 +141,35 @@ def find_files(start_dir, re_pattern='.*\.(pyd|dll)'):
     @param re_pattern: regular expression with which all found files
     will be matched. example: re_pattern = '.*\.(pyd|dll)' will match
     all filenames ending in pyd or dll.
+    @param exclude_pats: if filename (without directory) matches any
+    one of these patterns, do not include it in the list
     @return: list of fully qualified filenames that satisfy the
     pattern
     """
 
     cpat = re.compile(re_pattern, re.IGNORECASE)
     found_files = []
+    excluded_files = []
 
     for dirpath, dirnames, filenames in os.walk(start_dir):
         ndirpath = os.path.normpath(os.path.abspath(dirpath))
         for fn in filenames:
             if cpat.match(fn):
-                found_files.append(os.path.join(ndirpath,fn))
+              
+                # see if fn does not satisfy one of the exclude
+                # patterns
+                exclude_fn = False
+                for exclude_pat in exclude_pats:
+                    if re.match(exclude_pat, fn, re.IGNORECASE):
+                        exclude_fn = True
+                        break
+                
+                if not exclude_fn:
+                    found_files.append(os.path.join(ndirpath,fn))
+                else:
+                    excluded_files.append(os.path.join(ndirpath,fn))
 
-    return found_files
+    return found_files, excluded_files
 
 ####################################################################
 # METHODS CALLED FROM MAIN()
@@ -189,7 +204,7 @@ def run_pyinstaller(md_paths):
     # first get rid of all pre-compiled and backup files.  These HAVE
     # screwed up our binaries in the past!
     print PPF, 'Deleting PYC, *~ and #*# files'
-    dead_files = find_files(md_paths.devide_dir, '(.*\.pyc|.*~|#.*#)')
+    dead_files, _ = find_files(md_paths.devide_dir, '(.*\.pyc|.*~|#.*#)')
     for fn in dead_files:
         os.unlink(fn)
     
@@ -292,7 +307,7 @@ def postproc_sos(md_paths):
         print S_PPF, "postproc_sos (strip, chrpath)"
 
         # strip all libraries
-        so_files = find_files(md_paths.pyi_dist_dir, '.*\.(so$|so\.)')
+        so_files, _ = find_files(md_paths.pyi_dist_dir, '.*\.(so$|so\.)')
 
         print PPF, 'strip / chrpath %d SO files.' % (len(so_files),)
         for so_file in so_files:
@@ -311,12 +326,22 @@ def rebase_dlls(md_paths):
 
     if os.name == 'nt':
         print S_PPF, "rebase_dlls"
-        # get list of pyd / dll files, add newline to each and every
-        # filename
-        so_files = ['%s\n' % (i,) for i in
-                find_files(md_paths.pyi_dist_dir)]
+
+        # sqlite3.dll cannot be rebased; it even gets corrupted in the
+        # process!  see this test:
+        # C:\TEMP>rebase -b 0x60000000 -e 0x1000000 sqlite3.dll
+        # REBASE: *** RelocateImage failed (sqlite3.dll).  
+        # Image may be corrupted
+
+        # get list of pyd / dll files, excluding sqlite3
+        so_files, excluded_files = find_files(
+                md_paths.pyi_dist_dir, '.*\.(pyd|dll)', ['sqlite3\.dll'])
+        # add newline to each and every filename
+        so_files = ['%s\n' % (i,) for i in so_files]
 
         print "Found %d DLL PYD files..." % (len(so_files),)
+        print "Excluded %d files..." % (len(excluded_files),)
+
 
         # open file in specfile_dir, write the whole list
         dll_list_fn = os.path.join(
