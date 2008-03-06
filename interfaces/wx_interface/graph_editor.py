@@ -478,6 +478,8 @@ class GraphEditor:
         Of course, producers of selected modules will also be asked to resend
         their output, even although they are perhaps not part of the
         selection.
+
+        This method is called by event handlers in the GraphEditor.
         """
         
         instances = [g.moduleInstance for g in glyphs]

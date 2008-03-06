@@ -368,6 +368,8 @@ class Scheduler:
         this the other way round, i.e. each module is executed and its output
         is transferred.
 
+        Called by SchedulerProxy.execute_modules().
+
         @param schedulerModules: list of modules that should be executed in
         order.
         @raise CyclesDetectedException: This exception is raised if any
@@ -687,6 +689,12 @@ class SchedulerProxy:
         return s
 
     def execute_modules(self, scheduler_modules):
+        """Thunks through to the correct scheduler instance's
+        execute_modules.
+
+        This is called by NetworkManager.execute_network()
+        """
+
         self.get_scheduler().execute_modules(scheduler_modules)
 
     def meta_modules_to_scheduler_modules(self, meta_modules):
