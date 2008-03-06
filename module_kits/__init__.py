@@ -1,5 +1,6 @@
-# moduleKits __init__.py
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 """Top-level __init__ of the module_kits.
 
@@ -17,7 +18,7 @@ call, this is ignored and DeVIDE starts up as usual.  However, if the module
 is in the crucial_kit_list, DeVIDE will refuse to start up.
 """
 
-module_kit_list = ['wx_kit', 'vtk_kit', 'vtktudoss_kit',
+module_kit_list = ['sqlite_kit', 'wx_kit', 'vtk_kit', 'vtktudoss_kit',
                    'itk_kit', 'itktudoss_kit',
                    'numpy_kit', 'matplotlib_kit', 'stats_kit',
                    'geometry_kit']
