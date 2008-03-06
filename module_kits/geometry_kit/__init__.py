@@ -1,4 +1,6 @@
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
