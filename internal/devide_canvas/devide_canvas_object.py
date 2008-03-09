@@ -311,13 +311,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _glyph_z_len = 0.1
     _text_z = 0.4
 
-
-    t = vtk.vtkVectorText()
-    t.SetText('M')
-    t.Update()
-    b = t.GetOutput().GetBounds()
-    _label_scale = _label_height / (b[3] - b[2])
-
     def __init__(self, canvas, position, numInputs, numOutputs,
                  labelList, moduleInstance):
         # parent constructor
