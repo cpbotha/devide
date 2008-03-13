@@ -68,17 +68,11 @@ class geCanvasDropTarget(wx.PyDropTarget):
             filenames = self._fdo.GetFilenames()
             
             if len(text) > 0:
-                # we're going to do something, so set the focus on
-                # the graph editor canvas
-                #self._graphEditor._canvasFrame.SetFocus()
                 # set the string to zero so we know what to do when
                 self._tdo.SetText('')
                 self._graphEditor.canvasDropText(x,y,text)
 
             elif len(filenames) > 0:
-                # we're going to do something, so set the focus on
-                # the graph editor canvas
-                #self._graphEditor._canvasFrame.SetFocus()
                 # handle the list of filenames
                 dropFilenameErrors = self._graphEditor.canvasDropFilenames(
                     x,y,filenames)
@@ -414,6 +408,10 @@ class GraphEditor:
     def _handlerModulesListBoxMouseEvents(self, event):
         if event.ButtonDClick():
             self._place_current_module_at_convenient_pos()
+            # user has dragged and dropped module, if a viewer module
+            # has taken focus with Raise(), we have to take it back.
+            self.canvas._rwi.SetFocus()
+            wx.SafeYield()
             return
         
         if not event.Dragging():
@@ -542,24 +540,21 @@ class GraphEditor:
         if itemText.startswith(modp):
             self.create_module_and_glyph(w_x, w_y, itemText[len(modp):])
 
-            # on GTK we have to SetFocus on the canvas, else the palette
-            # keeps the mouse and weird things happen
-            if os.name == 'posix':
-                self.canvas._rwi.SetFocus()
-                # yield also necessary, else the workaround doesn't
-                wx.SafeYield()
+            # if the user has dropped a module on the canvas, we want
+            # the focus to return to the canvas, as the user probably
+            # wants to connect the thing up.  if we don't do this,
+            # some viewer modules takes focus.  Thanks Peter Krekel.
+            self.canvas._rwi.SetFocus()
+            wx.SafeYield()
           
 
         elif itemText.startswith(segp):
             self._loadAndRealiseNetwork(itemText[len(segp):], (wx,wy),
                                         reposition=True)
 
-            # on GTK we have to SetFocus on the canvas, else the palette
-            # keeps the mouse and weird things happen
-            if os.name == 'posix':
-                self.canvas._rwi.SetFocus()
-                # yield also necessary, else the workaround doesn't
-                wx.SafeYield()
+            # see explanation above for the SetFocus
+            self.canvas._rwi.SetFocus()
+            wx.SafeYield()
             
 
 
@@ -665,6 +660,14 @@ class GraphEditor:
                 # we have to convert the event coords to real coords
                 self._loadAndRealiseNetwork(filename, (wx,wy),
                                             reposition=True)
+
+                # some DVNs contain viewer modules that take the focus
+                # (due to Raise).  Here we take it back to the canvas,
+                # most logical thing we can do.
+                self.canvas._rwi.SetFocus()
+                wx.SafeYield()
+
+
 
             elif filename.lower().endswith('.vtk'):
                 # for this type we have to do some special handling.

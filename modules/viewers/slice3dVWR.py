@@ -521,6 +521,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
         # the user can show the control panel by using the button
         # made for that purpose.
         self.threedFrame.Show(True)
+        # make sure the view comes to the front
         self.threedFrame.Raise()
 
         # need to call this so that the window is actually refreshed
