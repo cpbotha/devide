@@ -37,3 +37,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
     def view(self):
         pass
 
+    def _scan(self, paths):
+        """Given a list combining filenames and directories, search
+        recursively to find all valid DICOM files.  Build
+        dictionaries.
+        """
+
