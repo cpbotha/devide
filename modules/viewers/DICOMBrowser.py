@@ -29,6 +29,9 @@ class Series:
         self.series_description = None
         self.modality = None
         self.filenames = []
+        # number of slices can deviate from number of filenames due to
+        # multi-frame DICOM files
+        self.slices = 0
 
 class DICOMBrowser(noConfigModuleMixin, moduleBase):
     def __init__(self, module_manager):
@@ -81,6 +84,12 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
         # Study description (0008,1030)
         # Series UID (0020,000E)
 
+        # see http://public.kitware.com/pipermail/igstk-developers/
+        # 2006-March/000901.html for explanation w.r.t. number of
+        # frames; for now we are going to assume that this refers to
+        # the number of included slices (as is the case for the
+        # Toshiba 320 slice for example)
+
         tag_to_symbol = {
                 (0x0008, 0x0018) : 'instance_uid',
                 (0x0010, 0x0010) : 'patient_name',
@@ -90,7 +99,10 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
                 (0x0008, 0x0020) : 'study_date',
                 (0x0020, 0x000e) : 'series_uid',
                 (0x0008, 0x103e) : 'series_description',
-                (0x0008, 0x0060) : 'modality'
+                (0x0008, 0x0060) : 'modality', # fixed per series
+                (0x0028, 0x0008) : 'number_of_frames',
+                (0x0028, 0x0010) : 'rows',
+                (0x0028, 0x0011) : 'columns'
                 }
 
         # only do this if path is a directory
@@ -148,13 +160,21 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
             
             study_uid = file_tags['study_uid']
             series_uid = file_tags['series_uid']
-            
+           
+            # create a new study if it doesn't exist yet
             try:
                 study = study_dict[study_uid]
             except KeyError:
-                # create new study instance
                 study = Study()
                 study.study_uid = study_uid
+
+                study.study_description = file_tags.get(
+                        'study_description', '')
+                study.study_date = file_tags.get(
+                        'study_date', '')
+                study.patient_name = file_tags.get(
+                        'patient_name', '')
+
                 study_dict[study_uid] = study
 
             try:
@@ -171,6 +191,15 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
                 study.series_dict[series_uid] = series
 
             series.filenames.append(f)
+
+            
+            try:
+                number_of_frames = int(file_tags['number_of_frames'])
+            except KeyError:
+                # means number_of_frames wasn't found
+                number_of_frames = 1
+
+            series.slices = series.slices + number_of_frames
 
         return study_dict
 
