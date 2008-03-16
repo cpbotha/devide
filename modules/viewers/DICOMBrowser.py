@@ -6,13 +6,12 @@
 # wxTreeListCtrl
 # wx.TR_HIDE_ROOT
 
+import DICOMBrowserFrame
+reload(DICOMBrowserFrame)
 import gdcm
-
 from moduleBase import moduleBase
-#from moduleMixins import introspectModuleMixin
-from moduleMixins import noConfigModuleMixin
-# eventually this is going to be a full view module
-# while we are experimenting, it's a noConfig
+from moduleMixins import introspectModuleMixin
+import moduleUtils
 
 class Study:
     def __init__(self):
@@ -41,9 +40,16 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
             self,
             {'Module (self)' : self})
 
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager, 
+            DICOMBrowserFrame.DICOMBrowserFrame)
+
         self.sync_module_logic_with_config()
 
+        self.view()
+
     def close(self):
+        self._view_frame.close()
         noConfigModuleMixin.close(self)
 
     def get_input_descriptions(self):
@@ -67,8 +73,9 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
     def config_to_logic(self):
         pass
 
-    def view_NOT(self):
-        pass
+    def view(self):
+        self._view_frame.Show()
+        self._view_frame.Raise()
 
     def _scan(self, path):
         """Given a list combining filenames and directories, search
@@ -115,6 +122,8 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
             tag = gdcm.Tag(*tag_tuple)
             s.AddTag(tag)
 
+        # d.GetFilenames simply returns a tuple with all
+        # fully-qualified filenames that it finds.
         ret = s.Scan(d.GetFilenames())
         if not ret:
             print "scanner failed"
