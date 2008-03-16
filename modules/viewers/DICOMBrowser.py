@@ -12,6 +12,7 @@ import gdcm
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
+import wx
 
 class Study:
     def __init__(self):
@@ -43,6 +44,8 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
+
+        self._bind_events()
 
         self.sync_module_logic_with_config()
 
@@ -76,6 +79,23 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
     def view(self):
         self._view_frame.Show()
         self._view_frame.Raise()
+
+    def _bind_events(self):
+        fp = self._view_frame.files_pane
+        fp.ad_button.Bind(wx.EVT_BUTTON,
+                self._handler_ad_button)
+
+    def _handler_ad_button(self, event):
+
+        dlg = wx.DirDialog(self._view_frame, "Choose a directory:",
+                          style=wx.DD_DEFAULT_STYLE
+                           | wx.DD_DIR_MUST_EXIST
+                           )
+
+        if dlg.ShowModal() == wx.ID_OK:
+            print dlg.GetPath()
+
+        dlg.Destroy()
 
     def _scan(self, path):
         """Given a list combining filenames and directories, search
