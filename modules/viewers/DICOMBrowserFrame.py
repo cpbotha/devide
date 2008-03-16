@@ -47,7 +47,16 @@ class DICOMBrowserFrame(wx.Frame):
         self.Destroy()
 
     def _create_files_pane(self):
-        pass
+        panel = wx.Panel(self, -1)
+        files_list = wx.ListBox(panel, -1, choices=["choice 1"],
+                style=wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB)
+
+        ad_button = wx.Button(panel, -1, "Add Directory")
+        af_button = wx.Button(panel, -1, "Add Files")
+        r_button = wx.Button(panel, -1, "Remove")
+
+        bs = wx.Sizer(wx.VERTICAL)
+
 
     def _create_studies_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
