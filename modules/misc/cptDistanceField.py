@@ -1,11 +1,12 @@
 import genUtils
 from moduleBase import moduleBase
 import moduleUtils
-from moduleMixins import noConfigModuleMixin
+import moduleMixins
+from moduleMixins import scriptedConfigModuleMixin
 import os
 import vtk
 
-class cptDistanceField(noConfigModuleMixin, moduleBase):
+class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
 
     _cptDriverExe = '/home/cpbotha/build/cpt/3d/driver/driver.exe'
 
@@ -25,8 +26,20 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(
             self, self._flipper, 'Flipping Y axis.')
 
-        noConfigModuleMixin.__init__(
-            self, {'Module (self)' : self})
+        self._config.cpt_driver_path = \
+                'd:\\misc\\stuff\\driver.bat'
+            #'/home/cpbotha/build/cpt/3d/driver/driver.exe'
+
+        config_list = [
+                ('CPT driver path', 'cpt_driver_path',
+                'base:str', 'filebrowser', 
+                'Path to CPT driver executable',
+                {'fileMode' : moduleMixins.wx.OPEN,
+                 'fileMask' : 'All files (*.*)|*.*'})]
+
+        scriptedConfigModuleMixin.__init__(
+            self, config_list,
+            {'Module (self)' : self})
             
         self.sync_module_logic_with_config()
         
@@ -34,10 +47,10 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
         # we should disconnect all inputs
         self.set_input(0, None)
         self.set_input(1, None)
-        noConfigModuleMixin.close(self)
+        scriptedConfigModuleMixin.close(self)
 
     def get_input_descriptions(self):
-	return ('VTK Image', 'VTK Polydata')
+        return ('VTK Image', 'VTK Polydata')
     
     def set_input(self, idx, inputStream):
         if idx == 0:
@@ -62,7 +75,7 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
             
         
     def get_output_descriptions(self):
-	return ('Distance field (VTK Image)',)
+        return ('Distance field (VTK Image)',)
     
     def get_output(self, idx):
         return self._flipper.GetOutput()
@@ -73,12 +86,6 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
     def config_to_logic(self):
         pass
 
-    def view_to_config(self):
-        pass
-
-    def config_to_view(self):
-        pass
-
     def execute_module(self):
         if self._imageInput and self._meshInput:
 
@@ -87,7 +94,7 @@ class cptDistanceField(noConfigModuleMixin, moduleBase):
 
             # first convert mesh data to brep
             cbw = self._moduleManager.createModule(
-                'modules.Writers.cptBrepWRT')
+                'modules.writers.cptBrepWRT')
             cbw.set_input(0, self._meshInput)
             cfg = cbw.get_config()
             brepFilename = '%s.brep' % (cptBaseName,)
