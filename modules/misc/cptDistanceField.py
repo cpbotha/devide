@@ -8,8 +8,6 @@ import vtk
 
 class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
 
-    _cptDriverExe = '/home/cpbotha/build/cpt/3d/driver/driver.exe'
-
     def __init__(self, moduleManager):
 
         # call parent constructor
@@ -124,7 +122,7 @@ class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
 
             # now we can call the driver
             os.system('%s -b -o %s %s.geom %s.brep' % \
-                      (self._cptDriverExe,
+                      (self._config.cpt_driver_path,
                        cptBaseName, cptBaseName, cptBaseName))
 
             # we should have cptBaseName.dist waiting...
