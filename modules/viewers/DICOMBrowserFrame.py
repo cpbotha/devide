@@ -60,6 +60,8 @@ class DICOMBrowserFrame(wx.Frame):
         self._mgr.Update()
 
     def close(self):
+        del self.files_pane
+        del self.studies_lc
         self.Destroy()
 
     def _create_files_pane(self):
@@ -74,6 +76,8 @@ class DICOMBrowserFrame(wx.Frame):
         fpf.Destroy()
 
         panel.ad_button = fpf.ad_button
+        panel.af_button = fpf.af_button
+        panel.r_button = fpf.r_button
         panel.scan_button = fpf.scan_button
         panel.dirs_files_lb = fpf.dirs_files_lb
         self.files_pane = panel
@@ -87,6 +91,8 @@ class DICOMBrowserFrame(wx.Frame):
         sl.InsertColumn(2, "Date") # study date
         sl.InsertColumn(3, "Images") # total number of images
         sl.InsertColumn(4, "Series") # number of series
+
+        self.studies_lc = sl
 
         return sl
 

@@ -12,6 +12,8 @@ import gdcm
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
+import os
+import sys
 import wx
 
 class Study:
@@ -33,11 +35,11 @@ class Series:
         # multi-frame DICOM files
         self.slices = 0
 
-class DICOMBrowser(noConfigModuleMixin, moduleBase):
+class DICOMBrowser(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
-        noConfigModuleMixin.__init__(
+        introspectModuleMixin.__init__(
             self,
             {'Module (self)' : self})
 
@@ -53,7 +55,7 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
 
     def close(self):
         self._view_frame.close()
-        noConfigModuleMixin.close(self)
+        introspectModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ()
@@ -82,22 +84,97 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
 
     def _bind_events(self):
         fp = self._view_frame.files_pane
+
         fp.ad_button.Bind(wx.EVT_BUTTON,
                 self._handler_ad_button)
 
+        fp.af_button.Bind(wx.EVT_BUTTON,
+                self._handler_af_button)
+
+        fp.scan_button.Bind(wx.EVT_BUTTON,
+                self._handler_scan_button)
+
     def _handler_ad_button(self, event):
 
-        dlg = wx.DirDialog(self._view_frame, "Choose a directory:",
+        dlg = wx.DirDialog(self._view_frame, 
+            "Choose a directory to add:",
                           style=wx.DD_DEFAULT_STYLE
                            | wx.DD_DIR_MUST_EXIST
                            )
 
         if dlg.ShowModal() == wx.ID_OK:
-            print dlg.GetPath()
+            self._view_frame.files_pane.dirs_files_lb.Append(dlg.GetPath())
 
         dlg.Destroy()
 
-    def _scan(self, path):
+    def _handler_af_button(self, event):
+
+        dlg = wx.FileDialog(
+                self._view_frame, message="Choose files to add:",
+                defaultDir="", 
+                defaultFile="",
+                wildcard="All files (*.*)|*.*",
+                style=wx.OPEN | wx.MULTIPLE
+                )
+
+        if dlg.ShowModal() == wx.ID_OK:
+            for p in dlg.GetPaths():
+                self._view_frame.files_pane.dirs_files_lb.Append(p)
+
+        dlg.Destroy()
+
+    def _handler_scan_button(self, event):
+        paths = []
+        lb = self._view_frame.files_pane.dirs_files_lb
+        for i in range(lb.GetCount()):
+            paths.append(lb.GetString(i))
+
+        study_dict = self._scan(paths)
+
+        lc = self._view_frame.studies_lc
+        # clear the thing out
+        lc.DeleteAllItems()
+
+        for study_uid, study in study_dict.items():
+            idx = lc.InsertStringItem(sys.maxint, study.patient_name)
+
+
+
+    def _helper_recursive_glob(self, paths):
+        """Given a combined list of files and directories, return a
+        combined list of sorted and unique fully-qualified filenames,
+        consisting of the supplied filenames and a recursive search
+        through all supplied directories.
+        """
+
+        # we'll use this to keep all filenames unique 
+        files_dict = {}
+        d = gdcm.Directory()
+
+        for path in paths:
+            if os.path.isdir(path):
+                # we have to cast path to str (it's usually unicode)
+                # else the gdcm wrappers error on "bad number of
+                # arguments to overloaded function"
+                d.Load(str(path), True)
+                # fromkeys creates a new dictionary with GetFilenames
+                # as keys; then update merges this dictionary with the
+                # existing files_dict
+                normed = [os.path.normpath(i) for i in d.GetFilenames()]
+                files_dict.update(dict.fromkeys(normed, 1))
+
+            elif os.path.isfile(path):
+                files_dict[os.path.normpath(path)] = 1
+
+
+        # now sort everything
+        filenames = files_dict.keys()
+        filenames.sort()
+
+        return filenames
+
+
+    def _scan(self, paths):
         """Given a list combining filenames and directories, search
         recursively to find all valid DICOM files.  Build
         dictionaries.
@@ -132,9 +209,8 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
                 (0x0028, 0x0011) : 'columns'
                 }
 
-        # only do this if path is a directory
-        d = gdcm.Directory()
-        nfiles = d.Load(path, True)
+        # find list of unique and sorted filenames
+        filenames = self._helper_recursive_glob(paths)
 
         s = gdcm.Scanner()
         # add the tags we want to the scanner
@@ -144,7 +220,7 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
 
         # d.GetFilenames simply returns a tuple with all
         # fully-qualified filenames that it finds.
-        ret = s.Scan(d.GetFilenames())
+        ret = s.Scan(filenames)
         if not ret:
             print "scanner failed"
             return
@@ -162,7 +238,7 @@ class DICOMBrowser(noConfigModuleMixin, moduleBase):
         # maps from study_uid to instance of Study
         study_dict = {} 
 
-        for f in d.GetFilenames():
+        for f in filenames:
             mapping = s.GetMapping(f)
 
             # with this we can iterate through all tags for this file
