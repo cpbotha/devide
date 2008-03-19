@@ -2,10 +2,12 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+import cStringIO
 import wx
 import wx.aui
 # need listmix.ColumnSorterMixin
 import wx.lib.mixins.listctrl as listmix
+from wx import BitmapFromImage, ImageFromStream
 
 from resources.python import DICOMBrowserPanels
 reload(DICOMBrowserPanels)
@@ -21,6 +23,43 @@ class SeriesColumns:
     description = 0
     modality = 1
     num_images = 2
+    row_col = 3
+
+#----------------------------------------------------------------------
+def getSmallUpArrowData():
+    return \
+'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
+\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
+\x00\x00<IDAT8\x8dcddbf\xa0\x040Q\xa4{h\x18\xf0\xff\xdf\xdf\xffd\x1b\x00\xd3\
+\x8c\xcf\x10\x9c\x06\xa0k\xc2e\x08m\xc2\x00\x97m\xd8\xc41\x0c \x14h\xe8\xf2\
+\x8c\xa3)q\x10\x18\x00\x00R\xd8#\xec\xb2\xcd\xc1Y\x00\x00\x00\x00IEND\xaeB`\
+\x82' 
+
+def getSmallUpArrowBitmap():
+    return BitmapFromImage(getSmallUpArrowImage())
+
+def getSmallUpArrowImage():
+    stream = cStringIO.StringIO(getSmallUpArrowData())
+    return ImageFromStream(stream)
+
+#----------------------------------------------------------------------
+def getSmallDnArrowData():
+    return \
+"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
+\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
+\x00\x00HIDAT8\x8dcddbf\xa0\x040Q\xa4{\xd4\x00\x06\x06\x06\x06\x06\x16t\x81\
+\xff\xff\xfe\xfe'\xa4\x89\x91\x89\x99\x11\xa7\x0b\x90%\ti\xc6j\x00>C\xb0\x89\
+\xd3.\x10\xd1m\xc3\xe5*\xbc.\x80i\xc2\x17.\x8c\xa3y\x81\x01\x00\xa1\x0e\x04e\
+?\x84B\xef\x00\x00\x00\x00IEND\xaeB`\x82" 
+
+def getSmallDnArrowBitmap():
+    return BitmapFromImage(getSmallDnArrowImage())
+
+def getSmallDnArrowImage():
+    stream = cStringIO.StringIO(getSmallDnArrowData())
+    return ImageFromStream(stream)
+
+#----------------------------------------------------------------------
 
 
 class SortedListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin, listmix.ColumnSorterMixin):
@@ -35,12 +74,22 @@ class SortedListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin, listmix.Column
         # These values will be used for sorting
         self.itemDataMap = {}
 
+        self.il = wx.ImageList(16, 16)
+        self.sm_up = self.il.Add(getSmallUpArrowBitmap())
+        self.sm_dn = self.il.Add(getSmallDnArrowBitmap())
+        self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
+
         listmix.ColumnSorterMixin.__init__(self, 5)
 
     def GetListCtrl(self):
         """Method required by ColumnSorterMixin.
         """
         return self
+
+    def GetSortImages(self):
+        """Used by the ColumnSorterMixin.
+        """
+        return (self.sm_dn, self.sm_up)
 
     def auto_size_columns(self):
         for idx in range(self.GetColumnCount()):
@@ -79,6 +128,7 @@ class DICOMBrowserFrame(wx.Frame):
     def close(self):
         del self.files_pane
         del self.studies_lc
+        del self.series_lc
         self.Destroy()
 
     def _create_files_pane(self):
@@ -107,8 +157,8 @@ class DICOMBrowserFrame(wx.Frame):
         sl.InsertColumn(StudyColumns.description, "Description") 
         sl.InsertColumn(StudyColumns.date, "Date") # study date
         # total number of images
-        sl.InsertColumn(StudyColumns.num_images, "Images") 
-        sl.InsertColumn(StudyColumns.num_series, "Series") 
+        sl.InsertColumn(StudyColumns.num_images, "# Images") 
+        sl.InsertColumn(StudyColumns.num_series, "# Series") 
 
         self.studies_lc = sl
 
@@ -117,8 +167,13 @@ class DICOMBrowserFrame(wx.Frame):
     def _create_series_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
         sl.InsertColumn(SeriesColumns.description, "Description")
+        sl.SetColumnWidth(SeriesColumns.description, 200)
+
         sl.InsertColumn(SeriesColumns.modality, "Modality")
-        sl.InsertColumn(SeriesColumns.num_images, "Images")
+        sl.InsertColumn(SeriesColumns.num_images, "# Images")
+        sl.InsertColumn(SeriesColumns.row_col, "Size")
+
+        self.series_lc = sl
 
         return sl
        

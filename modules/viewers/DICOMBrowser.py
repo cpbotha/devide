@@ -29,13 +29,15 @@ class Study:
 
 class Series:
     def __init__(self):
-        self.series_uid = None
-        self.series_description = None
+        self.uid = None
+        self.description = None
         self.modality = None
         self.filenames = []
         # number of slices can deviate from number of filenames due to
         # multi-frame DICOM files
         self.slices = 0
+        self.rows = 0
+        self.columns = 0
 
 class DICOMBrowser(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
@@ -49,11 +51,25 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self, self._moduleManager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
 
+        # map from study_uid to Study instances
+        self._study_dict = {}
+        # map from studies listctrl itemdata to study uid
+        self._item_data_to_study_uid = {}
+        # currently selected study_uid
+        self._selected_study_uid = None
+
         self._bind_events()
 
+
+        self._config.dicom_search_paths = []
+
         self.sync_module_logic_with_config()
+        self.sync_module_view_with_logic()
 
         self.view()
+        # all modules should toggle this once they have shown their
+        # stuff.
+        self.view_initialised = True
 
     def close(self):
         self._view_frame.close()
@@ -80,6 +96,16 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
     def config_to_logic(self):
         pass
 
+    def config_to_view(self):
+        lb = self._view_frame.files_pane.dirs_files_lb
+        # clear the listbox
+        lb.Clear()
+        for p in self._config.dicom_search_paths:
+            lb.Append(str(p))
+
+    def view_to_config(self):
+        pass
+
     def view(self):
         self._view_frame.Show()
         self._view_frame.Raise()
@@ -93,10 +119,51 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         fp.af_button.Bind(wx.EVT_BUTTON,
                 self._handler_af_button)
 
+        fp.r_button.Bind(wx.EVT_BUTTON,
+                self._handler_r_button)
+
         fp.scan_button.Bind(wx.EVT_BUTTON,
                 self._handler_scan_button)
+        
+        lc = self._view_frame.studies_lc
+        lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
+                self._handler_study_selected)
 
-    def _fill_studies_listctrl(self, study_dict):
+    def _fill_series_listctrl(self):
+        # get out current Study instance
+        study = self._study_dict[self._selected_study_uid]
+        # then the series_dict belonging to that Study
+        series_dict = study.series_dict
+
+        # clear the ListCtrl
+        lc = self._view_frame.series_lc
+        lc.DeleteAllItems()
+        # shortcut to the columns class
+        sc = DICOMBrowserFrame.SeriesColumns
+
+        # we're going to need this for the column sorting
+        item_data_map = {}
+
+        for series_uid, series in series_dict.items():
+            idx = lc.InsertStringItem(sys.maxint, series.description)
+            lc.SetStringItem(idx, sc.modality, series.modality)
+            lc.SetStringItem(idx, sc.num_images, str(series.slices))
+            rc_string = '%d x %d' % (series.columns, series.rows)
+            lc.SetStringItem(idx, sc.row_col, rc_string)
+            
+            # also for the column sorting
+            lc.SetItemData(idx, idx)
+
+            item_data_map[idx] = (
+                series.description,
+                series.modality,
+                series.slices,
+                rc_string)
+
+        lc.itemDataMap = item_data_map
+
+
+    def _fill_studies_listctrl(self):
         """Given a study dictionary, fill out the complete studies
         ListCtrl.
         """
@@ -107,8 +174,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         sc = DICOMBrowserFrame.StudyColumns
 
+        # this is for the columnsorter
         item_data_map = {}
-        for study_uid, study in study_dict.items():
+        # this is for figuring out which study is selected in the
+        # event handler
+        self.item_data_to_study_id = {}
+        for study_uid, study in self._study_dict.items():
             # clean way of mapping from item to column?
             idx = lc.InsertStringItem(sys.maxint, study.patient_name)
             lc.SetStringItem(idx, sc.description, study.description)
@@ -117,23 +188,24 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             lc.SetStringItem(
                     idx, sc.num_series, str(len(study.series_dict)))
           
-            # SetItemData wants a long as argument, so we give it the
-            # hash of the study_uid, which is unique
-            h = hash(study_uid)
-            lc.SetItemData(idx, h) 
+            # we set the itemdata to the current index (this will
+            # change with sorting, of course)
+            lc.SetItemData(idx, idx) 
 
             # for sorting we build up this item_data_map with the same
             # hash as key, and the all values occurring in the columns
             # as sortable values
-            item_data_map[h] = (
+            item_data_map[idx] = (
                     study.patient_name,
                     study.description,
                     study.date,
                     study.slices,
                     len(study.series_dict))
 
-            # assign the datamap to the ColumnSorterMixin
-            lc.itemDataMap = item_data_map
+            self._item_data_to_study_uid[idx] = study.uid
+
+        # assign the datamap to the ColumnSorterMixin
+        lc.itemDataMap = item_data_map
 
         lc.auto_size_columns()
 
@@ -146,7 +218,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                            )
 
         if dlg.ShowModal() == wx.ID_OK:
-            self._view_frame.files_pane.dirs_files_lb.Append(dlg.GetPath())
+            p = dlg.GetPath()
+            self._view_frame.files_pane.dirs_files_lb.Append(p)
+            self._config.dicom_search_paths.append(p)
 
         dlg.Destroy()
 
@@ -163,8 +237,19 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         if dlg.ShowModal() == wx.ID_OK:
             for p in dlg.GetPaths():
                 self._view_frame.files_pane.dirs_files_lb.Append(p)
+                self._config.dicom_search_paths.append(p)
 
         dlg.Destroy()
+
+    def _handler_r_button(self, event):
+        lb = self._view_frame.files_pane.dirs_files_lb
+        s = list(lb.GetSelections())
+        s.sort(reverse=True)
+        for idx in s:
+            lb.Delete(idx)
+
+        self._config.dicom_search_paths = lb.GetStrings()
+
 
     def _handler_scan_button(self, event):
         paths = []
@@ -172,11 +257,19 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         for i in range(lb.GetCount()):
             paths.append(lb.GetString(i))
 
-        study_dict = self._scan(paths)
+        self._study_dict = self._scan(paths)
+        self._fill_studies_listctrl()
 
-        self._fill_studies_listctrl(study_dict)
+    def _handler_study_selected(self, event):
+        # we get the ItemData from the currently selected ListCtrl
+        # item
+        lc = self._view_frame.studies_lc
+        idx = lc.GetItemData(event.m_itemIndex)
+        # and then use this to find the current study_uid
+        study_uid = self._item_data_to_study_uid[idx]
+        self._selected_study_uid = study_uid
 
-
+        self._fill_series_listctrl()
 
     def _helper_recursive_glob(self, paths):
         """Given a combined list of files and directories, return a
@@ -309,7 +402,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 study = study_dict[study_uid]
             except KeyError:
                 study = Study()
-                study.study_uid = study_uid
+                study.uid = study_uid
 
                 study.description = file_tags.get(
                         'study_description', '')
@@ -324,12 +417,15 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 series = study.series_dict[series_uid]
             except KeyError:
                 series = Series()
-                series.series_uid = series_uid
+                series.uid = series_uid
                 # these should be the same over the whole series
                 # fixme: could be that they don't exist (handle)
-                series.series_description = \
+                series.description = \
                     file_tags['series_description']
                 series.modality = file_tags['modality']
+
+                series.rows = int(file_tags['rows'])
+                series.columns = int(file_tags['columns'])
 
                 study.series_dict[series_uid] = series
 
