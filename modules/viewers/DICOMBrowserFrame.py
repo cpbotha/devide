@@ -25,6 +25,10 @@ class SeriesColumns:
     num_images = 2
     row_col = 3
 
+class FilesColumns:
+    name = 0
+
+
 #----------------------------------------------------------------------
 def getSmallUpArrowData():
     return \
@@ -104,9 +108,9 @@ class DICOMBrowserFrame(wx.Frame):
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
         
-        self._mgr.AddPane(self._create_files_pane(), wx.aui.AuiPaneInfo().
-                          Name("files").
-                          Caption("Files and Directories").Top().
+        self._mgr.AddPane(self._create_dirs_pane(), wx.aui.AuiPaneInfo().
+                          Name("dirs").
+                          Caption("Files and Directories to Search").Top().
                           Row(1).
                           CloseButton(False).MaximizeButton(True))
 
@@ -118,6 +122,10 @@ class DICOMBrowserFrame(wx.Frame):
                           Name("series").Caption("Series").Top().Row(3).
                           CloseButton(False).MaximizeButton(True))
 
+        self._mgr.AddPane(self._create_files_pane(), wx.aui.AuiPaneInfo().
+                          Name("files").Caption("Image Files").Top().Row(4).
+                          CloseButton(False).MaximizeButton(True))
+
 
         self._perspectives = []
 
@@ -126,12 +134,13 @@ class DICOMBrowserFrame(wx.Frame):
         self._mgr.Update()
 
     def close(self):
-        del self.files_pane
+        del self.dirs_pane
         del self.studies_lc
         del self.series_lc
+        del self.files_lc
         self.Destroy()
 
-    def _create_files_pane(self):
+    def _create_dirs_pane(self):
         # instantiate the wxGlade-created frame
         fpf = DICOMBrowserPanels.FilesPanelFrame(self, id=-1)
         # reparent the panel to us
@@ -147,9 +156,20 @@ class DICOMBrowserFrame(wx.Frame):
         panel.r_button = fpf.r_button
         panel.scan_button = fpf.scan_button
         panel.dirs_files_lb = fpf.dirs_files_lb
-        self.files_pane = panel
+        self.dirs_pane = panel
 
         return panel
+
+    def _create_files_pane(self):
+        sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
+        sl.InsertColumn(FilesColumns.name, "Full name")
+        sl.SetColumnWidth(SeriesColumns.description, 200)
+
+        #sl.InsertColumn(SeriesColumns.modality, "Modality")
+
+        self.files_lc = sl
+
+        return sl
 
     def _create_studies_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)

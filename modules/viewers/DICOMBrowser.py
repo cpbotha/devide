@@ -58,6 +58,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # currently selected study_uid
         self._selected_study_uid = None
 
+        self._item_data_to_series_uid = {}
+        self._selected_series_uid = None
+
         self._bind_events()
 
 
@@ -97,7 +100,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         pass
 
     def config_to_view(self):
-        lb = self._view_frame.files_pane.dirs_files_lb
+        lb = self._view_frame.dirs_pane.dirs_files_lb
         # clear the listbox
         lb.Clear()
         for p in self._config.dicom_search_paths:
@@ -111,7 +114,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._view_frame.Raise()
 
     def _bind_events(self):
-        fp = self._view_frame.files_pane
+        fp = self._view_frame.dirs_pane
 
         fp.ad_button.Bind(wx.EVT_BUTTON,
                 self._handler_ad_button)
@@ -129,6 +132,24 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
                 self._handler_study_selected)
 
+        lc = self._view_frame.series_lc
+        lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
+                self._handler_series_selected)
+
+    def _fill_files_listctrl(self):
+        # get out current Study instance
+        study = self._study_dict[self._selected_study_uid]
+        # then the series_dict belonging to that Study
+        series_dict = study.series_dict
+        # and finally the specific series instance
+        series = series_dict[self._selected_series_uid]
+
+        lc = self._view_frame.files_lc
+        lc.DeleteAllItems()
+
+        for filename in series.filenames:
+            idx = lc.InsertStringItem(sys.maxint, filename)
+
     def _fill_series_listctrl(self):
         # get out current Study instance
         study = self._study_dict[self._selected_study_uid]
@@ -143,6 +164,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # we're going to need this for the column sorting
         item_data_map = {}
+        self._item_data_to_series_uid = {}
 
         for series_uid, series in series_dict.items():
             idx = lc.InsertStringItem(sys.maxint, series.description)
@@ -159,6 +181,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 series.modality,
                 series.slices,
                 rc_string)
+
+            self._item_data_to_series_uid[idx] = series.uid
 
         lc.itemDataMap = item_data_map
 
@@ -219,7 +243,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         if dlg.ShowModal() == wx.ID_OK:
             p = dlg.GetPath()
-            self._view_frame.files_pane.dirs_files_lb.Append(p)
+            self._view_frame.dirs_pane.dirs_files_lb.Append(p)
             self._config.dicom_search_paths.append(p)
 
         dlg.Destroy()
@@ -236,13 +260,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         if dlg.ShowModal() == wx.ID_OK:
             for p in dlg.GetPaths():
-                self._view_frame.files_pane.dirs_files_lb.Append(p)
+                self._view_frame.dirs_pane.dirs_files_lb.Append(p)
                 self._config.dicom_search_paths.append(p)
 
         dlg.Destroy()
 
     def _handler_r_button(self, event):
-        lb = self._view_frame.files_pane.dirs_files_lb
+        lb = self._view_frame.dirs_pane.dirs_files_lb
         s = list(lb.GetSelections())
         s.sort(reverse=True)
         for idx in s:
@@ -253,12 +277,20 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
     def _handler_scan_button(self, event):
         paths = []
-        lb = self._view_frame.files_pane.dirs_files_lb
+        lb = self._view_frame.dirs_pane.dirs_files_lb
         for i in range(lb.GetCount()):
             paths.append(lb.GetString(i))
 
         self._study_dict = self._scan(paths)
         self._fill_studies_listctrl()
+
+    def _handler_series_selected(self, event):
+        lc = self._view_frame.series_lc
+        idx = lc.GetItemData(event.m_itemIndex)
+        series_uid = self._item_data_to_series_uid[idx]
+        self._selected_series_uid = series_uid
+
+        self._fill_files_listctrl()
 
     def _handler_study_selected(self, event):
         # we get the ItemData from the currently selected ListCtrl
