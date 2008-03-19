@@ -43,7 +43,7 @@ class moduleBase(object):
         self.view_initialised = False
 
     def close(self):
-	"""Idempotent method for de-initialising module as far as possible.
+        """Idempotent method for de-initialising module as far as possible.
 
         We can't guarantee the calling of __del__, as Python does garbage
         collection and the object might destruct a while after we've removed
@@ -57,12 +57,12 @@ class moduleBase(object):
         del self._moduleManager
 
     def get_input_descriptions(self):
-	"""Returns tuple of input descriptions, mostly used by the graph editor
-	to make a nice glyph for this module."""
-	raise NotImplementedError
-    
+        """Returns tuple of input descriptions, mostly used by the graph editor
+        to make a nice glyph for this module."""
+        raise NotImplementedError
+        
     def set_input(self, idx, input_stream):
-	"""Attaches input_stream (which is e.g. the output of a previous
+        """Attaches input_stream (which is e.g. the output of a previous
         module) to this module's input at position idx.
 
         If the previous value was None and the current value is not None, it
@@ -81,15 +81,15 @@ class moduleBase(object):
         be considered an event for which this module is an observer.
         """
         
-	raise NotImplementedError
+        raise NotImplementedError
     
     def get_output_descriptions(self):
-	"""Returns a tuple of output descriptions.
+        """Returns a tuple of output descriptions.
 
         Mostly used by the graph editor to make a nice glyph for this module.
         These are also clues to the user as to which glyphs can be connected.
         """
-	raise NotImplementedError
+        raise NotImplementedError
 
     def get_output(self, idx):
 	"""Get the n-th output.
@@ -143,7 +143,7 @@ class moduleBase(object):
         You only need to implement this if you make use of the standard ECASH
         controls.
         """
-	raise NotImplementedError
+        raise NotImplementedError
 
     def execute_module(self):
         """This should make the model do whatever processing it was designed
@@ -162,10 +162,10 @@ class moduleBase(object):
         In short, execute_module() should call Update() on all of this modules
         input objects, directly or indirectly.
         """
-	raise NotImplementedError
+        raise NotImplementedError
     
     def view(self):
-	"""Pop up a dialog with all config possibilities, including optional
+        """Pop up a dialog with all config possibilities, including optional
         use of the pipeline browser.
 
         If the dialog is already visible, do something to draw the user's
@@ -174,7 +174,7 @@ class moduleBase(object):
             frame.Raise()
         If the frame is already visible, this will bring it to the front.
         """
-	raise NotImplementedError
+        raise NotImplementedError
 
     def get_config(self):
         """Returns current configuration of module.
