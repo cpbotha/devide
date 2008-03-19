@@ -10,6 +10,19 @@ import wx.lib.mixins.listctrl as listmix
 from resources.python import DICOMBrowserPanels
 reload(DICOMBrowserPanels)
 
+class StudyColumns:
+    patient = 0
+    description = 1
+    date = 2
+    num_images = 3
+    num_series = 4
+
+class SeriesColumns:
+    description = 0
+    modality = 1
+    num_images = 2
+
+
 class SortedListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin, listmix.ColumnSorterMixin):
 
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
@@ -28,6 +41,10 @@ class SortedListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin, listmix.Column
         """Method required by ColumnSorterMixin.
         """
         return self
+
+    def auto_size_columns(self):
+        for idx in range(self.GetColumnCount()):
+            self.SetColumnWidth(idx, wx.LIST_AUTOSIZE)
 
 class DICOMBrowserFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="", name=""):
@@ -86,11 +103,12 @@ class DICOMBrowserFrame(wx.Frame):
 
     def _create_studies_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
-        sl.InsertColumn(0, "Patient")
-        sl.InsertColumn(1, "Description") # study description
-        sl.InsertColumn(2, "Date") # study date
-        sl.InsertColumn(3, "Images") # total number of images
-        sl.InsertColumn(4, "Series") # number of series
+        sl.InsertColumn(StudyColumns.patient, "Patient")
+        sl.InsertColumn(StudyColumns.description, "Description") 
+        sl.InsertColumn(StudyColumns.date, "Date") # study date
+        # total number of images
+        sl.InsertColumn(StudyColumns.num_images, "Images") 
+        sl.InsertColumn(StudyColumns.num_series, "Series") 
 
         self.studies_lc = sl
 
@@ -98,9 +116,9 @@ class DICOMBrowserFrame(wx.Frame):
 
     def _create_series_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
-        sl.InsertColumn(0, "Description")
-        sl.InsertColumn(1, "Modality")
-        sl.InsertColumn(2, "Images")
+        sl.InsertColumn(SeriesColumns.description, "Description")
+        sl.InsertColumn(SeriesColumns.modality, "Modality")
+        sl.InsertColumn(SeriesColumns.num_images, "Images")
 
         return sl
        

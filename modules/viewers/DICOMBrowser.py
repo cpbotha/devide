@@ -19,11 +19,13 @@ import wx
 class Study:
     def __init__(self):
         self.patient_name = None
-        self.study_uid = None
-        self.study_description = None
-        self.study_date = None
+        self.uid = None
+        self.description = None
+        self.date = None
         # maps from series_uid to Series instance
         self.series_dict = {}
+        # total number of slices in complete study
+        self.slices = 0
 
 class Series:
     def __init__(self):
@@ -94,6 +96,47 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         fp.scan_button.Bind(wx.EVT_BUTTON,
                 self._handler_scan_button)
 
+    def _fill_studies_listctrl(self, study_dict):
+        """Given a study dictionary, fill out the complete studies
+        ListCtrl.
+        """
+
+        lc = self._view_frame.studies_lc
+        # clear the thing out
+        lc.DeleteAllItems()
+
+        sc = DICOMBrowserFrame.StudyColumns
+
+        item_data_map = {}
+        for study_uid, study in study_dict.items():
+            # clean way of mapping from item to column?
+            idx = lc.InsertStringItem(sys.maxint, study.patient_name)
+            lc.SetStringItem(idx, sc.description, study.description)
+            lc.SetStringItem(idx, sc.date, study.date)
+            lc.SetStringItem(idx, sc.num_images, str(study.slices))
+            lc.SetStringItem(
+                    idx, sc.num_series, str(len(study.series_dict)))
+          
+            # SetItemData wants a long as argument, so we give it the
+            # hash of the study_uid, which is unique
+            h = hash(study_uid)
+            lc.SetItemData(idx, h) 
+
+            # for sorting we build up this item_data_map with the same
+            # hash as key, and the all values occurring in the columns
+            # as sortable values
+            item_data_map[h] = (
+                    study.patient_name,
+                    study.description,
+                    study.date,
+                    study.slices,
+                    len(study.series_dict))
+
+            # assign the datamap to the ColumnSorterMixin
+            lc.itemDataMap = item_data_map
+
+        lc.auto_size_columns()
+
     def _handler_ad_button(self, event):
 
         dlg = wx.DirDialog(self._view_frame, 
@@ -131,12 +174,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         study_dict = self._scan(paths)
 
-        lc = self._view_frame.studies_lc
-        # clear the thing out
-        lc.DeleteAllItems()
-
-        for study_uid, study in study_dict.items():
-            idx = lc.InsertStringItem(sys.maxint, study.patient_name)
+        self._fill_studies_listctrl(study_dict)
 
 
 
@@ -273,9 +311,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 study = Study()
                 study.study_uid = study_uid
 
-                study.study_description = file_tags.get(
+                study.description = file_tags.get(
                         'study_description', '')
-                study.study_date = file_tags.get(
+                study.date = file_tags.get(
                         'study_date', '')
                 study.patient_name = file_tags.get(
                         'patient_name', '')
@@ -305,6 +343,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 number_of_frames = 1
 
             series.slices = series.slices + number_of_frames
+            study.slices = study.slices + number_of_frames
 
         return study_dict
 
