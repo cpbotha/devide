@@ -3,6 +3,7 @@
 # See COPYRIGHT for details.
 
 import cStringIO
+from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
 import wx.aui
 # need listmix.ColumnSorterMixin
@@ -111,21 +112,29 @@ class DICOMBrowserFrame(wx.Frame):
         self._mgr.AddPane(self._create_dirs_pane(), wx.aui.AuiPaneInfo().
                           Name("dirs").
                           Caption("Files and Directories to Search").Top().
-                          Row(1).
+                          Row(1).BestSize(wx.Size(200, 130)).
                           CloseButton(False).MaximizeButton(True))
 
         self._mgr.AddPane(self._create_studies_pane(), wx.aui.AuiPaneInfo().
-                          Name("studies").Caption("Studies").Top().Row(2).
+                          Name("studies").Caption("Studies").Top().Row(1).
+                          BestSize(wx.Size(300, 130)).
                           CloseButton(False).MaximizeButton(True))
 
         self._mgr.AddPane(self._create_series_pane(), wx.aui.AuiPaneInfo().
-                          Name("series").Caption("Series").Top().Row(3).
+                          Name("series").Caption("Series").Top().Row(2).
                           CloseButton(False).MaximizeButton(True))
 
         self._mgr.AddPane(self._create_files_pane(), wx.aui.AuiPaneInfo().
-                          Name("files").Caption("Image Files").Top().Row(4).
+                          Name("files").Caption("Image Files").
+                          Left().
+                          BestSize(wx.Size(200,400)).
                           CloseButton(False).MaximizeButton(True))
 
+        self._mgr.AddPane(self._create_image_pane(), wx.aui.AuiPaneInfo().
+                          Name("image").Caption("Image").
+                          Center().
+                          BestSize(wx.Size(400,400)).
+                          CloseButton(False).MaximizeButton(True))
 
         self._perspectives = []
 
@@ -142,7 +151,8 @@ class DICOMBrowserFrame(wx.Frame):
 
     def _create_dirs_pane(self):
         # instantiate the wxGlade-created frame
-        fpf = DICOMBrowserPanels.FilesPanelFrame(self, id=-1)
+        fpf = DICOMBrowserPanels.FilesPanelFrame(self, id=-1,
+                size=(200, 150))
         # reparent the panel to us
         panel = fpf.files_panel
         panel.Reparent(self)
@@ -171,6 +181,10 @@ class DICOMBrowserFrame(wx.Frame):
 
         return sl
 
+    def _create_image_pane(self):
+        self._rwi = wxVTKRenderWindowInteractor(self, -1, size=(400,300))
+        return self._rwi
+
     def _create_studies_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
         sl.InsertColumn(StudyColumns.patient, "Patient")
@@ -185,7 +199,8 @@ class DICOMBrowserFrame(wx.Frame):
         return sl
 
     def _create_series_pane(self):
-        sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
+        sl = SortedListCtrl(self, -1, style=wx.LC_REPORT,
+                size=(600,120))
         sl.InsertColumn(SeriesColumns.description, "Description")
         sl.SetColumnWidth(SeriesColumns.description, 200)
 
@@ -196,6 +211,11 @@ class DICOMBrowserFrame(wx.Frame):
         self.series_lc = sl
 
         return sl
+
+    def render_image(self):
+        """Update embedded RWI, i.e. update the image.
+        """
+        self._rwi.Render()
        
 
 

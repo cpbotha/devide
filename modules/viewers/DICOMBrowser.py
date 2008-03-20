@@ -14,6 +14,8 @@ from moduleMixins import introspectModuleMixin
 import moduleUtils
 import os
 import sys
+import vtk
+import vtkgdcm
 import wx
 
 class Study:
@@ -51,6 +53,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self, self._moduleManager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
 
+        # setup VTK viewer with dummy source (else it complains)
+        self._image_viewer = vtkgdcm.vtkImageColorViewer()
+        self._image_viewer.SetupInteractor(self._view_frame._rwi)
+        ds = vtk.vtkImageGridSource()
+        self._image_viewer.SetInput(ds.GetOutput())
+
         # map from study_uid to Study instances
         self._study_dict = {}
         # map from studies listctrl itemdata to study uid
@@ -75,6 +83,19 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self.view_initialised = True
 
     def close(self):
+        
+        # with this complicated de-init, we make sure that VTK is 
+        # properly taken care of
+        self._image_viewer.GetRenderer().RemoveAllViewProps()
+        self._image_viewer.SetupInteractor(None)
+        self._image_viewer.SetRenderer(None)
+        # this finalize makes sure we don't get any strange X
+        # errors when we kill the module.
+        self._image_viewer.GetRenderWindow().Finalize()
+        self._image_viewer.SetRenderWindow(None)
+        del self._image_viewer
+        # done with VTK de-init
+
         self._view_frame.close()
         introspectModuleMixin.close(self)
 
@@ -113,6 +134,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._view_frame.Show()
         self._view_frame.Raise()
 
+        # because we have an RWI involved, we have to do this
+        # SafeYield, so that the window does actually appear before we
+        # call the render.  If we don't do this, we get an initial
+        # empty renderwindow.
+        wx.SafeYield()
+        self._view_frame.render_image()
+
     def _bind_events(self):
         fp = self._view_frame.dirs_pane
 
@@ -136,6 +164,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
                 self._handler_series_selected)
 
+        lc = self._view_frame.files_lc
+        lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
+                self._handler_file_selected)
+
     def _fill_files_listctrl(self):
         # get out current Study instance
         study = self._study_dict[self._selected_study_uid]
@@ -147,8 +179,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         lc = self._view_frame.files_lc
         lc.DeleteAllItems()
 
+        self._item_data_to_file = {}
+
         for filename in series.filenames:
             idx = lc.InsertStringItem(sys.maxint, filename)
+            lc.SetItemData(idx, idx)
+            self._item_data_to_file[idx] = filename
 
     def _fill_series_listctrl(self):
         # get out current Study instance
@@ -264,6 +300,22 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 self._config.dicom_search_paths.append(p)
 
         dlg.Destroy()
+
+    def _handler_file_selected(self, event):
+        lc = self._view_frame.files_lc
+        idx = lc.GetItemData(event.m_itemIndex)
+        filename = self._item_data_to_file[idx]
+
+        r = vtkgdcm.vtkGDCMImageReader()
+        r.SetFileName(filename)
+        r.Update()
+
+        self._image_viewer.SetInput(r.GetOutput())
+        #if r.GetNumberOfOverlays():
+        #    self._image_viewer.AddInput(r.GetOverlay(0))
+
+        self._image_viewer.Render()
+        
 
     def _handler_r_button(self, event):
         lb = self._view_frame.dirs_pane.dirs_files_lb
