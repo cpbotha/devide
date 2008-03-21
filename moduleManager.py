@@ -247,10 +247,6 @@ class moduleManager:
         # values are metaModules
 	self._moduleDict = {}
 
-        # we use this to store temporary bindings to modules so that
-        # they can be scripted with
-        self._markedModules = {}
-
         appdir = self._devide_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
         #sys.path.insert(0,self._modules_dir)
@@ -988,14 +984,6 @@ class moduleManager:
         # we've disconnected completely - let's reset all lists
         self._moduleDict[instance].reset_inputsOutputs()
 
-        # remove the instance from the markedModules (if it's present)
-        # 1. first find all keys that point to it
-        mmKeys = [mmItem[0] for mmItem in self._markedModules.items()
-                  if mmItem[1] == instance]
-        # 2. remove all of em
-        for mmKey in mmKeys:
-            del self._markedModules[mmKey]
-
         # store autoexecute, then disable
         ae = self.auto_execute
         self.auto_execute = False
@@ -1471,28 +1459,6 @@ class moduleManager:
 
         
         return instanceName
-
-
-    def markModule(self, instance, name):
-        """Add instance to self._markedModules dictionary with name as
-        key.  Anything other than a module instance will not be added.
-
-        
-        """
-
-        if instance in self._moduleDict:
-            self._markedModules[name] = instance
-
-    def getMarkedModule(self, name):
-        """Return module instance from self._markedModules with key == name.
-
-        If the key does not exist, returns None.
-        """
-
-        if name in self._markedModules:
-            return self._markedModules[name]
-        else:
-            return None
 
     def renameModule(self, instance, name):
         """Rename a module in the module dictionary
