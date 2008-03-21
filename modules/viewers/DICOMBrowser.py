@@ -22,6 +22,7 @@ import wx
 class Study:
     def __init__(self):
         self.patient_name = None
+        self.patient_id = None
         self.uid = None
         self.description = None
         self.date = None
@@ -240,6 +241,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         for study_uid, study in self._study_dict.items():
             # clean way of mapping from item to column?
             idx = lc.InsertStringItem(sys.maxint, study.patient_name)
+            lc.SetStringItem(idx, sc.patient_id, study.patient_id)
             lc.SetStringItem(idx, sc.description, study.description)
             lc.SetStringItem(idx, sc.date, study.date)
             lc.SetStringItem(idx, sc.num_images, str(study.slices))
@@ -255,6 +257,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             # as sortable values
             item_data_map[idx] = (
                     study.patient_name,
+                    study.patient_id,
                     study.description,
                     study.date,
                     study.slices,
@@ -526,6 +529,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                         'study_date', '')
                 study.patient_name = file_tags.get(
                         'patient_name', '')
+                study.patient_id = file_tags.get(
+                        'patient_id', '')
 
                 study_dict[study_uid] = study
 

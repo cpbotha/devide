@@ -15,10 +15,11 @@ reload(DICOMBrowserPanels)
 
 class StudyColumns:
     patient = 0
-    description = 1
-    date = 2
-    num_images = 3
-    num_series = 4
+    patient_id = 1
+    description = 2
+    date = 3
+    num_images = 4
+    num_series = 5
 
 class SeriesColumns:
     description = 0
@@ -111,17 +112,20 @@ class DICOMBrowserFrame(wx.Frame):
         
         self._mgr.AddPane(self._create_dirs_pane(), wx.aui.AuiPaneInfo().
                           Name("dirs").
-                          Caption("Files and Directories to Search").Top().
-                          Row(1).BestSize(wx.Size(200, 130)).
+                          Caption("Files and Directories to Search").
+                          Top().Row(0).
+                          Top().
                           CloseButton(False).MaximizeButton(True))
 
         self._mgr.AddPane(self._create_studies_pane(), wx.aui.AuiPaneInfo().
-                          Name("studies").Caption("Studies").Top().Row(1).
-                          BestSize(wx.Size(300, 130)).
+                          Name("studies").Caption("Studies").
+                          Top().Row(1).
+                          BestSize(wx.Size(600, 100)).
                           CloseButton(False).MaximizeButton(True))
 
         self._mgr.AddPane(self._create_series_pane(), wx.aui.AuiPaneInfo().
                           Name("series").Caption("Series").Top().Row(2).
+                          BestSize(wx.Size(600, 100)).
                           CloseButton(False).MaximizeButton(True))
 
         self._mgr.AddPane(self._create_files_pane(), wx.aui.AuiPaneInfo().
@@ -188,6 +192,7 @@ class DICOMBrowserFrame(wx.Frame):
     def _create_studies_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
         sl.InsertColumn(StudyColumns.patient, "Patient")
+        sl.InsertColumn(StudyColumns.patient_id, "Patient ID")
         sl.InsertColumn(StudyColumns.description, "Description") 
         sl.InsertColumn(StudyColumns.date, "Date") # study date
         # total number of images

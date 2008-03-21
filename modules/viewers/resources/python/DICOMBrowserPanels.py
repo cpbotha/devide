@@ -28,19 +28,20 @@ class FilesPanelFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: FilesPanelFrame.__set_properties
         self.SetTitle("frame_1")
+        self.dirs_files_lb.SetMinSize((267, 25))
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: FilesPanelFrame.__do_layout
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_3 = wx.BoxSizer(wx.VERTICAL)
-        sizer_2.Add(self.dirs_files_lb, 1, wx.ALL|wx.EXPAND, 7)
-        sizer_3.Add(self.ad_button, 0, wx.BOTTOM, 4)
-        sizer_3.Add(self.af_button, 0, wx.BOTTOM, 4)
-        sizer_3.Add(self.r_button, 0, wx.BOTTOM, 4)
+        sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_2.Add(self.dirs_files_lb, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 7)
+        sizer_3.Add(self.ad_button, 0, wx.RIGHT, 4)
+        sizer_3.Add(self.af_button, 0, wx.RIGHT, 4)
+        sizer_3.Add(self.r_button, 0, wx.RIGHT, 4)
         sizer_3.Add(self.scan_button, 0, 0, 0)
-        sizer_2.Add(sizer_3, 0, wx.RIGHT|wx.TOP|wx.BOTTOM|wx.EXPAND, 7)
+        sizer_2.Add(sizer_3, 0, wx.RIGHT|wx.TOP|wx.BOTTOM, 7)
         self.files_panel.SetSizer(sizer_2)
         sizer_1.Add(self.files_panel, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_1)
