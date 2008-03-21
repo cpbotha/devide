@@ -1,6 +1,6 @@
-# python_interpreter.py copyright 2002 by Charl P. Botha http://cpbotha.net/
-# $Id$
-# window for interacting with the python interpreter during execution
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import os
 import sys
