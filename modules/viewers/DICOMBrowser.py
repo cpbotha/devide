@@ -9,6 +9,7 @@
 import DICOMBrowserFrame
 reload(DICOMBrowserFrame)
 import gdcm
+import misc_utils
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
@@ -53,11 +54,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self, self._moduleManager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
 
-        # setup VTK viewer with dummy source (else it complains)
-        self._image_viewer = vtkgdcm.vtkImageColorViewer()
-        self._image_viewer.SetupInteractor(self._view_frame._rwi)
-        ds = vtk.vtkImageGridSource()
-        self._image_viewer.SetInput(ds.GetOutput())
+        self._image_viewer = None
+        self._setup_image_viewer()
 
         # map from study_uid to Study instances
         self._study_dict = {}
@@ -314,6 +312,40 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         #if r.GetNumberOfOverlays():
         #    self._image_viewer.AddInput(r.GetOverlay(0))
 
+        # now make the nice text overlay thingies!
+
+        # DirectionCosines: first two columns are X and Y in the RAH
+        # space
+        dc = r.GetDirectionCosines()
+
+        x_cosine = \
+                dc.GetElement(0,0), dc.GetElement(1,0), dc.GetElement(2,0)
+
+        rah = misc_utils.major_axis_from_iop_cosine(x_cosine)
+        if rah:
+            self._image_viewer.xl_text_actor.SetInput(rah[0])
+            self._image_viewer.xr_text_actor.SetInput(rah[1])
+        else:
+            self._image_viewer.xl_text_actor.SetInput('X')
+            self._image_viewer.xr_text_actor.SetInput('X')
+
+        y_cosine = \
+                dc.GetElement(0,1), dc.GetElement(1,1), dc.GetElement(2,1)
+        rah = misc_utils.major_axis_from_iop_cosine(y_cosine)
+
+        if rah:
+            # we have to swap these around because VTK has the
+            # convention of image origin at the upper left and GDCM
+            # dutifully swaps the images when loading to follow this
+            # convention.  Direction cosines (IOP) is not swapped, so
+            # we have to compensate here.
+            self._image_viewer.yb_text_actor.SetInput(rah[1])
+            self._image_viewer.yt_text_actor.SetInput(rah[0])
+        else:
+            self._image_viewer.yb_text_actor.SetInput('X')
+            self._image_viewer.yt_text_actor.SetInput('X')
+
+
         self._image_viewer.Render()
         
 
@@ -526,6 +558,48 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             study.slices = study.slices + number_of_frames
 
         return study_dict
+
+    def _setup_image_viewer(self):
+        # setup VTK viewer with dummy source (else it complains)
+        self._image_viewer = vtkgdcm.vtkImageColorViewer()
+        self._image_viewer.SetupInteractor(self._view_frame._rwi)
+        ds = vtk.vtkImageGridSource()
+        self._image_viewer.SetInput(ds.GetOutput())
+
+        def setup_text_actor(x, y):
+            ta = vtk.vtkTextActor()
+
+            c = ta.GetPositionCoordinate()
+            c.SetCoordinateSystemToNormalizedDisplay()
+            c.SetValue(x,y)
+
+            p = ta.GetTextProperty()
+            p.SetFontFamilyToArial()
+            p.SetFontSize(14)
+            p.SetBold(0)
+            p.SetItalic(0)
+            p.SetShadow(0)
+
+            return ta
+
+        ren = self._image_viewer.GetRenderer()
+
+        xl = self._image_viewer.xl_text_actor = setup_text_actor(0.01, 0.5)
+        ren.AddActor(xl)
+        xr = self._image_viewer.xr_text_actor = setup_text_actor(0.99, 0.5)
+        xr.GetTextProperty().SetJustificationToRight()
+        ren.AddActor(xr)
+
+        # y coordinate ~ 0, bottom of normalized display
+        yb = self._image_viewer.yb_text_actor = setup_text_actor(
+                0.5, 0.01)
+        ren.AddActor(yb)
+
+        yt = self._image_viewer.yt_text_actor = setup_text_actor(
+                0.5, 0.99)
+        yt.GetTextProperty().SetVerticalJustificationToTop()
+        ren.AddActor(yt)
+                
 
 
         
