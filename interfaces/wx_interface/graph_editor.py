@@ -25,6 +25,7 @@ import os
 import re
 import string
 import sys
+import weakref
 import wx
 
 # so we're using VTK here for doing the graph layout.
@@ -1231,15 +1232,24 @@ class GraphEditor:
             # so we call the handler manually (so help is updated)
             self._handlerModulesListBoxSelected(None)
 
-    def _handlerMarkModule(self, instance):
-        markedModuleName = wx.GetTextFromUser(
-            'Please enter a name for this module to be keyed on.',
-            'Input text',
-            instance.__class__.__name__)
+    def _handler_inject_module(self, module_instance):
+        pyshell = self._devide_app.get_interface()._python_shell
+        if not pyshell:
+            self._devide_app.get_interface().log_message(
+            'Please activate Python Shell first.')
+            return
 
-        if markedModuleName:
-            self._devide_app.get_module_manager().markModule(
-                instance, markedModuleName)
+        mm = self._devide_app.get_module_manager()
+        bname = wx.GetTextFromUser(
+                'Enter a name to which the instance should be bound.',
+                'Input text',
+                mm.get_instance_name(module_instance))
+
+        # we inject a weakref to the module, so that it can still be
+        # destroyed when the user wishes to do that.
+        if bname:
+            pyshell.inject_locals(
+                    {bname : weakref.proxy(module_instance)})
 
     def _reload_module(self, module_instance, glyph):
         """Reload a module by storing all configuration information, deleting
@@ -2253,10 +2263,11 @@ class GraphEditor:
         wx.EVT_MENU(self.canvas._rwi, renameModuleId,
                  lambda e: self._handlerRenameModule(module,glyph))
 
-        markModuleId = wx.NewId()
-        pmenu.AppendItem(wx.MenuItem(pmenu, markModuleId, 'Mark Module'))
-        wx.EVT_MENU(self.canvas._rwi, markModuleId,
-                 lambda e: self._handlerMarkModule(module))
+        inject_module_id = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, inject_module_id, 
+        'Module -> Python shell'))
+        wx.EVT_MENU(self.canvas._rwi, inject_module_id,
+                lambda e: self._handler_inject_module(module))
 
         pmenu.AppendSeparator()
 
