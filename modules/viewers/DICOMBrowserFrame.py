@@ -190,7 +190,8 @@ class DICOMBrowserFrame(wx.Frame):
         return self._rwi
 
     def _create_studies_pane(self):
-        sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
+        sl = SortedListCtrl(self, -1, 
+                style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         sl.InsertColumn(StudyColumns.patient, "Patient")
         sl.InsertColumn(StudyColumns.patient_id, "Patient ID")
         sl.InsertColumn(StudyColumns.description, "Description") 
@@ -204,7 +205,8 @@ class DICOMBrowserFrame(wx.Frame):
         return sl
 
     def _create_series_pane(self):
-        sl = SortedListCtrl(self, -1, style=wx.LC_REPORT,
+        sl = SortedListCtrl(self, -1, 
+                style=wx.LC_REPORT | wx.LC_SINGLE_SEL,
                 size=(600,120))
         sl.InsertColumn(SeriesColumns.description, "Description")
         sl.SetColumnWidth(SeriesColumns.description, 200)

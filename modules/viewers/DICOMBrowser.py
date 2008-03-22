@@ -15,6 +15,7 @@ from moduleMixins import introspectModuleMixin
 import moduleUtils
 import os
 import sys
+import traceback
 import vtk
 import vtkgdcm
 import wx
@@ -164,7 +165,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 self._handler_series_selected)
 
         lc = self._view_frame.files_lc
-        lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
+        # we use this event instead of focused, as group / multi
+        # selections (click, then shift click 5 items down) would fire
+        # selected events for ALL involved items.  With FOCUSED, only
+        # the item actually clicked on, or keyboarded to, gets the
+        # event.
+        lc.Bind(wx.EVT_LIST_ITEM_FOCUSED,
                 self._handler_file_selected)
 
     def _fill_files_listctrl(self):
@@ -309,7 +315,17 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         r = vtkgdcm.vtkGDCMImageReader()
         r.SetFileName(filename)
-        r.Update()
+
+        try:
+            r.Update()
+        except RuntimeWarning, e:
+            # reader generates warning of overlay information can't be
+            # read.  We should change the VTK exception support to
+            # just output some text with a warning and not raise an
+            # exception.
+            traceback.print_exc()
+            # with trackback.format_exc() you can send this to the log
+            # window.
 
         self._image_viewer.SetInput(r.GetOutput())
         #if r.GetNumberOfOverlays():
@@ -353,6 +369,18 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         isize.SetInput('Image Size: %d x %d' % (d[0], d[1]))
 
         #r.GetMedicalImageProperties().GetSliceThickness()
+
+        # we have a new image in the image_viewer, so we have to reset
+        # the camera so that the image is visible.
+        # FIXME: add lock zoom / pan button so that this can be
+        # optionally deactivated.
+        ren = self._image_viewer.GetRenderer()
+        ren.ResetCamera()
+
+        # also reset window level
+        # FIXME: add lock window / level option so that new image does
+        # not change that.
+        
 
         self._image_viewer.Render()
         
@@ -587,7 +615,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             c.SetValue(x,y)
 
             p = ta.GetTextProperty()
-            p.SetFontFamilyToCourier()
+            p.SetFontFamilyToArial()
             p.SetFontSize(14)
             p.SetBold(0)
             p.SetItalic(0)
