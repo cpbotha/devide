@@ -348,6 +348,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self._image_viewer.yb_text_actor.SetInput('X')
             self._image_viewer.yt_text_actor.SetInput('X')
 
+        d = r.GetOutput().GetDimensions()
+        isize = self._image_viewer.isize_text_actor
+        isize.SetInput('Image Size: %d x %d' % (d[0], d[1]))
+
+        #r.GetMedicalImageProperties().GetSliceThickness()
 
         self._image_viewer.Render()
         
@@ -565,6 +570,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         return study_dict
 
     def _setup_image_viewer(self):
+        # FIXME: I'm planning to factor this out into a medical image
+        # viewing class, probably in the GDCM_KIT
+
         # setup VTK viewer with dummy source (else it complains)
         self._image_viewer = vtkgdcm.vtkImageColorViewer()
         self._image_viewer.SetupInteractor(self._view_frame._rwi)
@@ -579,7 +587,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             c.SetValue(x,y)
 
             p = ta.GetTextProperty()
-            p.SetFontFamilyToArial()
+            p.SetFontFamilyToCourier()
             p.SetFontSize(14)
             p.SetBold(0)
             p.SetItalic(0)
@@ -589,12 +597,14 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         ren = self._image_viewer.GetRenderer()
 
+        # direction labels left and right #####
         xl = self._image_viewer.xl_text_actor = setup_text_actor(0.01, 0.5)
         ren.AddActor(xl)
         xr = self._image_viewer.xr_text_actor = setup_text_actor(0.99, 0.5)
         xr.GetTextProperty().SetJustificationToRight()
         ren.AddActor(xr)
 
+        # direction labels top and bottom #####
         # y coordinate ~ 0, bottom of normalized display
         yb = self._image_viewer.yb_text_actor = setup_text_actor(
                 0.5, 0.01)
@@ -605,7 +615,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         yt.GetTextProperty().SetVerticalJustificationToTop()
         ren.AddActor(yt)
                 
-
+        # labels upper-left #####
+        isize = self._image_viewer.isize_text_actor = \
+            setup_text_actor(0.01, 0.99)
+        isize.GetTextProperty().SetVerticalJustificationToTop()
+        ren.AddActor(isize)
 
         
 
