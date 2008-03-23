@@ -17,6 +17,17 @@
 #   a quick re-scan (only add new files that have appeared, remove 
 #   files that have disappeared).  See issue 39.
 
+# - when you select a study, it should automatically select the first
+#   series, which should then automatically trigger the selection of the
+#   first image.
+# - see about adding a text box in the interface for outputting more
+#   per-image meta-data 
+# - exceptions for mixed series... *sigh*
+# - image sorting (image position patient)
+# - exceptions for large multi-frame images: can we read this in a
+#   sensible way?
+# - vtkImageData output!
+
 import DICOMBrowserFrame
 reload(DICOMBrowserFrame)
 import gdcm
@@ -66,6 +77,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
+        # change the title to something more spectacular
+        # default is DICOMBrowser View
+        self._view_frame.SetTitle('DeVIDE DICOMBrowser')
 
         self._image_viewer = None
         self._setup_image_viewer()
