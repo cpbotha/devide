@@ -84,6 +84,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
 
         self._config.dicom_search_paths = []
+        self._config.lock_pz = False
+        self._config.lock_wl = False
 
         self.sync_module_logic_with_config()
         self.sync_module_view_with_logic()
@@ -132,9 +134,15 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         pass
 
     def config_to_view(self):
+        # show DICOM search paths in interface
         tc = self._view_frame.dirs_pane.dirs_files_tc
         tc.SetValue(self._helper_dicom_search_paths_to_string(
             self._config.dicom_search_paths))
+
+        # show value of pz and wl locks
+        ip = self._view_frame.image_pane
+        ip.lock_pz_cb.SetValue(self._config.lock_pz)
+        ip.lock_wl_cb.SetValue(self._config.lock_wl)
 
     def view_to_config(self):
         pass
@@ -178,6 +186,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # event.
         lc.Bind(wx.EVT_LIST_ITEM_FOCUSED,
                 self._handler_file_selected)
+
+        # keep track of the image viewer controls
+        ip = self._view_frame.image_pane
+        ip.lock_pz_cb.Bind(wx.EVT_CHECKBOX,
+                self._handler_lock_pz_cb)
+        ip.lock_wl_cb.Bind(wx.EVT_CHECKBOX,
+                self._handler_lock_wl_cb)
 
     def _fill_files_listctrl(self):
         # get out current Study instance
@@ -280,7 +295,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # assign the datamap to the ColumnSorterMixin
         lc.itemDataMap = item_data_map
 
-        lc.auto_size_columns()
+        #lc.auto_size_columns()
 
     def _handler_ad_button(self, event):
 
@@ -394,19 +409,36 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # we have a new image in the image_viewer, so we have to reset
         # the camera so that the image is visible.
-        # FIXME: add lock zoom / pan button so that this can be
-        # optionally deactivated.
-        ren = self._image_viewer.GetRenderer()
-        ren.ResetCamera()
+        if not self._config.lock_pz:
+            self._reset_image_pz()
 
         # also reset window level
-        # FIXME: add lock window / level option so that new image does
-        # not change that.
+        if not self._config.lock_wl:
+            self._reset_image_wl()
         
 
         self._image_viewer.Render()
         
+    def _handler_lock_pz_cb(self, event):
+        cb = self._view_frame.image_pane.lock_pz_cb 
+        self._config.lock_pz = cb.GetValue()
 
+        # when the user unlocks pan/zoom, reset it for the current
+        # image
+        if not self._config.lock_pz:
+            self._reset_image_pz()
+            self._image_viewer.Render()
+      
+
+    def _handler_lock_wl_cb(self, event):
+        cb = self._view_frame.image_pane.lock_wl_cb 
+        self._config.lock_wl = cb.GetValue()
+        
+        # when the user unlocks window / level, reset it for the
+        # current image
+        if not self._config.lock_wl:
+            self._reset_image_wl()
+            self._image_viewer.Render()
 
     def _handler_scan_button(self, event):
         tc = self._view_frame.dirs_pane.dirs_files_tc
@@ -494,6 +526,26 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         return filenames
 
+    def _reset_image_pz(self):
+        """Reset the pan/zoom of the current image.
+        """
+
+        ren = self._image_viewer.GetRenderer()
+        ren.ResetCamera()
+
+    def _reset_image_wl(self):
+        """Reset the window/level of the current image.
+
+        This assumes that the image has already been read and that it
+        has a valid scalar range.
+        """
+        
+        iv = self._image_viewer
+        inp = iv.GetInput()
+        if inp:
+            r = inp.GetScalarRange()
+            iv.SetColorWindow(r[1] - r[0])
+            iv.SetColorLevel(0.5 * (r[1] + r[0]))
 
     def _scan(self, paths):
         """Given a list combining filenames and directories, search
@@ -641,7 +693,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # setup VTK viewer with dummy source (else it complains)
         self._image_viewer = vtkgdcm.vtkImageColorViewer()
-        self._image_viewer.SetupInteractor(self._view_frame._rwi)
+        self._image_viewer.SetupInteractor(self._view_frame.image_pane.rwi)
         ds = vtk.vtkImageGridSource()
         self._image_viewer.SetInput(ds.GetOutput())
 

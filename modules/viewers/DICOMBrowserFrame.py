@@ -112,7 +112,7 @@ class DICOMBrowserFrame(wx.Frame):
         
         self._mgr.AddPane(self._create_dirs_pane(), wx.aui.AuiPaneInfo().
                           Name("dirs").
-                          Caption("Files and Directories to Search").
+                          Caption("Files and Directories to Scan").
                           Top().Row(0).
                           Top().
                           CloseButton(False).MaximizeButton(True))
@@ -176,7 +176,7 @@ class DICOMBrowserFrame(wx.Frame):
     def _create_files_pane(self):
         sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
         sl.InsertColumn(FilesColumns.name, "Full name")
-        sl.SetColumnWidth(SeriesColumns.description, 200)
+        sl.SetColumnWidth(SeriesColumns.description, 170)
 
         #sl.InsertColumn(SeriesColumns.modality, "Modality")
 
@@ -185,16 +185,41 @@ class DICOMBrowserFrame(wx.Frame):
         return sl
 
     def _create_image_pane(self):
-        self._rwi = wxVTKRenderWindowInteractor(self, -1, size=(400,300))
-        return self._rwi
+        # instantiate the wxGlade-created frame
+        ipf = DICOMBrowserPanels.ImagePanelFrame(self, id=-1,
+                size=(400, 300))
+        # reparent the panel to us
+        panel = ipf.image_panel
+        panel.Reparent(self)
+
+        # still need fpf.* to bind everything
+        # but we can destroy fpf (everything has been reparented)
+        ipf.Destroy()
+
+        panel.rwi = ipf.rwi
+        panel.lock_pz_cb = ipf.lock_pz_cb
+        panel.lock_wl_cb = ipf.lock_wl_cb
+
+        self.image_pane = panel
+
+        return panel
 
     def _create_studies_pane(self):
         sl = SortedListCtrl(self, -1, 
                 style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+
         sl.InsertColumn(StudyColumns.patient, "Patient")
+        sl.SetColumnWidth(StudyColumns.patient, 170)
+
         sl.InsertColumn(StudyColumns.patient_id, "Patient ID")
+        sl.SetColumnWidth(StudyColumns.patient_id, 100)
+
         sl.InsertColumn(StudyColumns.description, "Description") 
+        sl.SetColumnWidth(StudyColumns.description, 170)
+
         sl.InsertColumn(StudyColumns.date, "Date") # study date
+        sl.SetColumnWidth(StudyColumns.date, 70)
+
         # total number of images
         sl.InsertColumn(StudyColumns.num_images, "# Images") 
         sl.InsertColumn(StudyColumns.num_series, "# Series") 
@@ -208,7 +233,7 @@ class DICOMBrowserFrame(wx.Frame):
                 style=wx.LC_REPORT | wx.LC_SINGLE_SEL,
                 size=(600,120))
         sl.InsertColumn(SeriesColumns.description, "Description")
-        sl.SetColumnWidth(SeriesColumns.description, 200)
+        sl.SetColumnWidth(SeriesColumns.description, 170)
 
         sl.InsertColumn(SeriesColumns.modality, "Modality")
         sl.InsertColumn(SeriesColumns.num_images, "# Images")
@@ -221,7 +246,7 @@ class DICOMBrowserFrame(wx.Frame):
     def render_image(self):
         """Update embedded RWI, i.e. update the image.
         """
-        self._rwi.Render()
+        self.image_pane.rwi.Render()
        
 
 
