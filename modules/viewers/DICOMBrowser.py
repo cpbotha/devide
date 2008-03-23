@@ -193,6 +193,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 self._handler_lock_pz_cb)
         ip.lock_wl_cb.Bind(wx.EVT_CHECKBOX,
                 self._handler_lock_wl_cb)
+        ip.reset_b.Bind(wx.EVT_BUTTON,
+                self._handler_image_reset_b)
 
     def _fill_files_listctrl(self):
         # get out current Study instance
@@ -211,6 +213,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             idx = lc.InsertStringItem(sys.maxint, filename)
             lc.SetItemData(idx, idx)
             self._item_data_to_file[idx] = filename
+        
+        # make sure the column shows the full length of the fn
+        # why does this sometimes not capture the full length?
+        lc.auto_size_columns()
 
     def _fill_series_listctrl(self):
         # get out current Study instance
@@ -417,6 +423,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self._reset_image_wl()
         
 
+        self._image_viewer.Render()
+
+    def _handler_image_reset_b(self, event):
+        self._reset_image_pz()
+        self._reset_image_wl()
         self._image_viewer.Render()
         
     def _handler_lock_pz_cb(self, event):

@@ -68,12 +68,11 @@ def getSmallDnArrowImage():
 #----------------------------------------------------------------------
 
 
-class SortedListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin, listmix.ColumnSorterMixin):
+class SortedListCtrl(wx.ListCtrl, listmix.ColumnSorterMixin):
 
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
-        listmix.ListCtrlAutoWidthMixin.__init__(self)
         
         # for the ColumnSorterMixin: this should be a dict mapping
         # from item data values to sequence of values for the columns.
@@ -100,6 +99,13 @@ class SortedListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin, listmix.Column
     def auto_size_columns(self):
         for idx in range(self.GetColumnCount()):
             self.SetColumnWidth(idx, wx.LIST_AUTOSIZE)
+
+class SortedAutoWidthListCtrl(listmix.ListCtrlAutoWidthMixin, SortedListCtrl):
+    def __init__(self, parent, ID, pos=wx.DefaultPosition,
+                 size=wx.DefaultSize, style=0):
+
+        SortedListCtrl.__init__(self, parent, ID, pos, size, style)
+        listmix.ListCtrlAutoWidthMixin.__init__(self)
 
 class DICOMBrowserFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="", name=""):
@@ -174,9 +180,11 @@ class DICOMBrowserFrame(wx.Frame):
         return panel
 
     def _create_files_pane(self):
-        sl = SortedListCtrl(self, -1, style=wx.LC_REPORT)
+        sl = SortedListCtrl(self, -1, 
+                style=wx.LC_REPORT)
         sl.InsertColumn(FilesColumns.name, "Full name")
-        sl.SetColumnWidth(SeriesColumns.description, 170)
+        # we'll autosize this column later
+        sl.SetColumnWidth(FilesColumns.name, 300)
 
         #sl.InsertColumn(SeriesColumns.modality, "Modality")
 
@@ -199,14 +207,15 @@ class DICOMBrowserFrame(wx.Frame):
         panel.rwi = ipf.rwi
         panel.lock_pz_cb = ipf.lock_pz_cb
         panel.lock_wl_cb = ipf.lock_wl_cb
+        panel.reset_b = ipf.reset_b
 
         self.image_pane = panel
 
         return panel
 
     def _create_studies_pane(self):
-        sl = SortedListCtrl(self, -1, 
-                style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        sl = SortedAutoWidthListCtrl(self, -1, 
+                style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_SINGLE_SEL)
 
         sl.InsertColumn(StudyColumns.patient, "Patient")
         sl.SetColumnWidth(StudyColumns.patient, 170)
@@ -229,8 +238,8 @@ class DICOMBrowserFrame(wx.Frame):
         return sl
 
     def _create_series_pane(self):
-        sl = SortedListCtrl(self, -1, 
-                style=wx.LC_REPORT | wx.LC_SINGLE_SEL,
+        sl = SortedAutoWidthListCtrl(self, -1, 
+                style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_SINGLE_SEL,
                 size=(600,120))
         sl.InsertColumn(SeriesColumns.description, "Description")
         sl.SetColumnWidth(SeriesColumns.description, 170)
