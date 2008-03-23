@@ -365,8 +365,19 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self._image_viewer.yt_text_actor.SetInput('X')
 
         d = r.GetOutput().GetDimensions()
-        isize = self._image_viewer.isize_text_actor
-        isize.SetInput('Image Size: %d x %d' % (d[0], d[1]))
+        ul = self._image_viewer.ul_text_actor
+        ul.SetInput('Image Size: %d x %d' % (d[0], d[1]))
+
+        ur = self._image_viewer.ur_text_actor
+        mip = r.GetMedicalImageProperties()
+        ur.SetInput('%s\n%s\n%s\n%s' % (
+            mip.GetPatientName(),
+            mip.GetPatientID(),
+            mip.GetStudyDescription(),
+            mip.GetSeriesDescription()))
+
+        br = self._image_viewer.br_text_actor
+        br.SetInput('DeVIDE\nTU Delft')
 
         #r.GetMedicalImageProperties().GetSliceThickness()
 
@@ -410,6 +421,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         series_uid = self._item_data_to_series_uid[idx]
         self._selected_series_uid = series_uid
 
+        print 'series_uid', series_uid
+
         self._fill_files_listctrl()
 
     def _handler_study_selected(self, event):
@@ -420,6 +433,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # and then use this to find the current study_uid
         study_uid = self._item_data_to_study_uid[idx]
         self._selected_study_uid = study_uid
+
+        print 'study uid', study_uid
 
         self._fill_series_listctrl()
 
@@ -644,10 +659,26 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         ren.AddActor(yt)
                 
         # labels upper-left #####
-        isize = self._image_viewer.isize_text_actor = \
+        ul = self._image_viewer.ul_text_actor = \
             setup_text_actor(0.01, 0.99)
-        isize.GetTextProperty().SetVerticalJustificationToTop()
-        ren.AddActor(isize)
+        ul.GetTextProperty().SetVerticalJustificationToTop()
+        ren.AddActor(ul)
+
+        # labels upper-right #####
+        ur = self._image_viewer.ur_text_actor = \
+            setup_text_actor(0.99, 0.99)
+        ur.GetTextProperty().SetVerticalJustificationToTop()
+        ur.GetTextProperty().SetJustificationToRight()
+        ren.AddActor(ur)
+
+        # labels bottom-right #####
+        br = self._image_viewer.br_text_actor = \
+            setup_text_actor(0.99, 0.01)
+        br.GetTextProperty().SetVerticalJustificationToBottom()
+        br.GetTextProperty().SetJustificationToRight()
+        ren.AddActor(br)
+       
+
 
         
 
