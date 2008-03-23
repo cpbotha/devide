@@ -15,10 +15,9 @@ class FilesPanelFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.files_panel = wx.Panel(self, -1)
-        self.dirs_files_lb = wx.ListBox(self.files_panel, -1, choices=[], style=wx.LB_EXTENDED|wx.LB_HSCROLL|wx.LB_NEEDED_SB)
+        self.dirs_files_tc = wx.TextCtrl(self.files_panel, -1, "", style=wx.HSCROLL|wx.TE_NOHIDESEL)
         self.ad_button = wx.Button(self.files_panel, -1, "Add Dirs")
         self.af_button = wx.Button(self.files_panel, -1, "Add Files")
-        self.r_button = wx.Button(self.files_panel, -1, "Remove")
         self.scan_button = wx.Button(self.files_panel, -1, "Scan")
 
         self.__set_properties()
@@ -28,7 +27,6 @@ class FilesPanelFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: FilesPanelFrame.__set_properties
         self.SetTitle("frame_1")
-        self.dirs_files_lb.SetMinSize((267, 25))
         # end wxGlade
 
     def __do_layout(self):
@@ -36,12 +34,11 @@ class FilesPanelFrame(wx.Frame):
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_2.Add(self.dirs_files_lb, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 7)
+        sizer_2.Add(self.dirs_files_tc, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 7)
         sizer_3.Add(self.ad_button, 0, wx.RIGHT, 4)
         sizer_3.Add(self.af_button, 0, wx.RIGHT, 4)
-        sizer_3.Add(self.r_button, 0, wx.RIGHT, 4)
         sizer_3.Add(self.scan_button, 0, 0, 0)
-        sizer_2.Add(sizer_3, 0, wx.RIGHT|wx.TOP|wx.BOTTOM, 7)
+        sizer_2.Add(sizer_3, 0, wx.RIGHT|wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER_VERTICAL, 7)
         self.files_panel.SetSizer(sizer_2)
         sizer_1.Add(self.files_panel, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_1)

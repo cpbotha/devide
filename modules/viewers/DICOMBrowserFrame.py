@@ -167,9 +167,8 @@ class DICOMBrowserFrame(wx.Frame):
 
         panel.ad_button = fpf.ad_button
         panel.af_button = fpf.af_button
-        panel.r_button = fpf.r_button
         panel.scan_button = fpf.scan_button
-        panel.dirs_files_lb = fpf.dirs_files_lb
+        panel.dirs_files_tc = fpf.dirs_files_tc
         self.dirs_pane = panel
 
         return panel

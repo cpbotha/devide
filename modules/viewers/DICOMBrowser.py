@@ -2,9 +2,20 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-
-# wxTreeListCtrl
-# wx.TR_HIDE_ROOT
+# Hello there person reading this source!
+# At the moment, I'm trying to get a fully-functioning DICOM browser
+# out the door as fast as possible.  As soon as the first version is
+# out there and my one user can start giving feedback, the following
+# major changes are planned:
+# * refactoring of the code, specifically to get the dicom slice
+#   viewer out into a separate class for re-use in the rest of DeVIDE,
+#   for example by the light-table thingy I'm planning.  See issue 38.
+# * caching of DICOM searches: a scan of a set of directories will
+#   create an sqlite file with all scanned information.  Name of sql
+#   file will be stored in config, so that restarts will be REALLY
+#   quick.  One will be able to scan (recreate whole cache file) or
+#   a quick re-scan (only add new files that have appeared, remove 
+#   files that have disappeared).  See issue 39.
 
 import DICOMBrowserFrame
 reload(DICOMBrowserFrame)
@@ -121,11 +132,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         pass
 
     def config_to_view(self):
-        lb = self._view_frame.dirs_pane.dirs_files_lb
-        # clear the listbox
-        lb.Clear()
-        for p in self._config.dicom_search_paths:
-            lb.Append(str(p))
+        tc = self._view_frame.dirs_pane.dirs_files_tc
+        tc.SetValue(self._helper_dicom_search_paths_to_string(
+            self._config.dicom_search_paths))
 
     def view_to_config(self):
         pass
@@ -149,9 +158,6 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         fp.af_button.Bind(wx.EVT_BUTTON,
                 self._handler_af_button)
-
-        fp.r_button.Bind(wx.EVT_BUTTON,
-                self._handler_r_button)
 
         fp.scan_button.Bind(wx.EVT_BUTTON,
                 self._handler_scan_button)
@@ -286,8 +292,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         if dlg.ShowModal() == wx.ID_OK:
             p = dlg.GetPath()
-            self._view_frame.dirs_pane.dirs_files_lb.Append(p)
-            self._config.dicom_search_paths.append(p)
+            tc = self._view_frame.dirs_pane.dirs_files_tc
+            v = tc.GetValue()
+            nv = self._helper_dicom_search_paths_to_string(
+                    [v, p])
+            tc.SetValue(nv)
 
         dlg.Destroy()
 
@@ -302,9 +311,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 )
 
         if dlg.ShowModal() == wx.ID_OK:
-            for p in dlg.GetPaths():
-                self._view_frame.dirs_pane.dirs_files_lb.Append(p)
-                self._config.dicom_search_paths.append(p)
+            tc = self._view_frame.dirs_pane.dirs_files_tc
+            v = tc.GetValue()
+            nv = self._helper_dicom_search_paths_to_string(
+                    [v] + dlg.GetPaths())
+
 
         dlg.Destroy()
 
@@ -396,21 +407,16 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._image_viewer.Render()
         
 
-    def _handler_r_button(self, event):
-        lb = self._view_frame.dirs_pane.dirs_files_lb
-        s = list(lb.GetSelections())
-        s.sort(reverse=True)
-        for idx in s:
-            lb.Delete(idx)
-
-        self._config.dicom_search_paths = lb.GetStrings()
-
 
     def _handler_scan_button(self, event):
-        paths = []
-        lb = self._view_frame.dirs_pane.dirs_files_lb
-        for i in range(lb.GetCount()):
-            paths.append(lb.GetString(i))
+        tc = self._view_frame.dirs_pane.dirs_files_tc
+
+        # helper function discards empty strings and strips the rest
+        paths = self._config.dicom_search_paths = \
+                self._helper_dicom_search_paths_to_list(tc.GetValue())
+
+        # let's put it back in the interface too
+        tc.SetValue(self._helper_dicom_search_paths_to_string(paths))
 
         self._study_dict = self._scan(paths)
         self._fill_studies_listctrl()
@@ -437,6 +443,23 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         print 'study uid', study_uid
 
         self._fill_series_listctrl()
+
+    def _helper_dicom_search_paths_to_string(
+            self, dicom_search_paths):
+        """Given a list of search paths, append them into a semicolon
+        delimited string.
+        """
+        s = [i.strip() for i in dicom_search_paths]
+        s2 = [i for i in s if len(i) > 0]
+        return ' ; '.join(s2)
+
+    def _helper_dicom_search_paths_to_list(
+            self, dicom_search_paths):
+        """Given a semicolon-delimited string, break into list.
+        """
+
+        s = [i.strip() for i in dicom_search_paths.split(';')]
+        return [i for i in s if len(i) > 0]
 
     def _helper_recursive_glob(self, paths):
         """Given a combined list of files and directories, return a
