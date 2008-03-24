@@ -110,7 +110,7 @@ class SortedAutoWidthListCtrl(listmix.ListCtrlAutoWidthMixin, SortedListCtrl):
 class DICOMBrowserFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="", name=""):
         wx.Frame.__init__(self, parent, id=id, title=title, 
-                pos=wx.DefaultPosition, size=(800,600), name=name)
+                pos=wx.DefaultPosition, size=(800,800), name=name)
 
         # tell FrameManager to manage this frame        
         self._mgr = wx.aui.AuiManager()
@@ -136,6 +136,12 @@ class DICOMBrowserFrame(wx.Frame):
 
         self._mgr.AddPane(self._create_files_pane(), wx.aui.AuiPaneInfo().
                           Name("files").Caption("Image Files").
+                          Left().
+                          BestSize(wx.Size(200,400)).
+                          CloseButton(False).MaximizeButton(True))
+
+        self._mgr.AddPane(self._create_meta_pane(), wx.aui.AuiPaneInfo().
+                          Name("meta").Caption("Image Metadata").
                           Left().
                           BestSize(wx.Size(200,400)).
                           CloseButton(False).MaximizeButton(True))
@@ -213,9 +219,27 @@ class DICOMBrowserFrame(wx.Frame):
 
         return panel
 
+    def _create_meta_pane(self):
+        ml = SortedAutoWidthListCtrl(self, -1, 
+                style=wx.LC_REPORT | 
+                wx.LC_HRULES | wx.LC_VRULES |
+                wx.LC_SINGLE_SEL)
+
+        ml.InsertColumn(0, "Key")
+        ml.SetColumnWidth(0, 70)
+
+        ml.InsertColumn(1, "Value")
+        ml.SetColumnWidth(1, 70)
+
+        self.meta_lc = ml
+
+        return ml
+
     def _create_studies_pane(self):
         sl = SortedAutoWidthListCtrl(self, -1, 
-                style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_SINGLE_SEL)
+                style=wx.LC_REPORT | 
+                wx.LC_HRULES | 
+                wx.LC_SINGLE_SEL)
 
         sl.InsertColumn(StudyColumns.patient, "Patient")
         sl.SetColumnWidth(StudyColumns.patient, 170)

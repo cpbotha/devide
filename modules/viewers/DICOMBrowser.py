@@ -17,12 +17,14 @@
 #   a quick re-scan (only add new files that have appeared, remove 
 #   files that have disappeared).  See issue 39.
 
-# - see about adding a text box in the interface for outputting more
-#   per-image meta-data 
+# - create menu bar with:
+#   * reset default view (aui perspective)
+#   * changing focus to various bits, with hot keys; e.g. ctrl-f goes
+#     to image file listing.
 # - exceptions for mixed series... *sigh*
-# - image sorting (image position patient)
+# - image sorting (image position patient) mathieu has fixed in trunk!
 # - exceptions for large multi-frame images: can we read this in a
-#   sensible way?
+#   sensible way? mathieu has fixed in trunk!
 # - vtkImageData output!
 
 import DICOMBrowserFrame
@@ -388,6 +390,16 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             # with trackback.format_exc() you can send this to the log
             # window.
 
+        self._update_image(r)
+        self._update_meta_data_pane(r)
+
+    def _update_image(self, gdcm_reader):
+        """Given a vtkGDCMImageReader instance that has read the given
+        file, update the image viewer.
+        """
+
+        r = gdcm_reader
+
         self._image_viewer.SetInput(r.GetOutput())
         #if r.GetNumberOfOverlays():
         #    self._image_viewer.AddInput(r.GetOverlay(0))
@@ -440,8 +452,6 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         br = self._image_viewer.br_text_actor
         br.SetInput('DeVIDE\nTU Delft')
 
-        #r.GetMedicalImageProperties().GetSliceThickness()
-
         # we have a new image in the image_viewer, so we have to reset
         # the camera so that the image is visible.
         if not self._config.lock_pz:
@@ -450,9 +460,96 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # also reset window level
         if not self._config.lock_wl:
             self._reset_image_wl()
-        
 
         self._image_viewer.Render()
+
+
+
+    def _update_meta_data_pane(self, gdcm_reader):
+        """Given a vtkGDCMImageReader instance that was used to read a
+        file, update the meta-data display.
+        """
+
+        # update image meta-data #####
+        r = gdcm_reader
+        mip = r.GetMedicalImageProperties()
+
+        r_attr_l = [
+                'DataOrigin',
+                'DataSpacing'
+        ]
+
+        mip_attr_l = [
+                'PatientName',
+                'PatientID',
+                'PatientAge',
+                'PatientSex',
+                'PatientBirthDate',
+                'ImageDate',
+                'ImageTime',
+                'ImageNumber',
+                'StudyDescription',
+                'StudyID',
+                'StudyDate',
+                'AcquisitionDate',
+                'SeriesNumber',
+                'SeriesDescription',
+                'Modality',
+                'ManufacturerModelName',
+                'Manufacturer',
+                'StationName',
+                'InstitutionName',
+                'ConvolutionKernel',
+                'SliceThickness',
+                'KVP',
+                'GantryTilt',
+                'EchoTime',
+                'EchoTrainLength',
+                'RepetitionTime',
+                'ExposureTime',
+                'XRayTubeCurrent'
+            ]
+                
+
+
+        item_data_map = {}
+        lc = self._view_frame.meta_lc
+
+        # only start over if we have to to avoid flickering and
+        # resetting of scroll bars.
+        if lc.GetItemCount() != (len(r_attr_l) + len(mip_attr_l)):
+            lc.DeleteAllItems() 
+            reset_lc = True
+        else:
+            reset_lc = False
+
+        def helper_av_in_lc(a, v, idx):
+            if reset_lc:
+                # in the case of a reset (i.e. we have to build up the
+                # listctrl from scratch), the idx param is ignored as
+                # we overwrite it with our own here
+                idx = lc.InsertStringItem(sys.maxint, a)
+            else:
+                # not a reset, so we use the given idx
+                lc.SetStringItem(idx, 0, a)
+
+            lc.SetStringItem(idx, 1, v)
+            lc.SetItemData(idx, idx)
+            item_data_map[idx] = (a, v)
+
+        idx = 0
+        for a in r_attr_l:
+            v = str(getattr(r, 'Get%s' % (a,))())
+            helper_av_in_lc(a, v, idx)
+            idx = idx + 1
+
+        for a in mip_attr_l:
+            v = str(getattr(mip, 'Get%s' % (a,))())
+            helper_av_in_lc(a, v, idx)
+            idx = idx + 1
+
+        # so that sorting (kinda) works
+        lc.itemDataMap = item_data_map
 
     def _handler_image_reset_b(self, event):
         self._reset_image_pz()
