@@ -17,9 +17,6 @@
 #   a quick re-scan (only add new files that have appeared, remove 
 #   files that have disappeared).  See issue 39.
 
-# - when you select a study, it should automatically select the first
-#   series, which should then automatically trigger the selection of the
-#   first image.
 # - see about adding a text box in the interface for outputting more
 #   per-image meta-data 
 # - exceptions for mixed series... *sigh*
@@ -232,6 +229,16 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # why does this sometimes not capture the full length?
         lc.auto_size_columns()
 
+        # select the first file
+        if lc.GetItemCount() > 0:
+            lc.SetItemState(0, wx.LIST_STATE_SELECTED,
+                    wx.LIST_STATE_SELECTED)
+            # in this case we have to focus as well, as that's the
+            # event that it's sensitive to.
+            lc.SetItemState(0, wx.LIST_STATE_FOCUSED,
+                    wx.LIST_STATE_FOCUSED)
+
+
     def _fill_series_listctrl(self):
         # get out current Study instance
         study = self._study_dict[self._selected_study_uid]
@@ -268,6 +275,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         lc.itemDataMap = item_data_map
 
+        # select the first series
+        if lc.GetItemCount() > 0:
+            lc.SetItemState(0, wx.LIST_STATE_SELECTED,
+                    wx.LIST_STATE_SELECTED)
 
     def _fill_studies_listctrl(self):
         """Given a study dictionary, fill out the complete studies
@@ -314,6 +325,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # assign the datamap to the ColumnSorterMixin
         lc.itemDataMap = item_data_map
+        
+        if lc.GetItemCount() > 0:
+            lc.SetItemState(0, wx.LIST_STATE_SELECTED,
+                    wx.LIST_STATE_SELECTED)
 
         #lc.auto_size_columns()
 
