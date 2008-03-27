@@ -1,6 +1,6 @@
-# sliceDirection.py copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
-# $Id$
-# does all the actual work for a single slice in the slice3dVWR
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import operator
 import moduleUtils
@@ -657,8 +657,19 @@ class sliceDirection:
             # calculate default window/level once (same as used
             # by vtkImagePlaneWidget)
             (dmin,dmax) = inputData.GetScalarRange()
-            iwindow = dmax - dmin
-            ilevel = 0.5 * (dmin + dmax)
+
+            import external.fpconst as fpconst
+            if fpconst.isNaN(dmin) or fpconst.isInf(dmin) or \
+                fpconst.isNaN(dmax) or fpconst.isInf(dmax):
+                # sometimes one of the values is infinite
+                # in that case, we set a window level that should be
+                # appropriate for many CT and MRI datasets
+                # if we don't, calculated window could be INF.
+                iwindow = 4000
+                ilevel = 1000
+            else:
+                iwindow = dmax - dmin
+                ilevel = 0.5 * (dmin + dmax)
 
             # this doesn't work anymore.  We'll have to pack the
             # Window/Level data in a field like we do with the
