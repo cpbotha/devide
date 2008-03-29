@@ -123,7 +123,7 @@ class nbhSeedConnect(scriptedConfigModuleMixin, moduleBase):
                 # we have to cast these to int... they are discrete,
                 # but the IPW seems to be returning them as floats
                 x,y,z = [int(i) for i in ip['discrete']]
-                idx = itk.itkIndex3()
+                idx = itk.Index[3]()
                 idx.SetElement(0, x)
                 idx.SetElement(1, y)
                 idx.SetElement(2, z)
