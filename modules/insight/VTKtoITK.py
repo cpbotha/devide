@@ -1,4 +1,6 @@
-# $Id: VTKtoITK.py 2110 2006-06-22 15:11:21Z cpbotha $
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import itk
 import module_kits.itk_kit as itk_kit

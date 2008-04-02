@@ -1,4 +1,6 @@
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import itk
 import module_kits.itk_kit as itk_kit

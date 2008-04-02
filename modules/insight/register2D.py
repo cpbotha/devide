@@ -1,4 +1,6 @@
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # TODO:
 # * if the input imageStackRDR is reconfigured to read a different stack

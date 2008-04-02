@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 from typeModules.imageStackClass import imageStackClass
 import fixitk as itk
 from moduleBase import moduleBase

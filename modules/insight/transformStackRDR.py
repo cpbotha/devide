@@ -1,4 +1,7 @@
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 import fixitk as itk

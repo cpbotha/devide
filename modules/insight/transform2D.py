@@ -1,4 +1,6 @@
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # TODO:
 # * this module is not sensitive to changes in its inputs... it should

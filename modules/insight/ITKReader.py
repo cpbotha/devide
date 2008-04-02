@@ -1,4 +1,6 @@
-# $Id: itk3RDR.py 1957 2006-03-05 22:49:30Z cpbotha $
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 import copy
 import itk
