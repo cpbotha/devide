@@ -8,27 +8,34 @@ from moduleMixins import \
 import moduleUtils
 
 import vtkgdcm
+import wx
 
 class DICOMReader(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
-        self.reader = vtkgdcm.vtkGDCMImageReader()
+        self._reader = vtkgdcm.vtkGDCMImageReader()
 
-        moduleUtils.setupVTKObjectProgress(self, self.reader,
+        moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
 
         self._view_frame = None
+        self._file_dialog = None
         self._config.dicom_filenames = []
 
         self.sync_module_logic_with_config()
 
     def close(self):
         introspectModuleMixin.close(self)
+
+        # we just delete our binding.  Destroying the view_frame
+        # should also take care of this one.
+        del self._file_dialog
+
         if self._view_frame is not None:
             self._view_frame.Destroy()
 
-        del self.reader
+        del self._reader
 
         moduleBase.close(self) 
 
@@ -43,7 +50,7 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         return ('DICOM data (vtkStructuredPoints)',)
     
     def get_output(self, idx):
-        return self.reader.GetOutput()
+        return self._reader.GetOutput()
 
     def logic_to_config(self):
         # get filenames from reader, put in interface
@@ -56,16 +63,21 @@ class DICOMReader(introspectModuleMixin, moduleBase):
 
 
     def view_to_config(self):
-        # lbaat
-        pass
+        lb = self._view_frame.dicom_files_lb
+        lb.GetStrings()
+        
+        # just clear out the current list
+        # and copy everything
+        self._config.dicom_filenames[:] = lb.GetStrings()[:]
 
     def config_to_view(self):
-        # put list of filenames in interface
-        pass
-
+        # get listbox, clear it out, add filenames from the config
+        lb = self._view_frame.dicom_files_lb
+        lb.Clear()
+        lb.AppendItems(self._config.dicom_filenames)
     
     def execute_module(self):
-        self.reader.Update()
+        self._reader.Update()
 
         if False:
             # first determine axis labels based on IOP ####################
@@ -99,13 +111,35 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         
 
     def _create_view_frame(self):
+        import modules.readers.resources.python.DICOMReaderViewFrame
+        reload(modules.readers.resources.python.DICOMReaderViewFrame)
+
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.readers.resources.python.DICOMReaderViewFrame.\
+            DICOMReaderViewFrame)
+
+        # make sure the listbox is empty
+        self._view_frame.dicom_files_lb.Clear()
+
+        object_dict = {'vtkGDCMImageReader' : self._reader}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._view_frame, self._view_frame.view_frame_panel,
+            object_dict, None)
+
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.view_frame_panel)
+
+        # now add the event handlers
+        self._view_frame.add_files_b.Bind(wx.EVT_BUTTON,
+                self._handler_add_files_b)
+        self._view_frame.remove_files_b.Bind(wx.EVT_BUTTON,
+                self._handler_remove_files_b)
 
 
         # follow moduleBase convention to indicate that we now have
         # a view
         self.view_initialised = True
-        
-        
 
     def view(self, parent_window=None):
         if self._view_frame is None:
@@ -115,4 +149,36 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         self._view_frame.Show(True)
         self._view_frame.Raise()
 
-   
+    def _handler_add_files_b(self, event):
+        if not self._file_dialog:
+            self._file_dialog = wx.FileDialog(
+                self._view_frame,
+                'Select files to add to the list', "", "",
+                "DICOM files (*.dcm)|*.dcm|All files (*)|*",
+                wx.OPEN | wx.MULTIPLE)
+            
+        if self._file_dialog.ShowModal() == wx.ID_OK:
+            new_filenames = self._file_dialog.GetPaths()
+
+            # only add filenames that are not in there yet...
+            lb = self._view_frame.dicom_files_lb
+
+            # create new dictionary with current filenames as keys
+            dup_dict = {}.fromkeys(lb.GetStrings(), 1)
+
+            fns_to_add = [fn for fn in new_filenames
+                          if fn not in dup_dict]
+
+            lb.AppendItems(fns_to_add)
+
+    def _handler_remove_files_b(self, event):
+        lb = self._view_frame.dicom_files_lb
+        sels = list(lb.GetSelections())
+
+        # we have to delete from the back to the front
+        sels.sort()
+        sels.reverse()
+
+        for sel in sels:
+            lb.Delete(sel)
+
