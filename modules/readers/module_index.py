@@ -13,6 +13,18 @@ class BMPReader:
 
     """
 
+class DICOMReader:
+    kits = ['vtk_kit']
+    cats = ['Readers']
+    help = """New module for reading DICOM data.
+
+    GDCM-based module for reading DICOM data.  This is newer than
+    dicomRDR (which is DCMTK-based) and should be able to read more
+    kinds of data.  The interface is deliberately less rich, as the
+    DICOMReader is supposed to be used in concert with the
+    DICOMBrowser.
+    """
+
 class dicomRDR:
     kits = ['vtk_kit']
     cats = ['Readers']
