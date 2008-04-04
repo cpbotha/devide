@@ -59,7 +59,8 @@ class DICOMReader(introspectModuleMixin, moduleBase):
 
     def config_to_logic(self):
         # add filenames to reader
-        pass
+
+        # need IPPSorter for this!
 
 
     def view_to_config(self):
