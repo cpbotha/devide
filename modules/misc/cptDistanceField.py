@@ -16,7 +16,6 @@ class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
 
         self._imageInput = None
         self._meshInput = None
-        self._maxDistance = 5
 
         
         self._flipper = vtk.vtkImageFlip()
@@ -27,13 +26,17 @@ class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
         self._config.cpt_driver_path = \
                 'd:\\misc\\stuff\\driver.bat'
             #'/home/cpbotha/build/cpt/3d/driver/driver.exe'
+        self._config.max_distance = 5
 
         config_list = [
                 ('CPT driver path', 'cpt_driver_path',
                 'base:str', 'filebrowser', 
                 'Path to CPT driver executable',
                 {'fileMode' : moduleMixins.wx.OPEN,
-                 'fileMask' : 'All files (*.*)|*.*'})]
+                 'fileMask' : 'All files (*.*)|*.*'}), 
+                ('Maximum distance', 'max_distance', 
+                'base:float', 'text', 
+                'The maximum (absolute) distance up to which the field is computed.')]
 
         scriptedConfigModuleMixin.__init__(
             self, config_list,
@@ -115,7 +118,7 @@ class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
             # dimensions
             geomFile.write('%d %d %d\n' % (d[0], d[1], d[2]))
             # maximum distance
-            geomFile.write('%d\n' % (self._maxDistance,))
+            geomFile.write('%d\n' % (self._config.max_distance,))
             # must be signed
             geomFile.write('1\n')
             geomFile.close()

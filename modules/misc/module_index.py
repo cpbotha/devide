@@ -29,8 +29,12 @@ class cptDistanceField:
     brep files.  The output distance field is read, y-axis is flipped, and
     the whole shebang is made available at the output.
 
-    The distance will be calculated up to _maxDistance.
+    Contributions to module code by Stef Busking.
 
+    Suggestion: On Windows, your driver.bat could make use of plink /
+    pscp to copy data to a linux server and run Mauch's code there,
+    and then copy everything back.  On Linux you can run Mauch's code
+    directly.
     """
 
     
