@@ -360,6 +360,10 @@ class Measure2D(introspectModuleMixin, moduleBase):
                             [0.0,0.0,0.0],
                             [0.0,0.0,0.0],
                             [0.0,0.0,0.0])
+
+                    # these vectors describe the principal HALF-axes
+                    # of the ellipse, starting out from the centre
+                    # (mi.c)
                     r.GetSemiMajorAxisVector(mi.radius_vectors[0])
                     r.GetSemiMinorAxisVector(mi.radius_vectors[1])
 
