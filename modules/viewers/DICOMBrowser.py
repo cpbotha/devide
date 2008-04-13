@@ -800,13 +800,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 series = Series()
                 series.uid = series_uid
                 # these should be the same over the whole series
-                # fixme: could be that they don't exist (handle)
                 series.description = \
-                    file_tags['series_description']
-                series.modality = file_tags['modality']
+                    file_tags.get('series_description', '')
+                series.modality = file_tags.get('modality', '')
 
-                series.rows = int(file_tags['rows'])
-                series.columns = int(file_tags['columns'])
+                series.rows = int(file_tags.get('rows', 0))
+                series.columns = int(file_tags.get('columns', 0))
 
                 study.series_dict[series_uid] = series
 
