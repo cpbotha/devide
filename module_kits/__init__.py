@@ -19,11 +19,13 @@ is in the crucial_kit_list, DeVIDE will refuse to start up.
 """
 
 module_kit_list = ['sqlite_kit', 'wx_kit', 'vtk_kit', 'vtktudoss_kit',
+                   'gdcm_kit',
                    'itk_kit', 'itktudoss_kit',
                    'numpy_kit', 'matplotlib_kit', 'stats_kit',
                    'geometry_kit', 'misc_kit']
 
 dependencies_dict = {'vtktudoss_kit' : ['vtk_kit'],
+                     'gdcm_kit' : ['vtk_kit'],
                      'matplotlib_kit' : ['numpy_kit'],
                      'itktudoss_kit' : ['itk_kit'],
                      'geometry_kit' : ['numpy_kit']}
