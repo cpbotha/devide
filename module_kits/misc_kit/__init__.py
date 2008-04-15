@@ -4,8 +4,7 @@
 
 import sys
 
-VERSION = ''
-
+VERSION = 'INTEGRATED'
 
 def init(module_manager):
     global misc_utils

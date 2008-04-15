@@ -16,7 +16,7 @@ Inserts the following modules in sys.modules: geometry.
 import sys
 
 # you have to define this
-VERSION = '$Revision$'
+VERSION = 'INTEGRATED'
 
 def init(module_manager):
     global geometry
