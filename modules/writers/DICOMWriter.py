@@ -2,6 +2,14 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+# Random development notes:
+# * SetFileDimensionality(2) if you want multiple slices written from
+#   a single volume
+# * just generate im%05d.dcm filenames, as many as there are slices
+# * where do we get DirectionCosines from? (not in
+#   vtkMedicalImageProperties)
+# * study / series UIDs are auto generated
+
 from moduleBase import moduleBase
 from moduleMixins import \
      introspectModuleMixin
