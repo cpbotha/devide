@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 from moduleBase import moduleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
