@@ -7,6 +7,22 @@
 
 import vtk
 
+def vtkmip_copy(src, dst):
+    """Given two vtkMedicalImageProperties instances, copy all
+    attributes from the one to the other.
+    """
+
+    import module_kits.vtk_kit as vk
+    mip_kw = vk.constants.medical_image_properties_keywords
+
+    for kw in mip_kw:
+        # get method objects for the getter and the setter
+        gmo = getattr(src, 'Get%s' % (kw,))
+        smo = getattr(dst, 'Set%s' % (kw,))
+        # from the get to the set!
+        smo(gmo())
+        
+
 def setup_renderers(renwin, fg_ren, bg_ren):
     """Utility method to configure foreground and background renderer
     and insert them into different layers of the renderenwinindow.

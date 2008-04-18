@@ -138,6 +138,7 @@ def init(theModuleManager):
     import module_kits.vtk_kit.misc as misc
     import module_kits.vtk_kit.mixins as mixins
     import module_kits.vtk_kit.utils as utils
+    import module_kits.vtk_kit.constants as constants
 
     # setup the kit version
     global VERSION
