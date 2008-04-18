@@ -14,6 +14,14 @@
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
+import vtk
+from module_kits.vtk_kit.utils import vtkmip_copy
+
+class MedicalImageData:
+    def __init__(self):
+        self.image_data = None
+        self.mip = vtk.vtkMedicalImageProperties()
+        self.direction_cosines = None
 
 class DVMedicalImageData(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
@@ -23,6 +31,8 @@ class DVMedicalImageData(introspectModuleMixin, moduleBase):
         self._input_data = None
         self._input_mip = None
         self._input_dc = None
+
+        self._output_mid = DVMedicalImageData()
 
        
     def close(self):
@@ -54,13 +64,22 @@ class DVMedicalImageData(introspectModuleMixin, moduleBase):
             self._input_dc = input_stream
 
     def get_output_descriptions(self):
-        return ()
+        return ('DeVIDE Medical Image Data')
 
     def get_output(self, idx):
-        raise RuntimeError
+        return self._output_mid
     
     def execute_module(self):
-        pass
+        self._output_mid.image_data = self._input_data
+
+        # 1. if self._input_mip is set, copy from self._input_mip to
+        # self._output_mid.mip
+        if self._input_mip not is None:
+            vtkmip_copy(self._input_mip, self._output_mid.mip)
+        # 2. apply only changed fields from interface
+        # ... TBD
+
+        self._output_mid.direction_cosines = self._input_dc
 
     def logic_to_config(self):
         pass
@@ -72,5 +91,10 @@ class DVMedicalImageData(introspectModuleMixin, moduleBase):
         pass
 
     def view_to_config(self):
+        pass
+
+    def view(self):
+        # all fields touched by user are recorded.  when we get a new
+        # input, these fields are left untouched.  mmmkay?
         pass
 

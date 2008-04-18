@@ -47,10 +47,17 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         raise Exception
     
     def get_output_descriptions(self):
-        return ('DICOM data (vtkStructuredPoints)',)
+        return ('DICOM data (vtkStructuredPoints)',
+                'VTK Medical Image Properties',
+                'Direction Cosines')
     
     def get_output(self, idx):
-        return self._reader.GetOutput()
+        if idx == 0:
+            return self._reader.GetOutput()
+        elif idx == 1:
+            return self._reader.GetMedicalImageProperties()
+        else:
+            return self._reader.GetDirectionCosines()
 
     def logic_to_config(self):
         # get filenames from reader, put in interface
@@ -58,9 +65,9 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         
 
     def config_to_logic(self):
-        # add filenames to reader
-
-        # need IPPSorter for this!
+        # we deliberately don't add filenames to the reader here, as
+        # we would need to sort them, which would imply scanning all
+        # of them during this step
         pass
 
 
@@ -79,6 +86,9 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         lb.AppendItems(self._config.dicom_filenames)
     
     def execute_module(self):
+        # get filenames from config, sort them, then add them to the
+        # reader
+
         self._reader.Update()
 
         if False:
