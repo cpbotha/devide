@@ -11,6 +11,19 @@ class cptBrepWRT:
     software.
     """
 
+class DICOMWriter:
+    kits = ['vtk_kit', 'gdcm_kit']
+    cats = ['Writers', 'Medical']
+    help = """Writes image data to disc as DICOM images.
+
+    This GDCM2-based module writes data to disc as one (multi-frame)
+    or more DICOM files.  As input, it requires a special DeVIDE
+    datastructure containing the raw data, the medical image
+    properties and direction cosines (indicating the orientation of
+    the dataset in world / scanner space).  You can create such a
+    datastructure by making use of the DVMedicalImageData module.
+
+    """
 
 class ivWRT:
     kits = ['vtk_kit']
