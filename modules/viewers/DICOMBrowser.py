@@ -479,36 +479,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                 'DataSpacing'
         ]
 
-        mip_attr_l = [
-                'PatientName',
-                'PatientID',
-                'PatientAge',
-                'PatientSex',
-                'PatientBirthDate',
-                'ImageDate',
-                'ImageTime',
-                'ImageNumber',
-                'StudyDescription',
-                'StudyID',
-                'StudyDate',
-                'AcquisitionDate',
-                'SeriesNumber',
-                'SeriesDescription',
-                'Modality',
-                'ManufacturerModelName',
-                'Manufacturer',
-                'StationName',
-                'InstitutionName',
-                'ConvolutionKernel',
-                'SliceThickness',
-                'KVP',
-                'GantryTilt',
-                'EchoTime',
-                'EchoTrainLength',
-                'RepetitionTime',
-                'ExposureTime',
-                'XRayTubeCurrent'
-            ]
+        import module_kits.vtk_kit
+        mip_attr_l = \
+            module_kits.vtk_kit.constants.medical_image_properties_keywords
                 
 
 
