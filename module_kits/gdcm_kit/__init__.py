@@ -20,6 +20,10 @@ def init(module_manager):
     global vtkgdcm
     import vtkgdcm
 
+    # will be available as module_kits.gdcm_kit.utils after the client
+    # programmer has done module_kits.gdcm_kit
+    import module_kits.gdcm_kit.utils
+
     global VERSION
     VERSION = gdcm.Version.GetVersion()
 
