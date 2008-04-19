@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 import vtk
 from gen_mixins import SubjectMixin
 from devide_canvas_object import DeVIDECanvasGlyph
