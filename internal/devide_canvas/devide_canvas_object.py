@@ -339,7 +339,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._cso = vtk.vtkCubeSource()
         self._csoa = vtk.vtkActor()
         # and of course the label
-        self._tsa = vtk.vtkCaptionActor2D()
+        self._tsa = vtk.vtkTextActor()
+        self._tsa.ScaledTextOn()
 
         self._iportssa = \
             [(vtk.vtkCubeSource(),vtk.vtkActor()) for _ in
@@ -360,18 +361,18 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     def _create_geometry(self):
 
         # TEXT LABEL ##############################################
-        tprop = self._tsa.GetCaptionTextProperty()
+        tprop = self._tsa.GetTextProperty()
         tprop.SetFontFamilyToArial()
-        tprop.SetVerticalJustificationToCentered()
-        tprop.SetFontSize(12)
+
+        # due to the bug in VTK ParaView-3-2-1 vtkTextActor
+        # ScaledText, we have to leave Justificition at default.
+        #tprop.SetVerticalJustificationToCentered()
+
         tprop.SetBold(0)
         tprop.SetItalic(0)
         tprop.SetShadow(0)
         #tprop.SetColor((1.0,1.0,1.0))
         tprop.SetColor((0,0,0))
-
-        self._tsa.LeaderOff()
-        self._tsa.BorderOff()
 
         # GLYPH BLOCK ##############################################
 
@@ -482,23 +483,39 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # update text label ###################################
        
         # update the text caption
-        self._tsa.SetCaption('\n'.join(self._labelList))
+        self._tsa.SetInput('\n'.join(self._labelList))
 
-        # attachmentpoint is in world coordinates
         # self._position is the bottom left corner of the button face,
         # but the text is centre justified. 
+        # update: usually y = self._position[1], but because we had to switch
+        # off centered justification (due to bug in vtkTextActor), we
+        # have this more complicated version
         ap = self._position[0] + self._horizBorder, \
-            self._position[1], self._text_z
-        self._tsa.SetAttachmentPoint(ap)
-        # position is relative to attachmentpoint, in display coords
-        self._tsa.GetPositionCoordinate().SetValue(0.0, 0.0)
+            self._position[1] + self._vertBorder, self._text_z
 
-        p2c = max_label_width, \
-            self._size[1], self._text_z
+        self._tsa.GetPositionCoordinate().SetCoordinateSystemToWorld()
+        self._tsa.GetPositionCoordinate().SetValue(ap)
+
+        if False:
+            vp = \
+            self._tsa.GetPositionCoordinate().GetComputedViewportValue(
+                    self.canvas._ren)
+            self._tsa.GetPositionCoordinate().SetCoordinateSystemToViewport()
+            self._tsa.GetPositionCoordinate().SetValue(*vp)
+
+        # position2coordinate is supposed to be relative to position,
+        # but only sometimes is.
+        if ap[1] < 0:
+            y2 = self._size[1] 
+        else:
+            y2 = ap[1] + self._size[1]
+
+        p2c = max_label_width, y2, self._text_z
         self._tsa.GetPosition2Coordinate().SetCoordinateSystemToWorld()
         self._tsa.GetPosition2Coordinate().SetValue(p2c)
 
-        tprop = self._tsa.GetCaptionTextProperty()
+
+        tprop = self._tsa.GetTextProperty()
         tcol = [text_normal_col, text_selected_col][self.selected]
         tprop.SetColor(tcol)
 
