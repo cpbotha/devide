@@ -475,10 +475,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # now the glyph outline
         self._cso.SetCenter(gc)
-        self._cso.SetYLength(self._size[1] + 4) # horizontal 2
-        self._cso.SetXLength(self._size[0] + 4) # vertical 2
+        self._cso.SetYLength(self._size[1] + 2) # horizontal 1
+        self._cso.SetXLength(self._size[0] + 2) # vertical 1
         p = self._csoa.GetProperty()
-        p.SetColor(0.0, 0.0, 0.0) # and it's black
+        p.SetColor(0, 0, 0) # and it's black
 
         # update text label ###################################
        
