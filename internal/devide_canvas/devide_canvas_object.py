@@ -475,8 +475,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # now the glyph outline
         self._cso.SetCenter(gc)
-        self._cso.SetYLength(self._size[1] + 3) # horizontal 1.5
-        self._cso.SetXLength(self._size[0] + 3) # vertical 1.5
+        self._cso.SetYLength(self._size[1] + 4) # horizontal 1.5
+        self._cso.SetXLength(self._size[0] + 4) # vertical 1.5
         p = self._csoa.GetProperty()
         p.SetColor(0.0, 0.0, 0.0) # and it's black
 
