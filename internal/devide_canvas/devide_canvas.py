@@ -520,9 +520,7 @@ class DeVIDECanvas(SubjectMixin):
         visible.
         """
         self._ren.ResetCamera()
-        # reset is quite conservative.  This zoom brings objects a bit
-        # closer and also does a redraw.
-        self._zoom(1.5)
+        self.redraw()
 
     def getDraggedObject(self):
         return self._draggedObject
