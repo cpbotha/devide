@@ -10,6 +10,8 @@ import vtk
 def vtkmip_copy(src, dst):
     """Given two vtkMedicalImageProperties instances, copy all
     attributes from the one to the other.
+
+    Rather use vtkMedicalImageProperties.DeepCopy.
     """
 
     import module_kits.vtk_kit as vk

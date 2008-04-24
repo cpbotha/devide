@@ -15,7 +15,6 @@ from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
-from module_kits.vtk_kit.utils import vtkmip_copy
 
 class MedicalImageData:
     def __init__(self):
@@ -74,8 +73,8 @@ class DVMedicalImageData(introspectModuleMixin, moduleBase):
 
         # 1. if self._input_mip is set, copy from self._input_mip to
         # self._output_mid.mip
-        if self._input_mip not is None:
-            vtkmip_copy(self._input_mip, self._output_mid.mip)
+        if not self._input_mip is None:
+            self._output_mid.mip.DeepCopy(self._input_mip)
         # 2. apply only changed fields from interface
         # ... TBD
 
