@@ -93,9 +93,9 @@ class BSplineRegistration(scriptedConfigModuleMixin, moduleBase):
         self._transform.SetGridRegion(bspline_region)
 
         num_params = self._transform.GetNumberOfParameters()
-        params = [0.0] * num_params
+        params = itk.Array[itk.D](num_params)
+        params.Fill(0.0)
 
-        import pdb; pdb.set_trace()
         self._transform.SetParameters(params)
         self._registration.SetInitialTransformParameters(
                 self._transform.GetParameters())
