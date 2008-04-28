@@ -41,6 +41,10 @@ class BSplineRegistration(scriptedConfigModuleMixin, moduleBase):
             self, self._registration, 'BSpline Registration', 
             'Performing registration')
 
+        itk_kit.utils.setupITKObjectProgress(
+                self, self._optimizer, 
+                'LBFGSOptimizer', 'Optimizing')
+
     def get_input_descriptions(self):
         return ('Fixed image', 'Moved image')
 
@@ -106,7 +110,7 @@ class BSplineRegistration(scriptedConfigModuleMixin, moduleBase):
         self._optimizer.TraceOn()
         self._optimizer.SetMaximumNumberOfFunctionEvaluations( 1000 )
 
-        self._registration.StartRegistration()
+        self._registration.Update()
 
     def logic_to_config(self):
         pass
