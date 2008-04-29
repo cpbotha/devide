@@ -7,6 +7,8 @@ from moduleMixins import \
      introspectModuleMixin
 import moduleUtils
 
+import gdcm
+import vtk
 import vtkgdcm
 import wx
 
@@ -88,6 +90,26 @@ class DICOMReader(introspectModuleMixin, moduleBase):
     def execute_module(self):
         # get filenames from config, sort them, then add them to the
         # reader
+      
+        # have to  cast to normal strings (from unicode)
+        filenames = [str(i) for i in self._config.dicom_filenames]
+        sorter = gdcm.IPPSorter()
+        sorter.SetComputeZSpacing(True)
+        ret = sorter.Sort(filenames)
+        if not ret:
+            raise RuntimeError(
+            'Could not sort DICOM filenames to load.')
+
+        print sorter.GetFilenames()
+        print sorter.GetZSpacing()
+
+        sa = vtk.vtkStringArray()
+        for fn in sorter.GetFilenames(): 
+            sa.InsertNextValue(fn)
+
+
+
+        self._reader.SetFileNames(sa)
 
         self._reader.Update()
 

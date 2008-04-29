@@ -77,6 +77,10 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
         fn_sa = vtk.vtkStringArray()
         [fn_sa.InsertNextValue(fn) for fn in fn_list]
 
+        mip = vtk.vtkMedicalImageProperties()
+        mip.SetModality('CT')
+        self._writer.SetMedicalImageProperties(mip)
+
         self._writer.SetInput(self._input)
         self._writer.SetFileNames(fn_sa)
         # we want to write separate slices
