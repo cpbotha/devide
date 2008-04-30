@@ -62,7 +62,8 @@ class DICOMReader(introspectModuleMixin, moduleBase):
             return self._reader.GetDirectionCosines()
 
     def logic_to_config(self):
-        # get filenames from reader, put in interface
+        # we deliberately don't do any processing here, as we want to
+        # limit all DICOM parsing to the execute_module
         pass
         
 
@@ -93,24 +94,37 @@ class DICOMReader(introspectModuleMixin, moduleBase):
       
         # have to  cast to normal strings (from unicode)
         filenames = [str(i) for i in self._config.dicom_filenames]
-        sorter = gdcm.IPPSorter()
-        sorter.SetComputeZSpacing(True)
-        ret = sorter.Sort(filenames)
-        if not ret:
+
+        # we only sort and derive slice-based spacing if there are
+        # more than 1 filenames
+        if len(filenames) > 1:
+            sorter = gdcm.IPPSorter()
+            sorter.SetComputeZSpacing(True)
+            ret = sorter.Sort(filenames)
+            if not ret:
+                raise RuntimeError(
+                'Could not sort DICOM filenames to load.')
+
+            # impose derived spacing on the reader
+            spacing = list(self._reader.GetDataSpacing())
+            spacing[2] = sorter.GetZSpacing()
+            self._reader.SetDataSpacing(spacing)
+
+            # then give the reader the sorted list of files
+            sa = vtk.vtkStringArray()
+            for fn in sorter.GetFilenames(): 
+                sa.InsertNextValue(fn)
+
+            self._reader.SetFileNames(sa)
+
+        elif len(filenames) == 1:
+            self._reader.SetFileName(filenames[0])
+
+        else:
             raise RuntimeError(
-            'Could not sort DICOM filenames to load.')
+                    'No DICOM filenames to read.')
 
-        print sorter.GetFilenames()
-        print sorter.GetZSpacing()
-
-        sa = vtk.vtkStringArray()
-        for fn in sorter.GetFilenames(): 
-            sa.InsertNextValue(fn)
-
-
-
-        self._reader.SetFileNames(sa)
-
+        # now do the actual reading
         self._reader.Update()
 
         if False:
