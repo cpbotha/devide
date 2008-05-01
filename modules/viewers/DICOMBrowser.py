@@ -17,15 +17,16 @@
 #   a quick re-scan (only add new files that have appeared, remove 
 #   files that have disappeared).  See issue 39.
 
+# - drag-drop support (dragging from series, or selection of files in
+#   file listbox)
 # - create menu bar with:
 #   * reset default view (aui perspective)
 #   * changing focus to various bits, with hot keys; e.g. ctrl-f goes
 #     to image file listing.
-# - exceptions for mixed series... *sigh*
-# - image sorting (image position patient) mathieu has fixed in trunk!
-# - exceptions for large multi-frame images: can we read this in a
-#   sensible way? mathieu has fixed in trunk!
-# - vtkImageData output!
+
+# for the drag-drop support:
+# you need to create a wx.FileDataObject that can be dragged and
+# dropped on e.g. the DICOMReader module
 
 import DICOMBrowserFrame
 reload(DICOMBrowserFrame)

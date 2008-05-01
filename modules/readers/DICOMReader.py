@@ -2,6 +2,17 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+# next action on this module: list of filenames can be dropped on
+# listbox
+
+# as of 20080431 the following bug:
+# load set 1 of dicom files
+# now set a single filename instead
+# try to load
+# things crash
+# wait until the fix Mathieu made on the basis of my
+# empty-filelist-segfault report is ported to the GDCM2 branch.
+
 from moduleBase import moduleBase
 from moduleMixins import \
      introspectModuleMixin
@@ -20,6 +31,8 @@ class DICOMReader(introspectModuleMixin, moduleBase):
 
         self._reader = vtkgdcm.vtkGDCMImageReader()
 
+        # create output MedicalMetaData and populate it with the
+        # necessary bindings.
         mmd = MedicalMetaData()
         mmd.medical_image_properties = \
                 self._reader.GetMedicalImageProperties()
@@ -96,11 +109,12 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         lb.AppendItems(self._config.dicom_filenames)
     
     def execute_module(self):
-        # get filenames from config, sort them, then add them to the
-        # reader
-      
         # have to  cast to normal strings (from unicode)
         filenames = [str(i) for i in self._config.dicom_filenames]
+
+        # make sure all is zeroed.
+        self._reader.SetFileName(None)
+        self._reader.SetFileNames(None)
 
         # we only sort and derive slice-based spacing if there are
         # more than 1 filenames
@@ -110,7 +124,7 @@ class DICOMReader(introspectModuleMixin, moduleBase):
             ret = sorter.Sort(filenames)
             if not ret:
                 raise RuntimeError(
-                'Could not sort DICOM filenames to load.')
+                'Could not sort DICOM filenames before loading.')
 
             # then give the reader the sorted list of files
             sa = vtk.vtkStringArray()
