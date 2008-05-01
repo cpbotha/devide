@@ -12,11 +12,20 @@ import vtk
 import vtkgdcm
 import wx
 
+from module_kits.misc_kit.devide_types import MedicalMetaData
+
 class DICOMReader(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
         self._reader = vtkgdcm.vtkGDCMImageReader()
+
+        mmd = MedicalMetaData()
+        mmd.medical_image_properties = \
+                self._reader.GetMedicalImageProperties()
+        mmd.direction_cosines = \
+                self._reader.GetDirectionCosines()
+        self._output_mmd = mmd
 
         moduleUtils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
@@ -37,6 +46,9 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         if self._view_frame is not None:
             self._view_frame.Destroy()
 
+        self._output_mmd.close() 
+        del self._output_mmd
+
         del self._reader
 
         moduleBase.close(self) 
@@ -50,29 +62,24 @@ class DICOMReader(introspectModuleMixin, moduleBase):
     
     def get_output_descriptions(self):
         return ('DICOM data (vtkStructuredPoints)',
-                'VTK Medical Image Properties',
-                'Direction Cosines')
+                'Medical Meta Data')
     
     def get_output(self, idx):
         if idx == 0:
             return self._reader.GetOutput()
         elif idx == 1:
-            return self._reader.GetMedicalImageProperties()
-        else:
-            return self._reader.GetDirectionCosines()
+            return self._output_mmd
 
     def logic_to_config(self):
         # we deliberately don't do any processing here, as we want to
         # limit all DICOM parsing to the execute_module
         pass
-        
 
     def config_to_logic(self):
         # we deliberately don't add filenames to the reader here, as
         # we would need to sort them, which would imply scanning all
         # of them during this step
         pass
-
 
     def view_to_config(self):
         lb = self._view_frame.dicom_files_lb
@@ -105,11 +112,6 @@ class DICOMReader(introspectModuleMixin, moduleBase):
                 raise RuntimeError(
                 'Could not sort DICOM filenames to load.')
 
-            # impose derived spacing on the reader
-            spacing = list(self._reader.GetDataSpacing())
-            spacing[2] = sorter.GetZSpacing()
-            self._reader.SetDataSpacing(spacing)
-
             # then give the reader the sorted list of files
             sa = vtk.vtkStringArray()
             for fn in sorter.GetFilenames(): 
@@ -126,6 +128,15 @@ class DICOMReader(introspectModuleMixin, moduleBase):
 
         # now do the actual reading
         self._reader.Update()
+
+        if len(filenames) > 1:
+            # after the reader has done its thing,
+            # impose derived spacing on the reader
+            # (by default it takes the SpacingBetweenSlices, which is
+            # not always correct)
+            spacing = list(self._reader.GetDataSpacing())
+            spacing[2] = sorter.GetZSpacing()
+            self._reader.SetDataSpacing(spacing)
 
         if False:
             # first determine axis labels based on IOP ####################
@@ -170,7 +181,9 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         # make sure the listbox is empty
         self._view_frame.dicom_files_lb.Clear()
 
-        object_dict = {'vtkGDCMImageReader' : self._reader}
+        object_dict = {
+                'Module (self)'      : self,
+                'vtkGDCMImageReader' : self._reader}
         moduleUtils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
