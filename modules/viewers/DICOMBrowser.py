@@ -30,7 +30,7 @@
 import DICOMBrowserFrame
 reload(DICOMBrowserFrame)
 import gdcm
-import misc_utils
+from module_kits.misc_kit import misc_utils
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
