@@ -63,6 +63,12 @@ class geCanvasDropTarget(wx.PyDropTarget):
         return True
 
     def OnData(self, x, y, d):
+        # when we are a drag source, we get blocked throughout the
+        # drag, which means that our picked_cobject doesn't get
+        # updated, which means that drops on glyphs don't get handled.
+        # so here we make sure that the correct picked_cobject is
+        # selected right before we actually handle the drop:
+        self._graphEditor.canvas.update_picked_cobject_at_drop(x, y)
         
         if self.GetData():
             text = self._tdo.GetText()

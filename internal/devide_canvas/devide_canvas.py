@@ -499,6 +499,23 @@ class DeVIDECanvas(SubjectMixin):
         for o in self._cobjects:
             o.update_geometry()
 
+    def update_picked_cobject_at_drop(self, ex, ey):
+        """Method to be used in the GraphEditor DropTarget
+        (geCanvasDropTarget) to make sure that the correct glyph is
+        selected.  
+        
+        Problem is that the application gets blocked during
+        wxDropSource.DoDragDrop(), so that if the user drags things
+        from for example the DICOMBrowser to a DICOMReader on the
+        canvas, the canvas doesn't know that the DICOMReader has been
+        picked.
+
+        If this method is called at drop time, all is well.
+        """
+
+        pg_ret = self._pick_glyph(ex, self.flip_y(ey))
+        if pg_ret:
+            self.event.picked_cobject, self.event.picked_sub_prop = pg_ret
 
     def remove_object(self, cobj):
         if cobj and cobj in self._cobjects:
