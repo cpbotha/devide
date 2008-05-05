@@ -191,6 +191,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         lc = self._view_frame.series_lc
         lc.Bind(wx.EVT_LIST_ITEM_SELECTED,
                 self._handler_series_selected)
+        # with this one, we'll catch drag events
+        lc.Bind(wx.EVT_MOTION, self._handler_series_motion)
 
         lc = self._view_frame.files_lc
         # we use this event instead of focused, as group / multi
@@ -200,6 +202,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # event.
         lc.Bind(wx.EVT_LIST_ITEM_FOCUSED,
                 self._handler_file_selected)
+    
+        # catch drag events (so user can drag and drop selected files)
+        lc.Bind(wx.EVT_MOTION, self._handler_files_motion)
 
         # keep track of the image viewer controls
         ip = self._view_frame.image_pane
@@ -563,6 +568,64 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         self._study_dict = self._scan(paths)
         self._fill_studies_listctrl()
+
+    def _handler_files_motion(self, event):
+        """Handler for when user drags a file selection somewhere.
+        """
+
+        if not event.Dragging():
+            event.Skip()
+            return
+
+        lc = self._view_frame.files_lc
+
+        selected_idxs = []
+        s = lc.GetFirstSelected()
+        while s != -1:
+            selected_idxs.append(s)
+            s = lc.GetNextSelected(s)
+
+        if len(selected_idxs) > 0:
+            data_object = wx.FileDataObject()
+            for idx in selected_idxs:
+                data_object.AddFile(self._item_data_to_file[idx])
+
+            drop_source = wx.DropSource(lc)
+            drop_source.SetData(data_object)
+            drop_source.DoDragDrop(False)
+
+    def _handler_series_motion(self, event):
+        if not event.Dragging():
+            event.Skip()
+            return
+
+        # get out current Study instance
+        try:
+            study = self._study_dict[self._selected_study_uid]
+        except KeyError:
+            return
+
+        # then the series_dict belonging to that Study
+        series_dict = study.series_dict
+        # and finally the specific series instance
+        # series.filenames is a list of the filenames
+        try:
+            series = series_dict[self._selected_series_uid]
+        except KeyError:
+            return
+
+        # according to the documentation, we can only write to this
+        # object on Windows and GTK2.  Hrrmmpph.
+        # FIXME.  Will have to think up an alternative solution on
+        # OS-X
+        data_object = wx.FileDataObject()
+        for f in series.filenames:
+            data_object.AddFile(f)
+
+        drop_source = wx.DropSource(self._view_frame.series_lc)
+        drop_source.SetData(data_object)
+        # False means that files will be copied, NOT moved
+        drop_source.DoDragDrop(False)
 
     def _handler_series_selected(self, event):
         lc = self._view_frame.series_lc
