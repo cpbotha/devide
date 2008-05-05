@@ -3,7 +3,7 @@
 # See COPYRIGHT for details.
 
 import genUtils
-import misc_utils # new-style genUtils (in a module_kit)
+from module_kits.misc_kit import misc_utils
 import os
 from moduleBase import moduleBase
 from moduleMixins import \
