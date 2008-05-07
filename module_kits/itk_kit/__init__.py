@@ -88,7 +88,7 @@ def init(theModuleManager):
     # setup the kit version
     global VERSION
     isv = itk.Version.GetITKSourceVersion()
-    ind = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', isv).group(1)
+    ind = re.match('.*Date: ([0-9]+-[0-9]+-[0-9]+).*', isv).group(1)
     VERSION = '%s (%s)' % (itk.Version.GetITKVersion(), ind)
 
     theModuleManager.setProgress(45, 'Initialising ITK: VXLNumerics, Base')
