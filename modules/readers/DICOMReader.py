@@ -25,6 +25,25 @@ import wx
 
 from module_kits.misc_kit.devide_types import MedicalMetaData
 
+class DRDropTarget(wx.PyDropTarget):
+    def __init__(self, dicom_reader):
+        wx.PyDropTarget.__init__(self)
+        self._fdo = wx.FileDataObject()
+        self.SetDataObject(self._fdo)
+        self._dicom_reader = dicom_reader
+
+    def OnDrop(self, x, y):
+        return True
+
+    def OnData(self, x, y, d):
+        if self.GetData():
+            filenames = self._fdo.GetFilenames()
+            lb = self._dicom_reader._view_frame.dicom_files_lb
+            lb.Clear()
+            lb.AppendItems(filenames)
+
+        return d
+
 class DICOMReader(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
@@ -236,6 +255,10 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         self._view_frame.remove_files_b.Bind(wx.EVT_BUTTON,
                 self._handler_remove_files_b)
 
+        # also the drop handler
+        dt = DRDropTarget(self)
+        self._view_frame.dicom_files_lb.SetDropTarget(dt)
+
 
         # follow moduleBase convention to indicate that we now have
         # a view
@@ -249,6 +272,18 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         self._view_frame.Show(True)
         self._view_frame.Raise()
 
+    def _add_filenames_to_listbox(self, filenames):
+        # only add filenames that are not in there yet...
+        lb = self._view_frame.dicom_files_lb
+
+        # create new dictionary with current filenames as keys
+        dup_dict = {}.fromkeys(lb.GetStrings(), 1)
+
+        fns_to_add = [fn for fn in filenames
+                      if fn not in dup_dict]
+
+        lb.AppendItems(fns_to_add)
+
     def _handler_add_files_b(self, event):
         if not self._file_dialog:
             self._file_dialog = wx.FileDialog(
@@ -259,17 +294,8 @@ class DICOMReader(introspectModuleMixin, moduleBase):
             
         if self._file_dialog.ShowModal() == wx.ID_OK:
             new_filenames = self._file_dialog.GetPaths()
+            self._add_filenames_to_listbox(new_filenames)
 
-            # only add filenames that are not in there yet...
-            lb = self._view_frame.dicom_files_lb
-
-            # create new dictionary with current filenames as keys
-            dup_dict = {}.fromkeys(lb.GetStrings(), 1)
-
-            fns_to_add = [fn for fn in new_filenames
-                          if fn not in dup_dict]
-
-            lb.AppendItems(fns_to_add)
 
     def _handler_remove_files_b(self, event):
         lb = self._view_frame.dicom_files_lb
