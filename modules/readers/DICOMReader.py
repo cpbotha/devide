@@ -30,6 +30,8 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         moduleBase.__init__(self, module_manager)
 
         self._reader = vtkgdcm.vtkGDCMImageReader()
+        self._ici = vtk.vtkImageChangeInformation()
+        self._ici.SetInputConnection(0, self._reader.GetOutputPort(0))
 
         # create output MedicalMetaData and populate it with the
         # necessary bindings.
@@ -79,7 +81,7 @@ class DICOMReader(introspectModuleMixin, moduleBase):
     
     def get_output(self, idx):
         if idx == 0:
-            return self._reader.GetOutput()
+            return self._ici.GetOutput()
         elif idx == 1:
             return self._output_mmd
 
@@ -92,11 +94,15 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         # we deliberately don't add filenames to the reader here, as
         # we would need to sort them, which would imply scanning all
         # of them during this step
-        pass
+
+        # we return False to indicate that we haven't made any changes
+        # to the underlying logic (so that the MetaModule knows it
+        # doesn't have to invalidate us after a call to
+        # config_to_logic)
+        return False
 
     def view_to_config(self):
         lb = self._view_frame.dicom_files_lb
-        lb.GetStrings()
         
         # just clear out the current list
         # and copy everything
@@ -121,10 +127,16 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         if len(filenames) > 1:
             sorter = gdcm.IPPSorter()
             sorter.SetComputeZSpacing(True)
+            sorter.SetZSpacingTolerance(1e-3)
+
             ret = sorter.Sort(filenames)
             if not ret:
                 raise RuntimeError(
                 'Could not sort DICOM filenames before loading.')
+
+            if sorter.GetZSpacing() == 0.0:
+                msg = 'DICOM IPP sorting yielded incorrect results.'
+                raise RuntimeError(msg)
 
             # then give the reader the sorted list of files
             sa = vtk.vtkStringArray()
@@ -143,14 +155,22 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         # now do the actual reading
         self._reader.Update()
 
+        # see what the reader thinks the spacing is
+        spacing = list(self._reader.GetDataSpacing())
+
         if len(filenames) > 1:
             # after the reader has done its thing,
-            # impose derived spacing on the reader
+            # impose derived spacing on the vtkImageChangeInformation
             # (by default it takes the SpacingBetweenSlices, which is
             # not always correct)
-            spacing = list(self._reader.GetDataSpacing())
             spacing[2] = sorter.GetZSpacing()
-            self._reader.SetDataSpacing(spacing)
+            print "SPACING", sorter.GetZSpacing()
+
+        # single or multiple filenames, we have to set the correct
+        # output spacing on the image change information
+        self._ici.SetOutputSpacing(spacing)
+        self._ici.Update()
+
 
         if False:
             # first determine axis labels based on IOP ####################
