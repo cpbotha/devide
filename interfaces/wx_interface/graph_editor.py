@@ -613,8 +613,6 @@ class GraphEditor:
                 # view is only done if view_initialised is True
                 mi.set_config(c)
 
-                mm.modify_module(mi)
-
                 return True
 
             elif mi.__class__.__name__ == 'DICOMReader':
@@ -623,16 +621,12 @@ class GraphEditor:
                 c.dicom_filenames.extend(filenames)
                 mi.set_config(c)
 
-                mm.modify_module(mi)
-
                 return True
 
             elif hasattr(c, 'filename'):
                 c = mi.get_config()
                 c.filename = filenames[0]
                 mi.set_config(c)
-
-                mm.modify_module(mi)
 
                 return True
 
