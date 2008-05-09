@@ -106,9 +106,6 @@ class moduleBase(object):
         """Synchronise internal configuration information (usually
         self._config)with underlying system.
 
-        If this has resulted in changes to the config, return True, otherwise
-        return False.
-
         You only need to implement this if you make use of the standard ECASH
         controls.
         """
@@ -130,6 +127,9 @@ class moduleBase(object):
     def view_to_config(self):
         """Synchronise internal configuration information with the view (GUI)
         of this module.
+
+        If this has resulted in changes to the config, return True,
+        otherwise return False.
 
         You only need to implement this if you make use of the standard ECASH
         controls.
