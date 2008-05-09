@@ -105,14 +105,19 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         lb = self._view_frame.dicom_files_lb
         
         # just clear out the current list
-        # and copy everything
-        self._config.dicom_filenames[:] = lb.GetStrings()[:]
+        # and copy everything, only if necessary!
+        if self._config.dicom_filenames[:] == lb.GetStrings()[:]:
+            return False
+        else:
+            self._config.dicom_filenames[:] = lb.GetStrings()[:]
+            return True
 
     def config_to_view(self):
         # get listbox, clear it out, add filenames from the config
         lb = self._view_frame.dicom_files_lb
-        lb.Clear()
-        lb.AppendItems(self._config.dicom_filenames)
+        if self._config.dicom_filenames[:] != lb.GetStrings()[:]:
+            lb.Clear()
+            lb.AppendItems(self._config.dicom_filenames)
     
     def execute_module(self):
         # have to  cast to normal strings (from unicode)
