@@ -41,7 +41,7 @@ class CodeRunner:
 
 class DICOMBrowser:
     kits = ['vtk_kit'] # will add gdcm_kit later
-    cats = ['Viewers', 'Readers']
+    cats = ['Viewers', 'Readers', 'DICOM', 'Medical']
     help = \
     """DICOMBrowser.  Does for DICOM reading what slice3dVWR does for
     3-D viewing.

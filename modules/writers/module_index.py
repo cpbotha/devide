@@ -13,7 +13,7 @@ class cptBrepWRT:
 
 class DICOMWriter:
     kits = ['vtk_kit', 'gdcm_kit']
-    cats = ['Writers', 'Medical']
+    cats = ['Writers', 'Medical', 'DICOM']
     help = """Writes image data to disc as DICOM images.
 
     This GDCM2-based module writes data to disc as one (multi-frame)

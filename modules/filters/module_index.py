@@ -59,7 +59,7 @@ class doubleThreshold:
 
 class DVMedicalImageData:
     kits = ['vtk_kit']
-    cats = ['Filters', 'Medical']
+    cats = ['Filters', 'Medical', 'DICOM']
     help = """Add medical meta data to image data.
     """
 

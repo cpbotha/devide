@@ -15,7 +15,7 @@ class BMPReader:
 
 class DICOMReader:
     kits = ['vtk_kit']
-    cats = ['Readers']
+    cats = ['Readers', 'Medical', 'DICOM']
     help = """New module for reading DICOM data.
 
     GDCM-based module for reading DICOM data.  This is newer than
