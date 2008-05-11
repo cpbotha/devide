@@ -57,10 +57,10 @@ class doubleThreshold:
     help = """Apply a lower and an upper threshold to the input image data.
     """
 
-class DVMedicalImageData:
+class EditMedicalMetaData:
     kits = ['vtk_kit']
     cats = ['Filters', 'Medical', 'DICOM']
-    help = """Add medical meta data to image data.
+    help = """Edit Medical Meta Data structure.
     """
 
 class extractGrid:
