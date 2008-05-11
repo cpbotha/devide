@@ -6,10 +6,7 @@
 # * SetFileDimensionality(2) if you want multiple slices written from
 #   a single volume
 # * just generate im%05d.dcm filenames, as many as there are slices
-# * where do we get DirectionCosines from? (not in
-#   vtkMedicalImageProperties)
 # * study / series UIDs are auto generated
-# as a shortcut, you can just give this a VTK image data
 
 from moduleBase import moduleBase
 from moduleMixins import \
@@ -29,7 +26,8 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
         moduleUtils.setupVTKObjectProgress(self, self._writer,
                                            'Writing DICOM data')
 
-        self._input = None
+        self._input_data = None
+        self._input_metadata = None
 
         self._view_frame = None
         self._file_dialog = None
@@ -52,10 +50,13 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
         moduleBase.close(self) 
 
     def get_input_descriptions(self):
-        return ('DeVIDE medical image data',) 
+        return ('VTK image data', 'Medical Meta Data') 
     
     def set_input(self, idx, input_stream):
-        self._input = input_stream
+        if idx == 0:
+            self._input_data = input_stream
+        else:
+            self._input_metadata = input_stream
     
     def get_output_descriptions(self):
         return ()
@@ -70,7 +71,7 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
         # z-slices
         odir = 'c:/temp/dicomtest'
 
-        z_len = self._input.GetDimensions()[2]
+        z_len = self._input_data.GetDimensions()[2]
 
         fn_list = [os.path.join(odir,'im%05d.dcm' % (i,)) 
                 for i in range(z_len)]
@@ -78,10 +79,25 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
         [fn_sa.InsertNextValue(fn) for fn in fn_list]
 
         mip = vtk.vtkMedicalImageProperties()
-        mip.SetModality('CT')
+
+        try:
+            mip.DeepCopy(self._input_metadata.medical_image_properties)
+        except AttributeError:
+            # this simply means that we have no input metadata
+            pass
+
         self._writer.SetMedicalImageProperties(mip)
 
-        self._writer.SetInput(self._input)
+        try:
+            self._writer.SetDirectionCosines(
+                    self._input_metadata.direction_cosines)
+        except AttributeError:
+            # we have no input metadata, set the default
+            # identity matrix
+            m = vtk.vtkMatrix4x4()
+            self._writer.SetDirectionCosines(m)
+
+        self._writer.SetInput(self._input_data)
         self._writer.SetFileNames(fn_sa)
         # we want to write separate slices
         self._writer.SetFileDimensionality(2)
