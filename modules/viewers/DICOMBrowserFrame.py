@@ -112,10 +112,43 @@ class DICOMBrowserFrame(wx.Frame):
         wx.Frame.__init__(self, parent, id=id, title=title, 
                 pos=wx.DefaultPosition, size=(800,800), name=name)
 
+
+        self.menubar = wx.MenuBar()
+        self.SetMenuBar(self.menubar)
+
+        nav_menu = wx.Menu()
+        self.id_next_image = wx.NewId()
+        nav_menu.Append(self.id_next_image, "&Next image\tCtrl-N",
+                "Go to next image in series", wx.ITEM_NORMAL)
+
+        self.id_prev_image = wx.NewId()
+        nav_menu.Append(self.id_prev_image, "&Previous image\tCtrl-P",
+                "Go to previous image in series", wx.ITEM_NORMAL)
+
+        self.menubar.Append(nav_menu, "&Navigation")
+       
+
+        views_menu = wx.Menu()
+        views_default_id = wx.NewId()
+        views_menu.Append(views_default_id, "&Default\tCtrl-0",
+                         "Activate default view layout.", wx.ITEM_NORMAL)
+                
+
+        views_max_image_id = wx.NewId()
+        views_menu.Append(views_max_image_id, "&Maximum image size\tCtrl-1",
+                         "Activate maximum image view size layout.", 
+                         wx.ITEM_NORMAL)
+
+        self.menubar.Append(views_menu, "&Views")
+
+
+
         # tell FrameManager to manage this frame        
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
+
         
+
         self._mgr.AddPane(self._create_dirs_pane(), wx.aui.AuiPaneInfo().
                           Name("dirs").
                           Caption("Files and Directories to Scan").
@@ -152,11 +185,34 @@ class DICOMBrowserFrame(wx.Frame):
                           BestSize(wx.Size(400,400)).
                           CloseButton(False).MaximizeButton(True))
 
-        self._perspectives = []
+
 
         self.SetMinSize(wx.Size(400, 300))
 
+        self._perspectives = {} 
+        self._perspectives['default'] = self._mgr.SavePerspective()
+
+        self._mgr.GetPane("dirs").Hide()
+        self._mgr.GetPane("studies").Hide()
+        self._mgr.GetPane("series").Hide()
+        self._mgr.GetPane("files").Hide()
+        self._mgr.GetPane("meta").Hide()
+
+        self._perspectives['max_image'] = self._mgr.SavePerspective()
+
+        self._mgr.LoadPerspective(self._perspectives['default'])
+
         self._mgr.Update()
+
+        # we bind the views events here, because the functionality is
+        # completely encapsulated in the frame and does not need to
+        # round-trip to the DICOMBrowser main module.
+        self.Bind(wx.EVT_MENU, lambda e: self._mgr.LoadPerspective(
+            self._perspectives['default']), id=views_default_id)
+
+        self.Bind(wx.EVT_MENU, lambda e: self._mgr.LoadPerspective(
+            self._perspectives['max_image']), id=views_max_image_id)
+
 
     def close(self):
         del self.dirs_pane

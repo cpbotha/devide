@@ -173,6 +173,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._view_frame.render_image()
 
     def _bind_events(self):
+        vf = self._view_frame
+        vf.Bind(wx.EVT_MENU, self._handler_next_image,
+                id = vf.id_next_image)
+        vf.Bind(wx.EVT_MENU, self._handler_prev_image,
+                id = vf.id_prev_image)
+
+
         fp = self._view_frame.dirs_pane
 
         fp.ad_button.Bind(wx.EVT_BUTTON,
@@ -239,12 +246,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # select the first file
         if lc.GetItemCount() > 0:
-            lc.SetItemState(0, wx.LIST_STATE_SELECTED,
-                    wx.LIST_STATE_SELECTED)
+            lc.Select(0)
             # in this case we have to focus as well, as that's the
             # event that it's sensitive to.
-            lc.SetItemState(0, wx.LIST_STATE_FOCUSED,
-                    wx.LIST_STATE_FOCUSED)
+            lc.Focus(0)
 
 
     def _fill_series_listctrl(self):
@@ -398,6 +403,33 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         self._update_image(r)
         self._update_meta_data_pane(r)
+
+    def _handler_next_image(self, event):
+        """Go to next image.
+
+        We could move this to the display code, it only needs to know
+        about widgets.
+        """
+        lc = self._view_frame.files_lc
+        nidx = lc.GetFocusedItem() + 1
+        if nidx >= lc.GetItemCount():
+            nidx = lc.GetItemCount() - 1
+
+        lc.Focus(nidx)
+        wx.SafeYield()
+
+    def _handler_prev_image(self, event):
+        """Move to previous image.
+
+        We could move this to the display code, it only needs to know
+        about widgets.
+        """
+        lc = self._view_frame.files_lc
+        nidx = lc.GetFocusedItem() - 1
+        if nidx < 0:
+            nidx = 0
+
+        lc.Focus(nidx)
 
     def _update_image(self, gdcm_reader):
         """Given a vtkGDCMImageReader instance that has read the given
