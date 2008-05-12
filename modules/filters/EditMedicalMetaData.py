@@ -16,22 +16,29 @@ from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
+from module_kits.misc_kit.devide_types import MedicalMetaData
+
 class MedicalImageData:
     def __init__(self):
         self.image_data = None
         self.mip = vtk.vtkMedicalImageProperties()
         self.direction_cosines = None
 
-class DVMedicalImageData(introspectModuleMixin, moduleBase):
+class EditMedicalMetaData(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         # initialise our base class
         moduleBase.__init__(self, moduleManager)
 
-        self._input_data = None
-        self._input_mip = None
-        self._input_dc = None
+        self._input_mmd = None
 
-        self._output_mid = DVMedicalImageData()
+        self._output_mmd = MedicalMetaData()
+        self._output_mmd.medical_image_properties = \
+                vtk.vtkMedicalImageProperties()
+        self._output_mmd.direction_cosines = \
+                vtk.vtkMatrix4x4()
+
+        self._view_frame = None
+        self.sync_module_logic_with_config()
 
        
     def close(self):
@@ -49,21 +56,13 @@ class DVMedicalImageData(introspectModuleMixin, moduleBase):
         moduleBase.close(self) 
 
     def get_input_descriptions(self):
-        return ('VTK image data', 'VTK medical image properties',
-                'Direction Cosines')
+        return ('Medical Meta Data',)
 
     def set_input(self, idx, input_stream):
-        if idx == 0:
-            self._input_data = input_stream
-
-        elif idx == 1:
-            self._input_mip = input_stream
-
-        else:
-            self._input_dc = input_stream
+        self._input_mmd = input_stream
 
     def get_output_descriptions(self):
-        return ('DeVIDE Medical Image Data')
+        return ('Medical Meta Data')
 
     def get_output(self, idx):
         return self._output_mid
@@ -95,5 +94,40 @@ class DVMedicalImageData(introspectModuleMixin, moduleBase):
     def view(self):
         # all fields touched by user are recorded.  when we get a new
         # input, these fields are left untouched.  mmmkay?
-        pass
+
+        if self._view_frame is None:
+            self._create_view_frame()
+            self.sync_module_view_with_logic()
+            
+        self._view_frame.Show(True)
+        self._view_frame.Raise()
+
+    def _create_view_frame(self):
+        import modules.filters.resources.python.EditMedicalMetaDataViewFrame
+        reload(modules.readers.resources.python.EditMedicalMetaDataViewFrame)
+
+        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+            self, self._moduleManager,
+            modules.readers.resources.python.EditMedicalMetaDataViewFrame.\
+            EditMedicalMetaDataViewFrame)
+
+
+        object_dict = {
+                'Module (self)'      : self}
+        moduleUtils.createStandardObjectAndPipelineIntrospection(
+            self, self._view_frame, self._view_frame.view_frame_panel,
+            object_dict, None)
+
+        moduleUtils.createECASButtons(self, self._view_frame,
+                                      self._view_frame.view_frame_panel)
+
+        # now add the event handlers
+        #self._view_frame.add_files_b.Bind(wx.EVT_BUTTON,
+        #        self._handler_add_files_b)
+        #self._view_frame.remove_files_b.Bind(wx.EVT_BUTTON,
+        #        self._handler_remove_files_b)
+
+        # follow moduleBase convention to indicate that we now have
+        # a view
+        self.view_initialised = True
 
