@@ -27,7 +27,7 @@ class MedicalImageData:
 class EditMedicalMetaData(introspectModuleMixin, moduleBase):
     def __init__(self, module_manager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        moduleBase.__init__(self, module_manager)
 
         self._input_mmd = None
 
@@ -44,14 +44,8 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
     def close(self):
         introspectModuleMixin.close(self)
 
-        # we just delete our binding.  Destroying the view_frame
-        # should also take care of this one.
-        del self._file_dialog
-
         if self._view_frame is not None:
             self._view_frame.Destroy()
-
-        del self._reader
 
         moduleBase.close(self) 
 
@@ -62,7 +56,7 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
         self._input_mmd = input_stream
 
     def get_output_descriptions(self):
-        return ('Medical Meta Data')
+        return ('Medical Meta Data',)
 
     def get_output(self, idx):
         return self._output_mid
@@ -104,11 +98,11 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
 
     def _create_view_frame(self):
         import modules.filters.resources.python.EditMedicalMetaDataViewFrame
-        reload(modules.readers.resources.python.EditMedicalMetaDataViewFrame)
+        reload(modules.filters.resources.python.EditMedicalMetaDataViewFrame)
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
             self, self._moduleManager,
-            modules.readers.resources.python.EditMedicalMetaDataViewFrame.\
+            modules.filters.resources.python.EditMedicalMetaDataViewFrame.\
             EditMedicalMetaDataViewFrame)
 
 

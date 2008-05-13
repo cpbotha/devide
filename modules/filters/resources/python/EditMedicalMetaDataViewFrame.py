@@ -10,42 +10,58 @@ import wx.grid
 
 
 
-class MyFrame1(wx.Frame):
+class EditMedicalMetaDataViewFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-        # begin wxGlade: MyFrame1.__init__
+        # begin wxGlade: EditMedicalMetaDataViewFrame.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.panel_1 = wx.Panel(self, -1)
-        self.prop_grid = wx.grid.Grid(self.panel_1, -1, size=(1, 1))
+        self.view_frame_panel = wx.Panel(self, -1)
+        self.prop_grid = wx.grid.Grid(self.view_frame_panel, -1, size=(1, 1))
 
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
 
     def __set_properties(self):
-        # begin wxGlade: MyFrame1.__set_properties
+        # begin wxGlade: EditMedicalMetaDataViewFrame.__set_properties
         self.SetTitle("frame_2")
         self.prop_grid.CreateGrid(10, 2)
         self.prop_grid.SetRowLabelSize(0)
         self.prop_grid.EnableDragColSize(0)
         self.prop_grid.SetColLabelValue(0, "Tag")
         self.prop_grid.SetColLabelValue(1, "Value")
-        self.prop_grid.SetMinSize((400, 300))
+        self.prop_grid.SetMinSize((165, 210))
         # end wxGlade
 
     def __do_layout(self):
-        # begin wxGlade: MyFrame1.__do_layout
+        # begin wxGlade: EditMedicalMetaDataViewFrame.__do_layout
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
-        sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_4 = wx.BoxSizer(wx.VERTICAL)
-        sizer_4.Add(self.prop_grid, 1, wx.EXPAND, 0)
-        sizer_3.Add(sizer_4, 1, wx.ALL|wx.EXPAND, 7)
-        self.panel_1.SetSizer(sizer_3)
-        sizer_2.Add(self.panel_1, 1, wx.EXPAND, 0)
+        sizer_1 = wx.BoxSizer(wx.VERTICAL)
+        sizer_3 = wx.BoxSizer(wx.VERTICAL)
+        sizer_3.Add(self.prop_grid, 1, wx.EXPAND, 0)
+        sizer_1.Add(sizer_3, 1, wx.ALL|wx.EXPAND, 7)
+        self.view_frame_panel.SetSizer(sizer_1)
+        sizer_2.Add(self.view_frame_panel, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_2)
         sizer_2.Fit(self)
         self.Layout()
         # end wxGlade
+
+# end of class EditMedicalMetaDataViewFrame
+
+
+class MyFrame1(wx.Frame):
+    def __init__(self, *args, **kwds):
+        # content of this block not found: did you rename this class?
+        pass
+
+    def __set_properties(self):
+        # content of this block not found: did you rename this class?
+        pass
+
+    def __do_layout(self):
+        # content of this block not found: did you rename this class?
+        pass
 
 # end of class MyFrame1
 
