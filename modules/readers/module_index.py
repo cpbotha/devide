@@ -18,6 +18,9 @@ class DICOMReader:
     cats = ['Readers', 'Medical', 'DICOM']
     help = """New module for reading DICOM data.
 
+    dicomRDR is still preferred in DeVIDE 8.5 while the DICOMReader
+    code is being stabilised.
+
     GDCM-based module for reading DICOM data.  This is newer than
     dicomRDR (which is DCMTK-based) and should be able to read more
     kinds of data.  The interface is deliberately less rich, as the
@@ -30,9 +33,15 @@ class dicomRDR:
     cats = ['Readers']
     help = """Module for reading DICOM data.
 
+    This is still the preferred module for DICOM reading in DeVIDE 8.5
+    while the new DICOMReader code is being stabilised.
+
     Add DICOM files (they may be from multiple series) by using the 'Add'
     button on the view/config window.  You can select multiple files in
-    the File dialog by holding shift or control whilst clicking.
+    the File dialog by holding shift or control whilst clicking.  You
+    can also drag and drop files from a file or DICOM browser either
+    onto an existing dicomRDR or directly onto the Graph Editor
+    canvas.
 
     You can read multiframe DICOM files with the ITKReader module.
     """
