@@ -15,11 +15,16 @@ def get_img_type_and_dim(itk_img):
         # g will be e.g. ('float', '3') or ('unsigned_char', '2')
         # note that we use the NON-greedy version so it doesn't break
         # on vectors
-        g = re.search('.*itk__ImageT(.*?)_([0-9]+)_t',
-                      itk_img.this).groups()
+        # example strings: 
+        # Image.F3: _f04b4f1b_p_itk__SmartPointerTitk__ImageTfloat_3u_t_t
+        # Image.VF33: _600e411b_p_itk__SmartPointerTitk__ImageTitk__VectorTfloat_3u_t_3u_t_t'
+        mo = re.search('.*itk__ImageT(.*?)_([0-9]+)u*_t',
+                      itk_img.this)
 
-    if not g:
+    if not mo:
         raise TypeError, 'This method requires an ITK Image as input.'
+    else:
+        g = mo.groups()
         
     # see if it's a vector
     if g[0].startswith('itk__VectorT'):
