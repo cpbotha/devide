@@ -54,8 +54,7 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
 
         # and create default ImageFileReader we'll use for the actual lifting
         self._reader = itk.ImageFileReader[itk.Image.F3].New()
-        self._reader_type = 'F'
-        self._reader_dim = 3
+        self._reader_type_text = 'F3'
 
         itk_kit.utils.setupITKObjectProgress(
             self, self._reader, 'ImageFileReader',
@@ -112,8 +111,8 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
                 comp_type = 'signed_short'
             # lc will convert e.g. unsigned_char to UC
             short_type = ''.join([i[0].upper() for i in comp_type.split('_')])
-            print comp_type, short_type
             dim = iio.GetNumberOfDimensions()
+            num_comp = iio.GetNumberOfComponents()
 
         else:
             # lc will convert e.g. unsigned char to UC
@@ -123,14 +122,21 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
                 short_type = 'SS'
 
             dim = self._config.dimensionality
+            num_comp = 1
+
+        # e.g. F3
+        reader_type_text = '%s%d' % (short_type, dim)
+        if num_comp > 1:
+            # e.g. VF33
+            reader_type_text = 'V%s%d' % (reader_type_text, num_comp)
 
         # if things have changed, make a new reader, else re-use the old
-        if short_type != self._reader_type or dim != self._reader_dim:
+        if reader_type_text != self._reader_type_text:
             # equivalent to e.g. itk.Image.UC3
             self._reader = itk.ImageFileReader[
-                getattr(itk.Image, '%s%s' % (short_type, dim))].New()
-            self._reader_type = short_type
-            self._reader_dim = dim
+                getattr(itk.Image, reader_type_text)].New()
+            self._reader_type_text = reader_type_text
+            print reader_type_text
                 
             itk_kit.utils.setupITKObjectProgress(
                 self, self._reader, 'ImageFileReader',
