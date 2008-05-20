@@ -556,7 +556,7 @@ class GraphEditor:
           
 
         elif itemText.startswith(segp):
-            self._loadAndRealiseNetwork(itemText[len(segp):], (wx,wy),
+            self._loadAndRealiseNetwork(itemText[len(segp):], (w_x,w_y),
                                         reposition=True)
 
             # see explanation above for the SetFocus
