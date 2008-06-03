@@ -339,8 +339,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._cso = vtk.vtkCubeSource()
         self._csoa = vtk.vtkActor()
         # and of course the label
-        self._tsa = vtk.vtkTextActor()
-        self._tsa.ScaledTextOn()
+        self._tsa = vtk.vtkTextActor3D()
 
         self._iportssa = \
             [(vtk.vtkCubeSource(),vtk.vtkActor()) for _ in
@@ -363,15 +362,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # TEXT LABEL ##############################################
         tprop = self._tsa.GetTextProperty()
         tprop.SetFontFamilyToArial()
-
-        # due to the bug in VTK ParaView-3-2-1 vtkTextActor
-        # ScaledText, we have to leave Justificition at default.
-        #tprop.SetVerticalJustificationToCentered()
-
+        tprop.SetFontSize(24)
         tprop.SetBold(0)
         tprop.SetItalic(0)
         tprop.SetShadow(0)
-        #tprop.SetColor((1.0,1.0,1.0))
         tprop.SetColor((0,0,0))
 
         # GLYPH BLOCK ##############################################
@@ -438,10 +432,40 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         glyph_normal_col = (0.75, 0.75, 0.75)
         glyph_selected_col = (0.2, 0.367, 0.656)
         glyph_blocked_col = (0.06, 0.06, 0.06)
+
         text_normal_col = (0.0, 0.0, 0.0)
-        text_selected_col = (1.0, 1.0, 1.0)
+        # text_selected_col used to be white, but the vtkTextActor3D()
+        # has broken aliasing that is more visible on a darker
+        # background.
+        #text_selected_col = (1.0, 1.0, 1.0)
+        text_selected_col = (0.0, 0.0, 0.0)
+
         port_conn_col = (0.0, 1.0, 0.0)
         port_disconn_col = (1.0, 0.0, 0.0)
+
+        # update text label ###################################
+       
+        # update the text caption
+        # experiments with inserting spaces in front of text were not
+        # successful (sizing still screws up)
+        #nll = [' %s' % (l,) for l in self._labelList]
+        nll = self._labelList
+        self._tsa.SetInput('\n'.join(nll))
+
+        # self._position is the bottom left corner of the button face
+        ap = self._position[0] + self._horizBorder, \
+            self._position[1] + self._vertBorder, self._text_z
+
+        self._tsa.SetPosition(ap)
+
+        tprop = self._tsa.GetTextProperty()
+        tcol = [text_normal_col, text_selected_col][self.selected]
+        tprop.SetColor(tcol)
+
+        # also get the text dimensions
+        bb = [0,0,0,0]
+        self._tsa.GetBoundingBox(bb)
+        text_width, text_height = bb[1] - bb[0], bb[3] - bb[2]
 
         # update glyph position and size ######################
         self.props[0].SetPosition(self._position + (0.0,))
@@ -456,12 +480,9 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
 
        
-        label_lengths = [len(i) for i in self._labelList]
-        max_label_width = max(label_lengths) * self._char_width
-
-        label_and_borders = max_label_width + 2 * self._horizBorder
+        label_and_borders = text_width + 2 * self._horizBorder
         self._size = max(portsWidth, label_and_borders), \
-                      self._label_height * len(self._labelList) + \
+                      text_height + \
                       2 * self._vertBorder
 
         # usually the position is the CENTRE of the button, so we
@@ -480,44 +501,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         p = self._csoa.GetProperty()
         p.SetColor(0, 0, 0) # and it's black
 
-        # update text label ###################################
-       
-        # update the text caption
-        self._tsa.SetInput('\n'.join(self._labelList))
-
-        # self._position is the bottom left corner of the button face,
-        # but the text is centre justified. 
-        # update: usually y = self._position[1], but because we had to switch
-        # off centered justification (due to bug in vtkTextActor), we
-        # have this more complicated version
-        ap = self._position[0] + self._horizBorder, \
-            self._position[1] + self._vertBorder, self._text_z
-
-        self._tsa.GetPositionCoordinate().SetCoordinateSystemToWorld()
-        self._tsa.GetPositionCoordinate().SetValue(ap)
-
-        if False:
-            vp = \
-            self._tsa.GetPositionCoordinate().GetComputedViewportValue(
-                    self.canvas._ren)
-            self._tsa.GetPositionCoordinate().SetCoordinateSystemToViewport()
-            self._tsa.GetPositionCoordinate().SetValue(*vp)
-
-        # position2coordinate is supposed to be relative to position,
-        # but only sometimes is.
-        if ap[1] < 0:
-            y2 = self._size[1] 
-        else:
-            y2 = ap[1] + self._size[1]
-
-        p2c = max_label_width, y2, self._text_z
-        self._tsa.GetPosition2Coordinate().SetCoordinateSystemToWorld()
-        self._tsa.GetPosition2Coordinate().SetValue(p2c)
-
-
-        tprop = self._tsa.GetTextProperty()
-        tcol = [text_normal_col, text_selected_col][self.selected]
-        tprop.SetColor(tcol)
 
         # calc and update glyph colour ########################
         gcol = glyph_normal_col
