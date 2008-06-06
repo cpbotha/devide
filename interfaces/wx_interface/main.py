@@ -55,7 +55,7 @@ class WXInterface(wx.App):
 
         title = 'DeVIDE v%s' % (self._devide_app.get_devide_version(),)
         self._main_frame = main_frame.MainWXFrame(None, -1, title, (-1,-1),
-                                                  (640,480))
+                                                  (800,600))
         wx.InitAllImageHandlers()
         self._main_frame.SetIcon(self.getApplicationIcon())
 
