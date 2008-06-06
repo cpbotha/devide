@@ -70,7 +70,7 @@ class DeVIDECanvas(SubjectMixin):
         self._ren.GetActiveCamera().SetParallelProjection(1)
 
         # set a sensible initial zoom
-        self._zoom(0.008)
+        self._zoom(0.004)
 
 
         istyle = vtk.vtkInteractorStyleUser()

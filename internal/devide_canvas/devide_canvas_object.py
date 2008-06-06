@@ -299,17 +299,30 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     # at start and end of glyph
     _horizBorder = 5 
     # between ports
-    _horizSpacing = 5
+    _horizSpacing = 10 
     # at top and bottom of glyph
-    _vertBorder = 15
-    _pWidth = 10
-    _pHeight = 10
-
-    _label_height = 15
-    _char_width = 10
+    _vertBorder = 20
+    _pWidth = 20
+    _pHeight = 20
 
     _glyph_z_len = 0.1
     _text_z = 0.4
+
+    _glyph_normal_col = (0.75, 0.75, 0.75)
+    _glyph_selected_col = (0.2, 0.367, 0.656)
+    _glyph_blocked_col = (0.06, 0.06, 0.06)
+
+    _text_normal_col = (0.0, 0.0, 0.0)
+    # text_selected_col used to be white, but the vtkTextActor3D()
+    # has broken aliasing that is more visible on a darker
+    # background.
+    #text_selected_col = (1.0, 1.0, 1.0)
+    _text_selected_col = (0.0, 0.0, 0.0)
+
+    # dark green to light green
+    _port_conn_col = (0.0, 218 / 255.0, 25 / 255.0)
+    _port_disconn_col = (0, 93 / 255.0, 11 / 255.0)
+
 
     def __init__(self, canvas, position, numInputs, numOutputs,
                  labelList, moduleInstance):
@@ -429,20 +442,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.props = [self.prop1, self._tsa]
 
     def update_geometry(self):
-        glyph_normal_col = (0.75, 0.75, 0.75)
-        glyph_selected_col = (0.2, 0.367, 0.656)
-        glyph_blocked_col = (0.06, 0.06, 0.06)
-
-        text_normal_col = (0.0, 0.0, 0.0)
-        # text_selected_col used to be white, but the vtkTextActor3D()
-        # has broken aliasing that is more visible on a darker
-        # background.
-        #text_selected_col = (1.0, 1.0, 1.0)
-        text_selected_col = (0.0, 0.0, 0.0)
-
-        port_conn_col = (0.0, 1.0, 0.0)
-        port_disconn_col = (1.0, 0.0, 0.0)
-
+        
         # update text label ###################################
        
         # update the text caption
@@ -459,7 +459,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._tsa.SetPosition(ap)
 
         tprop = self._tsa.GetTextProperty()
-        tcol = [text_normal_col, text_selected_col][self.selected]
+        tcol = [self._text_normal_col, self._text_selected_col]\
+                [self.selected]
         tprop.SetColor(tcol)
 
         # also get the text dimensions
@@ -503,14 +504,14 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
 
         # calc and update glyph colour ########################
-        gcol = glyph_normal_col
+        gcol = self._glyph_normal_col
 
         if self.selected:
-            gcol = [gcol[i] * 0.5 + glyph_selected_col[i] * 0.5
+            gcol = [gcol[i] * 0.5 + self._glyph_selected_col[i] * 0.5
                     for i in range(3)]
 
         if self.blocked:
-            gcol = [gcol[i] * 0.5 + glyph_blocked_col[i] * 0.5
+            gcol = [gcol[i] * 0.5 + self._glyph_blocked_col[i] * 0.5
                     for i in range(3)]
 
         self._rbsa.GetProperty().SetColor(gcol)
@@ -520,8 +521,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         horizStep = self._pWidth + self._horizSpacing
 
         for i in range(self._numInputs):
-            col = [port_disconn_col,
-                    port_conn_col][bool(self.inputLines[i])]
+            col = [self._port_disconn_col,
+                    self._port_conn_col][bool(self.inputLines[i])]
             s,a = self._iportssa[i]
             a.GetProperty().SetColor(col)
             a.SetPosition(
@@ -529,8 +530,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                 self._size[1], 0.1))
 
         for i in range(self._numOutputs):
-            col = [port_disconn_col,
-                    port_conn_col][bool(self.outputLines[i])]
+            col = [self._port_disconn_col,
+                    self._port_conn_col][bool(self.outputLines[i])]
             s,a = self._oportssa[i]
             a.GetProperty().SetColor(col)
             a.SetPosition(
