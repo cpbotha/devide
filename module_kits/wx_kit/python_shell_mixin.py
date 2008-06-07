@@ -9,11 +9,28 @@ def sanitise_text(text):
     by changing all CR/LF pairs into LF, and then nuking all remaining CRs.
     This consistency also ensures that the files we save have the correct
     line-endings depending on the operating system we are running on.
+
+    It also turns out that things break when after an indentation
+    level at the very end of the code, there is no empty line.  For
+    example (thanks to Emiel v. IJsseldijk for reproducing!):
+    def hello():
+      print "hello" # and this is the last line of the text
+    Will not completely define method hello.
+    
+    To remedy this, we add an empty line at the very end if there's
+    not one already.
+
     """
     
     text = text.replace('\r\n', '\n')
     text = text.replace('\r', '')
-    return text
+
+    lines = text.split('\n')
+    
+    if lines and len(lines[-1]) != 0:
+        return text + '\n'
+    else:
+        return text
 
 def runcode(self, code):
     """Execute a code object.
