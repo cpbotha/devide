@@ -416,7 +416,11 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         via = vtk.vtkImageAccumulate()
         via.SetInput(i2vmod.get_output(0))
         via.Update()
-        self.failUnless(via.GetVoxelCount() == 262144)
+        # get second bin of output histogram: that should be the
+        # number of voxels
+        s = via.GetOutput().GetPointData().GetScalars()
+        print s.GetTuple1(1)
+        self.failUnless(s.GetTuple1(1) == 26728)
         via.SetInput(None)
         del via
 
@@ -434,7 +438,7 @@ def get_some_suite(devide_testing):
     
     some_suite = unittest.TestSuite()
 
-    t = TestITKBasic('test_vtktoitk_types')
+    t = TestITKBasic('test_confidence_seed_connect')
     t._devide_app = devide_app
 
     #t = create_geb_test('test_module_search', devide_app)
