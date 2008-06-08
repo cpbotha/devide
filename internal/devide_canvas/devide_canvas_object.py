@@ -267,16 +267,17 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
 
     def set_highlight(self):
         prop = self.props[0].GetProperty()
-        prop.SetLineWidth(self._highlight_width)
         # for more stipple patterns, see:
         # http://fly.cc.fer.hr/~unreal/theredbook/chapter02.html
         prop.SetLineStipplePattern(0x00FF)
-        
+        prop.SetLineStippleRepeatFactor(1)
+        prop.SetLineWidth(self._highlight_width)
 
     def set_normal(self):
         prop = self.props[0].GetProperty()
-        prop.SetLineWidth(self._normal_width)
         prop.SetLineStipplePattern(0xFFFF)
+        prop.SetLineStippleRepeatFactor(1)
+        prop.SetLineWidth(self._normal_width)
 
     def updateEndPoints(self):
         # first get us just out of the port, then create margin between
