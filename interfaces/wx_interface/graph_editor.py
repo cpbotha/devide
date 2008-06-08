@@ -2678,6 +2678,7 @@ class GraphEditor:
                     print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
                     raise Exception
 
+        line.set_normal()
         line.update_geometry()
 
     def _route_line_fast(self, line):
@@ -2695,6 +2696,7 @@ class GraphEditor:
         line.updateEndPoints()
         # then get it to update (applying the spline to the control
         # points)
+        line.set_highlight()
         line.update_geometry()
 
     def _viewConfModule(self, module):
