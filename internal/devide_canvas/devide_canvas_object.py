@@ -137,6 +137,8 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
     # with a certain border; this is also used by updateEndPoints to bring
     # the connection out of the connection port initially
     routingOvershoot = 5
+    _normal_width = 2.5
+    _highlight_width = 5
 
     def __init__(self, canvas, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
 
@@ -208,7 +210,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         a.SetMapper(m)
 
         a.GetProperty().SetColor(self.line_colour)
-        a.GetProperty().SetLineWidth(2.5)
+        a.GetProperty().SetLineWidth(self._normal_width)
 
         self.props = [a]
 
@@ -262,6 +264,19 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
             return True
         else:
             return False
+
+    def set_highlight(self):
+        prop = self.props[0].GetProperty()
+        prop.SetLineWidth(self._highlight_width)
+        # for more stipple patterns, see:
+        # http://fly.cc.fer.hr/~unreal/theredbook/chapter02.html
+        prop.SetLineStipplePattern(0x00FF)
+        
+
+    def set_normal(self):
+        prop = self.props[0].GetProperty()
+        prop.SetLineWidth(self._normal_width)
+        prop.SetLineStipplePattern(0xFFFF)
 
     def updateEndPoints(self):
         # first get us just out of the port, then create margin between
