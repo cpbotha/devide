@@ -624,9 +624,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         if bl[1] > tr[1]:
             bl[1],tr[1] = tr[1],bl[1]
 
-        print bl, tr
-        print self._position
-
         inside = True
 
         if self._position[0] < bl[0] or self._position[1] < bl[1]:

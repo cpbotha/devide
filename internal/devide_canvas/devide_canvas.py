@@ -9,6 +9,8 @@ import operator
 
 import wx # we're going to use this for event handling
 
+from module_kits.misc_kit import dprint
+
 # think about turning this into a singleton.
 class DeVIDECanvasEvent:
     def __init__(self):
@@ -224,7 +226,7 @@ class DeVIDECanvas(SubjectMixin):
         self._helper_glyph_button_down('left_button_down')
 
     def _handler_lu(self, e):
-        print "_handler_lu::"
+        dprint("_handler_lu::")
         self._helper_handler_preamble(e, focus=False)
         self.event.left_button = False
         self._helper_glyph_button_up('left_button_up')
@@ -282,7 +284,7 @@ class DeVIDECanvas(SubjectMixin):
             try:
                 picked_cobject = self.prop_to_glyph[prop]
             except KeyError:
-                print "_pick_glyph:: couldn't find prop in p2g dict"
+                dprint("_pick_glyph:: couldn't find prop in p2g dict")
                 return None
             else:
                 # need to find out WHICH sub-actor was picked.
@@ -293,22 +295,14 @@ class DeVIDECanvas(SubjectMixin):
                 else:
                     sub_prop = None
 
-                #print p.GetPath().GetNumberOfItems()
-                #print p.GetPath().GetItemAsObject(0)
-                #print p.GetPath().GetItemAsObject(1)
                 # our assembly is one level deep, so 1 is the one we
                 # want (actor at leaf node)
-
-                #p.GetPath().InitTraversal()
-                #print p.GetPath().GetNextItemAsObject().GetViewProp()
-                #print p.GetPath().GetNextItemAsObject().GetViewProp()
 
                 return (picked_cobject, sub_prop)
 
         return None
 
     def _zoom(self, amount):
-        print "zoom::", amount
         cam = self._ren.GetActiveCamera()
         if cam.GetParallelProjection():
             cam.SetParallelScale(cam.GetParallelScale() / amount)
@@ -465,7 +459,7 @@ class DeVIDECanvas(SubjectMixin):
         if not event.Dragging():
             # when user stops dragging the mouse, lose the object
             if not self._draggedObject is None:
-                print "_handler_motion:: dragging -> off"
+                dprint("_handler_motion:: dragging -> off")
                 self._draggedObject.draggedPort = None
                 self._draggedObject = None
 

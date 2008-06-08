@@ -31,14 +31,7 @@ import wx
 # so we're using VTK here for doing the graph layout.
 import vtk
 
-DEBUG=True
-if DEBUG:
-    def dprint(*msg):
-        print msg
-else:
-    def dprint(*msg):
-        pass
-
+from module_kits.misc_kit import dprint
 
 
 # ----------------------------------------------------------------------------
@@ -656,7 +649,7 @@ class GraphEditor:
         
         #g = canvas.get_glyph_on_coords(rx,ry)
         g = canvas.event.picked_cobject
-        print "canvasDropFilename:: picked_cobject", g
+        dprint("canvasDropFilename:: picked_cobject", g)
         if g:
             # returns True if glyph did something with drop...
             ret = handle_drop_on_glyph(g, filenames)
@@ -894,8 +887,6 @@ class GraphEditor:
     def _testSelectedGlyphs(self):
         si = [i.moduleInstance
               for i in self._selected_glyphs.getSelectedGlyphs()]
-
-        print "LALA, no test at the moment."
 
     def createGlyph(self, rx, ry, labelList, moduleInstance):
         """Create only a glyph on the canvas given an already created
@@ -1559,7 +1550,7 @@ class GraphEditor:
 
 
     def _observer_canvas_left_up(self, canvas):
-        print "_observer_canvas_left_up::"
+        dprint("_observer_canvas_left_up::")
         
         # whatever the case may be, stop rubber banding.
         if self._rbb_box:
@@ -1669,7 +1660,7 @@ class GraphEditor:
     def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
         l1 = DeVIDECanvasLine(self.canvas, fromObject, fromOutputIdx,
                          toObject, toInputIdx)
-        print "_createLine:: calling canvas.add_object"
+        dprint("_createLine:: calling canvas.add_object")
         self.canvas.add_object(l1)
             
         # also record the line in the glyphs
@@ -2159,7 +2150,7 @@ class GraphEditor:
         if not glyph.draggedPort:
             # we're dragging, but we don't know if we're dragging a port yet
             port = glyph.get_port_containing_mouse()
-            print "_observer_glyph_dragging:: port", port
+            dprint("_observer_glyph_dragging:: port", port)
             if port:
                 # 
                 glyph.draggedPort = port
@@ -2385,7 +2376,8 @@ class GraphEditor:
 
         if canvas.getDraggedObject() and \
         canvas.getDraggedObject().draggedPort == (-1,-1):
-            print "_observer_glyph_left_button_up:: end of glyph move"
+            dprint(
+            "_observer_glyph_left_button_up:: end of glyph move")
             # this is the end of a glyph move: there is still a
             # draggedObject, but the left mouse button is up.
             # the new VTK canvas event system only switches off draggy
