@@ -25,6 +25,7 @@ import os
 import re
 import string
 import sys
+import time
 import weakref
 import wx
 
@@ -209,6 +210,9 @@ class GraphEditor:
         wx.EVT_MENU(mf, mf.fileSaveId,
                  self._fileSaveCallback)
 
+        wx.EVT_MENU(mf, mf.id_file_save_as,
+                self._handler_file_save_as)
+
         wx.EVT_MENU(mf, mf.fileSaveSelectedId,
                  self._handlerFileSaveSelected)
 
@@ -288,6 +292,9 @@ class GraphEditor:
 
         # initialise cut/copy/paste buffer
         self._copyBuffer = None
+
+        # initialise current filename
+        self.set_current_filename(None)
 
         # now display the shebang
         # (GraphEditor controls the GraphEditor bits...)
@@ -2104,6 +2111,7 @@ class GraphEditor:
 
     def _fileNewCallback(self, event):
         self.clearAllGlyphsFromCanvas()
+        self.set_current_filename(None)
 
     def _fileOpenCallback(self, event):
         filename = wx.FileSelector(
@@ -2118,22 +2126,43 @@ class GraphEditor:
             # make sure that the newly realised network is nicely in
             # view
             self.canvas.reset_view()
+            self.set_current_filename(filename)
 
+    def _helper_file_save(self, always_ask=True):
+        """Save current network to file.
 
-    def _fileSaveCallback(self, event):
+        If always_ask is True, will popup a file selector dialogue.
+        If always_ask is False, will only popup a file selector
+        dialogue if there is no current filename set.
+        """
         # make a list of all glyphs
         allGlyphs = self.canvas.getObjectsOfClass(
             DeVIDECanvasGlyph)
         
         if allGlyphs:
-            filename = wx.FileSelector(
-                "Choose filename for DeVIDE network",
-                "", "", "dvn",
-                "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
-                wx.SAVE)
-        
+            if always_ask or self._current_filename is None:
+                filename = wx.FileSelector(
+                    "Choose filename for DeVIDE network",
+                    "", "", "dvn",
+                    "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
+                    wx.SAVE)
+            else:
+                filename = self._current_filename
+       
             if filename:
+                self.set_current_filename(filename)
                 self._saveNetwork(allGlyphs, filename)
+
+                self._interface.set_status_message(
+                        'Saved %s - %s' % 
+                        (filename,time.ctime(time.time())))
+
+
+    def _fileSaveCallback(self, event):
+        self._helper_file_save(always_ask=False)
+
+    def _handler_file_save_as(self, event):
+        self._helper_file_save(always_ask=True)
 
     def _get_all_glyphs(self):
         """Return list with all glyphs on canvas.
@@ -2747,6 +2776,19 @@ class GraphEditor:
             canvas.redraw()
 
         return success
+
+    def set_current_filename(self, filename):
+        """Set current filename.
+
+        This will record this in an ivar, and also change the window
+        title to reflect the current filename.
+        """
+
+        self._current_filename = filename
+        if filename is None:
+            filename = 'unnamed.dvn'
+
+        self._interface.set_current_filename(filename)
 
     def show_module_help_from_glyph(self, glyph):
         module_instance = glyph.moduleInstance

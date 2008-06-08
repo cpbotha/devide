@@ -281,6 +281,7 @@ class MainWXFrame(wx.Frame):
         self.fileOpenId = wx.NewId()
         self.fileOpenSegmentId = wx.NewId()
         self.fileSaveId = wx.NewId()
+        self.id_file_save_as = wx.NewId()
         self.fileSaveSelectedId = wx.NewId()
         self.fileExportAsDOTId = wx.NewId()
         self.fileExportSelectedAsDOTId = wx.NewId()
@@ -301,6 +302,8 @@ class MainWXFrame(wx.Frame):
             wx.ITEM_NORMAL)
         file_menu.Append(self.fileSaveId, "&Save\tCtrl-S",
                          "Save the current network.", wx.ITEM_NORMAL)
+        file_menu.Append(self.id_file_save_as, "Save &As",
+                         "Save the current network with a new filename.", wx.ITEM_NORMAL)
         file_menu.Append(self.fileSaveSelectedId,
                          "Save se&lected Glyphs\tCtrl-L",
                          "Save the selected glyphs as a network.",

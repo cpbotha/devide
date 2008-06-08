@@ -53,8 +53,8 @@ class WXInterface(wx.App):
         #self._main_frame = resources.python.mainFrame.mainFrame(
         #    None, -1, "dummy", name="DeVIDE")
 
-        title = 'DeVIDE v%s' % (self._devide_app.get_devide_version(),)
-        self._main_frame = main_frame.MainWXFrame(None, -1, title, (-1,-1),
+        self._title = 'DeVIDE v%s' % (self._devide_app.get_devide_version(),)
+        self._main_frame = main_frame.MainWXFrame(None, -1, self._title, (-1,-1),
                                                   (800,600))
         wx.InitAllImageHandlers()
         self._main_frame.SetIcon(self.getApplicationIcon())
@@ -289,6 +289,8 @@ class WXInterface(wx.App):
         for menuPos in range(menuCount):
             self._main_frame.GetMenuBar().EnableTop(menuPos, True)
 
+    def set_status_message(self, msg):
+        self._main_frame.GetStatusBar().SetStatusText(msg)
 
     def start_main_loop(self):
         self.MainLoop()
@@ -334,6 +336,14 @@ class WXInterface(wx.App):
 
     def _handler_menu_python_shell(self, event):
         self.start_python_shell()
+
+    def set_current_filename(self, filename):
+        """Change the window title to reflect the current network
+        filename.  This is purely for display purposes and is used by
+        the Graph Editor.
+        """
+
+        self._main_frame.SetTitle('%s - %s' % (self._title, filename))
 
     def _windowIconizeAllChildren(self):
         children = self._main_frame.GetChildren()
