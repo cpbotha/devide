@@ -348,9 +348,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # the main body glyph
         self._cs = vtk.vtkCubeSource()
         self._rbsa = vtk.vtkActor()
-        # a black cube behind it to give it a nice border
-        self._cso = vtk.vtkCubeSource()
-        self._csoa = vtk.vtkActor()
         # and of course the label
         self._tsa = vtk.vtkTextActor3D()
 
@@ -408,12 +405,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.prop1.AddPart(self._rbsa)
 
         # GLYPH BLOCK BORDER #######################################
-
-        self._cso.SetZLength(self._glyph_z_len / 2.0)
-        m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._cso.GetOutput())
-        self._csoa.SetMapper(m)
-        self.prop1.AddPart(self._csoa)
+        
+        # putting another cube behind the glyph cube doesn't work as
+        # desired.  line around glyph sporadically disappears during
+        # zooming.
 
         # INPUTS #################################################### 
         
@@ -494,14 +489,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         
         self._cs.SetYLength(self._size[1])
         self._cs.SetXLength(self._size[0])
-
-        # now the glyph outline
-        self._cso.SetCenter(gc)
-        self._cso.SetYLength(self._size[1] + 2) # horizontal 1
-        self._cso.SetXLength(self._size[0] + 2) # vertical 1
-        p = self._csoa.GetProperty()
-        p.SetColor(0, 0, 0) # and it's black
-
 
         # calc and update glyph colour ########################
         gcol = self._glyph_normal_col
