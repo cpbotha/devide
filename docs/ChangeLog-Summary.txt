@@ -4,8 +4,12 @@ Changes since previous release (8.2.2807)
  * DICOMBrowser: you can now visually browse your complete local DICOM
    database!  Together with the new DICOMReader and DICOMWriter
    modules, DICOM support in DeVIDE has taken a big step forward.
- * Integrated GDCM2 dicom library, in addition to existing DCMTK support
- * Upgraded to ITK 3.6, CMake 2.6.0
+ * Integrated GDCM2 DICOM library, in addition to existing DCMTK support
+ * Font rendering in the Graph Editor has been greatly improved (it's
+   still ugly, but now consistently so).
+ * UI improvements to the Graph Editor, e.g. larger connection ports,
+   feedback on connections when dragging a glyph.
+ * Upgraded to ITK 3.6
 
 Changes since previous release (2571 - Mon Sep 10 14:35:31 WEST 2007)
  * 8.2 is the first open source release!
