@@ -45,6 +45,16 @@ exclude_pos = [
         re.compile('.*Abstract.*$')
         ]
 
+# these are for filters that take multiple connections on the same
+# input port.  We're kludging this at the moment by making use of the
+# legacy SetInput(idx, input_data) method (see vtk_kit/mixins/
+# SimpleVTKClassModuleBase). This kludge only works in some cases...
+# (e.g. vtkAppendPolyData doesn't like SetInput(idx, blaat), but
+# vtkImageAppendComponents does - thanks Stef Busking!)
+multi_input_connection_filters = {
+        'vtkImageAppendComponents' : 5
+        }
+
 def createDeVIDEModuleFromVTKObject(vtkObjName):
     """Returns tuple with first element the name of the module,
     the second element a string representing the complete code, the third
@@ -85,6 +95,12 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
             ip_inf = vtkObj.GetInputPortInformation(i)
             ip_typ = ip_inf.Get(vtk.vtkAlgorithm.INPUT_REQUIRED_DATA_TYPE())
             ip_types.append(ip_typ)
+
+        # kludge to support some multi-input-connection filters
+        input_conns = multi_input_connection_filters.get(vtkObjName, 1)
+        if num_i == 1 and input_conns > 1:
+            ip_types = input_conns * [ip_typ]
+
         # we need a tuple for creating the DeVIDE module
         ip_types = tuple(ip_types)
 
@@ -106,70 +122,6 @@ def createDeVIDEModuleFromVTKObject(vtkObjName):
                                         None, None)
 
         return (moduleName, moduleText, 'VTK basic filters', vtkObj.__doc__)
-        
-
-
-    # use GetInputPortInformation() INPUT_REQUIRED_DATA_TYPE
-    # GetNumberOfInputPorts()
-
-    if vtkObj.IsA('vtkPolyDataAlgorithm'):
-        moduleName = vtkObjName
-
-        moduleText = moduleSkeleton1 % (moduleName, vtkObjName,
-                                        'Processing.',
-                                        ('vtkPolyData',), ('vtkPolyData',),
-                                        None, None)
-        return (moduleName, moduleText, 'vtkPolyToPoly')
-
-    # now all the vtkImageSource derivatives ------------------------------
-    # ---------------------------------------------------------------------
-    
-    elif vtkObj.IsA('vtkImageTwoInputFilter'):
-        moduleName = vtkObjName
-
-        moduleText = moduleSkeleton1 % (moduleName, vtkObjName,
-                                        'Processing.',
-                                        ('Input 1 (vtkImageData)',
-                                         'Input 2 (vtkImageData)'),
-                                        ('vtkImageData',),
-                                        ('SetInput1(inputStream)',
-                                         'SetInput2(inputStream)'), None)
-
-        return (moduleName, moduleText, 'vtkImageToImage')
-        
-    elif vtkObj.IsA('vtkImageMultipleInputFilter'):
-        moduleName = vtkObjName
-        inputDescriptions = ('Input 1 (vtkImageData)',
-                             'Input 2 (vtkImageData)',
-                             'Input 3 (vtkImageData)',
-                             'Input 4 (vtkImageData)',
-                             'Input 5 (vtkImageData)')
-        inputMethods = ('SetInput(0, inputStream)',
-                        'SetInput(1, inputStream)',
-                        'SetInput(2, inputStream)',
-                        'SetInput(3, inputStream)',
-                        'SetInput(4, inputStream)')
-
-        moduleText = moduleSkeleton1 % (moduleName, vtkObjName,
-                                        'Processing.',
-                                        inputDescriptions,
-                                        ('vtkImageData',),
-                                        inputMethods, None)
-
-        return (moduleName, moduleText, 'vtkImageToImage')
-
-    elif vtkObj.IsA('vtkImageToImageFilter'):
-        moduleName = vtkObjName
-
-        moduleText = moduleSkeleton1 % (moduleName, vtkObjName,
-                                        'Processing.',
-                                        ('vtkImageData',), ('vtkImageData',),
-                                        None, None)
-        return (moduleName, moduleText, 'vtkImageToImage')
-
-    else:
-        return (None, None, None)
-        
 
 
 def main():
