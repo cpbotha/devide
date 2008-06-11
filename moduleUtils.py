@@ -184,11 +184,16 @@ def create_standard_object_introspection(d3module,
     hSizer.Add(ocLabel, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(objectChoice, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
 
+    vSizer = wx.BoxSizer(wx.VERTICAL)
+    sl = wx.StaticLine(viewFramePanel, -1)
+    vSizer.Add(sl, 0, wx.CENTER|wx.EXPAND|wx.BOTTOM, 7)
+    vSizer.Add(hSizer, 0, wx.CENTER|wx.EXPAND)
+
     # this will usually get added right below an existing sizer with 7 points
     # border all around.  Below us the ECAS buttons will be added and these
     # assume that there is a 7 pixel border above them, which is why we
     # supply a 7 pixel below us.
-    viewFramePanel.GetSizer().Add(hSizer, 0,
+    viewFramePanel.GetSizer().Add(vSizer, 0,
                                   wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, 7)
 
     # force the sizer to calculate new layout with all children (because
