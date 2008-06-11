@@ -308,7 +308,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                                                        self._file_wildcard))
         
         if self._object_dict != None:
-            moduleUtils.createStandardObjectAndPipelineIntrospection(
+            moduleUtils.create_standard_object_introspection(
                 self,
                 self._view_frame, self._view_frame.viewFramePanel,
                 self._object_dict, None)
@@ -439,7 +439,7 @@ class noConfigModuleMixin(introspectModuleMixin):
         viewFrame.SetSizer(viewFrameSizer)
 
         if self._object_dict != None:
-            moduleUtils.createStandardObjectAndPipelineIntrospection(
+            moduleUtils.create_standard_object_introspection(
                 self, viewFrame, viewFrame.viewFramePanel,
                 self._object_dict, None)
 
@@ -630,7 +630,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
         if self._object_dict != None:
-            moduleUtils.createStandardObjectAndPipelineIntrospection(
+            moduleUtils.create_standard_object_introspection(
                 self, viewFrame, viewFrame.viewFramePanel,
                 self._object_dict, None)
 

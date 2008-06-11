@@ -8,11 +8,7 @@
 """
 
 import wx
-from external.vtkPipeline.vtkPipeline import \
-     vtkPipelineBrowser
-from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 import resources.graphics.images
-
 
 def createECASButtons(d3module, viewFrame, viewFramePanel,
                       executeDefault=True):
@@ -162,20 +158,18 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     # setup some hotkeys as well
     viewFrame.SetAcceleratorTable(accel_table)
     
-
-def createStandardObjectAndPipelineIntrospection(d3module,
-                                                 viewFrame, viewFramePanel,
-                                                 objectDict,
-                                                 renderWindow=None):
+def create_standard_object_introspection(d3module, 
+                                         viewFrame, viewFramePanel,
+                                         objectDict,
+                                         renderWindow=None):
        
     """Given a devide module and its viewframe, this will create a
     standard wxChoice and wxButton (+ labels) UI for object and
-    pipeline introspection.  In addition, it'll call
-    setupObjectAndPipelineIntrospection in order to bind events to these
-    controls.
+    introspection.  In addition, it'll call setup_object_introspection
+    in order to bind events to these controls.
 
     In order to use this, the module HAS to use the
-    vtkPipelineConfigModuleMixin.
+    introspectModuleMixin.
 
     IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
     the viewFramePanel.  This is the default for wxGlade created dialogs
@@ -195,18 +189,11 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     objectChoice = wx.Choice(viewFramePanel, objectChoiceId, choices=[])
     objectChoice.SetToolTip(wx.ToolTip(
         "Select an object from the drop-down box to introspect it."))
-    pbLabel = wx.StaticText(viewFramePanel, -1, "or")
-    pipelineButtonId = wx.NewId()
-    pipelineButton = wx.Button(viewFramePanel, pipelineButtonId, "Pipeline")
-    pipelineButton.SetToolTip(wx.ToolTip(
-        "Show the underlying VTK pipeline."))
 
     hSizer = wx.BoxSizer(wx.HORIZONTAL)
     hSizer.Add(introspect_button, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(ocLabel, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
     hSizer.Add(objectChoice, 1, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
-    hSizer.Add(pbLabel, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
-    hSizer.Add(pipelineButton, 0, wx.ALIGN_CENTER_VERTICAL, 0)
 
     # this will usually get added right below an existing sizer with 7 points
     # border all around.  Below us the ECAS buttons will be added and these
@@ -233,10 +220,13 @@ def createStandardObjectAndPipelineIntrospection(d3module,
     viewFrame.GetSizer().SetSizeHints(viewFrame)
     
     # finally do the actual event setup
-    setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
-                                        renderWindow,
-                                        objectChoice, introspect_button_id,
-                                        pipelineButtonId)
+    setup_object_introspection(d3module, viewFrame, objectDict,
+                               renderWindow,
+                               objectChoice, introspect_button_id)
+
+# make sure the old method name still works.
+createStandardObjectAndPipelineIntrospection = \
+        create_standard_object_introspection
 
 def getModuleIcon():
     icon = wx.EmptyIcon()
@@ -266,13 +256,13 @@ def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
 
     return viewFrame
 
-def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
+def setup_object_introspection(d3module, viewFrame, objectDict,
                                         renderWindow,
                                         objectChoice, introspect_button_id,
-                                        pipelineButtonId):
-    """Setup all object and pipeline introspection for standard module
-    views with a choice for objects and a button for pipeline
-    introspection.  Call this if you have a wx.Choice and wx.Button ready!
+                                        ):
+    """Setup all object introspection for standard module views with a
+    choice for object introspection.  Call this if you have a
+    wx.Choice and wx.Button ready!
 
     viewFrame is the actual window of the module view.
     objectDict is a dictionary with object name strings as keys and object
@@ -281,11 +271,9 @@ def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
     pass as None if you don't have this.
     objectChoice is the object choice widget.
     objectChoiceId is the event id connected to the objectChoice widget.
-    pipelineButtonId is the event id connected to the pipeline
-    introspection button.
 
     In order to use this, the module HAS to use the
-    vtkPipelineConfigModuleMixin.
+    introspectModuleMixin.
 
     """
 
@@ -301,11 +289,8 @@ def setupObjectAndPipelineIntrospection(d3module, viewFrame, objectDict,
                   lambda e: d3module._defaultObjectChoiceCallback(
         viewFrame, renderWindow, objectChoice, objectDict))
 
-    wx.EVT_BUTTON(viewFrame, pipelineButtonId,
-               lambda e: d3module._defaultPipelineCallback(
-        viewFrame, renderWindow, objectDict))
-
-
+# old method name should still work
+setupObjectAndPipelineIntrospection = setup_object_introspection
 
 def setupVTKObjectProgress(d3module, obj, progressText):
     # we DON'T use SetProgressMethod, as the handler object then needs
