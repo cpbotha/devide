@@ -11,54 +11,55 @@
 # Copyright:   (c) 2000 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
+# 12/02/2003 - Jeff Grimmett (grimmtooth@softhome.net)
+#
+# o 2.5 Compatability changes
+#
+# imported from wxPython 2.8.7.1 into DeVIDE by Charl Botha
+# (cpbotha@cpbotha.net).  Brought back old behaviour where
+# labelText==None would result in no label being created.
 
-# imported by cpbotha into devide
-# * changed layout
-# * changed to import wx scheme
-# * we might not need our changed version with wxPython 2.6
+import  os
+import  types
 
-import wx
-import os, types
+import  wx
 
 #----------------------------------------------------------------------
 
 class FileBrowseButton(wx.Panel):
-    """ A control to allow the user to type in a filename
-    or browse with the standard file dialog to select file
-
-    __init__ (
-        parent, id, pos, size -- passed directly to wx.Panel initialisation
-        style = wx.TAB_TRAVERSAL -- passed directly to wx.Panel initialisation
-        labelText -- Text for label to left of text field
-        buttonText -- Text for button which launches the file dialog
-        toolTip -- Help text
-        dialogTitle -- Title used in file dialog
-        startDirectory -- Default directory for file dialog startup
-        fileMask -- File mask (glob pattern, such as *.*) to use in file dialog
-        fileMode -- wx.OPEN or wx.SAVE, indicates type of file dialog to use
-        changeCallback -- callback receives all > > changes in value of control
-    )
-    GetValue() -- retrieve current value of text control
-    SetValue(string) -- set current value of text control
-    label -- pointer to internal label widget
-    textControl -- pointer to internal text control
-    browseButton -- pointer to button
+    """
+    A control to allow the user to type in a filename or browse with
+    the standard file dialog to select file
     """
     def __init__ (self, parent, id= -1,
-              pos = wx.DefaultPosition, size = wx.DefaultSize,
-              style = wx.TAB_TRAVERSAL,
-              labelText= "File Entry:",
-              buttonText= "Browse",
-              toolTip= "Type filename or click browse to choose file",
-              # following are the values for a file dialog box
-              dialogTitle = "Choose a file",
-              startDirectory = ".",
-              initialValue = "",
-              fileMask = "*.*",
-              fileMode = wx.OPEN,
-              # callback for when value changes (optional)
-              changeCallback= lambda x:x
+                  pos = wx.DefaultPosition,
+                  size = wx.DefaultSize,
+                  style = wx.TAB_TRAVERSAL,
+                  labelText= "File Entry:",
+                  buttonText= "Browse",
+                  toolTip= "Type filename or click browse to choose file",
+                  # following are the values for a file dialog box
+                  dialogTitle = "Choose a file",
+                  startDirectory = ".",
+                  initialValue = "",
+                  fileMask = "*.*",
+                  fileMode = wx.OPEN,
+                  # callback for when value changes (optional)
+                  changeCallback= lambda x:x,
+                  labelWidth = 0
         ):
+        """
+        :param labelText:      Text for label to left of text field
+        :param buttonText:     Text for button which launches the file dialog
+        :param toolTip:        Help text
+        :param dialogTitle:    Title used in file dialog
+        :param startDirectory: Default directory for file dialog startup
+        :param fileMask:       File mask (glob pattern, such as *.*) to use in file dialog
+        :param fileMode:       wx.OPEN or wx.SAVE, indicates type of file dialog to use
+        :param changeCallback: Optional callback called for all changes in value of the control
+        :param labelWidth:     Width of the label
+        """
+      
         # store variables
         self.labelText = labelText
         self.buttonText = buttonText
@@ -70,13 +71,7 @@ class FileBrowseButton(wx.Panel):
         self.fileMode = fileMode
         self.changeCallback = changeCallback
         self.callCallback = True
-
-
-        # get background to match it
-        try:
-            self._bc = parent.GetBackgroundColour()
-        except:
-            pass
+        self.labelWidth = labelWidth
 
         # create the dialog
         self.createDialog(parent, id, pos, size, style )
@@ -90,31 +85,26 @@ class FileBrowseButton(wx.Panel):
     def createDialog( self, parent, id, pos, size, style ):
         """Setup the graphic representation of the dialog"""
         wx.Panel.__init__ (self, parent, id, pos, size, style)
-        # try to set the background colour
-        try:
-            self.SetBackgroundColour(self._bc)
-        except:
-            pass
+        self.SetMinSize(size) # play nice with sizers
+
         box = wx.BoxSizer(wx.HORIZONTAL)
 
-        if self.labelText:
-            self.label = self.createLabel( )
-            box.Add( self.label, 0, wx.ALIGN_CENTER_HORIZONTAL )
-            textLeftBorder = 5
+        if self.labelText is None:
+            self.label = None
         else:
-            textLeftBorder = 0
+            self.label = self.createLabel( )
+            box.Add( self.label, 0, wx.RIGHT|wx.CENTER, 5)
 
         self.textControl = self.createTextControl()
-        box.Add( self.textControl, 1, wx.LEFT|wx.ALIGN_CENTER_HORIZONTAL,
-                 textLeftBorder)
+        box.Add( self.textControl, 1, wx.CENTER)
 
         self.browseButton = self.createBrowseButton()
-        box.Add( self.browseButton, 0, wx.LEFT|wx.ALIGN_CENTER_HORIZONTAL, 5)
+        box.Add( self.browseButton, 0, wx.LEFT|wx.CENTER, 5)
 
-        # add a border around the whole thing and resize the panel to fit
+        # No, I don't want a 3 pixel border around the whole thing,
+        # thanks.
         outsidebox = wx.BoxSizer(wx.VERTICAL)
-        # this border was 3, we don't want that thanks.
-        outsidebox.Add(box, 1, wx.EXPAND|wx.ALL, 0)
+        outsidebox.Add(box, 1, wx.EXPAND)
         outsidebox.Fit(self)
 
         self.SetAutoLayout(True)
@@ -129,24 +119,27 @@ class FileBrowseButton(wx.Panel):
 
     def SetBackgroundColour(self,color):
         wx.Panel.SetBackgroundColour(self,color)
-        self.label.SetBackgroundColour(color)
+        if self.label:
+            self.label.SetBackgroundColour(color)
 
     def createLabel( self ):
         """Create the label/caption"""
         label = wx.StaticText(self, -1, self.labelText, style =wx.ALIGN_RIGHT )
         font = label.GetFont()
         w, h, d, e = self.GetFullTextExtent(self.labelText, font)
-        label.SetSize(wx.Size(w+5, h))
+        if self.labelWidth > 0:
+            label.SetSize((self.labelWidth+5, h))
+        else:
+            label.SetSize((w+5, h))
         return label
 
     def createTextControl( self):
         """Create the text control"""
-        ID = wx.NewId()
-        textControl = wx.TextCtrl(self, ID)
+        textControl = wx.TextCtrl(self, -1)
         textControl.SetToolTipString( self.toolTip )
         if self.changeCallback:
-            wx.EVT_TEXT(textControl, ID, self.OnChanged)
-            wx.EVT_COMBOBOX(textControl, ID, self.OnChanged)
+            textControl.Bind(wx.EVT_TEXT, self.OnChanged)
+            textControl.Bind(wx.EVT_COMBOBOX, self.OnChanged)
         return textControl
 
     def OnChanged(self, evt):
@@ -155,10 +148,9 @@ class FileBrowseButton(wx.Panel):
 
     def createBrowseButton( self):
         """Create the browse-button control"""
-        ID = wx.NewId()
-        button =wx.Button(self, ID, self.buttonText)
+        button =wx.Button(self, -1, self.buttonText)
         button.SetToolTipString( self.toolTip )
-        wx.EVT_BUTTON(button, ID, self.OnBrowse)
+        button.Bind(wx.EVT_BUTTON, self.OnBrowse)
         return button
 
 
@@ -174,7 +166,8 @@ class FileBrowseButton(wx.Panel):
             directory = directory [0]
         else:
             directory = self.startDirectory
-        dlg = wx.FileDialog(self, self.dialogTitle, directory, current, self.fileMask, self.fileMode)
+        dlg = wx.FileDialog(self, self.dialogTitle, directory, current,
+                            self.fileMask, self.fileMode)
 
         if dlg.ShowModal() == wx.ID_OK:
             self.SetValue(dlg.GetPath())
@@ -182,58 +175,78 @@ class FileBrowseButton(wx.Panel):
 
 
     def GetValue (self):
-        """ Convenient access to text control value """
+        """
+        retrieve current value of text control
+        """
         return self.textControl.GetValue()
 
     def SetValue (self, value, callBack=1):
-        """ Convenient setting of text control value """
+        """set current value of text control"""
         save = self.callCallback
         self.callCallback = callBack
         self.textControl.SetValue(value)
         self.callCallback =  save
 
 
-    def Enable (self, value):
+    def Enable (self, value=True):
         """ Convenient enabling/disabling of entire control """
-        self.label.Enable (value)
+        if self.label:
+            self.label.Enable (value)
         self.textControl.Enable (value)
         return self.browseButton.Enable (value)
 
+    def Disable (self,):
+        """ Convenient disabling of entire control """
+        self.Enable(False)
+
     def GetLabel( self ):
         """ Retrieve the label's current text """
-        return self.label.GetLabel()
+        if self.label:
+            return self.label.GetLabel()
+        else:
+            return None
 
     def SetLabel( self, value ):
         """ Set the label's current text """
-        rvalue = self.label.SetLabel( value )
-        self.Refresh( True )
-        return rvalue
+        if self.label:
+            rvalue = self.label.SetLabel( value )
+            self.Refresh( True )
+            return rvalue
+        else:
+            return None
 
 
 
 
 class FileBrowseButtonWithHistory( FileBrowseButton ):
-    """ with following additions:
+    """
+    with following additions:
         __init__(..., history=None)
 
             history -- optional list of paths for initial history drop-down
                 (must be passed by name, not a positional argument)
                 If history is callable it will must return a list used
                 for the history drop-down
+
             changeCallback -- as for FileBrowseButton, but with a work-around
                 for win32 systems which don't appear to create wx.EVT_COMBOBOX
                 events properly.  There is a (slight) chance that this work-around
                 will cause some systems to create two events for each Combobox
                 selection. If you discover this condition, please report it!
+
             As for a FileBrowseButton.__init__ otherwise.
+            
         GetHistoryControl()
             Return reference to the control which implements interfaces
             required for manipulating the history list.  See GetHistoryControl
             documentation for description of what that interface is.
+            
         GetHistory()
             Return current history list
+            
         SetHistory( value=(), selectionIndex = None )
             Set current history list, if selectionIndex is not None, select that index
+            
         """
     def __init__( self, *arguments, **namedarguments):
         self.history = namedarguments.get( "history" )
@@ -249,13 +262,12 @@ class FileBrowseButtonWithHistory( FileBrowseButton ):
 
     def createTextControl( self):
         """Create the text control"""
-        ID = wx.NewId()
-        textControl = wx.ComboBox(self, ID, style = wx.CB_DROPDOWN )
+        textControl = wx.ComboBox(self, -1, style = wx.CB_DROPDOWN )
         textControl.SetToolTipString( self.toolTip )
-        wx.EVT_SET_FOCUS(textControl, self.OnSetFocus)
+        textControl.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
         if self.changeCallback:
-            wx.EVT_TEXT(textControl, ID, self.changeCallback)
-            wx.EVT_COMBOBOX(textControl, ID, self.changeCallback)
+            textControl.Bind(wx.EVT_TEXT, self.OnChanged)
+            textControl.Bind(wx.EVT_COMBOBOX, self.OnChanged)
         if self.history:
             history=self.history
             self.history=None
@@ -264,13 +276,16 @@ class FileBrowseButtonWithHistory( FileBrowseButton ):
 
 
     def GetHistoryControl( self ):
-        """Return a pointer to the control which provides (at least)
-        the following methods for manipulating the history list.:
+        """
+        Return a pointer to the control which provides (at least)
+        the following methods for manipulating the history list:
+        
             Append( item ) -- add item
             Clear() -- clear all items
             Delete( index ) -- 0-based index to delete from list
             SetSelection( index ) -- 0-based index to select in list
-        Semantics of the methods follow those for the wx.ComboBox control
+            
+        Semantics of the methods follow those for the wxComboBox control
         """
         return self.textControl
 
@@ -298,8 +313,10 @@ class FileBrowseButtonWithHistory( FileBrowseButton ):
         """Return the current history list"""
         if self.historyCallBack != None:
             return self.historyCallBack()
-        else:
+        elif self.history:
             return list( self.history )
+        else:
+            return []
 
 
     def OnSetFocus(self, event):
@@ -340,24 +357,31 @@ class DirBrowseButton(FileBrowseButton):
                  dialogTitle = '',
                  startDirectory = '.',
                  changeCallback = None,
-                 dialogClass = wx.DirDialog):
+                 dialogClass = wx.DirDialog,
+                 newDirectory = False):
         FileBrowseButton.__init__(self, parent, id, pos, size, style,
                                   labelText, buttonText, toolTip,
                                   dialogTitle, startDirectory,
                                   changeCallback = changeCallback)
-        #
-        self._dirDialog = dialogClass(self,
-                                      message = dialogTitle,
-                                      defaultPath = startDirectory)
+        self.dialogClass = dialogClass
+        self.newDirectory = newDirectory
     #
+
     def OnBrowse(self, ev = None):
-        dialog = self._dirDialog
+        style=0
+
+        if not self.newDirectory:
+          style |= wx.DD_DIR_MUST_EXIST
+
+        dialog = self.dialogClass(self,
+                                  message = self.dialogTitle,
+                                  defaultPath = self.startDirectory,
+                                  style = style)
+
         if dialog.ShowModal() == wx.ID_OK:
             self.SetValue(dialog.GetPath())
+        dialog.Destroy()
     #
-    def __del__(self):
-        if self.__dict__.has_key('_dirDialog'):
-            self._dirDialog.Destroy()
 
 
 #----------------------------------------------------------------------
@@ -372,8 +396,8 @@ if __name__ == "__main__":
             print self.tag, event.GetString()
     class DemoFrame( wx.Frame ):
         def __init__(self, parent):
-            wx.Frame.__init__(self, parent, 2400, "File entry with browse", size=(500,260) )
-            wx.EVT_CLOSE(self, self.OnCloseWindow)
+            wx.Frame.__init__(self, parent, -1, "File entry with browse", size=(500,260))
+            self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
             panel = wx.Panel (self,-1)
             innerbox = wx.BoxSizer(wx.VERTICAL)
             control = FileBrowseButton(
@@ -411,10 +435,10 @@ if __name__ == "__main__":
             innerbox.Add(  control, 0, wx.EXPAND)
             ID = wx.NewId()
             innerbox.Add( wx.Button( panel, ID,"Change Label",  ), 1, wx.EXPAND)
-            wx.EVT_BUTTON( self, ID, self.OnChangeLabel )
+            self.Bind(wx.EVT_BUTTON, self.OnChangeLabel , id=ID)
             ID = wx.NewId()
             innerbox.Add( wx.Button( panel, ID,"Change Value",  ), 1, wx.EXPAND)
-            wx.EVT_BUTTON( self, ID, self.OnChangeValue )
+            self.Bind(wx.EVT_BUTTON, self.OnChangeValue, id=ID )
             panel.SetAutoLayout(True)
             panel.SetSizer( innerbox )
             self.history={"c:\\temp":1, "c:\\tmp":1, "r:\\temp":1,"z:\\temp":1}
@@ -439,11 +463,8 @@ if __name__ == "__main__":
 
     class DemoApp(wx.App):
         def OnInit(self):
-            wx.Image_AddHandler(wx.JPEGHandler())
-            wx.Image_AddHandler(wx.PNGHandler())
-            wx.Image_AddHandler(wx.GIFHandler())
-            frame = DemoFrame(NULL)
-            #frame = RulesPanel(NULL )
+            wx.InitAllImageHandlers()
+            frame = DemoFrame(None)
             frame.Show(True)
             self.SetTopWindow(frame)
             return True

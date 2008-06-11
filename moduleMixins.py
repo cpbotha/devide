@@ -12,7 +12,7 @@ import module_kits.vtk_kit.utils
 
 import wx
 import wx.lib.masked
-from wx.lib.filebrowsebutton import \
+from external.filebrowsebutton import \
         FileBrowseButton, FileBrowseButtonWithHistory,DirBrowseButton
 
 import resources.python.filenameViewModuleMixinFrame
@@ -617,12 +617,12 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     panel, -1,
                     fileMask=configTuple[5]['fileMask'],
                     fileMode=configTuple[5]['fileMode'],
-                    labelText='',
+                    labelText=None,
                     toolTip=configTuple[4])
 
             else: # dirbrowser
                 widget = DirBrowseButton(
-                        panel, -1, labelText='',
+                        panel, -1, labelText=None,
                         toolTip=configTuple[4])
                 
             if widget:
