@@ -7,6 +7,6 @@ class vtkImageAppendComponents(SimpleVTKClassModuleBase):
         SimpleVTKClassModuleBase.__init__(
             self, moduleManager,
             vtk.vtkImageAppendComponents(), 'Processing.',
-            ('vtkImageData',), ('vtkImageData',),
+            ('vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData', 'vtkImageData'), ('vtkImageData',),
             replaceDoc=True,
             inputFunctions=None, outputFunctions=None)
