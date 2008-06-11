@@ -296,6 +296,13 @@ class GraphEditor:
         # initialise current filename
         self.set_current_filename(None)
 
+        # instrument network_manager with handler so we can autosave
+        # before a network gets executed
+        self._devide_app.network_manager.add_observer(
+                'execute_network_start',
+                self._observer_network_manager_ens)
+
+
         # now display the shebang
         # (GraphEditor controls the GraphEditor bits...)
         self.show()
@@ -754,6 +761,11 @@ class GraphEditor:
         """This gracefull takes care of all graphEditor shutdown and is mostly
         called at application shutdown.
         """
+
+        # remove the observer we have placed on the network manager
+        self._devide_app.network_manager.remove_observer(
+                'execute_network_start',
+                self._observer_network_manager_ens)
 
         # make sure no refs are stuck in the selection
         self._selected_glyphs.close()
@@ -1628,6 +1640,33 @@ class GraphEditor:
                           droppedObject, droppedInputPort)
 
             self.canvas.redraw()
+    def _observer_network_manager_ens(self, network_manager):
+        """Autosave file, only if we have a _current_filename
+        """
+
+        if self._current_filename is None:
+            return
+
+        all_glyphs = self.canvas.getObjectsOfClass(
+            DeVIDECanvasGlyph)
+
+        if all_glyphs:
+            # create new filename
+            fn = self._current_filename
+            f, e = os.path.splitext(fn)
+            new_fn = '%s_autosave%s' % (f, e)
+
+            # auto-save the network to that file
+            self._saveNetwork(all_glyphs, new_fn)
+
+            msg1 = 'Auto-saved %s' % (new_fn,)
+            # set message on statusbar
+            self._interface.set_status_message(
+                    '%s - %s' % 
+                    (msg1,time.ctime(time.time())))
+            # and also in log window
+            self._interface.log_info(msg1)
+       
 
     def clearAllGlyphsFromCanvas(self):
         allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
@@ -2153,9 +2192,13 @@ class GraphEditor:
                 self.set_current_filename(filename)
                 self._saveNetwork(allGlyphs, filename)
 
+                msg1 = 'Saved %s' % (filename,)
+                # set message on statusbar
                 self._interface.set_status_message(
-                        'Saved %s - %s' % 
-                        (filename,time.ctime(time.time())))
+                        '%s - %s' % 
+                        (msg1,time.ctime(time.time())))
+                # and also in log window
+                self._interface.log_info(msg1)
 
 
     def _fileSaveCallback(self, event):

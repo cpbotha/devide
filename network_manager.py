@@ -3,9 +3,10 @@
 # See COPYRIGHT for details.
 
 import cPickle
+from module_kits.misc_kit.mixins import SubjectMixin
 import time
 
-class NetworkManager:
+class NetworkManager(SubjectMixin):
     """Contains all logic to do with network handling.
 
     This is still work in progress: code has to be refactored out of the
@@ -14,12 +15,20 @@ class NetworkManager:
 
     def __init__(self, devide_app):
         self._devide_app = devide_app
+        SubjectMixin.__init__(self)
+
+    def close(self):
+        SubjectMixin.close(self)
 
     def execute_network(self, meta_modules):
         """Execute network represented by all modules in the list
         meta_modules.
 
         """
+
+        # trigger start event so that our observers can auto-save and
+        # whatnot
+        self.notify('execute_network_start')
 
         # convert all metaModules to schedulerModules
         sms = self._devide_app.scheduler.meta_modules_to_scheduler_modules(

@@ -319,6 +319,7 @@ class DeVIDEApp:
         """
 
         self._interface.close()
+        self.network_manager.close()
         self.moduleManager.close()
 
         # and make 100% we're done
