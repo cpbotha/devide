@@ -747,7 +747,7 @@ class moduleManager:
                 '%s is not available in the current Module Manager / '
                 'Kit configuration.' % (fullName,))
 
-	try:
+        try:
             # think up name for this module (we have to think this up now
             # as the module might want to know about it whilst it's being
             # constructed
@@ -793,18 +793,18 @@ class moduleManager:
             # it's now fully born ;)
             self._halfBornInstanceName = None
 
-	except ImportError, e:
+        except ImportError, e:
             # we re-raise with the three argument form to retain full
             # trace information.
             es = "Unable to import module %s: %s" % (fullName, str(e))
             raise ModuleManagerException, es, sys.exc_info()[2]
         
-	except Exception, e:
+        except Exception, e:
             es = "Unable to instantiate module %s: %s" % (fullName, str(e))
             raise ModuleManagerException, es, sys.exc_info()[2]
 
-	# return the instance
-	return moduleInstance
+        # return the instance
+        return moduleInstance
 
     def importReload(self, fullName):
         """This will import and reload a module if necessary.  Use this only

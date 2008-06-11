@@ -250,7 +250,16 @@ class metaModule:
 
         @return: Nothing.
         """
-        
+
+        # if this is a new disconnect, we have to register that the
+        # module is now modified.  For connected data transfers, this
+        # is done by the scheduler during network execution (when the
+        # data is actually transferred), but for disconnects, we have
+        # to modify the module immediately.
+        if not self.inputs[inputIdx] is None:
+            part = self.getPartForInput(inputIdx)
+            self.modify(part)
+
         self.inputs[inputIdx] = None
 
     def connectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
