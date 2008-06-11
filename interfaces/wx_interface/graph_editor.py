@@ -2805,6 +2805,7 @@ class GraphEditor:
         if filename is None:
             filename = 'unnamed.dvn'
 
+        # this changes the window title
         self._interface.set_current_filename(filename)
 
     def show_module_help_from_glyph(self, glyph):

@@ -86,7 +86,7 @@ class NetworkManager:
             pms_dict, connection_list)
 
         return new_modules_dict, new_connections
-    
+
     def clear_network(self):
         """Remove/close complete network.
 
