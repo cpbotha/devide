@@ -25,12 +25,15 @@ class EditMedicalMetaDataViewFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: EditMedicalMetaDataViewFrame.__set_properties
         self.SetTitle("frame_2")
-        self.prop_grid.CreateGrid(10, 2)
+        self.prop_grid.CreateGrid(10, 3)
         self.prop_grid.SetRowLabelSize(0)
-        self.prop_grid.EnableDragColSize(0)
+        self.prop_grid.EnableDragRowSize(0)
         self.prop_grid.SetColLabelValue(0, "Tag")
-        self.prop_grid.SetColLabelValue(1, "Value")
-        self.prop_grid.SetMinSize((165, 210))
+        self.prop_grid.SetColLabelValue(1, "Input Value")
+        self.prop_grid.SetColSize(1, 150)
+        self.prop_grid.SetColLabelValue(2, "New Value")
+        self.prop_grid.SetColSize(2, 150)
+        self.prop_grid.SetMinSize((500,300))
         # end wxGlade
 
     def __do_layout(self):

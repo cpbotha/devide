@@ -60,7 +60,10 @@ class doubleThreshold:
 class EditMedicalMetaData:
     kits = ['vtk_kit']
     cats = ['Filters', 'Medical', 'DICOM']
-    help = """Edit Medical Meta Data structure.
+    help = """Edit Medical Meta Data structure.  Use this to edit for
+    example the medical meta data output of a DICOMReader before
+    writing DICOM data to disk, or to create new meta data.  You don't
+    have to supply an input.
     """
 
 class extractGrid:
