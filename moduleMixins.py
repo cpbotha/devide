@@ -5,8 +5,6 @@
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
-from external.filebrowsebutton import FileBrowseButton, \
-     FileBrowseButtonWithHistory,DirBrowseButton
 import genUtils
 from moduleBase import moduleBase
 import moduleUtils
@@ -14,6 +12,8 @@ import module_kits.vtk_kit.utils
 
 import wx
 import wx.lib.masked
+from wx.lib.filebrowsebutton import \
+        FileBrowseButton, FileBrowseButtonWithHistory,DirBrowseButton
 
 import resources.python.filenameViewModuleMixinFrame
 import re
@@ -508,12 +508,15 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                 tupleText - your type spec HAS to be a tuple; text boxes
                             are created in a horizontal sizer
                 checkbox,
+                radiobox - optional data is a list of choices; returns
+                           integer 0-based index (so use base:int)
                 choice - optional data is a list of choices,
                 filebrowser - optional data is a dict with fileMask and
                               fileMode keys, for example:
                               {'fileMode' : wx.SAVE,
                                'fileMask' :
                         'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*'})
+                dirbrowser,  
                 maskedText - optional data is the kwargs dict for
                              MaskedTextCtrl instantiation, e.g.:
                          {'mask': '\(#{3}, #{3}, #{3}\)', 'formatcodes':'F-_'}
@@ -598,18 +601,29 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             elif configTuple[3] == 'checkbox': # checkbox
                 widget = wx.CheckBox(panel, -1, "")
                 
+            elif configTuple[3] == 'radiobox': # radiobox
+                # configTuple[5] has to be a list of strings
+                widget = wx.RadioBox(panel, -1, "",
+                        choices=configTuple[5]) 
+
             elif configTuple[3] == 'choice': # choice
                 widget = wx.Choice(panel, -1)
                 # in this case, configTuple[5] has to be a list of strings
                 for cString in configTuple[5]:
                     widget.Append(cString)
 
-            else: # filebrowser
+            elif configTuple[3] == 'filebrowser': # filebrowser
                 widget = FileBrowseButton(
                     panel, -1,
                     fileMask=configTuple[5]['fileMask'],
                     fileMode=configTuple[5]['fileMode'],
-                    labelText=None)
+                    labelText='',
+                    toolTip=configTuple[4])
+
+            else: # dirbrowser
+                widget = DirBrowseButton(
+                        panel, -1, labelText='',
+                        toolTip=configTuple[4])
                 
             if widget:
                 if len(configTuple[4]) > 0:
@@ -675,6 +689,9 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                     castString = typeD.split(':')[1]
                     if castString == 'int':
                         wv = widget.GetSelection()
+
+            elif configTuple[3] == 'radiobox':
+                wv = widget.GetSelection()
 
             elif configTuple[3] == 'tupleText':
                 widgets = widget
@@ -776,7 +793,13 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             elif configTuple[3] == 'checkbox':
                 widget.SetValue(bool(val))
 
+            elif configTuple[3] == 'radiobox':
+                widget.SetSelection(int(val))
+
             elif configTuple[3] == 'filebrowser':
+                widget.SetValue(str(val))
+
+            elif configTuple[3] == 'dirbrowser':
                 widget.SetValue(str(val))
 
             elif configTuple[3] == 'choice': # choice
