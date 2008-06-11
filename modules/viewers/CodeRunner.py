@@ -44,9 +44,10 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         PythonShellMixin.__init__(self, self._view_frame.shell_window,
                                   module_manager)
 
-        moduleUtils.createECASButtons(self, self._view_frame,
-                                      self._view_frame.view_frame_panel,
-                                      executeDefault=False)
+        moduleUtils.create_eoca_buttons(self, self._view_frame,
+                                        self._view_frame.view_frame_panel,
+                                        ok_default=False,
+                                        execute_hotkey=False )
 
         # more convenience bindings
         self._editwindows = [self._view_frame.scratch_editwindow,

@@ -10,9 +10,9 @@
 import wx
 import resources.graphics.images
 
-def createECASButtons(d3module, viewFrame, viewFramePanel,
-                      executeDefault=True):
-    """Add Execute, Close, Apply and Sync buttons to the viewFrame.
+def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
+                        ok_default=True, execute_hotkey=True):
+    """Add Execute, OK, Cancel and Apply buttons to the viewFrame.
 
     d3module is the module for which these buttons are being added.
     viewFrame is the actual dialog frame.
@@ -26,20 +26,13 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
     all around.  These ECAS buttons will be in a sibling sizer to that
     ANOTHER sizer.
 
-    The Execute, Close, Apply and Sync buttons will be created with the
-    viewFramePanel as their parent.  They will be added to a horizontal sizer
-    which will then be added to viewFramePanel.GetSizer().  The viewFramePanel
-    sizer will then be used to fit the viewFramePanel.
+    The buttons will be created with the viewFramePanel as their
+    parent.  They will be added to a horizontal sizer which will then
+    be added to viewFramePanel.GetSizer().  The viewFramePanel sizer
+    will then be used to fit the viewFramePanel.
 
-    After this, the viewFrame.GetSizer() will be used to fit and layout the
-    frame itself.
-
-    The buttons will be assigned to executeButton, closeButton, applyButton
-    and syncButton bindings in viewFrame, with corresponding ids:
-    executeButtonId, closeButtonId, etc.
-
-    After this call, you should use bindECAS to bind the correct events to
-    these buttons.
+    After this, the viewFrame.GetSizer() will be used to fit and
+    layout the frame itself.
     """
 
     # create the buttons
@@ -48,47 +41,37 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
                                         viewFrame.executeButtonId,
                                         "Execute")
     viewFrame.executeButton.SetToolTip(wx.ToolTip(
-        "Apply any changes, then execute the whole network."))
+        "Apply all changes, then execute the whole network "\
+        "(Ctrl-Enter)."))
 
-    viewFrame.closeButtonId = wx.NewId()
-    viewFrame.closeButton = wx.Button(viewFramePanel,
-                                      viewFrame.closeButtonId,
-                                      "Close")
-    viewFrame.closeButton.SetToolTip(wx.ToolTip(
-        "Close the dialog window."))
+    viewFrame.id_ok_button = wx.ID_OK
+    viewFrame.ok_button = wx.Button(
+            viewFramePanel, viewFrame.id_ok_button, "OK")
+    viewFrame.ok_button.SetToolTip(wx.ToolTip(
+        "Apply all changes, then close this dialogue (Enter)."))
+
+    viewFrame.id_cancel_button = wx.ID_CANCEL
+    viewFrame.cancel_button = wx.Button(
+            viewFramePanel, viewFrame.id_cancel_button, "Cancel")
+    viewFrame.cancel_button.SetToolTip(wx.ToolTip(
+        "Cancel all changes, then close this dialogue (Esc)."))
 
     viewFrame.applyButtonId = wx.NewId()
     viewFrame.applyButton = wx.Button(viewFramePanel,
                                       viewFrame.applyButtonId,
                                       "Apply")
     viewFrame.applyButton.SetToolTip(wx.ToolTip(
-        "Modify configuration of underlying system as specified by "
-        "this dialogue."))
-
-    viewFrame.syncButtonId = wx.NewId()
-    viewFrame.syncButton = wx.Button(viewFramePanel,
-                                     viewFrame.syncButtonId,
-                                     "Sync")
-    viewFrame.syncButton.SetToolTip(wx.ToolTip(
-        "Synchronise dialogue with configuration of underlying system."))
-
-    viewFrame.helpButtonId = wx.NewId()
-    viewFrame.helpButton = wx.Button(viewFramePanel,
-                                     viewFrame.helpButtonId,
-                                     "Help")
-    viewFrame.helpButton.SetToolTip(wx.ToolTip(
-        "Show help on this module."))
-    
+        "Apply all changes, keep this dialogue open."))
 
 
     # add them to their own sizer, each with a border of 4 pixels on the right
     buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-    for button in (viewFrame.executeButton, viewFrame.closeButton,
-                   viewFrame.applyButton, viewFrame.syncButton):
+    for button in (viewFrame.executeButton, viewFrame.ok_button,
+                   viewFrame.cancel_button):
         buttonSizer.Add(button, 0, wx.RIGHT, 7)
 
     # except for the right-most button, which has no border
-    buttonSizer.Add(viewFrame.helpButton, 0)
+    buttonSizer.Add(viewFrame.applyButton, 0)
 
     # add the buttonSizer to the viewFramePanel sizer with a border of 7 pixels
     # on the left, right and bottom... remember, this is below a sizer with
@@ -118,46 +101,52 @@ def createECASButtons(d3module, viewFrame, viewFramePanel,
 
     # call back into the graphEditor, if it exists
     ge = mm._devide_app.get_interface()._graph_editor
-    def helpModule(dvModule):
-        if ge:
-            ge.show_module_help(mm.get_module_spec(dvModule))
 
     # execute
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
                lambda e: (mm.applyModuleViewToLogic(d3module),
                           mm.executeNetwork(d3module)))
     
-    # close
-    wx.EVT_BUTTON(viewFrame, viewFrame.closeButtonId,
-               lambda e, vf=viewFrame: vf.Show(False))
+    # OK (apply and close)
+    wx.EVT_BUTTON(viewFrame, viewFrame.id_ok_button,
+               lambda e, vf=viewFrame:
+               (mm.applyModuleViewToLogic(d3module),
+                   vf.Show(False)))
     
-    # apply
+    # Cancel
+    wx.EVT_BUTTON(viewFrame, viewFrame.id_cancel_button,
+               lambda e, vf=viewFrame: 
+               (mm.syncModuleViewWithLogic(d3module),
+                   vf.Show(False)))
+    
+    # Apply
     wx.EVT_BUTTON(viewFrame, viewFrame.applyButtonId,
                lambda e: mm.applyModuleViewToLogic(d3module))
-    
-    # sync
-    wx.EVT_BUTTON(viewFrame, viewFrame.syncButtonId,
-               lambda e: mm.syncModuleViewWithLogic(d3module))
 
-    # help
-    wx.EVT_BUTTON(viewFrame, viewFrame.helpButtonId,
-               lambda e: ge.show_module_help(mm.get_module_spec(d3module)))
-
-    # make sure that execute is the default button
+    # make sure that OK is the default button
     # unless the user specifies otherwise - in frames where we make
-    # use of an introspection shell, we don't want Enter to execute...
-    if executeDefault:
-        viewFrame.executeButton.SetDefault()
-        accel_table = wx.AcceleratorTable(
-            [(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, viewFrame.closeButtonId),
-             (wx.ACCEL_NORMAL, wx.WXK_RETURN, viewFrame.executeButtonId)])
-    else:
-        accel_table = wx.AcceleratorTable(
-            [(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, viewFrame.closeButtonId)])
+    # use of an introspection shell, we don't want Enter to executeh
+    # or Ctrl-Enter to execute the whole network.
+    accel_list = [
+        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE, viewFrame.id_cancel_button)
+        ]
 
-    # setup some hotkeys as well
-    viewFrame.SetAcceleratorTable(accel_table)
+    if execute_hotkey:
+        accel_list.append(
+                (wx.ACCEL_CTRL, wx.WXK_RETURN,
+                    viewFrame.executeButtonId))
+
+    if ok_default:
+        viewFrame.ok_button.SetDefault()
+        accel_list.append(
+                (wx.ACCEL_NORMAL, wx.WXK_RETURN,
+                    viewFrame.id_ok_button))
     
+    # setup some hotkeys as well
+    viewFrame.SetAcceleratorTable(wx.AcceleratorTable(accel_list))
+
+createECASButtons = create_eoca_buttons
+
 def create_standard_object_introspection(d3module, 
                                          viewFrame, viewFramePanel,
                                          objectDict,

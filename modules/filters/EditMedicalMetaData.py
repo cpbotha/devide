@@ -175,9 +175,11 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
 
-        moduleUtils.createECASButtons(self, self._view_frame,
-                                      self._view_frame.view_frame_panel,
-                                      executeDefault=False)
+        # we don't want enter to execute the whole network, hence the
+        # ok_default=False
+        moduleUtils.create_eoca_buttons(self, self._view_frame,
+                                        self._view_frame.view_frame_panel,
+                                        ok_default=False)
 
         # follow moduleBase convention to indicate that we now have
         # a view
