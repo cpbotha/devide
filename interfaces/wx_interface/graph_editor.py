@@ -2567,6 +2567,23 @@ class GraphEditor:
                 if l is not None:
                     self._route_line_fast(l)
 
+    def dummy(self):
+        # dummy method: this code can be used at the end of the
+        # previous method for debugging stippling problems.
+        allLines = self.canvas.getObjectsOfClass(DeVIDECanvasLine)
+        for line in allLines:
+            should_draw = True
+            if line in glyph.inputLines:
+                should_draw = False
+            else:
+                for lines in glyph.outputLines:
+                    if line in lines:
+                        should_draw = False
+                        break
+                   
+            if should_draw:
+                line.set_normal()
+
         
 
     def _route_line(self, line):
