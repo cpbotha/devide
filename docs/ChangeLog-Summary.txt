@@ -9,6 +9,12 @@ Changes since previous release (8.2.2807)
    still ugly, but now consistently so).
  * UI improvements to the Graph Editor, e.g. larger connection ports,
    feedback on connections when dragging a glyph.
+ * Your network now remembers the last filename it was saved to (or
+   loaded from) and proudly displays it in the title bar.
+ * If your network has a filename, it will auto-save (to
+   filename-autosave.dvn) before every execute.  
+ * Module view-config buttons have been simplified: you now have
+   Execute (ctrl-enter), OK (enter), Cancel and Apply.
  * Upgraded to ITK 3.6
 
 Changes since previous release (2571 - Mon Sep 10 14:35:31 WEST 2007)
