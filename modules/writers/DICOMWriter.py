@@ -10,44 +10,70 @@
 
 from moduleBase import moduleBase
 from moduleMixins import \
-     introspectModuleMixin
+     scriptedConfigModuleMixin
 import moduleUtils
 import os
 
 import vtk
 import vtkgdcm
+import wx # need this for wx.SAVE
 
-class DICOMWriter(introspectModuleMixin, moduleBase):
+RADIOBOX_IDX, DIR_IDX, FILE_IDX = 0, 1, 2
+
+class DICOMWriter(scriptedConfigModuleMixin, moduleBase):
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
 
         self._writer = vtkgdcm.vtkGDCMImageWriter()
-
         moduleUtils.setupVTKObjectProgress(self, self._writer,
                                            'Writing DICOM data')
+
+        self._caster = vtk.vtkImageCast()
+        self._caster.SetOutputScalarTypeToShort()
+        moduleUtils.setupVTKObjectProgress(self, self._caster,
+                'Casting DICOM data to short')
 
         self._input_data = None
         self._input_metadata = None
 
-        self._view_frame = None
-        self._file_dialog = None
-        self._config.dicom_filenames = []
+        self._config.output_mode = 0
+        self._config.output_directory = ''
+        self._config.output_filename = ''
+        self._config.cast_to_short = True
+
+        config_list = [
+                ('Output mode:', 'output_mode', 'base:int',
+                    'radiobox', 'Output mode',
+                    ['Slice-per-file (directory)', 
+                     'Multi-slice per file (file)']),
+                ('Output directory:', 'output_directory', 'base:str',
+                'dirbrowser', 
+                'Directory that takes slice-per-file output'),
+                ('Output filename:', 'output_filename', 'base:str',
+                 'filebrowser', 
+                 'Output filename for multi-slice per file output.',
+                 {'fileMode' : wx.SAVE,
+                     'fileMask' : 'DICOM file (*.dcm)|*.dcm|'
+                     'All files (*.*)|*.*'}
+                 ),
+                ('Cast to short:', 'cast_to_short', 'base:bool',
+                    'checkbox',
+                    'Should the data be cast to signed 16-bit (short), '
+                    'common for DICOM.')
+                ]
+
+        scriptedConfigModuleMixin.__init__(self, config_list,
+                {'Module (self)' : self})
+
 
         self.sync_module_logic_with_config()
 
+
     def close(self):
-        introspectModuleMixin.close(self)
-
-        # we just delete our binding.  Destroying the view_frame
-        # should also take care of this one.
-        del self._file_dialog
-
-        if self._view_frame is not None:
-            self._view_frame.Destroy()
+        scriptedConfigModuleMixin.close(self)
+        moduleBase.close(self) 
 
         del self._writer
-
-        moduleBase.close(self) 
 
     def get_input_descriptions(self):
         return ('VTK image data', 'Medical Meta Data') 
@@ -64,20 +90,36 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
     def get_output(self, idx):
         raise RuntimeError
 
-    
-
     def execute_module(self):
-        # generate filenamelist with as many entries as there are
-        # z-slices
-        odir = 'c:/temp/dicomtest'
+        if self._config.output_mode == 0:
+            # slice-per-file mode
 
-        z_len = self._input_data.GetDimensions()[2]
+            if not os.path.isdir(self._config.output_directory):
+                raise RuntimeError(
+                        'Please specify a valid output directory.')
 
-        fn_list = [os.path.join(odir,'im%05d.dcm' % (i,)) 
-                for i in range(z_len)]
-        fn_sa = vtk.vtkStringArray()
-        [fn_sa.InsertNextValue(fn) for fn in fn_list]
+            # generate filenamelist with as many entries as there are
+            # z-slices
+            self._input_data.UpdateInformation() # shouldn't be nec.
+            z_len = self._input_data.GetDimensions()[2]
+            odir = self._config.output_directory
+            fn_list = [os.path.join(odir,'im%05d.dcm' % (i,)) 
+                       for i in range(z_len)]
 
+            fn_sa = vtk.vtkStringArray()
+            [fn_sa.InsertNextValue(fn) for fn in fn_list]
+            self._writer.SetFileNames(fn_sa)
+            self._writer.SetFileDimensionality(2)
+
+        else: # output_mode == 1, multi-slices per file
+            if not self._config.output_filename:
+                raise RuntimeError(
+                        'Please specify an output filename.')
+
+            self._writer.SetFileName(self._config.output_filename)
+            self._writer.SetFileDimensionality(3)
+
+        # now setup the common stuff
         mip = vtk.vtkMedicalImageProperties()
 
         try:
@@ -98,10 +140,6 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
             self._writer.SetDirectionCosines(m)
 
         self._writer.SetInput(self._input_data)
-        self._writer.SetFileNames(fn_sa)
-        # we want to write separate slices
-        self._writer.SetFileDimensionality(2)
-
         self._writer.Write()
 
     def logic_to_config(self):
@@ -110,9 +148,30 @@ class DICOMWriter(introspectModuleMixin, moduleBase):
     def config_to_logic(self):
         pass
 
-    def config_to_view(self):
-        pass
+    def view(self):
+        # call to our parent
+        scriptedConfigModuleMixin.view(self)
 
-    def view_to_config(self):
-        pass
+        # get binding to radiobox
+        radiobox = self._getWidget(RADIOBOX_IDX)
+        # bind change event to it
+        radiobox.Bind(wx.EVT_RADIOBOX, self._handler_output_mode_radiobox)
+        # make sure the initial state is ok
+        self._toggle_filedir(radiobox.GetSelection())
+
+
+    def _handler_output_mode_radiobox(self, event):
+        self._toggle_filedir(event.GetEventObject().GetSelection())
+
+    def _toggle_filedir(self, idx):
+        dir_widget = self._getWidget(DIR_IDX)
+        file_widget = self._getWidget(FILE_IDX)
+        if idx == 0:
+            # user wants slice-per-file, so we enable dir widget
+            dir_widget.Enable()
+            file_widget.Disable()
+        else:
+            dir_widget.Disable()
+            file_widget.Enable()
+
 
