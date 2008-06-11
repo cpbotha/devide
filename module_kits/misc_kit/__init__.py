@@ -22,6 +22,9 @@ def init(module_manager):
     global misc_utils
     import misc_utils
 
+    global mixins
+    import mixins
+
     global types
     module_manager.set_progress(100, 'Initialising misc_kit: complete.')
 

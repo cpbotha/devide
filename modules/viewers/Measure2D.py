@@ -1,4 +1,4 @@
-from gen_mixins import SubjectMixin
+from module_kits.misc_kit.mixins import SubjectMixin
 import geometry
 from moduleBase import moduleBase
 from moduleMixins import introspectModuleMixin

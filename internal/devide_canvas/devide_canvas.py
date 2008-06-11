@@ -3,7 +3,7 @@
 # See COPYRIGHT for details.
 
 import vtk
-from gen_mixins import SubjectMixin
+from module_kits.misc_kit.mixins import SubjectMixin
 from devide_canvas_object import DeVIDECanvasGlyph
 import operator
 

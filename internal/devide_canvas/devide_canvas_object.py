@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from gen_mixins import SubjectMixin
+from module_kits.misc_kit.mixins import SubjectMixin
 import vtk
 
 # z-coord of RBB box

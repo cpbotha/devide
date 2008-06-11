@@ -2,7 +2,7 @@
 # $Id$
 #
 
-from gen_mixins import SubjectMixin
+from module_kits.misc_kit.mixins import SubjectMixin
 from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
