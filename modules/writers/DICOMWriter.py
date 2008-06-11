@@ -81,6 +81,12 @@ class DICOMWriter(scriptedConfigModuleMixin, moduleBase):
     def set_input(self, idx, input_stream):
         if idx == 0:
             self._input_data = input_stream
+
+            if input_stream is None:
+                # we explicitly disconnect our filters too
+                self._caster.SetInput(None)
+                self._writer.SetInput(None)
+
         else:
             self._input_metadata = input_stream
     
@@ -104,7 +110,7 @@ class DICOMWriter(scriptedConfigModuleMixin, moduleBase):
             z_len = self._input_data.GetDimensions()[2]
             odir = self._config.output_directory
             fn_list = [os.path.join(odir,'im%05d.dcm' % (i,)) 
-                       for i in range(z_len)]
+                       for i in range(1, z_len+1)]
 
             fn_sa = vtk.vtkStringArray()
             [fn_sa.InsertNextValue(fn) for fn in fn_list]
@@ -139,7 +145,18 @@ class DICOMWriter(scriptedConfigModuleMixin, moduleBase):
             m = vtk.vtkMatrix4x4()
             self._writer.SetDirectionCosines(m)
 
-        self._writer.SetInput(self._input_data)
+        if self._config.cast_to_short:
+            self._caster.SetInput(self._input_data)
+            # if we don't call this update, it crashes on Windows with
+            # GDCM 2.0.5, and everything else shortly before DeVIDE
+            # 8.5.  The crash is inside the vtkGDCMImageWriter.
+            self._caster.Update()
+            self._writer.SetInput(self._caster.GetOutput())
+        else:
+            # just to be sure
+            self._caster.SetInput(None)
+            self._writer.SetInput(self._input_data)
+
         self._writer.Write()
 
     def logic_to_config(self):
