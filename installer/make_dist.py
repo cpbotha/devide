@@ -404,7 +404,25 @@ def windows_prereq_check():
             '%s /version' % (MAKE_NSIS,),
             '^(v[0-9\.]+)$')
 
-    return v
+    # now check that setuptools is NOT installed (it screws up
+    # everything on Windows)
+    try:
+        import setuptools
+    except ImportError:
+        # this is what we want
+        print PPF, 'setuptools not found. Good!'
+        sut_v = True
+    else:
+        print PPF, """setuptools is installed.
+
+setuptools will break the DeVIDE dist build.  Please uninstall by doing:
+\Python25\Scripts\easy_install -m setuptools
+del \Python25\Lib\site-packages\setuptools*.*
+You can reinstall later by using ez_setup.py again.
+"""
+        sut_v = False
+
+    return v and sut_v
 
 
 def main():
