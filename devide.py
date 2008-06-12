@@ -10,7 +10,7 @@ import re
 SVN_REVISION_TEXT = "$Revision$"
 # updated stamp to have SVN_REVISION_TEXT updated.  This is mostly
 # only relevant for DEV builds.
-STAMP = "20080612-1330"
+STAMP = "20080612-1420"
 
 # the main release version: year.month (ubuntu-style) on release
 # branches (the branch is also named vYEAR.MONTH), DEV for trunk
