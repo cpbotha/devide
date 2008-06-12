@@ -353,6 +353,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             lc.SetItemState(0, wx.LIST_STATE_SELECTED,
                     wx.LIST_STATE_SELECTED)
 
+        else:
+            # this means the study LC is empty, i.e. nothing was
+            # found.  In this case, we have to empty the other series
+            # and file LCs as well.
+            self._view_frame.series_lc.DeleteAllItems()
+            self._view_frame.files_lc.DeleteAllItems()
+
         #lc.auto_size_columns()
 
     def _handler_ad_button(self, event):
@@ -412,6 +419,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             traceback.print_exc()
             # with trackback.format_exc() you can send this to the log
             # window.
+        except RuntimeError, e:
+            self._moduleManager.log_error(
+                    'Could not read %s:\n%s.\nSuggest re-Scan.' %
+                    (os.path.basename(filename), str(e)))
+            return
 
         self._update_image(r)
         self._update_meta_data_pane(r)
