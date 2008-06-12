@@ -36,6 +36,7 @@ mkl = [i for i in mkl if i not in nokits and i not in
 # other imports
 other_imports = ['genMixins', 'genUtils', 'moduleBase', 'moduleMixins',
                  'moduleUtils',
+                 'modules.viewers.DICOMBrowser',
                  'modules.viewers.slice3dVWR',
                  'modules.viewers.histogram1D',
                  'modules.viewers.TFEditor']
