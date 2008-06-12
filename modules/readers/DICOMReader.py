@@ -14,6 +14,7 @@
 # empty-filelist-segfault report is ported to the GDCM2 branch.
 
 from moduleBase import moduleBase
+from module_kits.misc_kit import misc_utils
 from moduleMixins import \
      introspectModuleMixin
 import moduleUtils
@@ -49,6 +50,9 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         moduleBase.__init__(self, module_manager)
 
         self._reader = vtkgdcm.vtkGDCMImageReader()
+        # NB NB NB: for now we're SWITCHING off the VTK-compatible
+        # Y-flip, until the X-mirror issues can be solved.
+        self._reader.SetFileLowerLeft(1)
         self._ici = vtk.vtkImageChangeInformation()
         self._ici.SetInputConnection(0, self._reader.GetOutputPort(0))
 
@@ -196,35 +200,45 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         self._ici.Update()
 
 
-        if False:
-            # first determine axis labels based on IOP ####################
-            iop = self._reader.GetImageOrientationPatient()
-            row = iop[0:3]
-            col = iop[3:6]
-            # the cross product (plane normal) based on the row and col will
-            # also be in the RAH system (I THINK)
-            norm = [0,0,0]
-            vtk.vtkMath.Cross(row, col, norm)
+        # integrate DirectionCosines into output data ###############
+        # DirectionCosines: first two columns are X and Y in the RAH
+        # space
+        dc = self._reader.GetDirectionCosines()
 
-            xl = misc_utils.major_axis_from_iop_cosine(row)
-            yl = misc_utils.major_axis_from_iop_cosine(col)
-            zl = misc_utils.major_axis_from_iop_cosine(norm)
+        x_cosine = \
+                dc.GetElement(0,0), dc.GetElement(1,0), dc.GetElement(2,0)
+        y_cosine = \
+                dc.GetElement(0,1), dc.GetElement(1,1), dc.GetElement(2,1)
 
-            lut = {'L' : 0, 'R' : 1, 'P' : 2, 'A' : 3, 'F' : 4, 'H' : 5}
+        # calculate plane normal, also in RAH space
+        norm = [0,0,0]
+        vtk.vtkMath.Cross(x_cosine, y_cosine, norm)
 
-            if xl and yl and zl:
-                # add this data as a vtkFieldData
-                fd = self._reader.GetOutput().GetFieldData()
+        xl = misc_utils.major_axis_from_iop_cosine(x_cosine)
+        yl = misc_utils.major_axis_from_iop_cosine(y_cosine)
 
-                axis_labels_array = vtk.vtkIntArray()
-                axis_labels_array.SetName('axis_labels_array')
+        # vtkGDCMImageReader swaps the y (to fit the VTK convention),
+        # but does not flip the DirectionCosines here, so we do that.
+        # (only if the reader is flipping)
+        if yl and not self._reader.GetFileLowerLeft():
+            yl = tuple((yl[1], yl[0]))
 
-                for l in xl + yl + zl:
-                    axis_labels_array.InsertNextValue(lut[l])
+        zl = misc_utils.major_axis_from_iop_cosine(norm)
 
-                fd.AddArray(axis_labels_array)
+        lut = {'L' : 0, 'R' : 1, 'P' : 2, 'A' : 3, 'F' : 4, 'H' : 5}
+    
+        if xl and yl and zl:
+            # add this data as a vtkFieldData
+            fd = self._ici.GetOutput().GetFieldData()
 
-            # window/level ###############################################
+            axis_labels_array = vtk.vtkIntArray()
+            axis_labels_array.SetName('axis_labels_array')
+
+            for l in xl + yl + zl:
+                axis_labels_array.InsertNextValue(lut[l])
+
+            fd.AddArray(axis_labels_array)
+
         
 
     def _create_view_frame(self):
