@@ -100,6 +100,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._config.dicom_search_paths = []
         self._config.lock_pz = False
         self._config.lock_wl = False
+        self._config.study_dict = {}
 
         self.sync_module_logic_with_config()
         self.sync_module_view_with_logic()
@@ -158,7 +159,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         ip.lock_pz_cb.SetValue(self._config.lock_pz)
         ip.lock_wl_cb.SetValue(self._config.lock_wl)
 
+        # now load the cached study_dict (if available)
+        self._study_dict = self._config.study_dict
+        self._fill_studies_listctrl()
+
     def view_to_config(self):
+        # self._config is maintained in real-time
         pass
 
     def view(self):
@@ -296,6 +302,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
     def _fill_studies_listctrl(self):
         """Given a study dictionary, fill out the complete studies
         ListCtrl.
+
+        This will also select the first study, triggering that event
+        handler and consequently filling the series control and the
+        images control for the first selected series.
         """
 
         lc = self._view_frame.studies_lc
@@ -609,7 +619,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # let's put it back in the interface too
         tc.SetValue(self._helper_dicom_search_paths_to_string(paths))
 
-        self._study_dict = self._scan(paths)
+        self._study_dict = self._config.study_dict = self._scan(paths)
         self._fill_studies_listctrl()
 
     def _handler_files_motion(self, event):
