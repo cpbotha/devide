@@ -2,11 +2,6 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-class BSplineRegistration:
-    kits = ['itk_kit']
-    cats = ['Insight', 'Registration']
-    help = """TBD."""
-
 class ITKtoVTK:
     kits = ['itk_kit']
     cats = ['Insight']
