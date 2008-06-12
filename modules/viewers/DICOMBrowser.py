@@ -508,12 +508,16 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             self._image_viewer.yb_text_actor.SetInput('X')
             self._image_viewer.yt_text_actor.SetInput('X')
 
+        mip = r.GetMedicalImageProperties()
+        
         d = r.GetOutput().GetDimensions()
+        imsize_str = 'Image Size: %d x %d' % (d[0], d[1]) 
+        imnum_str = 'Image # %s' % (mip.GetImageNumber(),)
+
         ul = self._image_viewer.ul_text_actor
-        ul.SetInput('Image Size: %d x %d' % (d[0], d[1]))
+        ul.SetInput('%s\n%s' % (imsize_str, imnum_str))
 
         ur = self._image_viewer.ur_text_actor
-        mip = r.GetMedicalImageProperties()
         ur.SetInput('%s\n%s\n%s\n%s' % (
             mip.GetPatientName(),
             mip.GetPatientID(),
