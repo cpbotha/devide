@@ -162,6 +162,7 @@ else:
                        'libpango', 'libfontconfig', 'libfreetype',
                        'libatk', 'libgtk', 'libgdk',
                        'libglib', 'libgmodule', 'libgobject', 'libgthread',
+                       'librt',
                        'qt', '_tkinter']
 
     # make sure remove_binaries is lowercase
