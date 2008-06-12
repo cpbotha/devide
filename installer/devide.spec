@@ -119,6 +119,14 @@ else:
     if os.path.exists(xine):
 	extraLibs.append((os.path.basename(xine), xine, 'BINARY'))
 
+    ######################################################################
+    # ubuntu 7.10 has renumbered libtiff 3.7 (or .8) to 4.  other dists of
+    # course don't have this, so we have to include it.
+    libtiff = '/usr/lib/libtiff.so.4'
+    if os.path.exists(libtiff):
+        extraLibs.append(
+                (os.path.basename(libtiff), libtiff, 'BINARY'))
+
     
     ######################################################################
     # also add some binary dependencies of numpy that are normally ignored
