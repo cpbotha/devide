@@ -2,17 +2,6 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-# next action on this module: list of filenames can be dropped on
-# listbox
-
-# as of 20080431 the following bug:
-# load set 1 of dicom files
-# now set a single filename instead
-# try to load
-# things crash
-# wait until the fix Mathieu made on the basis of my
-# empty-filelist-segfault report is ported to the GDCM2 branch.
-
 from moduleBase import moduleBase
 from module_kits.misc_kit import misc_utils
 from moduleMixins import \

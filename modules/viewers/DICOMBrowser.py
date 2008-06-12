@@ -387,6 +387,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         idx = lc.GetItemData(event.m_itemIndex)
         filename = self._item_data_to_file[idx]
 
+        # unlike the DICOMReader, we allow the vtkGDCMImageReader to
+        # do its y-flipping here.
         r = vtkgdcm.vtkGDCMImageReader()
         r.SetFileName(filename)
 
@@ -464,13 +466,22 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         rah = misc_utils.major_axis_from_iop_cosine(y_cosine)
 
         if rah:
-            # we have to swap these around because VTK has the
-            # convention of image origin at the upper left and GDCM
-            # dutifully swaps the images when loading to follow this
-            # convention.  Direction cosines (IOP) is not swapped, so
-            # we have to compensate here.
-            self._image_viewer.yb_text_actor.SetInput(rah[1])
-            self._image_viewer.yt_text_actor.SetInput(rah[0])
+            if r.GetFileLowerLeft():
+                # no swap
+                b = rah[0]
+                t = rah[1]
+            else:
+                # we have to swap these around because VTK has the
+                # convention of image origin at the upper left and GDCM
+                # dutifully swaps the images when loading to follow this
+                # convention.  Direction cosines (IOP) is not swapped, so
+                # we have to compensate here.
+                b = rah[1]
+                t = rah[0]
+
+            self._image_viewer.yb_text_actor.SetInput(b)
+            self._image_viewer.yt_text_actor.SetInput(t)
+
         else:
             self._image_viewer.yb_text_actor.SetInput('X')
             self._image_viewer.yt_text_actor.SetInput('X')
