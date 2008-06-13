@@ -11,7 +11,8 @@ import wx
 import resources.graphics.images
 
 def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
-                        ok_default=True, execute_hotkey=True):
+                        ok_default=True, execute_hotkey=True,
+                        cancel_hotkey=True):
     """Add Execute, OK, Cancel and Apply buttons to the viewFrame.
 
     d3module is the module for which these buttons are being added.
@@ -114,10 +115,12 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
                    vf.Show(False)))
     
     # Cancel
+    def helper_cancel():
+        mm.syncModuleViewWithLogic(d3module)
+        viewFrame.Show(False)
+
     wx.EVT_BUTTON(viewFrame, viewFrame.id_cancel_button,
-               lambda e, vf=viewFrame: 
-               (mm.syncModuleViewWithLogic(d3module),
-                   vf.Show(False)))
+               lambda e: helper_cancel()) 
     
     # Apply
     wx.EVT_BUTTON(viewFrame, viewFrame.applyButtonId,
@@ -127,9 +130,14 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
     # unless the user specifies otherwise - in frames where we make
     # use of an introspection shell, we don't want Enter to executeh
     # or Ctrl-Enter to execute the whole network.
-    accel_list = [
-        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE, viewFrame.id_cancel_button)
-        ]
+    accel_list = []
+
+    if cancel_hotkey:
+        # this doesn't work for frames, but I'm keeping it here just
+        # in case.  We use the EVT_CHAR_HOOK later to capture escape
+        accel_list.append(
+                (wx.ACCEL_NORMAL, wx.WXK_ESCAPE,
+                 viewFrame.id_cancel_button))
 
     if execute_hotkey:
         accel_list.append(
@@ -144,6 +152,17 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
     
     # setup some hotkeys as well
     viewFrame.SetAcceleratorTable(wx.AcceleratorTable(accel_list))
+
+    def handler_evt_char_hook(event):
+        if event.KeyCode == wx.WXK_ESCAPE:
+            helper_cancel()
+
+        else:
+            event.Skip()
+
+    if cancel_hotkey:
+        # this is the only way to capture escape on a frame
+        viewFrame.Bind(wx.EVT_CHAR_HOOK, handler_evt_char_hook)
 
 createECASButtons = create_eoca_buttons
 

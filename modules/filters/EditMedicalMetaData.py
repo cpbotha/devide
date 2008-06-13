@@ -175,11 +175,12 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
 
-        # we don't want enter to execute the whole network, hence the
-        # ok_default=False
+        # we don't want enter to OK and escape to cancel, as these are
+        # used for confirming and cancelling grid editing operations
         moduleUtils.create_eoca_buttons(self, self._view_frame,
                                         self._view_frame.view_frame_panel,
-                                        ok_default=False)
+                                        ok_default=False,
+                                        cancel_hotkey=False)
 
         # follow moduleBase convention to indicate that we now have
         # a view
