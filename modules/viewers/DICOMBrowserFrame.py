@@ -337,5 +337,10 @@ class DICOMBrowserFrame(wx.Frame):
         """
         self.image_pane.rwi.Render()
        
+    def set_default_view(self):
+        self._mgr.LoadPerspective(
+                self._perspectives['default'])
+
+
 
 

@@ -110,6 +110,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # stuff.
         self.view_initialised = True
 
+        if os.name == 'posix':
+            # bug with GTK where the image window appears bunched up
+            # in the top-left corner.  By setting the default view
+            # (again), it's worked around
+            self._view_frame.set_default_view()
+
     def close(self):
         
         # with this complicated de-init, we make sure that VTK is 
