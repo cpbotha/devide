@@ -145,7 +145,13 @@ def init(theModuleManager):
 
     # moo
     vsv = vtk.vtkVersion.GetVTKSourceVersion()
+    print vsv
     # VTK source nightly date
-    vnd = re.match('.*Date: ([0-9]+/[0-9]+/[0-9]+).*', vsv).group(1)
+    mo = re.match('.*Date: ([0-9]+[/-][0-9]+[/-][0-9]+).*', vsv)
+    if mo:
+        vnd = mo.group(1)
+    else:
+        vnd = 'NO-DATE'
+
     VERSION = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
     
