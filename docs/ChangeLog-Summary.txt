@@ -2,8 +2,18 @@ This is Release 8.5
 
 Changes since previous release (8.2.2807)
  * DICOMBrowser: you can now visually browse your complete local DICOM
-   database!  Together with the new DICOMReader and DICOMWriter
-   modules, DICOM support in DeVIDE has taken a big step forward.
+   database! See http://www.youtube.com/watch?v=iLfu6JXkWP4 for a
+   demonstration. 
+ * New DICOMReader and DICOMWriter modules.  Both of these are based
+   on GDCM2.  You can drag-and-drop series or files from the
+   DICOMBrowser onto the DICOMReader.  You can also write arbitrary
+   volume datasets to DICOM slices or multi-frame files.  The old
+   dicomRDR is still the default if you drag and drop DCM files onto
+   the canvas, but in future versions DICOMReader will become the new
+   default.
+ * EditMedicalMetaData module: use this to edit or add medical meta
+   data (patient name, study description, etc.) before saving to
+   DICOM.
  * Integrated GDCM2 DICOM library, in addition to existing DCMTK support
  * Font rendering in the Graph Editor has been greatly improved (it's
    still ugly, but now consistently so).
