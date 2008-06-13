@@ -25,7 +25,7 @@ Changes since previous release (8.2.2807)
    filename-autosave.dvn) before every execute.  
  * Module view-config buttons have been simplified: you now have
    Execute (ctrl-enter), OK (enter), Cancel and Apply.
- * Upgraded to ITK 3.6
+ * Upgraded to ITK 3.6, Python 2.5.2.
 
 Changes since previous release (2571 - Mon Sep 10 14:35:31 WEST 2007)
  * 8.2 is the first open source release!
