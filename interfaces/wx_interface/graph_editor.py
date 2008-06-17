@@ -580,7 +580,7 @@ class GraphEditor:
         """
 
         # before we do anything, convert to world coordinates
-        wx,wy,wz = \
+        w_x,w_y,w_z = \
             self.canvas.display_to_world((x,self.canvas.flip_y(y)))
         
         def createModuleOneVar(moduleName, configVarName, configVarValue,
@@ -589,7 +589,7 @@ class GraphEditor:
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
             """
-            (mod, glyph) = self.create_module_and_glyph(wx, wy, moduleName)
+            (mod, glyph) = self.create_module_and_glyph(w_x, w_y, moduleName)
             if mod:
                 cfg = mod.get_config()
                 setattr(cfg, configVarName, filename)
@@ -676,7 +676,7 @@ class GraphEditor:
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
-                self._loadAndRealiseNetwork(filename, (wx,wy),
+                self._loadAndRealiseNetwork(filename, (w_x,w_y),
                                             reposition=True)
 
                 # some DVNs contain viewer modules that take the focus
@@ -742,7 +742,7 @@ class GraphEditor:
         # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
-            (mod,glyph) = self.create_module_and_glyph(wx, wy,
+            (mod,glyph) = self.create_module_and_glyph(w_x, w_y,
                                                     'modules.readers.dicomRDR')
             
             if mod:
