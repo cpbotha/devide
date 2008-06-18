@@ -296,6 +296,12 @@ class GraphEditor:
         # initialise current filename
         self.set_current_filename(None)
 
+        # On Windows, file open/save dialogs remember where you last
+        # used them.  On Linux, we have to do this ourselves.  If we
+        # don't, every new selection dialog starts on the current
+        # directory.
+        self._last_fileselector_dir = ''
+
         # instrument network_manager with handler so we can autosave
         # before a network gets executed
         self._devide_app.network_manager.add_observer(
@@ -1093,11 +1099,15 @@ class GraphEditor:
         if allGlyphs:
             filename = wx.FileSelector(
                 "Choose filename for GraphViz DOT file",
-                "", "", "dot",
+                self._last_fileselector_dir, "", "dot",
                 "GraphViz DOT files (*.dot)|*.dot|All files (*.*)|*.*",
                 wx.SAVE)
         
             if filename:
+                # save directory for future use
+                self._last_fileselector_dir = \
+                        os.path.dirname(filename)
+
                 self._exportNetworkAsDOT(allGlyphs, filename)
 
     def _handlerFileExportSelectedAsDOT(self, event):
@@ -1105,22 +1115,30 @@ class GraphEditor:
         if glyphs:
             filename = wx.FileSelector(
                 "Choose filename for GraphViz DOT file",
-                "", "", "dot",
+                self._last_fileselector_dir, "", "dot",
                 "GraphViz DOT files (*.dot)|*.dot|All files (*.*)|*.*",
                 wx.SAVE)
                     
             if filename:
+                # save directory for future use
+                self._last_fileselector_dir = \
+                        os.path.dirname(filename)
+
                 self._exportNetworkAsDOT(glyphs, filename)
     
 
     def _handlerFileOpenSegment(self, event):
         filename = wx.FileSelector(
             "Choose DeVIDE network to load into copy buffer",
-            "", "", "dvn",
+            self._last_fileselector_dir, "", "dvn",
             "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
             wx.OPEN)
         
         if filename:
+            # save directory for future use
+            self._last_fileselector_dir = \
+                    os.path.dirname(filename)
+
             self._loadNetworkIntoCopyBuffer(filename)
 
     def _handlerFileSaveSelected(self, event):
@@ -1128,11 +1146,15 @@ class GraphEditor:
         if glyphs:
             filename = wx.FileSelector(
                 "Choose filename for DeVIDE network",
-                "", "", "dvn",
+                self._last_fileselector_dir, "", "dvn",
                 "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
                 wx.SAVE)
                     
             if filename:
+                # save directory for future use
+                self._last_fileselector_dir = \
+                        os.path.dirname(filename)
+
                 self._saveNetwork(glyphs, filename)
 
     def _update_search_results(self, event=None):
@@ -2155,11 +2177,16 @@ class GraphEditor:
     def _fileOpenCallback(self, event):
         filename = wx.FileSelector(
             "Choose DeVIDE network to load",
-            "", "", "dvn",
+            self._last_fileselector_dir, "", "dvn",
             "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
             wx.OPEN)
         
         if filename:
+            # save the directory part of whatever was selected for
+            # future use.
+            self._last_fileselector_dir = \
+                    os.path.dirname(filename)
+
             self.clearAllGlyphsFromCanvas()
             self._loadAndRealiseNetwork(filename)
             # make sure that the newly realised network is nicely in
@@ -2182,13 +2209,17 @@ class GraphEditor:
             if always_ask or self._current_filename is None:
                 filename = wx.FileSelector(
                     "Choose filename for DeVIDE network",
-                    "", "", "dvn",
+                    self._last_fileselector_dir, "", "dvn",
                     "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
                     wx.SAVE)
             else:
                 filename = self._current_filename
        
             if filename:
+                # save directory for future use
+                self._last_fileselector_dir = \
+                        os.path.dirname(filename)
+
                 self.set_current_filename(filename)
                 self._saveNetwork(allGlyphs, filename)
 
