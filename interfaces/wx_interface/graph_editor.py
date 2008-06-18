@@ -1108,6 +1108,12 @@ class GraphEditor:
                 self._last_fileselector_dir = \
                         os.path.dirname(filename)
 
+                # if the user has NOT specified any fileextension, we
+                # add .dot.  (on Win this gets added by the
+                # FileSelector automatically, on Linux it doesn't)
+                if os.path.splitext(filename)[1] == '':
+                    filename = '%s.dot' % (filename,)
+
                 self._exportNetworkAsDOT(allGlyphs, filename)
 
     def _handlerFileExportSelectedAsDOT(self, event):
@@ -1123,6 +1129,12 @@ class GraphEditor:
                 # save directory for future use
                 self._last_fileselector_dir = \
                         os.path.dirname(filename)
+
+                # if the user has NOT specified any fileextension, we
+                # add .dot.  (on Win this gets added by the
+                # FileSelector automatically, on Linux it doesn't)
+                if os.path.splitext(filename)[1] == '':
+                    filename = '%s.dot' % (filename,)
 
                 self._exportNetworkAsDOT(glyphs, filename)
     
@@ -1154,6 +1166,12 @@ class GraphEditor:
                 # save directory for future use
                 self._last_fileselector_dir = \
                         os.path.dirname(filename)
+
+                # if the user has NOT specified any fileextension, we
+                # add .dvn.  (on Win this gets added by the
+                # FileSelector automatically, on Linux it doesn't)
+                if os.path.splitext(filename)[1] == '':
+                    filename = '%s.dvn' % (filename,)
 
                 self._saveNetwork(glyphs, filename)
 
@@ -2219,6 +2237,12 @@ class GraphEditor:
                 # save directory for future use
                 self._last_fileselector_dir = \
                         os.path.dirname(filename)
+
+                # if the user has NOT specified any fileextension, we
+                # add .dvn.  (on Win this gets added by the
+                # FileSelector automatically, on Linux it doesn't)
+                if os.path.splitext(filename)[1] == '':
+                    filename = '%s.dvn' % (filename,)
 
                 self.set_current_filename(filename)
                 self._saveNetwork(allGlyphs, filename)
