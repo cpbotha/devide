@@ -748,13 +748,13 @@ class GraphEditor:
         # ends for filename in filenames
 
         if len(dcmFilenames) > 0:
-            (mod,glyph) = self.create_module_and_glyph(w_x, w_y,
-                                                    'modules.readers.dicomRDR')
+            (mod,glyph) = self.create_module_and_glyph(
+                    w_x, w_y, 'modules.readers.DICOMReader')
             
             if mod:
                 try:
                     cfg = mod.get_config()
-                    cfg.dicomFilenames.extend(dcmFilenames)
+                    cfg.dicom_filenames.extend(dcmFilenames)
                     mod.set_config(cfg)
                 except Exception, e:
                     dropFilenameErrors.append(
