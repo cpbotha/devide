@@ -2310,7 +2310,7 @@ class GraphEditor:
                 canvas.drag_object(glyph,
                         canvas.get_motion_vector_world(0.0))
 
-                self._route_all_glyph_lines_fast(sglyph)
+                self._route_all_glyph_lines_fast(glyph)
 
             # finished glyph drag event handling, have to redraw.
             canvas.redraw()
