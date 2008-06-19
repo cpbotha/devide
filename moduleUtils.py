@@ -11,7 +11,7 @@ import wx
 import resources.graphics.images
 
 def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
-                        ok_default=True, execute_hotkey=True,
+                        ok_default=True, 
                         cancel_hotkey=True):
     """Add Execute, OK, Cancel and Apply buttons to the viewFrame.
 
@@ -40,10 +40,10 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
     viewFrame.executeButtonId = wx.NewId()
     viewFrame.executeButton = wx.Button(viewFramePanel,
                                         viewFrame.executeButtonId,
-                                        "Execute")
+                                        "&Execute")
     viewFrame.executeButton.SetToolTip(wx.ToolTip(
         "Apply all changes, then execute the whole network "\
-        "(Ctrl-Enter)."))
+        "(F5 or Alt-E)."))
 
     viewFrame.id_ok_button = wx.ID_OK
     viewFrame.ok_button = wx.Button(
@@ -139,10 +139,10 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
                 (wx.ACCEL_NORMAL, wx.WXK_ESCAPE,
                  viewFrame.id_cancel_button))
 
-    if execute_hotkey:
-        accel_list.append(
-                (wx.ACCEL_CTRL, wx.WXK_RETURN,
-                    viewFrame.executeButtonId))
+    # add F5 hotkey to this dialogue as well so that we can execute
+    accel_list.append(
+            (wx.ACCEL_NORMAL, wx.WXK_F5,
+                viewFrame.executeButtonId))
 
     if ok_default:
         viewFrame.ok_button.SetDefault()
