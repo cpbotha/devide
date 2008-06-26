@@ -144,7 +144,7 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         if len(filenames) > 1:
             sorter = gdcm.IPPSorter()
             sorter.SetComputeZSpacing(True)
-            sorter.SetZSpacingTolerance(1e-3)
+            sorter.SetZSpacingTolerance(1e-2)
 
             ret = sorter.Sort(filenames)
             if not ret:
