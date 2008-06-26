@@ -646,8 +646,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         try:
             self._study_dict = self._config.study_dict = self._scan(paths)
         except Exception, e:
-            self._moduleManager.log_error_with_exception(
-                    'Error scanning DICOM files.')
+            # also print the exception
+            traceback.print_exc()
+            # i don't want to use log_error_with_exception, because it
+            # uses a non-standard dialogue box that pops up over the
+            # main devide window instead of the module view.
+            self._moduleManager.log_error(
+                    'Error scanning DICOM files: %s' % (str(e)))
 
         # do this in anycase...
         self._fill_studies_listctrl()
@@ -856,6 +861,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # proper feedback to the user, and also to give the user the
         # opportunity to interrupt the scan
         num_files = len(filenames)
+
+        # no filenames, we return an empty dict.
+        if num_files == 0:
+            return study_dict
+
         num_files_per_block = 100 
         num_blocks = num_files / num_files_per_block 
         if num_blocks == 0:
