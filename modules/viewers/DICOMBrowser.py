@@ -400,7 +400,9 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             tc = self._view_frame.dirs_pane.dirs_files_tc
             v = tc.GetValue()
             nv = self._helper_dicom_search_paths_to_string(
-                    [v] + dlg.GetPaths())
+                    [v] + [str(p) for p in dlg.GetPaths()])
+
+            tc.SetValue(nv)
 
 
         dlg.Destroy()
@@ -640,8 +642,14 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # let's put it back in the interface too
         tc.SetValue(self._helper_dicom_search_paths_to_string(paths))
+        
+        try:
+            self._study_dict = self._config.study_dict = self._scan(paths)
+        except Exception, e:
+            self._moduleManager.log_error_with_exception(
+                    'Error scanning DICOM files.')
 
-        self._study_dict = self._config.study_dict = self._scan(paths)
+        # do this in anycase...
         self._fill_studies_listctrl()
 
     def _handler_files_motion(self, event):
@@ -739,7 +747,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         """Given a semicolon-delimited string, break into list.
         """
 
-        s = [i.strip() for i in dicom_search_paths.split(';')]
+        s = [str(i.strip()) for i in dicom_search_paths.split(';')]
         return [i for i in s if len(i) > 0]
 
     def _helper_recursive_glob(self, paths):
@@ -833,7 +841,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         # find list of unique and sorted filenames
         filenames = self._helper_recursive_glob(paths)
-
+        
         s = gdcm.Scanner()
         # add the tags we want to the scanner
         for tag_tuple in tag_to_symbol:
@@ -876,13 +884,21 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
                                 | wx.PD_REMAINING_TIME
                                 )
         keep_going = True
+        error_occurred = False
 
         # and now the processing loop can start
         for block_len in block_lens:
             # scan the current block of files
-            self._helper_scan_block(
-                    s, filenames[file_idx:file_idx + block_len],
-                    tag_to_symbol, study_dict)
+            try:
+                self._helper_scan_block(
+                        s, filenames[file_idx:file_idx + block_len],
+                        tag_to_symbol, study_dict)
+            except Exception:
+                # error during scan, we have to kill the dialog and
+                # then re-raise the error
+                dlg.Destroy()
+                raise
+
 
             # update file_idx for the next block
             file_idx += block_len
