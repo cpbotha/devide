@@ -840,6 +840,77 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             tag = gdcm.Tag(*tag_tuple)
             s.AddTag(tag)
 
+        # maps from study_uid to instance of Study
+        study_dict = {}
+
+        # we're going to break the filenames up into 10 blocks and
+        # scan each block separately in order to be able to give
+        # proper feedback to the user, and also to give the user the
+        # opportunity to interrupt the scan
+        num_files = len(filenames)
+        num_files_per_block = 100 
+        num_blocks = num_files / num_files_per_block 
+        if num_blocks == 0:
+            num_blocks = 1
+
+        blocklen = num_files / num_blocks
+        blockmod = num_files % num_blocks
+
+        block_lens = [blocklen] * num_blocks
+        if blockmod > 0:
+            block_lens += [blockmod]
+
+        file_idx = 0 
+        progress = 0.0 
+
+        # setup progress dialog
+        dlg = wx.ProgressDialog("DICOMBrowser",
+                                "Scanning DICOM data",
+                                maximum = 100,
+                                parent=self._view_frame,
+                                style = wx.PD_CAN_ABORT
+                                | wx.PD_APP_MODAL
+                                | wx.PD_ELAPSED_TIME
+                                | wx.PD_AUTO_HIDE
+                                #| wx.PD_ESTIMATED_TIME
+                                | wx.PD_REMAINING_TIME
+                                )
+        keep_going = True
+
+        # and now the processing loop can start
+        for block_len in block_lens:
+            # scan the current block of files
+            self._helper_scan_block(
+                    s, filenames[file_idx:file_idx + block_len],
+                    tag_to_symbol, study_dict)
+
+            # update file_idx for the next block
+            file_idx += block_len
+            # update progress counter
+            progress = int(100 * file_idx / float(num_files))
+            # and tell the progress dialog about our progress
+            # by definition, progress will be 100 at the end: if you
+            # add all blocklens together, you have to get 1
+            (keep_going, skip) = dlg.Update(progress)
+
+            if not keep_going:
+                # user has clicked cancel so we zero the dictionary
+                study_dict = {}
+                # and stop the for loop
+                break
+
+        # dialog needs to be taken care of
+        dlg.Destroy()
+
+        # return all the scanned data
+        return study_dict
+
+    def _helper_scan_block(
+            self, s, filenames, tag_to_symbol, study_dict):
+        """Scan list of filenames, fill study_dict.  Used by _scan()
+        to scan list of filenames in blocks.
+        """
+
         # d.GetFilenames simply returns a tuple with all
         # fully-qualified filenames that it finds.
         ret = s.Scan(filenames)
@@ -856,9 +927,6 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # a list of studies (indexed on study id): each study object
         # contains metadata we want to list per study, plus a list of
         # series belonging to that study.
-
-        # maps from study_uid to instance of Study
-        study_dict = {} 
 
         for f in filenames:
             mapping = s.GetMapping(f)
@@ -933,7 +1001,6 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             series.slices = series.slices + number_of_frames
             study.slices = study.slices + number_of_frames
 
-        return study_dict
 
     def _setup_image_viewer(self):
         # FIXME: I'm planning to factor this out into a medical image
