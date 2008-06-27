@@ -195,6 +195,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         vf.Bind(wx.EVT_MENU, self._handler_prev_image,
                 id = vf.id_prev_image)
 
+        #vf.Bind(wx.EVT_MOUSEWHEEL, self._handler_mousewheel)
+
 
         fp = self._view_frame.dirs_pane
 
@@ -451,19 +453,40 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         self._current_filename = filename
 
+    def _handler_mousewheel(self, event):
+        # event.GetWheelRotation() is + or - 120 depending on
+        # direction of turning.
+        event.Skip()
+
     def _handler_next_image(self, event):
         """Go to next image.
 
         We could move this to the display code, it only needs to know
         about widgets.
         """
-        lc = self._view_frame.files_lc
-        nidx = lc.GetFocusedItem() + 1
-        if nidx >= lc.GetItemCount():
-            nidx = lc.GetItemCount() - 1
 
-        lc.Focus(nidx)
-        wx.SafeYield()
+        # first see if we're previewing a multi-slice DICOM file
+        next_file = True
+        range = [0,0]
+        self._image_viewer.GetSliceRange(range)
+        if range[1] - range[0] != 0:
+            cur_slice = self._image_viewer.GetSlice()
+            if cur_slice < range[1]:
+                new_slice = cur_slice + 1
+                self._image_viewer.SetSlice(new_slice)
+                self._image_viewer.ul_text_actor.frnum = new_slice
+                self._update_image_ul_text()
+
+                next_file = False
+
+        if next_file:
+            lc = self._view_frame.files_lc
+            nidx = lc.GetFocusedItem() + 1
+            if nidx >= lc.GetItemCount():
+                nidx = lc.GetItemCount() - 1
+
+            lc.Focus(nidx)
+            wx.SafeYield()
 
     def _handler_prev_image(self, event):
         """Move to previous image.
@@ -471,12 +494,41 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         We could move this to the display code, it only needs to know
         about widgets.
         """
-        lc = self._view_frame.files_lc
-        nidx = lc.GetFocusedItem() - 1
-        if nidx < 0:
-            nidx = 0
+       
+        # first see if we're previewing a multi-slice DICOM file
+        prev_file = True
+        range = [0,0]
+        self._image_viewer.GetSliceRange(range)
+        if range[1] - range[0] != 0:
+            cur_slice = self._image_viewer.GetSlice()
+            if cur_slice > range[0]:
+                new_slice = cur_slice - 1
+                self._image_viewer.SetSlice(new_slice)
+                self._image_viewer.ul_text_actor.frnum = new_slice
+                self._update_image_ul_text()
 
-        lc.Focus(nidx)
+                prev_file = False
+
+        if prev_file:
+            lc = self._view_frame.files_lc
+            nidx = lc.GetFocusedItem() - 1
+            if nidx < 0:
+                nidx = 0
+
+            lc.Focus(nidx)
+            wx.SafeYield()
+
+    def _update_image_ul_text(self):
+        """Updates upper left text actor according to relevant
+        instance variables.
+        """
+
+        ul = self._image_viewer.ul_text_actor
+        imsize_str = 'Image Size: %d x %d' % (ul.imsize) 
+        imnum_str = 'Image # %s' % (ul.imnum,)
+        frnum_str = 'Frame # %d' % (ul.frnum,)
+        ul.SetInput('%s\n%s\n%s' % (
+            imsize_str, imnum_str, frnum_str))
 
     def _update_image(self, gdcm_reader):
         """Given a vtkGDCMImageReader instance that has read the given
@@ -534,11 +586,12 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         mip = r.GetMedicalImageProperties()
         
         d = r.GetOutput().GetDimensions()
-        imsize_str = 'Image Size: %d x %d' % (d[0], d[1]) 
-        imnum_str = 'Image # %s' % (mip.GetImageNumber(),)
 
         ul = self._image_viewer.ul_text_actor
-        ul.SetInput('%s\n%s' % (imsize_str, imnum_str))
+        ul.imsize = (d[0], d[1])
+        ul.imnum = mip.GetImageNumber() # string
+        ul.frnum = self._image_viewer.GetSlice()
+        self._update_image_ul_text()
 
         ur = self._image_viewer.ur_text_actor
         ur.SetInput('%s\n%s\n%s\n%s' % (
