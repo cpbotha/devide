@@ -412,6 +412,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         idx = lc.GetItemData(event.m_itemIndex)
         filename = self._item_data_to_file[idx]
 
+        # first make sure the image_viewer has a dummy input, so that
+        # any previously connected reader can be deallocated first
+        self._set_image_viewer_dummy_input()
+
         # unlike the DICOMReader, we allow the vtkGDCMImageReader to
         # do its y-flipping here.
         r = vtkgdcm.vtkGDCMImageReader()
@@ -1027,6 +1031,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             series.slices = series.slices + number_of_frames
             study.slices = study.slices + number_of_frames
 
+    def _set_image_viewer_dummy_input(self):
+        ds = vtk.vtkImageGridSource()
+        self._image_viewer.SetInput(ds.GetOutput())
+
 
     def _setup_image_viewer(self):
         # FIXME: I'm planning to factor this out into a medical image
@@ -1035,8 +1043,7 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         # setup VTK viewer with dummy source (else it complains)
         self._image_viewer = vtkgdcm.vtkImageColorViewer()
         self._image_viewer.SetupInteractor(self._view_frame.image_pane.rwi)
-        ds = vtk.vtkImageGridSource()
-        self._image_viewer.SetInput(ds.GetOutput())
+        self._set_image_viewer_dummy_input()
 
         def setup_text_actor(x, y):
             ta = vtk.vtkTextActor()
