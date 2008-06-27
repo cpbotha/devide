@@ -14,11 +14,14 @@ import sys
 VERSION = ''
 
 def init(module_manager):
-    global gdcm
-    import gdcm
-
+    # as of 20080628, the order of importing vtkgdcm and gdcm IS
+    # important on Linux.  vtkgdcm needs to go before gdcm, else very
+    # strange things happen due to the dl (dynamic loading) switches.
     global vtkgdcm
     import vtkgdcm
+
+    global gdcm
+    import gdcm
 
     # will be available as module_kits.gdcm_kit.utils after the client
     # programmer has done module_kits.gdcm_kit
