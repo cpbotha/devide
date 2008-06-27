@@ -195,8 +195,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         vf.Bind(wx.EVT_MENU, self._handler_prev_image,
                 id = vf.id_prev_image)
 
-        #vf.Bind(wx.EVT_MOUSEWHEEL, self._handler_mousewheel)
-
+        # we unbind the existing mousewheel handler so it doesn't
+        # interfere
+        self._view_frame.image_pane.rwi.Unbind(wx.EVT_MOUSEWHEEL)
+        self._view_frame.image_pane.rwi.Bind(
+                wx.EVT_MOUSEWHEEL, self._handler_mousewheel)
 
         fp = self._view_frame.dirs_pane
 
@@ -456,7 +459,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
     def _handler_mousewheel(self, event):
         # event.GetWheelRotation() is + or - 120 depending on
         # direction of turning.
-        event.Skip()
+        if event.GetWheelRotation() > 0:
+            self._handler_prev_image(None)
+        else:
+            self._handler_next_image(None)
 
     def _handler_next_image(self, event):
         """Go to next image.
