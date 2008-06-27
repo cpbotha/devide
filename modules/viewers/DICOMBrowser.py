@@ -94,6 +94,10 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._item_data_to_series_uid = {}
         self._selected_series_uid = None
 
+        # store name of currently previewed filename, so we don't
+        # reload unnecessarily.
+        self._current_filename = None
+
         self._bind_events()
 
 
@@ -412,6 +416,11 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         idx = lc.GetItemData(event.m_itemIndex)
         filename = self._item_data_to_file[idx]
 
+        if filename == self._current_filename:
+            # we're already viewing this filename, don't try to load
+            # again.
+            return
+
         # first make sure the image_viewer has a dummy input, so that
         # any previously connected reader can be deallocated first
         self._set_image_viewer_dummy_input()
@@ -439,6 +448,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         self._update_image(r)
         self._update_meta_data_pane(r)
+
+        self._current_filename = filename
 
     def _handler_next_image(self, event):
         """Go to next image.
