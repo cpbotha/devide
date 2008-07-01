@@ -41,16 +41,18 @@ class helpClass(object):
         if help_type > 0:
             del self._htmlHelpController
 
-    def show(self):
+    def show(self, topic_filename=None):
         if help_type > 0:
-            self._htmlHelpController.DisplayContents()
+            if topic_filename is None:
+                self._htmlHelpController.DisplayContents()
+            else:
+                self._htmlHelpController.Display(topic_filename)
+
         else:
+            if topic_filename is None:
+                topic_filename = 'introduction.html'
+
             self._w32h_hh = win32help.HtmlHelp(self._frame.GetHandle(),
                     self._help_file, win32help.HH_DISPLAY_TOPIC,
-                    'introduction.html')
-
-
-
-
-        
+                    topic_filename)
         
