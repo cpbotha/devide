@@ -45,6 +45,9 @@ class DICOMBrowser:
     help = \
     """DICOMBrowser.  Does for DICOM reading what slice3dVWR does for
     3-D viewing.
+
+    See the main DeVIDE help file (Special Modules | DICOMBrowser) for
+    more information.  
     """
 
 class histogram1D:
