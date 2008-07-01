@@ -459,12 +459,23 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
     def _handler_mousewheel(self, event):
         # event.GetWheelRotation() is + or - 120 depending on
         # direction of turning.
-        if event.GetWheelRotation() > 0:
-            self._handler_prev_image(None)
+        if event.ControlDown():
+            delta = 10
         else:
-            self._handler_next_image(None)
+            delta = 1
+         
+        if event.GetWheelRotation() > 0:
+            self._helper_prev_image(delta)
+        else:
+            self._helper_next_image(delta)
 
     def _handler_next_image(self, event):
+        self._helper_next_image()
+
+    def _handler_prev_image(self, event):
+        self._helper_prev_image()
+
+    def _helper_next_image(self, delta=1):
         """Go to next image.
 
         We could move this to the display code, it only needs to know
@@ -477,8 +488,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._image_viewer.GetSliceRange(range)
         if range[1] - range[0] != 0:
             cur_slice = self._image_viewer.GetSlice()
-            if cur_slice < range[1]:
-                new_slice = cur_slice + 1
+            if cur_slice <= range[1] - delta:
+                new_slice = cur_slice + delta
                 self._image_viewer.SetSlice(new_slice)
                 self._image_viewer.ul_text_actor.frnum = new_slice
                 self._update_image_ul_text()
@@ -487,14 +498,13 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         if next_file:
             lc = self._view_frame.files_lc
-            nidx = lc.GetFocusedItem() + 1
+            nidx = lc.GetFocusedItem() + delta
             if nidx >= lc.GetItemCount():
                 nidx = lc.GetItemCount() - 1
 
             lc.Focus(nidx)
-            wx.SafeYield()
 
-    def _handler_prev_image(self, event):
+    def _helper_prev_image(self, delta=1):
         """Move to previous image.
 
         We could move this to the display code, it only needs to know
@@ -507,8 +517,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
         self._image_viewer.GetSliceRange(range)
         if range[1] - range[0] != 0:
             cur_slice = self._image_viewer.GetSlice()
-            if cur_slice > range[0]:
-                new_slice = cur_slice - 1
+            if cur_slice >= range[0] + delta:
+                new_slice = cur_slice - delta
                 self._image_viewer.SetSlice(new_slice)
                 self._image_viewer.ul_text_actor.frnum = new_slice
                 self._update_image_ul_text()
@@ -517,12 +527,29 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
 
         if prev_file:
             lc = self._view_frame.files_lc
-            nidx = lc.GetFocusedItem() - 1
+            nidx = lc.GetFocusedItem() - delta
             if nidx < 0:
                 nidx = 0
 
             lc.Focus(nidx)
-            wx.SafeYield()
+
+    def _read_all_tags(self, filename):
+        r = gdcm.Reader(filename)
+        r.Read()
+        f = r.GetFile()
+        ds = file.GetDataSet()
+        pds = gdcm.PythonDataSet(ds)
+        sf = gdcm.StringFilter()
+        pds.Start() # Make iterator go at begining
+        dic={}
+        sf.SetFile(f) # extremely important
+        while(not pds.IsAtEnd() ):
+                res = sf.ToStringPair( pds.GetCurrent().GetTag() )
+                dic[res[0]] = res[1]
+                pds.Next()
+
+        return dic
+
 
     def _update_image_ul_text(self):
         """Updates upper left text actor according to relevant
@@ -677,6 +704,8 @@ class DICOMBrowser(introspectModuleMixin, moduleBase):
             v = str(getattr(mip, 'Get%s' % (a,))())
             helper_av_in_lc(a, v, idx)
             idx = idx + 1
+
+
 
         # so that sorting (kinda) works
         lc.itemDataMap = item_data_map
