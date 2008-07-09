@@ -106,23 +106,14 @@ class MainWXFrame(wx.Frame):
             wx.aui.AuiPaneInfo().Name('progress_panel').
             Caption('Progress').CenterPane().Top().Row(0).MinSize(pp.GetSize()))
 
-        self.module_list = self._create_module_list()
-        self._mgr.AddPane(
-            self.module_list,
-            wx.aui.AuiPaneInfo().Name('module_list').Caption('Module List').
-            Left().CloseButton(False))
-
-        self.module_cats = self._create_module_cats()
-        self._mgr.AddPane(
-            self.module_cats,
-            wx.aui.AuiPaneInfo().Name('module_cats').Caption('Module Categories').
-            Left().CloseButton(False))
-
+        # on GTK, this sequence is flipped!  search panel is at the
+        # bottom, module list at the top.
         sp = self._create_module_search_panel()
         self._mgr.AddPane(
             sp,
             wx.aui.AuiPaneInfo().Name('module_search').
-            Caption('Module Search').Left().MinSize(sp.GetSize()).
+            Caption('Module Search').Left().Position(0).
+            MinSize(sp.GetSize()).
             CloseButton(False))
 
         # a little trick I found in the PyAUI source code.  This will make
@@ -131,8 +122,21 @@ class MainWXFrame(wx.Frame):
         p.dock_proportion = 0
 
 
-        # setup VTK rendering pipeline for the graph editor
+        self.module_cats = self._create_module_cats()
+        self._mgr.AddPane(
+            self.module_cats,
+            wx.aui.AuiPaneInfo().Name('module_cats').Caption('Module Categories').
+            Left().CloseButton(False))
+
+        self.module_list = self._create_module_list()
+        self._mgr.AddPane(
+            self.module_list,
+            wx.aui.AuiPaneInfo().Name('module_list').Caption('Module List').
+            Left().CloseButton(False))
+
+
         ##################################################################
+        # setup VTK rendering pipeline for the graph editor
 
         self._rwi, self._ren = self._create_graph_canvas()
 
@@ -142,17 +146,18 @@ class MainWXFrame(wx.Frame):
             Caption('Graph Canvas').Center().CloseButton(False))
 
         ##################################################################
+        # these two also get swapped on GTK
        
-        self._mgr.AddPane(
-            self._create_log_window(),
-            wx.aui.AuiPaneInfo().Name('log_window').
-            Caption('Log Messages').Bottom().CloseButton(False))
- 
         self._mgr.AddPane(
             self._create_documentation_window(),
             wx.aui.AuiPaneInfo().Name('doc_window').
             Caption('Documentation Window').Bottom().CloseButton(False))
 
+        self._mgr.AddPane(
+            self._create_log_window(),
+            wx.aui.AuiPaneInfo().Name('log_window').
+            Caption('Log Messages').Bottom().CloseButton(False))
+ 
       
         # save this perspective
         self.perspective_default = self._mgr.SavePerspective()
