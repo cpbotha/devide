@@ -227,15 +227,27 @@ class GraphEditor:
                     mf.helpShowHelpId,
                     self._handlerHelpShowHelp)
 
+        # every time a normal character is typed
+        mf.search.Bind(wx.EVT_TEXT, self._handler_search)
 
-        wx.EVT_TEXT(mf, mf.search_text.GetId(),
-                    self._handler_search_text)
+        # we do this to capture enter, escape and up and down
+        # we need this nasty work-around on win and gtk: the
+        # SearchCtrl doesn't trigger the necessary events itself.
+        if wx.Platform in ['__WXMSW__', '__WXGTK__']:
+            for child in mf.search.GetChildren():
+                if isinstance(child, wx.TextCtrl):
+                    child.Bind(wx.EVT_CHAR, 
+                            self._handler_search_char)
+                    break
+        else:
+            mf.search.Bind(wx.EVT_CHAR, 
+                    self._handler_search_char)
 
-        wx.EVT_CHAR(mf.search_text,
-                    self._handler_search_text_char)
+        # user clicks on x, search box is emptied.
+        mf.search.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN,
+                self._handler_search_x_button)
 
-        wx.EVT_BUTTON(mf, mf.search_x_button.GetId(),
-                      self._handler_search_x_button)
+        # not currently using wx.EVT_SEARCHCTRL_SEARCH_BTN
 
         
         wx.EVT_LISTBOX(mf,
@@ -314,13 +326,15 @@ class GraphEditor:
         self.show()
 
     def _handler_modules_search(self, event):
-        self._interface._main_frame.search_text.SetFocus()
+        self._interface._main_frame.search.SetFocus()
 
     def _handler_refresh_module_kits(self, event):
         mm = self._devide_app.get_module_manager()
         mm.refresh_module_kits()
 
-    def _handler_search_text(self, event):
+    def _handler_search(self, event):
+        """Handler for when the user types into the search box.
+        """
         self._update_search_results()
 
     def _place_current_module_at_convenient_pos(self):
@@ -391,15 +405,15 @@ class GraphEditor:
         return False
         
 
-    def _handler_search_text_char(self, event):
+    def _handler_search_char(self, event):
         key_code = event.GetKeyCode()
 
         if key_code == wx.WXK_ESCAPE:
-            self._interface._main_frame.search_text.SetValue('')
+            self._interface._main_frame.search.SetValue('')
 
         elif key_code == wx.WXK_RETURN:
             self._place_current_module_at_convenient_pos()
-            self._interface._main_frame.search_text.SetFocus()
+            self._interface._main_frame.search.SetFocus()
 
         elif key_code in [wx.WXK_UP, wx.WXK_DOWN]:
 
@@ -423,7 +437,7 @@ class GraphEditor:
             event.Skip()
 
     def _handler_search_x_button(self, event):
-        self._interface._main_frame.search_text.SetValue('')
+        self._interface._main_frame.search.SetValue('')
 
     def _handlerModulesListBoxMouseEvents(self, event):
         if event.ButtonDClick():
@@ -1184,7 +1198,7 @@ class GraphEditor:
         mf = self._interface._main_frame
 
         # get complete search results for this search string
-        t = mf.search_text.GetValue()
+        t = mf.search.GetValue()
         if t:
             mm = self._devide_app.get_module_manager()
             search_results = mm.module_search.find_matches(t)

@@ -213,22 +213,13 @@ class MainWXFrame(wx.Frame):
     def _create_module_search_panel(self):
         search_panel = wx.Panel(self, -1)
 
-        self.search_text = wx.TextCtrl(search_panel, -1, "", 
-                style=wx.TE_PROCESS_ENTER)
-        self.search_x_button = wx.Button(search_panel, -1, "X",
-                                    style=wx.BU_EXACTFIT)
+        self.search = wx.SearchCtrl(search_panel, size=(200,-1), style=wx.TE_PROCESS_ENTER)
+        self.search.ShowSearchButton(1)
+        self.search.ShowCancelButton(1)
 
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        #sizer.Add(search_label, 0,
-        #          wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 3)
-        sizer.Add(self.search_text, 1,
-                  wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ADJUST_MINSIZE, 3)
-        sizer.Add(self.search_x_button, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-
-        tl_sizer = wx.BoxSizer(wx.VERTICAL)
-        # in this case the wx.EXPAND makes it stretch horizontally
-        # the option=1 makes it stretch vertically
-        tl_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 4)
+        tl_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        # option=1 makes it stretch horizontally
+        tl_sizer.Add(self.search, 1, wx.ALL, 4)
         
         search_panel.SetAutoLayout(True)
         search_panel.SetSizer(tl_sizer)
