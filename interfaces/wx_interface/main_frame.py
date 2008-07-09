@@ -4,8 +4,8 @@
 
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-import external.PyAUI as PyAUI
 import wx
+import wx.aui
 from wx.html import HtmlWindow
 
 class SimpleHTMLListBox(wx.HtmlListBox):
@@ -81,8 +81,8 @@ class MainWXFrame(wx.Frame):
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
         
         # tell FrameManager to manage this frame        
-        self._mgr = PyAUI.FrameManager()
-        self._mgr.SetFrame(self)
+        self._mgr = wx.aui.AuiManager()
+        self._mgr.SetManagedWindow(self)
 
         self._make_menu()
 
@@ -103,7 +103,7 @@ class MainWXFrame(wx.Frame):
         pp = self._create_progress_panel() 
         self._mgr.AddPane(
             pp,
-            PyAUI.PaneInfo().Name('progress_panel').
+            wx.aui.AuiPaneInfo().Name('progress_panel').
             Caption('Progress').CenterPane().Top().MinSize(pp.GetSize()))
 
        
@@ -132,13 +132,13 @@ class MainWXFrame(wx.Frame):
 
         self._mgr.AddPane(
             self._rwi,
-            PyAUI.PaneInfo().Name('graph_canvas').
+            wx.aui.AuiPaneInfo().Name('graph_canvas').
             Caption('Graph Canvas').Center().CloseButton(False))
 
         sp = self._create_module_search_panel()
         self._mgr.AddPane(
             sp,
-            PyAUI.PaneInfo().Name('module_search').
+            wx.aui.AuiPaneInfo().Name('module_search').
             Caption('Module Search').Left().MinSize(sp.GetSize()).
             CloseButton(False))
 
@@ -150,38 +150,29 @@ class MainWXFrame(wx.Frame):
         self.module_cats = self._create_module_cats()
         self._mgr.AddPane(
             self.module_cats,
-            PyAUI.PaneInfo().Name('module_cats').Caption('Module Categories').
+            wx.aui.AuiPaneInfo().Name('module_cats').Caption('Module Categories').
             Left().CloseButton(False))
 
         self.module_list = self._create_module_list()
         self._mgr.AddPane(
             self.module_list,
-            PyAUI.PaneInfo().Name('module_list').Caption('Module List').
+            wx.aui.AuiPaneInfo().Name('module_list').Caption('Module List').
             CloseButton(False))
 
 
         self._mgr.AddPane(
             self._create_documentation_window(),
-            PyAUI.PaneInfo().Name('doc_window').
+            wx.aui.AuiPaneInfo().Name('doc_window').
             Caption('Documentation Window').Bottom().CloseButton(False))
 
         self._mgr.AddPane(
             self._create_log_window(),
-            PyAUI.PaneInfo().Name('log_window').
+            wx.aui.AuiPaneInfo().Name('log_window').
             Caption('Log Messages').Bottom().CloseButton(False))
         
         self._mgr.Update()
 
         self.perspective_default = self._mgr.SavePerspective()
-
-        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
-        #self.Bind(wx.EVT_CLOSE, self.OnClose)
-
-        # even although we disable the close button, when a window floats
-        # it gets a close button back, so we have to make sure that when
-        # the user activates that the windows is merely hidden
-        self.Bind(PyAUI.EVT_AUI_PANEBUTTON, self.OnPaneButton)
 
         wx.EVT_MENU(self, self.window_default_view_id,
                     lambda e: self._mgr.LoadPerspective(
@@ -370,13 +361,3 @@ class MainWXFrame(wx.Frame):
         self.menubar.Append(help_menu, "&Help")
         # Menu Bar end
         
-    def OnEraseBackground(self, event):
-        # from PyAUI demo
-        event.Skip()
-
-    def OnPaneButton(self, event):
-        event.GetPane().Hide()
-
-    def OnSize(self, event):
-        # from PyAUI demo
-        event.Skip()
