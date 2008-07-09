@@ -104,36 +104,19 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             pp,
             wx.aui.AuiPaneInfo().Name('progress_panel').
-            Caption('Progress').CenterPane().Top().MinSize(pp.GetSize()))
+            Caption('Progress').CenterPane().Top().Row(0).MinSize(pp.GetSize()))
 
-       
-        self._rwi = wxVTKRenderWindowInteractor(self, -1,
-                size=(400,400))
-
-        # we have to call this, else moving a modal dialogue over the
-        # graph editor will result in trails.  Usually, a wxVTKRWI
-        # refuses to render if its top-level parent is disabled.  This
-        # is to stop VTK pipeline updates whilst wx.SafeYield() is
-        # being called.  In _this_ case, the VTK pipeline is safe, so
-        # we can disable this check.
-        self._rwi.SetRenderWhenDisabled(True)
-        self._ren = vtk.vtkRenderer()
-        self._rwi.GetRenderWindow().AddRenderer(self._ren)
-
-        rw = self._rwi.GetRenderWindow()
-        rw.SetLineSmoothing(1)
-        rw.SetPointSmoothing(1)
-
-        # PolygonSmoothing is not really necessary for the GraphEditor
-        # (yet), and on a GeForce 4600 Ti on Linux with driver version
-        # 1.0-9639, you can see triangle lines bisecting quads.  Not
-        # a nice artifact, so I've disabled this for now.
-        #rw.SetPolygonSmoothing(1)
-
+        self.module_list = self._create_module_list()
         self._mgr.AddPane(
-            self._rwi,
-            wx.aui.AuiPaneInfo().Name('graph_canvas').
-            Caption('Graph Canvas').Center().CloseButton(False))
+            self.module_list,
+            wx.aui.AuiPaneInfo().Name('module_list').Caption('Module List').
+            Left().CloseButton(False))
+
+        self.module_cats = self._create_module_cats()
+        self._mgr.AddPane(
+            self.module_cats,
+            wx.aui.AuiPaneInfo().Name('module_cats').Caption('Module Categories').
+            Left().CloseButton(False))
 
         sp = self._create_module_search_panel()
         self._mgr.AddPane(
@@ -146,33 +129,36 @@ class MainWXFrame(wx.Frame):
         # sure that the pane is as low (small y) as it can be
         p = self._mgr.GetPane('module_search')
         p.dock_proportion = 0
-        
-        self.module_cats = self._create_module_cats()
+
+
+        # setup VTK rendering pipeline for the graph editor
+        ##################################################################
+
+        self._rwi, self._ren = self._create_graph_canvas()
+
         self._mgr.AddPane(
-            self.module_cats,
-            wx.aui.AuiPaneInfo().Name('module_cats').Caption('Module Categories').
-            Left().CloseButton(False))
+            self._rwi,
+            wx.aui.AuiPaneInfo().Name('graph_canvas').
+            Caption('Graph Canvas').Center().CloseButton(False))
 
-        self.module_list = self._create_module_list()
+        ##################################################################
+       
         self._mgr.AddPane(
-            self.module_list,
-            wx.aui.AuiPaneInfo().Name('module_list').Caption('Module List').
-            CloseButton(False))
-
-
+            self._create_log_window(),
+            wx.aui.AuiPaneInfo().Name('log_window').
+            Caption('Log Messages').Bottom().CloseButton(False))
+ 
         self._mgr.AddPane(
             self._create_documentation_window(),
             wx.aui.AuiPaneInfo().Name('doc_window').
             Caption('Documentation Window').Bottom().CloseButton(False))
 
-        self._mgr.AddPane(
-            self._create_log_window(),
-            wx.aui.AuiPaneInfo().Name('log_window').
-            Caption('Log Messages').Bottom().CloseButton(False))
-        
+      
+        # save this perspective
+        self.perspective_default = self._mgr.SavePerspective()
+
         self._mgr.Update()
 
-        self.perspective_default = self._mgr.SavePerspective()
 
         wx.EVT_MENU(self, self.window_default_view_id,
                     lambda e: self._mgr.LoadPerspective(
@@ -189,6 +175,36 @@ class MainWXFrame(wx.Frame):
     def _create_documentation_window(self):
         self.doc_window = HtmlWindow(self, -1, size=(200,80))
         return self.doc_window
+
+    def _create_graph_canvas(self):
+
+
+        rwi = wxVTKRenderWindowInteractor(self, -1,
+                size=(400,400))
+
+        # we have to call this, else moving a modal dialogue over the
+        # graph editor will result in trails.  Usually, a wxVTKRWI
+        # refuses to render if its top-level parent is disabled.  This
+        # is to stop VTK pipeline updates whilst wx.SafeYield() is
+        # being called.  In _this_ case, the VTK pipeline is safe, so
+        # we can disable this check.
+        rwi.SetRenderWhenDisabled(True)
+        ren = vtk.vtkRenderer()
+        rwi.GetRenderWindow().AddRenderer(ren)
+
+        rw = rwi.GetRenderWindow()
+        rw.SetLineSmoothing(1)
+        rw.SetPointSmoothing(1)
+
+        # PolygonSmoothing is not really necessary for the GraphEditor
+        # (yet), and on a GeForce 4600 Ti on Linux with driver version
+        # 1.0-9639, you can see triangle lines bisecting quads.  Not
+        # a nice artifact, so I've disabled this for now.
+        #rw.SetPolygonSmoothing(1)
+
+        return (rwi, ren)
+
+
 
     def _create_log_window(self):
         tc = wx.TextCtrl(
