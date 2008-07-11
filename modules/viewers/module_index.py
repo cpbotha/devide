@@ -71,6 +71,16 @@ class Measure2D:
     processing setting.
     """
 
+class SkeletonAUIViewer:
+    kits = ['vtk_kit', 'wx_kit']
+    cats = ['Viewers']
+    help = """Skeleton module to using AUI for the interface and
+    integrating a VTK renderer panel.
+
+    Copy and adapt for your own use.  Remember to modify the relevant
+    module_index.py.
+    """
+
 class slice3dVWR:
     kits = ['wx_kit', 'vtk_kit']
     cats = ['Viewers']
