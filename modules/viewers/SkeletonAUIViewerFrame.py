@@ -7,10 +7,18 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
 import wx.aui
 
+# one could have loaded a wxGlade created resource like this:
 #from resources.python import DICOMBrowserPanels
 #reload(DICOMBrowserPanels)
 
 class SkeletonAUIViewerFrame(wx.Frame):
+    """wx.Frame child class used by SkeletonAUIViewer for its
+    interface.
+
+    This is an AUI-managed window, so we create the top-level frame,
+    and then populate it with AUI panes.
+    """
+
     def __init__(self, parent, id=-1, title="", name=""):
         wx.Frame.__init__(self, parent, id=id, title=title, 
                 pos=wx.DefaultPosition, size=(800,800), name=name)
@@ -46,9 +54,6 @@ class SkeletonAUIViewerFrame(wx.Frame):
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
 
-        # see _create_studies_pane() for an example on how to use a
-        # panel from a wxGlade-designed frame. 
-
         self._mgr.AddPane(self._create_series_pane(), wx.aui.AuiPaneInfo().
                           Name("series").Caption("Series").Top().
                           BestSize(wx.Size(600, 100)).
@@ -76,27 +81,33 @@ class SkeletonAUIViewerFrame(wx.Frame):
 
         self.SetMinSize(wx.Size(400, 300))
 
+        # first we save this default perspective with all panes
+        # visible
         self._perspectives = {} 
         self._perspectives['default'] = self._mgr.SavePerspective()
 
+        # then we hide all of the panes except the renderer
         self._mgr.GetPane("series").Hide()
         self._mgr.GetPane("files").Hide()
         self._mgr.GetPane("meta").Hide()
-
+        # save the perspective again
         self._perspectives['max_image'] = self._mgr.SavePerspective()
 
+        # and put back the default perspective / view
         self._mgr.LoadPerspective(self._perspectives['default'])
 
+        # finally tell the AUI manager to do everything that we've
+        # asked
         self._mgr.Update()
 
         # we bind the views events here, because the functionality is
         # completely encapsulated in the frame and does not need to
         # round-trip to the DICOMBrowser main module.
-        self.Bind(wx.EVT_MENU, lambda e: self._mgr.LoadPerspective(
-            self._perspectives['default']), id=views_default_id)
+        self.Bind(wx.EVT_MENU, self._handler_default_view, 
+                id=views_default_id)
 
-        self.Bind(wx.EVT_MENU, lambda e: self._mgr.LoadPerspective(
-            self._perspectives['max_image']), id=views_max_image_id)
+        self.Bind(wx.EVT_MENU, self._handler_max_image_view, 
+                id=views_max_image_id)
 
 
     def close(self):
@@ -120,8 +131,8 @@ class SkeletonAUIViewerFrame(wx.Frame):
         panel = wx.Panel(self, -1)
 
         self.rwi = wxVTKRenderWindowInteractor(panel, -1, (400,400))
-        self.button1 = wx.Button(panel, -1, "Function 1")
-        self.button2 = wx.Button(panel, -1, "Function 2")
+        self.button1 = wx.Button(panel, -1, "Add Superquadric")
+        self.button2 = wx.Button(panel, -1, "Reset Camera")
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         button_sizer.Add(self.button1)
         button_sizer.Add(self.button2)
@@ -169,14 +180,24 @@ class SkeletonAUIViewerFrame(wx.Frame):
 
         return sl
 
-    def render_image(self):
+    def render(self):
         """Update embedded RWI, i.e. update the image.
         """
         self.rwi.Render()
        
-    def set_default_view(self):
+    def _handler_default_view(self, event):
+        """Event handler for when the user selects View | Default from
+        the main menu.
+        """
         self._mgr.LoadPerspective(
                 self._perspectives['default'])
+
+    def _handler_max_image_view(self, event):
+        """Event handler for when the user selects View | Max Image
+        from the main menu.
+        """
+        self._mgr.LoadPerspective(
+            self._perspectives['max_image'])
 
 
 
