@@ -6,10 +6,10 @@
 
 
 from moduleBase import moduleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import moduleUtils
 
-class TFEditor(introspectModuleMixin, moduleBase):
+class TFEditor(IntrospectModuleMixin, moduleBase):
 
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
