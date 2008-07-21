@@ -21,13 +21,14 @@ class VolumeRender(
         # setup some config defaults        
         self._config.rendering_type = 0
         self._config.threshold = 1250
-        self._config.interpolation = 0 # nearest
+        self._config.interpolation = 1 # linear
         # this is not in the interface yet, change by introspection
         self._config.mip_colour = (0.0, 0.0, 1.0)
         config_list = [
             ('Rendering type:', 'rendering_type', 'base:int', 'choice',
              'Direct volume rendering algorithm that will be used.',
-             ('Raycast', '2D Texture', '3D Texture', 'ShellSplatting')),
+             ('Raycast (fixed point)', '2D Texture', '3D Texture',
+                 'ShellSplatting', 'Raycast (old)')),
             ('Threshold:', 'threshold', 'base:float', 'text',
              'Used to generate transfer function if none is supplied'),
             ('Interpolation:', 'interpolation', 'base:int', 'choice',
@@ -43,6 +44,7 @@ class VolumeRender(
         self._input_otf = None
         self._input_ctf = None
 
+        self._volume_raycast_function = None
         self._create_pipeline()
 
         self.sync_module_logic_with_config()
@@ -94,8 +96,8 @@ class VolumeRender(
 
         if self._config.rendering_type != self._current_rendering_type:
             if self._config.rendering_type == 0:
-                # raycast
-                self._setup_for_raycast()
+                # raycast fixed point
+                self._setup_for_fixed_point()
 
             elif self._config.rendering_type == 1:
                 # 2d texture
@@ -105,8 +107,13 @@ class VolumeRender(
                 # 3d texture
                 self._setup_for_3d_texture()
 
-            else:
+            elif self._config.rendering_type == 3:
+                # shell splatter
                 self._setup_for_shell_splatting()
+
+            else:
+                # old raycaster (very picky about input types)
+                self._setup_for_raycast()
 
             self._volume.SetMapper(self._volume_mapper)
 
