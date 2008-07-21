@@ -20,7 +20,7 @@ import re
 import module_kits
 from module_kits.wx_kit.python_shell import PythonShell
 
-class introspectModuleMixin(object):
+class IntrospectModuleMixin(object):
     """Mixin to use for modules that want to make use of the vtkPipeline
     functionality.
 
@@ -187,7 +187,8 @@ class introspectModuleMixin(object):
         if len(objects) > 0:
             self.vtkPipelineConfigure(viewFrame, renderWin, objects)
 
-vtkPipelineConfigModuleMixin = introspectModuleMixin
+introspectModuleMixin = IntrospectModuleMixin
+vtkPipelineConfigModuleMixin = IntrospectModuleMixin
             
 # ----------------------------------------------------------------------------
 
