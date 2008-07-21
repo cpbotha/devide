@@ -1,4 +1,10 @@
-This is Release 8.5 
+This is Release 8.9 
+
+Changes since previous release (8.5.3085)
+ * Volume rendering functionality greatly improved.  VolumeRender now
+   has the vtkFixedPointVolumeRaycastMapper as default (trust me, it's
+   better).  You can now also use the TFEditor to edit and create
+   great new transfer functions!  (send me the nice ones)
 
 Changes since previous release (8.2.2807)
  * DICOMBrowser: you can now visually browse your complete local DICOM
