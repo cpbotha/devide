@@ -3,7 +3,9 @@
 # wxWindows Library License, copyright Stou S. <stou@icapsid.net>
 
 # modified for integration in DeVIDE by Charl P. Botha <cpbotha.net>
-#
+# * OnSize handler, dynamic sizing (e.g. with sizers).
+# * Scalar range can be changed dynamically.
+# * Removed all unnecessary self.x and self.y offsetting.
 
 import wx
 import numpy
@@ -43,13 +45,14 @@ class TransferPoint(object):
         self.selected = selected       
 
 
-class TransferFunctionWidget(wx.PyControl):
+class TransferFunctionWidget(wx.PyWindow):
 
     def __init__(self, parent, id=wx.ID_ANY, label="", pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=wx.NO_BORDER, validator=wx.DefaultValidator,
+                 size=wx.DefaultSize, style=wx.NO_BORDER, 
                  name="TransferFunction"):
         
-        wx.PyControl.__init__(self, parent, id, pos, size, style, validator, name)
+        wx.PyWindow.__init__(self, parent, id, pos, size,
+                style|wx.FULL_REPAINT_ON_RESIZE, name)
         
         # Local Variables
         self.m_BorderLeft = 20
@@ -62,39 +65,38 @@ class TransferFunctionWidget(wx.PyControl):
         self.m_TickBorder = 2
         self.m_labelFontPt = 10;
 
+        self.m_MinMax = (0.0, 255.0)
+
         # The transfer points
         self.points = []
-        self.points.append(TransferPoint(0, [255, 255, 255], 0, fixed=True))
-        self.points.append(TransferPoint(255, [0, 0, 0], 1.0, fixed=True))
-
-        self.m_MinMax = (0.0, 255.0)
+        self.points.append(TransferPoint(
+            self.m_MinMax[0], [255, 255, 255], 0, fixed=True))
+        self.points.append(TransferPoint(
+            self.m_MinMax[1], [0, 0, 0], 1.0, fixed=True))
         
         self.mouse_down = False
         self.prev_x = 0
         self.prev_y = 0
         self.cur_pt = None
 
-        # This is always return -1 wtf.
-        self.x, self.y = self.GetPositionTuple()
-        width, height = self.GetClientSize()
-        
-        # The number of usable pixels on the graph
-        self.r_fieldWidth = (width - (self.m_BorderRight + self.m_BorderLeft))
-        self.r_fieldHeight = (height - (self.m_BorderUp + self.m_BorderDown))
-
-        # The number of value data points
-        self.r_rangeWidth = (self.m_MinMax[1] - self.m_MinMax[0])
-        # Pixels per value
-        self.pixel_per_value = float(self.r_fieldWidth) / self.r_rangeWidth
+        # call this for initial setting of size variables
+        self._update_size()
 
         # Bind events
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
 
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
+
+    def OnSize(self, event):
+        # update all internal variables
+        self._update_size()
+        # then redraw everything
+        #self.Refresh()
 
     def OnKeyDown(self, event):
         """ Handles the wx.EVT_KEY_DOWN event for CustomCheckBox. """
@@ -112,7 +114,7 @@ class TransferFunctionWidget(wx.PyControl):
 
         dc = wx.BufferedPaintDC(self)
         self.Draw(dc)
-        
+
     def DrawPoints(self, dc):
 
         dc.SetBrush(wx.Brush(wx.Color(255,0,0), wx.SOLID))
@@ -159,41 +161,34 @@ class TransferFunctionWidget(wx.PyControl):
         dc.SetPen(wx.Pen(wx.Color(218,218,218)))
         
         # Horizontal
-        dc.DrawLine(self.x + self.m_BorderLeft - 2, self.y + self.m_BorderUp, 
-                    self.x + self.m_BorderLeft + self.r_fieldWidth, self.y + self.m_BorderUp)
-        dc.DrawLine(self.x + self.m_BorderLeft - 2, self.y + self.r_fieldHeight + self.m_BorderUp, 
-                    self.x + self.m_BorderLeft + self.r_fieldWidth, self.y + self.r_fieldHeight + self.m_BorderUp)
+        dc.DrawLine(self.m_BorderLeft - 2, self.m_BorderUp, 
+                    self.m_BorderLeft + self.r_fieldWidth, self.m_BorderUp)
+        dc.DrawLine(self.m_BorderLeft - 2, self.r_fieldHeight + self.m_BorderUp, 
+                    self.m_BorderLeft + self.r_fieldWidth, self.r_fieldHeight + self.m_BorderUp)
         # Vertical
-        dc.DrawLine(self.x + self.m_BorderLeft, self.y + self.m_BorderUp, 
-                    self.x + self.m_BorderLeft, self.y + self.m_BorderUp + self.r_fieldHeight);
-        dc.DrawLine(self.x + self.m_BorderLeft + self.r_fieldWidth, self.y + self.m_BorderUp, 
-                    self.x + self.m_BorderLeft + self.r_fieldWidth, self.y + self.m_BorderUp + self.r_fieldHeight);
+        dc.DrawLine(self.m_BorderLeft, self.m_BorderUp, 
+                    self.m_BorderLeft, self.m_BorderUp + self.r_fieldHeight);
+        dc.DrawLine(self.m_BorderLeft + self.r_fieldWidth, self.m_BorderUp, 
+                    self.m_BorderLeft + self.r_fieldWidth, self.m_BorderUp + self.r_fieldHeight);
 
         dc.SetFont(wx.Font(self.m_labelFontPt, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
-        dc.DrawText('1.0', self.x + 2, self.y + self.m_labelFontPt/2 )
-        dc.DrawText('0.0', self.x + 2, self.y + self.m_BorderUp +  self.r_fieldHeight)
+        dc.DrawText('1.0', 2, self.m_labelFontPt/2 )
+        dc.DrawText('0.0', 2, self.m_BorderUp + self.r_fieldHeight)
     
         for i, t in enumerate('Opacity'):
-            dc.DrawText(t, self.x + 6, self.y + self.m_BorderUp + (2+i)*self.m_labelFontPt)
+            dc.DrawText(t, 6, self.m_BorderUp + (2+i)*self.m_labelFontPt)
 
     
-#        int strw = 0;
-#        int strh = 0;
-#    
-#        fl_measure(m_strRangeFrom.c_str(), strw, strh);
-#        fl_draw(m_strRangeFrom.c_str(), x() + m_BorderLeft - strw/2, y() + m_BorderUp + r_fieldHeight + m_labelFontPt);
-#        fl_measure(m_strRangeTo.c_str(), strw, strh);
-#        fl_draw(m_strRangeTo.c_str(), x() + m_BorderLeft + r_fieldWidth - strw , y() + m_BorderUp + r_fieldHeight + m_labelFontPt);
-
-        dc.DrawText('Values', (self.m_BorderLeft + self.r_fieldWidth)/2, self.y + self.m_BorderUp +  self.r_fieldHeight)
+        dc.DrawText('Values', (self.m_BorderLeft + self.r_fieldWidth)/2, 
+                self.m_BorderUp +  self.r_fieldHeight)
 
     def DrawFill(self, dc):
         ''' Draws the interpolated fill'''
         yat = self.y_from_alpha(0.0)
 
         for i in range(self.r_fieldWidth):
-            x = self.m_BorderLeft + self.x + i
+            x = self.m_BorderLeft + i
             rgba = self.rgba_from_value(self.value_from_x(x))
             dc.SetPen(wx.Pen(wx.Color(rgba[0], rgba[1], rgba[2])))
             dc.DrawLine(x, self.y_from_alpha(rgba[3]), x, yat)
@@ -284,46 +279,68 @@ class TransferFunctionWidget(wx.PyControl):
 
         self.GetEventHandler().ProcessEvent(event)
 
+    def _update_size(self):
+        # This is always return -1 wtf.
+        self.x, self.y = self.GetPositionTuple()
+        # argh, GetClientSize is returning size including the window
+        # border...
+        width, height = self.GetClientSize()
+        print 'cs', self.GetClientSizeTuple()
+        print 's', self.GetSize()
+        
+        # The number of usable pixels on the graph
+        self.r_fieldWidth = (width - (self.m_BorderRight + self.m_BorderLeft))
+        self.r_fieldHeight = (height - (self.m_BorderUp + self.m_BorderDown))
+        print 'r', self.r_fieldWidth, self.r_fieldHeight
+
+        # The number of value data points
+        self.r_rangeWidth = (self.m_MinMax[1] - self.m_MinMax[0])
+        # Pixels per value
+        self.pixel_per_value = float(self.r_fieldWidth) / self.r_rangeWidth
+
+
     # Manipulation functions
     def x_from_value(self, value):
         
         if value > self.m_MinMax[1]:
 #            print 'Warning x_from_value value out of range', value
-            return self.r_fieldWidth + self.m_BorderLeft + self.x
+            return self.r_fieldWidth + self.m_BorderLeft
         
         if value < self.m_MinMax[0]:
 #            print 'Warning x_from_value value out of range', value
-            return self.m_BorderLeft + self.x
+            return self.m_BorderLeft
         
-        return self.m_BorderLeft + self.x + round(self.pixel_per_value * value)
+        return self.m_BorderLeft + round(self.pixel_per_value * value)
 #        return self.m_BorderLeft + self.x + int(self.r_fieldWidth*((value - self.m_MinMax[0])/self.r_rangeWidth))
     
     def y_from_alpha(self, alpha):
 
         if alpha < 0: 
-            return self.m_BorderUp + self.y
+            return self.m_BorderUp
         if alpha > 1.0:
-            return self.y
+            return 0
 
-        return self.m_BorderUp + self.y + int(self.r_fieldHeight*(1 - alpha))
+        return self.m_BorderUp + int(self.r_fieldHeight*(1 - alpha))
 
     def value_from_x(self, xc):
 
-        if not (xc >= self.x + self.m_BorderLeft):
+        if xc < self.m_BorderLeft:
             return float(self.m_MinMax[0])            
-        if not (xc <= self.x + self.r_fieldWidth + self.m_BorderLeft):
+        if xc >= self.r_fieldWidth + self.m_BorderLeft:
             return float(self.m_MinMax[1])
 
-        return float(self.m_MinMax[0]) + self.r_rangeWidth*float(float(xc - self.x - self.m_BorderLeft)/((self.r_fieldWidth)))
+        return float(self.m_MinMax[0]) + \
+                self.r_rangeWidth * \
+                float(xc - self.m_BorderLeft) / self.r_fieldWidth
 
     def alpha_from_y(self, yc):
 
-        if yc < self.y + self.m_BorderUp:
+        if yc < self.m_BorderUp:
             return 1.0
-        if yc > self.y + self.m_BorderUp + self.r_fieldHeight:
+        if yc > self.m_BorderUp + self.r_fieldHeight:
             return 0.0
 
-        return 1.0 - float(yc - self.y - self.m_BorderUp)/self.r_fieldHeight;
+        return 1.0 - float(yc - self.m_BorderUp)/self.r_fieldHeight;
 
     def hit_test(self, x, y, pt):
         x_c = self.x_from_value(pt.value)
