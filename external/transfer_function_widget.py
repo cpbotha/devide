@@ -7,6 +7,7 @@
 # * OnSize handler, dynamic sizing (e.g. with sizers).
 # * Scalar range can be changed dynamically.
 # * Removed all unnecessary self.x and self.y offsetting.
+# * Fixed for negative scalar ranges and whatnot.
 # * Colour state (defaults, custom colours) is maintained between
 #   invocations of the colour dialog.
 # * Custom events are signalled for point selections and what not.
@@ -69,14 +70,15 @@ class TransferFunctionWidget(wx.PyWindow):
         self.m_TickBorder = 2
         self.m_labelFontPt = 10
 
-        self.m_MinMax = (0.0, 255.0)
+        # temporary variable.
+        minmax = (0.0, 255.0)
 
         # The transfer points
         self.points = []
         self.points.append(TransferPoint(
-            self.m_MinMax[0], [255, 255, 255], 0, fixed=True))
+            minmax[0], [255, 255, 255], 0, fixed=True))
         self.points.append(TransferPoint(
-            self.m_MinMax[1], [0, 0, 0], 1.0, fixed=True))
+            minmax[1], [0, 0, 0], 1.0, fixed=True))
         
         self.mouse_down = False
         self.prev_x = 0
@@ -84,7 +86,7 @@ class TransferFunctionWidget(wx.PyWindow):
         self.cur_pt = None
 
         # we'll use this to maintain colour state
-        self._colour_data = None
+        self.colour_data = None
 
         # call this for initial setting of size variables
         self._update_size()
@@ -127,7 +129,7 @@ class TransferFunctionWidget(wx.PyWindow):
 
 
         
-        x = self.x_from_value(self.m_MinMax[0])
+        x = self.x_from_value(self.points[0].value)
         y = self.y_from_alpha(0.0)
         
         for pt in self.points:
@@ -225,6 +227,18 @@ class TransferFunctionWidget(wx.PyWindow):
         # Draw Points
         self.DrawPoints(dc)
 
+    def delete_current_point(self):
+        """If current point is not one of the end points, remove it!
+        """
+
+        if self.cur_pt and \
+                self.cur_pt not in (self.points[0], self.points[-1]):
+                   idx = self.points.index(self.cur_pt) 
+                   del self.points[idx]
+
+                   self.cur_pt = None
+                   self.Refresh()
+
     def get_current_point_info(self):
         """Return scalar value and rgba of currently selected point.
 
@@ -243,7 +257,71 @@ class TransferFunctionWidget(wx.PyWindow):
             self.cur_pt.color = colour
             # we've only changed the colour of this point, so we can
             # refresh the display (no sorting required)
+            self.SendCurPointChanged()
             self.Refresh()
+
+    def get_min_max(self):
+        """Return min and max scalars of the transfer function.
+        """
+
+        return self.points[0].value, self.points[-1].value
+
+    def set_min_max(self, min, max):
+        """Update the scalar range of the transfer function. 
+        """
+
+        if not min < max:
+            return
+
+        # this will make sure all points are inside the range
+        for p in self.points:
+            if p.value < min:
+                p.value = min
+            elif p.value > max:
+                p.value = max
+
+        # take first point and last point, change their scalar values
+        # to be on the extrema of the range.
+        self.points[0].value = min
+        self.points[-1].value = max
+
+        self._update_size()
+
+        self.Refresh()
+
+    def get_transfer_function(self):
+        """Returns transfer function as a sorted list of tuples, where
+        each tuple is (value, (r,g,b), opacity).
+        """
+
+        tf = []
+        for p in self.points:
+            tf.append((p.value, p.color, p.alpha))
+
+        return tf
+
+
+    def set_transfer_function(self, transfer_function):
+        """Overwrite current transfer function with transfer_function,
+        a list of tuples with each tuple (value, (r,g,b), opacity).
+        """
+
+        if len(transfer_function) < 2:
+            return
+
+        self.points = []
+        for pinfo in transfer_function:
+            self.points.append(
+                    TransferPoint(pinfo[0], pinfo[1], pinfo[2],
+                        fixed=False))
+
+        self.points.sort()
+
+        self.points[0].fixed = True
+        self.points[-1].fixed = True
+
+        self._update_size()
+        self.Refresh()
 
            
     def OnEraseBackground(self, event):
@@ -277,12 +355,12 @@ class TransferFunctionWidget(wx.PyWindow):
         if not self.cur_pt:
             # we can give a block of custom colour data, but we can't
             # set a default colour.  Doh!
-            color_picker = wx.ColourDialog(self, self._colour_data)
+            color_picker = wx.ColourDialog(self, self.colour_data)
         
             if color_picker.ShowModal() == wx.ID_OK:
         
                 color = color_picker.GetColourData().GetColour().Get()
-                self._colour_data = color_picker.GetColourData()
+                self.colour_data = color_picker.GetColourData()
                
                 pt = TransferPoint(
                         self.value_from_x(x), color, self.alpha_from_y(y))
@@ -335,7 +413,8 @@ class TransferFunctionWidget(wx.PyWindow):
         self.r_fieldWidth = (width - (self.m_BorderRight + self.m_BorderLeft))
         self.r_fieldHeight = (height - (self.m_BorderUp + self.m_BorderDown))
         # The number of value data points
-        self.r_rangeWidth = (self.m_MinMax[1] - self.m_MinMax[0])
+        self.r_rangeWidth = (self.points[-1].value -
+                self.points[0].value)
         # Pixels per value
         self.pixel_per_value = float(self.r_fieldWidth) / self.r_rangeWidth
 
@@ -343,16 +422,18 @@ class TransferFunctionWidget(wx.PyWindow):
     # Manipulation functions
     def x_from_value(self, value):
         
-        if value > self.m_MinMax[1]:
+        minv = self.points[0].value
+        maxv = self.points[-1].value
+        if value > maxv:
 #            print 'Warning x_from_value value out of range', value
             return self.r_fieldWidth + self.m_BorderLeft
         
-        if value < self.m_MinMax[0]:
+        if value < minv:
 #            print 'Warning x_from_value value out of range', value
             return self.m_BorderLeft
         
-        return self.m_BorderLeft + round(self.pixel_per_value * value)
-#        return self.m_BorderLeft + self.x + int(self.r_fieldWidth*((value - self.m_MinMax[0])/self.r_rangeWidth))
+        return self.m_BorderLeft + \
+                round(self.pixel_per_value * (value-minv))
     
     def y_from_alpha(self, alpha):
 
@@ -364,13 +445,15 @@ class TransferFunctionWidget(wx.PyWindow):
         return self.m_BorderUp + int(self.r_fieldHeight*(1 - alpha))
 
     def value_from_x(self, xc):
+        minv = self.points[0].value
+        maxv = self.points[-1].value
 
         if xc < self.m_BorderLeft:
-            return float(self.m_MinMax[0])            
+            return float(minv)            
         if xc >= self.r_fieldWidth + self.m_BorderLeft:
-            return float(self.m_MinMax[1])
+            return float(maxv)
 
-        return float(self.m_MinMax[0]) + \
+        return float(minv) + \
                 self.r_rangeWidth * \
                 float(xc - self.m_BorderLeft) / self.r_fieldWidth
 
@@ -398,7 +481,10 @@ class TransferFunctionWidget(wx.PyWindow):
      
     def rgba_from_value(self, value):
         
-        if not (value >= self.m_MinMax[0] and value <= self.m_MinMax[1]):
+        minv = self.points[0].value
+        maxv = self.points[-1].value
+
+        if not (value >= minv and value <= maxv):
             raise Exception, 'Value out of range: ' + str(value)
 
         for pt_i in range(len(self.points)):
