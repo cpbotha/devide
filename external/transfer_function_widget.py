@@ -225,7 +225,7 @@ class TransferFunctionWidget(wx.PyWindow):
         # Draw Points
         self.DrawPoints(dc)
 
-    def get_current_point(self):
+    def get_current_point_info(self):
         """Return scalar value and rgba of currently selected point.
 
         @retuns: (scalar_value, (r,g,b), alpha)
@@ -233,10 +233,18 @@ class TransferFunctionWidget(wx.PyWindow):
 
         if self.cur_pt:
             c = self.cur_pt
-            return (c.val, c.colour, c.alpha)
+            return (c.value, c.color, c.alpha)
 
         else:
             return None
+
+    def set_current_point_colour(self, colour):
+        if self.cur_pt:
+            self.cur_pt.color = colour
+            # we've only changed the colour of this point, so we can
+            # refresh the display (no sorting required)
+            self.Refresh()
+
            
     def OnEraseBackground(self, event):
         ''' Called when the background is erased '''
@@ -256,6 +264,7 @@ class TransferFunctionWidget(wx.PyWindow):
                 self.cur_pt = pt
                 self.prev_x = x
                 self.prev_y = y
+                self.SendCurPointChanged()
                 self.Refresh()
                 return
         
