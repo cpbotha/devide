@@ -3,15 +3,23 @@
 # wxWindows Library License, copyright Stou S. <stou@icapsid.net>
 
 # modified for integration with DeVIDE by Charl P. Botha <cpbotha.net>
+#
 # * OnSize handler, dynamic sizing (e.g. with sizers).
 # * Scalar range can be changed dynamically.
 # * Removed all unnecessary self.x and self.y offsetting.
 # * Colour state (defaults, custom colours) is maintained between
 #   invocations of the colour dialog.
+# * Custom events are signalled for point selections and what not.
+#
 # more info on DeVIDE: http://visualisation.tudelft.nl/Projects/DeVIDE
 
 import wx
 import numpy
+
+# ET is used in here for the CommandEvent
+EVT_CUR_PT_CHANGED_ET = wx.NewEventType()
+# the EventBinder is used on the outside to bind to this new event
+EVT_CUR_PT_CHANGED = wx.PyEventBinder(EVT_CUR_PT_CHANGED_ET, 1)
 
 class TransferPoint(object):
     
@@ -118,7 +126,6 @@ class TransferFunctionWidget(wx.PyWindow):
     def DrawPoints(self, dc):
 
 
-        dc.SetBrush(wx.Brush(wx.Color(128,128,128), wx.SOLID))
         
         x = self.x_from_value(self.m_MinMax[0])
         y = self.y_from_alpha(0.0)
@@ -131,8 +138,15 @@ class TransferFunctionWidget(wx.PyWindow):
             dc.SetPen(wx.Pen(wx.Color(0,0,0)))   
             dc.DrawLine(x, y, x_c, y_c)
 
-            dc.SetPen(wx.Pen(wx.Color(0,0,0)))
-            dc.DrawCircle(x_c, y_c, pt.radius)
+            if self.cur_pt and self.cur_pt == pt:
+                dc.SetBrush(wx.Brush(wx.Color(192,192,192), wx.SOLID))
+                dc.SetPen(wx.Pen(wx.Color(0,0,0)))
+                dc.DrawCircle(x_c, y_c, pt.radius+2)
+            else:
+                dc.SetBrush(wx.Brush(wx.Color(128,128,128), wx.SOLID))
+                dc.SetPen(wx.Pen(wx.Color(0,0,0)))
+                dc.DrawCircle(x_c, y_c, pt.radius)
+
 
             x = x_c 
             y = y_c
@@ -142,16 +156,14 @@ class TransferFunctionWidget(wx.PyWindow):
         Draw the grid lines
         '''
         
-        width, height = self.GetClientSize()
-        x, y = self.GetPositionTuple()
-        
-        spacing = height/(self.m_GridLines + 1)
+        spacing = self.r_fieldHeight/(self.m_GridLines)
         
         dc.SetPen(wx.Pen(wx.Color(218, 218, 218)))
 
         for i in range(self.m_GridLines):
-            dc.DrawLine(x + self.m_BorderLeft, y + (1 + i)*spacing, 
-                        x + self.m_BorderLeft + self.r_fieldWidth, y + (1 + i)*spacing)
+            y = self.m_BorderUp + (i+1) * spacing
+            dc.DrawLine(self.m_BorderLeft, y,
+                        self.m_BorderLeft + self.r_fieldWidth, y)
 
     def DrawAxis(self, dc):
 
@@ -212,6 +224,19 @@ class TransferFunctionWidget(wx.PyWindow):
         self.DrawAxis(dc)
         # Draw Points
         self.DrawPoints(dc)
+
+    def get_current_point(self):
+        """Return scalar value and rgba of currently selected point.
+
+        @retuns: (scalar_value, (r,g,b), alpha)
+        """
+
+        if self.cur_pt:
+            c = self.cur_pt
+            return (c.val, c.colour, c.alpha)
+
+        else:
+            return None
            
     def OnEraseBackground(self, event):
         ''' Called when the background is erased '''
@@ -231,6 +256,7 @@ class TransferFunctionWidget(wx.PyWindow):
                 self.cur_pt = pt
                 self.prev_x = x
                 self.prev_y = y
+                self.Refresh()
                 return
         
         self.cur_pt = None
@@ -248,32 +274,43 @@ class TransferFunctionWidget(wx.PyWindow):
         
                 color = color_picker.GetColourData().GetColour().Get()
                 self._colour_data = color_picker.GetColourData()
-                
-                self.points.append(TransferPoint(
-                    self.value_from_x(x), color, self.alpha_from_y(y)))
+               
+                pt = TransferPoint(
+                        self.value_from_x(x), color, self.alpha_from_y(y))
+                self.points.append(pt)
 
                 self.points.sort()
-                self.SendChangedEvent()
+
+                self.cur_pt = pt 
+                self.SendCurPointChanged()
 
                 self.Refresh()
            
     def OnMouseUp(self, event):
-        self.cur_pt = None
+        pass
+        #self.cur_pt = None
 
     def OnMouseMotion(self, event):
         x = event.GetX()
         y = event.GetY()
 
-        if self.cur_pt:
+        if self.cur_pt and event.Dragging():
 
             self.cur_pt.alpha = self.alpha_from_y(y)
 
             if not self.cur_pt.fixed:
                 self.cur_pt.value = self.value_from_x(x)
                 self.points.sort()
-            
-            self.SendChangedEvent()
+
+            # we're dragging the current point, so it's changing
+            self.SendCurPointChanged() 
             self.Refresh()
+
+    def SendCurPointChanged(self):
+        # tell handlers that the current point has changed
+        event = wx.CommandEvent(EVT_CUR_PT_CHANGED_ET, self.GetId())
+        event.SetEventObject(self)
+        self.GetEventHandler().ProcessEvent(event)
 
     def SendChangedEvent(self):
 
@@ -282,10 +319,7 @@ class TransferFunctionWidget(wx.PyWindow):
         self.GetEventHandler().ProcessEvent(event)
 
     def _update_size(self):
-        # This is always return -1 wtf.
         self.x, self.y = self.GetPositionTuple()
-        # argh, GetClientSize is returning size including the window
-        # border...
         width, height = self.GetClientSize()
 
         # The number of usable pixels on the graph
