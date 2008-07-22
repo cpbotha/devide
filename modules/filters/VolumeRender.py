@@ -20,8 +20,12 @@ class VolumeRender(
 
         # setup some config defaults        
         self._config.rendering_type = 0
-        self._config.threshold = 1250
         self._config.interpolation = 1 # linear
+        self._config.ambient = 0.1
+        self._config.diffuse = 0.7
+        self._config.specular = 0.2
+        self._config.specular_power = 10
+        self._config.threshold = 1250
         # this is not in the interface yet, change by introspection
         self._config.mip_colour = (0.0, 0.0, 1.0)
         config_list = [
@@ -93,6 +97,11 @@ class VolumeRender(
 
     def config_to_logic(self):
         self._volume_property.SetInterpolationType(self._config.interpolation)
+
+        self._volume_property.SetAmbient(self._config.ambient)
+        self._volume_property.SetDiffuse(self._config.diffuse)
+        self._volume_property.SetSpecular(self._config.specular)
+        self._volume_property.SetSpecularPower(self._config.specular_power)
 
         if self._config.rendering_type != self._current_rendering_type:
             if self._config.rendering_type == 0:
@@ -207,10 +216,6 @@ class VolumeRender(
 
         self._volume_property = vtk.vtkVolumeProperty()
         self._volume_property.ShadeOn()
-        self._volume_property.SetAmbient(0.1)
-        self._volume_property.SetDiffuse(0.7)
-        self._volume_property.SetSpecular(0.2)
-        self._volume_property.SetSpecularPower(10)
 
         self._volume_mapper = None
 
