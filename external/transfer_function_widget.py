@@ -2,10 +2,13 @@
 # http://www.siafoo.net/snippet/122 on 20080721
 # wxWindows Library License, copyright Stou S. <stou@icapsid.net>
 
-# modified for integration in DeVIDE by Charl P. Botha <cpbotha.net>
+# modified for integration with DeVIDE by Charl P. Botha <cpbotha.net>
 # * OnSize handler, dynamic sizing (e.g. with sizers).
 # * Scalar range can be changed dynamically.
 # * Removed all unnecessary self.x and self.y offsetting.
+# * Colour state (defaults, custom colours) is maintained between
+#   invocations of the colour dialog.
+# more info on DeVIDE: http://visualisation.tudelft.nl/Projects/DeVIDE
 
 import wx
 import numpy
@@ -22,8 +25,7 @@ class TransferPoint(object):
         if len(color) != 3:
             raise Exception, 'Color should have length of 3'
 
-        self.selected = False
-        self.pix_size = 4
+        self.radius = 5
         self.fixed = fixed
 
     def __cmp__(self, pt):
@@ -38,12 +40,6 @@ class TransferPoint(object):
     def get_rgba(self):
         return [self.color[0], self.color[1], self.color[2], self.alpha]
    
-    def is_selected(self):
-        return self.selected
-    
-    def set_selected(self, selected):
-        self.selected = selected       
-
 
 class TransferFunctionWidget(wx.PyWindow):
 
@@ -63,7 +59,7 @@ class TransferFunctionWidget(wx.PyWindow):
         self.m_GridLines = 10
         self.m_TickSize = 4
         self.m_TickBorder = 2
-        self.m_labelFontPt = 10;
+        self.m_labelFontPt = 10
 
         self.m_MinMax = (0.0, 255.0)
 
@@ -79,6 +75,9 @@ class TransferFunctionWidget(wx.PyWindow):
         self.prev_y = 0
         self.cur_pt = None
 
+        # we'll use this to maintain colour state
+        self._colour_data = None
+
         # call this for initial setting of size variables
         self._update_size()
 
@@ -89,6 +88,7 @@ class TransferFunctionWidget(wx.PyWindow):
 
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnMouseDClick)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
 
@@ -117,7 +117,8 @@ class TransferFunctionWidget(wx.PyWindow):
 
     def DrawPoints(self, dc):
 
-        dc.SetBrush(wx.Brush(wx.Color(255,0,0), wx.SOLID))
+
+        dc.SetBrush(wx.Brush(wx.Color(128,128,128), wx.SOLID))
         
         x = self.x_from_value(self.m_MinMax[0])
         y = self.y_from_alpha(0.0)
@@ -130,12 +131,8 @@ class TransferFunctionWidget(wx.PyWindow):
             dc.SetPen(wx.Pen(wx.Color(0,0,0)))   
             dc.DrawLine(x, y, x_c, y_c)
 
-            if pt.selected:
-                dc.SetPen(wx.Pen(wx.Color(0, 0, 255), 2))
-                dc.DrawRectangle(x_c - 3, y_c -3, 6, 6)
-
-            dc.SetPen(wx.Pen(wx.Color(255,0,0)))
-            dc.DrawRectangle(x_c - 2, y_c -2, 4, 4)    
+            dc.SetPen(wx.Pen(wx.Color(0,0,0)))
+            dc.DrawCircle(x_c, y_c, pt.radius)
 
             x = x_c 
             y = y_c
@@ -232,37 +229,42 @@ class TransferFunctionWidget(wx.PyWindow):
         for pt in self.points:
             if self.hit_test(x,y, pt):
                 self.cur_pt = pt
-                pt.selected = not pt.selected
                 self.prev_x = x
                 self.prev_y = y
                 return
         
         self.cur_pt = None
-            
-    def OnMouseUp(self, event):
+
+    def OnMouseDClick(self, event):
         x = event.GetX()
         y = event.GetY()
 
         if not self.cur_pt:
-            
-            color_picker = wx.ColourDialog(self)
+            # we can give a block of custom colour data, but we can't
+            # set a default colour.  Doh!
+            color_picker = wx.ColourDialog(self, self._colour_data)
         
             if color_picker.ShowModal() == wx.ID_OK:
         
                 color = color_picker.GetColourData().GetColour().Get()
+                self._colour_data = color_picker.GetColourData()
                 
-                self.points.append(TransferPoint(self.value_from_x(x), color, self.alpha_from_y(y)))
+                self.points.append(TransferPoint(
+                    self.value_from_x(x), color, self.alpha_from_y(y)))
+
                 self.points.sort()
                 self.SendChangedEvent()
 
-        self.mouse_down = False
-        self.Refresh()
+                self.Refresh()
+           
+    def OnMouseUp(self, event):
+        self.cur_pt = None
 
     def OnMouseMotion(self, event):
         x = event.GetX()
         y = event.GetY()
 
-        if self.cur_pt and self.mouse_down:
+        if self.cur_pt:
 
             self.cur_pt.alpha = self.alpha_from_y(y)
 
@@ -285,14 +287,10 @@ class TransferFunctionWidget(wx.PyWindow):
         # argh, GetClientSize is returning size including the window
         # border...
         width, height = self.GetClientSize()
-        print 'cs', self.GetClientSizeTuple()
-        print 's', self.GetSize()
-        
+
         # The number of usable pixels on the graph
         self.r_fieldWidth = (width - (self.m_BorderRight + self.m_BorderLeft))
         self.r_fieldHeight = (height - (self.m_BorderUp + self.m_BorderDown))
-        print 'r', self.r_fieldWidth, self.r_fieldHeight
-
         # The number of value data points
         self.r_rangeWidth = (self.m_MinMax[1] - self.m_MinMax[0])
         # Pixels per value
@@ -343,13 +341,15 @@ class TransferFunctionWidget(wx.PyWindow):
         return 1.0 - float(yc - self.m_BorderUp)/self.r_fieldHeight;
 
     def hit_test(self, x, y, pt):
+        """Does event-coordinate (x,y) fall somewhere on the point pt?
+        """
+
         x_c = self.x_from_value(pt.value)
         y_c = self.y_from_alpha(pt.get_alpha())
-        sz = pt.pix_size
+        rs = pt.radius ** 2 # radius squared
 
-        if x <= x_c + sz / 2 and x >= x_c - sz \
-            and y <= y_c + sz and y >= y_c - sz:
-                return True
+        if (x - x_c) ** 2 + (y - y_c) ** 2 <= rs:
+            return True
 
         return False
      
