@@ -23,8 +23,8 @@ class VolumeRender(
         self._config.interpolation = 1 # linear
         self._config.ambient = 0.1
         self._config.diffuse = 0.7
-        self._config.specular = 0.2
-        self._config.specular_power = 10
+        self._config.specular = 0.6
+        self._config.specular_power = 80 
         self._config.threshold = 1250
         # this is not in the interface yet, change by introspection
         self._config.mip_colour = (0.0, 0.0, 1.0)
@@ -33,12 +33,21 @@ class VolumeRender(
              'Direct volume rendering algorithm that will be used.',
              ('Raycast (fixed point)', '2D Texture', '3D Texture',
                  'ShellSplatting', 'Raycast (old)')),
-            ('Threshold:', 'threshold', 'base:float', 'text',
-             'Used to generate transfer function if none is supplied'),
             ('Interpolation:', 'interpolation', 'base:int', 'choice',
              'Linear (high quality, slower) or nearest neighbour (lower '
              'quality, faster) interpolation',
-             ('Nearest Neighbour', 'Linear'))]
+             ('Nearest Neighbour', 'Linear')),
+            ('Ambient:', 'ambient', 'base:float', 'text',
+                'Ambient lighting term.'),
+            ('Diffuse:', 'diffuse', 'base:float', 'text',
+                'Diffuse lighting term.'),
+            ('Specular:', 'specular', 'base:float', 'text',
+                'Specular lighting term.'),
+            ('Specular power:', 'specular_power', 'base:float', 'text',
+                'Specular power lighting term (more focused high-lights).'),
+               ('Threshold:', 'threshold', 'base:float', 'text',
+             'Used to generate transfer function ONLY if none is supplied')
+             ]
 
         scriptedConfigModuleMixin.__init__(
             self, config_list,
@@ -94,6 +103,12 @@ class VolumeRender(
         
         self._config.interpolation = \
                                    self._volume_property.GetInterpolationType()
+
+        self._config.ambient = self._volume_property.GetAmbient()
+        self._config.diffuse = self._volume_property.GetDiffuse()
+        self._config.specular = self._volume_property.GetSpecular()
+        self._config.specular_power = \
+                self._volume_property.GetSpecularPower()
 
     def config_to_logic(self):
         self._volume_property.SetInterpolationType(self._config.interpolation)
