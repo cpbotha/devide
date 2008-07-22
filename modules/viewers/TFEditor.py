@@ -34,26 +34,9 @@ class TFEditor(IntrospectModuleMixin, moduleBase):
             {'Module (self)' : self})
 
         # add the ECASH buttons
-        moduleUtils.createECASButtons(self, self._view_frame,
-                                      self._view_frame.view_frame_panel)
+        moduleUtils.create_eoca_buttons(self, self._view_frame,
+                                        self._view_frame.view_frame_panel)
 
-
-        oc = self._view_frame.opacity_canvas
-
-        # do initial drawing setup
-        oc.AddLine(((0, 0), (100, 0)))
-        oc.AddLine(((0, 0), (0, 100)))
-
-        # this should be dependent on some internal datastructure with
-        # points
-        oc.AddCircle((0, 0), 5)
-        oc.AddCircle((30, 0), 5)
-        oc.AddCircle((100,0), 5)
-
-        #Poly.Bind(FloatCanvas.EVT_FC_LEFT_DOWN, MyCallback)
-
-        oc.ZoomToBB()
-        
 
     def close(self):
         for i in range(len(self.get_input_descriptions())):
@@ -76,13 +59,11 @@ class TFEditor(IntrospectModuleMixin, moduleBase):
     def get_output(self, idx):
         return self._transfer_function
     
-    
-
     def view(self):
         self._view_frame.Show()
         self._view_frame.Raise()
 
-    def executeModel(self):
+    def execute_module(self):
         pass
 
         
