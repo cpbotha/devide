@@ -106,6 +106,22 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
 
         vf.delete_button.Bind(wx.EVT_BUTTON, handler_delete_button)
 
+        def handler_auto_range_button(event):
+            try:
+                range = self._volume_input.GetScalarRange()
+            except AttributeError:
+                self._moduleManager.log_error(
+                        'Could not determine range from input. ' +
+                        'Have you connected some input data and ' +
+                        'has the network executed at least once?')
+            else:
+                vf = self._view_frame
+                vf.scalar_min_text.SetValue(str(range[0]))
+                vf.scalar_max_text.SetValue(str(range[1]))
+
+        vf.auto_range_button.Bind(wx.EVT_BUTTON,
+                handler_auto_range_button)
+
 
         def handler_apply_range_button(event):
             try:
