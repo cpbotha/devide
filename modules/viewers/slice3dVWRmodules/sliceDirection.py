@@ -711,6 +711,7 @@ class sliceDirection:
             ipw.SetSliceIndex(0)
             ipw.GetPlaneProperty().SetColor(
                 ipw_cols[ipw.GetPlaneOrientation()])
+
             # set the window and level
             ipw.SetWindowLevel(window, level)
             ipw.On()
@@ -719,6 +720,24 @@ class sliceDirection:
         if len(self._ipws) > 1:
             for ipw in self._ipws[1:]:
                 self._setOverlayLookupTable(ipw)
+
+    def set_lookup_table(self, lut):
+        if not self._ipws:
+            return
+
+        ipw = self._ipws[0]
+
+        if not lut is None:
+            ipw.UserControlledLookupTableOn()
+            ipw.SetLookupTable(lut)
+            ipw.GetColorMap().SetOutputFormatToRGBA()
+
+        else:
+            # make sure lookuptable is reset
+            ipw.SetLookupTable(None)
+            ipw.UserControlledLookupTableOff()
+            ipw.GetColorMap().SetOutputFormatToRGB()
+
 
     def _setOverlayLookupTable(self, ipw):
         """Configures overlay lookup table according to mode.

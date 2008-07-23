@@ -530,6 +530,10 @@ class sliceDirections(s3dcGridMixin):
             sliceDirection._resetPrimary()
             sliceDirection._resetOverlays()
             sliceDirection._syncContours()
+
+    def set_lookup_table(self, lut):
+        for sname, sdirection in self._sliceDirectionsDict.items():
+            sdirection.set_lookup_table(lut)
         
     def setCurrentCursor(self, cursor):
         self.currentCursor = cursor
@@ -576,7 +580,7 @@ class sliceDirections(s3dcGridMixin):
             row = self._findGridRowByName(sliceName)
             if row >= 0:
                 self._grid.SelectRow(row, False)
-        
+
     def _setSliceEnabled(self, sliceName, enabled):
         if sliceName in self._sliceDirectionsDict:
             sd = self._sliceDirectionsDict[sliceName]

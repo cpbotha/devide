@@ -419,6 +419,14 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
             elif self._inputs[idx]['Connected'] == 'namedWorldPoints':
                 pass
 
+            elif self._inputs[idx]['Connected'] == \
+                    'vtkLookupTable':
+                        # disconnect from sliceDirections
+                        self.sliceDirections.set_lookup_table(
+                                None)
+                        self._inputs[idx]['Connected'] = None
+                        self._inputs[idx]['inputData'] = None
+
         # END of if inputStream is None clause -----------------------------
 
         # check for VTK types
@@ -461,6 +469,13 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
                     self.sliceDirections.updateData(prevData, inputStream)
                     # record it in our main structure
                     self._inputs[idx]['inputData'] = inputStream
+
+            elif inputStream.IsA('vtkLookupTable'):
+                self.sliceDirections.set_lookup_table(
+                        inputStream)
+                self._inputs[idx]['Connected'] = \
+                        'vtkLookupTable'
+                self._inputs[idx]['inputData'] = inputStream
 
             else:
                 raise TypeError, "Wrong input type!"
