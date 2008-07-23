@@ -50,6 +50,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
 
         self._opacity_tf = vtk.vtkPiecewiseFunction()
         self._colour_tf = vtk.vtkColorTransferFunction()
+        self._lut = vtk.vtkLookupTable()
 
         # list of tuples, where each tuple (scalar_value, (r,g,b,a))
         self._config.transfer_function = [
@@ -223,7 +224,8 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
 
     def get_output_descriptions(self):
         return ('VTK Opacity Transfer Function',
-                'VTK Colour Transfer Function')
+                'VTK Colour Transfer Function',
+                'VTK Lookup Table')
 
     def set_input(self, idx, input_stream):
         self._volume_input = input_stream
@@ -231,8 +233,10 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
     def get_output(self, idx):
         if idx == 0:
             return self._opacity_tf
-        else:
+        elif idx == 1:
             return self._colour_tf
+        else:
+            return self._lut
 
     def logic_to_config(self):
         pass
@@ -246,7 +250,19 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
             r,g,b = [i / 255.0 for i in p[1]]
             self._colour_tf.AddRGBPoint(
                     p[0],r,g,b)
-           
+
+        lut_res = 1024 
+        minmax = self._view_frame.tf_widget.get_min_max()
+        self._lut.SetTableRange(minmax)
+        self._lut.SetNumberOfTableValues(lut_res)
+
+        # lut_res - 1: lut_res points == lut_res-1 intervals
+        incr = (minmax[1] - minmax[0]) / float(lut_res - 1)
+        for i in range(lut_res):
+            v = minmax[0] + i * incr
+            rgb = self._colour_tf.GetColor(v)
+            o = self._opacity_tf.GetValue(v)
+            self._lut.SetTableValue(i, rgb + (o,))
 
     def view_to_config(self):
         self._config.transfer_function = \
