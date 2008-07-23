@@ -21,6 +21,21 @@
 # * Fixes For Display Glitches;
 # * Fixes For Other Bugs Found In Previous Versions.
 #
+# *****
+# Because wx.aui is buggy with wxPython 2.8.8.1 on GTK, see:
+# http://trac.wxwidgets.org/ticket/9716
+# I (cpbotha.net) have added a tiny wx.aui compatibility layer to this
+# module, so that it can be used as drop-in replacement like this:
+#
+# if wx.Platform == "__WXGTK__":
+#     import PyAUI
+#     wx.aui = PyAUI
+# else:
+#     import wx.aui
+#
+#  -- Charl Botha, July 2008
+# *****
+#
 #
 # TODO List/Caveats
 #
@@ -5449,3 +5464,12 @@ class FrameManager(wx.EvtHandler):
 
             self._panes[indx] = pane                
             self.Update()
+
+
+# compatibility layer so that PyAUI can be used as drop-in replacement
+# for wx.aui in wxPython 2.8.8.1.  I.e. you can do:
+# from external import PyAUI as wx.aui (cpbotha.net)
+AuiManager = FrameManager
+AuiManager.SetManagedWindow = AuiManager.SetFrame
+AuiPaneInfo = PaneInfo
+

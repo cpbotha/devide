@@ -5,7 +5,17 @@
 import cStringIO
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
-import wx.aui
+
+# wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
+# http://trac.wxwidgets.org/ticket/9716
+# Until this is fixed, use this PyAUI to which I've added a
+# wx.aui compatibility layer.
+if wx.Platform == "__WXGTK__":
+    from external import PyAUI
+    wx.aui = PyAUI
+else:
+    import wx.aui
+
 # need listmix.ColumnSorterMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import BitmapFromImage, ImageFromStream

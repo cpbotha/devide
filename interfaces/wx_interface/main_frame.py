@@ -5,7 +5,17 @@
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
-import wx.aui
+
+# wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
+# http://trac.wxwidgets.org/ticket/9716
+# Until this is fixed, use this PyAUI to which I've added a
+# wx.aui compatibility layer.
+if wx.Platform == "__WXGTK__":
+    from external import PyAUI
+    wx.aui = PyAUI
+else:
+    import wx.aui
+
 from wx.html import HtmlWindow
 
 class SimpleHTMLListBox(wx.HtmlListBox):
@@ -143,7 +153,7 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             self._rwi,
             wx.aui.AuiPaneInfo().Name('graph_canvas').
-            Caption('Graph Canvas').Center().CloseButton(False))
+            Caption('Graph Canvas').Center().Floatable(False).CloseButton(False))
 
         ##################################################################
         # these two also get swapped on GTK
