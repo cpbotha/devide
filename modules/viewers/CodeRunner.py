@@ -46,7 +46,8 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
 
         moduleUtils.create_eoca_buttons(self, self._view_frame,
                                         self._view_frame.view_frame_panel,
-                                        ok_default=False)
+                                        ok_default=False,
+                                        cancel_hotkey=False)
 
         # more convenience bindings
         self._editwindows = [self._view_frame.scratch_editwindow,
