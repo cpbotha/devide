@@ -4,9 +4,10 @@
 #   position of all the opacity transfer function vertices
 # - abstract floatcanvas-derived linear function editor into wx_kit
 
-
+import os
 from moduleBase import moduleBase
-from moduleMixins import IntrospectModuleMixin
+from moduleMixins import IntrospectModuleMixin,\
+        FileOpenDialogModuleMixin
 import moduleUtils
 from external import transfer_function_widget
 import vtk
@@ -40,7 +41,7 @@ TF_LIBRARY = {
             (3072.0, (255, 255, 255), 1)] 
         }
 
-class TFEditor(IntrospectModuleMixin, moduleBase):
+class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
 
     def __init__(self, module_manager):
         moduleBase.__init__(self, module_manager)
@@ -129,7 +130,37 @@ class TFEditor(IntrospectModuleMixin, moduleBase):
         vf.load_preset_button.Bind(wx.EVT_BUTTON,
                 handler_load_preset_button)
 
+        def handler_file_save_button(event):
+            filename = self.filename_browse(self._view_frame, 
+            'Select DVTF filename to save to', 
+            'DeVIDE Transfer Function (*.dvtf)|*.dvtf|All files (*)|*', 
+            style=wx.SAVE)
 
+            if filename:
+                # if the user has NOT specified any fileextension, we
+                # add .dvtf.  (on Win this gets added by the
+                # FileSelector automatically, on Linux it doesn't)
+                if os.path.splitext(filename)[1] == '':
+                    filename = '%s.dvtf' % (filename,)
+
+            self._save_tf_to_file(filename)
+
+        vf.file_save_button.Bind(wx.EVT_BUTTON,
+                handler_file_save_button)
+
+        def handler_file_load_button(event):
+            filename = self.filename_browse(self._view_frame, 
+            'Select DVTF filename to load', 
+            'DeVIDE Transfer Function (*.dvtf)|*.dvtf|All files (*)|*', 
+            style=wx.OPEN)
+
+            self._load_tf_from_file(filename)
+
+        vf.file_load_button.Bind(wx.EVT_BUTTON,
+                handler_file_load_button)
+
+
+        # auto_range_button
         
 
     def _create_view_frame(self):
@@ -220,4 +251,35 @@ class TFEditor(IntrospectModuleMixin, moduleBase):
     def execute_module(self):
         pass
 
+    def _load_tf_from_file(self, filename):
+        try:
+            loadf = file(filename, 'r')
+            tf = eval(loadf.read(), {}, {})
+            loadf.close()
+
+        except Exception, e:
+            self._moduleManager.log_error_with_exception(
+                    'Could not load transfer function: %s.' %
+                    (str(e),))
+
+        else:
+            self._view_frame.tf_widget.set_transfer_function(
+                    tf)
         
+    def _save_tf_to_file(self, filename):
+        tf = self._view_frame.tf_widget.get_transfer_function()
+
+        try:
+            savef = file(filename, 'w')
+            savef.write("# DeVIDE Transfer Function DVTF v1.0\n%s" % \
+                    (str(tf),))
+            savef.close()
+        except Exception, e:
+            self._moduleManager.log_error(
+                    'Error saving transfer function: %s.' % (str(e),))
+
+        else:
+            self._moduleManager.log_message(
+                    'Saved %s.' % (filename,))
+        
+

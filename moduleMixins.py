@@ -193,10 +193,10 @@ vtkPipelineConfigModuleMixin = IntrospectModuleMixin
 # ----------------------------------------------------------------------------
 
 
-class fileOpenDialogModuleMixin(object):
+class FileOpenDialogModuleMixin(object):
     """Module mixin to make use of file open dialog."""
     
-    def filenameBrowse(self, parent, message, wildcard, style=wx.OPEN):
+    def filename_browse(self, parent, message, wildcard, style=wx.OPEN):
         """Utility method to make use of wxFileDialog.
 
         This function will open up exactly one dialog per 'message' and this
@@ -221,6 +221,8 @@ class fileOpenDialogModuleMixin(object):
                 return self._fo_dlgs[message].GetPath()
         else:
             return None
+
+    filenameBrowse = filename_browse
 
     def closeFilenameBrowse(self):
         """Use this method to close all created dialogs explicitly.
@@ -250,6 +252,8 @@ class fileOpenDialogModuleMixin(object):
             return self._do_dlgs[message].GetPath()
         else:
             return None
+
+fileOpenDialogModuleMixin = FileOpenDialogModuleMixin
 
 # ----------------------------------------------------------------------------
 
