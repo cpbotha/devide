@@ -143,7 +143,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
                 if os.path.splitext(filename)[1] == '':
                     filename = '%s.dvtf' % (filename,)
 
-            self._save_tf_to_file(filename)
+                self._save_tf_to_file(filename)
 
         vf.file_save_button.Bind(wx.EVT_BUTTON,
                 handler_file_save_button)
@@ -154,7 +154,8 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
             'DeVIDE Transfer Function (*.dvtf)|*.dvtf|All files (*)|*', 
             style=wx.OPEN)
 
-            self._load_tf_from_file(filename)
+            if filename:
+                self._load_tf_from_file(filename)
 
         vf.file_load_button.Bind(wx.EVT_BUTTON,
                 handler_file_load_button)
@@ -254,7 +255,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
     def _load_tf_from_file(self, filename):
         try:
             loadf = file(filename, 'r')
-            tf = eval(loadf.read(), {}, {})
+            tf = eval(loadf.read(), {"__builtins__": {}})
             loadf.close()
 
         except Exception, e:
