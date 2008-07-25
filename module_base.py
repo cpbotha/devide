@@ -229,5 +229,4 @@ class ModuleBase(object):
     def sync_module_view_with_logic(self):
         self._moduleManager.sync_module_view_with_logic(self)
 
-ModuleBase = ModuleBase
 
