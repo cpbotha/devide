@@ -10,7 +10,7 @@ from metaModule import metaModule
 import modules
 import mutex
 from random import choice
-from moduleBase import defaultConfigClass
+from moduleBase import DefaultConfigClass
 import time
 import types
 import traceback
@@ -1238,7 +1238,7 @@ class moduleManager:
                         % (moduleInstance.__class__.__name__, str(e)))
 
                     # if we can't get a config, we pickle a default
-                    pms.moduleConfig = defaultConfigClass()
+                    pms.moduleConfig = DefaultConfigClass()
                     
                 #pms.moduleName = moduleInstance.__class__.__name__
                 # we need to store the complete module name

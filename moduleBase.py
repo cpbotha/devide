@@ -8,17 +8,17 @@ author: Charl P. Botha <cpbotha@ieee.org>
 """
 
 #########################################################################
-class genericObject(object):
+class GenericObject(object):
     """Generic object into which we can stuff whichever attributes we want.
     """
     pass
 
 #########################################################################
-class defaultConfigClass(object):
+class DefaultConfigClass(object):
     pass
 
 #########################################################################
-class moduleBase(object):
+class ModuleBase(object):
     """Base class for all modules.
 
     Any module wishing to take part in the devide party will have to offer all
@@ -36,7 +36,7 @@ class moduleBase(object):
         self._moduleManager = moduleManager
 
         
-        self._config = defaultConfigClass()
+        self._config = DefaultConfigClass()
 
         # modules should toggle this variable to True once they have
         # initialised and shown their view once.
@@ -228,3 +228,6 @@ class moduleBase(object):
 
     def sync_module_view_with_logic(self):
         self._moduleManager.sync_module_view_with_logic(self)
+
+moduleBase = ModuleBase
+
