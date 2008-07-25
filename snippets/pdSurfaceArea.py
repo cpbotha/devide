@@ -10,7 +10,7 @@
 import vtk
 
 # get the slice3dVWR marked by the user
-sv = devideApp.moduleManager.getMarkedModule('slice3dVWR')
+sv = devideApp.ModuleManager.getMarkedModule('slice3dVWR')
 
 if sv:
     so = sv._tdObjects._getSelectedObjects()

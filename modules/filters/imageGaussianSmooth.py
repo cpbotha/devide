@@ -10,8 +10,8 @@ import vtk
 
 class imageGaussianSmooth(introspectModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._imageGaussianSmooth = vtk.vtkImageGaussianSmooth()
 
@@ -25,7 +25,7 @@ class imageGaussianSmooth(introspectModuleMixin, ModuleBase):
         self._view_frame = None
 
 
-        self._moduleManager.sync_module_logic_with_config(self)
+        self._module_manager.sync_module_logic_with_config(self)
 
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -91,19 +91,19 @@ class imageGaussianSmooth(introspectModuleMixin, ModuleBase):
         if self._view_frame is None:
             self._createViewFrame()
             # the logic is the bottom line in this case
-            self._moduleManager.sync_module_view_with_logic(self)
+            self._module_manager.sync_module_view_with_logic(self)
             
         # if the window was visible already. just raise it
         self._view_frame.Show(True)
         self._view_frame.Raise()
 
     def _createViewFrame(self):
-        self._moduleManager.importReload(
+        self._module_manager.importReload(
             'modules.filters.resources.python.imageGaussianSmoothViewFrame')
         import modules.filters.resources.python.imageGaussianSmoothViewFrame
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.filters.resources.python.imageGaussianSmoothViewFrame.\
             imageGaussianSmoothViewFrame)
 

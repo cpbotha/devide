@@ -2,13 +2,13 @@
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
-# moduleManager progress handler methods.
+# ModuleManager progress handler methods.
 
 """vtk_kit package driver file.
 
 This performs all initialisation necessary to use VTK from DeVIDE.  Makes
 sure that all VTK classes have ErrorEvent handlers that report back to
-the moduleManager.
+the ModuleManager.
 
 Inserts the following modules in sys.modules: vtk, vtkdevide.
 

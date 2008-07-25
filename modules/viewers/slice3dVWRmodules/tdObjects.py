@@ -218,7 +218,7 @@ class tdObjects(s3dcGridMixin):
     def updateObject(self, prevObject, newObject):
         """Method used to update new data on a new connection.
 
-        When the moduleManager transfers data, it simply calls set_input()
+        When the ModuleManager transfers data, it simply calls set_input()
         with a non-None inputStream on an already non-None connection.  This
         function will take the necessary steps to update just the object and
         keep everything else as is.
@@ -813,7 +813,7 @@ class tdObjects(s3dcGridMixin):
                         exec('prop.%s' % (methodName,))
                         
             except Exception:
-                self._moduleManager.log_error_with_exception(
+                self._module_manager.log_error_with_exception(
                     'Could not execute %s on object %s\'s prop.' % \
                     (methodName,
                      self._tdObjectsDict[obj]['objectName']))

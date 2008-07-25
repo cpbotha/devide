@@ -3,9 +3,9 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
 class vtkOpenFOAMReader(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkOpenFOAMReader(), 'Reading vtkOpenFOAM.',
             (), ('vtkOpenFOAM',),
             replaceDoc=True,

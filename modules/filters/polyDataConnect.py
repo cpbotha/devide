@@ -7,10 +7,10 @@ import vtk
 
 class polyDataConnect(noConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._polyDataConnect = vtk.vtkPolyDataConnectivityFilter()
         # we're not going to use this feature just yet

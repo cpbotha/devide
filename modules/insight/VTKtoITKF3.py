@@ -9,8 +9,8 @@ import vtk
 
 class VTKtoITKF3(noConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
 
         # setup the pipeline

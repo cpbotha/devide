@@ -16,10 +16,10 @@ import vtk
 
 class decimate(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         # the decimator only works on triangle data, so we make sure
         # that it only gets triangle data

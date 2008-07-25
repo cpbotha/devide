@@ -3,9 +3,9 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
 class vtkImageDataGeometryFilter(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkImageDataGeometryFilter(), 'Processing.',
             ('vtkImageData',), ('vtkPolyData',),
             replaceDoc=True,

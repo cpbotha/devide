@@ -19,13 +19,13 @@ class testModule3(ModuleBase, noConfigModuleMixin):
     watershedding of curvature-on-surface image.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         # initialise any mixins we might have
         noConfigModuleMixin.__init__(self)
 
-        mm = self._moduleManager
+        mm = self._module_manager
 
         self._cleaner = vtk.vtkCleanPolyData()
 
@@ -182,10 +182,10 @@ class testModule3(ModuleBase, noConfigModuleMixin):
                 #print neighbourMap[ptId]
 
                 if ptId % (numPoints / 20) == 0:
-                    self._moduleManager.setProgress(100.0 * ptId / numPoints,
+                    self._module_manager.setProgress(100.0 * ptId / numPoints,
                                                     "Building neighbour map")
 
-            self._moduleManager.setProgress(100.0,
+            self._module_manager.setProgress(100.0,
                                             "Done building neighbour map")
 
             # DONE BUILDING NEIGBOUR MAP ################################
@@ -283,7 +283,7 @@ class testModule3(ModuleBase, noConfigModuleMixin):
                     # for the next iteration
                     seedPdScalars.SetTuple1(i, c)
 
-                self._moduleManager.setProgress(iteration / 500.0 * 100.0,
+                self._module_manager.setProgress(iteration / 500.0 * 100.0,
                                                 "Homotopic modification")
                 print "iteration %d done" % (iteration)
                 iteration += 1

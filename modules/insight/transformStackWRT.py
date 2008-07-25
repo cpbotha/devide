@@ -16,10 +16,10 @@ class transformStackWRT(ModuleBase, filenameViewModuleMixin):
     Use this module to save the results of a register2D session.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 
@@ -92,7 +92,7 @@ class transformStackWRT(ModuleBase, filenameViewModuleMixin):
     def _writeTransformStack(self, transformStack, filename):
         if not transformStack:
             md = wx.MessageDialog(
-                self._moduleManager.getModuleViewParentWindow(),
+                self._module_manager.getModuleViewParentWindow(),
                 'Input transform Stack is empty or not connected, not saving.',
                 "Information",
                 wx.OK | wx.ICON_INFORMATION)

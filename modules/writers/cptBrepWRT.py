@@ -8,10 +8,10 @@ import vtk
 
 class cptBrepWRT(filenameViewModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._triFilter = vtk.vtkTriangleFilter()
 
@@ -76,7 +76,7 @@ class cptBrepWRT(filenameViewModuleMixin, ModuleBase):
             # list constituting a triangle face
             faces = []
 
-            self._moduleManager.setProgress(10,'Extracting triangles')
+            self._module_manager.setProgress(10,'Extracting triangles')
             # blaat.
             numCells = polyData.GetNumberOfCells()
             for cellIdx in xrange(numCells):
@@ -99,7 +99,7 @@ class cptBrepWRT(filenameViewModuleMixin, ModuleBase):
 
                 pp = ptIdx / numPoints * 100.0
                 if pp % 10 == 0:
-                    self._moduleManager.setProgress(
+                    self._module_manager.setProgress(
                         pp, 'Writing points')
 
             numFaces = len(faces)
@@ -112,6 +112,6 @@ class cptBrepWRT(filenameViewModuleMixin, ModuleBase):
 
                 pp = faceIdx / numFaces * 100.0
                 if pp % 10 == 0:
-                    self._moduleManager.setProgress(
+                    self._module_manager.setProgress(
                         pp, 'Writing triangles')
             

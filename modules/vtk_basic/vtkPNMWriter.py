@@ -3,9 +3,9 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
 class vtkPNMWriter(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkPNMWriter(), 'Writing vtkPNM.',
             ('vtkPNM',), (),
             replaceDoc=True,

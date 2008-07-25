@@ -8,10 +8,10 @@ import vtk
 
 class vtiRDR(filenameViewModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._reader = vtk.vtkXMLImageDataReader()
         
@@ -31,7 +31,7 @@ class vtiRDR(filenameViewModuleMixin, ModuleBase):
         self._config.filename = ''
 
         # there is no view yet...
-        self._moduleManager.sync_module_logic_with_config(self)
+        self._module_manager.sync_module_logic_with_config(self)
         
     def close(self):
         del self._reader

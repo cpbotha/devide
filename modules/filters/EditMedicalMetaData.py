@@ -118,7 +118,7 @@ class EditMedicalMetaData(introspectModuleMixin, ModuleBase):
         reload(modules.filters.resources.python.EditMedicalMetaDataViewFrame)
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.filters.resources.python.EditMedicalMetaDataViewFrame.\
             EditMedicalMetaDataViewFrame)
 

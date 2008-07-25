@@ -7,9 +7,9 @@ class testModule2(noConfigModuleMixin, ModuleBase):
     """Resample volume according to 4x4 homogeneous transform.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         # initialise any mixins we might have
         noConfigModuleMixin.__init__(self)
 

@@ -6,9 +6,9 @@ import vtkdevide
 
 class extractHDomes(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._imageMathSubtractH = vtk.vtkImageMathematics()
         self._imageMathSubtractH.SetOperationToAddConstant()

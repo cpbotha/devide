@@ -9,8 +9,8 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.numberOfIterations = 5
         self._config.conductanceParameter = 3.0

@@ -745,7 +745,7 @@ class implicits(s3dcGridMixin):
         This method should be called when any of the implicits is modified.
         """
         
-        mm = self.slice3dVWR._moduleManager
+        mm = self.slice3dVWR._module_manager
         # part 2 is responsible for the implicit output
         mm.modifyModule(self.slice3dVWR, 2)
         mm.requestAutoExecuteNetwork(self.slice3dVWR)

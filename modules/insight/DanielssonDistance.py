@@ -9,8 +9,8 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class DanielssonDistance(scriptedConfigModuleMixin, ModuleBase):
     
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.squared_distance = False
         self._config.binary_input = True

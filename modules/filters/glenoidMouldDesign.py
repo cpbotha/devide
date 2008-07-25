@@ -22,10 +22,10 @@ class glenoidMouldDesign(ModuleBase, noConfigModuleMixin):
     drillGuideOuterDiameter = 5
     drillGuideHeight = 10
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         # and mixin
         noConfigModuleMixin.__init__(self)
 

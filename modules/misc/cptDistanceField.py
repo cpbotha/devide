@@ -8,10 +8,10 @@ import vtk
 
 class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         
 
         self._imageInput = None
@@ -94,7 +94,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
             cptBaseName = os.tempnam()
 
             # first convert mesh data to brep
-            cbw = self._moduleManager.createModule(
+            cbw = self._module_manager.createModule(
                 'modules.writers.cptBrepWRT')
             cbw.set_input(0, self._meshInput)
             cfg = cbw.get_config()
@@ -102,7 +102,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
             cfg.filename = brepFilename
             cbw.set_config(cfg)
             # we're calling it directly... propagations will propagate
-            # upwards to our caller (the moduleManager) - execution
+            # upwards to our caller (the ModuleManager) - execution
             # will be interrupted if cbw flags an error
             cbw.execute_module()
 
@@ -145,7 +145,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
             self._flipper.GetOutput().SetUpdateExtentToWholeExtent()
             self._flipper.Update()
 
-            self._moduleManager.deleteModule(cbw)
+            self._module_manager.deleteModule(cbw)
 
             print "CPT Basename == %s" % (cptBaseName,)
 

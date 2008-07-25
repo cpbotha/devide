@@ -7,10 +7,10 @@ import types
 from modules.viewers.slice3dVWRmodules.selectedPoints import outputSelectedPoints
 
 class points_reader(filenameViewModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(

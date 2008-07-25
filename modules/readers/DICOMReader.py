@@ -235,7 +235,7 @@ class DICOMReader(introspectModuleMixin, ModuleBase):
         reload(modules.readers.resources.python.DICOMReaderViewFrame)
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.readers.resources.python.DICOMReaderViewFrame.\
             DICOMReaderViewFrame)
 

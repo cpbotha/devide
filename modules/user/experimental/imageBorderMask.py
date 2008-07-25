@@ -4,9 +4,9 @@ import vtkdevide
 
 class imageBorderMask(simpleVTKClassModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         simpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtkdevide.vtkImageBorderMask(), 'Creating border mask.',
             ('VTK Image Data',), ('Border Mask (vtkImageData)',))
 

@@ -11,8 +11,8 @@ from moduleMixins import scriptedConfigModuleMixin
 class watershed(scriptedConfigModuleMixin, ModuleBase):
 
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         # pre-processing on input image: it will be thresholded
         self._config.threshold = 0.1
@@ -62,7 +62,7 @@ class watershed(scriptedConfigModuleMixin, ModuleBase):
         self._watershed.GetOutput().Update()
         # the watershed module is REALLY CRAP about setting progress to 100,
         # so we do it here.
-        self._moduleManager.setProgress(100, "Watershed complete.")
+        self._module_manager.setProgress(100, "Watershed complete.")
 
     def get_input_descriptions(self):
         return ('ITK Image (3D, float)',)

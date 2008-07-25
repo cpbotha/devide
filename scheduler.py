@@ -198,7 +198,7 @@ class Scheduler:
 
         # consumers is a list of (outputIdx, consumerMetaModule,
         # consumerInputIdx) tuples
-        mm = self._devideApp.getModuleManager()        
+        mm = self._devideApp.get_module_manager()        
         consumers = mm.getConsumers(p_meta_module)
         
         sConsumers = []
@@ -234,7 +234,7 @@ class Scheduler:
         
         # producers is a list of (producerMetaModule, output_idx, inputIdx)
         # tuples
-        mm = self._devideApp.getModuleManager()        
+        mm = self._devideApp.get_module_manager()        
         producers = mm.getProducers(c_meta_module)
 
         sProducers = []
@@ -407,7 +407,7 @@ class Scheduler:
 
             # this will also check for cycles...
             schedList = self.topoSort(schedulerModules)
-            mm = self._devideApp.getModuleManager()
+            mm = self._devideApp.get_module_manager()
 
             for sm in schedList:
                 print "### sched:", sm.meta_module.instance.__class__.__name__
@@ -429,7 +429,7 @@ class Scheduler:
                                           sm.meta_module, input_index)
 
                 # finally: execute module if
-                # moduleManager thinks it's necessary
+                # ModuleManager thinks it's necessary
                 if mm.shouldExecuteModule(sm.meta_module, sm.part):
                     print 'executing part %d of %s' % \
                           (sm.part, sm.meta_module.instance.__class__.__name__)
@@ -490,7 +490,7 @@ class HybridScheduler(Scheduler):
 
             # this will also check for cycles...
             schedList = self.topoSort(schedulerModules)
-            mm = self._devideApp.getModuleManager()
+            mm = self._devideApp.get_module_manager()
 
             # find largest streamable subsets
             streamables_dict, streamable_subsets = \
@@ -536,7 +536,7 @@ class HybridScheduler(Scheduler):
                                           streaming_transfer)
 
                 # finally: execute module if
-                # moduleManager thinks it's necessary
+                # ModuleManager thinks it's necessary
                 if streaming_module: 
                     if streamables_dict[smt] == 2:
                         # terminating module in streamable subset

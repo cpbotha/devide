@@ -5,10 +5,10 @@ import vtk
 
 class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
 
-    def __init__(self, moduleManager, contourFilterText):
+    def __init__(self, module_manager, contourFilterText):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._contourFilterText = contourFilterText
         if contourFilterText == 'marchingCubes':
@@ -88,7 +88,7 @@ class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
         reload(modules.Filters.resources.python.contourFLTBaseViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.Filters.resources.python.contourFLTBaseViewFrame.\
             contourFLTBaseViewFrame)
 

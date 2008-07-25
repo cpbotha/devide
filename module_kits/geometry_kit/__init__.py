@@ -4,7 +4,7 @@
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
-# moduleManager progress handler methods.
+# ModuleManager progress handler methods.
 
 """geometry_kit package driver file.
 

@@ -8,8 +8,8 @@ from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class sigmoid(scriptedConfigModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.alpha = - 0.5
         self._config.beta = 3.0

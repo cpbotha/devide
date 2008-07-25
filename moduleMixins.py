@@ -51,7 +51,7 @@ class IntrospectModuleMixin(object):
                 parentWindow,
                 'Introspecting %s' % (objDescription,),
                 icon,
-                self._moduleManager._devide_app)
+                self._module_manager._devide_app)
             
             self._python_shells[obj].inject_locals({'obj' : obj})
             self._python_shells[obj].set_statusbar_message(
@@ -298,13 +298,13 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
         False, it will be a File Save dialog.
         """
 
-        if not self._moduleManager._devide_app.view_mode:
+        if not self._module_manager._devide_app.view_mode:
             raise RuntimeError(
                 'Eror calling view-dependent createViewFrame() in '
                 'backend-type DeVIDE.')
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             resources.python.filenameViewModuleMixinFrame.\
             filenameViewModuleMixinFrame)
 
@@ -348,7 +348,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
     def view(self):
         if self._view_frame is None:
             self._create_view_frame()
-            self._moduleManager.sync_module_view_with_logic(self)
+            self._module_manager.sync_module_view_with_logic(self)
 
         # and show the UI
         self._view_frame.Show(True)
@@ -424,7 +424,7 @@ class noConfigModuleMixin(introspectModuleMixin):
         objectDict as none, the introspection controls won't get added.
         """
 
-        parent_window = self._moduleManager.get_module_view_parent_window()
+        parent_window = self._module_manager.get_module_view_parent_window()
 
         viewFrame = wx.Frame(parent_window, -1,
                             moduleUtils.createModuleViewFrameTitle(self))
@@ -470,7 +470,7 @@ class noConfigModuleMixin(introspectModuleMixin):
     def view(self):
         if self._view_frame is None:
             self._create_view_frame()
-            self._moduleManager.sync_module_view_with_logic(self)
+            self._module_manager.sync_module_view_with_logic(self)
             
         # and show the UI
         self._view_frame.Show(True)
@@ -546,14 +546,14 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
             del self._view_frame
 
     def _create_view_frame(self):
-        parentWindow = self._moduleManager.getModuleViewParentWindow()
+        parentWindow = self._module_manager.getModuleViewParentWindow()
 
         import resources.python.defaultModuleViewFrame
         reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
         viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, dMVF)
+            self, self._module_manager, dMVF)
 
         # this viewFrame doesn't have the 7-sizer yet
         sizer7 = wx.BoxSizer(wx.HORIZONTAL)
@@ -830,7 +830,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
     def view(self):
         if self._view_frame is None:
             self._create_view_frame()
-            self._moduleManager.sync_module_view_with_logic(self)
+            self._module_manager.sync_module_view_with_logic(self)
 
         # and show the UI
         self._view_frame.Show(True)

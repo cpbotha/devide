@@ -35,7 +35,7 @@ class SkeletonAUIViewer(introspectModuleMixin, ModuleBase):
 
         # create the view frame
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, 
+            self, self._module_manager, 
             SkeletonAUIViewerFrame.SkeletonAUIViewerFrame)
         # change the title to something more spectacular
         self._view_frame.SetTitle('Skeleton AUI Viewer')

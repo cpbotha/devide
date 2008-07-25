@@ -5,7 +5,7 @@
 """Top-level __init__ of the module_kits.
 
 @ivar module_kits_list: All moduleKits in this list will have their init()s
-called with the moduleManager as parameter (after being imported).  Before
+called with the ModuleManager as parameter (after being imported).  Before
 this happens though, members of this list that are also in the no-kits list
 (defined by defaults.py or command-line) will be removed.  The kits will be
 imported in the order that they are specified.  Make sure that kits dependent

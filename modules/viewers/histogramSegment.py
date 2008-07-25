@@ -16,8 +16,8 @@ class histogramSegment(introspectModuleMixin, ModuleBase):
     _gridNOHCol = 1
     
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._createViewFrame()
         self._grid = self._viewFrame.selectorGrid
@@ -436,7 +436,7 @@ class histogramSegment(introspectModuleMixin, ModuleBase):
 
         # DeVIDE takes care of the icon and the window close handlers
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, viewFrame)
+            self, self._module_manager, viewFrame)
         
 
     def _handlerAddSelector(self, event):

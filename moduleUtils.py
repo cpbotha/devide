@@ -98,7 +98,7 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
     viewFrame.GetSizer().SetSizeHints(viewFrame)
 
     # EVENT BINDINGS
-    mm = d3module._moduleManager
+    mm = d3module._module_manager
 
     # call back into the graphEditor, if it exists
     ge = mm._devide_app.get_interface()._graph_editor
@@ -251,9 +251,9 @@ def createModuleViewFrameTitle(d3module):
     return '%s View' % \
            (d3module.__class__.__name__,)
 
-def instantiateModuleViewFrame(d3module, moduleManager, frameClass):
+def instantiateModuleViewFrame(d3module, ModuleManager, frameClass):
     # instantiate the frame
-    pw = moduleManager.get_module_view_parent_window()
+    pw = ModuleManager.get_module_view_parent_window()
     # name becomes the WM_CLASS under X
     viewFrame = frameClass(pw, -1, 'dummy', name='DeVIDE')
 
@@ -312,7 +312,7 @@ def setupVTKObjectProgress(d3module, obj, progressText):
     # in addition, the AddObserver is the standard way for doing this
     # we should probably not use ProgressText though...
     obj.SetProgressText(progressText)
-    mm = d3module._moduleManager
+    mm = d3module._module_manager
     obj.AddObserver(
         'ProgressEvent', lambda vtko, name:
         mm.genericProgressCallback(vtko,

@@ -21,9 +21,9 @@ class reconstructionRDR(scriptedConfigModuleMixin, ModuleBase):
 	$Revision: 1.1 $
 	"""
 	
-	def __init__(self, moduleManager):
+	def __init__(self, module_manager):
 	# call the parent constructor
-		ModuleBase.__init__(self, moduleManager)
+		ModuleBase.__init__(self, module_manager)
 
 		# this is our output
 		self._transformStack = transformStackClass( self )

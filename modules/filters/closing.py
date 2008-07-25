@@ -9,9 +9,9 @@ import vtk
 class closing(scriptedConfigModuleMixin, ModuleBase):
 
     
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._imageDilate = vtk.vtkImageContinuousDilate3D()
         self._imageErode = vtk.vtkImageContinuousErode3D()

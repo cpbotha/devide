@@ -6,10 +6,10 @@ import vtk
 
 class contour(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._contourFilter = vtk.vtkContourFilter()
 

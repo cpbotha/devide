@@ -17,9 +17,9 @@ class imageCurvature(ModuleBase, noConfigModuleMixin):
     All code by Joris van Zwieten.  This bit of documentation by cpbotha.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         noConfigModuleMixin.__init__(self)
 
         self._imageCurvature = vtktud.vtkImageCurvature()

@@ -19,7 +19,7 @@ from internal.devide_canvas.devide_canvas_object import \
 DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine, \
 DeVIDECanvasRBBox
 import genUtils
-from moduleManager import ModuleManagerException
+from ModuleManager import ModuleManagerException
 import moduleUtils # for getModuleIcon
 import os
 import re
@@ -997,7 +997,7 @@ class GraphEditor:
                 return (temp_module, glyph)
 
     def _execute_module(self, moduleInstance):
-        """Ask the moduleManager to execute the devide module represented by
+        """Ask the ModuleManager to execute the devide module represented by
         the parameter moduleInstance.
         """
         
@@ -1023,7 +1023,7 @@ class GraphEditor:
 
     def fillModuleLists(self, scan_modules=True):
         """Build up the module tree from the list of available modules
-        supplied by the moduleManager.  At the moment, things will look
+        supplied by the ModuleManager.  At the moment, things will look
         a bit strange if the module tree goes deeper than one level, but
         everything will still work.
         """
@@ -1733,7 +1733,7 @@ class GraphEditor:
 
         # go through consumerTypes from high to low, building up a list
         # with glyph in the order that we should destroy them
-        # we should probably move this logic to the moduleManager as a
+        # we should probably move this logic to the ModuleManager as a
         # method getModuleDeletionOrder() or somesuch
         glyphDeletionSchedule = []
         for consumerType in range(maxConsumerType, -1, -1):
@@ -2123,7 +2123,7 @@ class GraphEditor:
         moduleInstances = [glyph.moduleInstance for glyph in glyphs]
         mm = self._devide_app.get_module_manager()
 
-        # let the moduleManager serialise what it can
+        # let the ModuleManager serialise what it can
         pmsDict, connectionList = mm.serialiseModuleInstances(
             moduleInstances)
 

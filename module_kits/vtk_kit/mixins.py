@@ -159,7 +159,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
     the default to be used (SetInput(), GetOutput()).
     """
     
-    def __init__(self, moduleManager, vtkObjectBinding, progressText,
+    def __init__(self, module_manager, vtkObjectBinding, progressText,
                  inputDescriptions, outputDescriptions,
                  replaceDoc=True,
                  inputFunctions=None, outputFunctions=None):
@@ -168,7 +168,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         self._configVtkObj = None
 
         # first these two mixins
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._theFilter = vtkObjectBinding
         
@@ -197,14 +197,14 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         self._outputFunctions = outputFunctions
 
     def _createViewFrame(self):
-        parentWindow = self._moduleManager.getModuleViewParentWindow()
+        parentWindow = self._module_manager.getModuleViewParentWindow()
 
         import resources.python.defaultModuleViewFrame
         reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
         viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, dMVF)
+            self, self._module_manager, dMVF)
 
         # ConfigVtkObj parent not important, we're passing frame + panel
         # this should populate the sizer with a new sizer7

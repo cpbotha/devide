@@ -36,8 +36,8 @@ glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 
 
 class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
         InputArrayChoiceMixin.__init__(self)
 
         self._config.scaling = True

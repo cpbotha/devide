@@ -7,10 +7,10 @@ import vtk
 
 
 class vtiWRT(filenameViewModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._writer = vtk.vtkXMLImageDataWriter()
         
@@ -32,7 +32,7 @@ class vtiWRT(filenameViewModuleMixin, ModuleBase):
 
         # set up some defaults
         self._config.filename = ''
-        self._moduleManager.sync_module_logic_with_config(self)
+        self._module_manager.sync_module_logic_with_config(self)
         
     def close(self):
         # we should disconnect all inputs
@@ -77,7 +77,7 @@ class vtiWRT(filenameViewModuleMixin, ModuleBase):
 
     def streaming_execute_module(self):
         if len(self._writer.GetFileName()) and self._writer.GetInput():
-            sp = self._moduleManager.get_app_main_config().streaming_pieces
+            sp = self._module_manager.get_app_main_config().streaming_pieces
             self._writer.SetNumberOfPieces(sp)
             self._writer.Write()
 

@@ -13,8 +13,8 @@ class histogram2D(scriptedConfigModuleMixin, ModuleBase):
     The inputs have to have identical dimensions.
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._histogram = vtkdevide.vtkImageHistogram2D()
         moduleUtils.setupVTKObjectProgress(self, self._histogram,

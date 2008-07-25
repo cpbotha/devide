@@ -6,10 +6,10 @@ import moduleUtils
 import types
 
 class MatlabPointsWriter(filenameViewModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(

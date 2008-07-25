@@ -10,8 +10,8 @@ import vtk
 
 class resampleImage(introspectModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._imageResample = vtk.vtkImageResample()
 
@@ -125,12 +125,12 @@ class resampleImage(introspectModuleMixin, ModuleBase):
         self._view_frame.Raise()
 
     def _createViewFrame(self):
-        self._moduleManager.importReload(
+        self._module_manager.importReload(
             'modules.filters.resources.python.resampleImageViewFrame')
         import modules.filters.resources.python.resampleImageViewFrame
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.filters.resources.python.resampleImageViewFrame.\
             resampleImageViewFrame)
 

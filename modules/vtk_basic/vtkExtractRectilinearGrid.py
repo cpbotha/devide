@@ -3,9 +3,9 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
 class vtkExtractRectilinearGrid(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkExtractRectilinearGrid(), 'Processing.',
             ('vtkRectilinearGrid',), ('vtkRectilinearGrid',),
             replaceDoc=True,

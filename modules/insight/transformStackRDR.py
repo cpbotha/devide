@@ -21,10 +21,10 @@ class transformStackRDR(ModuleBase, filenameViewModuleMixin):
     that.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 

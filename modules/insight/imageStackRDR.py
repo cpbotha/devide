@@ -15,8 +15,8 @@ class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
     This list can e.g. be used as input to the 2D registration module.
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         # list of ACTUAL itk images
         self._imageStack = imageStackClass(self)
@@ -100,7 +100,7 @@ class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
                 progressStep = 100.0
                 
             for imageFileName in self._config._imageFileNames:
-                self._moduleManager.setProgress(
+                self._module_manager.setProgress(
                     currentProgress, "Loading %s" % (imageFileName,))
                 currentProgress += progressStep
                 
@@ -113,7 +113,7 @@ class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
                 # it does if there was an explicit New()
                 self._imageStack[-1].Register()
 
-            self._moduleManager.setProgress(100.0, "Done loading images.")
+            self._module_manager.setProgress(100.0, "Done loading images.")
             # make sure all observers know about the changes
             self._imageStack.notify()
             # indicate that we're in sync now
@@ -129,12 +129,12 @@ class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
                       self._handlerAddButton)
 
     def _createViewFrame(self):
-        self._moduleManager.importReload(
+        self._module_manager.importReload(
             'modules.Insight.resources.python.imageStackRDRViewFrame')
         import modules.Insight.resources.python.imageStackRDRViewFrame
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.Insight.resources.python.imageStackRDRViewFrame.\
             imageStackRDRViewFrame)
 

@@ -75,7 +75,7 @@ class DICOMBrowser(introspectModuleMixin, ModuleBase):
             {'Module (self)' : self})
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, 
+            self, self._module_manager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
         # change the title to something more spectacular
         # default is DICOMBrowser View
@@ -446,7 +446,7 @@ class DICOMBrowser(introspectModuleMixin, ModuleBase):
             # with trackback.format_exc() you can send this to the log
             # window.
         except RuntimeError, e:
-            self._moduleManager.log_error(
+            self._module_manager.log_error(
                     'Could not read %s:\n%s.\nSuggest re-Scan.' %
                     (os.path.basename(filename), str(e)))
             return
@@ -754,7 +754,7 @@ class DICOMBrowser(introspectModuleMixin, ModuleBase):
             # i don't want to use log_error_with_exception, because it
             # uses a non-standard dialogue box that pops up over the
             # main devide window instead of the module view.
-            self._moduleManager.log_error(
+            self._module_manager.log_error(
                     'Error scanning DICOM files: %s' % (str(e)))
 
         # do this in anycase...

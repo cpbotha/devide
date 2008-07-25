@@ -14,8 +14,8 @@ class ITKtoVTK(noConfigModuleMixin, ModuleBase):
     $Revision: 1.5 $
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
 
         self._input = None
@@ -92,11 +92,11 @@ class ITKtoVTK(noConfigModuleMixin, ModuleBase):
             return None
 
     def logic_to_config(self):
-        # important so that moduleManager doesn't think our state has changed
+        # important so that ModuleManager doesn't think our state has changed
         return False
     
     def config_to_logic(self):
-        # important so that moduleManager doesn't think our state has changed
+        # important so that ModuleManager doesn't think our state has changed
         return False
     
     def view_to_config(self):

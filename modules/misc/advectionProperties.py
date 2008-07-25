@@ -12,8 +12,8 @@ import wx
 class advectionProperties(scriptedConfigModuleMixin, ModuleBase):
     _numberOfInputs = 16
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.csvFilename = ''
 

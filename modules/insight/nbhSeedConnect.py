@@ -9,8 +9,8 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class nbhSeedConnect(scriptedConfigModuleMixin, ModuleBase):
     
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         # floats
         self._config.lower = 128.0

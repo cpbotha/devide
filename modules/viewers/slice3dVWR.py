@@ -67,11 +67,11 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
 
     gridSelectionBackground = (11, 137, 239)
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # call base constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         colourDialogMixin.__init__(
-            self, moduleManager.get_module_view_parent_window())
+            self, module_manager.get_module_view_parent_window())
         self._numDataInputs = self.NUM_INPUTS
         # use list comprehension to create list keeping track of inputs
         self._inputs = [{'Connected' : None, 'inputData' : None,
@@ -591,7 +591,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         import modules.viewers.resources.python.slice3dVWRFrames
         reload(modules.viewers.resources.python.slice3dVWRFrames)
 
-        stereo = self._moduleManager.get_app_main_config().stereo
+        stereo = self._module_manager.get_app_main_config().stereo
         #print "STEREO:", stereo
         modules.viewers.resources.python.slice3dVWRFrames.S3DV_STEREO = stereo
 
@@ -599,7 +599,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         threedFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                       threedFrame
         self.threedFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, threedFrame)
+            self, self._module_manager, threedFrame)
         self.threedFrame.SetTitle('slice3dVWR 3D view')
             
         # see about stereo
@@ -621,7 +621,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         controlFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                        controlFrame
         self.controlFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, controlFrame)
+            self, self._module_manager, controlFrame)
         self.controlFrame.SetTitle('slice3dVWR Controls')
 
         # fix for the grid
@@ -706,7 +706,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         oaf = modules.viewers.resources.python.slice3dVWRFrames.\
               objectAnimationFrame
         self.objectAnimationFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, oaf)
+            self, self._module_manager, oaf)
 
         # display the windows (but we don't show the oaf yet)
         self.view()
@@ -890,7 +890,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         self.render3D()
 
     def _save3DToImage(self, filename):
-        self._moduleManager.setProgress(0, "Writing PNG image...")
+        self._module_manager.setProgress(0, "Writing PNG image...")
         w2i = vtk.vtkWindowToImageFilter()
         w2i.SetInput(self.threedFrame.threedRWI.GetRenderWindow())
 
@@ -898,7 +898,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         writer.SetInput(w2i.GetOutput())
         writer.SetFileName(filename)
         writer.Write()
-        self._moduleManager.setProgress(100, "Writing PNG image... [DONE]")
+        self._module_manager.setProgress(100, "Writing PNG image... [DONE]")
 
     def _showScalarBarForProp(self, prop):
         """Show scalar bar for the data represented by the passed prop.
@@ -1057,7 +1057,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         self.miscObjectConfigure(
             self.threedFrame, self,
             'slice3dVWR %s' % \
-            (self._moduleManager.get_instance_name(self),))
+            (self._module_manager.get_instance_name(self),))
         
 
     def _handlerProjectionChoice(self, event):

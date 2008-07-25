@@ -10,9 +10,9 @@ from moduleMixins import scriptedConfigModuleMixin
 class geodesicActiveContour(scriptedConfigModuleMixin, ModuleBase):
 
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         
         # setup defaults
         self._config.propagationScaling = 1.0
@@ -50,7 +50,7 @@ class geodesicActiveContour(scriptedConfigModuleMixin, ModuleBase):
 
     def execute_module(self):
         self.get_output(0).Update()
-        self._moduleManager.setProgress(
+        self._module_manager.setProgress(
             100, "Geodesic active contour complete.")
 
     def get_input_descriptions(self):

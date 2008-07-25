@@ -8,8 +8,8 @@ from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class cannyEdgeDetection(scriptedConfigModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.variance = (0.7, 0.7, 0.7)
         self._config.maximumError = (0.01, 0.01, 0.01)

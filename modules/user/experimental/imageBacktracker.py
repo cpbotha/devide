@@ -10,10 +10,10 @@ class imageBacktracker(noConfigModuleMixin, ModuleBase):
 
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 	noConfigModuleMixin.__init__(self)
 
 	self._imageBacktracker = vtkdevide.vtkImageBacktracker()

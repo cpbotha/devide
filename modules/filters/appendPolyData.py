@@ -8,9 +8,9 @@ import vtk
 class appendPolyData(noConfigModuleMixin, ModuleBase):
     _numInputs = 5
     
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
 
         # underlying VTK thingy

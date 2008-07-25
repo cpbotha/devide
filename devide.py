@@ -272,19 +272,19 @@ class DeVIDEApp:
         # now startup module manager
 
         try:
-            # load up the moduleManager; we do that here as the moduleManager
+            # load up the ModuleManager; we do that here as the ModuleManager
             # needs to give feedback via the GUI (when it's available)
-            global moduleManager
-            import moduleManager
-            self.moduleManager = moduleManager.moduleManager(self)
+            global module_manager
+            import module_manager
+            self.module_manager = module_manager.ModuleManager(self)
 
         except Exception, e:
-            es = 'Unable to startup the moduleManager: %s.  Terminating.' % \
+            es = 'Unable to startup the ModuleManager: %s.  Terminating.' % \
                  (str(e),)
             self.log_error_with_exception(es)
 
-            # this is a critical error: if the moduleManager raised an
-            # exception during construction, we have no moduleManager
+            # this is a critical error: if the ModuleManager raised an
+            # exception during construction, we have no ModuleManager
             # return False, thus terminating the application
             return False
 
@@ -320,7 +320,7 @@ class DeVIDEApp:
 
         self._interface.close()
         self.network_manager.close()
-        self.moduleManager.close()
+        self.module_manager.close()
 
         # and make 100% we're done
         sys.exit()
@@ -329,11 +329,8 @@ class DeVIDEApp:
         return DEVIDE_VERSION
 
     def get_module_manager(self):
-        return self.moduleManager
+        return self.module_manager
 
-    def getModuleManager(self):
-        return self.get_module_manager()
-    
     def log_error(self, msg):
         """Report error.
 

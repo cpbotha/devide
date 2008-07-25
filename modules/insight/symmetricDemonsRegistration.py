@@ -8,9 +8,9 @@ from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 class symmetricDemonsRegistration(scriptedConfigModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._config.numberOfIterations = 50
         self._config.deformationSmoothingStd = 1.0

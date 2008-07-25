@@ -9,9 +9,9 @@ import module_kits.itk_kit as itk_kit
 
 class isolatedConnect(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._config.replace_value = 1.0
         self._config.upper_threshold = False

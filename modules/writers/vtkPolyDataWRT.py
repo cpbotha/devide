@@ -8,10 +8,10 @@ import vtk
 
 class vtkPolyDataWRT(filenameViewModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._writer = vtk.vtkPolyDataWriter()
         # sorry about this, but the files get REALLY big if we write them

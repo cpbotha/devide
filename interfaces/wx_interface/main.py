@@ -312,7 +312,7 @@ class WXInterface(wx.App):
 
         about.versions_listbox.Append('Python %s' % (pyver,))
 
-        # get versions of all included kits; by this time moduleManager
+        # get versions of all included kits; by this time ModuleManager
         # has been imported
         kits_and_versions = []
         import module_kits

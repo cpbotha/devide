@@ -7,10 +7,10 @@ import vtk
 
 class stlWRT(filenameViewModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         # need to make sure that we're all happy triangles and stuff
         self._cleaner = vtk.vtkCleanPolyData()
@@ -24,7 +24,7 @@ class stlWRT(filenameViewModuleMixin, ModuleBase):
 
         # following is the standard way of connecting up the devide progress
         # callback to a VTK object; you should do this for all objects in
-        mm = self._moduleManager        
+        mm = self._module_manager        
         for textobj in (('Cleaning data', self._cleaner),
                         ('Converting to triangles', self._tf),
                         ('Writing STL data', self._writer)):

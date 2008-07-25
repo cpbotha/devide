@@ -10,8 +10,8 @@ class VTKtoPRTools(scriptedConfigModuleMixin, ModuleBase):
     $Revision: 1.1 $
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.filename = ''
 
@@ -67,11 +67,11 @@ class VTKtoPRTools(scriptedConfigModuleMixin, ModuleBase):
 
             outfile.write('%s\n' % (' '.join(curList),))
 
-            self._moduleManager.setProgress((float(i) / (nop - 1)) * 100.0,
+            self._module_manager.setProgress((float(i) / (nop - 1)) * 100.0,
                                             'Exporting PRTools data.')
 
 
-        self._moduleManager.setProgress(100.0,
+        self._module_manager.setProgress(100.0,
                                         'Exporting PRTools data [DONE].')
         
 

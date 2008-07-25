@@ -79,7 +79,7 @@ class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
     def close(self):
         # parameter is exception_printer method
         PythonShellMixin.close(self,
-                               self._moduleManager.log_error_with_exception)
+                               self._module_manager.log_error_with_exception)
         
         for i in range(len(self.get_input_descriptions())):
             self.set_input(i, None)
@@ -174,7 +174,7 @@ class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
         reload(resources.python.code_runner_frame)
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             resources.python.code_runner_frame.\
             CodeRunnerFrame)
 
@@ -185,7 +185,7 @@ class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
             filename, t = self._open_python_file(self._view_frame)
                 
         except IOError, e:
-            self._moduleManager.log_error_with_exception(
+            self._module_manager.log_error_with_exception(
                 'Could not open file %s into CodeRunner edit: %s' %
                 (filename, str(e)))
 
@@ -206,7 +206,7 @@ class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
                     'Saved current edit to %s.' % (filename,))
             
         except IOError, e:
-            self._moduleManager.log_error_with_exception(
+            self._module_manager.log_error_with_exception(
                 'Could not save CodeRunner edit to file %s: %s' %
                 (filename, str(e)))
 

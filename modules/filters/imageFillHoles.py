@@ -6,8 +6,8 @@ import vtkdevide
 
 
 class imageFillHoles(scriptedConfigModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._imageBorderMask = vtkdevide.vtkImageBorderMask()
         # input image value for border

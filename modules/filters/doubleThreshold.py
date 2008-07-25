@@ -6,10 +6,10 @@ import vtk
 
 class doubleThreshold(introspectModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._imageThreshold = vtk.vtkImageThreshold()
 
@@ -104,7 +104,7 @@ class doubleThreshold(introspectModuleMixin, ModuleBase):
 
         ocString = self._view_frame.outputDataTypeChoice.GetStringSelection()
         if len(ocString) == 0:
-            self._moduleManager.log_error(
+            self._module_manager.log_error(
                 "Impossible error with outputType choice in "
                 "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
@@ -113,7 +113,7 @@ class doubleThreshold(introspectModuleMixin, ModuleBase):
         try:
             symbolicOutputType = self._outputTypes[ocString]
         except KeyError:
-            self._moduleManager.log_error(
+            self._module_manager.log_error(
                 "Impossible error with ocString in "
                 "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
@@ -125,7 +125,7 @@ class doubleThreshold(introspectModuleMixin, ModuleBase):
             try:
                 self._config.outputScalarType = getattr(vtk, symbolicOutputType)
             except AttributeError:
-                self._moduleManager.log_error(
+                self._module_manager.log_error(
                     "Impossible error with symbolicOutputType "
                     "in doubleThresholdFLT.py.  Picking sane "
                     "default.")
@@ -173,7 +173,7 @@ class doubleThreshold(introspectModuleMixin, ModuleBase):
         reload(modules.filters.resources.python.doubleThresholdFLTFrame)
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.filters.resources.python.doubleThresholdFLTFrame.\
             doubleThresholdFLTFrame)
 

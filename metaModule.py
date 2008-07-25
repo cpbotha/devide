@@ -334,7 +334,7 @@ class metaModule:
         print "streaming touch stamped:", self.streaming_touch_times[part]
 
     def execute_module(self, part=0, streaming=False):
-        """Used by moduleManager to execute module.
+        """Used by ModuleManager to execute module.
 
         This method also takes care of timestamping the execution time if
         execution was successful.
@@ -366,12 +366,12 @@ class metaModule:
 
 
     def modify(self, part=0):
-        """Used by the moduleManager to timestamp the modified time.
+        """Used by the ModuleManager to timestamp the modified time.
 
         This should be called whenever module state has changed in such a way
         as to invalidate the current state of the module.  At the moment,
         this is called by L{applyViewToLogic()} as well as by the
-        moduleManager.
+        ModuleManager.
 
         @param part: indicates the part that has to be modified.
         """

@@ -9,8 +9,8 @@ from moduleMixins import scriptedConfigModuleMixin
 
 class curvatureFlowDenoising(scriptedConfigModuleMixin, ModuleBase):
     
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.numberOfIterations = 3
         self._config.timeStep = 0.05
@@ -58,7 +58,7 @@ class curvatureFlowDenoising(scriptedConfigModuleMixin, ModuleBase):
 
     def execute_module(self):
         self._cfif.Update()
-        self._moduleManager.setProgress(100, "Denoising data [DONE]")
+        self._module_manager.setProgress(100, "Denoising data [DONE]")
 
     def get_input_descriptions(self):
         return ('ITK Image (3D, float)',)

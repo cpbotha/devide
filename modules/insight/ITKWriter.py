@@ -9,10 +9,10 @@ from moduleMixins import filenameViewModuleMixin
 import re
 
 class ITKWriter(filenameViewModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._input = None
         self._writer = None

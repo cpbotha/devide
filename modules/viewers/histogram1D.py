@@ -20,8 +20,8 @@ class histogram1D(introspectModuleMixin, ModuleBase):
     $Revision: 1.3 $
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._imageAccumulate = vtk.vtkImageAccumulate()
         moduleUtils.setupVTKObjectProgress(self, self._imageAccumulate,
@@ -168,7 +168,7 @@ class histogram1D(introspectModuleMixin, ModuleBase):
         reload(modules.viewers.resources.python.histogram1DFrames)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.viewers.resources.python.histogram1DFrames.\
             histogram1DFrame)
 

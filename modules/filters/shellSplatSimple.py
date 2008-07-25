@@ -11,11 +11,11 @@ from moduleMixins import colourDialogMixin
 class shellSplatSimple(introspectModuleMixin,
                        colourDialogMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         colourDialogMixin.__init__(
-            self, moduleManager.getModuleViewParentWindow())
+            self, module_manager.getModuleViewParentWindow())
 
         # setup the whole VTK pipeline that we're going to use
         self._createPipeline()
@@ -269,7 +269,7 @@ class shellSplatSimple(introspectModuleMixin,
     
     def _createViewFrame(self):
 
-        mm = self._moduleManager
+        mm = self._module_manager
         # import/reload the viewFrame (created with wxGlade)
         mm.importReload(
             'modules.filters.resources.python.shellSplatSimpleFLTViewFrame')

@@ -3,9 +3,9 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
 class vtkImageMapToWindowLevelColors(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkImageMapToWindowLevelColors(), 'Processing.',
             ('vtkImageData',), ('vtkImageData',),
             replaceDoc=True,

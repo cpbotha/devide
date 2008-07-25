@@ -25,7 +25,7 @@ class ModuleBase(object):
     of these methods.
     """
     
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         """Perform your module initialisation here.
 
         Please also call this init method
@@ -33,7 +33,7 @@ class ModuleBase(object):
         should create your view and show it to the user.
 
         """
-        self._moduleManager = moduleManager
+        self._module_manager = ModuleManager
 
         
         self._config = DefaultConfigClass()
@@ -54,7 +54,7 @@ class ModuleBase(object):
         """
 
         # we neatly get rid of some references
-        del self._moduleManager
+        del self._module_manager
 
     def get_input_descriptions(self):
         """Returns tuple of input descriptions, mostly used by the graph editor
@@ -216,17 +216,17 @@ class ModuleBase(object):
 
         # the config has been set, so we assumem that the module has
         # now been modified. 
-        self._moduleManager.modify_module(self)
+        self._module_manager.modify_module(self)
 
     # convenience functions
 
     def sync_module_logic_with_config(self):
-        self._moduleManager.sync_module_logic_with_config(self)
+        self._module_manager.sync_module_logic_with_config(self)
 
     def sync_module_view_with_config(self):
-        self._moduleManager.sync_module_view_with_config(self)
+        self._module_manager.sync_module_view_with_config(self)
 
     def sync_module_view_with_logic(self):
-        self._moduleManager.sync_module_view_with_logic(self)
+        self._module_manager.sync_module_view_with_logic(self)
 
 

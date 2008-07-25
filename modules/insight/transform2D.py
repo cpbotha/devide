@@ -29,8 +29,8 @@ class transform2D(noConfigModuleMixin, ModuleBase):
     0:N). 11/11/2004 (joris): kludge removed.
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
         noConfigModuleMixin.__init__(self)
 
         self._imageStack = None

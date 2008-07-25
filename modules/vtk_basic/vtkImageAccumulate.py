@@ -3,9 +3,9 @@ from module_kits.vtk_kit.mixins import SimpleVTKClassModuleBase
 import vtk
 
 class vtkImageAccumulate(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkImageAccumulate(), 'Processing.',
             ('vtkImageData', 'vtkImageStencilData'), ('vtkImageData',),
             replaceDoc=True,

@@ -28,8 +28,8 @@ class register2D(ModuleBase):
     even saying sorry afterwards.  You have been warned.
     """
 
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._createLogic()
         self._createViewFrames()
@@ -254,7 +254,7 @@ class register2D(ModuleBase):
         viewerFrame = modules.Insight.resources.python.register2DViewFrames.\
                       viewerFrame
         self.viewerFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, viewerFrame)
+            self, self._module_manager, viewerFrame)
 
         self._threedRenderer = vtk.vtkRenderer()
         self._threedRenderer.SetBackground(0.5, 0.5, 0.5)
@@ -271,7 +271,7 @@ class register2D(ModuleBase):
         controlFrame = modules.Insight.resources.python.\
                        register2DViewFrames.controlFrame
         self.controlFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, controlFrame)
+            self, self._module_manager, controlFrame)
 
         # display
         self.viewerFrame.Show(True)
@@ -409,7 +409,7 @@ class register2D(ModuleBase):
                   optimizer.GetCurrentStepLength())
 
             p = (optimizer.GetCurrentIteration() + 1) / maxIterations * 100.0
-            self._moduleManager.setProgress(p, pm)
+            self._module_manager.setProgress(p, pm)
 
         pc2 = itk.itkPyCommand_New()
         pc2.SetCommandCallable(iterationEvent)
@@ -421,7 +421,7 @@ class register2D(ModuleBase):
 
         fpm = 'register2D registration done (final value: %0.2f).' % \
               optimizer.GetValue()
-        self._moduleManager.setProgress(100.0, fpm)
+        self._module_manager.setProgress(100.0, fpm)
 
         print registration.GetLastTransformParameters().GetElement(0)
         print registration.GetLastTransformParameters().GetElement(1)

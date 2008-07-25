@@ -12,9 +12,9 @@ class simplestVTKExample(SimpleVTKClassModuleBase):
     made to the vtkObject will be restored.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtk.vtkStripper(), 'Stripping polydata.',
             ('vtkPolyData',), ('Stripped vtkPolyData',))
 

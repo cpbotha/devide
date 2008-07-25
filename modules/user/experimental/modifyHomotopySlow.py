@@ -32,9 +32,9 @@ class modifyHomotopySlow(noConfigModuleMixin, ModuleBase):
     $Revision: 1.1 $
     """
     
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         noConfigModuleMixin.__init__(self)
 
         # these will be our markers

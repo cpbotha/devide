@@ -24,7 +24,7 @@ import traceback
 #
 
 # notes with regards to execute on change:
-# * devide.py should register a "change" handler with the moduleManager.
+# * devide.py should register a "change" handler with the ModuleManager.
 #   I've indicated places with "execute on change" where I think this
 #   handler should be invoked.  devide.py can then invoke the scheduler.
 
@@ -224,12 +224,12 @@ class pickledConnection:
         self.connectionType = connectionType
 
 #########################################################################
-class moduleManager:
+class ModuleManager:
     """This class in responsible for picking up new modules in the modules 
     directory and making them available to the rest of the program.
 
-    @todo: we should split this functionality into a moduleManager and
-    networkManager class.  One moduleManager per processing node,
+    @todo: we should split this functionality into a ModuleManager and
+    networkManager class.  One ModuleManager per processing node,
     global networkManager to coordinate everything.
 
     @todo: ideally, ALL module actions should go via the metaModule.
@@ -238,14 +238,14 @@ class moduleManager:
     """
     
     def __init__(self, devide_app):
-	"""Initialise module manager by fishing .py devide modules from
-	all pertinent directories.
+        """Initialise module manager by fishing .py devide modules from
+        all pertinent directories.
         """
 	
         self._devide_app = devide_app
         # module dictionary, keyed on instance... cool.
         # values are metaModules
-	self._moduleDict = {}
+        self._moduleDict = {}
 
         appdir = self._devide_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
@@ -344,7 +344,7 @@ class moduleManager:
                                   'histogramSegment' : 4}
 
         # we'll use this to perform mutex-based locking on the progress
-        # callback... (there SHOULD only be ONE moduleManager instance)
+        # callback... (there SHOULD only be ONE ModuleManager instance)
         self._inProgressCallback = mutex.mutex()
 
     def refresh_module_kits(self):
@@ -822,7 +822,7 @@ class moduleManager:
         This is one of the reasons we try to avoid unnecessary reloads.
 
         You should use this as follows:
-        moduleManager.importReloadModule('full.path.to.my.module')
+        ModuleManager.importReloadModule('full.path.to.my.module')
         import full.path.to.my.module
         so that the module is actually brought into the calling namespace.
 
@@ -940,7 +940,7 @@ class moduleManager:
 
         This will disconnect all module inputs and outputs and call the
         close() method.  This method is used by the graphEditor and by
-        the close() method of the moduleManager.
+        the close() method of the ModuleManager.
 
         @raise ModuleManagerException: if an error occurs during module
         deletion.
@@ -1572,7 +1572,7 @@ class moduleManager:
 
         Execution is required when the module is new or when the user has made
         parameter or introspection changes.  All of these conditions should be
-        indicated by calling L{moduleManager.modify(instance)}.
+        indicated by calling L{ModuleManager.modify(instance)}.
 
         @return: True if execution required, False if not.
         """
@@ -1619,7 +1619,7 @@ class moduleManager:
         shouldTransferOutput is true, so the number of unnecessary transfers
         should be minimised.
 
-        This method is in moduleManager and not in metaModule because it
+        This method is in ModuleManager and not in metaModule because it
         involves more than one metaModule.
 
         @param moduleInstance: producer module whose output data must be
@@ -1644,7 +1644,7 @@ class moduleManager:
         if meta_module.findConsumerInOutputConnections(
             output_idx, consumer_instance, consumer_input_idx) == -1:
 
-            raise Exception, 'moduleManager.transferOutput called for ' \
+            raise Exception, 'ModuleManager.transferOutput called for ' \
                   'connection that does not exist.'
         
         try:

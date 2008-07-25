@@ -12,8 +12,8 @@ class imageExtentUnionizer(simpleVTKClassModuleBase):
     made to the vtkObject will be restored.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         simpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtktud.vtkImageExtentUnionizer(), 'Image Extent Unionizer.',
             ('vtkImageData',), ('vtkImageData',))

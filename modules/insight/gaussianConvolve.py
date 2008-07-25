@@ -11,8 +11,8 @@ class gaussianConvolve(scriptedConfigModuleMixin, ModuleBase):
 
     _orders = ['Zero', 'First', 'Second']
     
-    def __init__(self, moduleManager):
-        ModuleBase.__init__(self, moduleManager)
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
 
         self._config.direction = 0
         self._config.sigma = 1.0

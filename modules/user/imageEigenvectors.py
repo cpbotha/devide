@@ -6,9 +6,9 @@ import vtktud
 
 class imageEigenvectors(ModuleBase, noConfigModuleMixin):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         noConfigModuleMixin.__init__(self)
 
         self._imageEigenvectors = vtktud.vtkImageEigenvectors()

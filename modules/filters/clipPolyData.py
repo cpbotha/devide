@@ -13,9 +13,9 @@ class clipPolyData(noConfigModuleMixin, ModuleBase):
     where the implicit function value is greater than 0.
     """
     
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
 
         self._clipPolyData = vtk.vtkClipPolyData()

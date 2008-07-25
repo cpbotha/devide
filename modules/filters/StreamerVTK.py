@@ -61,7 +61,7 @@ class StreamerVTK(noConfigModuleMixin, ModuleBase):
         pass
 
     def streaming_execute_module(self):
-        sp = self._moduleManager.get_app_main_config().streaming_pieces
+        sp = self._module_manager.get_app_main_config().streaming_pieces
         if self._current_mode == IMAGE_DATA:
             self._image_data_streamer.SetNumberOfStreamDivisions(sp)
             self._image_data_streamer.Update()

@@ -10,10 +10,10 @@ class rawVolumeRDR(ModuleBase,
                    vtkPipelineConfigModuleMixin,
                    fileOpenDialogModuleMixin):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
 	self._reader = vtk.vtkImageReader()
         self._reader.SetFileDimensionality(3)
@@ -189,7 +189,7 @@ class rawVolumeRDR(ModuleBase,
         reload(modules.readers.resources.python.rawVolumeRDRViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.readers.resources.python.rawVolumeRDRViewFrame.\
             rawVolumeRDRViewFrame)
 

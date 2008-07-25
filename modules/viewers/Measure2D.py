@@ -123,7 +123,7 @@ class Measure2D(introspectModuleMixin, ModuleBase):
 
         # build frame
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager, Measure2DFrame.Measure2DFrame)
+            self, self._module_manager, Measure2DFrame.Measure2DFrame)
 
         # now link up all event handlers
         self._bind_events()
@@ -473,5 +473,5 @@ class Measure2D(introspectModuleMixin, ModuleBase):
         # flag this in the module manager.  when the user sees this
         # and schedules an execute, the scheduler will execute us and
         # all parts of the network that are dependent on us.
-        self._moduleManager.modify_module(self)
+        self._module_manager.modify_module(self)
 

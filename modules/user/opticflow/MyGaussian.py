@@ -4,9 +4,9 @@ import vtk
 import vtktud
 
 class MyGaussian(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtktud.vtkMyGaussian(), 'Processing.',
             (), ('vtkPolyData',),
             replaceDoc=True,

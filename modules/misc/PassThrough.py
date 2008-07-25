@@ -3,9 +3,9 @@ from moduleMixins import noConfigModuleMixin
 import moduleUtils
 
 class PassThrough(noConfigModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         noConfigModuleMixin.__init__(
             self, {'Module (self)' : self})

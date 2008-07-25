@@ -15,8 +15,8 @@ import vtk
 import wx
 
 # get the slice3dVWR marked by the user
-sv = devideApp.moduleManager.getMarkedModule('slice3dVWR')
-mc = devideApp.moduleManager.getMarkedModule('marchingCubes')
+sv = devideApp.ModuleManager.getMarkedModule('slice3dVWR')
+mc = devideApp.ModuleManager.getMarkedModule('marchingCubes')
 
 if sv and mc:
     # bring the window to the front

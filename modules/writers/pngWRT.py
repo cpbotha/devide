@@ -10,10 +10,10 @@ import wx # needs this for wx.OPEN, we need to make this constant available
 
 class pngWRT(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
         # filenameViewModuleMixin.__init__(self)
 	
@@ -96,6 +96,6 @@ class pngWRT(scriptedConfigModuleMixin, ModuleBase):
             
 	    self._writer.Write()
             
-            self._moduleManager.setProgress(
+            self._module_manager.setProgress(
                 100.0, "vtkPNGWriter: Writing PNG file(s). [DONE]")
 

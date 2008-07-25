@@ -4,9 +4,9 @@ import vtk
 import vtktud
 
 class MyGlyph3DSimple(SimpleVTKClassModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         SimpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtktud.vtkMyGlyph3D(), 'Processing.',
             ('vtkDataSet', 'vtkPolyData'), ('vtkPolyData',),
             replaceDoc=True,

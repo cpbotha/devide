@@ -7,9 +7,9 @@ import vtktud
 
 class MyGlyph3D(scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
 
         self._glyph3d = vtktud.vtkMyGlyph3D()

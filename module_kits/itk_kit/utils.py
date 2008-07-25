@@ -91,7 +91,7 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
         raise Exception, 'Could not determine attribute string for ' \
               'object %s.' % (obj.__class__.__name__)
 
-    mm = dvModule._moduleManager
+    mm = dvModule._module_manager
 
     # sanity check objEvals
     if type(objEvals) != type(()) and objEvals != None:

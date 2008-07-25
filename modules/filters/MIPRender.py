@@ -10,9 +10,9 @@ import vtk
 class MIPRender(
     scriptedConfigModuleMixin, ModuleBase):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         #for o in self._objectDict.values():
         #    

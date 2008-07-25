@@ -21,9 +21,9 @@ class dicomRDR(ModuleBase,
                introspectModuleMixin,
                fileOpenDialogModuleMixin):
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # call the constructor in the "base"
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         # setup necessary VTK objects
         self._reader = vtkdevide.vtkDICOMVolumeReader()
@@ -231,7 +231,7 @@ class dicomRDR(ModuleBase,
         reload(modules.readers.resources.python.dicomRDRViewFrame)
 
         self._viewFrame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             modules.readers.resources.python.dicomRDRViewFrame.\
             dicomRDRViewFrame)
 
@@ -270,7 +270,7 @@ class dicomRDR(ModuleBase,
 
         if not self._fileDialog:
             self._fileDialog = wx.FileDialog(
-                self._moduleManager.getModuleViewParentWindow(),
+                self._module_manager.getModuleViewParentWindow(),
                 'Select files to add to the list', "", "",
                 "DICOM files (*.dcm)|*.dcm|All files (*)|*",
                 wx.OPEN | wx.MULTIPLE)

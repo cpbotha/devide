@@ -10,9 +10,9 @@ from moduleMixins import scriptedConfigModuleMixin
 import wx
 
 class ITKReader(scriptedConfigModuleMixin, ModuleBase):
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # call parent constructor
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._config.filename = ''
         self._config.autotype = True

@@ -111,7 +111,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
             try:
                 range = self._volume_input.GetScalarRange()
             except AttributeError:
-                self._moduleManager.log_error(
+                self._module_manager.log_error(
                         'Could not determine range from input. ' +
                         'Have you connected some input data and ' +
                         'has the network executed at least once?')
@@ -129,7 +129,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
                 min = float(vf.scalar_min_text.GetValue())
                 max = float(vf.scalar_max_text.GetValue())
             except ValueError:
-                self._moduleManager.log_error(
+                self._module_manager.log_error(
                 'Invalid scalar MIN / MAX.')
 
             else:
@@ -186,7 +186,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
         reload(resources.python.tfeditorframe)
 
         self._view_frame = moduleUtils.instantiateModuleViewFrame(
-            self, self._moduleManager,
+            self, self._module_manager,
             resources.python.tfeditorframe.TFEditorFrame)
 
         moduleUtils.createStandardObjectAndPipelineIntrospection(
@@ -291,7 +291,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
             loadf.close()
 
         except Exception, e:
-            self._moduleManager.log_error_with_exception(
+            self._module_manager.log_error_with_exception(
                     'Could not load transfer function: %s.' %
                     (str(e),))
 
@@ -308,11 +308,11 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
                     (str(tf),))
             savef.close()
         except Exception, e:
-            self._moduleManager.log_error(
+            self._module_manager.log_error(
                     'Error saving transfer function: %s.' % (str(e),))
 
         else:
-            self._moduleManager.log_message(
+            self._module_manager.log_message(
                     'Saved %s.' % (filename,))
         
 

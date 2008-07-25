@@ -12,8 +12,8 @@ class imageCopyPad(simpleVTKClassModuleBase):
     made to the vtkObject will be restored.
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         simpleVTKClassModuleBase.__init__(
-            self, moduleManager,
+            self, module_manager,
             vtktud.vtkImageCopyPad(), 'Extending image by copying border voxels.',
             ('vtkImageData',), ('vtkImageData',))

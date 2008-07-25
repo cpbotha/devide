@@ -14,9 +14,9 @@ class ImageLogic(scriptedConfigModuleMixin, ModuleBase):
     # get these values from vtkImageMathematics.h
     _operations = ('AND', 'OR', 'XOR', 'NAND', 'NOR', 'NOT', 'NOP')
     
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
         # initialise our base class
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
 
         self._image_logic = vtk.vtkImageLogic()
         

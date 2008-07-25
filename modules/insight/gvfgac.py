@@ -30,9 +30,9 @@ class gvfgac(scriptedConfigModuleMixin, ModuleBase):
     $Revision: 1.2 $
     """
 
-    def __init__(self, moduleManager):
+    def __init__(self, module_manager):
 
-        ModuleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, module_manager)
         
         # setup defaults
         self._config.propagationScaling = 1.0
@@ -70,7 +70,7 @@ class gvfgac(scriptedConfigModuleMixin, ModuleBase):
 
     def execute_module(self):
         self.get_output(0).Update()
-        self._moduleManager.setProgress(
+        self._module_manager.setProgress(
             100, "Geodesic active contour complete.")
 
     def get_input_descriptions(self):
