@@ -1,7 +1,7 @@
 # $Id: vtpWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
 from module_base import ModuleBase
-from moduleMixins import FilenameViewModuleMixin
+from module_mixins import FilenameViewModuleMixin
 import module_utils
 import types
 from modules.viewers.slice3dVWRmodules.selectedPoints import outputSelectedPoints

@@ -5,7 +5,7 @@
 import itk
 from module_base import ModuleBase
 import module_kits.itk_kit
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 
 class gradientAnisotropicDiffusion(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):

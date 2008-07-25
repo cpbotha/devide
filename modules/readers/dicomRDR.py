@@ -6,7 +6,7 @@ import genUtils
 from module_kits.misc_kit import misc_utils
 import os
 from module_base import ModuleBase
-from moduleMixins import \
+from module_mixins import \
      IntrospectModuleMixin, FileOpenDialogModuleMixin
 import module_utils
 

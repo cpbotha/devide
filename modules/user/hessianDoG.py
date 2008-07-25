@@ -5,7 +5,7 @@ import genUtils
 from module_base import ModuleBase
 import module_utils
 import module_utilsITK
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 
 class hessianDoG(ScriptedConfigModuleMixin, ModuleBase):
     """Calculates Hessian matrix of volume by convolution with second and

@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
-from moduleMixins import FileOpenDialogModuleMixin
+from module_mixins import vtkPipelineConfigModuleMixin
+from module_mixins import FileOpenDialogModuleMixin
 import module_utils
 import vtk
 import wx

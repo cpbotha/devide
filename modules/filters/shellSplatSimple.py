@@ -1,12 +1,12 @@
 import operator
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin
+from module_mixins import IntrospectModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 import wx
 
-from moduleMixins import ColourDialogMixin
+from module_mixins import ColourDialogMixin
 
 class shellSplatSimple(IntrospectModuleMixin,
                        ColourDialogMixin, ModuleBase):

@@ -5,7 +5,7 @@
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 from module_base import ModuleBase
-from moduleMixins import FilenameViewModuleMixin
+from module_mixins import FilenameViewModuleMixin
 import module_utils
 import wx
 import vtk

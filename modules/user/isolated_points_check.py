@@ -1,7 +1,7 @@
 # $Id: pngWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 WX_OPEN = 1
 WX_SAVE = 2

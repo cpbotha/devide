@@ -6,7 +6,7 @@ import copy
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import wx
 
 class ITKReader(ScriptedConfigModuleMixin, ModuleBase):

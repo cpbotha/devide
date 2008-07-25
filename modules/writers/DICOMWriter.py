@@ -9,7 +9,7 @@
 # * study / series UIDs are auto generated
 
 from module_base import ModuleBase
-from moduleMixins import \
+from module_mixins import \
      ScriptedConfigModuleMixin
 import module_utils
 import os

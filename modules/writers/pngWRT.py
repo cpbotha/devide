@@ -1,7 +1,7 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import wx # needs this for wx.OPEN, we need to make this constant available

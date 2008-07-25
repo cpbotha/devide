@@ -9,7 +9,7 @@
 # use vtkPolyDataConnectivityFilter with minima as seed points
 
 from module_base import ModuleBase
-from moduleMixins import NoConfigModuleMixin
+from module_mixins import NoConfigModuleMixin
 from wxPython.wx import *
 import vtk
 

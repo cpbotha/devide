@@ -1,7 +1,7 @@
 # $Id: BMPRDR.py 1853 2006-02-01 17:16:28Z cpbotha $
 
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import wx

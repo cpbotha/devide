@@ -4,7 +4,7 @@
 
 from module_base import ModuleBase
 from module_kits.misc_kit import misc_utils
-from moduleMixins import \
+from module_mixins import \
      IntrospectModuleMixin
 import module_utils
 

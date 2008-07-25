@@ -6,7 +6,7 @@
 #sys.path = sys.path + ['', 'H:\\bld\\bin\\Wrapping\\CSwig\\Python\\RelWithDebInfo', 'H:\\opt\\python23\\Lib\\site-packages\\adodbapi', 'C:\\WINNT\\System32\\python23.zip', 'H:\\', 'H:\\opt\\python23\\DLLs', 'H:\\opt\\python23\\lib', 'H:\\opt\\python23\\lib\\plat-win', 'H:\\opt\\python23\\lib\\lib-tk', 'H:\\opt\\python23', 'H:\\opt\\python23\\Lib\\site-packages\\win32', 'H:\\opt\\python23\\Lib\\site-packages\\win32\\lib', 'H:\\opt\\python23\\Lib\\site-packages\\Pythonwin', 'H:\\opt\\python23\\lib\\site-packages\\adodbapi']
 
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import fixitk as itk

@@ -1,8 +1,8 @@
 import genUtils
 from module_base import ModuleBase
 import module_utils
-import moduleMixins
-from moduleMixins import ScriptedConfigModuleMixin
+import module_mixins
+from module_mixins import ScriptedConfigModuleMixin
 import os
 import vtk
 
@@ -32,7 +32,7 @@ class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
                 ('CPT driver path', 'cpt_driver_path',
                 'base:str', 'filebrowser', 
                 'Path to CPT driver executable',
-                {'fileMode' : moduleMixins.wx.OPEN,
+                {'fileMode' : module_mixins.wx.OPEN,
                  'fileMask' : 'All files (*.*)|*.*'}), 
                 ('Maximum distance', 'max_distance', 
                 'base:float', 'text', 

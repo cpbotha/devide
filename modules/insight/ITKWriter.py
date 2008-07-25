@@ -5,7 +5,7 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import FilenameViewModuleMixin
+from module_mixins import FilenameViewModuleMixin
 import re
 
 class ITKWriter(FilenameViewModuleMixin, ModuleBase):

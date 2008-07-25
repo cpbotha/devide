@@ -8,7 +8,7 @@
 
 from imageStackRDR import imageStackClass
 from module_base import ModuleBase
-from moduleMixins import NoConfigModuleMixin
+from module_mixins import NoConfigModuleMixin
 import fixitk as itk
 from typeModules.transformStackClass import transformStackClass
 from typeModules.imageStackClass import imageStackClass

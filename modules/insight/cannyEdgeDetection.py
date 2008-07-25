@@ -5,7 +5,7 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 
 class cannyEdgeDetection(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):

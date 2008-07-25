@@ -1,7 +1,7 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import FilenameViewModuleMixin
+from module_mixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 import os

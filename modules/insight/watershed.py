@@ -6,7 +6,7 @@ import itk
 import genUtils
 import module_kits.itk_kit
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 
 class watershed(ScriptedConfigModuleMixin, ModuleBase):
 

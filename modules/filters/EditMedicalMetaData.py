@@ -3,7 +3,7 @@
 # See COPYRIGHT for details.
 
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin
+from module_mixins import IntrospectModuleMixin
 import module_kits.vtk_kit
 import module_utils
 import vtk

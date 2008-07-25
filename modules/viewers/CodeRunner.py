@@ -4,7 +4,7 @@
 import code # deep magic
 import md5
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin
+from module_mixins import IntrospectModuleMixin
 import module_utils
 import sys
 import module_kits.wx_kit

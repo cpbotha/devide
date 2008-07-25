@@ -33,7 +33,7 @@ reload(DICOMBrowserFrame)
 import gdcm
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin
+from module_mixins import IntrospectModuleMixin
 import module_utils
 import os
 import sys

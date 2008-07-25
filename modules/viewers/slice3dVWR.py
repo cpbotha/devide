@@ -9,7 +9,7 @@ import cPickle
 import genUtils
 
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin, ColourDialogMixin
+from module_mixins import IntrospectModuleMixin, ColourDialogMixin
 import module_utils
 
 # the following four lines are only needed during prototyping of the modules

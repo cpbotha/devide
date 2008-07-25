@@ -1,4 +1,4 @@
-from moduleMixins import simpleVTKClassModuleBase
+from module_mixins import simpleVTKClassModuleBase
 import vtktud
 
 class imageCopyPad(simpleVTKClassModuleBase):

@@ -1,5 +1,5 @@
 from module_base import ModuleBase
-from moduleMixins import vtkPipelineConfigModuleMixin
+from module_mixins import vtkPipelineConfigModuleMixin
 import module_utils
 import vtk
 

@@ -1,6 +1,6 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import NoConfigModuleMixin
+from module_mixins import NoConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide

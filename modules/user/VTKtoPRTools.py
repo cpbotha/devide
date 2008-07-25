@@ -1,5 +1,5 @@
 from module_base import ModuleBase
-from moduleMixins import ScriptedConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 from wxPython import wx
 
 class VTKtoPRTools(ScriptedConfigModuleMixin, ModuleBase):

@@ -4,7 +4,7 @@
 
 import itk
 from module_base import ModuleBase
-from moduleMixins import NoConfigModuleMixin
+from module_mixins import NoConfigModuleMixin
 import vtk
 
 class VTKtoITKF3(NoConfigModuleMixin, ModuleBase):

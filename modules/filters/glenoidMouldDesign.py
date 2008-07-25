@@ -12,7 +12,7 @@
 
 import math
 from module_base import ModuleBase
-from moduleMixins import NoConfigModuleMixin
+from module_mixins import NoConfigModuleMixin
 import operator
 import vtk
 

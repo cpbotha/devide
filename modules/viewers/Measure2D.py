@@ -1,7 +1,7 @@
 from module_kits.misc_kit.mixins import SubjectMixin
 import geometry
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin
+from module_mixins import IntrospectModuleMixin
 import module_utils
 import Measure2DFrame
 reload(Measure2DFrame)

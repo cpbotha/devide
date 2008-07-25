@@ -8,7 +8,7 @@
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin # temporary
+from module_mixins import IntrospectModuleMixin # temporary
 import module_utils # temporary, most of this should be in utils.
 import re
 import utils

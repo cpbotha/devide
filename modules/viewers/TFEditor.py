@@ -6,7 +6,7 @@
 
 import os
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin,\
+from module_mixins import IntrospectModuleMixin,\
         FileOpenDialogModuleMixin
 import module_utils
 from external import transfer_function_widget

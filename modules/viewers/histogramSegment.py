@@ -1,5 +1,5 @@
 from module_base import ModuleBase
-from moduleMixins import IntrospectModuleMixin
+from module_mixins import IntrospectModuleMixin
 import module_utils
 import vtk
 import vtkdevide
