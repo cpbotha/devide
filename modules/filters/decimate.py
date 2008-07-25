@@ -2,12 +2,12 @@
 # $Id$
 # module that triangulates and decimates polygonal input
 
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils

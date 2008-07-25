@@ -2,7 +2,7 @@
 # demand-driven model.  Keep the code around, it could be used as
 # illustrative case.
 
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import NoConfigModuleMixin
 import module_utils

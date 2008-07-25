@@ -347,8 +347,8 @@ class DeVIDEApp:
 
         """
         
-        import genUtils
-        emsgs = genUtils.exceptionToMsgs()
+        import gen_utils
+        emsgs = gen_utils.exceptionToMsgs()
         self.log_error_list(emsgs + [msg])
 
     def log_info(self, message, timeStamp=True):

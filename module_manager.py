@@ -5,7 +5,7 @@
 import sys, os, fnmatch
 import re
 import copy
-import genUtils
+import gen_utils
 from meta_module import MetaModule
 import modules
 import mutex
@@ -574,7 +574,7 @@ class ModuleManager:
             except Exception, e:
                 # make a list of all failed moduleIndices
                 failed_mis[mim] = sys.exc_info()
-                msgs = genUtils.exceptionToMsgs()
+                msgs = gen_utils.exceptionToMsgs()
 
                 # and log them as mesages
                 self._devide_app.log_info(

@@ -2,8 +2,8 @@
 # $Id$
 # class that controls the 3-D objects list
 
-import genUtils
-reload(genUtils)
+import gen_utils
+reload(gen_utils)
 import math
 import module_kits
 from module_kits.vtk_kit import misc
@@ -1444,7 +1444,7 @@ class tdObjects(s3dcGridMixin):
             # finally in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
-                genUtils.setGridCellYesNo(
+                gen_utils.setGridCellYesNo(
                     self._grid,gridRow, self._gridVisibleCol, visible)
 
     def _setObjectScalarVisibility(self, tdObject, scalarVisibility):
@@ -1468,7 +1468,7 @@ class tdObjects(s3dcGridMixin):
             # finally in the grid
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
-                genUtils.setGridCellYesNo(
+                gen_utils.setGridCellYesNo(
                     self._grid,gridRow, self._gridScalarVisibilityCol,
                     scalarVisibility)
         
@@ -1506,7 +1506,7 @@ class tdObjects(s3dcGridMixin):
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
                 if objectDict['type'] == 'vtkPolyData':
-                    genUtils.setGridCellYesNo(
+                    gen_utils.setGridCellYesNo(
                         self._grid, gridRow, self._gridContourCol, contour)
 
                 else:
@@ -1595,7 +1595,7 @@ class tdObjects(s3dcGridMixin):
             gridRow = self.findGridRowByName(objectDict['objectName'])
             if gridRow >= 0:
                 if objectDict['type'] == 'vtkPolyData':
-                    genUtils.setGridCellYesNo(
+                    gen_utils.setGridCellYesNo(
                         self._grid, gridRow, self._gridMotionCol, motion)
 
                 else:

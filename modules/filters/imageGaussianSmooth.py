@@ -2,7 +2,7 @@
 # $Id$
 # performs image smoothing by convolving with a Gaussian
 
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
@@ -67,13 +67,13 @@ class imageGaussianSmooth(IntrospectModuleMixin, ModuleBase):
             self._config.radiusCutoff)
 
     def view_to_config(self):
-        # continue with textToTuple in genUtils
+        # continue with textToTuple in gen_utils
         stdText = self._view_frame.stdTextCtrl.GetValue()
-        self._config.standardDeviation = genUtils.textToTypeTuple(
+        self._config.standardDeviation = gen_utils.textToTypeTuple(
             stdText, self._config.standardDeviation, 3, float)
         
         cutoffText = self._view_frame.radiusCutoffTextCtrl.GetValue()
-        self._config.radiusCutoff = genUtils.textToTypeTuple(
+        self._config.radiusCutoff = gen_utils.textToTypeTuple(
             cutoffText, self._config.radiusCutoff, 3, float)
 
     def config_to_view(self):

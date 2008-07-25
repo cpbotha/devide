@@ -2,7 +2,7 @@
 # $Id$
 # class encapsulating all instances of the sliceDirection class
 
-import genUtils
+import gen_utils
 
 # the following two lines are only needed during prototyping of the modules
 # that they import
@@ -591,7 +591,7 @@ class sliceDirections(s3dcGridMixin):
                 
             row = self._findGridRowByName(sliceName)
             if row >= 0:
-                genUtils.setGridCellYesNo(
+                gen_utils.setGridCellYesNo(
                     self._grid, row, self._gridEnabledCol, enabled)
 
     def _setSliceInteraction(self, sliceName, interaction):
@@ -604,7 +604,7 @@ class sliceDirections(s3dcGridMixin):
                 
             row = self._findGridRowByName(sliceName)
             if row >= 0:
-                genUtils.setGridCellYesNo(
+                gen_utils.setGridCellYesNo(
                     self._grid, row, self._gridInteractionCol, interaction)
 
     def _setSliceOpacity(self, sliceName, opacity):

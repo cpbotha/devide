@@ -3,7 +3,7 @@
 # See COPYRIGHT for details.
 
 import itk
-import genUtils
+import gen_utils
 import module_kits.itk_kit
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
@@ -77,11 +77,11 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
         return self._watershed.GetOutput()
 
     def config_to_logic(self):
-        self._config.threshold = genUtils.clampVariable(
+        self._config.threshold = gen_utils.clampVariable(
             self._config.threshold, 0.0, 1.0)
         self._watershed.SetThreshold(self._config.threshold)
         
-        self._config.level = genUtils.clampVariable(
+        self._config.level = gen_utils.clampVariable(
             self._config.level, 0.0, 1.0)
         self._watershed.SetLevel(self._config.level)
 

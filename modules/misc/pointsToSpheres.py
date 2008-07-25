@@ -2,7 +2,7 @@
 # $Id$
 # see module documentation
 
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils

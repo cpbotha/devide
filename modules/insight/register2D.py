@@ -10,7 +10,7 @@
 # * an observer which internally disconnects in the case of a screwup would
 #   be good enough; the user can be warned that he should reconnect
 
-import genUtils
+import gen_utils
 from typeModules.imageStackClass import imageStackClass
 from typeModules.transformStackClass import transformStackClass
 from module_base import ModuleBase
@@ -313,7 +313,7 @@ class register2D(ModuleBase):
         self._showImagePair(self.controlFrame.pairNumberSpinCtrl.GetValue())
 
     def _handlerRegisterButton(self, event):
-        maxIterations = genUtils.textToFloat(
+        maxIterations = gen_utils.textToFloat(
             self.controlFrame.maxIterationsTextCtrl.GetValue(), 50)
         if not maxIterations > 0:
             maxIterations = 50
@@ -333,13 +333,13 @@ class register2D(ModuleBase):
         if self._pairNumber > 0:
             pda = self._transformStack[self._pairNumber].GetParameters()
             
-            rot = genUtils.textToFloat(
+            rot = gen_utils.textToFloat(
                 self.controlFrame.rotationTextCtrl.GetValue(),
                 pda.GetElement(0))
-            xt = genUtils.textToFloat(
+            xt = gen_utils.textToFloat(
                 self.controlFrame.xTranslationTextCtrl.GetValue(),
                 pda.GetElement(1))
-            yt = genUtils.textToFloat(
+            yt = gen_utils.textToFloat(
                 self.controlFrame.yTranslationTextCtrl.GetValue(),
                 pda.GetElement(2))
 

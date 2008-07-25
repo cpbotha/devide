@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import genUtils
+import gen_utils
 from module_kits.misc_kit import misc_utils
 import os
 from module_base import ModuleBase

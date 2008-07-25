@@ -2,7 +2,7 @@
 # $Id$
 # performs image smoothing by convolving with a Gaussian
 
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
@@ -94,7 +94,7 @@ class resampleImage(IntrospectModuleMixin, ModuleBase):
                  self._view_frame.magFactorZText.GetValue()
 
         for i in range(3):
-            self._config.magFactors[i] = genUtils.textToFloat(
+            self._config.magFactors[i] = gen_utils.textToFloat(
                 txtTup[i], self._config.magFactors[i])
             
         

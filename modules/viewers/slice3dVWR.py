@@ -6,7 +6,7 @@
 # TODO: front-end / back-end module split (someday)
 
 import cPickle
-import genUtils
+import gen_utils
 
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin, ColourDialogMixin

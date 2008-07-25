@@ -1,5 +1,5 @@
 from external import wxPyPlot
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
@@ -99,15 +99,15 @@ class histogram1D(IntrospectModuleMixin, ModuleBase):
         self._imageAccumulate.SetComponentSpacing(cs)
         
     def view_to_config(self):
-        self._config.numberOfBins = genUtils.textToInt(
+        self._config.numberOfBins = gen_utils.textToInt(
             self._viewFrame.numBinsSpinCtrl.GetValue(),
             self._config.numberOfBins)
 
-        self._config.minValue = genUtils.textToFloat(
+        self._config.minValue = gen_utils.textToFloat(
             self._viewFrame.minValueText.GetValue(),
             self._config.minValue)
 
-        self._config.maxValue = genUtils.textToFloat(
+        self._config.maxValue = gen_utils.textToFloat(
             self._viewFrame.maxValueText.GetValue(),
             self._config.maxValue)
 

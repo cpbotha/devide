@@ -1,7 +1,7 @@
 # implicits.py  copyright (c) 2003 Charl P. Botha <cpbotha@ieee.org>
 # $Id$
 
-import genUtils
+import gen_utils
 from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import vtk
 import wx
@@ -139,7 +139,7 @@ class implicits(s3dcGridMixin):
             elif bti == 3:
                 # manual
                 v = cf.implicitManualBoundsText.GetValue()
-                t = genUtils.textToTypeTuple(v, (-1, 1, -1, 1, -1, 1),
+                t = gen_utils.textToTypeTuple(v, (-1, 1, -1, 1, -1, 1),
                                              6, float)
                 cf.implicitManualBoundsText.SetValue(str(t))
                         
@@ -668,7 +668,7 @@ class implicits(s3dcGridMixin):
             # in the grid
             gridRow = self.findGridRowByName(implicitName)
             if gridRow >= 0:
-                genUtils.setGridCellYesNo(
+                gen_utils.setGridCellYesNo(
                     self._grid, gridRow, self._gridEnabledCol, ii.enabled)
 
     def _setupGUI(self):

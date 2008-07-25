@@ -5,7 +5,7 @@
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
-import genUtils
+import gen_utils
 from module_base import ModuleBase
 import module_utils
 import module_kits.vtk_kit.utils
@@ -722,7 +722,7 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin):
             elif typeD.startswith('tuple:'):
                 # e.g. tuple:float,3
                 castString, numString = typeD.split(':')[1].split(',')
-                val = genUtils.textToTypeTuple(
+                val = gen_utils.textToTypeTuple(
                     wv, eval('self._config.%s' % (configTuple[1],)),
                     int(numString), eval(castString))
 

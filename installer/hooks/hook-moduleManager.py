@@ -34,7 +34,7 @@ mkl = [i for i in mkl if i not in nokits and i not in
         ['itk_kit','itktudoss_kit']]
 
 # other imports
-other_imports = ['genMixins', 'genUtils', 'ModuleBase', 'module_mixins',
+other_imports = ['genMixins', 'gen_utils', 'ModuleBase', 'module_mixins',
                  'module_utils',
                  'modules.viewers.DICOMBrowser',
                  'modules.viewers.slice3dVWR',
