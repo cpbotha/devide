@@ -10,6 +10,12 @@
 # * freehand drawing
 # * 2d levelset
 
-class Slicinator:
+# see design notes on p39 of AM2 moleskine
+
+from moduleBase import moduleBase
+from moduleMixins import introspectModuleMixin
+import moduleUtils
+
+class Slicinator(IntrospectModuleMixin, moduleBase):
     pass
 
