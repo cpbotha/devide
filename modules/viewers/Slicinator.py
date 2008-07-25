@@ -14,7 +14,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 
 class Slicinator(IntrospectModuleMixin, ModuleBase):
     pass

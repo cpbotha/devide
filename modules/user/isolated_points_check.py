@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 WX_OPEN = 1
 WX_SAVE = 2
 

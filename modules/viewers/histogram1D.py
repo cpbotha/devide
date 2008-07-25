@@ -2,7 +2,7 @@ from external import wxPyPlot
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 
 try:
     import Numeric
@@ -24,7 +24,7 @@ class histogram1D(introspectModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._imageAccumulate = vtk.vtkImageAccumulate()
-        moduleUtils.setupVTKObjectProgress(self, self._imageAccumulate,
+        module_utils.setupVTKObjectProgress(self, self._imageAccumulate,
                                            'Calculating histogram')
 
         self._viewFrame = None
@@ -167,7 +167,7 @@ class histogram1D(introspectModuleMixin, ModuleBase):
         import modules.viewers.resources.python.histogram1DFrames
         reload(modules.viewers.resources.python.histogram1DFrames)
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.viewers.resources.python.histogram1DFrames.\
             histogram1DFrame)
@@ -178,11 +178,11 @@ class histogram1D(introspectModuleMixin, ModuleBase):
         objectDict = {'Module (self)' : self,
                       'vtkImageAccumulate' : self._imageAccumulate}
 
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             objectDict, None)
 
-        moduleUtils.createECASButtons(self, self._viewFrame,
+        module_utils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
         
         

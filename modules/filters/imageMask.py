@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class imageMask(scriptedConfigModuleMixin, ModuleBase):
@@ -17,7 +17,7 @@ class imageMask(scriptedConfigModuleMixin, ModuleBase):
         self._imageMask.GetOutput().SetUpdateExtentToWholeExtent()
         #self._imageMask.SetMaskedOutputValue(0)
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageMask,
+        module_utils.setupVTKObjectProgress(self, self._imageMask,
                                            'Masking image')
         
         
@@ -29,7 +29,7 @@ class imageMask(scriptedConfigModuleMixin, ModuleBase):
         # connect output of cast to imagemask input
         self._imageMask.SetMaskInput(self._image_cast.GetOutput())
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._image_cast,
             'Casting mask image to unsigned char')
         

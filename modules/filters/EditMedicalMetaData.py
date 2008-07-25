@@ -5,7 +5,7 @@
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import module_kits.vtk_kit
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -117,7 +117,7 @@ class EditMedicalMetaData(introspectModuleMixin, ModuleBase):
         import modules.filters.resources.python.EditMedicalMetaDataViewFrame
         reload(modules.filters.resources.python.EditMedicalMetaDataViewFrame)
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.filters.resources.python.EditMedicalMetaDataViewFrame.\
             EditMedicalMetaDataViewFrame)
@@ -171,13 +171,13 @@ class EditMedicalMetaData(introspectModuleMixin, ModuleBase):
         object_dict = {
                 'Module (self)'      : self}
 
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
 
         # we don't want enter to OK and escape to cancel, as these are
         # used for confirming and cancelling grid editing operations
-        moduleUtils.create_eoca_buttons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                         self._view_frame.view_frame_panel,
                                         ok_default=False,
                                         cancel_hotkey=False)

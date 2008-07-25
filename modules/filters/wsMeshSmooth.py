@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class wsMeshSmooth(scriptedConfigModuleMixin, ModuleBase):
@@ -11,7 +11,7 @@ class wsMeshSmooth(scriptedConfigModuleMixin, ModuleBase):
 
         self._wsPDFilter = vtk.vtkWindowedSincPolyDataFilter()
 
-        moduleUtils.setupVTKObjectProgress(self, self._wsPDFilter,
+        module_utils.setupVTKObjectProgress(self, self._wsPDFilter,
                                            'Smoothing polydata')
         
 

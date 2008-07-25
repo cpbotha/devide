@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class vtpRDR(filenameViewModuleMixin, ModuleBase):
@@ -20,7 +20,7 @@ class vtpRDR(filenameViewModuleMixin, ModuleBase):
             'VTK Poly Data (*.vtp)|*.vtp|All files (*)|*',
             {'vtkXMLPolyDataReader': self._reader})
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._reader,
             'Reading VTK PolyData')
 

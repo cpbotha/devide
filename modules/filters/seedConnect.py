@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -17,11 +17,11 @@ class seedConnect(scriptedConfigModuleMixin, ModuleBase):
         self._seedConnect = vtk.vtkImageSeedConnectivity()
         self._seedConnect.SetInput(self._imageCast.GetOutput())
 
-        moduleUtils.setupVTKObjectProgress(self, self._seedConnect,
+        module_utils.setupVTKObjectProgress(self, self._seedConnect,
                                            'Performing region growing')
         
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageCast,
+        module_utils.setupVTKObjectProgress(self, self._imageCast,
                                            'Casting data to unsigned char')
         
         

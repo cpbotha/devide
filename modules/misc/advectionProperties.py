@@ -4,7 +4,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import operator
 import vtk
 import wx
@@ -27,7 +27,7 @@ class advectionProperties(scriptedConfigModuleMixin, ModuleBase):
 
         self._inputs = [None] * self._numberOfInputs
         
-        #moduleUtils.setupVTKObjectProgress(self, self._warpVector,
+        #module_utils.setupVTKObjectProgress(self, self._warpVector,
         #                                   'Warping points.')
 
         scriptedConfigModuleMixin.__init__(

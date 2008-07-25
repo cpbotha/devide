@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -18,7 +18,7 @@ class extractGrid(scriptedConfigModuleMixin, ModuleBase):
 
         self._extractGrid = vtkdevide.vtkPVExtractVOI()
         
-        moduleUtils.setupVTKObjectProgress(self, self._extractGrid,
+        module_utils.setupVTKObjectProgress(self, self._extractGrid,
                                            'Subsampling structured grid.')
 
         scriptedConfigModuleMixin.__init__(

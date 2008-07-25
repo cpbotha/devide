@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -16,11 +16,11 @@ class selectConnectedComponents(scriptedConfigModuleMixin, ModuleBase):
         self._selectccs = vtkdevide.vtkSelectConnectedComponents()
         self._selectccs.SetInput(self._imageCast.GetOutput())
 
-        moduleUtils.setupVTKObjectProgress(self, self._selectccs,
+        module_utils.setupVTKObjectProgress(self, self._selectccs,
                                            'Marking selected components')
         
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageCast,
+        module_utils.setupVTKObjectProgress(self, self._imageCast,
                                            'Casting data to unsigned long')
         
         

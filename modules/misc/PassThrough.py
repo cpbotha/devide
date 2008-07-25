@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 
 class PassThrough(noConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):

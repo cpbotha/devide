@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -52,7 +52,7 @@ class superQuadric(scriptedConfigModuleMixin, ModuleBase):
         self._outputs = [self._superquadric, vtk.vtkPolyData()]
         
         # setup progress for the processObject
-        moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,
+        module_utils.setupVTKObjectProgress(self, self._superquadricSource,
                                            "Synthesizing polydata.")
 
         # mixin ctor

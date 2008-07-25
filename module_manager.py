@@ -410,7 +410,7 @@ class ModuleManager:
         """Interface method that can be used by clients to transfer module
         view to underlying logic.
 
-        This is called by moduleUtils (the ECASH button handlers) and thunks
+        This is called by module_utils (the ECASH button handlers) and thunks
         through to the relevant MetaModule call.
         """
 
@@ -913,7 +913,7 @@ class ModuleManager:
     def executeNetwork(self, startingModule=None):
         """Execute local network in order, starting from startingModule.
 
-        This is a utility method used by moduleUtils to bind to the Execute
+        This is a utility method used by module_utils to bind to the Execute
         control found on must module UIs.  We are still in the process
         of formalising the concepts of networks vs. groups of modules.
         Eventually, networks will be grouped by process node and whatnot.

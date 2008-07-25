@@ -5,7 +5,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class landmarkTransform(scriptedConfigModuleMixin, ModuleBase):

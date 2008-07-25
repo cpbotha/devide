@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtktud
 
@@ -14,7 +14,7 @@ class MyGlyph3D(scriptedConfigModuleMixin, ModuleBase):
 
         self._glyph3d = vtktud.vtkMyGlyph3D()
         
-        moduleUtils.setupVTKObjectProgress(self, self._glyph3d,
+        module_utils.setupVTKObjectProgress(self, self._glyph3d,
                                            'Making 3D glyphs')
         
                                            

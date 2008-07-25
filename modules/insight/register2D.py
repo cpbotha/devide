@@ -14,7 +14,7 @@ import genUtils
 from typeModules.imageStackClass import imageStackClass
 from typeModules.transformStackClass import transformStackClass
 from module_base import ModuleBase
-import moduleUtils
+import module_utils
 import operator
 import fixitk as itk
 import ConnectVTKITKPython as CVIPy
@@ -253,7 +253,7 @@ class register2D(ModuleBase):
 
         viewerFrame = modules.Insight.resources.python.register2DViewFrames.\
                       viewerFrame
-        self.viewerFrame = moduleUtils.instantiateModuleViewFrame(
+        self.viewerFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, viewerFrame)
 
         self._threedRenderer = vtk.vtkRenderer()
@@ -270,7 +270,7 @@ class register2D(ModuleBase):
         # controlFrame creation
         controlFrame = modules.Insight.resources.python.\
                        register2DViewFrames.controlFrame
-        self.controlFrame = moduleUtils.instantiateModuleViewFrame(
+        self.controlFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, controlFrame)
 
         # display

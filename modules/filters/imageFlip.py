@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import wx
 import vtk
 
@@ -19,7 +19,7 @@ class imageFlip(noConfigModuleMixin, ModuleBase):
         self._imageFlip.SetFilteredAxis(2)
         self._imageFlip.GetOutput().SetUpdateExtentToWholeExtent()
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageFlip,
+        module_utils.setupVTKObjectProgress(self, self._imageFlip,
                                            'Flipping image')
 
         noConfigModuleMixin.__init__(

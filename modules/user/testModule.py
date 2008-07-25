@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class testModule(noConfigModuleMixin, ModuleBase):
@@ -23,9 +23,9 @@ class testModule(noConfigModuleMixin, ModuleBase):
                     'vtkTriangleFilter' : self._triangleFilter,
                     'vtkCurvatures' : self._curvatures})
 
-        moduleUtils.setupVTKObjectProgress(self, self._triangleFilter,
+        module_utils.setupVTKObjectProgress(self, self._triangleFilter,
                                            'Triangle filtering...')
-        moduleUtils.setupVTKObjectProgress(self, self._curvatures,
+        module_utils.setupVTKObjectProgress(self, self._curvatures,
                                            'Calculating curvatures...')
         
         

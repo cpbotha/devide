@@ -6,7 +6,7 @@ from typeModules.imageStackClass import imageStackClass
 import fixitk as itk
 from module_base import ModuleBase
 from moduleMixins import fileOpenDialogModuleMixin
-import moduleUtils
+import module_utils
 import wx
 
 class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
@@ -133,12 +133,12 @@ class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
             'modules.Insight.resources.python.imageStackRDRViewFrame')
         import modules.Insight.resources.python.imageStackRDRViewFrame
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.Insight.resources.python.imageStackRDRViewFrame.\
             imageStackRDRViewFrame)
 
-        moduleUtils.createECASButtons(self, self._viewFrame,
+        module_utils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
         self._bindEvents()

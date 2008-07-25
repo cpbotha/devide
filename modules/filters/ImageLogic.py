@@ -4,7 +4,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -20,12 +20,12 @@ class ImageLogic(scriptedConfigModuleMixin, ModuleBase):
 
         self._image_logic = vtk.vtkImageLogic()
         
-        moduleUtils.setupVTKObjectProgress(self, self._image_logic,
+        module_utils.setupVTKObjectProgress(self, self._image_logic,
                                            'Performing image logic')
         
 
         self._image_cast = vtk.vtkImageCast()
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._image_cast,
             'Casting scalar type before image logic')
         

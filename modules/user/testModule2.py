@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class testModule2(noConfigModuleMixin, ModuleBase):
@@ -21,7 +21,7 @@ class testModule2(noConfigModuleMixin, ModuleBase):
         self._matrixToHT.Inverse()
 
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageReslice,
+        module_utils.setupVTKObjectProgress(self, self._imageReslice,
                                            'Resampling volume')
 
         self._viewFrame = self._createViewFrame(

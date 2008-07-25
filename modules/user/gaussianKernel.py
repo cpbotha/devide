@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtktud
 
 class gaussianKernel(scriptedConfigModuleMixin, ModuleBase):
@@ -35,7 +35,7 @@ class gaussianKernel(scriptedConfigModuleMixin, ModuleBase):
         self._gaussianKernel = vtktud.vtkGaussianKernel()
 
         # setup progress for the processObject
-#        moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,
+#        module_utils.setupVTKObjectProgress(self, self._superquadricSource,
 #                                           "Synthesizing polydata.")
 
         self._createWindow(

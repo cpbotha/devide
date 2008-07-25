@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -17,7 +17,7 @@ class histogram2D(scriptedConfigModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._histogram = vtkdevide.vtkImageHistogram2D()
-        moduleUtils.setupVTKObjectProgress(self, self._histogram,
+        module_utils.setupVTKObjectProgress(self, self._histogram,
                                            'Calculating 2D histogram')
 
 

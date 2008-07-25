@@ -2,7 +2,7 @@ from module_kits.misc_kit.mixins import SubjectMixin
 import geometry
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 import Measure2DFrame
 reload(Measure2DFrame)
 
@@ -122,7 +122,7 @@ class Measure2D(introspectModuleMixin, ModuleBase):
         self._widgets = M2DWidgetList()
 
         # build frame
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, Measure2DFrame.Measure2DFrame)
 
         # now link up all event handlers

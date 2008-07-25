@@ -9,7 +9,7 @@ from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin # temporary
-import moduleUtils # temporary, most of this should be in utils.
+import module_utils # temporary, most of this should be in utils.
 import re
 import utils
 
@@ -187,7 +187,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         PickleVTKObjectsModuleMixin.__init__(self, ['_theFilter'])        
 
         # make progress hooks for the object
-        moduleUtils.setupVTKObjectProgress(self, self._theFilter,
+        module_utils.setupVTKObjectProgress(self, self._theFilter,
                                            progressText)        
 
         self._inputDescriptions = inputDescriptions
@@ -203,7 +203,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
-        viewFrame = moduleUtils.instantiateModuleViewFrame(
+        viewFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, dMVF)
 
         # ConfigVtkObj parent not important, we're passing frame + panel
@@ -213,13 +213,13 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
                                           self._theFilter,
                                           viewFrame, viewFrame.viewFramePanel)
 
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, viewFrame, viewFrame.viewFramePanel,
             {'Module (self)' : self}, None)
 
         # we don't want the Execute button to be default... else stuff gets
         # executed with every enter in the command window (at least in Doze)
-        moduleUtils.createECASButtons(self, viewFrame,
+        module_utils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel,
                                       False)
             

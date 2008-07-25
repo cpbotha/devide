@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class imageMathematics(scriptedConfigModuleMixin, ModuleBase):
@@ -21,7 +21,7 @@ class imageMathematics(scriptedConfigModuleMixin, ModuleBase):
         self._imageMath.SetInput1(None)
         self._imageMath.SetInput2(None)
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageMath,
+        module_utils.setupVTKObjectProgress(self, self._imageMath,
                                            'Performing image math')
         
                                            

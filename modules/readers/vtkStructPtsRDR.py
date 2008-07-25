@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class vtkStructPtsRDR(filenameViewModuleMixin, ModuleBase):
@@ -22,7 +22,7 @@ class vtkStructPtsRDR(filenameViewModuleMixin, ModuleBase):
             {'vtkStructuredPointsReader': self._reader})
 
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._reader,
             'Reading vtk structured points data')
 

@@ -34,7 +34,7 @@ import gdcm
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 import os
 import sys
 import traceback
@@ -74,7 +74,7 @@ class DICOMBrowser(introspectModuleMixin, ModuleBase):
             self,
             {'Module (self)' : self})
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
         # change the title to something more spectacular

@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -22,13 +22,13 @@ class extractHDomes(scriptedConfigModuleMixin, ModuleBase):
 
         self._imageMathSubtractR.SetInput(1, self._reconstruct.GetOutput())
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageMathSubtractH,
+        module_utils.setupVTKObjectProgress(self, self._imageMathSubtractH,
                                            'Preparing marker image.')
 
-        moduleUtils.setupVTKObjectProgress(self, self._reconstruct,
+        module_utils.setupVTKObjectProgress(self, self._reconstruct,
                                            'Performing reconstruction.')
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageMathSubtractR,
+        module_utils.setupVTKObjectProgress(self, self._imageMathSubtractR,
                                            'Subtracting reconstruction.')
 
         self._config.h = 50

@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -14,7 +14,7 @@ class vtpWRT(filenameViewModuleMixin, ModuleBase):
 
         self._writer = vtk.vtkXMLPolyDataWriter()
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._writer,
             'Writing VTK PolyData')
 

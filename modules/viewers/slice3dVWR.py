@@ -10,7 +10,7 @@ import genUtils
 
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin, colourDialogMixin
-import moduleUtils
+import module_utils
 
 # the following four lines are only needed during prototyping of the modules
 # that they import
@@ -598,7 +598,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         # threedFrame creation and basic setup -------------------
         threedFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                       threedFrame
-        self.threedFrame = moduleUtils.instantiateModuleViewFrame(
+        self.threedFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, threedFrame)
         self.threedFrame.SetTitle('slice3dVWR 3D view')
             
@@ -620,7 +620,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         # controlFrame creation and basic setup -------------------
         controlFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                        controlFrame
-        self.controlFrame = moduleUtils.instantiateModuleViewFrame(
+        self.controlFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, controlFrame)
         self.controlFrame.SetTitle('slice3dVWR Controls')
 
@@ -705,7 +705,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         # objectAnimationFrame creation and basic setup -------------------
         oaf = modules.viewers.resources.python.slice3dVWRFrames.\
               objectAnimationFrame
-        self.objectAnimationFrame = moduleUtils.instantiateModuleViewFrame(
+        self.objectAnimationFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, oaf)
 
         # display the windows (but we don't show the oaf yet)

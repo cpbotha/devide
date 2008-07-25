@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -10,7 +10,7 @@ class myImageClip(scriptedConfigModuleMixin, ModuleBase):
 
         self._clipper = vtk.vtkImageClip()
 
-        moduleUtils.setupVTKObjectProgress(self, self._clipper,
+        module_utils.setupVTKObjectProgress(self, self._clipper,
                                            'Reading PNG images.')
 
         self._config.outputWholeExtent = (0,-1,0,-1,0,-1)

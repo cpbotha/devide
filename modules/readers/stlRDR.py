@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import os
 
@@ -29,7 +29,7 @@ class stlRDR(filenameViewModuleMixin, ModuleBase):
             'STL data (*.stl)|*.stl|All files (*)|*',
             {'vtkSTLReader': self._reader})
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading STL data')
 
         # set up some defaults

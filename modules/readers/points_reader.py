@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import types
 from modules.viewers.slice3dVWRmodules.selectedPoints import outputSelectedPoints
 

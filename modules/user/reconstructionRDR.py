@@ -7,7 +7,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import fixitk as itk
 import wx
@@ -28,7 +28,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, ModuleBase):
 		# this is our output
 		self._transformStack = transformStackClass( self )
 
-#		moduleUtils.setupVTKObjectProgress(self, self._reader,
+#		module_utils.setupVTKObjectProgress(self, self._reader,
 #		                                   'Fetching transformStack from database...')
 
 		self._config.databaseFile = ""

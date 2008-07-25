@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -15,7 +15,7 @@ class pngRDR(scriptedConfigModuleMixin, ModuleBase):
         self._reader = vtk.vtkPNGReader()
         self._reader.SetFileDimensionality(3)
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading PNG images.')
 
         self._config.filePattern = '%03d.png'

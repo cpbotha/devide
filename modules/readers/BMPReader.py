@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -15,7 +15,7 @@ class BMPReader(scriptedConfigModuleMixin, ModuleBase):
         self._reader.SetFileDimensionality(3)
         self._reader.SetAllow8BitBMP(1)
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading BMP images.')
 
         

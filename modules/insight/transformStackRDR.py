@@ -8,7 +8,7 @@ import fixitk as itk
 import md5
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import wx
 import vtk
 

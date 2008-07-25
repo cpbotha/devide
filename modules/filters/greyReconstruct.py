@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -18,7 +18,7 @@ class greyReconstruct(noConfigModuleMixin, ModuleBase):
             {'Module (self)' : self,
              'vtkImageGreyscaleReconstruct3D' : self._greyReconstruct})
         
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._greyReconstruct,
             'Performing greyscale reconstruction')
 

@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -14,7 +14,7 @@ class metaImageRDR(scriptedConfigModuleMixin, ModuleBase):
 
         self._reader = vtk.vtkMetaImageReader()
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading MetaImage data.')
         
 

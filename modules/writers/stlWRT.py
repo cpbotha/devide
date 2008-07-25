@@ -1,7 +1,7 @@
 # $Id$
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -28,7 +28,7 @@ class stlWRT(filenameViewModuleMixin, ModuleBase):
         for textobj in (('Cleaning data', self._cleaner),
                         ('Converting to triangles', self._tf),
                         ('Writing STL data', self._writer)):
-            moduleUtils.setupVTKObjectProgress(self, textobj[1],
+            module_utils.setupVTKObjectProgress(self, textobj[1],
                                                textobj[0])
 
             

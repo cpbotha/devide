@@ -14,7 +14,7 @@ reload(SkeletonAUIViewerFrame)
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 import os
 import sys
 import traceback
@@ -34,7 +34,7 @@ class SkeletonAUIViewer(introspectModuleMixin, ModuleBase):
             {'Module (self)' : self})
 
         # create the view frame
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, 
             SkeletonAUIViewerFrame.SkeletonAUIViewerFrame)
         # change the title to something more spectacular

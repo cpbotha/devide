@@ -8,14 +8,14 @@ import os
 from module_base import ModuleBase
 from moduleMixins import \
      introspectModuleMixin, fileOpenDialogModuleMixin
-import moduleUtils
+import module_utils
 
 
 import stat
 import wx
 import vtk
 import vtkdevide
-import moduleUtils
+import module_utils
 
 class dicomRDR(ModuleBase,
                introspectModuleMixin,
@@ -28,7 +28,7 @@ class dicomRDR(ModuleBase,
         # setup necessary VTK objects
         self._reader = vtkdevide.vtkDICOMVolumeReader()
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
         
 
@@ -230,7 +230,7 @@ class dicomRDR(ModuleBase,
         import modules.readers.resources.python.dicomRDRViewFrame
         reload(modules.readers.resources.python.dicomRDRViewFrame)
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.readers.resources.python.dicomRDRViewFrame.\
             dicomRDRViewFrame)
@@ -239,11 +239,11 @@ class dicomRDR(ModuleBase,
         self._viewFrame.dicomFilesListBox.Clear()
 
         objectDict = {'dicom reader' : self._reader}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             objectDict, None)
 
-        moduleUtils.createECASButtons(self, self._viewFrame,
+        module_utils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
         wx.EVT_BUTTON(self._viewFrame, self._viewFrame.addButton.GetId(),

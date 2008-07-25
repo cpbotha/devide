@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -18,7 +18,7 @@ class imageBacktracker(noConfigModuleMixin, ModuleBase):
 
 	self._imageBacktracker = vtkdevide.vtkImageBacktracker()
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageBacktracker,
+        module_utils.setupVTKObjectProgress(self, self._imageBacktracker,
                                            'Backtracking...')
         
         # we'll use this to keep a binding (reference) to the passed object

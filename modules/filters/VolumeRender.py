@@ -3,7 +3,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -151,13 +151,13 @@ class VolumeRender(
         self._volume_mapper.SetVolumeRayCastFunction(
             self._volume_raycast_function)
         
-        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 
     def _setup_for_2d_texture(self):
         self._volume_mapper = vtk.vtkVolumeTextureMapper2D()
         
-        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 
         
@@ -165,7 +165,7 @@ class VolumeRender(
     def _setup_for_3d_texture(self):
         self._volume_mapper = vtk.vtkVolumeTextureMapper3D()
         
-        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 
     def _setup_for_shell_splatting(self):
@@ -175,7 +175,7 @@ class VolumeRender(
         # high-quality rendermode
         self._volume_mapper.SetRenderMode(0)
 
-        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 
     def _setup_for_fixed_point(self):
@@ -187,7 +187,7 @@ class VolumeRender(
         self._volume_mapper.SetBlendModeToComposite()
         #self._volume_mapper.SetBlendModeToMaximumIntensity()
 
-        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
         
     def execute_module(self):

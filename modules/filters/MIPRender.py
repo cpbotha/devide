@@ -3,7 +3,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -123,7 +123,7 @@ class MIPRender(
             self._volume_raycast_function)
 
         
-        moduleUtils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
                                            'Preparing render.')
 
         self._volume = vtk.vtkVolume()

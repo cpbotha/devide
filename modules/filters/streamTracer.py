@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 INTEG_TYPE = ['RK2', 'RK4', 'RK45']
@@ -27,7 +27,7 @@ class streamTracer(scriptedConfigModuleMixin, ModuleBase):
             {'Module (self)' : self,
              'vtkStreamTracer' : self._streamTracer})
 
-        moduleUtils.setupVTKObjectProgress(self, self._streamTracer,
+        module_utils.setupVTKObjectProgress(self, self._streamTracer,
                                            'Tracing stream lines.')
         
         self.sync_module_logic_with_config()

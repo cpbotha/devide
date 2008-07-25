@@ -1,7 +1,7 @@
 import operator
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 import wx
@@ -278,18 +278,18 @@ class shellSplatSimple(introspectModuleMixin,
         # requires it and so that it's available in this namespace.
         import modules.filters.resources.python.shellSplatSimpleFLTViewFrame
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, mm,
             modules.filters.resources.python.shellSplatSimpleFLTViewFrame.\
             shellSplatSimpleFLTViewFrame)
 
         # setup introspection with default everythings
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.viewFramePanel,
             self._object_dict, None)
 
         # create and configure the standard ECAS buttons
-        moduleUtils.createECASButtons(self, self._view_frame,
+        module_utils.createECASButtons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)
 
         

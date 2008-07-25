@@ -1,6 +1,6 @@
 import genUtils
 from module_base import ModuleBase
-import moduleUtils
+import module_utils
 import moduleMixins
 from moduleMixins import scriptedConfigModuleMixin
 import os
@@ -20,7 +20,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
         
         self._flipper = vtk.vtkImageFlip()
         self._flipper.SetFilteredAxis(1)
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._flipper, 'Flipping Y axis.')
 
         self._config.cpt_driver_path = \
@@ -137,7 +137,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
             reader.SetHeaderSize(24)
             reader.SetDataExtent(self._imageInput.GetWholeExtent())
             reader.SetDataSpacing(self._imageInput.GetSpacing())
-            moduleUtils.setupVTKObjectProgress(
+            module_utils.setupVTKObjectProgress(
                 self, reader, 'Reading CPT distance field output.')
 
             self._flipper.SetInput(reader.GetOutput())

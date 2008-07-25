@@ -3,8 +3,8 @@
 import fixitk as itk
 import genUtils
 from module_base import ModuleBase
-import moduleUtils
-import moduleUtilsITK
+import module_utils
+import module_utilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
 class hessianDoG(scriptedConfigModuleMixin, ModuleBase):
@@ -33,7 +33,7 @@ class hessianDoG(scriptedConfigModuleMixin, ModuleBase):
         g = itk.itkGradientMagnitudeRecursiveGaussianImageFilterF3F3_New()
         self._gradientMagnitude = g
         
-        moduleUtilsITK.setupITKObjectProgress(
+        module_utilsITK.setupITKObjectProgress(
             self, g,
             'itkGradientMagnitudeRecursiveGaussianImageFilter',
             'Calculating gradient image')

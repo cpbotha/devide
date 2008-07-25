@@ -11,7 +11,7 @@
 from module_base import ModuleBase
 from moduleMixins import \
      scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import os
 
 import vtk
@@ -25,12 +25,12 @@ class DICOMWriter(scriptedConfigModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._writer = vtkgdcm.vtkGDCMImageWriter()
-        moduleUtils.setupVTKObjectProgress(self, self._writer,
+        module_utils.setupVTKObjectProgress(self, self._writer,
                                            'Writing DICOM data')
 
         self._caster = vtk.vtkImageCast()
         self._caster.SetOutputScalarTypeToShort()
-        moduleUtils.setupVTKObjectProgress(self, self._caster,
+        module_utils.setupVTKObjectProgress(self, self._caster,
                 'Casting DICOM data to short')
 
         self._input_data = None

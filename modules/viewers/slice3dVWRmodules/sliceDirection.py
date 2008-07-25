@@ -3,7 +3,7 @@
 # See COPYRIGHT for details.
 
 import operator
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -373,7 +373,7 @@ class sliceDirection:
                 self.sliceDirections.slice3dVWR.threedFrame, id=-1,
                 title='dummy')
 
-            self._orthoViewFrame.SetIcon(moduleUtils.getModuleIcon())
+            self._orthoViewFrame.SetIcon(module_utils.getModuleIcon())
 
             self._renderer = vtk.vtkRenderer()
             self._renderer.SetBackground(0.5, 0.5, 0.5)

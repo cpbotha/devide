@@ -6,7 +6,7 @@ from module_base import ModuleBase
 from module_kits.misc_kit import misc_utils
 from moduleMixins import \
      introspectModuleMixin
-import moduleUtils
+import module_utils
 
 import gdcm
 import vtk
@@ -54,7 +54,7 @@ class DICOMReader(introspectModuleMixin, ModuleBase):
                 self._reader.GetDirectionCosines()
         self._output_mmd = mmd
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading DICOM data')
 
         self._view_frame = None
@@ -234,7 +234,7 @@ class DICOMReader(introspectModuleMixin, ModuleBase):
         import modules.readers.resources.python.DICOMReaderViewFrame
         reload(modules.readers.resources.python.DICOMReaderViewFrame)
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.readers.resources.python.DICOMReaderViewFrame.\
             DICOMReaderViewFrame)
@@ -245,11 +245,11 @@ class DICOMReader(introspectModuleMixin, ModuleBase):
         object_dict = {
                 'Module (self)'      : self,
                 'vtkGDCMImageReader' : self._reader}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
 
-        moduleUtils.createECASButtons(self, self._view_frame,
+        module_utils.createECASButtons(self, self._view_frame,
                                       self._view_frame.view_frame_panel)
 
         # now add the event handlers

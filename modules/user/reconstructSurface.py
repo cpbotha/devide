@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class reconstructSurface(ModuleBase, noConfigModuleMixin):
@@ -33,11 +33,11 @@ class reconstructSurface(ModuleBase, noConfigModuleMixin):
         self._mc.SetInput(self._reconstructionFilter.GetOutput())
         self._mc.SetValue(0, 0.0)
 
-        moduleUtils.setupVTKObjectProgress(self, self._thresh,
+        module_utils.setupVTKObjectProgress(self, self._thresh,
                                            'Extracting points...')
-        moduleUtils.setupVTKObjectProgress(self, self._reconstructionFilter,
+        module_utils.setupVTKObjectProgress(self, self._reconstructionFilter,
                                            'Reconstructing...')
-        moduleUtils.setupVTKObjectProgress(self, self._mc,
+        module_utils.setupVTKObjectProgress(self, self._mc,
                                            'Extracting surface...')
 
         self._iObj = self._thresh

@@ -3,7 +3,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class muscleLinesToSurface(ModuleBase, noConfigModuleMixin):
@@ -58,15 +58,15 @@ class muscleLinesToSurface(ModuleBase, noConfigModuleMixin):
         self._cpd.SetInput(self._mc.GetOutput())
         #self._cpd.InsideOutOn()
 
-        moduleUtils.setupVTKObjectProgress(self, self._distance,
+        module_utils.setupVTKObjectProgress(self, self._distance,
                                            'Calculating distance field...')
-        moduleUtils.setupVTKObjectProgress(self, self._pf1,
+        module_utils.setupVTKObjectProgress(self, self._pf1,
                                            'Signing distance field...')
-        moduleUtils.setupVTKObjectProgress(self, self._pf2,
+        module_utils.setupVTKObjectProgress(self, self._pf2,
                                            'Creating implicit volume...')
-        moduleUtils.setupVTKObjectProgress(self, self._mc,
+        module_utils.setupVTKObjectProgress(self, self._mc,
                                            'Extracting isosurface...')
-        moduleUtils.setupVTKObjectProgress(self, self._cpd,
+        module_utils.setupVTKObjectProgress(self, self._cpd,
                                            'Clipping isosurface...')
         
         

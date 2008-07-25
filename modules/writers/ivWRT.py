@@ -1,7 +1,7 @@
 # $Id$
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -18,7 +18,7 @@ class ivWRT(filenameViewModuleMixin, ModuleBase):
 
         # following is the standard way of connecting up the devide progress
         # callback to a VTK object; you should do this for all objects in
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._writer, 'Writing polydata to Inventor Viewer format')
 
         # ctor for this specific mixin

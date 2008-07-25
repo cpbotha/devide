@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 
@@ -25,11 +25,11 @@ class imageFillHoles(scriptedConfigModuleMixin, ModuleBase):
         self._imageGreyReconstruct.SetInput(
             1, self._imageBorderMask.GetOutput())
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageBorderMask,
+        module_utils.setupVTKObjectProgress(self, self._imageBorderMask,
                                            'Creating image mask.')
         
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageGreyReconstruct,
+        module_utils.setupVTKObjectProgress(self, self._imageGreyReconstruct,
                                            'Performing reconstruction.')
         
 

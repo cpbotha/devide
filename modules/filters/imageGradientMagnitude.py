@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import wx
 import vtk
 
@@ -15,7 +15,7 @@ class imageGradientMagnitude(noConfigModuleMixin, ModuleBase):
         self._imageGradientMagnitude = vtk.vtkImageGradientMagnitude()
         self._imageGradientMagnitude.SetDimensionality(3)
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageGradientMagnitude,
+        module_utils.setupVTKObjectProgress(self, self._imageGradientMagnitude,
                                            'Calculating gradient magnitude')
 
         noConfigModuleMixin.__init__(

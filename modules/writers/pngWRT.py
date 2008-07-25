@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import wx # needs this for wx.OPEN, we need to make this constant available
           # elsewhere
@@ -20,7 +20,7 @@ class pngWRT(scriptedConfigModuleMixin, ModuleBase):
 	self._shiftScale = vtk.vtkImageShiftScale()
         self._shiftScale.SetOutputScalarTypeToUnsignedShort()
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._shiftScale,
             'Converting input to unsigned short.')
 
@@ -30,7 +30,7 @@ class pngWRT(scriptedConfigModuleMixin, ModuleBase):
 	self._writer.SetFileDimensionality(3)
         self._writer.SetInput(self._shiftScale.GetOutput())
         
-	moduleUtils.setupVTKObjectProgress(
+	module_utils.setupVTKObjectProgress(
             self, self._writer, 'Writing PNG file(s)')
 
         

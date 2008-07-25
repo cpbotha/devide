@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 IMAGE_DATA = 0
@@ -18,7 +18,7 @@ class StreamerVTK(noConfigModuleMixin, ModuleBase):
                  'vtkImageDataStreamer' : self._image_data_streamer,
                  'vtkPolyDataStreamer' : self._poly_data_streamer})
 
-        moduleUtils.setupVTKObjectProgress(self,
+        module_utils.setupVTKObjectProgress(self,
                 self._image_data_streamer, 'Streaming image data')
 
         self._current_mode = None

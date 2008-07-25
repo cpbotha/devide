@@ -8,7 +8,7 @@ import os
 from module_base import ModuleBase
 from moduleMixins import IntrospectModuleMixin,\
         FileOpenDialogModuleMixin
-import moduleUtils
+import module_utils
 from external import transfer_function_widget
 import vtk
 import wx
@@ -185,16 +185,16 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
         import resources.python.tfeditorframe
         reload(resources.python.tfeditorframe)
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             resources.python.tfeditorframe.TFEditorFrame)
 
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             {'Module (self)' : self})
 
         # add the ECASH buttons
-        moduleUtils.create_eoca_buttons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                         self._view_frame.view_frame_panel)
 
         # and customize the presets choice

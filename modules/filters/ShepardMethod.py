@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class ShephardMethod(scriptedConfigModuleMixin, ModuleBase):
@@ -16,7 +16,7 @@ class ShephardMethod(scriptedConfigModuleMixin, ModuleBase):
 
         self._shepardFilter = vtk.vtkShepardMethod()
         
-        moduleUtils.setupVTKObjectProgress(self, self._shepardFilter,
+        module_utils.setupVTKObjectProgress(self, self._shepardFilter,
                                            'Applying Shepard Method.')
         
                                            

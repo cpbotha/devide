@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtktud
 import wx
 
@@ -15,7 +15,7 @@ class imageSepConvolution(scriptedConfigModuleMixin, ModuleBase):
 
         self._imageSepConvolution = vtktud.vtkImageSepConvolution()
 
-#        moduleUtils.setupVTKObjectProgress(self, self._clipper,
+#        module_utils.setupVTKObjectProgress(self, self._clipper,
 #                                           'Reading PNG images.')
 
         # set information for scriptedConfigModuleMixin

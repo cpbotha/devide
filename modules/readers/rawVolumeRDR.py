@@ -2,7 +2,7 @@ import genUtils
 from module_base import ModuleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 from moduleMixins import fileOpenDialogModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import wx
 
@@ -20,7 +20,7 @@ class rawVolumeRDR(ModuleBase,
         # FIXME: make configurable (or disable)
         #self._reader.SetFileLowerLeft(1)        
 
-        moduleUtils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setupVTKObjectProgress(self, self._reader,
                                            'Reading raw volume data')
 
         
@@ -188,7 +188,7 @@ class rawVolumeRDR(ModuleBase,
         import modules.readers.resources.python.rawVolumeRDRViewFrame
         reload(modules.readers.resources.python.rawVolumeRDRViewFrame)
 
-        self._viewFrame = moduleUtils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.readers.resources.python.rawVolumeRDRViewFrame.\
             rawVolumeRDRViewFrame)
@@ -200,12 +200,12 @@ class rawVolumeRDR(ModuleBase,
                    
         # setup object introspection
         objectDict = {'vtkImageReader' : self._reader}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             objectDict, None)
 
         # standard module buttons + events
-        moduleUtils.createECASButtons(self, self._viewFrame,
+        module_utils.createECASButtons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
         # finish setting up the output datatype choice

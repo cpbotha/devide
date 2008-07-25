@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import vtkdevide
 from input_array_choice_mixin import InputArrayChoiceMixin
@@ -80,7 +80,7 @@ class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         as = vtk.vtkArrowSource()
         self._glyphFilter.SetSource(0, as.GetOutput())
         
-        moduleUtils.setupVTKObjectProgress(self, self._glyphFilter,
+        module_utils.setupVTKObjectProgress(self, self._glyphFilter,
                                            'Creating glyphs.')
 
         scriptedConfigModuleMixin.__init__(

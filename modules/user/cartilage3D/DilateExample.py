@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class DilateExample(scriptedConfigModuleMixin, ModuleBase):
@@ -18,7 +18,7 @@ class DilateExample(scriptedConfigModuleMixin, ModuleBase):
 
         self._imageDilate = vtk.vtkImageContinuousDilate3D()
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
+        module_utils.setupVTKObjectProgress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
         
                                            

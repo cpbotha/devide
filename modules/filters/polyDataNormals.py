@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -12,7 +12,7 @@ class polyDataNormals(noConfigModuleMixin, ModuleBase):
 
 
         self._pdNormals = vtk.vtkPolyDataNormals()
-        moduleUtils.setupVTKObjectProgress(self, self._pdNormals,
+        module_utils.setupVTKObjectProgress(self, self._pdNormals,
                                            'Calculating normals')
 
         noConfigModuleMixin.__init__(

@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtktud
 
 class cubicBCSplineKernel(scriptedConfigModuleMixin, ModuleBase):
@@ -38,7 +38,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, ModuleBase):
         self._cubicBCSplineKernel = vtktud.vtkCubicBCSplineKernel()
 
         # setup progress for the processObject
-#        moduleUtils.setupVTKObjectProgress(self, self._superquadricSource,
+#        module_utils.setupVTKObjectProgress(self, self._superquadricSource,
 #                                           "Synthesizing polydata.")
 
         self._createWindow(

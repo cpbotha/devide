@@ -20,7 +20,7 @@ DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine, \
 DeVIDECanvasRBBox
 import genUtils
 from ModuleManager import ModuleManagerException
-import moduleUtils # for getModuleIcon
+import module_utils # for getModuleIcon
 import os
 import re
 import string

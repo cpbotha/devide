@@ -4,7 +4,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class surfaceToDistanceField(scriptedConfigModuleMixin, ModuleBase):
@@ -15,7 +15,7 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, ModuleBase):
 
         self._implicitModeller = vtk.vtkImplicitModeller()
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._implicitModeller,
             'Converting surface to distance field')
                                            

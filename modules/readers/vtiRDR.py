@@ -2,7 +2,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -23,7 +23,7 @@ class vtiRDR(filenameViewModuleMixin, ModuleBase):
             {'vtkXMLImageDataReader': self._reader,
              'Module (self)' : self})
 
-        moduleUtils.setupVTKObjectProgress(
+        module_utils.setupVTKObjectProgress(
             self, self._reader,
             'Reading VTK ImageData')
 

@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class opening(scriptedConfigModuleMixin, ModuleBase):
@@ -14,11 +14,11 @@ class opening(scriptedConfigModuleMixin, ModuleBase):
         self._imageErode = vtk.vtkImageContinuousErode3D()
         self._imageDilate.SetInput(self._imageErode.GetOutput())
         
-        moduleUtils.setupVTKObjectProgress(self, self._imageDilate,
+        module_utils.setupVTKObjectProgress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
         
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageErode,
+        module_utils.setupVTKObjectProgress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
         
 

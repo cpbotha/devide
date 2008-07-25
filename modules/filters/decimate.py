@@ -5,12 +5,12 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -28,10 +28,10 @@ class decimate(scriptedConfigModuleMixin, ModuleBase):
         self._decimate.PreserveTopologyOn()
         self._decimate.SetInput(self._triFilter.GetOutput())
 
-        moduleUtils.setupVTKObjectProgress(self, self._triFilter,
+        module_utils.setupVTKObjectProgress(self, self._triFilter,
                                            'Converting to triangles')
         
-        moduleUtils.setupVTKObjectProgress(self, self._decimate,
+        module_utils.setupVTKObjectProgress(self, self._decimate,
                                            'Decimating mesh')
         
                                            

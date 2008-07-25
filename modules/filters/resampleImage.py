@@ -5,7 +5,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class resampleImage(introspectModuleMixin, ModuleBase):
@@ -15,7 +15,7 @@ class resampleImage(introspectModuleMixin, ModuleBase):
 
         self._imageResample = vtk.vtkImageResample()
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageResample,
+        module_utils.setupVTKObjectProgress(self, self._imageResample,
                                            'Resampling image.')
         
         # 0: nearest neighbour
@@ -129,15 +129,15 @@ class resampleImage(introspectModuleMixin, ModuleBase):
             'modules.filters.resources.python.resampleImageViewFrame')
         import modules.filters.resources.python.resampleImageViewFrame
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             modules.filters.resources.python.resampleImageViewFrame.\
             resampleImageViewFrame)
 
         objectDict = {'vtkImageResample' : self._imageResample}
-        moduleUtils.createStandardObjectAndPipelineIntrospection(
+        module_utils.createStandardObjectAndPipelineIntrospection(
             self, self._view_frame, self._view_frame.viewFramePanel,
             objectDict, None)
 
-        moduleUtils.createECASButtons(self, self._view_frame,
+        module_utils.createECASButtons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)

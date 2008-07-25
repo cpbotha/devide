@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import wx
 import vtk
 
@@ -21,7 +21,7 @@ class myTubeFilter(scriptedConfigModuleMixin, ModuleBase):
 
         self._tubeFilter = vtk.vtkTubeFilter()
         
-        moduleUtils.setupVTKObjectProgress(self, self._tubeFilter,
+        module_utils.setupVTKObjectProgress(self, self._tubeFilter,
                                            'Generating tubes.')
                                            
         self._config.NumberOfSides = 3

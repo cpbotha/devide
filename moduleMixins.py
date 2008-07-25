@@ -7,7 +7,7 @@ from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import genUtils
 from module_base import ModuleBase
-import moduleUtils
+import module_utils
 import module_kits.vtk_kit.utils
 
 import wx
@@ -44,7 +44,7 @@ class IntrospectModuleMixin(object):
             self._python_shells = {}
 
         if obj not in self._python_shells:
-            icon = moduleUtils.getModuleIcon()
+            icon = module_utils.getModuleIcon()
 
             
             self._python_shells[obj] = PythonShell(
@@ -162,7 +162,7 @@ class IntrospectModuleMixin(object):
     def _defaultObjectChoiceCallback(self, viewFrame, renderWin,
                                      objectChoice, objectDict):
         """This callack is required for the
-        createStandardObjectAndPipelineIntrospection method in moduleUtils.
+        createStandardObjectAndPipelineIntrospection method in module_utils.
         """
         objectName = objectChoice.GetStringSelection()
         if objectDict.has_key(objectName):
@@ -176,7 +176,7 @@ class IntrospectModuleMixin(object):
         
     def _defaultPipelineCallback(self, viewFrame, renderWin, objectDict):
         """This callack is required for the
-        createStandardObjectAndPipelineIntrospection method in moduleUtils.
+        createStandardObjectAndPipelineIntrospection method in module_utils.
         """
         
         # check that all objects are VTK objects (probably not necessary)
@@ -303,7 +303,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                 'Eror calling view-dependent createViewFrame() in '
                 'backend-type DeVIDE.')
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             resources.python.filenameViewModuleMixinFrame.\
             filenameViewModuleMixinFrame)
@@ -313,13 +313,13 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
                                                        self._file_wildcard))
         
         if self._object_dict != None:
-            moduleUtils.create_standard_object_introspection(
+            module_utils.create_standard_object_introspection(
                 self,
                 self._view_frame, self._view_frame.viewFramePanel,
                 self._object_dict, None)
 
         # new style standard ECAS buttons
-        moduleUtils.createECASButtons(self, self._view_frame,
+        module_utils.createECASButtons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)
 
         # following module_base convention
@@ -427,7 +427,7 @@ class noConfigModuleMixin(introspectModuleMixin):
         parent_window = self._module_manager.get_module_view_parent_window()
 
         viewFrame = wx.Frame(parent_window, -1,
-                            moduleUtils.createModuleViewFrameTitle(self))
+                            module_utils.createModuleViewFrameTitle(self))
         viewFrame.viewFramePanel = wx.Panel(viewFrame, -1)
 
         viewFramePanelSizer = wx.BoxSizer(wx.VERTICAL)
@@ -444,11 +444,11 @@ class noConfigModuleMixin(introspectModuleMixin):
         viewFrame.SetSizer(viewFrameSizer)
 
         if self._object_dict != None:
-            moduleUtils.create_standard_object_introspection(
+            module_utils.create_standard_object_introspection(
                 self, viewFrame, viewFrame.viewFramePanel,
                 self._object_dict, None)
 
-        moduleUtils.createECASButtons(self, viewFrame,
+        module_utils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
 
         # make sure that a close of that window does the right thing
@@ -456,7 +456,7 @@ class noConfigModuleMixin(introspectModuleMixin):
                   lambda e: viewFrame.Show(False))
 
         # set cute icon
-        viewFrame.SetIcon(moduleUtils.getModuleIcon())
+        viewFrame.SetIcon(module_utils.getModuleIcon())
 
         # follow ModuleBase convention to indicate that view is
         # available
@@ -552,7 +552,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
-        viewFrame = moduleUtils.instantiateModuleViewFrame(
+        viewFrame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager, dMVF)
 
         # this viewFrame doesn't have the 7-sizer yet
@@ -649,11 +649,11 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         sizer7.Add(gridSizer, 1, wx.EXPAND, 0)
         
         if self._object_dict != None:
-            moduleUtils.create_standard_object_introspection(
+            module_utils.create_standard_object_introspection(
                 self, viewFrame, viewFrame.viewFramePanel,
                 self._object_dict, None)
 
-        moduleUtils.createECASButtons(self, viewFrame,
+        module_utils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
            
         # following ModuleBase convention to indicate that view is

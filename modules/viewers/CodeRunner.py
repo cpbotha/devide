@@ -5,7 +5,7 @@ import code # deep magic
 import md5
 from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
-import moduleUtils
+import module_utils
 import sys
 import module_kits.wx_kit
 from module_kits.wx_kit.python_shell_mixin import PythonShellMixin
@@ -44,7 +44,7 @@ class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
         PythonShellMixin.__init__(self, self._view_frame.shell_window,
                                   module_manager)
 
-        moduleUtils.create_eoca_buttons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                         self._view_frame.view_frame_panel,
                                         ok_default=False,
                                         cancel_hotkey=False)
@@ -173,7 +173,7 @@ class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
         import resources.python.code_runner_frame
         reload(resources.python.code_runner_frame)
 
-        self._view_frame = moduleUtils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
             resources.python.code_runner_frame.\
             CodeRunnerFrame)

@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 class transformPolyData(noConfigModuleMixin, ModuleBase):
@@ -14,7 +14,7 @@ class transformPolyData(noConfigModuleMixin, ModuleBase):
         noConfigModuleMixin.__init__(
             self, {'vtkTransformPolyDataFilter' : self._transformPolyData})
 
-        moduleUtils.setupVTKObjectProgress(self, self._transformPolyData,
+        module_utils.setupVTKObjectProgress(self, self._transformPolyData,
                                            'Transforming geometry')
 
         self.sync_module_logic_with_config()

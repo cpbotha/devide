@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 
 
@@ -13,7 +13,7 @@ class contour(scriptedConfigModuleMixin, ModuleBase):
 
         self._contourFilter = vtk.vtkContourFilter()
 
-        moduleUtils.setupVTKObjectProgress(self, self._contourFilter,
+        module_utils.setupVTKObjectProgress(self, self._contourFilter,
                                            'Extracting iso-surface')
         
 

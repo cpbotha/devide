@@ -1,6 +1,6 @@
 from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtk
 from input_array_choice_mixin import InputArrayChoiceMixin
 
@@ -30,7 +30,7 @@ class warpPoints(InputArrayChoiceMixin, scriptedConfigModuleMixin,
             {'Module (self)' : self,
              'vtkWarpVector' : self._warpVector})
         
-        moduleUtils.setupVTKObjectProgress(self, self._warpVector,
+        module_utils.setupVTKObjectProgress(self, self._warpVector,
                                            'Warping points.')
         
 

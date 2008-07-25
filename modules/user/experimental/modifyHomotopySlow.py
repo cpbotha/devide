@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import wx
 import vtk
 import vtkdevide
@@ -71,7 +71,7 @@ class modifyHomotopySlow(noConfigModuleMixin, ModuleBase):
         self._imageErode = vtk.vtkImageContinuousErode3D()
         self._imageErode.SetKernelSize(3,3,3)
 
-        moduleUtils.setupVTKObjectProgress(self, self._imageErode,
+        module_utils.setupVTKObjectProgress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
         
 

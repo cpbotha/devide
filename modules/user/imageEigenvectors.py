@@ -1,7 +1,7 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
-import moduleUtils
+import module_utils
 import vtktud
 
 class imageEigenvectors(ModuleBase, noConfigModuleMixin):
@@ -13,7 +13,7 @@ class imageEigenvectors(ModuleBase, noConfigModuleMixin):
 
         self._imageEigenvectors = vtktud.vtkImageEigenvectors()
         
-#        moduleUtils.setupVTKObjectProgress(self, self._clipPolyData,
+#        module_utils.setupVTKObjectProgress(self, self._clipPolyData,
 #                                          'Calculating normals')
 
         self._viewFrame = self._createViewFrame(
