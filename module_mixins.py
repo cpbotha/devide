@@ -15,7 +15,7 @@ import wx.lib.masked
 from external.filebrowsebutton import \
         FileBrowseButton, FileBrowseButtonWithHistory,DirBrowseButton
 
-import resources.python.FilenameViewModuleMixinFrame
+import resources.python.filename_view_module_mixin_frame
 import re
 import module_kits
 from module_kits.wx_kit.python_shell import PythonShell
@@ -305,7 +305,7 @@ class FilenameViewModuleMixin(FileOpenDialogModuleMixin,
 
         self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
-            resources.python.FilenameViewModuleMixinFrame.\
+            resources.python.filename_view_module_mixin_frame.\
             FilenameViewModuleMixinFrame)
 
         wx.EVT_BUTTON(self._view_frame, self._view_frame.browseButtonId,
