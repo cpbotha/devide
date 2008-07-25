@@ -251,9 +251,9 @@ def createModuleViewFrameTitle(d3module):
     return '%s View' % \
            (d3module.__class__.__name__,)
 
-def instantiateModuleViewFrame(d3module, ModuleManager, frameClass):
+def instantiateModuleViewFrame(d3module, module_manager, frameClass):
     # instantiate the frame
-    pw = ModuleManager.get_module_view_parent_window()
+    pw = module_manager.get_module_view_parent_window()
     # name becomes the WM_CLASS under X
     viewFrame = frameClass(pw, -1, 'dummy', name='DeVIDE')
 

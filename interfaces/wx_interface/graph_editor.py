@@ -19,7 +19,7 @@ from internal.devide_canvas.devide_canvas_object import \
 DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine, \
 DeVIDECanvasRBBox
 import gen_utils
-from ModuleManager import ModuleManagerException
+from module_manager import ModuleManagerException
 import module_utils # for getModuleIcon
 import os
 import re

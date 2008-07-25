@@ -33,7 +33,7 @@ class ModuleBase(object):
         should create your view and show it to the user.
 
         """
-        self._module_manager = ModuleManager
+        self._module_manager = module_manager
 
         
         self._config = DefaultConfigClass()

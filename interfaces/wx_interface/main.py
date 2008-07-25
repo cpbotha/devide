@@ -135,7 +135,7 @@ class WXInterface(wx.App):
         import module_kits
         from module_kits.wx_kit.python_shell import PythonShell
 
-        from HelpClass import HelpClass
+        from help_class import HelpClass
 
         self.start_graph_editor()
         

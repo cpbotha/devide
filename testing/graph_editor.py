@@ -136,10 +136,10 @@ class GraphEditorBasic(GraphEditorTestBase):
                 
         
         # type some text in the module search box
-        self._ge_frame.search_text.SetValue('fillholes')
+        self._ge_frame.search.SetValue('fillholes')
         # now place the module by pressing RETURN (simulated)
         evt = DummyKeyEvent(wx.WXK_RETURN)
-        self._ge._handler_search_text_char(evt)
+        self._ge._handler_search_char(evt)
 
         # check that the imageFillHoles module has been placed
         ag = self._ge._get_all_glyphs()
