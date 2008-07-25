@@ -4,18 +4,18 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import vtk
 
-class ITKtoVTK(noConfigModuleMixin, moduleBase):
+class ITKtoVTK(noConfigModuleMixin, ModuleBase):
     """Convert ITK 3D float data to VTK.
 
     $Revision: 1.5 $
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
 
         self._input = None
@@ -37,7 +37,7 @@ class ITKtoVTK(noConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         del self._itk2vtk
 

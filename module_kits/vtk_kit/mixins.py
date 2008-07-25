@@ -7,7 +7,7 @@
 
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin # temporary
 import moduleUtils # temporary, most of this should be in utils.
 import re
@@ -19,7 +19,7 @@ class PickleVTKObjectsModuleMixin(object):
     attribute names have been added to self._vtkObjects, e.g. if you have
     a self._imageMath, '_imageMath' should be in the list.
 
-    Your module has to derive from moduleBase as well so that it has a
+    Your module has to derive from module_base as well so that it has a
     self._config!
 
     Remember to call the __init__ of this class with the list of attribute
@@ -139,7 +139,7 @@ class PickleVTKObjectsModuleMixin(object):
 # should be chosen over that of noConfig
 class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
                                introspectModuleMixin,
-                               moduleBase):
+                               ModuleBase):
     """Use this base to make a DeVIDE module that wraps a single VTK
     object.  The state of the VTK object will be saved when the network
     is.
@@ -168,7 +168,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         self._configVtkObj = None
 
         # first these two mixins
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._theFilter = vtkObjectBinding
         
@@ -239,7 +239,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
             self._configVtkObj.close()
             self._viewFrame.Destroy()
             
-        moduleBase.close(self)
+        ModuleBase.close(self)
         # get rid of our binding to the vtkObject
         del self._theFilter
 

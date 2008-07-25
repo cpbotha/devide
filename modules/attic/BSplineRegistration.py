@@ -1,13 +1,13 @@
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
 import math
 
-class BSplineRegistration(scriptedConfigModuleMixin, moduleBase):
+class BSplineRegistration(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._create_pipeline()
 

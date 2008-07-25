@@ -1,18 +1,18 @@
 # todo:
 # * vtkVolumeMapper::SetCroppingRegionPlanes(xmin,xmax,ymin,ymax,zmin,zmax)
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 
 class VolumeRender(
-    scriptedConfigModuleMixin, moduleBase):
+    scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # at the first config_to_logic (at the end of the ctor), this will
         # be set to 0

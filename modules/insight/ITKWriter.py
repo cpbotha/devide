@@ -4,15 +4,15 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import re
 
-class ITKWriter(filenameViewModuleMixin, moduleBase):
+class ITKWriter(filenameViewModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._input = None
         self._writer = None

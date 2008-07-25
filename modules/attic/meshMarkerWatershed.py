@@ -8,12 +8,12 @@
 # IDEA:
 # use vtkPolyDataConnectivityFilter with minima as seed points
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 from wxPython.wx import *
 import vtk
 
-class testModule3(moduleBase, noConfigModuleMixin):
+class testModule3(ModuleBase, noConfigModuleMixin):
 
     """Module to prototype modification of homotopy and subsequent
     watershedding of curvature-on-surface image.
@@ -21,7 +21,7 @@ class testModule3(moduleBase, noConfigModuleMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         # initialise any mixins we might have
         noConfigModuleMixin.__init__(self)
 

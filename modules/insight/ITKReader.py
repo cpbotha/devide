@@ -5,14 +5,14 @@
 import copy
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import wx
 
-class ITKReader(scriptedConfigModuleMixin, moduleBase):
+class ITKReader(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.filename = ''
         self._config.autotype = True
@@ -74,7 +74,7 @@ class ITKReader(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # and remove all bindings
         del self._autotype_reader

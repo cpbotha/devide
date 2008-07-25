@@ -1,6 +1,6 @@
 from module_kits.misc_kit.mixins import SubjectMixin
 import geometry
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import Measure2DFrame
@@ -110,9 +110,9 @@ class M2DWidgetList:
 
         return name in self._wdict
 
-class Measure2D(introspectModuleMixin, moduleBase):
+class Measure2D(introspectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._view_frame = None
         self._viewer = None

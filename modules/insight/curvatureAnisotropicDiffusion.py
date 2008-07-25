@@ -4,13 +4,13 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
-class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
+class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.numberOfIterations = 5
         self._config.conductanceParameter = 3.0
@@ -54,7 +54,7 @@ class curvatureAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._diffuse

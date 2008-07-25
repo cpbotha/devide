@@ -1,12 +1,12 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 
-class extractGrid(scriptedConfigModuleMixin, moduleBase):
+class extractGrid(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.sampleRate = (1, 1, 1)
 

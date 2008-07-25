@@ -1,12 +1,12 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
 import vtkdevide
 
-class modifyHomotopySlow(noConfigModuleMixin, moduleBase):
+class modifyHomotopySlow(noConfigModuleMixin, ModuleBase):
 
     """
     WARNING, WARNING, DANGER WILL ROBINSON: this filter exists purely
@@ -34,7 +34,7 @@ class modifyHomotopySlow(noConfigModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
         # these will be our markers
@@ -94,7 +94,7 @@ class modifyHomotopySlow(noConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         #
         self._imageThreshold.RemoveObserver(self._imageThresholdObserverID)

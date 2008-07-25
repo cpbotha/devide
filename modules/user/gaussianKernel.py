@@ -1,18 +1,18 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtktud
 
-class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
+class gaussianKernel(scriptedConfigModuleMixin, ModuleBase):
     """First test of a gaussian implicit kernel
     
     $Revision: 1.1 $
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup config
         self._config.order = 0
@@ -50,7 +50,7 @@ class gaussianKernel(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.close(self)
 
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._gaussianKernel

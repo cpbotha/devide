@@ -4,10 +4,10 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
-class gvfgac(scriptedConfigModuleMixin, moduleBase):
+class gvfgac(scriptedConfigModuleMixin, ModuleBase):
 
     """Module for performing Gradient Vector Flow-driven Geodesic Active
     Contour-based segmentation on 3D data.
@@ -32,7 +32,7 @@ class gvfgac(scriptedConfigModuleMixin, moduleBase):
 
     def __init__(self, moduleManager):
 
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         
         # setup defaults
         self._config.propagationScaling = 1.0
@@ -66,7 +66,7 @@ class gvfgac(scriptedConfigModuleMixin, moduleBase):
     def close(self):
         self._destroyITKPipeline()
         scriptedConfigModuleMixin.close(self)
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def execute_module(self):
         self.get_output(0).Update()

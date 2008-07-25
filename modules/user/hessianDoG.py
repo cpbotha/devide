@@ -2,12 +2,12 @@
 
 import fixitk as itk
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 import moduleUtils
 import moduleUtilsITK
 from moduleMixins import scriptedConfigModuleMixin
 
-class hessianDoG(scriptedConfigModuleMixin, moduleBase):
+class hessianDoG(scriptedConfigModuleMixin, ModuleBase):
     """Calculates Hessian matrix of volume by convolution with second and
     cross derivatives of Gaussian kernel.
 
@@ -16,7 +16,7 @@ class hessianDoG(scriptedConfigModuleMixin, moduleBase):
     """
     
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.gaussianSigma = 0.7
         self._config.normaliseAcrossScale = False
@@ -55,7 +55,7 @@ class hessianDoG(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._gradientMagnitude

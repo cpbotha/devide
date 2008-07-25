@@ -3,7 +3,7 @@
 
 import code # deep magic
 import md5
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import sys
@@ -15,10 +15,10 @@ NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
 EDITWINDOW_LABELS = ['Scratch', 'Setup', 'Execute']
 
-class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
+class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
 
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
 
         self.inputs = [None] * NUMBER_OF_INPUTS
@@ -87,7 +87,7 @@ class CodeRunner(introspectModuleMixin, moduleBase, PythonShellMixin):
         self._view_frame.Destroy()
         del self._view_frame
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ('Any input',) * NUMBER_OF_INPUTS

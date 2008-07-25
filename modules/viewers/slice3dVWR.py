@@ -8,7 +8,7 @@
 import cPickle
 import genUtils
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin, colourDialogMixin
 import moduleUtils
 
@@ -42,7 +42,7 @@ import operator
 
 
 #########################################################################
-class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
+class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
     
     """Slicing, dicing slice viewing class.
 
@@ -69,7 +69,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, moduleBase):
 
     def __init__(self, moduleManager):
         # call base constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         colourDialogMixin.__init__(
             self, moduleManager.get_module_view_parent_window())
         self._numDataInputs = self.NUM_INPUTS

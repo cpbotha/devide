@@ -1,4 +1,4 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
@@ -35,9 +35,9 @@ glyphVectorModeTexts = ['Use vector', 'Use normal', 'Do not orient']
 glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 
 
-class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, moduleBase):
+class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         InputArrayChoiceMixin.__init__(self)
 
         self._config.scaling = True

@@ -1,15 +1,15 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
-class doubleThreshold(introspectModuleMixin, moduleBase):
+class doubleThreshold(introspectModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageThreshold = vtk.vtkImageThreshold()
 

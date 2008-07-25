@@ -24,7 +24,7 @@ class SchedulerModuleWrapper:
     use equality testing or 'in' tests to check for matches.  Use the
     L{matches} method.
 
-    @ivar instance: the module instance, e.g. instance of child of moduleBase
+    @ivar instance: the module instance, e.g. instance of child of ModuleBase
     @ivar input_independent_part: part of module that is not input dependent,
     e.g. in the case of purely interaction-dependent outputs
     @ivar input_independent_outputs: list of outputs that are input-dependent.

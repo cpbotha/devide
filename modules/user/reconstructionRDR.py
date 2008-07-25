@@ -5,7 +5,7 @@
 #import sys 
 #sys.path = sys.path + ['', 'H:\\bld\\bin\\Wrapping\\CSwig\\Python\\RelWithDebInfo', 'H:\\opt\\python23\\Lib\\site-packages\\adodbapi', 'C:\\WINNT\\System32\\python23.zip', 'H:\\', 'H:\\opt\\python23\\DLLs', 'H:\\opt\\python23\\lib', 'H:\\opt\\python23\\lib\\plat-win', 'H:\\opt\\python23\\lib\\lib-tk', 'H:\\opt\\python23', 'H:\\opt\\python23\\Lib\\site-packages\\win32', 'H:\\opt\\python23\\Lib\\site-packages\\win32\\lib', 'H:\\opt\\python23\\Lib\\site-packages\\Pythonwin', 'H:\\opt\\python23\\lib\\site-packages\\adodbapi']
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
@@ -15,7 +15,7 @@ from datetime import date
 from adodbapi import *
 from modules.Insight.typeModules.transformStackClass import transformStackClass
 
-class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
+class reconstructionRDR(scriptedConfigModuleMixin, ModuleBase):
 	"""Fetches a transform stack from an MS Access database
 
 	$Revision: 1.1 $
@@ -23,7 +23,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
 	
 	def __init__(self, moduleManager):
 	# call the parent constructor
-		moduleBase.__init__(self, moduleManager)
+		ModuleBase.__init__(self, moduleManager)
 
 		# this is our output
 		self._transformStack = transformStackClass( self )
@@ -59,7 +59,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, moduleBase):
 		# this will take care of all display thingies
 		scriptedConfigModuleMixin.close(self)
 
-		moduleBase.close(self)
+		ModuleBase.close(self)
 		
 		# get rid of our reference
 		# del self._reader

@@ -1,14 +1,14 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-class opening(scriptedConfigModuleMixin, moduleBase):
+class opening(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageDilate = vtk.vtkImageContinuousDilate3D()
         self._imageErode = vtk.vtkImageContinuousErode3D()
@@ -46,7 +46,7 @@ class opening(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._imageDilate

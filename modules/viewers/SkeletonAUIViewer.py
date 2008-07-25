@@ -12,7 +12,7 @@ import SkeletonAUIViewerFrame
 reload(SkeletonAUIViewerFrame)
 
 from module_kits.misc_kit import misc_utils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import os
@@ -21,13 +21,13 @@ import traceback
 import vtk
 import wx
 
-class SkeletonAUIViewer(introspectModuleMixin, moduleBase):
+class SkeletonAUIViewer(introspectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         """Standard constructor.  All DeVIDE modules have these, we do
         the required setup actions.
         """
 
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         introspectModuleMixin.__init__(
             self,

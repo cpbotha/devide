@@ -12,10 +12,10 @@
 
 # see design notes on p39 of AM2 moleskine
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 
-class Slicinator(IntrospectModuleMixin, moduleBase):
+class Slicinator(IntrospectModuleMixin, ModuleBase):
     pass
 

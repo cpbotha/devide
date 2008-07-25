@@ -5,13 +5,13 @@
 import itk
 import module_kits.itk_kit as itk_kit
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
-class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
+class confidenceSeedConnect(scriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup config thingy
         self._config.multiplier = 2.5
@@ -62,7 +62,7 @@ class confidenceSeedConnect(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._cCIF

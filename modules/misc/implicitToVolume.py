@@ -1,14 +1,14 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
+class implicitToVolume(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup config
         self._config.sampleDimensions = (64, 64, 64)
@@ -54,7 +54,7 @@ class implicitToVolume(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._sampleFunction

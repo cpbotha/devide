@@ -4,15 +4,15 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
-class tpgac(scriptedConfigModuleMixin, moduleBase):
+class tpgac(scriptedConfigModuleMixin, ModuleBase):
 
 
     def __init__(self, moduleManager):
 
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         
         # setup defaults
         self._config.propagationScaling = 1.0
@@ -46,7 +46,7 @@ class tpgac(scriptedConfigModuleMixin, moduleBase):
     def close(self):
         self._destroyITKPipeline()
         scriptedConfigModuleMixin.close(self)
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def execute_module(self):
         self.get_output(0).Update()

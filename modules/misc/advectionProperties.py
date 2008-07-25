@@ -2,18 +2,18 @@
 #
 #
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import operator
 import vtk
 import wx
 
-class advectionProperties(scriptedConfigModuleMixin, moduleBase):
+class advectionProperties(scriptedConfigModuleMixin, ModuleBase):
     _numberOfInputs = 16
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.csvFilename = ''
 

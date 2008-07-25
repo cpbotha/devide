@@ -1,16 +1,16 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class seedConnect(scriptedConfigModuleMixin, moduleBase):
+class seedConnect(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageCast = vtk.vtkImageCast()
         self._imageCast.SetOutputScalarTypeToUnsignedChar()

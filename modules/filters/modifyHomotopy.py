@@ -3,17 +3,17 @@
 # illustrative case.
 
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 
-class modifyHomotopy(noConfigModuleMixin, moduleBase):
+class modifyHomotopy(noConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # these will be our markers
         self._inputPoints = None
@@ -69,7 +69,7 @@ class modifyHomotopy(noConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         #
         self._imageThreshold.RemoveObserver(self._imageThresholdObserverID)

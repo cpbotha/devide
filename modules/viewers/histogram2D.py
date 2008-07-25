@@ -1,12 +1,12 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 
-class histogram2D(scriptedConfigModuleMixin, moduleBase):
+class histogram2D(scriptedConfigModuleMixin, ModuleBase):
     """This module takes two inputs and creates a 2D histogram with input 2
     vs input 1, i.e. input 1 on x-axis and input 2 on y-axis.
 
@@ -14,7 +14,7 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._histogram = vtkdevide.vtkImageHistogram2D()
         moduleUtils.setupVTKObjectProgress(self, self._histogram,
@@ -51,7 +51,7 @@ class histogram2D(scriptedConfigModuleMixin, moduleBase):
         self.set_input(1, None)
 
         scriptedConfigModuleMixin.close(self)
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         del self._histogram
 

@@ -1,18 +1,18 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtktud
 
-class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
+class cubicBCSplineKernel(scriptedConfigModuleMixin, ModuleBase):
     """First test of a cubic B-Spline implicit kernel
     
     $Revision: 1.1 $
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup config
         self._config.order = 0
@@ -53,7 +53,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, moduleBase):
         scriptedConfigModuleMixin.close(self)
 
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._cubicBCSplineKernel

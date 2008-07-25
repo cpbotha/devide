@@ -1,12 +1,12 @@
 # muscleLinesToSurface copyright (c) 2003 Charl P. Botha http://cpbotha.net/
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
 
-class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
+class muscleLinesToSurface(ModuleBase, noConfigModuleMixin):
     """Given muscle centre lines marked with 0-valued voxels, calculate a
     continuous surface through these marked lines.
 
@@ -26,7 +26,7 @@ class muscleLinesToSurface(moduleBase, noConfigModuleMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         # initialise any mixins we might have
         noConfigModuleMixin.__init__(self)
 

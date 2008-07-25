@@ -1,14 +1,14 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-class imageMask(scriptedConfigModuleMixin, moduleBase):
+class imageMask(scriptedConfigModuleMixin, ModuleBase):
 
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup VTK pipeline #########################################
         # 1. vtkImageMask
@@ -65,7 +65,7 @@ class imageMask(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._imageMask

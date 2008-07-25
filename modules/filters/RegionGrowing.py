@@ -2,15 +2,15 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-class RegionGrowing(scriptedConfigModuleMixin, moduleBase):
+class RegionGrowing(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._image_threshold = vtk.vtkImageThreshold()
         # seedconnect wants unsigned char at input
@@ -59,7 +59,7 @@ class RegionGrowing(scriptedConfigModuleMixin, moduleBase):
         self._seed_connect.SetInput(None)
         del self._seed_connect
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ('vtkImageData', 'Seed points')

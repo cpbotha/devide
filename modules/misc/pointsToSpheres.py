@@ -3,16 +3,16 @@
 # see module documentation
 
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
 
-class pointsToSpheres(scriptedConfigModuleMixin, moduleBase):
+class pointsToSpheres(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._inputPoints = None
         self._internalPoints = None

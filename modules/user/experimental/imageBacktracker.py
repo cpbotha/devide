@@ -1,11 +1,11 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 
-class imageBacktracker(noConfigModuleMixin, moduleBase):
+class imageBacktracker(noConfigModuleMixin, ModuleBase):
     """JORIK'S STUFF.
 
     """
@@ -13,7 +13,7 @@ class imageBacktracker(noConfigModuleMixin, moduleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 	noConfigModuleMixin.__init__(self)
 
 	self._imageBacktracker = vtkdevide.vtkImageBacktracker()
@@ -40,7 +40,7 @@ class imageBacktracker(noConfigModuleMixin, moduleBase):
         noConfigModuleMixin.close(self)
         # take out our view interface
         del self._imageBacktracker
-	moduleBase.close(self)
+	ModuleBase.close(self)
 
 
     def get_input_descriptions(self):

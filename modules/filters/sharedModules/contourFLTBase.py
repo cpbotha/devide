@@ -1,14 +1,14 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
 import moduleUtils
 import vtk
 
-class contourFLTBase(moduleBase, vtkPipelineConfigModuleMixin):
+class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
 
     def __init__(self, moduleManager, contourFilterText):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._contourFilterText = contourFilterText
         if contourFilterText == 'marchingCubes':

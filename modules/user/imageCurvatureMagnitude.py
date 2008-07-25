@@ -1,14 +1,14 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtktud
 
-class imageCurvatureMagnitude(moduleBase, noConfigModuleMixin):
+class imageCurvatureMagnitude(ModuleBase, noConfigModuleMixin):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
         self._imageCurvatureMagnitude = vtktud.vtkImageCurvatureMagnitude()

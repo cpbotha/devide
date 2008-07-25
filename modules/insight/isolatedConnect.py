@@ -2,16 +2,16 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import itk
 import module_kits.itk_kit as itk_kit
 
-class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
+class isolatedConnect(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.replace_value = 1.0
         self._config.upper_threshold = False
@@ -56,7 +56,7 @@ class isolatedConnect(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         del self._isol_connect
 

@@ -1,16 +1,16 @@
 # $Id: vtpWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import types
 from modules.viewers.slice3dVWRmodules.selectedPoints import outputSelectedPoints
 
-class points_reader(filenameViewModuleMixin, moduleBase):
+class points_reader(filenameViewModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(

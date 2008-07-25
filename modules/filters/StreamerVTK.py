@@ -1,4 +1,4 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
@@ -6,9 +6,9 @@ import vtk
 IMAGE_DATA = 0
 POLY_DATA = 1
 
-class StreamerVTK(noConfigModuleMixin, moduleBase):
+class StreamerVTK(noConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._image_data_streamer = vtk.vtkImageDataStreamer()
         self._poly_data_streamer = vtk.vtkPolyDataStreamer()

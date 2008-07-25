@@ -1,14 +1,14 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class superQuadric(scriptedConfigModuleMixin, moduleBase):
+class superQuadric(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup config
         self._config.toroidal = True
@@ -73,7 +73,7 @@ class superQuadric(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._superquadricSource

@@ -11,12 +11,12 @@
 # This is not critical.
 
 import math
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import operator
 import vtk
 
-class glenoidMouldDesign(moduleBase, noConfigModuleMixin):
+class glenoidMouldDesign(ModuleBase, noConfigModuleMixin):
 
     drillGuideInnerDiameter = 3
     drillGuideOuterDiameter = 5
@@ -25,7 +25,7 @@ class glenoidMouldDesign(moduleBase, noConfigModuleMixin):
     def __init__(self, moduleManager):
         
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         # and mixin
         noConfigModuleMixin.__init__(self)
 

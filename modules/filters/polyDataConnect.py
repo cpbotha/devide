@@ -1,16 +1,16 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class polyDataConnect(noConfigModuleMixin, moduleBase):
+class polyDataConnect(noConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._polyDataConnect = vtk.vtkPolyDataConnectivityFilter()
         # we're not going to use this feature just yet

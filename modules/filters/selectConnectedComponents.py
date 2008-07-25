@@ -1,15 +1,15 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 
-class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
+class selectConnectedComponents(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageCast = vtk.vtkImageCast()
         self._imageCast.SetOutputScalarTypeToUnsignedLong()
@@ -59,7 +59,7 @@ class selectConnectedComponents(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         # get rid of our reference
         del self._imageCast

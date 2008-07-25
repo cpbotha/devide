@@ -1,6 +1,6 @@
 from external import wxPyPlot
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 
@@ -12,7 +12,7 @@ except:
 import vtk
 import wx
 
-class histogram1D(introspectModuleMixin, moduleBase):
+class histogram1D(introspectModuleMixin, ModuleBase):
 
     """Calculates and shows 1D histogram (occurrences over value) of its
     input data.
@@ -21,7 +21,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageAccumulate = vtk.vtkImageAccumulate()
         moduleUtils.setupVTKObjectProgress(self, self._imageAccumulate,
@@ -50,7 +50,7 @@ class histogram1D(introspectModuleMixin, moduleBase):
 
         del self._imageAccumulate
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ('VTK Image Data',)

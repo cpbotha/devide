@@ -1,15 +1,15 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class marchingCubes(scriptedConfigModuleMixin, moduleBase):
+class marchingCubes(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._contourFilter = vtk.vtkMarchingCubes()
 
@@ -38,7 +38,7 @@ class marchingCubes(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._contourFilter

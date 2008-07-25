@@ -1,15 +1,15 @@
 # $Id: vtpWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import types
 
-class points_writer(filenameViewModuleMixin, moduleBase):
+class points_writer(filenameViewModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(

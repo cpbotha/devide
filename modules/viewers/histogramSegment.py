@@ -1,11 +1,11 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 import vtkdevide
 import wx
 
-class histogramSegment(introspectModuleMixin, moduleBase):
+class histogramSegment(introspectModuleMixin, ModuleBase):
     """Mooooo!  I'm a cow.
 
     $Revision: 1.9 $
@@ -17,7 +17,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
     
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._createViewFrame()
         self._grid = self._viewFrame.selectorGrid
@@ -39,7 +39,7 @@ class histogramSegment(introspectModuleMixin, moduleBase):
             self.set_input(i, None)
 
         # call close method of base class
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         # we should be able to take care of our renderwindow now
         # we have to do this nasty trick until my Finalize changes are

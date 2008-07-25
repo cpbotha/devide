@@ -32,7 +32,7 @@ import DICOMBrowserFrame
 reload(DICOMBrowserFrame)
 import gdcm
 from module_kits.misc_kit import misc_utils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import os
@@ -66,9 +66,9 @@ class Series:
         self.rows = 0
         self.columns = 0
 
-class DICOMBrowser(introspectModuleMixin, moduleBase):
+class DICOMBrowser(introspectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         introspectModuleMixin.__init__(
             self,

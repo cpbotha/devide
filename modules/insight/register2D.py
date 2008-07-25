@@ -13,7 +13,7 @@
 import genUtils
 from typeModules.imageStackClass import imageStackClass
 from typeModules.transformStackClass import transformStackClass
-from moduleBase import moduleBase
+from module_base import ModuleBase
 import moduleUtils
 import operator
 import fixitk as itk
@@ -21,7 +21,7 @@ import ConnectVTKITKPython as CVIPy
 import vtk
 import wx
 
-class register2D(moduleBase):
+class register2D(ModuleBase):
     """Registers a stack of 2D images and generates a list of transforms.
 
     This is BAD-ASSED CODE(tm) and can crash the whole of DeVIDE without
@@ -29,7 +29,7 @@ class register2D(moduleBase):
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._createLogic()
         self._createViewFrames()
@@ -42,7 +42,7 @@ class register2D(moduleBase):
         self.set_input(0, None)
         self.set_input(1, None)
         
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         # take care of the IPWs
         self._destroyIPWs()

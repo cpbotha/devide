@@ -4,12 +4,12 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
-class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
+class cannyEdgeDetection(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.variance = (0.7, 0.7, 0.7)
         self._config.maximumError = (0.01, 0.01, 0.01)
@@ -55,7 +55,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._canny

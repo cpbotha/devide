@@ -3,23 +3,23 @@
 # module that triangulates and decimates polygonal input
 
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class decimate(scriptedConfigModuleMixin, moduleBase):
+class decimate(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # the decimator only works on triangle data, so we make sure
         # that it only gets triangle data
@@ -59,7 +59,7 @@ class decimate(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         # get rid of our reference
         del self._decimate

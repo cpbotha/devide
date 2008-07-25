@@ -4,13 +4,13 @@
 
 from typeModules.transformStackClass import transformStackClass
 import cPickle
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import wx
 import vtk
 
-class transformStackWRT(moduleBase, filenameViewModuleMixin):
+class transformStackWRT(ModuleBase, filenameViewModuleMixin):
     """Writes 2D Transform Stack to disc.
 
     Use this module to save the results of a register2D session.
@@ -19,7 +19,7 @@ class transformStackWRT(moduleBase, filenameViewModuleMixin):
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
         filenameViewModuleMixin.__init__(self)
 

@@ -1,15 +1,15 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class imageMedian3D(scriptedConfigModuleMixin, moduleBase):
+class imageMedian3D(scriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.kernelSize = (3, 3, 3)
 

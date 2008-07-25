@@ -1,16 +1,16 @@
 # $Id$
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 
 
-class stlWRT(filenameViewModuleMixin, moduleBase):
+class stlWRT(filenameViewModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # need to make sure that we're all happy triangles and stuff
         self._cleaner = vtk.vtkCleanPolyData()

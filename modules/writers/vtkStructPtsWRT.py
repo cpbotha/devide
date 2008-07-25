@@ -1,17 +1,17 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 
 
-class vtkStructPtsWRT(filenameViewModuleMixin, moduleBase):
+class vtkStructPtsWRT(filenameViewModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._writer = vtk.vtkStructuredPointsWriter()
 

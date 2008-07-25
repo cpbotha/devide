@@ -1,5 +1,5 @@
 import operator
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
@@ -9,11 +9,11 @@ import wx
 from moduleMixins import colourDialogMixin
 
 class shellSplatSimple(introspectModuleMixin,
-                       colourDialogMixin, moduleBase):
+                       colourDialogMixin, ModuleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         colourDialogMixin.__init__(
             self, moduleManager.getModuleViewParentWindow())
 

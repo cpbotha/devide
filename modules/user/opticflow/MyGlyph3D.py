@@ -1,15 +1,15 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import vtktud
 
-class MyGlyph3D(scriptedConfigModuleMixin, moduleBase):
+class MyGlyph3D(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
 
         self._glyph3d = vtktud.vtkMyGlyph3D()
@@ -48,7 +48,7 @@ class MyGlyph3D(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._glyph3d

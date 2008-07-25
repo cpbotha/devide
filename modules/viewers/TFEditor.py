@@ -5,7 +5,7 @@
 # - abstract floatcanvas-derived linear function editor into wx_kit
 
 import os
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import IntrospectModuleMixin,\
         FileOpenDialogModuleMixin
 import moduleUtils
@@ -41,10 +41,10 @@ TF_LIBRARY = {
             (3072.0, (255, 255, 255), 1)] 
         }
 
-class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
+class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._volume_input = None
 
@@ -217,7 +217,7 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, moduleBase):
         self._view_frame.Destroy()
         del self._view_frame
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ('Optional input volume',)

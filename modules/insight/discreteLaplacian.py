@@ -4,13 +4,13 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 
-class discreteLaplacian(noConfigModuleMixin, moduleBase):
+class discreteLaplacian(noConfigModuleMixin, ModuleBase):
     
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
 
         # setup the pipeline
@@ -39,7 +39,7 @@ class discreteLaplacian(noConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._laplacian

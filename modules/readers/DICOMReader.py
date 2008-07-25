@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from module_kits.misc_kit import misc_utils
 from moduleMixins import \
      introspectModuleMixin
@@ -34,9 +34,9 @@ class DRDropTarget(wx.PyDropTarget):
 
         return d
 
-class DICOMReader(introspectModuleMixin, moduleBase):
+class DICOMReader(introspectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._reader = vtkgdcm.vtkGDCMImageReader()
         # NB NB NB: for now we're SWITCHING off the VTK-compatible
@@ -78,7 +78,7 @@ class DICOMReader(introspectModuleMixin, moduleBase):
 
         del self._reader
 
-        moduleBase.close(self) 
+        ModuleBase.close(self) 
 
 
     def get_input_descriptions(self):
@@ -263,7 +263,7 @@ class DICOMReader(introspectModuleMixin, moduleBase):
         self._view_frame.dicom_files_lb.SetDropTarget(dt)
 
 
-        # follow moduleBase convention to indicate that we now have
+        # follow ModuleBase convention to indicate that we now have
         # a view
         self.view_initialised = True
 

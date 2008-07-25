@@ -3,15 +3,15 @@
 # see module documentation
 
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-class landmarkTransform(scriptedConfigModuleMixin, moduleBase):
+class landmarkTransform(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._inputPoints = None
         self._sourceLandmarks = None

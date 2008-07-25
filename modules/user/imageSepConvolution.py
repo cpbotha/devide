@@ -1,17 +1,17 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtktud
 import wx
 
-class imageSepConvolution(scriptedConfigModuleMixin, moduleBase):
+class imageSepConvolution(scriptedConfigModuleMixin, ModuleBase):
     """
             lksajflksjdf
     """
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageSepConvolution = vtktud.vtkImageSepConvolution()
 
@@ -45,7 +45,7 @@ class imageSepConvolution(scriptedConfigModuleMixin, moduleBase):
 
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         # get rid of our reference
         del self._imageSepConvolution

@@ -2,16 +2,16 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
 import numpy
 
-class FitEllipsoidToMask(noConfigModuleMixin, moduleBase):
+class FitEllipsoidToMask(noConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._input_data = None
         self._output_dict = {}

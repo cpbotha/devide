@@ -4,19 +4,19 @@
 
 from typeModules.imageStackClass import imageStackClass
 import fixitk as itk
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import fileOpenDialogModuleMixin
 import moduleUtils
 import wx
 
-class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
+class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
     """Loads a list of images as ITK Images.
 
     This list can e.g. be used as input to the 2D registration module.
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # list of ACTUAL itk images
         self._imageStack = imageStackClass(self)
@@ -47,7 +47,7 @@ class imageStackRDR(moduleBase, fileOpenDialogModuleMixin):
         # destroy GUI
         self._viewFrame.Destroy()
         # base classes taken care of
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ()

@@ -10,7 +10,7 @@ from metaModule import metaModule
 import modules
 import mutex
 from random import choice
-from moduleBase import DefaultConfigClass
+from module_base import DefaultConfigClass
 import time
 import types
 import traceback

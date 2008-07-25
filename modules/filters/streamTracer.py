@@ -1,4 +1,4 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
@@ -6,9 +6,9 @@ import vtk
 INTEG_TYPE = ['RK2', 'RK4', 'RK45']
 INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
 
-class streamTracer(scriptedConfigModuleMixin, moduleBase):
+class streamTracer(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # 0 = RK2
         # 1 = RK4

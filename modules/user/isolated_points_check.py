@@ -1,18 +1,18 @@
 # $Id: pngWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 WX_OPEN = 1
 WX_SAVE = 2
 
 
-class isolated_points_check(scriptedConfigModuleMixin, moduleBase):
+class isolated_points_check(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         # ctor for this specific mixin
         # filenameViewModuleMixin.__init__(self)
 
@@ -44,7 +44,7 @@ class isolated_points_check(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
 	return ('Segmented image', 'Foreground points', 'Background points')

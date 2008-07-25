@@ -3,14 +3,14 @@
 # See COPYRIGHT for details.
 
 import itk
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import vtk
 
-class VTKtoITKF3(noConfigModuleMixin, moduleBase):
+class VTKtoITKF3(noConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
 
         # setup the pipeline
@@ -37,7 +37,7 @@ class VTKtoITKF3(noConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         noConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         del self._imageCast
         del self._vtk2itk

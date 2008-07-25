@@ -1,17 +1,17 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 import moduleUtils
 import moduleMixins
 from moduleMixins import scriptedConfigModuleMixin
 import os
 import vtk
 
-class cptDistanceField(scriptedConfigModuleMixin, moduleBase):
+class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         
 
         self._imageInput = None

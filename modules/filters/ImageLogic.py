@@ -2,13 +2,13 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
 
-class ImageLogic(scriptedConfigModuleMixin, moduleBase):
+class ImageLogic(scriptedConfigModuleMixin, ModuleBase):
 
 
     # get these values from vtkImageMathematics.h
@@ -16,7 +16,7 @@ class ImageLogic(scriptedConfigModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._image_logic = vtk.vtkImageLogic()
         
@@ -58,7 +58,7 @@ class ImageLogic(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._image_logic

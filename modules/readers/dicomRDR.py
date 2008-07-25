@@ -5,7 +5,7 @@
 import genUtils
 from module_kits.misc_kit import misc_utils
 import os
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import \
      introspectModuleMixin, fileOpenDialogModuleMixin
 import moduleUtils
@@ -17,13 +17,13 @@ import vtk
 import vtkdevide
 import moduleUtils
 
-class dicomRDR(moduleBase,
+class dicomRDR(ModuleBase,
                introspectModuleMixin,
                fileOpenDialogModuleMixin):
 
     def __init__(self, moduleManager):
         # call the constructor in the "base"
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup necessary VTK objects
         self._reader = vtkdevide.vtkDICOMVolumeReader()
@@ -252,7 +252,7 @@ class dicomRDR(moduleBase,
         wx.EVT_BUTTON(self._viewFrame, self._viewFrame.removeButton.GetId(),
                       self._handlerRemoveButton)
 
-        # follow moduleBase convention to indicate that we now have
+        # follow ModuleBase convention to indicate that we now have
         # a view
         self.view_initialised = True
         

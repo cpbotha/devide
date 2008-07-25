@@ -6,7 +6,7 @@ from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from external.vtkPipeline.vtkPipeline import vtkPipelineBrowser
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 import moduleUtils
 import module_kits.vtk_kit.utils
 
@@ -458,7 +458,7 @@ class noConfigModuleMixin(introspectModuleMixin):
         # set cute icon
         viewFrame.SetIcon(moduleUtils.getModuleIcon())
 
-        # follow moduleBase convention to indicate that view is
+        # follow ModuleBase convention to indicate that view is
         # available
         self.view_initialised = True
 
@@ -526,9 +526,9 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                              MaskedTextCtrl instantiation, e.g.:
                          {'mask': '\(#{3}, #{3}, #{3}\)', 'formatcodes':'F-_'}
 
-    NOTE: this mixin assumes that your module is derived from moduleBase,
-    e.g. class yourModule(scriptedConfigModuleMixin, moduleBase):
-    It's important that moduleBase comes after due to the new-style method
+    NOTE: this mixin assumes that your module is derived from module_base,
+    e.g. class yourModule(scriptedConfigModuleMixin, ModuleBase):
+    It's important that ModuleBase comes after due to the new-style method
     resolution order.
     """
 
@@ -656,7 +656,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         moduleUtils.createECASButtons(self, viewFrame,
                                       viewFrame.viewFramePanel)
            
-        # following moduleBase convention to indicate that view is
+        # following ModuleBase convention to indicate that view is
         # available.
         self.view_initialised = True
 

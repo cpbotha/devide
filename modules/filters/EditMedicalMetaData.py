@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import module_kits.vtk_kit
 import moduleUtils
@@ -11,10 +11,10 @@ import wx
 
 from module_kits.misc_kit.devide_types import MedicalMetaData
 
-class EditMedicalMetaData(introspectModuleMixin, moduleBase):
+class EditMedicalMetaData(introspectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._input_mmd = None
 
@@ -48,7 +48,7 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
         if self._view_frame is not None:
             self._view_frame.Destroy()
 
-        moduleBase.close(self) 
+        ModuleBase.close(self) 
 
     def get_input_descriptions(self):
         return ('Medical Meta Data',)
@@ -182,7 +182,7 @@ class EditMedicalMetaData(introspectModuleMixin, moduleBase):
                                         ok_default=False,
                                         cancel_hotkey=False)
 
-        # follow moduleBase convention to indicate that we now have
+        # follow ModuleBase convention to indicate that we now have
         # a view
         self.view_initialised = True
 

@@ -1,15 +1,15 @@
 # $Id$
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 
 
-class ivWRT(filenameViewModuleMixin, moduleBase):
+class ivWRT(filenameViewModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
 
         # call parent constructor
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._writer = vtk.vtkIVWriter()
         # sorry about this, but the files get REALLY big if we write them

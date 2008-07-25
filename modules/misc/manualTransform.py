@@ -1,12 +1,12 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 
-class manualTransform(scriptedConfigModuleMixin, moduleBase):
+class manualTransform(scriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.scale = (1.0, 1.0, 1.0)
         self._config.orientation = (0.0, 0.0, 0.0)

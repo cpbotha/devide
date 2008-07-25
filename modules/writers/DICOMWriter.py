@@ -8,7 +8,7 @@
 # * just generate im%05d.dcm filenames, as many as there are slices
 # * study / series UIDs are auto generated
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import \
      scriptedConfigModuleMixin
 import moduleUtils
@@ -20,9 +20,9 @@ import wx # need this for wx.SAVE
 
 RADIOBOX_IDX, DIR_IDX, FILE_IDX = 0, 1, 2
 
-class DICOMWriter(scriptedConfigModuleMixin, moduleBase):
+class DICOMWriter(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
-        moduleBase.__init__(self, module_manager)
+        ModuleBase.__init__(self, module_manager)
 
         self._writer = vtkgdcm.vtkGDCMImageWriter()
         moduleUtils.setupVTKObjectProgress(self, self._writer,
@@ -71,7 +71,7 @@ class DICOMWriter(scriptedConfigModuleMixin, moduleBase):
 
     def close(self):
         scriptedConfigModuleMixin.close(self)
-        moduleBase.close(self) 
+        ModuleBase.close(self) 
 
         del self._writer
 

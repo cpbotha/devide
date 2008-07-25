@@ -1,11 +1,11 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import wx
 import vtk
 
-class myTubeFilter(scriptedConfigModuleMixin, moduleBase):
+class myTubeFilter(scriptedConfigModuleMixin, ModuleBase):
 
     """Simple demonstration of scriptedConfigModuleMixin-based
     wrapping of a single VTK object.
@@ -17,7 +17,7 @@ class myTubeFilter(scriptedConfigModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._tubeFilter = vtk.vtkTubeFilter()
         
@@ -52,7 +52,7 @@ class myTubeFilter(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._tubeFilter

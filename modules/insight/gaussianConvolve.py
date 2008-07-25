@@ -4,15 +4,15 @@
 
 import itk
 import module_kits.itk_kit as itk_kit
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 
-class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
+class gaussianConvolve(scriptedConfigModuleMixin, ModuleBase):
 
     _orders = ['Zero', 'First', 'Second']
     
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.direction = 0
         self._config.sigma = 1.0
@@ -59,7 +59,7 @@ class gaussianConvolve(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._gaussian

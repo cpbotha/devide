@@ -3,15 +3,15 @@
 # performs image smoothing by convolving with a Gaussian
 
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import introspectModuleMixin
 import moduleUtils
 import vtk
 
-class imageGaussianSmooth(introspectModuleMixin, moduleBase):
+class imageGaussianSmooth(introspectModuleMixin, ModuleBase):
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._imageGaussianSmooth = vtk.vtkImageGaussianSmooth()
 
@@ -40,7 +40,7 @@ class imageGaussianSmooth(introspectModuleMixin, moduleBase):
         # get rid of our reference
         del self._imageGaussianSmooth
         # and finally call our base dtor
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
     def get_input_descriptions(self):
         return ('vtkImageData',)

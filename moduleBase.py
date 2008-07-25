@@ -29,7 +29,7 @@ class ModuleBase(object):
         """Perform your module initialisation here.
 
         Please also call this init method
-        (i.e. moduleBase.__init__(self)).  In your own __init__, you
+        (i.e. ModuleBase.__init__(self)).  In your own __init__, you
         should create your view and show it to the user.
 
         """
@@ -229,5 +229,5 @@ class ModuleBase(object):
     def sync_module_view_with_logic(self):
         self._moduleManager.sync_module_view_with_logic(self)
 
-moduleBase = ModuleBase
+ModuleBase = ModuleBase
 

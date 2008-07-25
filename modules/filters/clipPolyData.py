@@ -1,10 +1,10 @@
 import genUtils
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import moduleUtils
 import vtk
 
-class clipPolyData(noConfigModuleMixin, moduleBase):
+class clipPolyData(noConfigModuleMixin, ModuleBase):
     """Given an input polydata and an implicitFunction, this will clip
     the polydata.
 
@@ -15,7 +15,7 @@ class clipPolyData(noConfigModuleMixin, moduleBase):
     
     def __init__(self, moduleManager):
         # initialise our base class
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
 
         self._clipPolyData = vtk.vtkClipPolyData()

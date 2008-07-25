@@ -3,13 +3,13 @@
 # See COPYRIGHT for details.
 
 import itk
-from moduleBase import moduleBase
+from module_base import ModuleBase
 import module_kits.itk_kit
 from moduleMixins import scriptedConfigModuleMixin
 
-class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
+class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, ModuleBase):
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.numberOfIterations = 5
         self._config.conductanceParameter = 3.0
@@ -52,7 +52,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
             
         # remove all bindings
         del self._diffuse

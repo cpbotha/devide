@@ -1,17 +1,17 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 from input_array_choice_mixin import InputArrayChoiceMixin
 
 class warpPoints(InputArrayChoiceMixin, scriptedConfigModuleMixin,
-                 moduleBase):
+                 ModuleBase):
     
     _defaultVectorsSelectionString = 'Default Active Vectors'
     _userDefinedString = 'User Defined'
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         InputArrayChoiceMixin.__init__(self)
         
         self._config.scaleFactor = 1

@@ -1,15 +1,15 @@
 # $Id: BMPRDR.py 1853 2006-02-01 17:16:28Z cpbotha $
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import wx
 
-class BMPReader(scriptedConfigModuleMixin, moduleBase):
+class BMPReader(scriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._reader = vtk.vtkBMPReader()
         self._reader.SetFileDimensionality(3)
@@ -56,7 +56,7 @@ class BMPReader(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._reader

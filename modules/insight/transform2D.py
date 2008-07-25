@@ -7,7 +7,7 @@
 #   register observers and run _createPipelines if/when they change.
 
 from imageStackRDR import imageStackClass
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import noConfigModuleMixin
 import fixitk as itk
 from typeModules.transformStackClass import transformStackClass
@@ -15,7 +15,7 @@ from typeModules.imageStackClass import imageStackClass
 import  vtk
 import ConnectVTKITKPython as CVIPy
 
-class transform2D(noConfigModuleMixin, moduleBase):
+class transform2D(noConfigModuleMixin, ModuleBase):
 
     """This apply a stack of transforms to a stack of images in an
     accumulative fashion, i.e. imageN is transformed:
@@ -30,7 +30,7 @@ class transform2D(noConfigModuleMixin, moduleBase):
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
         noConfigModuleMixin.__init__(self)
 
         self._imageStack = None
@@ -61,7 +61,7 @@ class transform2D(noConfigModuleMixin, moduleBase):
 
         noConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ('ITK Image Stack', '2D Transform Stack')

@@ -1,13 +1,13 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import filenameViewModuleMixin
 import moduleUtils
 import vtk
 import os
 
 
-class objRDR(filenameViewModuleMixin, moduleBase):
+class objRDR(filenameViewModuleMixin, ModuleBase):
     
     def __init__(self, moduleManager):
         """Constructor (initialiser) for the PD reader.
@@ -17,7 +17,7 @@ class objRDR(filenameViewModuleMixin, moduleBase):
         """
         
         # call the constructor in the "base"
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         # setup necessary VTK objects
 	self._reader = vtk.vtkOBJReader()

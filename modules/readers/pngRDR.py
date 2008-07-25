@@ -1,16 +1,16 @@
 # $Id$
 
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 import moduleUtils
 import vtk
 import wx
 
 
-class pngRDR(scriptedConfigModuleMixin, moduleBase):
+class pngRDR(scriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._reader = vtk.vtkPNGReader()
         self._reader.SetFileDimensionality(3)
@@ -55,7 +55,7 @@ class pngRDR(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
 
-        moduleBase.close(self)
+        ModuleBase.close(self)
         
         # get rid of our reference
         del self._reader

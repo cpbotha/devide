@@ -1,8 +1,8 @@
-from moduleBase import moduleBase
+from module_base import ModuleBase
 from moduleMixins import scriptedConfigModuleMixin
 from wxPython import wx
 
-class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
+class VTKtoPRTools(scriptedConfigModuleMixin, ModuleBase):
 
     """Module to convert multi-component VTK image data to PRTools-compatible
     dataset.
@@ -11,7 +11,7 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
     """
 
     def __init__(self, moduleManager):
-        moduleBase.__init__(self, moduleManager)
+        ModuleBase.__init__(self, moduleManager)
 
         self._config.filename = ''
 
@@ -39,7 +39,7 @@ class VTKtoPRTools(scriptedConfigModuleMixin, moduleBase):
         # this will take care of all display thingies
         scriptedConfigModuleMixin.close(self)
         # and the baseclass close
-        moduleBase.close(self)
+        ModuleBase.close(self)
 
         del self._inputData
 
