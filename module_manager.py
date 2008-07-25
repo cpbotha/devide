@@ -6,7 +6,7 @@ import sys, os, fnmatch
 import re
 import copy
 import genUtils
-from metaModule import metaModule
+from meta_module import MetaModule
 import modules
 import mutex
 from random import choice
@@ -232,7 +232,7 @@ class ModuleManager:
     networkManager class.  One ModuleManager per processing node,
     global networkManager to coordinate everything.
 
-    @todo: ideally, ALL module actions should go via the metaModule.
+    @todo: ideally, ALL module actions should go via the MetaModule.
     
     @author: Charl P. Botha <http://cpbotha.net/>
     """
@@ -244,7 +244,7 @@ class ModuleManager:
 	
         self._devide_app = devide_app
         # module dictionary, keyed on instance... cool.
-        # values are metaModules
+        # values are MetaModules
         self._moduleDict = {}
 
         appdir = self._devide_app.get_appdir()
@@ -411,7 +411,7 @@ class ModuleManager:
         view to underlying logic.
 
         This is called by moduleUtils (the ECASH button handlers) and thunks
-        through to the relevant metaModule call.
+        through to the relevant MetaModule call.
         """
 
         mModule = self._moduleDict[instance]
@@ -787,7 +787,7 @@ class ModuleManager:
                 pto = None
             
             # and store it in our internal structures
-            self._moduleDict[moduleInstance] = metaModule(
+            self._moduleDict[moduleInstance] = MetaModule(
                 moduleInstance, instanceName, fullName, pti, pto)
 
             # it's now fully born ;)
@@ -890,7 +890,7 @@ class ModuleManager:
         """
 
         try:
-            # this goes via the metaModule so that time stamps and the
+            # this goes via the MetaModule so that time stamps and the
             # like are correctly reported
             meta_module.execute_module(part, streaming)
 
@@ -1046,7 +1046,7 @@ class ModuleManager:
         All errors will be handled internally in this function, i.e. no
         exceptions will be raised.
 
-        @todo: factor parts of this out into the metaModule.
+        @todo: factor parts of this out into the MetaModule.
         FIXME: continue here...  (we can start converting some of
         the modules to shallow copy their data; especially the slice3dVWR
         is a problem child.)
@@ -1221,7 +1221,7 @@ class ModuleManager:
         for moduleInstance in moduleInstances:
             if self._moduleDict.has_key(moduleInstance):
 
-                # first get the metaModule
+                # first get the MetaModule
                 mModule = self._moduleDict[moduleInstance]
                 
                 # create a picklable thingy
@@ -1342,8 +1342,8 @@ class ModuleManager:
 
         This method is called by: scheduler, self.recreate_module_in_place.
 
-        @todo: this should be part of the metaModule code, as soon as
-        the metaModule inputs and outputs are of type metaModule and not
+        @todo: this should be part of the MetaModule code, as soon as
+        the MetaModule inputs and outputs are of type MetaModule and not
         instance.
 
         @param instance: module instance of which the consumers should be
@@ -1354,7 +1354,7 @@ class ModuleManager:
 
         consumers = []
 
-        # get outputs from metaModule: this is a list of list of tuples
+        # get outputs from MetaModule: this is a list of list of tuples
         # outer list has number of outputs elements
         # inner lists store consumer modules for that output
         # tuple contains (consumerModuleInstance, consumerInputIdx)
@@ -1373,8 +1373,8 @@ class ModuleManager:
         """Return a list of meta modules, output indices and the input
         index through which they supply 'meta_module' with data.
 
-        @todo: this should be part of the metaModule code, as soon as
-        the metaModule inputs and outputs are of type metaModule and not
+        @todo: this should be part of the MetaModule code, as soon as
+        the MetaModule inputs and outputs are of type MetaModule and not
         instance.
 
         @param meta_module: consumer meta module.
@@ -1401,7 +1401,7 @@ class ModuleManager:
         return producers
 
     def setModified_DEPRECATED(self, moduleInstance):
-        """Changed modified ivar in metaModule.
+        """Changed modified ivar in MetaModule.
 
         This ivar is used to determine whether moduleInstance needs to be
         executed to become up to date.  It should be set whenever changes
@@ -1480,7 +1480,7 @@ class ModuleManager:
             i += 1
 
         try:
-            # get the metaModule and rename it.
+            # get the MetaModule and rename it.
             self._moduleDict[instance].instanceName = name
         except Exception:
             return False
@@ -1619,8 +1619,8 @@ class ModuleManager:
         shouldTransferOutput is true, so the number of unnecessary transfers
         should be minimised.
 
-        This method is in ModuleManager and not in metaModule because it
-        involves more than one metaModule.
+        This method is in ModuleManager and not in MetaModule because it
+        involves more than one MetaModule.
 
         @param moduleInstance: producer module whose output data must be
         transferred.

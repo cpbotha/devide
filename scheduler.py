@@ -154,7 +154,7 @@ class Scheduler:
         
         self._devideApp = devideApp
 
-    def meta_modules_to_scheduler_modules(self, metaModules):
+    def meta_modules_to_scheduler_modules(self, meta_modules):
         """Preprocess module instance list before cycle detection or
         topological sorting to take care of exceptions.
         
@@ -168,7 +168,7 @@ class Scheduler:
         
         # replace every view module with two segments: final and initial
         SchedulerModuleWrappers = []
-        for mModule in metaModules:
+        for mModule in meta_modules:
             # wrap every part separately
             for part in range(mModule.numParts):
                 SchedulerModuleWrappers.append(

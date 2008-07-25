@@ -5,14 +5,14 @@
 
 import counter
 
-class metaModule:
+class MetaModule:
     """Class used to store module-related information.
 
-    Every instance is contained in a single metaModule.  This is why the
-    cycle-proof module split has not been implemented as metaModules.
+    Every instance is contained in a single MetaModule.  This is why the
+    cycle-proof module split has not been implemented as MetaModules.
 
     @todo: at the moment, some interfaces work with a real module instance
-    as well as a metaModule.  Should be consistent and use all metaModules.
+    as well as a MetaModule.  Should be consistent and use all MetaModules.
 
     @todo: document all timestamp logic here, link to scheduler
     documentation
@@ -34,7 +34,7 @@ class metaModule:
 
         if instance is None:
             raise Exception(
-                'instance is None during metaModule instantiation.')
+                'instance is None during MetaModule instantiation.')
 
         self.instance = instance
         self.instanceName = instanceName
@@ -318,10 +318,10 @@ class metaModule:
         numOuts = len(self.instance.get_output_descriptions())
         # numIns list of tuples of (supplierModule, supplierOutputIdx)
         # if the input is not connected, that position in the list is None
-        # supplierModule is a module instance, not a metaModule
+        # supplierModule is a module instance, not a MetaModule
         self.inputs = [None] * numIns
         # numOuts list of lists of tuples of (consumerModule,
-        # consumerInputIdx); consumerModule is an instance, not a metaModule
+        # consumerInputIdx); consumerModule is an instance, not a MetaModule
         # be careful with list concatenation, it makes copies, which are mostly
         # shallow!!!
         self.outputs = [[] for _ in range(numOuts)]

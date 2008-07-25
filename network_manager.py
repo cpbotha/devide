@@ -30,7 +30,7 @@ class NetworkManager(SubjectMixin):
         # whatnot
         self.notify('execute_network_start')
 
-        # convert all metaModules to schedulerModules
+        # convert all MetaModules to schedulerModules
         sms = self._devide_app.scheduler.meta_modules_to_scheduler_modules(
             meta_modules)
 
