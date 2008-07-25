@@ -19,7 +19,7 @@ class HelpContentsTest(unittest.TestCase):
         """Test if Help Contents can be opened successfully.
         """
         self._devide_app.get_interface()._handlerHelpContents(None)
-        hc = self._devide_app.get_interface()._helpClass
+        hc = self._devide_app.get_interface()._help_class
 
         if hasattr(hc, '_htmlHelpController'):
             self.failUnless(

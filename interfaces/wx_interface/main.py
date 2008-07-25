@@ -41,7 +41,7 @@ class WXInterface(wx.App):
 
         self._graph_editor = None
         self._python_shell = None
-        self._helpClass = None
+        self._help_class = None
 
     def OnInit(self):
         """Standard WX OnInit() method, called during construction.
@@ -128,14 +128,14 @@ class WXInterface(wx.App):
         can't do their thing.
         """
     
-        global GraphEditor, PythonShell, helpClass
+        global GraphEditor, PythonShell, HelpClass
     
         from graph_editor import GraphEditor
 
         import module_kits
         from module_kits.wx_kit.python_shell import PythonShell
 
-        from helpClass import helpClass
+        from HelpClass import HelpClass
 
         self.start_graph_editor()
         
@@ -165,15 +165,15 @@ class WXInterface(wx.App):
             self._graph_editor.close()
             
         # take down the help
-        if self._helpClass:
-            self._helpClass.close()
+        if self._help_class:
+            self._help_class.close()
         
         # take care of main window
         self._main_frame.Close()
 
     def showHelp(self):
         self._startHelpClass()
-        self._helpClass.show()
+        self._help_class.show()
 
     def start_python_shell(self):
         if self._python_shell == None:
@@ -190,8 +190,8 @@ class WXInterface(wx.App):
             self._python_shell.show()
 
     def _startHelpClass(self):
-        if self._helpClass == None:
-            self._helpClass = helpClass(self._devide_app)
+        if self._help_class == None:
+            self._help_class = HelpClass(self._devide_app)
 
     def start_graph_editor(self):
         if self._graph_editor == None:

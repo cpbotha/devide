@@ -8,7 +8,7 @@ import os
 # on windows, use win32help to show the chm file
 # on anything else, show the crappy htb file.
 
-# helpClass should be somewhere in the wx_interface.  think about
+# HelpClass should be somewhere in the wx_interface.  think about
 # that!
 
 try:
@@ -19,7 +19,7 @@ except ImportError:
     import wx.html
     help_type = 1
 
-class helpClass(object):
+class HelpClass(object):
     def __init__(self, devide_app):
         app_dir = devide_app.get_appdir()
         helpDir = os.path.join(app_dir, 'docs/help')
