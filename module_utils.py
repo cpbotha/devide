@@ -177,7 +177,7 @@ def create_standard_object_introspection(d3module,
     in order to bind events to these controls.
 
     In order to use this, the module HAS to use the
-    introspectModuleMixin.
+    IntrospectModuleMixin.
 
     IMPORTANT: viewFrame must have a top-level sizer that contains ONLY
     the viewFramePanel.  This is the default for wxGlade created dialogs
@@ -286,7 +286,7 @@ def setup_object_introspection(d3module, viewFrame, objectDict,
     objectChoiceId is the event id connected to the objectChoice widget.
 
     In order to use this, the module HAS to use the
-    introspectModuleMixin.
+    IntrospectModuleMixin.
 
     """
 

@@ -3,11 +3,11 @@
 # See COPYRIGHT for details.
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import itk
 import module_kits.itk_kit as itk_kit
 
-class isolatedConnect(scriptedConfigModuleMixin, ModuleBase):
+class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # call parent constructor
@@ -39,7 +39,7 @@ class isolatedConnect(scriptedConfigModuleMixin, ModuleBase):
             self, self._isol_connect,
             'IsolatedConnectedImageFilter', 'Performing isolated connect')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'IsolatedConnectedImageFilter' :
@@ -54,7 +54,7 @@ class isolatedConnect(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
 

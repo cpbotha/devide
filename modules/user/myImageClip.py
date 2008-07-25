@@ -1,10 +1,10 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import wx
 
-class myImageClip(scriptedConfigModuleMixin, ModuleBase):
+class myImageClip(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -19,7 +19,7 @@ class myImageClip(scriptedConfigModuleMixin, ModuleBase):
             ('OutputWholeExtent:', 'outputWholeExtent', 'tuple:float,6', 'text',
              'The size of the clip volume.')]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+        ScriptedConfigModuleMixin.__init__(self, configList)
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self,
@@ -35,7 +35,7 @@ class myImageClip(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         ModuleBase.close(self)
         
         # get rid of our reference

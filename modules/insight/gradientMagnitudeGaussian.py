@@ -5,9 +5,9 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class gradientMagnitudeGaussian(scriptedConfigModuleMixin, ModuleBase):
+class gradientMagnitudeGaussian(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -32,7 +32,7 @@ class gradientMagnitudeGaussian(scriptedConfigModuleMixin, ModuleBase):
             'itkGradientMagnitudeRecursiveGaussianImageFilter',
             'Calculating gradient image')
         
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'itkGradientMagnitudeRecursiveGaussianImageFilter' :
@@ -47,7 +47,7 @@ class gradientMagnitudeGaussian(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

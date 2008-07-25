@@ -1,12 +1,12 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 INTEG_TYPE = ['RK2', 'RK4', 'RK45']
 INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
 
-class streamTracer(scriptedConfigModuleMixin, ModuleBase):
+class streamTracer(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -22,7 +22,7 @@ class streamTracer(scriptedConfigModuleMixin, ModuleBase):
 
         self._streamTracer = vtk.vtkStreamTracer() 
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkStreamTracer' : self._streamTracer})
@@ -39,7 +39,7 @@ class streamTracer(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._streamTracer

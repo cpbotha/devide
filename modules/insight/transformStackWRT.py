@@ -5,12 +5,12 @@
 from typeModules.transformStackClass import transformStackClass
 import cPickle
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import wx
 import vtk
 
-class transformStackWRT(ModuleBase, filenameViewModuleMixin):
+class transformStackWRT(ModuleBase, FilenameViewModuleMixin):
     """Writes 2D Transform Stack to disc.
 
     Use this module to save the results of a register2D session.
@@ -21,7 +21,7 @@ class transformStackWRT(ModuleBase, filenameViewModuleMixin):
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
+        FilenameViewModuleMixin.__init__(self)
 
         # this is the input
         self._transformStack = None
@@ -43,7 +43,7 @@ class transformStackWRT(ModuleBase, filenameViewModuleMixin):
         # we should disconnect all inputs
         self.setInput(0, None)
         del self._transformStack
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def getInputDescriptions(self):
 	return ('2D Transform Stack',)

@@ -1,8 +1,8 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 from wxPython import wx
 
-class VTKtoPRTools(scriptedConfigModuleMixin, ModuleBase):
+class VTKtoPRTools(ScriptedConfigModuleMixin, ModuleBase):
 
     """Module to convert multi-component VTK image data to PRTools-compatible
     dataset.
@@ -23,7 +23,7 @@ class VTKtoPRTools(scriptedConfigModuleMixin, ModuleBase):
               'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*'})
             ]
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+        ScriptedConfigModuleMixin.__init__(self, configList)
 
         self._createViewFrame(
             {'Module (self)' : self})
@@ -37,7 +37,7 @@ class VTKtoPRTools(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
 

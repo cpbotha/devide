@@ -1,10 +1,10 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class contour(scriptedConfigModuleMixin, ModuleBase):
+class contour(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -24,7 +24,7 @@ class contour(scriptedConfigModuleMixin, ModuleBase):
             ('ISO value:', 'iso_value', 'base:float', 'text',
              'Surface will pass through points with this value.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'vtkContourFilter' : self._contourFilter})
@@ -37,7 +37,7 @@ class contour(scriptedConfigModuleMixin, ModuleBase):
         self.set_input(0, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

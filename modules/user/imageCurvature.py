@@ -1,10 +1,10 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtktud
 
-class imageCurvature(ModuleBase, noConfigModuleMixin):
+class imageCurvature(ModuleBase, NoConfigModuleMixin):
     """Calculates image curvature with VTKTUD vtkImageCurvature filter.
     
     You need 8 inputs, and in the following sequence: dx, dy, dz,
@@ -20,7 +20,7 @@ class imageCurvature(ModuleBase, noConfigModuleMixin):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
         self._imageCurvature = vtktud.vtkImageCurvature()
         
@@ -42,7 +42,7 @@ class imageCurvature(ModuleBase, noConfigModuleMixin):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._imageCurvature

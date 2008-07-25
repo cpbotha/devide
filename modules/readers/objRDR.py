@@ -1,19 +1,19 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 import os
 
 
-class objRDR(filenameViewModuleMixin, ModuleBase):
+class objRDR(FilenameViewModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         """Constructor (initialiser) for the PD reader.
 
         This is almost standard code for most of the modules making use of
-        the filenameViewModuleMixin mixin.
+        the FilenameViewModuleMixin mixin.
         """
         
         # call the constructor in the "base"
@@ -23,7 +23,7 @@ class objRDR(filenameViewModuleMixin, ModuleBase):
 	self._reader = vtk.vtkOBJReader()
         
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'Wavefront OBJ data (*.obj)|*.obj|All files (*)|*',
@@ -40,7 +40,7 @@ class objRDR(filenameViewModuleMixin, ModuleBase):
     def close(self):
         del self._reader
         # call the close method of the mixin
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ()

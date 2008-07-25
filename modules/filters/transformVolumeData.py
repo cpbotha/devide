@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class transformVolumeData(noConfigModuleMixin, ModuleBase):
+class transformVolumeData(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -12,7 +12,7 @@ class transformVolumeData(noConfigModuleMixin, ModuleBase):
         self._imageReslice.SetInterpolationModeToCubic()
 
         # initialise any mixins we might have
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'vtkImageReslice' : self._imageReslice})
@@ -29,7 +29,7 @@ class transformVolumeData(noConfigModuleMixin, ModuleBase):
         for inputIdx in range(len(self.get_input_descriptions())):
             self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._imageReslice
 

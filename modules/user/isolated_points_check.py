@@ -1,20 +1,20 @@
 # $Id: pngWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 WX_OPEN = 1
 WX_SAVE = 2
 
 
-class isolated_points_check(scriptedConfigModuleMixin, ModuleBase):
+class isolated_points_check(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
-        # filenameViewModuleMixin.__init__(self)
+        # FilenameViewModuleMixin.__init__(self)
 
         self._input_image = None
         self._foreground_points = None
@@ -29,7 +29,7 @@ class isolated_points_check(scriptedConfigModuleMixin, ModuleBase):
               'fileMask' :
               'All files (*.*)|*.*'})]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self})
             
@@ -42,7 +42,7 @@ class isolated_points_check(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
 

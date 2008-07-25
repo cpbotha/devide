@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class testModule2(noConfigModuleMixin, ModuleBase):
+class testModule2(NoConfigModuleMixin, ModuleBase):
     """Resample volume according to 4x4 homogeneous transform.
     """
 
@@ -11,7 +11,7 @@ class testModule2(noConfigModuleMixin, ModuleBase):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
         # initialise any mixins we might have
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
 
         self._imageReslice = vtk.vtkImageReslice()
@@ -39,7 +39,7 @@ class testModule2(noConfigModuleMixin, ModuleBase):
         for inputIdx in range(len(self.get_input_descriptions())):
             self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._imageReslice
 

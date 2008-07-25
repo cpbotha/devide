@@ -1,7 +1,7 @@
 from external import wxPyPlot
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 
 try:
@@ -12,7 +12,7 @@ except:
 import vtk
 import wx
 
-class histogram1D(introspectModuleMixin, ModuleBase):
+class histogram1D(IntrospectModuleMixin, ModuleBase):
 
     """Calculates and shows 1D histogram (occurrences over value) of its
     input data.

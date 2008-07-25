@@ -13,7 +13,7 @@ reload(SkeletonAUIViewerFrame)
 
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import os
 import sys
@@ -21,7 +21,7 @@ import traceback
 import vtk
 import wx
 
-class SkeletonAUIViewer(introspectModuleMixin, ModuleBase):
+class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         """Standard constructor.  All DeVIDE modules have these, we do
         the required setup actions.
@@ -29,7 +29,7 @@ class SkeletonAUIViewer(introspectModuleMixin, ModuleBase):
 
         ModuleBase.__init__(self, module_manager)
 
-        introspectModuleMixin.__init__(
+        IntrospectModuleMixin.__init__(
             self,
             {'Module (self)' : self})
 
@@ -81,7 +81,7 @@ class SkeletonAUIViewer(introspectModuleMixin, ModuleBase):
         # now take care of the wx window
         self._view_frame.close()
         # then shutdown our introspection mixin
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
     def get_input_descriptions(self):
         # define this as a tuple of input descriptions if you want to

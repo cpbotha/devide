@@ -1,11 +1,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class implicitToVolume(scriptedConfigModuleMixin, ModuleBase):
+class implicitToVolume(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -38,7 +38,7 @@ class implicitToVolume(scriptedConfigModuleMixin, ModuleBase):
         self._example_input = None
 
         # mixin ctor
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkSampleFunction' : self._sampleFunction})
@@ -52,7 +52,7 @@ class implicitToVolume(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

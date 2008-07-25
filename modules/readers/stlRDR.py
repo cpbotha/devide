@@ -1,19 +1,19 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 import os
 
 
-class stlRDR(filenameViewModuleMixin, ModuleBase):
+class stlRDR(FilenameViewModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         """Constructor (initialiser) for the PD reader.
 
         This is almost standard code for most of the modules making use of
-        the filenameViewModuleMixin mixin.
+        the FilenameViewModuleMixin mixin.
         """
         
         # call the constructor in the "base"
@@ -23,7 +23,7 @@ class stlRDR(filenameViewModuleMixin, ModuleBase):
 	self._reader = vtk.vtkSTLReader()
 
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'STL data (*.stl)|*.stl|All files (*)|*',
@@ -39,7 +39,7 @@ class stlRDR(filenameViewModuleMixin, ModuleBase):
     def close(self):
         del self._reader
         # call the close method of the mixin
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ()

@@ -1,12 +1,12 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 
 
-class vtkPolyDataWRT(filenameViewModuleMixin, ModuleBase):
+class vtkPolyDataWRT(FilenameViewModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -24,7 +24,7 @@ class vtkPolyDataWRT(filenameViewModuleMixin, ModuleBase):
 
         
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'VTK data (*.vtk)|*.vtk|All files (*)|*',
@@ -40,7 +40,7 @@ class vtkPolyDataWRT(filenameViewModuleMixin, ModuleBase):
         # we should disconnect all inputs
         self.set_input(0, None)
         del self._writer
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ('vtkStructuredPoints',)

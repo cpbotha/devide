@@ -1,10 +1,10 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 from input_array_choice_mixin import InputArrayChoiceMixin
 
-class warpPoints(InputArrayChoiceMixin, scriptedConfigModuleMixin,
+class warpPoints(InputArrayChoiceMixin, ScriptedConfigModuleMixin,
                  ModuleBase):
     
     _defaultVectorsSelectionString = 'Default Active Vectors'
@@ -25,7 +25,7 @@ class warpPoints(InputArrayChoiceMixin, scriptedConfigModuleMixin,
 
         self._warpVector = vtk.vtkWarpVector()
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkWarpVector' : self._warpVector})
@@ -43,7 +43,7 @@ class warpPoints(InputArrayChoiceMixin, scriptedConfigModuleMixin,
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._warpVector
@@ -76,7 +76,7 @@ class warpPoints(InputArrayChoiceMixin, scriptedConfigModuleMixin,
 
     def config_to_view(self):
         # first get our parent mixin to do its thing
-        scriptedConfigModuleMixin.config_to_view(self)
+        ScriptedConfigModuleMixin.config_to_view(self)
 
         # the vector choice is the second configTuple
         choice = self._getWidget(1)

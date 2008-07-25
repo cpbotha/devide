@@ -1,15 +1,15 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtktud
 
-class imageEigenvectors(ModuleBase, noConfigModuleMixin):
+class imageEigenvectors(ModuleBase, NoConfigModuleMixin):
 
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
         self._imageEigenvectors = vtktud.vtkImageEigenvectors()
         
@@ -31,7 +31,7 @@ class imageEigenvectors(ModuleBase, noConfigModuleMixin):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._imageEigenvectors

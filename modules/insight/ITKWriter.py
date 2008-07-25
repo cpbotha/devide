@@ -5,10 +5,10 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import re
 
-class ITKWriter(filenameViewModuleMixin, ModuleBase):
+class ITKWriter(FilenameViewModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
@@ -24,7 +24,7 @@ class ITKWriter(filenameViewModuleMixin, ModuleBase):
                          'All files (*)|*'
 
         # we now have a viewFrame in self._viewFrame
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             wildCardString,
@@ -40,7 +40,7 @@ class ITKWriter(filenameViewModuleMixin, ModuleBase):
         # we should disconnect all inputs
         self.set_input(0, None)
         del self._writer
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ('ITK Image',)

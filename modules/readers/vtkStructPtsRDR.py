@@ -1,11 +1,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 
-class vtkStructPtsRDR(filenameViewModuleMixin, ModuleBase):
+class vtkStructPtsRDR(FilenameViewModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -15,7 +15,7 @@ class vtkStructPtsRDR(filenameViewModuleMixin, ModuleBase):
         self._reader = vtk.vtkStructuredPointsReader()
         
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'VTK data (*.vtk)|*.vtk|All files (*)|*',
@@ -32,7 +32,7 @@ class vtkStructPtsRDR(filenameViewModuleMixin, ModuleBase):
         
     def close(self):
         del self._reader
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ()

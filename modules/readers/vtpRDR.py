@@ -1,11 +1,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 
-class vtpRDR(filenameViewModuleMixin, ModuleBase):
+class vtpRDR(FilenameViewModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
@@ -14,7 +14,7 @@ class vtpRDR(filenameViewModuleMixin, ModuleBase):
         self._reader = vtk.vtkXMLPolyDataReader()
 
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'VTK Poly Data (*.vtp)|*.vtp|All files (*)|*',
@@ -32,7 +32,7 @@ class vtpRDR(filenameViewModuleMixin, ModuleBase):
         
     def close(self):
         del self._reader
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ()

@@ -1,11 +1,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtktud
 
-class gaussianKernel(scriptedConfigModuleMixin, ModuleBase):
+class gaussianKernel(ScriptedConfigModuleMixin, ModuleBase):
     """First test of a gaussian implicit kernel
     
     $Revision: 1.1 $
@@ -29,7 +29,7 @@ class gaussianKernel(scriptedConfigModuleMixin, ModuleBase):
              'The support of the gaussian kernel.')]
 
         # mixin ctor
-        scriptedConfigModuleMixin.__init__(self, configList)
+        ScriptedConfigModuleMixin.__init__(self, configList)
         
         # now create the necessary VTK modules
         self._gaussianKernel = vtktud.vtkGaussianKernel()
@@ -47,7 +47,7 @@ class gaussianKernel(scriptedConfigModuleMixin, ModuleBase):
 
     def close(self):
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         # and the baseclass close
         ModuleBase.close(self)

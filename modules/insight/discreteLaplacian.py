@@ -5,9 +5,9 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 
-class discreteLaplacian(noConfigModuleMixin, ModuleBase):
+class discreteLaplacian(NoConfigModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -22,7 +22,7 @@ class discreteLaplacian(noConfigModuleMixin, ModuleBase):
             'itkLaplacianImageFilter',
             'Calculating Laplacian')
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'itkLaplacianImageFilter' :
@@ -37,7 +37,7 @@ class discreteLaplacian(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

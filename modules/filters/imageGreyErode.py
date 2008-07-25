@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class imageGreyErode(scriptedConfigModuleMixin, ModuleBase):
+class imageGreyErode(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -24,7 +24,7 @@ class imageGreyErode(scriptedConfigModuleMixin, ModuleBase):
         configList = [
             ('Kernel size:', 'kernelSize', 'tuple:int,3', 'text',
              'Size of the kernel in x,y,z dimensions.')]
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageContinuousErode3D' : self._imageErode})
@@ -38,7 +38,7 @@ class imageGreyErode(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

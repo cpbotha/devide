@@ -9,11 +9,11 @@
 # use vtkPolyDataConnectivityFilter with minima as seed points
 
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 from wxPython.wx import *
 import vtk
 
-class testModule3(ModuleBase, noConfigModuleMixin):
+class testModule3(ModuleBase, NoConfigModuleMixin):
 
     """Module to prototype modification of homotopy and subsequent
     watershedding of curvature-on-surface image.
@@ -23,7 +23,7 @@ class testModule3(ModuleBase, noConfigModuleMixin):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
         # initialise any mixins we might have
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
         mm = self._module_manager
 
@@ -77,7 +77,7 @@ class testModule3(ModuleBase, noConfigModuleMixin):
         for inputIdx in range(len(self.get_input_descriptions())):
             self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._cleaner
         del self._cleaner2

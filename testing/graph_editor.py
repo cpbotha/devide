@@ -182,7 +182,7 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         self._ge._viewConfModule(sqmod)
 
-        # superQuadric is a standard scriptedConfigModuleMixin, so it has
+        # superQuadric is a standard ScriptedConfigModuleMixin, so it has
         # a _viewFrame ivar
         self.failUnless(sqmod._view_frame.IsShown())
 

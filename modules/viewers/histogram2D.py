@@ -1,12 +1,12 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
-class histogram2D(scriptedConfigModuleMixin, ModuleBase):
+class histogram2D(ScriptedConfigModuleMixin, ModuleBase):
     """This module takes two inputs and creates a 2D histogram with input 2
     vs input 1, i.e. input 1 on x-axis and input 2 on y-axis.
 
@@ -36,7 +36,7 @@ class histogram2D(scriptedConfigModuleMixin, ModuleBase):
              'The number of samples per 2D bin/class will be truncated to '
              'this value.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageHistogram2D' : self._histogram})
@@ -50,7 +50,7 @@ class histogram2D(scriptedConfigModuleMixin, ModuleBase):
         self.set_input(0, None)
         self.set_input(1, None)
 
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         ModuleBase.close(self)
 
         del self._histogram

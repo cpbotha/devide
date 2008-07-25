@@ -6,9 +6,9 @@ import itk
 import genUtils
 import module_kits.itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class watershed(scriptedConfigModuleMixin, ModuleBase):
+class watershed(ScriptedConfigModuleMixin, ModuleBase):
 
 
     def __init__(self, module_manager):
@@ -36,7 +36,7 @@ class watershed(scriptedConfigModuleMixin, ModuleBase):
             self, self._watershed, 'itkWatershedImageFilter',
             'Performing watershed')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'itkWatershedImageFilter' : self._watershed})
@@ -50,7 +50,7 @@ class watershed(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

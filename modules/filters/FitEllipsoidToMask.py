@@ -3,12 +3,12 @@
 # See COPYRIGHT for details.
 
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 import numpy
 
-class FitEllipsoidToMask(noConfigModuleMixin, ModuleBase):
+class FitEllipsoidToMask(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -25,7 +25,7 @@ class FitEllipsoidToMask(noConfigModuleMixin, ModuleBase):
         self._append_pd.AddInput(self._ls2.GetOutput())
         self._append_pd.AddInput(self._ls3.GetOutput())
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self, {'Module (self)' : self})
 
         self.sync_module_logic_with_config()
@@ -37,7 +37,7 @@ class FitEllipsoidToMask(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
     def get_input_descriptions(self):
         return ('VTK image data',)

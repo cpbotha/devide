@@ -4,17 +4,17 @@
 
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class decimate(scriptedConfigModuleMixin, ModuleBase):
+class decimate(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -43,7 +43,7 @@ class decimate(scriptedConfigModuleMixin, ModuleBase):
             ('Target reduction (%):', 'target_reduction', 'base:float', 'text',
              'Decimate algorithm will attempt to reduce by this much.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'vtkDecimatePro' : self._decimate,
@@ -57,7 +57,7 @@ class decimate(scriptedConfigModuleMixin, ModuleBase):
         self.set_input(0, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
 

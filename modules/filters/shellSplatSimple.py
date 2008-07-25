@@ -1,20 +1,20 @@
 import operator
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 import wx
 
-from moduleMixins import colourDialogMixin
+from moduleMixins import ColourDialogMixin
 
-class shellSplatSimple(introspectModuleMixin,
-                       colourDialogMixin, ModuleBase):
+class shellSplatSimple(IntrospectModuleMixin,
+                       ColourDialogMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
-        colourDialogMixin.__init__(
+        ColourDialogMixin.__init__(
             self, module_manager.getModuleViewParentWindow())
 
         # setup the whole VTK pipeline that we're going to use
@@ -58,12 +58,12 @@ class shellSplatSimple(introspectModuleMixin,
 
         del self._object_dict
 
-        colourDialogMixin.close(self)
+        ColourDialogMixin.close(self)
         # we have to call this mixin close so that all inspection windows
         # can be taken care of.  They should be taken care of in anycase
         # when the viewFrame is destroyed, but we like better safe than
         # sorry
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
         # take care of our own window
         if self._view_frame is not None:

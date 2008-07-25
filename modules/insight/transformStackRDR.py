@@ -7,12 +7,12 @@ import cPickle
 import fixitk as itk
 import md5
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import wx
 import vtk
 
-class transformStackRDR(ModuleBase, filenameViewModuleMixin):
+class transformStackRDR(ModuleBase, FilenameViewModuleMixin):
 
     """Reads 2D Transform Stack from disc.
 
@@ -26,7 +26,7 @@ class transformStackRDR(ModuleBase, filenameViewModuleMixin):
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(self)
+        FilenameViewModuleMixin.__init__(self)
 
         # this is the output
         self._transformStack = transformStackClass(self)
@@ -49,7 +49,7 @@ class transformStackRDR(ModuleBase, filenameViewModuleMixin):
         
     def close(self):
         del self._transformStack
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ()

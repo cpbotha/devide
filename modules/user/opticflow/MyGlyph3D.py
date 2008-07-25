@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtktud
 
-class MyGlyph3D(scriptedConfigModuleMixin, ModuleBase):
+class MyGlyph3D(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -26,7 +26,7 @@ class MyGlyph3D(scriptedConfigModuleMixin, ModuleBase):
              'Glyphs will be scaled by this factor.'),
             ('Scalemode:', 'scalemode', 'base:int', 'text',
              'Scaling will occur by scalar, vector direction or magnitude.')]
-        scriptedConfigModuleMixin.__init__(self, configList)        
+        ScriptedConfigModuleMixin.__init__(self, configList)        
         
 
         self._viewFrame = self._createWindow(
@@ -46,7 +46,7 @@ class MyGlyph3D(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

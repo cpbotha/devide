@@ -5,9 +5,9 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class levelSetMotionRegistration(scriptedConfigModuleMixin, ModuleBase):
+class levelSetMotionRegistration(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         
         ModuleBase.__init__(self, module_manager)
@@ -62,7 +62,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, ModuleBase):
             'Performing registration, metric = %.2f',
             ('GetMetric()',))
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'LevelSetMotionRegistrationFilter' : self._levelSetMotion,
@@ -77,7 +77,7 @@ class levelSetMotionRegistration(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

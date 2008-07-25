@@ -9,7 +9,7 @@ import cPickle
 import genUtils
 
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin, colourDialogMixin
+from moduleMixins import IntrospectModuleMixin, ColourDialogMixin
 import module_utils
 
 # the following four lines are only needed during prototyping of the modules
@@ -42,7 +42,7 @@ import operator
 
 
 #########################################################################
-class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
+class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
     
     """Slicing, dicing slice viewing class.
 
@@ -70,7 +70,7 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
     def __init__(self, module_manager):
         # call base constructor
         ModuleBase.__init__(self, module_manager)
-        colourDialogMixin.__init__(
+        ColourDialogMixin.__init__(
             self, module_manager.get_module_view_parent_window())
         self._numDataInputs = self.NUM_INPUTS
         # use list comprehension to create list keeping track of inputs
@@ -192,8 +192,8 @@ class slice3dVWR(introspectModuleMixin, colourDialogMixin, ModuleBase):
         del self._implicits
 
         # don't forget to call the mixin close() methods
-        introspectModuleMixin.close(self)
-        colourDialogMixin.close(self)
+        IntrospectModuleMixin.close(self)
+        ColourDialogMixin.close(self)
         
         # unbind everything that we bound in our __init__
         del self._outline_source

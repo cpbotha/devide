@@ -8,7 +8,7 @@
 from external.vtkPipeline.ConfigVtkObj import ConfigVtkObj
 from external.vtkPipeline.vtkMethodParser import VtkMethodParser
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin # temporary
+from moduleMixins import IntrospectModuleMixin # temporary
 import module_utils # temporary, most of this should be in utils.
 import re
 import utils
@@ -138,7 +138,7 @@ class PickleVTKObjectsModuleMixin(object):
 # note that the pickle mixin comes first, as its config_to_logic/logic_to_config
 # should be chosen over that of noConfig
 class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
-                               introspectModuleMixin,
+                               IntrospectModuleMixin,
                                ModuleBase):
     """Use this base to make a DeVIDE module that wraps a single VTK
     object.  The state of the VTK object will be saved when the network
@@ -233,7 +233,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
             self.set_input(inputIdx, None)
         
         PickleVTKObjectsModuleMixin.close(self)
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
         if self._viewFrame is not None:
             self._configVtkObj.close()

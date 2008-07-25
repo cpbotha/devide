@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
-class imageBacktracker(noConfigModuleMixin, ModuleBase):
+class imageBacktracker(NoConfigModuleMixin, ModuleBase):
     """JORIK'S STUFF.
 
     """
@@ -14,7 +14,7 @@ class imageBacktracker(noConfigModuleMixin, ModuleBase):
 
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
-	noConfigModuleMixin.__init__(self)
+	NoConfigModuleMixin.__init__(self)
 
 	self._imageBacktracker = vtkdevide.vtkImageBacktracker()
 
@@ -37,7 +37,7 @@ class imageBacktracker(noConfigModuleMixin, ModuleBase):
         self.set_input(0, None)
         self.set_input(1, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # take out our view interface
         del self._imageBacktracker
 	ModuleBase.close(self)

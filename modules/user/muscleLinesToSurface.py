@@ -2,11 +2,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class muscleLinesToSurface(ModuleBase, noConfigModuleMixin):
+class muscleLinesToSurface(ModuleBase, NoConfigModuleMixin):
     """Given muscle centre lines marked with 0-valued voxels, calculate a
     continuous surface through these marked lines.
 
@@ -28,7 +28,7 @@ class muscleLinesToSurface(ModuleBase, noConfigModuleMixin):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
         # initialise any mixins we might have
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
 
         self._distance = vtk.vtkImageEuclideanDistance()
@@ -279,7 +279,7 @@ class muscleLinesToSurface(ModuleBase, noConfigModuleMixin):
         for inputIdx in range(len(self.get_input_descriptions())):
             self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._distance
         del self._mc

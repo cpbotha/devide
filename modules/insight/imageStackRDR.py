@@ -5,11 +5,11 @@
 from typeModules.imageStackClass import imageStackClass
 import fixitk as itk
 from module_base import ModuleBase
-from moduleMixins import fileOpenDialogModuleMixin
+from moduleMixins import FileOpenDialogModuleMixin
 import module_utils
 import wx
 
-class imageStackRDR(ModuleBase, fileOpenDialogModuleMixin):
+class imageStackRDR(ModuleBase, FileOpenDialogModuleMixin):
     """Loads a list of images as ITK Images.
 
     This list can e.g. be used as input to the 2D registration module.

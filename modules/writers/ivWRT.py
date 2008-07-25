@@ -1,11 +1,11 @@
 # $Id$
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 
 
-class ivWRT(filenameViewModuleMixin, ModuleBase):
+class ivWRT(FilenameViewModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
@@ -22,7 +22,7 @@ class ivWRT(filenameViewModuleMixin, ModuleBase):
             self, self._writer, 'Writing polydata to Inventor Viewer format')
 
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'InventorViewer data (*.iv)|*.iv|All files (*)|*',
@@ -37,7 +37,7 @@ class ivWRT(filenameViewModuleMixin, ModuleBase):
         # we should disconnect all inputs
         self.set_input(0, None)
         del self._writer
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ('vtkPolyData',)

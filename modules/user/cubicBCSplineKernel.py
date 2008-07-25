@@ -1,11 +1,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtktud
 
-class cubicBCSplineKernel(scriptedConfigModuleMixin, ModuleBase):
+class cubicBCSplineKernel(ScriptedConfigModuleMixin, ModuleBase):
     """First test of a cubic B-Spline implicit kernel
     
     $Revision: 1.1 $
@@ -32,7 +32,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, ModuleBase):
              'The support of the cubic B-Spline kernel.')]
 
         # mixin ctor
-        scriptedConfigModuleMixin.__init__(self, configList)
+        ScriptedConfigModuleMixin.__init__(self, configList)
         
         # now create the necessary VTK modules
         self._cubicBCSplineKernel = vtktud.vtkCubicBCSplineKernel()
@@ -50,7 +50,7 @@ class cubicBCSplineKernel(scriptedConfigModuleMixin, ModuleBase):
 
     def close(self):
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         # and the baseclass close
         ModuleBase.close(self)

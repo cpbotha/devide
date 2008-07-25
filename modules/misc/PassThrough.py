@@ -1,13 +1,13 @@
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 
-class PassThrough(noConfigModuleMixin, ModuleBase):
+class PassThrough(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self, {'Module (self)' : self})
 
         self.sync_module_logic_with_config()
@@ -19,7 +19,7 @@ class PassThrough(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
     def get_input_descriptions(self):
         return ('Anything',)

@@ -5,9 +5,9 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class cannyEdgeDetection(scriptedConfigModuleMixin, ModuleBase):
+class cannyEdgeDetection(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -39,7 +39,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, ModuleBase):
             self, self._canny, 'itkCannyEdgeDetectionImageFilter',
             'Performing Canny edge detection')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'itkCannyEdgeDetectionImageFilter' : self._canny})
@@ -53,7 +53,7 @@ class cannyEdgeDetection(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

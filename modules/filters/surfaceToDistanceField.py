@@ -3,11 +3,11 @@
 
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class surfaceToDistanceField(scriptedConfigModuleMixin, ModuleBase):
+class surfaceToDistanceField(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -32,7 +32,7 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, ModuleBase):
             ('Maximum distance:', 'maxDistance', 'base:float', 'text',
              'The distance will only be calculated up to this maximum.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImplicitModeller' : self._implicitModeller})
@@ -46,7 +46,7 @@ class surfaceToDistanceField(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

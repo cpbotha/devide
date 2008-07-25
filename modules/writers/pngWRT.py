@@ -1,21 +1,21 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import wx # needs this for wx.OPEN, we need to make this constant available
           # elsewhere
 
 
-class pngWRT(scriptedConfigModuleMixin, ModuleBase):
+class pngWRT(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
         # ctor for this specific mixin
-        # filenameViewModuleMixin.__init__(self)
+        # FilenameViewModuleMixin.__init__(self)
 	
 	self._shiftScale = vtk.vtkImageShiftScale()
         self._shiftScale.SetOutputScalarTypeToUnsignedShort()
@@ -44,7 +44,7 @@ class pngWRT(scriptedConfigModuleMixin, ModuleBase):
               'fileMask' :
               'PNG files (*.png)|*.png|All files (*.*)|*.*'})]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkPNGWriter' : self._writer})
@@ -58,7 +58,7 @@ class pngWRT(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

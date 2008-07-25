@@ -33,7 +33,7 @@ reload(DICOMBrowserFrame)
 import gdcm
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import os
 import sys
@@ -66,11 +66,11 @@ class Series:
         self.rows = 0
         self.columns = 0
 
-class DICOMBrowser(introspectModuleMixin, ModuleBase):
+class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
-        introspectModuleMixin.__init__(
+        IntrospectModuleMixin.__init__(
             self,
             {'Module (self)' : self})
 
@@ -135,7 +135,7 @@ class DICOMBrowser(introspectModuleMixin, ModuleBase):
         # done with VTK de-init
 
         self._view_frame.close()
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ()

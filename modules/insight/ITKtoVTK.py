@@ -5,10 +5,10 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import vtk
 
-class ITKtoVTK(noConfigModuleMixin, ModuleBase):
+class ITKtoVTK(NoConfigModuleMixin, ModuleBase):
     """Convert ITK 3D float data to VTK.
 
     $Revision: 1.5 $
@@ -21,7 +21,7 @@ class ITKtoVTK(noConfigModuleMixin, ModuleBase):
         self._input = None
         self._itk2vtk = None
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'ImageToVTKImageFilter' : self._itk2vtk})
@@ -35,7 +35,7 @@ class ITKtoVTK(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
 

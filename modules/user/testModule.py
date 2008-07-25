@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class testModule(noConfigModuleMixin, ModuleBase):
+class testModule(NoConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -18,7 +18,7 @@ class testModule(noConfigModuleMixin, ModuleBase):
         self._curvatures.SetInput(self._triangleFilter.GetOutput())
 
         # initialise any mixins we might have
-        noConfigModuleMixin.__init__(self,
+        NoConfigModuleMixin.__init__(self,
                 {'Module (self)' : self,
                     'vtkTriangleFilter' : self._triangleFilter,
                     'vtkCurvatures' : self._curvatures})
@@ -37,7 +37,7 @@ class testModule(noConfigModuleMixin, ModuleBase):
         for inputIdx in range(len(self.get_input_descriptions())):
             self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._triangleFilter
         del self._curvatures

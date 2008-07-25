@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
 
-class appendPolyData(noConfigModuleMixin, ModuleBase):
+class appendPolyData(NoConfigModuleMixin, ModuleBase):
     _numInputs = 5
     
     def __init__(self, module_manager):
@@ -21,7 +21,7 @@ class appendPolyData(noConfigModuleMixin, ModuleBase):
         module_utils.setupVTKObjectProgress(self, self._appendPolyData,
                                            'Appending PolyData')
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'vtkAppendPolyData' : self._appendPolyData})
 
@@ -34,7 +34,7 @@ class appendPolyData(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._appendPolyData

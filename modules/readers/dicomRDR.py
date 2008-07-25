@@ -7,7 +7,7 @@ from module_kits.misc_kit import misc_utils
 import os
 from module_base import ModuleBase
 from moduleMixins import \
-     introspectModuleMixin, fileOpenDialogModuleMixin
+     IntrospectModuleMixin, FileOpenDialogModuleMixin
 import module_utils
 
 
@@ -18,8 +18,8 @@ import vtkdevide
 import module_utils
 
 class dicomRDR(ModuleBase,
-               introspectModuleMixin,
-               fileOpenDialogModuleMixin):
+               IntrospectModuleMixin,
+               FileOpenDialogModuleMixin):
 
     def __init__(self, module_manager):
         # call the constructor in the "base"
@@ -49,7 +49,7 @@ class dicomRDR(ModuleBase,
             del self._fileDialog
             
         # this will take care of all the vtkPipeline windows
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
         if self._viewFrame is not None:
             # take care of our own window

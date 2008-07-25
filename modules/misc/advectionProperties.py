@@ -3,13 +3,13 @@
 #
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import operator
 import vtk
 import wx
 
-class advectionProperties(scriptedConfigModuleMixin, ModuleBase):
+class advectionProperties(ScriptedConfigModuleMixin, ModuleBase):
     _numberOfInputs = 16
 
     def __init__(self, module_manager):
@@ -30,7 +30,7 @@ class advectionProperties(scriptedConfigModuleMixin, ModuleBase):
         #module_utils.setupVTKObjectProgress(self, self._warpVector,
         #                                   'Warping points.')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self})
 
@@ -43,7 +43,7 @@ class advectionProperties(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of any references
         

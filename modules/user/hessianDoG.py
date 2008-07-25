@@ -5,9 +5,9 @@ import genUtils
 from module_base import ModuleBase
 import module_utils
 import module_utilsITK
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class hessianDoG(scriptedConfigModuleMixin, ModuleBase):
+class hessianDoG(ScriptedConfigModuleMixin, ModuleBase):
     """Calculates Hessian matrix of volume by convolution with second and
     cross derivatives of Gaussian kernel.
 
@@ -27,7 +27,7 @@ class hessianDoG(scriptedConfigModuleMixin, ModuleBase):
             ('Normalise across scale', 'normaliseAcrossScale', 'base:bool',
              'checkbox', 'Determine normalisation factor.')]
         
-        scriptedConfigModuleMixin.__init__(self, configList)
+        ScriptedConfigModuleMixin.__init__(self, configList)
 
         # setup the pipeline
         g = itk.itkGradientMagnitudeRecursiveGaussianImageFilterF3F3_New()
@@ -53,7 +53,7 @@ class hessianDoG(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

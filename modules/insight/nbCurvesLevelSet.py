@@ -5,9 +5,9 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class nbCurvesLevelSet(scriptedConfigModuleMixin, ModuleBase):
+class nbCurvesLevelSet(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -30,7 +30,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, ModuleBase):
              'text',
              'Number of iterations that the algorithm should be run for')]
         
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self})
 
@@ -41,7 +41,7 @@ class nbCurvesLevelSet(scriptedConfigModuleMixin, ModuleBase):
         
     def close(self):
         self._destroyITKPipeline()
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         ModuleBase.close(self)
 
     def execute_module(self):

@@ -1,12 +1,12 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class superQuadric(scriptedConfigModuleMixin, ModuleBase):
+class superQuadric(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -56,7 +56,7 @@ class superQuadric(scriptedConfigModuleMixin, ModuleBase):
                                            "Synthesizing polydata.")
 
         # mixin ctor
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkSuperquadric' : self._superquadric,
@@ -71,7 +71,7 @@ class superQuadric(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

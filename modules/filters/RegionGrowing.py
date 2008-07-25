@@ -3,11 +3,11 @@
 # See COPYRIGHT for details.
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class RegionGrowing(scriptedConfigModuleMixin, ModuleBase):
+class RegionGrowing(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -43,7 +43,7 @@ class RegionGrowing(scriptedConfigModuleMixin, ModuleBase):
              'text',
              'Used to calculate automatic threshold.')]
              
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'vtkImageSeedConnectivity' : self._seed_connect,
@@ -52,7 +52,7 @@ class RegionGrowing(scriptedConfigModuleMixin, ModuleBase):
         self.sync_module_logic_with_config()
 
     def close(self):
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         # get rid of our reference
         del self._image_threshold

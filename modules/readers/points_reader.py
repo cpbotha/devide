@@ -1,19 +1,19 @@
 # $Id: vtpWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import types
 from modules.viewers.slice3dVWRmodules.selectedPoints import outputSelectedPoints
 
-class points_reader(filenameViewModuleMixin, ModuleBase):
+class points_reader(FilenameViewModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
 
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'DeVIDE points (*.dvp)|*.dvp|All files (*)|*',
@@ -28,7 +28,7 @@ class points_reader(filenameViewModuleMixin, ModuleBase):
         self.sync_module_logic_with_config()
 
     def close(self):
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ()

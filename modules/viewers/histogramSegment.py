@@ -1,11 +1,11 @@
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 import wx
 
-class histogramSegment(introspectModuleMixin, ModuleBase):
+class histogramSegment(IntrospectModuleMixin, ModuleBase):
     """Mooooo!  I'm a cow.
 
     $Revision: 1.9 $

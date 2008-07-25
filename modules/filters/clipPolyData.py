@@ -1,10 +1,10 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class clipPolyData(noConfigModuleMixin, ModuleBase):
+class clipPolyData(NoConfigModuleMixin, ModuleBase):
     """Given an input polydata and an implicitFunction, this will clip
     the polydata.
 
@@ -22,7 +22,7 @@ class clipPolyData(noConfigModuleMixin, ModuleBase):
         module_utils.setupVTKObjectProgress(self, self._clipPolyData,
                                            'Calculating normals')
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'vtkClipPolyData' : self._clipPolyData})
 
@@ -35,7 +35,7 @@ class clipPolyData(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._clipPolyData

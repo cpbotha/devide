@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class seedConnect(scriptedConfigModuleMixin, ModuleBase):
+class seedConnect(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -45,7 +45,7 @@ class seedConnect(scriptedConfigModuleMixin, ModuleBase):
             ('Output unconnected value:', 'outputUnconnectedValue',
              'base:int', 'text', 'Non-included points will get this value.')]
              
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'vtkImageSeedConnectivity' : self._seedConnect,
@@ -59,7 +59,7 @@ class seedConnect(scriptedConfigModuleMixin, ModuleBase):
         self.set_input(0, None)
         self.set_input(1, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         # get rid of our reference
         del self._imageCast

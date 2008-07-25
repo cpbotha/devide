@@ -5,9 +5,9 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class gaussianConvolve(scriptedConfigModuleMixin, ModuleBase):
+class gaussianConvolve(ScriptedConfigModuleMixin, ModuleBase):
 
     _orders = ['Zero', 'First', 'Second']
     
@@ -43,7 +43,7 @@ class gaussianConvolve(scriptedConfigModuleMixin, ModuleBase):
             self, self._gaussian, 'itkRecursiveGaussianImageFilter',
             'Convolving with Gaussian')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'itkRecursiveGaussianImageFilter' : self._gaussian})
@@ -57,7 +57,7 @@ class gaussianConvolve(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

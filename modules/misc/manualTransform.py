@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class manualTransform(scriptedConfigModuleMixin, ModuleBase):
+class manualTransform(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -30,7 +30,7 @@ class manualTransform(scriptedConfigModuleMixin, ModuleBase):
         
         # has no progress!
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkTransform' : self._transform})
@@ -44,7 +44,7 @@ class manualTransform(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._transform

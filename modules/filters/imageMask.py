@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class imageMask(scriptedConfigModuleMixin, ModuleBase):
+class imageMask(ScriptedConfigModuleMixin, ModuleBase):
 
     
     def __init__(self, module_manager):
@@ -49,7 +49,7 @@ class imageMask(scriptedConfigModuleMixin, ModuleBase):
              'text', 'Positions outside the mask will be assigned this '
              'value.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' :self,
              'vtkImageMask' : self._imageMask})
@@ -63,7 +63,7 @@ class imageMask(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

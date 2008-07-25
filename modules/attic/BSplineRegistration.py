@@ -1,11 +1,11 @@
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
 import math
 
-class BSplineRegistration(scriptedConfigModuleMixin, ModuleBase):
+class BSplineRegistration(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 

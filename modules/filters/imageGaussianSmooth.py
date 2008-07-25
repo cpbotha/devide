@@ -4,11 +4,11 @@
 
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import vtk
 
-class imageGaussianSmooth(introspectModuleMixin, ModuleBase):
+class imageGaussianSmooth(IntrospectModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -32,7 +32,7 @@ class imageGaussianSmooth(introspectModuleMixin, ModuleBase):
         # disconnected us by now)
         self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
         # take out our view interface
         if self._view_frame is not None:
             self._view_frame.Destroy()

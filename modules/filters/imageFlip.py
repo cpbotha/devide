@@ -1,12 +1,12 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import wx
 import vtk
 
 
-class imageFlip(noConfigModuleMixin, ModuleBase):
+class imageFlip(NoConfigModuleMixin, ModuleBase):
 
     
     def __init__(self, module_manager):
@@ -22,7 +22,7 @@ class imageFlip(noConfigModuleMixin, ModuleBase):
         module_utils.setupVTKObjectProgress(self, self._imageFlip,
                                            'Flipping image')
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'vtkImageFlip' : self._imageFlip})
 
@@ -35,7 +35,7 @@ class imageFlip(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._imageFlip

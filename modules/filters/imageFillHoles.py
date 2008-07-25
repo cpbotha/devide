@@ -1,11 +1,11 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
 
-class imageFillHoles(scriptedConfigModuleMixin, ModuleBase):
+class imageFillHoles(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -43,7 +43,7 @@ class imageFillHoles(scriptedConfigModuleMixin, ModuleBase):
              'edge will not be considered background and will be filled.')
             ]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageBorderMask' : self._imageBorderMask,
@@ -58,7 +58,7 @@ class imageFillHoles(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

@@ -1,17 +1,17 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class transformPolyData(noConfigModuleMixin, ModuleBase):
+class transformPolyData(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
 
         self._transformPolyData = vtk.vtkTransformPolyDataFilter()
         
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self, {'vtkTransformPolyDataFilter' : self._transformPolyData})
 
         module_utils.setupVTKObjectProgress(self, self._transformPolyData,
@@ -26,7 +26,7 @@ class transformPolyData(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._transformPolyData

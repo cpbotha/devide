@@ -1,10 +1,10 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtktud
 import wx
 
-class imageSepConvolution(scriptedConfigModuleMixin, ModuleBase):
+class imageSepConvolution(ScriptedConfigModuleMixin, ModuleBase):
     """
             lksajflksjdf
     """
@@ -18,7 +18,7 @@ class imageSepConvolution(scriptedConfigModuleMixin, ModuleBase):
 #        module_utils.setupVTKObjectProgress(self, self._clipper,
 #                                           'Reading PNG images.')
 
-        # set information for scriptedConfigModuleMixin
+        # set information for ScriptedConfigModuleMixin
         self._config.axis = 0
 
         # FIXME: include options for kernel normalisation?
@@ -26,7 +26,7 @@ class imageSepConvolution(scriptedConfigModuleMixin, ModuleBase):
             ('Axis:', 'axis', 'base:int', 'choice',
              'Axis over which convolution is to be performed.', ("X", "Y", "Z") ) ] 
 
-        scriptedConfigModuleMixin.__init__(self, configList)
+        ScriptedConfigModuleMixin.__init__(self, configList)
 
         self._viewFrame = self._createViewFrame(
             {'Module (self)' : self,
@@ -44,7 +44,7 @@ class imageSepConvolution(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         ModuleBase.close(self)
 
         # get rid of our reference

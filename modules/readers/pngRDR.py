@@ -1,13 +1,13 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import wx
 
 
-class pngRDR(scriptedConfigModuleMixin, ModuleBase):
+class pngRDR(ScriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -39,7 +39,7 @@ class pngRDR(scriptedConfigModuleMixin, ModuleBase):
             ('Lower left:', 'fileLowerLeft', 'base:bool', 'checkbox',
              'Image origin at lower left? (vs. upper left)')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkPNGReader' : self._reader})
@@ -53,7 +53,7 @@ class pngRDR(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

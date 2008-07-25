@@ -5,7 +5,7 @@
 from module_base import ModuleBase
 from module_kits.misc_kit import misc_utils
 from moduleMixins import \
-     introspectModuleMixin
+     IntrospectModuleMixin
 import module_utils
 
 import gdcm
@@ -34,7 +34,7 @@ class DRDropTarget(wx.PyDropTarget):
 
         return d
 
-class DICOMReader(introspectModuleMixin, ModuleBase):
+class DICOMReader(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -64,7 +64,7 @@ class DICOMReader(introspectModuleMixin, ModuleBase):
         self.sync_module_logic_with_config()
 
     def close(self):
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
         # we just delete our binding.  Destroying the view_frame
         # should also take care of this one.

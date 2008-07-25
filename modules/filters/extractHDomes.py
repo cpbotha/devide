@@ -1,10 +1,10 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
-class extractHDomes(scriptedConfigModuleMixin, ModuleBase):
+class extractHDomes(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         
@@ -38,7 +38,7 @@ class extractHDomes(scriptedConfigModuleMixin, ModuleBase):
              'The required difference in brightness between an h-dome and\n'
              'its surroundings.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'ImageMath Subtract H' : self._imageMathSubtractH,
@@ -54,7 +54,7 @@ class extractHDomes(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

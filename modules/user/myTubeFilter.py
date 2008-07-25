@@ -1,13 +1,13 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import wx
 import vtk
 
-class myTubeFilter(scriptedConfigModuleMixin, ModuleBase):
+class myTubeFilter(ScriptedConfigModuleMixin, ModuleBase):
 
-    """Simple demonstration of scriptedConfigModuleMixin-based
+    """Simple demonstration of ScriptedConfigModuleMixin-based
     wrapping of a single VTK object.
 
     It would of course be even easier using simpleVTKClassModuleBase.
@@ -32,7 +32,7 @@ class myTubeFilter(scriptedConfigModuleMixin, ModuleBase):
              'Number of sides that the tube should have.'),
             ('Tube radius:', 'Radius', 'base:float', 'text',
              'Radius of the generated tube.')]
-        scriptedConfigModuleMixin.__init__(self, configList)        
+        ScriptedConfigModuleMixin.__init__(self, configList)        
         
         self._viewFrame = self._createWindow(
             {'Module (self)' : self,
@@ -50,7 +50,7 @@ class myTubeFilter(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

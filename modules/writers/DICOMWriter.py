@@ -10,7 +10,7 @@
 
 from module_base import ModuleBase
 from moduleMixins import \
-     scriptedConfigModuleMixin
+     ScriptedConfigModuleMixin
 import module_utils
 import os
 
@@ -20,7 +20,7 @@ import wx # need this for wx.SAVE
 
 RADIOBOX_IDX, DIR_IDX, FILE_IDX = 0, 1, 2
 
-class DICOMWriter(scriptedConfigModuleMixin, ModuleBase):
+class DICOMWriter(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -62,7 +62,7 @@ class DICOMWriter(scriptedConfigModuleMixin, ModuleBase):
                     'common for DICOM.')
                 ]
 
-        scriptedConfigModuleMixin.__init__(self, config_list,
+        ScriptedConfigModuleMixin.__init__(self, config_list,
                 {'Module (self)' : self})
 
 
@@ -70,7 +70,7 @@ class DICOMWriter(scriptedConfigModuleMixin, ModuleBase):
 
 
     def close(self):
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         ModuleBase.close(self) 
 
         del self._writer
@@ -167,7 +167,7 @@ class DICOMWriter(scriptedConfigModuleMixin, ModuleBase):
 
     def view(self):
         # call to our parent
-        scriptedConfigModuleMixin.view(self)
+        ScriptedConfigModuleMixin.view(self)
 
         # get binding to radiobox
         radiobox = self._getWidget(RADIOBOX_IDX)

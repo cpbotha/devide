@@ -1,18 +1,18 @@
 # $Id: vtpWRT.py 2401 2006-12-20 20:29:15Z cpbotha $
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import types
 
-class points_writer(filenameViewModuleMixin, ModuleBase):
+class points_writer(FilenameViewModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
 
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'DeVIDE points (*.dvp)|*.dvp|All files (*)|*',
@@ -29,7 +29,7 @@ class points_writer(filenameViewModuleMixin, ModuleBase):
     def close(self):
         # we should disconnect all inputs
         self.set_input(0, None)
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ('DeVIDE points',)

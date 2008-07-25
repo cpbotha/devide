@@ -2,11 +2,11 @@ import genUtils
 from module_base import ModuleBase
 import module_utils
 import moduleMixins
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import os
 import vtk
 
-class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
+class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -38,7 +38,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
                 'base:float', 'text', 
                 'The maximum (absolute) distance up to which the field is computed.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self})
             
@@ -48,7 +48,7 @@ class cptDistanceField(scriptedConfigModuleMixin, ModuleBase):
         # we should disconnect all inputs
         self.set_input(0, None)
         self.set_input(1, None)
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ('VTK Image', 'VTK Polydata')

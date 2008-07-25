@@ -6,10 +6,10 @@ import copy
 import itk
 import module_kits.itk_kit as itk_kit
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import wx
 
-class ITKReader(scriptedConfigModuleMixin, ModuleBase):
+class ITKReader(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
@@ -60,7 +60,7 @@ class ITKReader(scriptedConfigModuleMixin, ModuleBase):
             self, self._reader, 'ImageFileReader',
             'Reading file.')
 
-        scriptedConfigModuleMixin.__init__(self, config_list,
+        ScriptedConfigModuleMixin.__init__(self, config_list,
                                            {'Module (self)' : self})
 
         self.sync_module_logic_with_config()
@@ -72,7 +72,7 @@ class ITKReader(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             

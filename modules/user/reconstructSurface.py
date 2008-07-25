@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
-class reconstructSurface(ModuleBase, noConfigModuleMixin):
+class reconstructSurface(ModuleBase, NoConfigModuleMixin):
     """Given a binary volume, fit a surface through the marked points.
 
     A doubleThreshold could be used to extract points of interest from
@@ -19,7 +19,7 @@ class reconstructSurface(ModuleBase, noConfigModuleMixin):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
         # initialise any mixins we might have
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
 
         # we'll be playing around with some vtk objects, this could
@@ -57,7 +57,7 @@ class reconstructSurface(ModuleBase, noConfigModuleMixin):
         for inputIdx in range(len(self.get_input_descriptions())):
             self.set_input(inputIdx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._thresh
         del self._reconstructionFilter

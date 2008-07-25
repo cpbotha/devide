@@ -1,14 +1,14 @@
 import genUtils
 from module_base import ModuleBase
 from moduleMixins import vtkPipelineConfigModuleMixin
-from moduleMixins import fileOpenDialogModuleMixin
+from moduleMixins import FileOpenDialogModuleMixin
 import module_utils
 import vtk
 import wx
 
 class rawVolumeRDR(ModuleBase,
                    vtkPipelineConfigModuleMixin,
-                   fileOpenDialogModuleMixin):
+                   FileOpenDialogModuleMixin):
 
     def __init__(self, module_manager):
 

@@ -2,13 +2,13 @@
 # * vtkVolumeMapper::SetCroppingRegionPlanes(xmin,xmax,ymin,ymax,zmin,zmax)
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
 class MIPRender(
-    scriptedConfigModuleMixin, ModuleBase):
+    ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -30,7 +30,7 @@ class MIPRender(
              'quality, faster) interpolation',
              ('Nearest Neighbour', 'Linear'))]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self})
         
@@ -45,7 +45,7 @@ class MIPRender(
             self.set_input(inputIdx, None)
 
         # this will take care of GUI
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         # get rid of our reference
         del self._otf

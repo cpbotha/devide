@@ -2,13 +2,13 @@
 # * vtkVolumeMapper::SetCroppingRegionPlanes(xmin,xmax,ymin,ymax,zmin,zmax)
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
 class VolumeRender(
-    scriptedConfigModuleMixin, ModuleBase):
+    ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -49,7 +49,7 @@ class VolumeRender(
              'Used to generate transfer function ONLY if none is supplied')
              ]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self})
 
@@ -69,7 +69,7 @@ class VolumeRender(
             self.set_input(inputIdx, None)
 
         # this will take care of GUI
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         # get rid of our reference
         del self._volume_property

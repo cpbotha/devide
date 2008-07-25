@@ -1,11 +1,11 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class extractImageComponents(scriptedConfigModuleMixin, ModuleBase):
+class extractImageComponents(ScriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -35,7 +35,7 @@ class extractImageComponents(scriptedConfigModuleMixin, ModuleBase):
              'above-specified component indices will be used.',
              ('1', '2', '3'))]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageExtractComponents' : self._extract})
@@ -49,7 +49,7 @@ class extractImageComponents(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

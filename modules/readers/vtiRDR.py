@@ -1,12 +1,12 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 
 
-class vtiRDR(filenameViewModuleMixin, ModuleBase):
+class vtiRDR(FilenameViewModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -16,7 +16,7 @@ class vtiRDR(filenameViewModuleMixin, ModuleBase):
         self._reader = vtk.vtkXMLImageDataReader()
         
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'VTK Image Data (*.vti)|*.vti|All files (*)|*',
@@ -35,7 +35,7 @@ class vtiRDR(filenameViewModuleMixin, ModuleBase):
         
     def close(self):
         del self._reader
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return ()

@@ -1,5 +1,5 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
@@ -35,7 +35,7 @@ glyphVectorModeTexts = ['Use vector', 'Use normal', 'Do not orient']
 glyphIndexMode = ['INDEXING_OFF', 'INDEXING_BY_SCALAR', 'INDEXING_BY_VECTOR']
 
 
-class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
+class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
         InputArrayChoiceMixin.__init__(self)
@@ -83,7 +83,7 @@ class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         module_utils.setupVTKObjectProgress(self, self._glyphFilter,
                                            'Creating glyphs.')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkPVGlyphFilter' : self._glyphFilter})
@@ -97,7 +97,7 @@ class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._glyphFilter
@@ -134,7 +134,7 @@ class glyphs(scriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
 
     def config_to_view(self):
         # first get our parent mixin to do its thing
-        scriptedConfigModuleMixin.config_to_view(self)
+        ScriptedConfigModuleMixin.config_to_view(self)
 
         # the vector choice is the second configTuple
         choice = self._getWidget(5)

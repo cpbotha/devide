@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
 
-class polyDataConnect(noConfigModuleMixin, ModuleBase):
+class polyDataConnect(NoConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -22,7 +22,7 @@ class polyDataConnect(noConfigModuleMixin, ModuleBase):
                                            'Finding connected surfaces')
         
         # and the mixin constructor
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'vtkPolyDataConnectivityFilter' :
              self._polyDataConnect})
@@ -39,7 +39,7 @@ class polyDataConnect(noConfigModuleMixin, ModuleBase):
         # disconnected us by now)
         self.set_input(0, None)
         # don't forget to call the close() method of the vtkPipeline mixin
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._polyDataConnect
 

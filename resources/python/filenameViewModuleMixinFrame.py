@@ -4,9 +4,9 @@
 
 import wx
 
-class filenameViewModuleMixinFrame(wx.Frame):
+class FilenameViewModuleMixinFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-        # begin wxGlade: filenameViewModuleMixinFrame.__init__
+        # begin wxGlade: FilenameViewModuleMixinFrame.__init__
         kwds["style"] = wx.CAPTION|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         self.viewFramePanel = wx.Panel(self, -1)
@@ -20,12 +20,12 @@ class filenameViewModuleMixinFrame(wx.Frame):
         # end wxGlade
 
     def __set_properties(self):
-        # begin wxGlade: filenameViewModuleMixinFrame.__set_properties
+        # begin wxGlade: FilenameViewModuleMixinFrame.__set_properties
         self.SetTitle("SomeModule")
         # end wxGlade
 
     def __do_layout(self):
-        # begin wxGlade: filenameViewModuleMixinFrame.__do_layout
+        # begin wxGlade: FilenameViewModuleMixinFrame.__do_layout
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_5 = wx.BoxSizer(wx.VERTICAL)
         sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
@@ -45,13 +45,13 @@ class filenameViewModuleMixinFrame(wx.Frame):
         self.Layout()
         # end wxGlade
 
-# end of class filenameViewModuleMixinFrame
+# end of class FilenameViewModuleMixinFrame
 
 
 if __name__ == "__main__":
     app = wx.PySimpleApp(0)
     wx.InitAllImageHandlers()
-    frame_1 = filenameViewModuleMixinFrame(None, -1, "")
+    frame_1 = FilenameViewModuleMixinFrame(None, -1, "")
     app.SetTopWindow(frame_1)
     frame_1.Show()
     app.MainLoop()

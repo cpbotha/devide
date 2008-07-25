@@ -1,10 +1,10 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class imageMathematics(scriptedConfigModuleMixin, ModuleBase):
+class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
 
     # get these values from vtkImageMathematics.h
     _operations = {'Add' : 0,
@@ -39,7 +39,7 @@ class imageMathematics(scriptedConfigModuleMixin, ModuleBase):
             ('Constant K:', 'constantK', 'base:float', 'text',
              'The constant C used in some operations.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageMathematics' : self._imageMath})
@@ -53,7 +53,7 @@ class imageMathematics(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

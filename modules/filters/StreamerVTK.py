@@ -1,19 +1,19 @@
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
 IMAGE_DATA = 0
 POLY_DATA = 1
 
-class StreamerVTK(noConfigModuleMixin, ModuleBase):
+class StreamerVTK(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
         self._image_data_streamer = vtk.vtkImageDataStreamer()
         self._poly_data_streamer = vtk.vtkPolyDataStreamer()
 
-        noConfigModuleMixin.__init__(self, 
+        NoConfigModuleMixin.__init__(self, 
                 {'module (self)' : self,
                  'vtkImageDataStreamer' : self._image_data_streamer,
                  'vtkPolyDataStreamer' : self._poly_data_streamer})
@@ -27,7 +27,7 @@ class StreamerVTK(noConfigModuleMixin, ModuleBase):
 
 
     def close(self):
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         del self._image_data_streamer
         del self._poly_data_streamer
 

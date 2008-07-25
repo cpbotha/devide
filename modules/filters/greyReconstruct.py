@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
-class greyReconstruct(noConfigModuleMixin, ModuleBase):
+class greyReconstruct(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -13,7 +13,7 @@ class greyReconstruct(noConfigModuleMixin, ModuleBase):
 
         self._greyReconstruct = vtkdevide.vtkImageGreyscaleReconstruct3D()
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'vtkImageGreyscaleReconstruct3D' : self._greyReconstruct})
@@ -31,7 +31,7 @@ class greyReconstruct(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

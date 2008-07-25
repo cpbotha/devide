@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class ShephardMethod(scriptedConfigModuleMixin, ModuleBase):
+class ShephardMethod(ScriptedConfigModuleMixin, ModuleBase):
 
     """Apply Shepard Method to input.
     
@@ -29,7 +29,7 @@ class ShephardMethod(scriptedConfigModuleMixin, ModuleBase):
             ('Kernel size:', 'kernelSize', 'tuple:int,3', 'text',
              'Size of the kernel in x,y,z dimensions.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageContinuousDilate3D' : self._imageDilate})
@@ -43,7 +43,7 @@ class ShephardMethod(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

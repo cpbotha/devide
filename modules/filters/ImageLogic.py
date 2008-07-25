@@ -3,12 +3,12 @@
 # See COPYRIGHT for details.
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class ImageLogic(scriptedConfigModuleMixin, ModuleBase):
+class ImageLogic(ScriptedConfigModuleMixin, ModuleBase):
 
 
     # get these values from vtkImageMathematics.h
@@ -42,7 +42,7 @@ class ImageLogic(scriptedConfigModuleMixin, ModuleBase):
             ('Output true value:', 'output_true_value', 'base:float', 'text',
              'Output voxels that are TRUE will get this value.')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'vtkImageLogic' : self._image_logic})
@@ -56,7 +56,7 @@ class ImageLogic(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

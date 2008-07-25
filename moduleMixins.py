@@ -15,7 +15,7 @@ import wx.lib.masked
 from external.filebrowsebutton import \
         FileBrowseButton, FileBrowseButtonWithHistory,DirBrowseButton
 
-import resources.python.filenameViewModuleMixinFrame
+import resources.python.FilenameViewModuleMixinFrame
 import re
 import module_kits
 from module_kits.wx_kit.python_shell import PythonShell
@@ -187,7 +187,7 @@ class IntrospectModuleMixin(object):
         if len(objects) > 0:
             self.vtkPipelineConfigure(viewFrame, renderWin, objects)
 
-introspectModuleMixin = IntrospectModuleMixin
+IntrospectModuleMixin = IntrospectModuleMixin
 vtkPipelineConfigModuleMixin = IntrospectModuleMixin
             
 # ----------------------------------------------------------------------------
@@ -253,14 +253,14 @@ class FileOpenDialogModuleMixin(object):
         else:
             return None
 
-fileOpenDialogModuleMixin = FileOpenDialogModuleMixin
+FileOpenDialogModuleMixin = FileOpenDialogModuleMixin
 
 # ----------------------------------------------------------------------------
 
 
 
 
-class filenameViewModuleMixin(fileOpenDialogModuleMixin,
+class FilenameViewModuleMixin(FileOpenDialogModuleMixin,
                               vtkPipelineConfigModuleMixin):
     """Mixin class for those modules that only need a filename to operate.
 
@@ -305,8 +305,8 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
 
         self._view_frame = module_utils.instantiateModuleViewFrame(
             self, self._module_manager,
-            resources.python.filenameViewModuleMixinFrame.\
-            filenameViewModuleMixinFrame)
+            resources.python.FilenameViewModuleMixinFrame.\
+            FilenameViewModuleMixinFrame)
 
         wx.EVT_BUTTON(self._view_frame, self._view_frame.browseButtonId,
                    lambda e: self.browseButtonCallback(self._browse_msg,
@@ -356,7 +356,7 @@ class filenameViewModuleMixin(fileOpenDialogModuleMixin,
             
 
 # ----------------------------------------------------------------------------
-class colourDialogMixin(object):
+class ColourDialogMixin(object):
 
     def __init__(self, parent):
         ccd = wx.ColourData()
@@ -393,7 +393,7 @@ class colourDialogMixin(object):
 
 # ----------------------------------------------------------------------------
 
-class noConfigModuleMixin(introspectModuleMixin):
+class NoConfigModuleMixin(IntrospectModuleMixin):
     """Mixin class for those modules that don't make use of any user-config
     views.
 
@@ -410,7 +410,7 @@ class noConfigModuleMixin(introspectModuleMixin):
         self._object_dict = object_dict
 
     def close(self):
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
         if self._view_frame is not None:
             self._view_frame.Destroy()
             del self._view_frame
@@ -488,7 +488,7 @@ class noConfigModuleMixin(introspectModuleMixin):
     def view_to_config(self):
         pass
 
-class scriptedConfigModuleMixin(introspectModuleMixin):
+class ScriptedConfigModuleMixin(IntrospectModuleMixin):
 
     """
 
@@ -527,7 +527,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
                          {'mask': '\(#{3}, #{3}, #{3}\)', 'formatcodes':'F-_'}
 
     NOTE: this mixin assumes that your module is derived from module_base,
-    e.g. class yourModule(scriptedConfigModuleMixin, ModuleBase):
+    e.g. class yourModule(ScriptedConfigModuleMixin, ModuleBase):
     It's important that ModuleBase comes after due to the new-style method
     resolution order.
     """
@@ -539,7 +539,7 @@ class scriptedConfigModuleMixin(introspectModuleMixin):
         self._object_dict = object_dict
 
     def close(self):
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
         if self._view_frame is not None:
             self._view_frame.Destroy()

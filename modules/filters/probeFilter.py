@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
 
-class probeFilter(noConfigModuleMixin, ModuleBase):
+class probeFilter(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -25,7 +25,7 @@ class probeFilter(noConfigModuleMixin, ModuleBase):
         self._probeFilter = vtk.vtkProbeFilter()
         self._probeFilter.SetInput(self._dummyInput)
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'vtkProbeFilter' : self._probeFilter})
@@ -42,7 +42,7 @@ class probeFilter(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._probeFilter

@@ -4,12 +4,12 @@
 
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
 
-class modifyHomotopy(noConfigModuleMixin, ModuleBase):
+class modifyHomotopy(NoConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         # initialise our base class
@@ -52,7 +52,7 @@ class modifyHomotopy(noConfigModuleMixin, ModuleBase):
             self, self._dualGreyReconstruct,
             'Performing dual greyscale reconstruction')
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'vtkImageGreyscaleReconstruct3D' : self._dualGreyReconstruct})
@@ -67,7 +67,7 @@ class modifyHomotopy(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
 

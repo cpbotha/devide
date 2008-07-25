@@ -1,13 +1,13 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import wx
 
 
-class metaImageRDR(scriptedConfigModuleMixin, ModuleBase):
+class metaImageRDR(ScriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -28,7 +28,7 @@ class metaImageRDR(scriptedConfigModuleMixin, ModuleBase):
               'MetaImage single file (*.mha)|*.mha|MetaImage separate header '
               '(*.mhd)|*.mhd|All files (*.*)|*.*'})]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkMetaImageReader' : self._reader})
@@ -42,7 +42,7 @@ class metaImageRDR(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
         

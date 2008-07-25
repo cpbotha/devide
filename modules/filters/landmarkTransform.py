@@ -4,11 +4,11 @@
 
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class landmarkTransform(scriptedConfigModuleMixin, ModuleBase):
+class landmarkTransform(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -27,7 +27,7 @@ class landmarkTransform(scriptedConfigModuleMixin, ModuleBase):
 
         self._landmarkTransform = vtk.vtkLandmarkTransform()
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkLandmarkTransform': self._landmarkTransform})
@@ -41,7 +41,7 @@ class landmarkTransform(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._landmarkTransform

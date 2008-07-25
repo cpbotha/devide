@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class imageMedian3D(scriptedConfigModuleMixin, ModuleBase):
+class imageMedian3D(ScriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         # initialise our base class
@@ -19,7 +19,7 @@ class imageMedian3D(scriptedConfigModuleMixin, ModuleBase):
 
         self._imageMedian3D = vtk.vtkImageMedian3D()
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkImageMedian3D' : self._imageMedian3D})
@@ -36,7 +36,7 @@ class imageMedian3D(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._imageMedian3D

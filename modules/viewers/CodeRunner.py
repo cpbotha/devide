@@ -4,7 +4,7 @@
 import code # deep magic
 import md5
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import sys
 import module_kits.wx_kit
@@ -15,7 +15,7 @@ NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
 EDITWINDOW_LABELS = ['Scratch', 'Setup', 'Execute']
 
-class CodeRunner(introspectModuleMixin, ModuleBase, PythonShellMixin):
+class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)

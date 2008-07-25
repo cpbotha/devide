@@ -1,9 +1,9 @@
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class wsMeshSmooth(scriptedConfigModuleMixin, ModuleBase):
+class wsMeshSmooth(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -32,7 +32,7 @@ class wsMeshSmooth(scriptedConfigModuleMixin, ModuleBase):
             ('Boundary smoothing', 'boundarySmoothing', 'base:bool',
              'checkbox', 'Smooth boundary edges (edges with only one face).')]
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, config_list,
             {'Module (self)' : self,
              'vtkWindowedSincPolyDataFilter' : self._wsPDFilter})
@@ -46,7 +46,7 @@ class wsMeshSmooth(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
             

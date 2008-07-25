@@ -4,10 +4,10 @@
 
 import itk
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import vtk
 
-class VTKtoITKF3(noConfigModuleMixin, ModuleBase):
+class VTKtoITKF3(NoConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -20,7 +20,7 @@ class VTKtoITKF3(noConfigModuleMixin, ModuleBase):
         self._vtk2itk = itk.VTKImageToImageFilter[itk.Image[itk.F, 3]].New()
         self._vtk2itk.SetInput(self._imageCast.GetOutput())
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self,
             {'Module (self)' : self,
              'vtkImageCast' : self._imageCast,
@@ -35,7 +35,7 @@ class VTKtoITKF3(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
 

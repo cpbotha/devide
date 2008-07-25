@@ -6,7 +6,7 @@
 #sys.path = sys.path + ['', 'H:\\bld\\bin\\Wrapping\\CSwig\\Python\\RelWithDebInfo', 'H:\\opt\\python23\\Lib\\site-packages\\adodbapi', 'C:\\WINNT\\System32\\python23.zip', 'H:\\', 'H:\\opt\\python23\\DLLs', 'H:\\opt\\python23\\lib', 'H:\\opt\\python23\\lib\\plat-win', 'H:\\opt\\python23\\lib\\lib-tk', 'H:\\opt\\python23', 'H:\\opt\\python23\\Lib\\site-packages\\win32', 'H:\\opt\\python23\\Lib\\site-packages\\win32\\lib', 'H:\\opt\\python23\\Lib\\site-packages\\Pythonwin', 'H:\\opt\\python23\\lib\\site-packages\\adodbapi']
 
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import fixitk as itk
@@ -15,7 +15,7 @@ from datetime import date
 from adodbapi import *
 from modules.Insight.typeModules.transformStackClass import transformStackClass
 
-class reconstructionRDR(scriptedConfigModuleMixin, ModuleBase):
+class reconstructionRDR(ScriptedConfigModuleMixin, ModuleBase):
 	"""Fetches a transform stack from an MS Access database
 
 	$Revision: 1.1 $
@@ -43,7 +43,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, ModuleBase):
 			('Reconstruction:', 'reconstructionName', 'base:str', 'choice',
 			'Specific reconstruction to use.', ("--- select a value ---",) ) ] 
 
-		scriptedConfigModuleMixin.__init__(self, configList)
+		ScriptedConfigModuleMixin.__init__(self, configList)
 
 		self._viewFrame = self._createViewFrame({'Module (self)' : self})
 
@@ -57,7 +57,7 @@ class reconstructionRDR(scriptedConfigModuleMixin, ModuleBase):
 		#    self.set_input(inputIdx, None)
 
 		# this will take care of all display thingies
-		scriptedConfigModuleMixin.close(self)
+		ScriptedConfigModuleMixin.close(self)
 
 		ModuleBase.close(self)
 		

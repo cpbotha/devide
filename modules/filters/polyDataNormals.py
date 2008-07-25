@@ -1,11 +1,11 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import module_utils
 import vtk
 
 
-class polyDataNormals(noConfigModuleMixin, ModuleBase):
+class polyDataNormals(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -15,7 +15,7 @@ class polyDataNormals(noConfigModuleMixin, ModuleBase):
         module_utils.setupVTKObjectProgress(self, self._pdNormals,
                                            'Calculating normals')
 
-        noConfigModuleMixin.__init__(
+        NoConfigModuleMixin.__init__(
             self, {'vtkPolyDataNormals' : self._pdNormals})
         
         self.sync_module_logic_with_config()
@@ -27,7 +27,7 @@ class polyDataNormals(noConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._pdNormals

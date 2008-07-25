@@ -1,12 +1,12 @@
 # $Id$
 
 from module_base import ModuleBase
-from moduleMixins import filenameViewModuleMixin
+from moduleMixins import FilenameViewModuleMixin
 import module_utils
 import vtk
 
 
-class vtiWRT(filenameViewModuleMixin, ModuleBase):
+class vtiWRT(FilenameViewModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
@@ -15,7 +15,7 @@ class vtiWRT(filenameViewModuleMixin, ModuleBase):
         self._writer = vtk.vtkXMLImageDataWriter()
         
         # ctor for this specific mixin
-        filenameViewModuleMixin.__init__(
+        FilenameViewModuleMixin.__init__(
             self,
             'Select a filename',
             'VTK Image Data (*.vti)|*.vti|All files (*)|*',
@@ -38,7 +38,7 @@ class vtiWRT(filenameViewModuleMixin, ModuleBase):
         # we should disconnect all inputs
         self.set_input(0, None)
         del self._writer
-        filenameViewModuleMixin.close(self)
+        FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
 	return ('vtkImageData',)

@@ -8,14 +8,14 @@
 
 from imageStackRDR import imageStackClass
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import fixitk as itk
 from typeModules.transformStackClass import transformStackClass
 from typeModules.imageStackClass import imageStackClass
 import  vtk
 import ConnectVTKITKPython as CVIPy
 
-class transform2D(noConfigModuleMixin, ModuleBase):
+class transform2D(NoConfigModuleMixin, ModuleBase):
 
     """This apply a stack of transforms to a stack of images in an
     accumulative fashion, i.e. imageN is transformed:
@@ -31,7 +31,7 @@ class transform2D(noConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
         self._imageStack = None
         self._transformStack = None
@@ -59,7 +59,7 @@ class transform2D(noConfigModuleMixin, ModuleBase):
         del self._itkExporterStack
         del self._imageAppend
 
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
 
         ModuleBase.close(self)
 

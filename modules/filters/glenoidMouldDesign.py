@@ -12,11 +12,11 @@
 
 import math
 from module_base import ModuleBase
-from moduleMixins import noConfigModuleMixin
+from moduleMixins import NoConfigModuleMixin
 import operator
 import vtk
 
-class glenoidMouldDesign(ModuleBase, noConfigModuleMixin):
+class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
 
     drillGuideInnerDiameter = 3
     drillGuideOuterDiameter = 5
@@ -27,7 +27,7 @@ class glenoidMouldDesign(ModuleBase, noConfigModuleMixin):
         # call parent constructor
         ModuleBase.__init__(self, module_manager)
         # and mixin
-        noConfigModuleMixin.__init__(self)
+        NoConfigModuleMixin.__init__(self)
 
         self._inputPolyData = None
         self._inputPoints = None
@@ -48,7 +48,7 @@ class glenoidMouldDesign(ModuleBase, noConfigModuleMixin):
         # take care of critical instances
         self._outputPolyData = None
         # mixin close
-        noConfigModuleMixin.close(self)
+        NoConfigModuleMixin.close(self)
 
     def get_input_descriptions(self):
         return('Scapula vtkPolyData', 'Insertion axis (points)')

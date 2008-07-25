@@ -3,7 +3,7 @@
 # See COPYRIGHT for details.
 
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_kits.vtk_kit
 import module_utils
 import vtk
@@ -11,7 +11,7 @@ import wx
 
 from module_kits.misc_kit.devide_types import MedicalMetaData
 
-class EditMedicalMetaData(introspectModuleMixin, ModuleBase):
+class EditMedicalMetaData(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -43,7 +43,7 @@ class EditMedicalMetaData(introspectModuleMixin, ModuleBase):
 
        
     def close(self):
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
 
         if self._view_frame is not None:
             self._view_frame.Destroy()

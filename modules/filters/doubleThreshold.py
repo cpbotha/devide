@@ -1,10 +1,10 @@
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import introspectModuleMixin
+from moduleMixins import IntrospectModuleMixin
 import module_utils
 import vtk
 
-class doubleThreshold(introspectModuleMixin, ModuleBase):
+class doubleThreshold(IntrospectModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
 
@@ -48,7 +48,7 @@ class doubleThreshold(introspectModuleMixin, ModuleBase):
         # disconnected us by now)
         self.set_input(0, None)
         # close down the vtkPipeline stuff
-        introspectModuleMixin.close(self)
+        IntrospectModuleMixin.close(self)
         # take out our view interface
         if self._view_frame is not None:
             self._view_frame.Destroy()

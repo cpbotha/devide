@@ -4,12 +4,12 @@
 
 import genUtils
 from module_base import ModuleBase
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 import module_utils
 import wx
 import vtk
 
-class pointsToSpheres(scriptedConfigModuleMixin, ModuleBase):
+class pointsToSpheres(ScriptedConfigModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -59,7 +59,7 @@ class pointsToSpheres(scriptedConfigModuleMixin, ModuleBase):
         # this will hold our shallow-copied output
         self._output = vtk.vtkPolyData()
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'vtkAppendPolyData' : self._appendPolyData})
@@ -73,7 +73,7 @@ class pointsToSpheres(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
         del self._appendPolyData

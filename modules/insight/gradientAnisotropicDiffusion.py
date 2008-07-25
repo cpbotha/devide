@@ -5,9 +5,9 @@
 import itk
 from module_base import ModuleBase
 import module_kits.itk_kit
-from moduleMixins import scriptedConfigModuleMixin
+from moduleMixins import ScriptedConfigModuleMixin
 
-class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, ModuleBase):
+class gradientAnisotropicDiffusion(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
@@ -36,7 +36,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, ModuleBase):
             self, self._diffuse, 'itkGradientAnisotropicDiffusionImageFilter',
             'Smoothing data')
 
-        scriptedConfigModuleMixin.__init__(
+        ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'itkGradientAnisotropicDiffusion' : self._diffuse})
@@ -50,7 +50,7 @@ class gradientAnisotropicDiffusion(scriptedConfigModuleMixin, ModuleBase):
             self.set_input(inputIdx, None)
 
         # this will take care of all display thingies
-        scriptedConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # and the baseclass close
         ModuleBase.close(self)
             
