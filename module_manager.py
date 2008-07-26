@@ -245,7 +245,7 @@ class ModuleManager:
         self._devide_app = devide_app
         # module dictionary, keyed on instance... cool.
         # values are MetaModules
-        self._moduleDict = {}
+        self._module_dict = {}
 
         appdir = self._devide_app.get_appdir()
         self._modules_dir = os.path.join(appdir, 'modules')
@@ -389,7 +389,7 @@ class ModuleManager:
         """
         
         # this is fine because .items() makes a copy of the dict
-        for mModule in self._moduleDict.values():
+        for mModule in self._module_dict.values():
 
             print "Deleting %s (%s) >>>>>" % \
                   (mModule.instance_name,
@@ -414,7 +414,7 @@ class ModuleManager:
         through to the relevant MetaModule call.
         """
 
-        mModule = self._moduleDict[instance]
+        mModule = self._module_dict[instance]
 
         try:
             # these two MetaModule wrapper calls will take care of setting
@@ -673,7 +673,7 @@ class ModuleManager:
         """
 
         found = False
-        for instance, mModule in self._moduleDict.items():
+        for instance, mModule in self._module_dict.items():
             if mModule.instance_name == instance_name:
                 found = True
                 break
@@ -686,12 +686,12 @@ class ModuleManager:
 
     def get_instance_name(self, instance):
         """Given the actual instance, return its unique instance.  If the
-        instance doesn't exist in self._moduleDict, return the currently
+        instance doesn't exist in self._module_dict, return the currently
         halfborn instance.
         """
 
         try:
-            return self._moduleDict[instance].instance_name
+            return self._module_dict[instance].instance_name
         except Exception:
             return self._halfBornInstanceName
 
@@ -700,9 +700,9 @@ class ModuleManager:
 
         @param instance: the instance whose meta_module should be returned.
         @return: meta_module corresponding to instance.
-        @raise KeyError: this instance doesn't exist in the moduleDict.
+        @raise KeyError: this instance doesn't exist in the module_dict.
         """
-        return self._moduleDict[instance]
+        return self._module_dict[instance]
 
     def get_modules_dir(self):
         return self._modules_dir
@@ -787,7 +787,7 @@ class ModuleManager:
                 pto = None
             
             # and store it in our internal structures
-            self._moduleDict[module_instance] = MetaModule(
+            self._module_dict[module_instance] = MetaModule(
                 module_instance, instance_name, fullName, pti, pto)
 
             # it's now fully born ;)
@@ -923,7 +923,7 @@ class ModuleManager:
 
         try:
             self._devide_app.network_manager.execute_network(
-                self._moduleDict.values())
+                self._module_dict.values())
 
         except Exception, e:
             # we are directly reporting the error, as this is used by
@@ -947,13 +947,13 @@ class ModuleManager:
         """
 
         # get details about the module (we might need this later)
-        meta_module = self._moduleDict[instance]
+        meta_module = self._module_dict[instance]
         instance_name = meta_module.instance_name
         module_name = meta_module.instance.__class__.__name__
         
         # first disconnect all outgoing connections
-        inputs = self._moduleDict[instance].inputs
-        outputs = self._moduleDict[instance].outputs
+        inputs = self._module_dict[instance].inputs
+        outputs = self._module_dict[instance].outputs
 
         # outputs is a list of lists of tuples, each tuple containing
         # module_instance and inputIdx of the consumer module
@@ -982,7 +982,7 @@ class ModuleManager:
             inputs[inputIdx] = None
 
         # we've disconnected completely - let's reset all lists
-        self._moduleDict[instance].reset_inputsOutputs()
+        self._module_dict[instance].reset_inputsOutputs()
 
         # store autoexecute, then disable
         ae = self.auto_execute
@@ -996,7 +996,7 @@ class ModuleManager:
             finally:
                 # do the following in all cases:
                 # 1. remove module from our dict
-                del self._moduleDict[instance]
+                del self._module_dict[instance]
                 # 2. reset auto_execute mode
                 self.auto_execute = ae
                 # the exception will now be re-raised if there was one
@@ -1027,12 +1027,12 @@ class ModuleManager:
 
         # record connection (this will raise an exception if the input
         # is already occupied)
-        self._moduleDict[input_module].connectInput(
+        self._module_dict[input_module].connectInput(
             input_idx, output_module, output_idx)
 
         # record connection on the output of the producer module
         # this will also initialise the transfer times
-        self._moduleDict[output_module].connectOutput(
+        self._module_dict[output_module].connectOutput(
             output_idx, input_module, input_idx)
 
 	
@@ -1052,7 +1052,7 @@ class ModuleManager:
         is a problem child.)
         """
 
-        meta_module = self._moduleDict[input_module]
+        meta_module = self._module_dict[input_module]
         instance_name = meta_module.instance_name
         module_name = meta_module.instance.__class__.__name__
 
@@ -1070,17 +1070,17 @@ class ModuleManager:
 
         # trace it back to our supplier, and tell it that it has one
         # less consumer (if we even HAVE a supplier on this port)
-        s = self._moduleDict[input_module].inputs[input_idx]
+        s = self._module_dict[input_module].inputs[input_idx]
         if s:
             supp = s[0]
             suppOutIdx = s[1]
 
-            self._moduleDict[supp].disconnectOutput(
+            self._module_dict[supp].disconnectOutput(
                 suppOutIdx, input_module, input_idx)
 
         # indicate to the meta data that this module doesn't have an input
         # anymore
-        self._moduleDict[input_module].disconnectInput(input_idx)
+        self._module_dict[input_module].disconnectInput(input_idx)
 
     def deserialiseModuleInstances(self, pmsDict, connectionList):
         """Given a pickled stream, this method will recreate all modules,
@@ -1219,10 +1219,10 @@ class ModuleManager:
         pickledModuleInstances = []
         
         for module_instance in module_instances:
-            if self._moduleDict.has_key(module_instance):
+            if self._module_dict.has_key(module_instance):
 
                 # first get the MetaModule
-                mModule = self._moduleDict[module_instance]
+                mModule = self._module_dict[module_instance]
                 
                 # create a picklable thingy
                 pms = PickledModuleState()
@@ -1259,7 +1259,7 @@ class ModuleManager:
         # 2. connections with targets that are exceptions, e.g. sliceViewer
         connectionList = []
         for module_instance in pickledModuleInstances:
-            mModule = self._moduleDict[module_instance]
+            mModule = self._module_dict[module_instance]
             # we only have to iterate through all outputs
             for outputIdx in range(len(mModule.outputs)):
                 outputConnections = mModule.outputs[outputIdx]
@@ -1293,7 +1293,7 @@ class ModuleManager:
                         
                         connection = PickledConnection(
                             mModule.instance_name, outputIdx,
-                            self._moduleDict[outputConnection[0]].instance_name,
+                            self._module_dict[outputConnection[0]].instance_name,
                             outputConnection[1],
                             connectionType)
                                                        
@@ -1363,7 +1363,7 @@ class ModuleManager:
         for outputIdx in range(len(outputs)):
             output = outputs[outputIdx]
             for consumerInstance, consumerInputIdx in output:
-                consumerMetaModule = self._moduleDict[consumerInstance]
+                consumerMetaModule = self._module_dict[consumerInstance]
                 consumers.append(
                     (outputIdx, consumerMetaModule, consumerInputIdx))
 
@@ -1394,7 +1394,7 @@ class ModuleManager:
             if pTuple is not None:
                 # unpack
                 pInstance, pOutputIdx = pTuple
-                pMetaModule = self._moduleDict[pInstance]
+                pMetaModule = self._module_dict[pInstance]
                 # and store
                 producers.append((pMetaModule, pOutputIdx, i))
 
@@ -1413,7 +1413,7 @@ class ModuleManager:
         @param value: the new value of the modified ivar, True or False.
         """
         
-        self._moduleDict[module_instance].modified = True 
+        self._module_dict[module_instance].modified = True 
 
     def set_progress(self, progress, message, noTime=False):
         """Progress is in percent.
@@ -1433,14 +1433,14 @@ class ModuleManager:
         
         # first we make sure we have a unique instance name
         if not instance_name:
-            instance_name = "dvm%d" % (len(self._moduleDict),)
+            instance_name = "dvm%d" % (len(self._module_dict),)
 
         # now make sure that instance_name is unique
         uniqueName = False
         while not uniqueName:
             # first check that this doesn't exist in the module dictionary
             uniqueName = True
-            for mmt in self._moduleDict.items():
+            for mmt in self._module_dict.items():
                 if mmt[1].instance_name == instance_name:
                     uniqueName = False
                     break
@@ -1455,7 +1455,7 @@ class ModuleManager:
                     tl += choice(chars)
                         
                 instance_name = "%s%s%d" % (instance_name, tl,
-                                           len(self._moduleDict))
+                                           len(self._module_dict))
 
         
         return instance_name
@@ -1481,7 +1481,7 @@ class ModuleManager:
 
         try:
             # get the MetaModule and rename it.
-            self._moduleDict[instance].instance_name = name
+            self._module_dict[instance].instance_name = name
         except Exception:
             return False
 
@@ -1494,7 +1494,7 @@ class ModuleManager:
         changed or when new input data has been transferred.
         """
 
-        self._moduleDict[module_instance].modify(part)
+        self._module_dict[module_instance].modify(part)
 
     modifyModule = modify_module
 
@@ -1545,7 +1545,7 @@ class ModuleManager:
         #############################################################
 
         # find the corresponding new meta_module
-        meta_module = self._moduleDict[new_instance]
+        meta_module = self._module_dict[new_instance]
         # give it its old name back
         meta_module.instance_name = instance_name
 

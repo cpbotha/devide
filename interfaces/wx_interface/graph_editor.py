@@ -516,7 +516,7 @@ class GraphEditor:
         
         instances = [g.module_instance for g in glyphs]
         mm = self._devide_app.get_module_manager()
-        allMetaModules = [mm._moduleDict[instance]
+        allMetaModules = [mm._module_dict[instance]
                           for instance in instances]
 
         try:
