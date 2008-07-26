@@ -204,13 +204,13 @@ class ModuleSearch:
         
 
 #########################################################################
-class pickledModuleState:
+class PickledModuleState:
     def __init__(self):
-        self.moduleConfig = None
+        self.module_config = None
         # e.g. modules.Viewers.histogramSegment
-        self.moduleName = None
+        self.module_name = None
         # this is the unique name of the module, e.g. dvm15
-        self.instanceName = None
+        self.instance_name = None
 
 #########################################################################
 class pickledConnection:
@@ -392,7 +392,7 @@ class ModuleManager:
         for mModule in self._moduleDict.values():
 
             print "Deleting %s (%s) >>>>>" % \
-                  (mModule.instanceName,
+                  (mModule.instance_name,
                    mModule.instance.__class__.__name__)
                    
             try:
@@ -400,7 +400,7 @@ class ModuleManager:
             except Exception, e:
                 # we can't allow a module to stop us
                 print "Error deleting %s (%s): %s" % \
-                      (mModule.instanceName,
+                      (mModule.instance_name,
                        mModule.instance.__class__.__name__,
                        str(e))
                 print "FULL TRACE:"
@@ -667,14 +667,14 @@ class ModuleManager:
 	return self._availableModules
 
 
-    def get_instance(self, instanceName):
+    def get_instance(self, instance_name):
         """Given the unique instance name, return the instance itself.
         If the module doesn't exist, return None.
         """
 
         found = False
         for instance, mModule in self._moduleDict.items():
-            if mModule.instanceName == instanceName:
+            if mModule.instance_name == instance_name:
                 found = True
                 break
 
@@ -691,7 +691,7 @@ class ModuleManager:
         """
 
         try:
-            return self._moduleDict[instance].instanceName
+            return self._moduleDict[instance].instance_name
         except Exception:
             return self._halfBornInstanceName
 
@@ -730,7 +730,7 @@ class ModuleManager:
             # the interface has no main_window
             return None
     
-    def createModule(self, fullName, instanceName=None):
+    def createModule(self, fullName, instance_name=None):
         """Try and create module fullName.
 
         @param fullName: The complete module spec below application directory,
@@ -751,8 +751,8 @@ class ModuleManager:
             # think up name for this module (we have to think this up now
             # as the module might want to know about it whilst it's being
             # constructed
-            instanceName = self._makeUniqueInstanceName(instanceName)
-            self._halfBornInstanceName = instanceName
+            instance_name = self._makeUniqueInstanceName(instance_name)
+            self._halfBornInstanceName = instance_name
             
             # perform the conditional import/reload
             self.importReload(fullName)
@@ -788,7 +788,7 @@ class ModuleManager:
             
             # and store it in our internal structures
             self._moduleDict[moduleInstance] = MetaModule(
-                moduleInstance, instanceName, fullName, pti, pto)
+                moduleInstance, instance_name, fullName, pti, pto)
 
             # it's now fully born ;)
             self._halfBornInstanceName = None
@@ -897,12 +897,12 @@ class ModuleManager:
             
         except Exception, e:
             # get details about the errored module
-            instanceName = meta_module.instanceName
-            moduleName = meta_module.instance.__class__.__name__
+            instance_name = meta_module.instance_name
+            module_name = meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
             es = 'Unable to execute part %d of module %s (%s): %s' \
-                 % (part, instanceName, moduleName, str(e))
+                 % (part, instance_name, module_name, str(e))
                  
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
@@ -948,8 +948,8 @@ class ModuleManager:
 
         # get details about the module (we might need this later)
         meta_module = self._moduleDict[instance]
-        instanceName = meta_module.instanceName
-        moduleName = meta_module.instance.__class__.__name__
+        instance_name = meta_module.instance_name
+        module_name = meta_module.instance.__class__.__name__
         
         # first disconnect all outgoing connections
         inputs = self._moduleDict[instance].inputs
@@ -976,7 +976,7 @@ class ModuleManager:
                 self.log_error_with_exception(
                     'Module %s (%s) errored during disconnect of input %d. '
                     'Continuing with deletion.' % \
-                    (instanceName, moduleName, inputIdx))
+                    (instance_name, module_name, inputIdx))
                 
             # set supplier to None - so we know it's nuked
             inputs[inputIdx] = None
@@ -1009,7 +1009,7 @@ class ModuleManager:
 
             # create new exception message
             es = 'Error calling close() on module %s (%s): %s' \
-                 % (instanceName, moduleName, str(e))
+                 % (instance_name, module_name, str(e))
                  
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
@@ -1053,7 +1053,7 @@ class ModuleManager:
         """
 
         meta_module = self._moduleDict[input_module]
-        instance_name = meta_module.instanceName
+        instance_name = meta_module.instance_name
         module_name = meta_module.instance.__class__.__name__
 
         try:
@@ -1099,21 +1099,21 @@ class ModuleManager:
         ae = self.auto_execute
         self.auto_execute = False
         
-        # newModulesDict will act as translator between pickled instanceName
+        # newModulesDict will act as translator between pickled instance_name
         # and new instance!
         newModulesDict = {}
         failed_modules_dict = []
         for pmsTuple in pmsDict.items():
-            # each pmsTuple == (instanceName, pms)
+            # each pmsTuple == (instance_name, pms)
             # we're only going to try to create a module if the module_man
             # says it's available!
             try:
-                newModule = self.createModule(pmsTuple[1].moduleName)
+                newModule = self.createModule(pmsTuple[1].module_name)
                 
             except ModuleManagerException, e:
                 self._devide_app.log_error_with_exception(
                     'Could not create module %s:\n%s.' %
-                    (pmsTuple[1].moduleName, str(e)))
+                    (pmsTuple[1].module_name, str(e)))
                 # make sure
                 newModule = None
                 
@@ -1127,7 +1127,7 @@ class ModuleManager:
                     # two datasets into a slice viewer... now save the whole
                     # thing and load it: note that the two readers are now
                     # reading the same file!
-                    configCopy = copy.deepcopy(pmsTuple[1].moduleConfig)
+                    configCopy = copy.deepcopy(pmsTuple[1].module_config)
                     newModule.set_config(configCopy)
                 except Exception, e:
                     # it could be a module with no defined config logic
@@ -1138,11 +1138,11 @@ class ModuleManager:
                 # try to rename the module to the pickled unique instance name
                 # if this name is already taken, use the generated unique instance
                 # name
-                self.renameModule(newModule,pmsTuple[1].instanceName)
+                self.renameModule(newModule,pmsTuple[1].instance_name)
                 
                 # and record that it's been recreated (once again keyed
                 # on the OLD unique instance name)
-                newModulesDict[pmsTuple[1].instanceName] = newModule
+                newModulesDict[pmsTuple[1].instance_name] = newModule
 
         # now we're going to connect all of the successfully created
         # modules together; we iterate DOWNWARDS through the different
@@ -1176,7 +1176,7 @@ class ModuleManager:
             # retrieve the pickled module state
             pms = pmsDict[oldInstanceName]
             # take care to deep copy the config
-            configCopy = copy.deepcopy(pms.moduleConfig)
+            configCopy = copy.deepcopy(pms.module_config)
 
             # now try to call set_configPostConnect
             try:
@@ -1225,30 +1225,30 @@ class ModuleManager:
                 mModule = self._moduleDict[moduleInstance]
                 
                 # create a picklable thingy
-                pms = pickledModuleState()
+                pms = PickledModuleState()
                 
                 try:
                     print "SERIALISE: %s - %s" % \
                           (str(moduleInstance),
                            str(moduleInstance.get_config()))
-                    pms.moduleConfig = moduleInstance.get_config()
+                    pms.module_config = moduleInstance.get_config()
                 except AttributeError, e:
                     self._devide_app.log_warning(
                         'Could not extract state (config) from module %s: %s' \
                         % (moduleInstance.__class__.__name__, str(e)))
 
                     # if we can't get a config, we pickle a default
-                    pms.moduleConfig = DefaultConfigClass()
+                    pms.module_config = DefaultConfigClass()
                     
-                #pms.moduleName = moduleInstance.__class__.__name__
+                #pms.module_name = moduleInstance.__class__.__name__
                 # we need to store the complete module name
                 # we could also get this from meta_module.module_name
-                pms.moduleName = moduleInstance.__class__.__module__
+                pms.module_name = moduleInstance.__class__.__module__
 
                 # this will only be used for uniqueness purposes
-                pms.instanceName = mModule.instanceName
+                pms.instance_name = mModule.instance_name
 
-                pmsDict[pms.instanceName] = pms
+                pmsDict[pms.instance_name] = pms
                 pickledModuleInstances.append(moduleInstance)
 
         # now iterate through all the actually pickled module instances
@@ -1292,8 +1292,8 @@ class ModuleManager:
                                connectionType)
                         
                         connection = pickledConnection(
-                            mModule.instanceName, outputIdx,
-                            self._moduleDict[outputConnection[0]].instanceName,
+                            mModule.instance_name, outputIdx,
+                            self._moduleDict[outputConnection[0]].instance_name,
                             outputConnection[1],
                             connectionType)
                                                        
@@ -1422,26 +1422,26 @@ class ModuleManager:
 
     setProgress = set_progress
 
-    def _makeUniqueInstanceName(self, instanceName=None):
-        """Ensure that instanceName is unique or create a new unique
-        instanceName.
+    def _makeUniqueInstanceName(self, instance_name=None):
+        """Ensure that instance_name is unique or create a new unique
+        instance_name.
 
-        If instanceName is None, a unique one will be created.  An
-        instanceName (whether created or passed) will be permuted until it
+        If instance_name is None, a unique one will be created.  An
+        instance_name (whether created or passed) will be permuted until it
         unique and then returned.
         """
         
         # first we make sure we have a unique instance name
-        if not instanceName:
-            instanceName = "dvm%d" % (len(self._moduleDict),)
+        if not instance_name:
+            instance_name = "dvm%d" % (len(self._moduleDict),)
 
-        # now make sure that instanceName is unique
+        # now make sure that instance_name is unique
         uniqueName = False
         while not uniqueName:
             # first check that this doesn't exist in the module dictionary
             uniqueName = True
             for mmt in self._moduleDict.items():
-                if mmt[1].instanceName == instanceName:
+                if mmt[1].instance_name == instance_name:
                     uniqueName = False
                     break
 
@@ -1454,11 +1454,11 @@ class ModuleManager:
                 for i in range(3):
                     tl += choice(chars)
                         
-                instanceName = "%s%s%d" % (instanceName, tl,
+                instance_name = "%s%s%d" % (instance_name, tl,
                                            len(self._moduleDict))
 
         
-        return instanceName
+        return instance_name
 
     def renameModule(self, instance, name):
         """Rename a module in the module dictionary
@@ -1481,7 +1481,7 @@ class ModuleManager:
 
         try:
             # get the MetaModule and rename it.
-            self._moduleDict[instance].instanceName = name
+            self._moduleDict[instance].instance_name = name
         except Exception:
             return False
 
@@ -1520,7 +1520,7 @@ class ModuleManager:
         # consumer input index)
         cons_tuples = self.getConsumers(meta_module)
         # store the instance name
-        instance_name = meta_module.instanceName
+        instance_name = meta_module.instance_name
         # and the full module spec name
         full_name = meta_module.module_name
         # and get the module state (we make a deep copy just in case)
@@ -1547,7 +1547,7 @@ class ModuleManager:
         # find the corresponding new meta_module
         meta_module = self._moduleDict[new_instance]
         # give it its old name back
-        meta_module.instanceName = instance_name
+        meta_module.instance_name = instance_name
 
         # 5. connect it up
         #############################################################
@@ -1653,12 +1653,12 @@ class ModuleManager:
 
         except Exception, e:
             # get details about the errored module
-            instanceName = meta_module.instanceName
-            moduleName = meta_module.instance.__class__.__name__
+            instance_name = meta_module.instance_name
+            module_name = meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
             es = 'Faulty transferOutput (get_output on module %s (%s)): %s' \
-                 % (instanceName, moduleName, str(e))
+                 % (instance_name, module_name, str(e))
                  
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
@@ -1684,12 +1684,12 @@ class ModuleManager:
             
         except Exception, e:
             # get details about the errored module
-            instanceName = consumer_meta_module.instanceName
-            moduleName = consumer_meta_module.instance.__class__.__name__
+            instance_name = consumer_meta_module.instance_name
+            module_name = consumer_meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
             es = 'Faulty transferOutput (set_input on module %s (%s)): %s' \
-                 % (instanceName, moduleName, str(e))
+                 % (instance_name, module_name, str(e))
 
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback

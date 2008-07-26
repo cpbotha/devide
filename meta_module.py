@@ -20,9 +20,9 @@ class MetaModule:
     @author: Charl P. Botha <http://cpbotha.net/>
     """
     
-    def __init__(self, instance, instanceName, module_name,
+    def __init__(self, instance, instance_name, module_name,
                  partsToInputs=None, partsToOutputs=None):
-        """Instance is the actual class instance and instanceName is a unique
+        """Instance is the actual class instance and instance_name is a unique
         name that has been chosen by the user or automatically.
 
         @param module_name: the full spec of the module of which the instance
@@ -37,7 +37,7 @@ class MetaModule:
                 'instance is None during MetaModule instantiation.')
 
         self.instance = instance
-        self.instanceName = instanceName
+        self.instance_name = instance_name
         self.module_name = module_name
 
         # init blocked ivar

@@ -356,10 +356,10 @@ class GraphEditor:
         # item is selected
         sel = mlb.GetSelection()
 
-        shortName, moduleName = (mlb.GetString(sel),
+        shortName, module_name = (mlb.GetString(sel),
                                  mlb.GetClientData(sel))
 
-        if moduleName:
+        if module_name:
 
             # default position
             x, y = (10,10)
@@ -386,12 +386,12 @@ class GraphEditor:
 
             modp = 'module:'
             segp = 'segment:'
-            if moduleName.startswith(modp):
+            if module_name.startswith(modp):
                 # the coordinates are canvas-absolute already
-                self.create_module_and_glyph(x, y, moduleName[len(modp):])
+                self.create_module_and_glyph(x, y, module_name[len(modp):])
 
-            elif moduleName.startswith(segp):
-                self._loadAndRealiseNetwork(moduleName[len(segp):], (x,y),
+            elif module_name.startswith(segp):
+                self._loadAndRealiseNetwork(module_name[len(segp):], (x,y),
                                             reposition=True)
 
             else:
@@ -458,12 +458,12 @@ class GraphEditor:
 
         sel = mlb.GetSelection()
         if sel >= 0:
-            shortName, moduleName = mlb.GetString(sel), mlb.GetClientData(sel)
+            shortName, module_name = mlb.GetString(sel), mlb.GetClientData(sel)
             
-            if type(moduleName) != str:
+            if type(module_name) != str:
                 return
         
-            dataObject = wx.TextDataObject(moduleName)
+            dataObject = wx.TextDataObject(module_name)
             dropSource = wx.DropSource(self._interface._main_frame.module_list_box)
             dropSource.SetData(dataObject)
             # we don't need the result of the DoDragDrop call (phew)
@@ -603,13 +603,13 @@ class GraphEditor:
         w_x,w_y,w_z = \
             self.canvas.display_to_world((x,self.canvas.flip_y(y)))
         
-        def createModuleOneVar(moduleName, configVarName, configVarValue,
+        def createModuleOneVar(module_name, configVarName, configVarValue,
                                newModuleName=None):
-            """This method creates a moduleName (e.g. modules.Readers.vtiRDR)
+            """This method creates a module_name (e.g. modules.Readers.vtiRDR)
             at position x,y.  It then sets the 'configVarName' attribute to
             value configVarValue.
             """
-            (mod, glyph) = self.create_module_and_glyph(w_x, w_y, moduleName)
+            (mod, glyph) = self.create_module_and_glyph(w_x, w_y, module_name)
             if mod:
                 cfg = mod.get_config()
                 setattr(cfg, configVarName, filename)
@@ -962,7 +962,7 @@ class GraphEditor:
         # the network loading needs this
         return co
     
-    def create_module_and_glyph(self, x, y, moduleName):
+    def create_module_and_glyph(self, x, y, module_name):
         """Create a DeVIDE and a corresponding glyph at world
         coordinates x,y.
 
@@ -971,14 +971,14 @@ class GraphEditor:
         """
         
         # check that it's a valid module name
-        if moduleName in self._availableModules:
+        if module_name in self._availableModules:
             # we have a valid module, we should try and instantiate
             mm = self._devide_app.get_module_manager()
             try:
-                temp_module = mm.createModule(moduleName)
+                temp_module = mm.createModule(module_name)
             except ModuleManagerException, e:
                 self._devide_app.log_error_with_exception(
-                    'Could not create module %s: %s' % (moduleName, str(e)))
+                    'Could not create module %s: %s' % (module_name, str(e)))
                 return (None, None)
                 
             # if the module_manager did its trick, we can make a glyph
@@ -988,7 +988,7 @@ class GraphEditor:
                 # we can query with mm.get_instance_name(temp_module).  However,
                 # this is a new module, so we don't actually display the name
                 # in the glyph label.
-                gLabel = [moduleName.split('.')[-1]]
+                gLabel = [module_name.split('.')[-1]]
                 glyph = self.createGlyph(x,y,gLabel,temp_module)
 
                 # route all lines
@@ -1036,7 +1036,7 @@ class GraphEditor:
 
         self._moduleCats = {}
         # let's build up new dictionary with categoryName as key and
-        # list of complete moduleNames as value - check for 'Segments',
+        # list of complete module_names as value - check for 'Segments',
         # that's reserved
         for mn,module_metadata in self._availableModules.items():
             # we add an ALL category implicitly to all modules
@@ -1343,7 +1343,7 @@ class GraphEditor:
         # consumer input index)
         cons_tuples = mm.getConsumers(meta_module)
         # store the instance name
-        instance_name = meta_module.instanceName
+        instance_name = meta_module.instance_name
         # and the full module spec name
         full_name = meta_module.module_name
         # and get the module state (we make a deep copy just in case)
@@ -1839,7 +1839,7 @@ class GraphEditor:
             reposCoords = [0, 0]
 
         # store the new glyphs in a dictionary keyed on OLD pickled
-        # instanceName so that we can connect them up in the next step
+        # instance_name so that we can connect them up in the next step
         mm = self._devide_app.get_module_manager()
         newGlyphDict = {} 
         for newModulePickledName in newModulesDict.keys():
@@ -2034,13 +2034,13 @@ class GraphEditor:
         # first work through the module instances
         dotModuleDefLines = []
 
-        for instanceName, pickledModule in pmsDict.items():
-            configKeys = [i for i in dir(pickledModule.moduleConfig) if
+        for instance_name, pickledModule in pmsDict.items():
+            configKeys = [i for i in dir(pickledModule.module_config) if
                           not i.startswith('__')]
 
             configList = []
             for configKey in configKeys:
-                cValStr = str(getattr(pickledModule.moduleConfig, configKey))
+                cValStr = str(getattr(pickledModule.module_config, configKey))
                 if len(cValStr) > 80:
                     cValStr = 'Compacted'
 
@@ -2055,9 +2055,9 @@ class GraphEditor:
             
             dotModuleDefLines.append(
                 '%s [shape=box, label="%s %s\\n%s"];\n' % \
-                (instanceName,
-                 pickledModule.moduleName,
-                 instanceName,
+                (instance_name,
+                 pickledModule.module_name,
+                 instance_name,
                  configString))
 
         # then the connections
@@ -2112,9 +2112,9 @@ class GraphEditor:
 
         glyphPosDict is a dictionary mapping from instance_name to
         glyph position.
-        pmsDict maps from instance_name to pickledModuleState, an
-        object with attributes (moduleConfig, moduleName,
-        instanceName)
+        pmsDict maps from instance_name to PickledModuleState, an
+        object with attributes (module_config, module_name,
+        instance_name)
         connectionList is a list of pickledConnection, each containing
         (producer_instance_name, output_idx, consumer_instance_name,
         input_idx)
@@ -2127,18 +2127,18 @@ class GraphEditor:
         pmsDict, connectionList = mm.serialiseModuleInstances(
             moduleInstances)
 
-        savedInstanceNames = [pms.instanceName for pms in pmsDict.values()]
+        savedInstanceNames = [pms.instance_name for pms in pmsDict.values()]
                                   
         # now we also get to store the coordinates of the glyphs which
-        # have been saved (keyed on instanceName)
+        # have been saved (keyed on instance_name)
         savedGlyphs = [glyph for glyph in glyphs
                        if mm.get_instance_name(glyph.moduleInstance)\
                        in savedInstanceNames]
             
         glyphPosDict = {}
         for savedGlyph in savedGlyphs:
-            instanceName = mm.get_instance_name(savedGlyph.moduleInstance)
-            glyphPosDict[instanceName] = savedGlyph.get_position()
+            instance_name = mm.get_instance_name(savedGlyph.moduleInstance)
+            glyphPosDict[instance_name] = savedGlyph.get_position()
 
         return (pmsDict, connectionList, glyphPosDict)
         
