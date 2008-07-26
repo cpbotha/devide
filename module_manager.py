@@ -213,7 +213,7 @@ class PickledModuleState:
         self.instance_name = None
 
 #########################################################################
-class pickledConnection:
+class PickledConnection:
     def __init__(self, sourceInstanceName=None, outputIdx=None,
                  targetInstanceName=None, inputIdx=None, connectionType=None):
         
@@ -1291,7 +1291,7 @@ class ModuleManager:
                               (outputConnection[0].__class__.__name__,
                                connectionType)
                         
-                        connection = pickledConnection(
+                        connection = PickledConnection(
                             mModule.instance_name, outputIdx,
                             self._moduleDict[outputConnection[0]].instance_name,
                             outputConnection[1],
