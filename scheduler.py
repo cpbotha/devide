@@ -162,7 +162,7 @@ class Scheduler:
         tests with previously existing scheduleModules will not work.  You have
         to use the L{SchedulerModuleWrapper.matches()} method.
 
-        @param moduleInstances: list of raw module instances
+        @param module_instances: list of raw module instances
         @return: list with SchedulerModuleWrappers
         """
         

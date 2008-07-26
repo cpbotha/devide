@@ -222,7 +222,7 @@ class coGlyph(coRectangle):
     
 
     def __init__(self, position, numInputs, numOutputs,
-                 labelList, moduleInstance):
+                 labelList, module_instance):
         # parent constructor
         coRectangle.__init__(self, position, (0,0))
         # we'll fill this out later
@@ -233,14 +233,14 @@ class coGlyph(coRectangle):
         # be careful with list concatenation!
         self.outputLines = [[] for i in range(self._numOutputs)]
         self._labelList = labelList
-        self.moduleInstance = moduleInstance
+        self.module_instance = module_instance
         self.draggedPort = None
         self.enteredPort = None
         self.selected = False
         self.blocked = False
 
     def close(self):
-        del self.moduleInstance
+        del self.module_instance
         del self.inputLines
         del self.outputLines
 

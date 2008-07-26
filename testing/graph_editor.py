@@ -143,7 +143,7 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         # check that the imageFillHoles module has been placed
         ag = self._ge._get_all_glyphs()
-        module_name = str(ag[0].moduleInstance.__class__.__name__)
+        module_name = str(ag[0].module_instance.__class__.__name__)
         expected_name = 'imageFillHoles'
         self.failUnless(module_name == expected_name, '%s != %s' %
                         (module_name, expected_name))

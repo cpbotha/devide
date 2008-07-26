@@ -33,7 +33,7 @@ def unlink_slice3dVWRs():
 
 iface = devide_app.get_interface()
 sg = iface._graph_editor._selected_glyphs.getSelectedGlyphs()
-s3ds = [i.moduleInstance for i in sg if i.moduleInstance.__class__.__name__ == 'slice3dVWR']
+s3ds = [i.module_instance for i in sg if i.module_instance.__class__.__name__ == 'slice3dVWR']
 
 unlink_slice3dVWRs()
 for s3d in s3ds:

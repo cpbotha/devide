@@ -341,7 +341,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
 
     def __init__(self, canvas, position, numInputs, numOutputs,
-                 labelList, moduleInstance):
+                 labelList, module_instance):
         # parent constructor
         DeVIDECanvasObject.__init__(self, canvas, position)
 
@@ -353,7 +353,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # be careful with list concatenation!
         self.outputLines = [[] for i in range(self._numOutputs)]
         self._labelList = labelList
-        self.moduleInstance = moduleInstance
+        self.module_instance = module_instance
         self.draggedPort = None
         self.enteredPort = None
         self.selected = False
@@ -379,7 +379,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.update_geometry()
 
     def close(self):
-        del self.moduleInstance
+        del self.module_instance
         del self.inputLines
         del self.outputLines
 

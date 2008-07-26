@@ -483,7 +483,7 @@ class GraphEditor:
         """
         # first get the module manager to block this
         mm = self._devide_app.get_module_manager()
-        mm.blockmodule(mm.get_meta_module(glyph.moduleInstance))
+        mm.blockmodule(mm.get_meta_module(glyph.module_instance))
         # then tell the glyph about it
         self._blocked_glyphs.addGlyph(glyph)
         # finally tell the glyph to update its geometry
@@ -497,7 +497,7 @@ class GraphEditor:
         """
         # first get the module manager to unblock this
         mm = self._devide_app.get_module_manager()
-        mm.unblockmodule(mm.get_meta_module(glyph.moduleInstance))
+        mm.unblockmodule(mm.get_meta_module(glyph.module_instance))
         # then tell the glyph about it
         self._blocked_glyphs.removeGlyph(glyph)
         # finally tell the glyph to update its geometry
@@ -514,7 +514,7 @@ class GraphEditor:
         This method is called by event handlers in the GraphEditor.
         """
         
-        instances = [g.moduleInstance for g in glyphs]
+        instances = [g.module_instance for g in glyphs]
         mm = self._devide_app.get_module_manager()
         allMetaModules = [mm._moduleDict[instance]
                           for instance in instances]
@@ -628,7 +628,7 @@ class GraphEditor:
             first filename in list if its any other module with a
             filename attribute in its config struct.
             """
-            mi = g.moduleInstance
+            mi = g.module_instance
             c = mi.get_config()
             mm = self._devide_app.get_module_manager()
 
@@ -924,21 +924,21 @@ class GraphEditor:
 
 
     def _testSelectedGlyphs(self):
-        si = [i.moduleInstance
+        si = [i.module_instance
               for i in self._selected_glyphs.getSelectedGlyphs()]
 
-    def createGlyph(self, rx, ry, labelList, moduleInstance):
+    def createGlyph(self, rx, ry, labelList, module_instance):
         """Create only a glyph on the canvas given an already created
-        moduleInstance.  labelList is a list of strings that will be printed
+        module_instance.  labelList is a list of strings that will be printed
         inside the glyph representation.  The glyph instance is returned.
 
         @param rx,ry: world coordinates of new glyph.
         """
         
         co = DeVIDECanvasGlyph(self.canvas, (rx, ry),
-                          len(moduleInstance.get_input_descriptions()),
-                          len(moduleInstance.get_output_descriptions()),
-                          labelList, moduleInstance)
+                          len(module_instance.get_input_descriptions()),
+                          len(module_instance.get_output_descriptions()),
+                          labelList, module_instance)
         
         self.canvas.add_object(co)
 
@@ -996,13 +996,13 @@ class GraphEditor:
 
                 return (temp_module, glyph)
 
-    def _execute_module(self, moduleInstance):
+    def _execute_module(self, module_instance):
         """Ask the ModuleManager to execute the devide module represented by
-        the parameter moduleInstance.
+        the parameter module_instance.
         """
         
         mm = self._devide_app.get_module_manager()
-        mm.execute_module(moduleInstance)
+        mm.execute_module(module_instance)
 
     def _module_doc_to_html(self, full_module_name, doc):
         # do rudimentary __doc__ -> html conversion
@@ -1083,7 +1083,7 @@ class GraphEditor:
 
         found = False
         for glyph in all_glyphs:
-            if glyph.moduleInstance == meta_module.instance:
+            if glyph.module_instance == meta_module.instance:
                 found = True
                 break # get out of this for
 
@@ -1561,7 +1561,7 @@ class GraphEditor:
         try:
             # first disconnect the actual modules
             mm = self._devide_app.get_module_manager()
-            mm.disconnectModules(glyph.moduleInstance, inputIdx)
+            mm.disconnectModules(glyph.module_instance, inputIdx)
 
         except Exception, e:
             self._devide_app.log_error_with_exception(
@@ -1738,7 +1738,7 @@ class GraphEditor:
         glyphDeletionSchedule = []
         for consumerType in range(maxConsumerType, -1, -1):
             for glyph in allGlyphs:
-                moduleClassName = glyph.moduleInstance.__class__.__name__
+                moduleClassName = glyph.module_instance.__class__.__name__
                 if moduleClassName in mm.consumerTypeTable:
                     currentConsumerType = mm.consumerTypeTable[
                         moduleClassName]
@@ -1777,8 +1777,8 @@ class GraphEditor:
         try:
             # connect the actual modules
             mm = self._devide_app.get_module_manager()
-            mm.connectModules(fromObject.moduleInstance, fromOutputIdx,
-                              toObject.moduleInstance, toInputIdx)
+            mm.connectModules(fromObject.module_instance, fromOutputIdx,
+                              toObject.module_instance, toInputIdx)
 
             # if that worked, we can make a linypoo
             self._createLine(fromObject, fromOutputIdx, toObject, toInputIdx)
@@ -1844,9 +1844,9 @@ class GraphEditor:
         newGlyphDict = {} 
         for newModulePickledName in newModulesDict.keys():
             position = glyphPosDict[newModulePickledName]
-            moduleInstance = newModulesDict[newModulePickledName]
-            gLabel = [moduleInstance.__class__.__name__]
-            instname = mm.get_instance_name(moduleInstance)
+            module_instance = newModulesDict[newModulePickledName]
+            gLabel = [module_instance.__class__.__name__]
+            instname = mm.get_instance_name(module_instance)
             if not instname.startswith('dvm'):
                 gLabel.append(instname)
                 
@@ -1854,7 +1854,7 @@ class GraphEditor:
                 position[0] - reposCoords[0] + origin[0],
                 position[1] - reposCoords[1] + origin[1],
                 gLabel,
-                moduleInstance)
+                module_instance)
             newGlyphDict[newModulePickledName] = newGlyph
 
         # now make lines for all the existing connections
@@ -1915,7 +1915,7 @@ class GraphEditor:
 
             new_pos = pos + (0.0,)
             ptid = points.InsertNextPoint(new_pos)
-            instance_name = mm.get_instance_name(glyph.moduleInstance)
+            instance_name = mm.get_instance_name(glyph.module_instance)
             name2ptid[instance_name] = ptid
             ptid2glyph[ptid] = glyph
 
@@ -1939,10 +1939,10 @@ class GraphEditor:
         # we can also add an extra connection from each glyph to EVERY
         # other glyph to keep things more balanced...  (SIGH)
         for iglyph in all_glyphs:
-            iptid = name2ptid[mm.get_instance_name(iglyph.moduleInstance)]
+            iptid = name2ptid[mm.get_instance_name(iglyph.module_instance)]
             for jglyph in all_glyphs:
                 if iglyph is not jglyph:
-                    jptid = name2ptid[mm.get_instance_name(jglyph.moduleInstance)]
+                    jptid = name2ptid[mm.get_instance_name(jglyph.module_instance)]
                     v = vtk.vtkIdList()
                     v.InsertNextId(iptid)
                     v.InsertNextId(jptid)
@@ -2010,7 +2010,7 @@ class GraphEditor:
         (pmsDict, connectionList, glyphPosDict) = \
                   self._serialiseNetwork(glyphs)
 
-        # change the serialised moduleInstances to a pickled stream
+        # change the serialised module_instances to a pickled stream
         headerAndData = (('DVN', 1, 0, 0), \
                         (pmsDict, connectionList, glyphPosDict))
         stream = cPickle.dumps(headerAndData, True)
@@ -2120,24 +2120,24 @@ class GraphEditor:
         input_idx)
         """
 
-        moduleInstances = [glyph.moduleInstance for glyph in glyphs]
+        module_instances = [glyph.module_instance for glyph in glyphs]
         mm = self._devide_app.get_module_manager()
 
         # let the ModuleManager serialise what it can
         pmsDict, connectionList = mm.serialiseModuleInstances(
-            moduleInstances)
+            module_instances)
 
         savedInstanceNames = [pms.instance_name for pms in pmsDict.values()]
                                   
         # now we also get to store the coordinates of the glyphs which
         # have been saved (keyed on instance_name)
         savedGlyphs = [glyph for glyph in glyphs
-                       if mm.get_instance_name(glyph.moduleInstance)\
+                       if mm.get_instance_name(glyph.module_instance)\
                        in savedInstanceNames]
             
         glyphPosDict = {}
         for savedGlyph in savedGlyphs:
-            instance_name = mm.get_instance_name(savedGlyph.moduleInstance)
+            instance_name = mm.get_instance_name(savedGlyph.module_instance)
             glyphPosDict[instance_name] = savedGlyph.get_position()
 
         return (pmsDict, connectionList, glyphPosDict)
@@ -2161,10 +2161,10 @@ class GraphEditor:
                draggedObject.draggedPort != (-1, -1):
 
             if draggedObject.draggedPort[0] == 0:
-                pstr = draggedObject.moduleInstance.get_input_descriptions()[
+                pstr = draggedObject.module_instance.get_input_descriptions()[
                     draggedObject.draggedPort[1]]
             else:
-                pstr = draggedObject.moduleInstance.get_output_descriptions()[
+                pstr = draggedObject.module_instance.get_output_descriptions()[
                     draggedObject.draggedPort[1]]
 
             from_descr = '|%s|-[%s]' % (draggedObject.getLabel(), pstr)
@@ -2177,10 +2177,10 @@ class GraphEditor:
                     draggedObject.draggedPort[1] == port_idx
 
         if port_inout == 0:
-            pstr = glyph.moduleInstance.get_input_descriptions()[
+            pstr = glyph.module_instance.get_input_descriptions()[
                 port_idx]
         else:
-            pstr = glyph.moduleInstance.get_output_descriptions()[
+            pstr = glyph.module_instance.get_output_descriptions()[
                 port_idx]
              
         to_descr = '|%s|-[%s]' % (glyph.getLabel(), pstr)
@@ -2374,7 +2374,7 @@ class GraphEditor:
             self.update_port_info_statusbar(glyph, inout, port_idx)
 
     def _observer_glyph_right_button_down(self, glyph):
-        module = glyph.moduleInstance
+        module = glyph.module_instance
         
         pmenu = wx.Menu(glyph.getLabel())
 
@@ -2427,7 +2427,7 @@ class GraphEditor:
                     self.canvas.event.pos[1]))
 
     def _observer_glyph_left_button_down(self, glyph):
-        module = glyph.moduleInstance
+        module = glyph.module_instance
         
         
         if self.canvas.event.wx_event.ControlDown() or \
@@ -2532,7 +2532,7 @@ class GraphEditor:
             self.canvas.redraw()
 
     def _observer_glyph_left_button_dclick(self, glyph):
-        module = glyph.moduleInstance
+        module = glyph.module_instance
         # double clicking on a module opens the View/Config.
         self._viewConfModule(module)
 
@@ -2885,7 +2885,7 @@ class GraphEditor:
             mm = self._devide_app.get_module_manager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
-            mm.deleteModule(glyph.moduleInstance)
+            mm.deleteModule(glyph.module_instance)
 
 
         except Exception, e:
@@ -2921,7 +2921,7 @@ class GraphEditor:
         self._interface.set_current_filename(filename)
 
     def show_module_help_from_glyph(self, glyph):
-        module_instance = glyph.moduleInstance
+        module_instance = glyph.module_instance
         mm = self._devide_app.get_module_manager()
 
         spec = mm.get_module_spec(module_instance)

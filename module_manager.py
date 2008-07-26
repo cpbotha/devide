@@ -736,7 +736,7 @@ class ModuleManager:
         @param fullName: The complete module spec below application directory,
         e.g. modules.Readers.hdfRDR.
 
-        @return: moduleInstance if successful.
+        @return: module_instance if successful.
 
         @raises ModuleManagerException: if there is a problem creating the
         module.
@@ -766,9 +766,9 @@ class ModuleManager:
 
             try:
                 # then instantiate the requested class
-                moduleInstance = None
+                module_instance = None
                 exec(
-                    'moduleInstance = %s.%s(self)' % (fullName,
+                    'module_instance = %s.%s(self)' % (fullName,
                                                       fullName.split('.')[-1]))
             finally:
                 # do the following in all cases:
@@ -776,19 +776,19 @@ class ModuleManager:
 
                 # if there was an exception, it will now be re-raised
 
-            if hasattr(moduleInstance, 'PARTS_TO_INPUTS'):
-                pti = moduleInstance.PARTS_TO_INPUTS
+            if hasattr(module_instance, 'PARTS_TO_INPUTS'):
+                pti = module_instance.PARTS_TO_INPUTS
             else:
                 pti = None
 
-            if hasattr(moduleInstance, 'PARTS_TO_OUTPUTS'):
-                pto = moduleInstance.PARTS_TO_OUTPUTS
+            if hasattr(module_instance, 'PARTS_TO_OUTPUTS'):
+                pto = module_instance.PARTS_TO_OUTPUTS
             else:
                 pto = None
             
             # and store it in our internal structures
-            self._moduleDict[moduleInstance] = MetaModule(
-                moduleInstance, instance_name, fullName, pti, pto)
+            self._moduleDict[module_instance] = MetaModule(
+                module_instance, instance_name, fullName, pti, pto)
 
             # it's now fully born ;)
             self._halfBornInstanceName = None
@@ -804,7 +804,7 @@ class ModuleManager:
             raise ModuleManagerException, es, sys.exc_info()[2]
 
         # return the instance
-        return moduleInstance
+        return module_instance
 
     def importReload(self, fullName):
         """This will import and reload a module if necessary.  Use this only
@@ -956,7 +956,7 @@ class ModuleManager:
         outputs = self._moduleDict[instance].outputs
 
         # outputs is a list of lists of tuples, each tuple containing
-        # moduleInstance and inputIdx of the consumer module
+        # module_instance and inputIdx of the consumer module
         for output in outputs:
             if output:
                 # we just want to walk through the dictionary tuples
@@ -964,7 +964,7 @@ class ModuleManager:
                     # disconnect all consumers
                     self.disconnectModules(consumer[0], consumer[1])
 
-        # inputs is a list of tuples, each tuple containing moduleInstance
+        # inputs is a list of tuples, each tuple containing module_instance
         # and outputIdx of the producer/supplier module
         for inputIdx in range(len(inputs)):
             try:
@@ -1196,7 +1196,7 @@ class ModuleManager:
         # the newly created module-instance and a list with the connections
         return (newModulesDict, newConnections)
 
-    def requestAutoExecuteNetwork(self, moduleInstance):
+    def requestAutoExecuteNetwork(self, module_instance):
         """Method that can be called by an interaction/view module to
         indicate that some action by the user should result in a network
         update.  The execution will only be performed if the
@@ -1207,7 +1207,7 @@ class ModuleManager:
             print "auto_execute ##### #####"
             self.executeNetwork()
 
-    def serialiseModuleInstances(self, moduleInstances):
+    def serialiseModuleInstances(self, module_instances):
         """Given 
         """
 
@@ -1218,38 +1218,38 @@ class ModuleManager:
         # pickling) which modules are being written away
         pickledModuleInstances = []
         
-        for moduleInstance in moduleInstances:
-            if self._moduleDict.has_key(moduleInstance):
+        for module_instance in module_instances:
+            if self._moduleDict.has_key(module_instance):
 
                 # first get the MetaModule
-                mModule = self._moduleDict[moduleInstance]
+                mModule = self._moduleDict[module_instance]
                 
                 # create a picklable thingy
                 pms = PickledModuleState()
                 
                 try:
                     print "SERIALISE: %s - %s" % \
-                          (str(moduleInstance),
-                           str(moduleInstance.get_config()))
-                    pms.module_config = moduleInstance.get_config()
+                          (str(module_instance),
+                           str(module_instance.get_config()))
+                    pms.module_config = module_instance.get_config()
                 except AttributeError, e:
                     self._devide_app.log_warning(
                         'Could not extract state (config) from module %s: %s' \
-                        % (moduleInstance.__class__.__name__, str(e)))
+                        % (module_instance.__class__.__name__, str(e)))
 
                     # if we can't get a config, we pickle a default
                     pms.module_config = DefaultConfigClass()
                     
-                #pms.module_name = moduleInstance.__class__.__name__
+                #pms.module_name = module_instance.__class__.__name__
                 # we need to store the complete module name
                 # we could also get this from meta_module.module_name
-                pms.module_name = moduleInstance.__class__.__module__
+                pms.module_name = module_instance.__class__.__module__
 
                 # this will only be used for uniqueness purposes
                 pms.instance_name = mModule.instance_name
 
                 pmsDict[pms.instance_name] = pms
-                pickledModuleInstances.append(moduleInstance)
+                pickledModuleInstances.append(module_instance)
 
         # now iterate through all the actually pickled module instances
         # and store all connections in a connections list
@@ -1258,8 +1258,8 @@ class ModuleManager:
         # 1. normal connections
         # 2. connections with targets that are exceptions, e.g. sliceViewer
         connectionList = []
-        for moduleInstance in pickledModuleInstances:
-            mModule = self._moduleDict[moduleInstance]
+        for module_instance in pickledModuleInstances:
+            mModule = self._moduleDict[module_instance]
             # we only have to iterate through all outputs
             for outputIdx in range(len(mModule.outputs)):
                 outputConnections = mModule.outputs[outputIdx]
@@ -1383,7 +1383,7 @@ class ModuleManager:
         they connect to.
         """
         
-        # inputs is a list of tuples, each tuple containing moduleInstance
+        # inputs is a list of tuples, each tuple containing module_instance
         # and outputIdx of the producer/supplier module; if the port is
         # not connected, that position in inputs contains "None"
         inputs = meta_module.inputs
@@ -1400,20 +1400,20 @@ class ModuleManager:
 
         return producers
 
-    def setModified_DEPRECATED(self, moduleInstance):
+    def setModified_DEPRECATED(self, module_instance):
         """Changed modified ivar in MetaModule.
 
-        This ivar is used to determine whether moduleInstance needs to be
+        This ivar is used to determine whether module_instance needs to be
         executed to become up to date.  It should be set whenever changes
         are made that dirty the module state, for example parameter changes
         or topology changes.
 
-        @param moduleInstance: the instance whose modified state sbould be
+        @param module_instance: the instance whose modified state sbould be
         changed.
         @param value: the new value of the modified ivar, True or False.
         """
         
-        self._moduleDict[moduleInstance].modified = True 
+        self._moduleDict[module_instance].modified = True 
 
     def set_progress(self, progress, message, noTime=False):
         """Progress is in percent.
@@ -1488,13 +1488,13 @@ class ModuleManager:
         # everything proceeded according to plan.        
         return True
 
-    def modify_module(self, moduleInstance, part=0):
+    def modify_module(self, module_instance, part=0):
         """Call this whenever module state has changed in such a way that
         necessitates a re-execution, for instance when parameters have been
         changed or when new input data has been transferred.
         """
 
-        self._moduleDict[moduleInstance].modify(part)
+        self._moduleDict[module_instance].modify(part)
 
     modifyModule = modify_module
 
@@ -1567,7 +1567,7 @@ class ModuleManager:
 
     def shouldExecuteModule(self, meta_module, part=0):
 
-        """Determine whether moduleInstance requires execution to become
+        """Determine whether module_instance requires execution to become
         up to date.
 
         Execution is required when the module is new or when the user has made
@@ -1585,10 +1585,10 @@ class ModuleManager:
         consumer_input_idx, streaming=False):
         
         """Determine whether output data has to be transferred from
-        moduleInstance via output outputIndex to module consumerInstance.
+        module_instance via output outputIndex to module consumerInstance.
 
         Output needs to be transferred if:
-         - moduleInstance has new or changed output (i.e. it has
+         - module_instance has new or changed output (i.e. it has
            executed after the previous transfer)
          - consumerInstance does not have the data yet
         Both of these cases are handled with a transfer timestamp per
@@ -1610,11 +1610,11 @@ class ModuleManager:
         meta_module, output_idx, consumer_meta_module,
         consumer_input_idx, streaming=False):
 
-        """Transfer output data from moduleInstance to the consumer modules
+        """Transfer output data from module_instance to the consumer modules
         connected to its specified output indexes.
 
         This will be called by the scheduler right before execution to
-        transfer the given output from moduleInstance instance to the correct
+        transfer the given output from module_instance instance to the correct
         input on the consumerInstance.  In general, this is only done if
         shouldTransferOutput is true, so the number of unnecessary transfers
         should be minimised.
@@ -1622,7 +1622,7 @@ class ModuleManager:
         This method is in ModuleManager and not in MetaModule because it
         involves more than one MetaModule.
 
-        @param moduleInstance: producer module whose output data must be
+        @param module_instance: producer module whose output data must be
         transferred.
         @param outputIndex: only output data produced by this output will
         be transferred.
@@ -1635,7 +1635,7 @@ class ModuleManager:
         from or transferring it to a new module.
         """
 
-        #print 'transferring data %s:%d' % (moduleInstance.__class__.__name__,
+        #print 'transferring data %s:%d' % (module_instance.__class__.__name__,
         #                                   outputIndex)
 
         # double check that this connection already exists
