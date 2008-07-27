@@ -108,8 +108,15 @@ class NetworkManager(SubjectMixin):
 
         sections = cp.sections()
 
-        pc= PickledConnection()
-        conn_attrs = pc.__dict__.keys()
+        # we use this dictionary to determine which ConfigParser get
+        # method to use for the specific connection attribute.
+        conn_attrs = {
+                'source_instance_name' : 'get',
+                'output_idx' : 'getint',
+                'target_instance_name' : 'get',
+                'input_idx' : 'getint',
+                'connection_type' : 'getint'
+                }
 
         for sec in sections:
             if sec.startswith('modules/'):
@@ -119,7 +126,8 @@ class NetworkManager(SubjectMixin):
                 # we have to use this relatively safe eval trick to
                 # unpack and interpret the dict
                 cd = eval(cp.get(sec, 'module_config_dict'),
-                        {"__builtins__": {}})
+                        {"__builtins__": {}, 
+                         'True' : True, 'False' : False})
                 pms.module_config.__dict__.update(cd)
                 # store in main pms dict
                 pms_dict[pms.instance_name] = pms
@@ -132,11 +140,11 @@ class NetworkManager(SubjectMixin):
             elif sec.startswith('connections/'):
                 pc = PickledConnection()
 
-                for a in conn_attrs:
-                    setattr(pc, a, cp.get(sec, a))
+                for a, getter in conn_attrs.items():
+                    get_method = getattr(cp, getter) 
+                    setattr(pc, a, get_method(sec, a))
 
                 connection_list.append(pc)
-
 
         return pms_dict, connection_list, glyph_pos_dict
 
