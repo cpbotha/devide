@@ -6,7 +6,17 @@
 # Shell).
 
 import ConfigParser
+import os
 import wx
+
+# used to translate from old-style attributes to new-style
+conn_trans = {
+        'sourceInstanceName' : 'source_instance_name',
+        'inputIdx' : 'input_idx',
+        'targetInstanceName' : 'target_instance_name',
+        'connectionType' : 'connection_type',
+        'outputIdx' : 'output_idx'
+        }
 
 def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
     """Given the serialised network representation as returned by
@@ -17,11 +27,11 @@ def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
     cp = ConfigParser.ConfigParser()
     # create a section for each module
     for pms in pms_dict.values():
-        sec = 'modules/%s' % (pms.instance_name,)
+        sec = 'modules/%s' % (pms.instanceName,)
         cp.add_section(sec)
-        cp.set(sec, 'module_name', pms.module_name)
-        cp.set(sec, 'module_config_dict', pms.module_config.__dict__)
-        cp.set(sec, 'glyph_position', glyph_pos_dict[pms.instance_name])
+        cp.set(sec, 'module_name', pms.moduleName)
+        cp.set(sec, 'module_config_dict', pms.moduleConfig.__dict__)
+        cp.set(sec, 'glyph_position', glyph_pos_dict[pms.instanceName])
 
     sec = 'connections'
     for idx, pconn in enumerate(connection_list):
@@ -29,7 +39,7 @@ def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
         cp.add_section(sec)
         attrs = pconn.__dict__.keys()
         for a in attrs:
-            cp.set(sec, a, getattr(pconn, a))
+            cp.set(sec, conn_trans[a], getattr(pconn, a))
 
 
     cfp = file(filename, 'wb')
