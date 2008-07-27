@@ -177,7 +177,7 @@ class MetaModule:
         self.instance.config_to_view()
 
     def findConsumerInOutputConnections(
-        self, outputIdx, consumerInstance, consumerInputIdx=-1):
+        self, output_idx, consumerInstance, consumerInputIdx=-1):
         """Find the given consumer module and its input index in the
         list for the given output index.
         
@@ -187,7 +187,7 @@ class MetaModule:
         @return: index of given instance if found, -1 otherwise.
         """
 
-        ol = self.outputs[outputIdx]
+        ol = self.outputs[output_idx]
 
         found = False
         for i in range(len(ol)):
@@ -205,28 +205,28 @@ class MetaModule:
         else:
             return -1
 
-    def getPartForInput(self, inputIdx):
-        """Return module part that takes input inputIdx.
+    def getPartForInput(self, input_idx):
+        """Return module part that takes input input_idx.
         """
 
         if self.numParts > 1:
-            return self._inputsToParts[inputIdx]
+            return self._inputsToParts[input_idx]
 
         else:
             return 0
 
-    def getPartForOutput(self, outputIdx):
-        """Return module part that produces output outputIdx.
+    def getPartForOutput(self, output_idx):
+        """Return module part that produces output output_idx.
         """
 
         if self.numParts > 1:
-            return self._outputsToParts[outputIdx]
+            return self._outputsToParts[output_idx]
 
         else:
             return 0
 
-    def connectInput(self, inputIdx, producerModule, producerOutputIdx):
-        """Record connection on the specified inputIdx.
+    def connectInput(self, input_idx, producerModule, producerOutputIdx):
+        """Record connection on the specified input_idx.
 
         This is one half of recording a complete connection: the supplier
         module should also record the connection of this consumer.
@@ -236,15 +236,15 @@ class MetaModule:
         """
 
         # check that the given input is not already connected
-        if self.inputs[inputIdx] is not None:
+        if self.inputs[input_idx] is not None:
             raise Exception, \
                   "%d'th input of module %s already connected." % \
-                  (inputIdx, self.instance.__class__.__name__)
+                  (input_idx, self.instance.__class__.__name__)
 
         # record the input connection
-        self.inputs[inputIdx] = (producerModule, producerOutputIdx)
+        self.inputs[input_idx] = (producerModule, producerOutputIdx)
 
-    def disconnectInput(self, inputIdx):
+    def disconnectInput(self, input_idx):
         """Record disconnection on the given input of the encapsulated
         instance.
 
@@ -256,13 +256,13 @@ class MetaModule:
         # is done by the scheduler during network execution (when the
         # data is actually transferred), but for disconnects, we have
         # to modify the module immediately.
-        if not self.inputs[inputIdx] is None:
-            part = self.getPartForInput(inputIdx)
+        if not self.inputs[input_idx] is None:
+            part = self.getPartForInput(input_idx)
             self.modify(part)
 
-        self.inputs[inputIdx] = None
+        self.inputs[input_idx] = None
 
-    def connectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
+    def connectOutput(self, output_idx, consumerInstance, consumerInputIdx):
         """Record connection on the given output of the encapsulated module.
 
         @return: True if connection recorded, False if not (for example if
@@ -270,42 +270,42 @@ class MetaModule:
         """
 
         if self.findConsumerInOutputConnections(
-            outputIdx, consumerInstance, consumerInputIdx) >= 0:
+            output_idx, consumerInstance, consumerInputIdx) >= 0:
             # this connection has already been made, bail.
             return
 
         # do the connection
-        ol = self.outputs[outputIdx]
+        ol = self.outputs[output_idx]
         ol.append((consumerInstance, consumerInputIdx))
 
         # this is a new connection, so set the transfer times to 0
         self.transferTimes[
-            (outputIdx, consumerInstance, consumerInputIdx)] = 0
+            (output_idx, consumerInstance, consumerInputIdx)] = 0
 
         # also reset streaming transfers
         self.streaming_transfer_times[
-            (outputIdx, consumerInstance, consumerInputIdx)] = 0
+            (output_idx, consumerInstance, consumerInputIdx)] = 0
 
-    def disconnectOutput(self, outputIdx, consumerInstance, consumerInputIdx):
+    def disconnectOutput(self, output_idx, consumerInstance, consumerInputIdx):
         """Record disconnection on the given output of the encapsulated module.
         """
 
         # find index of the given consumerInstance and consumerInputIdx
-        # in the list of consumers connected to producer port outputIdx
+        # in the list of consumers connected to producer port output_idx
         cidx = self.findConsumerInOutputConnections(
-            outputIdx, consumerInstance, consumerInputIdx)
+            output_idx, consumerInstance, consumerInputIdx)
 
         # if this is a valid index, nuke it
         if cidx >= 0:
-            ol = self.outputs[outputIdx]
+            ol = self.outputs[output_idx]
             del ol[cidx]
 
             # also remove the relevant slot from our transferTimes
             del self.transferTimes[
-                (outputIdx, consumerInstance, consumerInputIdx)]
+                (output_idx, consumerInstance, consumerInputIdx)]
 
             del self.streaming_transfer_times[
-                (outputIdx, consumerInstance, consumerInputIdx)]
+                (output_idx, consumerInstance, consumerInputIdx)]
 
         else:
             # consumer not found, the connection didn't exist

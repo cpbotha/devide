@@ -50,8 +50,8 @@ class DanielssonDistance(ScriptedConfigModuleMixin, ModuleBase):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.get_input_descriptions())):
-            self.set_input(inputIdx, None)
+        for input_idx in range(len(self.get_input_descriptions())):
+            self.set_input(input_idx, None)
 
         # this will take care of all display thingies
         ScriptedConfigModuleMixin.close(self)

@@ -74,8 +74,8 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
-        for inputIdx in range(len(self.get_input_descriptions())):
-            self.set_input(inputIdx, None)
+        for input_idx in range(len(self.get_input_descriptions())):
+            self.set_input(input_idx, None)
         # don't forget to call the close() method of the vtkPipeline mixin
         NoConfigModuleMixin.close(self)
         # get rid of our reference

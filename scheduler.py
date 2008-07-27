@@ -196,14 +196,14 @@ class Scheduler:
         # only consumers that are dependent on p_part are relevant
         p_part = schedulerModule.part
 
-        # consumers is a list of (outputIdx, consumerMetaModule,
+        # consumers is a list of (output_idx, consumerMetaModule,
         # consumerInputIdx) tuples
         mm = self._devideApp.get_module_manager()        
         consumers = mm.getConsumers(p_meta_module)
         
         sConsumers = []
-        for outputIdx, consumerMetaModule, consumerInputIdx in consumers:
-            if p_meta_module.getPartForOutput(outputIdx) == p_part:
+        for output_idx, consumerMetaModule, consumerInputIdx in consumers:
+            if p_meta_module.getPartForOutput(output_idx) == p_part:
 
                 # now see which part of the consumerMetaModule is dependent
                 cPart = consumerMetaModule.getPartForInput(consumerInputIdx)
@@ -232,7 +232,7 @@ class Scheduler:
         # only producers that supply this part are relevant
         c_part = schedulerModule.part
         
-        # producers is a list of (producerMetaModule, output_idx, inputIdx)
+        # producers is a list of (producerMetaModule, output_idx, input_idx)
         # tuples
         mm = self._devideApp.get_module_manager()        
         producers = mm.getProducers(c_meta_module)

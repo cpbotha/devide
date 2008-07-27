@@ -214,14 +214,14 @@ class PickledModuleState:
 
 #########################################################################
 class PickledConnection:
-    def __init__(self, sourceInstanceName=None, outputIdx=None,
-                 targetInstanceName=None, inputIdx=None, connectionType=None):
+    def __init__(self, source_instance_name=None, output_idx=None,
+                 target_instance_name=None, input_idx=None, connection_type=None):
         
-        self.sourceInstanceName = sourceInstanceName
-        self.outputIdx = outputIdx
-        self.targetInstanceName = targetInstanceName
-        self.inputIdx = inputIdx
-        self.connectionType = connectionType
+        self.source_instance_name = source_instance_name
+        self.output_idx = output_idx
+        self.target_instance_name = target_instance_name
+        self.input_idx = input_idx
+        self.connection_type = connection_type
 
 #########################################################################
 class ModuleManager:
@@ -956,7 +956,7 @@ class ModuleManager:
         outputs = self._module_dict[instance].outputs
 
         # outputs is a list of lists of tuples, each tuple containing
-        # module_instance and inputIdx of the consumer module
+        # module_instance and input_idx of the consumer module
         for output in outputs:
             if output:
                 # we just want to walk through the dictionary tuples
@@ -965,21 +965,21 @@ class ModuleManager:
                     self.disconnectModules(consumer[0], consumer[1])
 
         # inputs is a list of tuples, each tuple containing module_instance
-        # and outputIdx of the producer/supplier module
-        for inputIdx in range(len(inputs)):
+        # and output_idx of the producer/supplier module
+        for input_idx in range(len(inputs)):
             try:
                 # also make sure we fully disconnect ourselves from
                 # our producers
-                self.disconnectModules(instance, inputIdx)
+                self.disconnectModules(instance, input_idx)
             except Exception, e:
                 # we can't allow this to prevent a destruction, just log
                 self.log_error_with_exception(
                     'Module %s (%s) errored during disconnect of input %d. '
                     'Continuing with deletion.' % \
-                    (instance_name, module_name, inputIdx))
+                    (instance_name, module_name, input_idx))
                 
             # set supplier to None - so we know it's nuked
-            inputs[inputIdx] = None
+            inputs[input_idx] = None
 
         # we've disconnected completely - let's reset all lists
         self._module_dict[instance].reset_inputsOutputs()
@@ -1149,23 +1149,23 @@ class ModuleManager:
         # consumerTypes
         
         newConnections = []
-        for connectionType in range(max(self.consumerTypeTable.values()) + 1):
+        for connection_type in range(max(self.consumerTypeTable.values()) + 1):
             typeConnections = [connection for connection in connectionList
-                               if connection.connectionType == connectionType]
+                               if connection.connection_type == connection_type]
             
             for connection in typeConnections:
-                if newModulesDict.has_key(connection.sourceInstanceName) and \
-                   newModulesDict.has_key(connection.targetInstanceName):
-                    sourceM = newModulesDict[connection.sourceInstanceName]
-                    targetM = newModulesDict[connection.targetInstanceName]
+                if newModulesDict.has_key(connection.source_instance_name) and \
+                   newModulesDict.has_key(connection.target_instance_name):
+                    sourceM = newModulesDict[connection.source_instance_name]
+                    targetM = newModulesDict[connection.target_instance_name]
                     # attempt connecting them
                     print "connecting %s:%d to %s:%d..." % \
-                          (sourceM.__class__.__name__, connection.outputIdx,
-                           targetM.__class__.__name__, connection.inputIdx)
+                          (sourceM.__class__.__name__, connection.output_idx,
+                           targetM.__class__.__name__, connection.input_idx)
 
                     try:
-                        self.connectModules(sourceM, connection.outputIdx,
-                                            targetM, connection.inputIdx)
+                        self.connectModules(sourceM, connection.output_idx,
+                                            targetM, connection.input_idx)
                     except:
                         pass
                     else:
@@ -1261,8 +1261,8 @@ class ModuleManager:
         for module_instance in pickledModuleInstances:
             mModule = self._module_dict[module_instance]
             # we only have to iterate through all outputs
-            for outputIdx in range(len(mModule.outputs)):
-                outputConnections = mModule.outputs[outputIdx]
+            for output_idx in range(len(mModule.outputs)):
+                outputConnections = mModule.outputs[output_idx]
                 # each output can of course have multiple outputConnections
                 # each outputConnection is a tuple:
                 # (consumerModule, consumerInputIdx)
@@ -1278,10 +1278,10 @@ class ModuleManager:
                                         outputConnection[0].__class__.__name__
                         
                         if moduleClassName in self.consumerTypeTable:
-                            connectionType = self.consumerTypeTable[
+                            connection_type = self.consumerTypeTable[
                                 moduleClassName]
                         else:
-                            connectionType = 1
+                            connection_type = 1
                             # FIXME: we still have to check for 0: iterate
                             # through all inputs, check that none of the
                             # supplier modules are in the list that we're
@@ -1289,13 +1289,13 @@ class ModuleManager:
 
                         print '%s has connection type %d' % \
                               (outputConnection[0].__class__.__name__,
-                               connectionType)
+                               connection_type)
                         
                         connection = PickledConnection(
-                            mModule.instance_name, outputIdx,
+                            mModule.instance_name, output_idx,
                             self._module_dict[outputConnection[0]].instance_name,
                             outputConnection[1],
-                            connectionType)
+                            connection_type)
                                                        
                         connectionList.append(connection)
 
@@ -1360,12 +1360,12 @@ class ModuleManager:
         # tuple contains (consumerModuleInstance, consumerInputIdx)
         outputs = meta_module.outputs
 
-        for outputIdx in range(len(outputs)):
-            output = outputs[outputIdx]
+        for output_idx in range(len(outputs)):
+            output = outputs[output_idx]
             for consumerInstance, consumerInputIdx in output:
                 consumerMetaModule = self._module_dict[consumerInstance]
                 consumers.append(
-                    (outputIdx, consumerMetaModule, consumerInputIdx))
+                    (output_idx, consumerMetaModule, consumerInputIdx))
 
         return consumers
 
@@ -1384,7 +1384,7 @@ class ModuleManager:
         """
         
         # inputs is a list of tuples, each tuple containing module_instance
-        # and outputIdx of the producer/supplier module; if the port is
+        # and output_idx of the producer/supplier module; if the port is
         # not connected, that position in inputs contains "None"
         inputs = meta_module.inputs
 

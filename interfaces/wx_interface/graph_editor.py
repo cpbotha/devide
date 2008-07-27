@@ -1553,15 +1553,15 @@ class GraphEditor:
 
 
 
-    def _disconnect(self, glyph, inputIdx):
-        """Disconnect inputIdx'th input of glyph, also remove line
+    def _disconnect(self, glyph, input_idx):
+        """Disconnect input_idx'th input of glyph, also remove line
         from canvas.
         """
 
         try:
             # first disconnect the actual modules
             mm = self._devide_app.get_module_manager()
-            mm.disconnectModules(glyph.module_instance, inputIdx)
+            mm.disconnectModules(glyph.module_instance, input_idx)
 
         except Exception, e:
             self._devide_app.log_error_with_exception(
@@ -1571,10 +1571,10 @@ class GraphEditor:
 
         # we did our best, the module didn't want to comply
         # we're going to nuke it anyway
-        deadLine = glyph.inputLines[inputIdx]
+        deadLine = glyph.inputLines[input_idx]
         if deadLine:
             # remove the line from the destination module input lines
-            glyph.inputLines[inputIdx] = None
+            glyph.inputLines[input_idx] = None
             # and for the source module output lines
             outlines = deadLine.fromGlyph.outputLines[
                 deadLine.fromOutputIdx]
@@ -1639,9 +1639,9 @@ class GraphEditor:
             if canvas.getDraggedObject().draggedPort[0] == 0:
                 # the user was dragging an input port and dropped it
                 # on the canvas, so she probably wants us to disconnect
-                inputIdx = canvas.getDraggedObject().draggedPort[1]
+                input_idx = canvas.getDraggedObject().draggedPort[1]
                 self._disconnect(canvas.getDraggedObject(),
-                                 inputIdx)
+                                 input_idx)
 
             # we were dragging a port, so there was a preview line,
             # which we now can discard
@@ -1860,10 +1860,10 @@ class GraphEditor:
         # now make lines for all the existing connections
         # note that we use "newConnections" and not connectionList
         for connection in newConnections:
-            sGlyph = newGlyphDict[connection.sourceInstanceName]
-            tGlyph = newGlyphDict[connection.targetInstanceName]
-            self._createLine(sGlyph, connection.outputIdx,
-                             tGlyph, connection.inputIdx)
+            sGlyph = newGlyphDict[connection.source_instance_name]
+            tGlyph = newGlyphDict[connection.target_instance_name]
+            self._createLine(sGlyph, connection.output_idx,
+                             tGlyph, connection.input_idx)
 
         # finally we can let the canvas redraw
         self.canvas.update_all_geometry()
@@ -1921,8 +1921,8 @@ class GraphEditor:
 
         condone = {} # we use this dict to add each connection once
         for connection in connection_list:
-            prod_ptid = name2ptid[connection.sourceInstanceName]
-            cons_ptid = name2ptid[connection.targetInstanceName]
+            prod_ptid = name2ptid[connection.source_instance_name]
+            cons_ptid = name2ptid[connection.target_instance_name]
 
             # we keep this for now, we want the number of connections
             # between two modules to play a role in the layout.
@@ -2068,14 +2068,14 @@ class GraphEditor:
         
         for connection in connectionList:
 
-            mi = mm.get_instance(connection.sourceInstanceName)
+            mi = mm.get_instance(connection.source_instance_name)
             outputName = ''
             if mi:
-                outputName = mi.get_output_descriptions()[connection.outputIdx]
+                outputName = mi.get_output_descriptions()[connection.output_idx]
                 
             connectionLines.append('%s -> %s [label="%s"];\n' % \
-                                   (connection.sourceInstanceName,
-                                    connection.targetInstanceName,
+                                   (connection.source_instance_name,
+                                    connection.target_instance_name,
                                     outputName
                                     ))
 
@@ -2489,9 +2489,9 @@ class GraphEditor:
                 # if the user was dragging an input port, we have to
                 # manually disconnect
                 if canvas.getDraggedObject().draggedPort[0] == 0:
-                    inputIdx = canvas.getDraggedObject().draggedPort[1]
+                    input_idx = canvas.getDraggedObject().draggedPort[1]
                     self._disconnect(canvas.getDraggedObject(),
-                                     inputIdx)
+                                     input_idx)
                     self.canvas.redraw()
 
                 else:
@@ -2878,8 +2878,8 @@ class GraphEditor:
                 self._disconnect(consumer[0], consumer[1])
 
             # then far simpler all suppliers
-            for inputIdx in range(len(glyph.inputLines)):
-                self._disconnect(glyph, inputIdx)
+            for input_idx in range(len(glyph.inputLines)):
+                self._disconnect(glyph, input_idx)
             
             # then get the module manager to NUKE the module itself
             mm = self._devide_app.get_module_manager()
