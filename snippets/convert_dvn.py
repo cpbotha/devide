@@ -1,0 +1,68 @@
+# convert old-style (up to DeVIDE 8.5) to new-style DVN network files
+#
+# usage:
+# load your old network in DeVIDE 8.5, then execute this snippet in
+# the main Python introspection window (main menu: Window | Python
+# Shell).
+
+import ConfigParser
+import wx
+
+def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
+    """Given the serialised network representation as returned by
+    ModuleManager._serialiseNetwork, write the whole thing to disk
+    as a config-style DVN file.
+    """
+
+    cp = ConfigParser.ConfigParser()
+    # create a section for each module
+    for pms in pms_dict.values():
+        sec = 'modules/%s' % (pms.instance_name,)
+        cp.add_section(sec)
+        cp.set(sec, 'module_name', pms.module_name)
+        cp.set(sec, 'module_config_dict', pms.module_config.__dict__)
+        cp.set(sec, 'glyph_position', glyph_pos_dict[pms.instance_name])
+
+    sec = 'connections'
+    for idx, pconn in enumerate(connection_list):
+        sec = 'connections/%d' % (idx,)
+        cp.add_section(sec)
+        attrs = pconn.__dict__.keys()
+        for a in attrs:
+            cp.set(sec, a, getattr(pconn, a))
+
+
+    cfp = file(filename, 'wb')
+    cp.write(cfp)
+    cfp.close()
+
+    mm = devide_app.get_module_manager()
+    mm.log_message('Wrote NEW-style network %s.' % (filename,))
+    
+
+def save_current_network():
+    """Pop up file selector to ask for filename, then save new-style
+    network to that filename.
+    """
+
+
+    ge = devide_app._interface._graph_editor
+    filename = wx.FileSelector(
+            "Choose filename for NEW-style DVN",
+            ge._last_fileselector_dir, "", "dvn",
+            "NEW-style DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
+            wx.SAVE)
+
+    if filename:
+        # make sure it has a dvn extension
+        if os.path.splitext(filename)[1] == '':
+            filename = '%s.dvn' % (filename,)
+
+        glyphs = ge._get_all_glyphs()
+        pms_dict, connection_list, glyph_pos_dict = ge._serialiseNetwork(glyphs)
+        save_network(pms_dict, connection_list, glyph_pos_dict,
+                filename)
+
+
+save_current_network()
+
