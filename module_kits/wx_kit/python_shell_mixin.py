@@ -1,5 +1,6 @@
 import code
 from code import softspace
+import os
 import sys
 import wx
 import new
@@ -91,6 +92,8 @@ class PythonShellMixin:
         self.shell_window = shell_window
         self.module_manager = module_manager
 
+        self._last_fileselector_dir = ''
+
     def close(self, exception_printer):
         for ch in self.close_handlers:
             try:
@@ -103,14 +106,17 @@ class PythonShellMixin:
         del self.shell_window
 
     def _open_python_file(self, parent_window):
-        fd = wx.FileDialog(
-            parent_window,
-            'Select file to open into current edit',
-            wildcard='*.py', style=wx.OPEN)
+        filename = wx.FileSelector(
+                'Select file to open into current edit',
+                self._last_fileselector_dir, "", "py",
+                "Python files (*.py)|*.py|All files (*.*)|*.*",
+                wx.OPEN, parent_window)
 
-        if fd.ShowModal() == wx.ID_OK:
-            filename = fd.GetPath()
-            
+        if filename:
+            # save directory for future use
+            self._last_fileselector_dir = \
+                    os.path.dirname(filename)
+
             f = open(filename, 'r')
                 
             t = f.read()
@@ -130,13 +136,22 @@ class PythonShellMixin:
         f.close()
         
     def _saveas_python_file(self, text, parent_window):
-        fd = wx.FileDialog(
-            parent_window,
-            'Select filename to save current edit to',
-            wildcard='*.py', style=wx.SAVE)
+        filename = wx.FileSelector(
+                'Select filename to save current edit to',
+                self._last_fileselector_dir, "", "py",
+                "Python files (*.py)|*.py|All files (*.*)|*.*",
+                wx.SAVE, parent_window)
 
-        if fd.ShowModal() == wx.ID_OK:
-            filename = fd.GetPath()
+        if filename:
+            # save directory for future use
+            self._last_fileselector_dir = \
+                    os.path.dirname(filename)
+
+            # if the user has NOT specified any fileextension, we
+            # add .py.  (on Win this gets added by the
+            # FileSelector automatically, on Linux it doesn't)
+            if os.path.splitext(filename)[1] == '':
+                filename = '%s.py' % (filename,)
 
             self._save_python_file(filename, text)
 
