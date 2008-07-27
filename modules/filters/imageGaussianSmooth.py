@@ -98,7 +98,7 @@ class imageGaussianSmooth(IntrospectModuleMixin, ModuleBase):
         self._view_frame.Raise()
 
     def _createViewFrame(self):
-        self._module_manager.importReload(
+        self._module_manager.import_reload(
             'modules.filters.resources.python.imageGaussianSmoothViewFrame')
         import modules.filters.resources.python.imageGaussianSmoothViewFrame
 

@@ -13,7 +13,6 @@
 # mouse wheel: zoom
 
 import copy
-import cPickle
 from internal.devide_canvas.devide_canvas import DeVIDECanvas 
 from internal.devide_canvas.devide_canvas_object import \
 DeVIDECanvasGlyph, DeVIDECanvasLine, DeVIDECanvasSimpleLine, \
@@ -177,7 +176,7 @@ class GraphEditor:
 
         mf = self._interface._main_frame
         em = mf.edit_menu
-        self._appendEditCommands(em,
+        self._append_edit_commands(em,
                                  mf,
                                  (0,0), False)
 
@@ -189,7 +188,7 @@ class GraphEditor:
                     self._handler_modules_search)
 
         wx.EVT_MENU(mf, mf.id_rescan_modules,
-                    lambda e, s=self: s.fillModuleLists())
+                    lambda e, s=self: s.fill_module_lists())
 
         wx.EVT_MENU(mf, mf.id_refresh_module_kits,
                     self._handler_refresh_module_kits)
@@ -260,12 +259,12 @@ class GraphEditor:
 
         # this will be filled in by self.fill_module_tree; it's here for
         # completeness
-        self._availableModules = None
+        self._available_modules = None
 
         # this is usually shortly after initialisation, so a module scan
         # should be available.  Actually, the user could be very naughty,
         # but let's not think about that.
-        self.fillModuleLists(scan_modules=False)
+        self.fill_module_lists(scan_modules=False)
 
         wx.EVT_MOUSE_EVENTS(mf.module_list_box,
                             self._handlerModulesListBoxMouseEvents)
@@ -391,7 +390,7 @@ class GraphEditor:
                 self.create_module_and_glyph(x, y, module_name[len(modp):])
 
             elif module_name.startswith(segp):
-                self._loadAndRealiseNetwork(module_name[len(segp):], (x,y),
+                self._load_and_realise_network(module_name[len(segp):], (x,y),
                                             reposition=True)
 
             else:
@@ -583,7 +582,7 @@ class GraphEditor:
           
 
         elif itemText.startswith(segp):
-            self._loadAndRealiseNetwork(itemText[len(segp):], (w_x,w_y),
+            self._load_and_realise_network(itemText[len(segp):], (w_x,w_y),
                                         reposition=True)
 
             # see explanation above for the SetFocus
@@ -603,7 +602,7 @@ class GraphEditor:
         w_x,w_y,w_z = \
             self.canvas.display_to_world((x,self.canvas.flip_y(y)))
         
-        def createModuleOneVar(module_name, configVarName, configVarValue,
+        def create_module_one_var(module_name, configVarName, configVarValue,
                                newModuleName=None):
             """This method creates a module_name (e.g. modules.Readers.vtiRDR)
             at position x,y.  It then sets the 'configVarName' attribute to
@@ -616,11 +615,11 @@ class GraphEditor:
                 mod.set_config(cfg)
 
                 if newModuleName:
-                    r = self._renameModule(mod, glyph, newModuleName)
+                    r = self._rename_module(mod, glyph, newModuleName)
                     #i = 0
                     #while not r:
                     #    i += 1
-                    #    r = self._renameModule(mod, glyph, '%s (%d)' %
+                    #    r = self._rename_module(mod, glyph, '%s (%d)' %
                     #                           (newModuleName, i))
 
         def handle_drop_on_glyph(glyph, filename):
@@ -696,7 +695,7 @@ class GraphEditor:
         for filename in filenames:
             if filename.lower().endswith('.dvn'):
                 # we have to convert the event coords to real coords
-                self._loadAndRealiseNetwork(filename, (w_x,w_y),
+                self._load_and_realise_network(filename, (w_x,w_y),
                                             reposition=True)
 
                 # some DVNs contain viewer modules that take the focus
@@ -728,13 +727,13 @@ class GraphEditor:
                 else:
                     # this only executes if there was no exception
                     if fline.endswith('structured_points'):
-                        createModuleOneVar(
+                        create_module_one_var(
                             'modules.readers.vtkStructPtsRDR',
                             'filename', filename,
                             os.path.basename(filename))
                         
                     elif fline.lower().endswith('polydata'):
-                        createModuleOneVar(
+                        create_module_one_var(
                             'modules.readers.vtkPolyDataRDR',
                             'filename', filename,
                             os.path.basename(filename))
@@ -751,7 +750,7 @@ class GraphEditor:
             else:
                 ext = filename.split('.')[-1].lower()
                 if ext in actionDict:
-                    createModuleOneVar(actionDict[ext][0], actionDict[ext][1],
+                    create_module_one_var(actionDict[ext][0], actionDict[ext][1],
                                        filename,
                                        os.path.basename(filename))
 
@@ -790,13 +789,13 @@ class GraphEditor:
         # make sure no refs are stuck in the selection
         self._selected_glyphs.close()
         # this should take care of just about everything!
-        self.clearAllGlyphsFromCanvas()
+        self.clear_all_glyphs_from_canvas()
 
         # this will take care of all cleanup (including the VTK stuff)
         # and then Destroy() the main WX window.
         self._interface._main_frame.close()
 
-    def _appendEditCommands(self, pmenu, eventWidget, origin, disable=True):
+    def _append_edit_commands(self, pmenu, eventWidget, origin, disable=True):
         """Append copy/cut/paste/delete commands and the default handlers
         to a given menu.  Origin is used by the paste command, and should be
         the REAL canvas coordinates, i.e. with scroll position taken into
@@ -839,7 +838,7 @@ class GraphEditor:
                         'Delete all selected glyphs.')
         pmenu.AppendItem(ni)
         wx.EVT_MENU(eventWidget, deleteId,
-                 lambda e: self._deleteSelectedGlyphs())
+                 lambda e: self._delete_selected_glyphs())
         if disable:
             if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
@@ -927,7 +926,7 @@ class GraphEditor:
         si = [i.module_instance
               for i in self._selected_glyphs.getSelectedGlyphs()]
 
-    def createGlyph(self, rx, ry, labelList, module_instance):
+    def create_glyph(self, rx, ry, labelList, module_instance):
         """Create only a glyph on the canvas given an already created
         module_instance.  labelList is a list of strings that will be printed
         inside the glyph representation.  The glyph instance is returned.
@@ -971,11 +970,11 @@ class GraphEditor:
         """
         
         # check that it's a valid module name
-        if module_name in self._availableModules:
+        if module_name in self._available_modules:
             # we have a valid module, we should try and instantiate
             mm = self._devide_app.get_module_manager()
             try:
-                temp_module = mm.createModule(module_name)
+                temp_module = mm.create_module(module_name)
             except ModuleManagerException, e:
                 self._devide_app.log_error_with_exception(
                     'Could not create module %s: %s' % (module_name, str(e)))
@@ -989,7 +988,7 @@ class GraphEditor:
                 # this is a new module, so we don't actually display the name
                 # in the glyph label.
                 gLabel = [module_name.split('.')[-1]]
-                glyph = self.createGlyph(x,y,gLabel,temp_module)
+                glyph = self.create_glyph(x,y,gLabel,temp_module)
 
                 # route all lines
                 self._route_all_lines()
@@ -1021,7 +1020,7 @@ class GraphEditor:
         
 	
 
-    def fillModuleLists(self, scan_modules=True):
+    def fill_module_lists(self, scan_modules=True):
         """Build up the module tree from the list of available modules
         supplied by the ModuleManager.  At the moment, things will look
         a bit strange if the module tree goes deeper than one level, but
@@ -1030,15 +1029,15 @@ class GraphEditor:
 
         mm = self._devide_app.get_module_manager()
         if scan_modules:
-            mm.scanModules()
+            mm.scan_modules()
             
-        self._availableModules = mm.getAvailableModules()
+        self._available_modules = mm.get_available_modules()
 
         self._moduleCats = {}
         # let's build up new dictionary with categoryName as key and
         # list of complete module_names as value - check for 'Segments',
         # that's reserved
-        for mn,module_metadata in self._availableModules.items():
+        for mn,module_metadata in self._available_modules.items():
             # we add an ALL category implicitly to all modules
             for cat in module_metadata.cats + ['ALL']:
                 if cat in self._moduleCats:
@@ -1165,7 +1164,7 @@ class GraphEditor:
             self._last_fileselector_dir = \
                     os.path.dirname(filename)
 
-            self._loadNetworkIntoCopyBuffer(filename)
+            self._load_network_into_copy_buffer(filename)
 
     def _handlerFileSaveSelected(self, event):
         glyphs = self._selected_glyphs.getSelectedGlyphs()
@@ -1187,7 +1186,7 @@ class GraphEditor:
                 if os.path.splitext(filename)[1] == '':
                     filename = '%s.dvn' % (filename,)
 
-                self._saveNetwork(glyphs, filename)
+                self._save_network(glyphs, filename)
 
     def _update_search_results(self, event=None):
         """Each time the user modifies the module search string or the
@@ -1239,7 +1238,7 @@ class GraphEditor:
                         # srkey starts with module: or segment:, we have to
                         # remove this
                         module_name = srkey.split(':')[1]
-                        for c in mm._availableModules[module_name].cats:
+                        for c in mm._available_modules[module_name].cats:
                             if c in selectedCats:
                                 cat_found = True
                                 # stop with for iteration
@@ -1338,10 +1337,10 @@ class GraphEditor:
 
         # prod_tuple contains a list of (prod_meta_module, output_idx,
         # input_idx) tuples
-        prod_tuples = mm.getProducers(meta_module)
+        prod_tuples = mm.get_producers(meta_module)
         # cons_tuples contains a list of (output_index, consumer_meta_module,
         # consumer input index)
-        cons_tuples = mm.getConsumers(meta_module)
+        cons_tuples = mm.get_consumers(meta_module)
         # store the instance name
         instance_name = meta_module.instance_name
         # and the full module spec name
@@ -1352,7 +1351,7 @@ class GraphEditor:
         gp_x, gp_y = glyph.get_position()
 
         # now disconnect and nuke the old module
-        self._deleteModule(glyph)
+        self._delete_module(glyph)
 
         # FIXME: error checking
         # create a new one (don't convert my coordinates)
@@ -1361,7 +1360,7 @@ class GraphEditor:
 
         if new_instance and new_glyph:
             # give it its name back
-            self._renameModule(new_instance, new_glyph, instance_name)
+            self._rename_module(new_instance, new_glyph, instance_name)
 
             try:
                 # and its config (FIXME: we should honour pre- and
@@ -1392,10 +1391,10 @@ class GraphEditor:
         wx.SafeYield()
 
 
-    def _renameModule(self, module, glyph, newModuleName):
+    def _rename_module(self, module, glyph, newModuleName):
         if newModuleName:
             # try to rename the module...
-            if self._devide_app.get_module_manager().renameModule(
+            if self._devide_app.get_module_manager().rename_module(
                 module,newModuleName):
 
                 # if no conflict, set label and redraw
@@ -1423,8 +1422,8 @@ class GraphEditor:
         else:
             # the user has given us a blank or None modulename... we'll rename
             # the module with an internal random name and remove its label
-            uin = self._devide_app.get_module_manager()._makeUniqueInstanceName()
-            rr = self._devide_app.get_module_manager().renameModule(module, uin)
+            uin = self._devide_app.get_module_manager()._make_unique_instance_name()
+            rr = self._devide_app.get_module_manager().rename_module(module, uin)
             if rr:
                 glyph.setLabelList([module.__class__.__name__])
                 self.canvas.redraw()
@@ -1444,7 +1443,7 @@ class GraphEditor:
             self._devide_app.get_module_manager().get_instance_name(module))
 
         if newModuleName:
-            self._renameModule(module, glyph, newModuleName)
+            self._rename_module(module, glyph, newModuleName)
 
     def _handlerModulesListBoxSelected(self, event):
         mlb = self._interface._main_frame.module_list_box
@@ -1459,7 +1458,7 @@ class GraphEditor:
 
     def _handlerPaste(self, event, position):
         if self._copyBuffer:
-            self._realiseNetwork(
+            self._realise_network(
                 # when we paste, we want the thing to reposition!
                 self._copyBuffer[0], self._copyBuffer[1], self._copyBuffer[2],
                 position, True)
@@ -1469,15 +1468,15 @@ class GraphEditor:
             
     def _handlerCopySelected(self, event):
         if self._selected_glyphs.getSelectedGlyphs():
-            self._copyBuffer = self._serialiseNetwork(
+            self._copyBuffer = self._serialise_network(
                 self._selected_glyphs.getSelectedGlyphs())
 
     def _handlerCutSelected(self, event):
         if self._selected_glyphs.getSelectedGlyphs():
-            self._copyBuffer = self._serialiseNetwork(
+            self._copyBuffer = self._serialise_network(
                 self._selected_glyphs.getSelectedGlyphs())
         
-            self._deleteSelectedGlyphs()
+            self._delete_selected_glyphs()
 
     def hide(self):
         self._interface._main_frame.Show(False)
@@ -1561,7 +1560,7 @@ class GraphEditor:
         try:
             # first disconnect the actual modules
             mm = self._devide_app.get_module_manager()
-            mm.disconnectModules(glyph.module_instance, input_idx)
+            mm.disconnect_modules(glyph.module_instance, input_idx)
 
         except Exception, e:
             self._devide_app.log_error_with_exception(
@@ -1609,7 +1608,7 @@ class GraphEditor:
         pmenu = wx.Menu('Canvas Menu')
 
         # fill it out with edit (copy, cut, paste, delete) commands
-        self._appendEditCommands(pmenu, canvas._rwi,
+        self._append_edit_commands(pmenu, canvas._rwi,
                 (canvas.event.world_pos[0:2]))
 
         pmenu.AppendSeparator()
@@ -1711,7 +1710,7 @@ class GraphEditor:
             new_fn = '%s_autosave%s' % (f, e)
 
             # auto-save the network to that file
-            self._saveNetwork(all_glyphs, new_fn)
+            self._save_network(all_glyphs, new_fn)
 
             msg1 = 'Auto-saved %s' % (new_fn,)
             # set message on statusbar
@@ -1722,7 +1721,7 @@ class GraphEditor:
             self._interface.log_info(msg1)
        
 
-    def clearAllGlyphsFromCanvas(self):
+    def clear_all_glyphs_from_canvas(self):
         allGlyphs = self.canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
         mm = self._devide_app.get_module_manager()
@@ -1752,15 +1751,15 @@ class GraphEditor:
 
         # now actually delete the glyphs in the correct order
         for glyph in glyphDeletionSchedule:
-            self._deleteModule(glyph)
+            self._delete_module(glyph)
 
         # only here!
         self.canvas.redraw()
 
-    def _createLine(self, fromObject, fromOutputIdx, toObject, toInputIdx):
+    def _create_line(self, fromObject, fromOutputIdx, toObject, toInputIdx):
         l1 = DeVIDECanvasLine(self.canvas, fromObject, fromOutputIdx,
                          toObject, toInputIdx)
-        dprint("_createLine:: calling canvas.add_object")
+        dprint("_create_line:: calling canvas.add_object")
         self.canvas.add_object(l1)
             
         # also record the line in the glyphs
@@ -1777,11 +1776,11 @@ class GraphEditor:
         try:
             # connect the actual modules
             mm = self._devide_app.get_module_manager()
-            mm.connectModules(fromObject.module_instance, fromOutputIdx,
+            mm.connect_modules(fromObject.module_instance, fromOutputIdx,
                               toObject.module_instance, toInputIdx)
 
             # if that worked, we can make a linypoo
-            self._createLine(fromObject, fromOutputIdx, toObject, toInputIdx)
+            self._create_line(fromObject, fromOutputIdx, toObject, toInputIdx)
 
             # have to call update_geometry (the glyphs have new
             # colours!)
@@ -1795,7 +1794,7 @@ class GraphEditor:
 
         return success
 
-    def _deleteSelectedGlyphs(self):
+    def _delete_selected_glyphs(self):
         """Delete all currently selected glyphs.
         """
 
@@ -1806,12 +1805,12 @@ class GraphEditor:
         
         for glyph in deadGlyphs:
             # delete the glyph, do not refresh the canvas
-            self._deleteModule(glyph, False)
+            self._delete_module(glyph, False)
 
         # finally we can let the canvas redraw
         self.canvas.redraw()
 
-    def _realiseNetwork(self, pmsDict, connectionList, glyphPosDict,
+    def _realise_network(self, pmsDict, connectionList, glyphPosDict,
                         origin=(0,0), reposition=False):
         """Given a pmsDict, connectionList and glyphPosDict, recreate
         the network described by those structures.  The origin of the glyphs
@@ -1850,7 +1849,7 @@ class GraphEditor:
             if not instname.startswith('dvm'):
                 gLabel.append(instname)
                 
-            newGlyph = self.createGlyph(
+            newGlyph = self.create_glyph(
                 position[0] - reposCoords[0] + origin[0],
                 position[1] - reposCoords[1] + origin[1],
                 gLabel,
@@ -1862,7 +1861,7 @@ class GraphEditor:
         for connection in newConnections:
             sGlyph = newGlyphDict[connection.source_instance_name]
             tGlyph = newGlyphDict[connection.target_instance_name]
-            self._createLine(sGlyph, connection.output_idx,
+            self._create_line(sGlyph, connection.output_idx,
                              tGlyph, connection.input_idx)
 
         # finally we can let the canvas redraw
@@ -1894,7 +1893,7 @@ class GraphEditor:
             return
 
         (pmsDict, connection_list, glyphPosDict) = \
-                  ge._serialiseNetwork(all_glyphs)
+                  ge._serialise_network(all_glyphs)
 
         # first convert all glyph positions to points and connections
         # to polylines.
@@ -1974,7 +1973,7 @@ class GraphEditor:
 
         ge._route_all_lines()
 
-    def _loadAndRealiseNetwork(self, filename, position=(0,0),
+    def _load_and_realise_network(self, filename, position=(0,0),
                                reposition=False):
         """Attempt to load (i.e. unpickle) a DVN network file and recreate
         this network on the canvas.
@@ -1986,12 +1985,12 @@ class GraphEditor:
         try:
             ln = self._devide_app.network_manager.load_network
             pmsDict, connectionList, glyphPosDict = ln(filename)
-            self._realiseNetwork(pmsDict, connectionList, glyphPosDict,
+            self._realise_network(pmsDict, connectionList, glyphPosDict,
                                  position, reposition)
         except Exception, e:
             self._devide_app.log_error_with_exception(str(e))
 
-    def _loadNetworkIntoCopyBuffer(self, filename):
+    def _load_network_into_copy_buffer(self, filename):
         """Attempt to load (i.e. unpickle) a DVN network and bind the
         tuple to self._copyBuffer.  When the user pastes, the network will
         be recreated.  DANG!
@@ -2006,9 +2005,9 @@ class GraphEditor:
             self._devide_app.log_error_with_exception(str(e))
 
 
-    def _saveNetwork_DEPRECATED(self, glyphs, filename):
+    def _save_network_DEPRECATED(self, glyphs, filename):
         (pmsDict, connectionList, glyphPosDict) = \
-                  self._serialiseNetwork(glyphs)
+                  self._serialise_network(glyphs)
 
         # change the serialised module_instances to a pickled stream
         headerAndData = (('DVN', 1, 0, 0), \
@@ -2027,9 +2026,9 @@ class GraphEditor:
         if f:
             f.close()
 
-    def _saveNetwork(self, glyphs, filename):
+    def _save_network(self, glyphs, filename):
         (pms_dict, connection_list, glyph_pos_dict) = \
-                  self._serialiseNetwork(glyphs)
+                  self._serialise_network(glyphs)
 
         nm = self._devide_app.network_manager 
 
@@ -2043,7 +2042,7 @@ class GraphEditor:
  
     def _exportNetworkAsDOT(self, glyphs, filename):
         (pmsDict, connectionList, glyphPosDict) = \
-                  self._serialiseNetwork(glyphs)
+                  self._serialise_network(glyphs)
 
         # first work through the module instances
         dotModuleDefLines = []
@@ -2118,7 +2117,7 @@ class GraphEditor:
         
         
 
-    def _serialiseNetwork(self, glyphs):
+    def _serialise_network(self, glyphs):
         """Given a list of glyphs, return a tuple containing pmsDict,
         connectionList and glyphPosDict.  This can be used to reconstruct the
         whole network from scratch and is used for saving and
@@ -2138,7 +2137,7 @@ class GraphEditor:
         mm = self._devide_app.get_module_manager()
 
         # let the ModuleManager serialise what it can
-        pmsDict, connectionList = mm.serialiseModuleInstances(
+        pmsDict, connectionList = mm.serialise_module_instances(
             module_instances)
 
         savedInstanceNames = [pms.instance_name for pms in pmsDict.values()]
@@ -2217,7 +2216,7 @@ class GraphEditor:
         self._interface.quit()
 
     def _fileNewCallback(self, event):
-        self.clearAllGlyphsFromCanvas()
+        self.clear_all_glyphs_from_canvas()
         self.set_current_filename(None)
 
     def _fileOpenCallback(self, event):
@@ -2233,8 +2232,8 @@ class GraphEditor:
             self._last_fileselector_dir = \
                     os.path.dirname(filename)
 
-            self.clearAllGlyphsFromCanvas()
-            self._loadAndRealiseNetwork(filename)
+            self.clear_all_glyphs_from_canvas()
+            self._load_and_realise_network(filename)
             # make sure that the newly realised network is nicely in
             # view
             self.canvas.reset_view()
@@ -2273,7 +2272,7 @@ class GraphEditor:
                     filename = '%s.dvn' % (filename,)
 
                 self.set_current_filename(filename)
-                self._saveNetwork(allGlyphs, filename)
+                self._save_network(allGlyphs, filename)
 
                 msg1 = 'Saved %s' % (filename,)
                 # set message on statusbar
@@ -2395,7 +2394,7 @@ class GraphEditor:
         vc_id = wx.NewId()
         pmenu.AppendItem(wx.MenuItem(pmenu, vc_id, "View-Configure"))
         wx.EVT_MENU(self.canvas._rwi, vc_id,
-                 lambda e: self._viewConfModule(module))
+                 lambda e: self._view_conf_module(module))
 
         help_id = wx.NewId()
         pmenu.AppendItem(wx.MenuItem(
@@ -2412,11 +2411,11 @@ class GraphEditor:
         del_id = wx.NewId()
         pmenu.AppendItem(wx.MenuItem(pmenu, del_id, 'Delete Module'))
         wx.EVT_MENU(self.canvas._rwi, del_id,
-                 lambda e: self._deleteModule(glyph))
+                 lambda e: self._delete_module(glyph))
 
-        renameModuleId = wx.NewId()
-        pmenu.AppendItem(wx.MenuItem(pmenu, renameModuleId, 'Rename Module'))
-        wx.EVT_MENU(self.canvas._rwi, renameModuleId,
+        rename_moduleId = wx.NewId()
+        pmenu.AppendItem(wx.MenuItem(pmenu, rename_moduleId, 'Rename Module'))
+        wx.EVT_MENU(self.canvas._rwi, rename_moduleId,
                  lambda e: self._handlerRenameModule(module,glyph))
 
         inject_module_id = wx.NewId()
@@ -2427,7 +2426,7 @@ class GraphEditor:
 
         pmenu.AppendSeparator()
 
-        self._appendEditCommands(pmenu, self.canvas._rwi,
+        self._append_edit_commands(pmenu, self.canvas._rwi,
                 self.canvas.event.world_pos)
 
         pmenu.AppendSeparator()
@@ -2548,7 +2547,7 @@ class GraphEditor:
     def _observer_glyph_left_button_dclick(self, glyph):
         module = glyph.module_instance
         # double clicking on a module opens the View/Config.
-        self._viewConfModule(module)
+        self._view_conf_module(module)
 
     def _cohenSutherLandClip(self,
                              x0, y0, x1, y1,
@@ -2871,11 +2870,11 @@ class GraphEditor:
         line.set_highlight()
         line.update_geometry()
 
-    def _viewConfModule(self, module):
+    def _view_conf_module(self, module):
         mm = self._devide_app.get_module_manager()
-        mm.viewModule(module)
+        mm.view_module(module)
 
-    def _deleteModule(self, glyph, refreshCanvas=True):
+    def _delete_module(self, glyph, refreshCanvas=True):
         success = True
         try:
             # FIRST remove it from any selections; we have to do this
@@ -2899,7 +2898,7 @@ class GraphEditor:
             mm = self._devide_app.get_module_manager()
             # this thing can also remove all links between supplying and
             # consuming objects (we hope) :)
-            mm.deleteModule(glyph.module_instance)
+            mm.delete_module(glyph.module_instance)
 
 
         except Exception, e:
@@ -2952,7 +2951,7 @@ class GraphEditor:
         mm = self._devide_app.get_module_manager()
         
         try:
-            ht = mm._availableModules[module_name].help
+            ht = mm._available_modules[module_name].help
         except AttributeError:
             ht = 'No documentation available for this module.'
 

@@ -16,7 +16,7 @@ import types
 import traceback
 
 # some notes with regards to extra module state/logic required for scheduling
-# * in general, execute_module()/transferOutput()/etc calls do exactly that
+# * in general, execute_module()/transfer_output()/etc calls do exactly that
 #   when called, i.e. they don't automatically cache.  The scheduler should
 #   take care of caching by making the necessary isModified() or
 #   shouldTransfer() calls.  The reason for this is so that the module
@@ -328,7 +328,7 @@ class ModuleManager:
         self.module_search = ModuleSearch()
         
 	# make first scan of available modules
-	self.scanModules()
+	self.scan_modules()
 
         # auto_execute mode, still need to link this up with the GUI
         self.auto_execute = True
@@ -396,7 +396,7 @@ class ModuleManager:
                    mModule.instance.__class__.__name__)
                    
             try:
-                self.deleteModule(mModule.instance)
+                self.delete_module(mModule.instance)
             except Exception, e:
                 # we can't allow a module to stop us
                 print "Error deleting %s (%s): %s" % \
@@ -406,7 +406,7 @@ class ModuleManager:
                 print "FULL TRACE:"
                 traceback.print_exc()
 
-    def applyModuleViewToLogic(self, instance):
+    def apply_module_view_to_logic(self, instance):
         """Interface method that can be used by clients to transfer module
         view to underlying logic.
 
@@ -518,14 +518,14 @@ class ModuleManager:
         self._devide_app.log_warning(message)
 
 
-    def scanModules(self):
-	"""(Re)Check the modules directory for *.py files and put them in
-	the list self.module_files.
+    def scan_modules(self):
+        """(Re)Check the modules directory for *.py files and put them in
+        the list self.module_files.
         """
 
         # this is a dict mapping from full module name to the classes as
         # found in the module_index.py files
-        self._availableModules = {}
+        self._available_modules = {}
         appDir = self._devide_app.get_appdir()
         modulePath = self.get_modules_dir()
 
@@ -585,7 +585,7 @@ class ModuleManager:
 
                 # we don't want to throw an exception here, as that would
                 # mean that a singe misconfigured module_index file can
-                # prevent the whole scanModules process from completing
+                # prevent the whole scan_modules process from completing
                 # so we'll report on errors here and at the end
 
             else:
@@ -611,7 +611,7 @@ class ModuleManager:
 
                     if module_deps:
                         module_name = mim.replace('module_index', a)
-                        self._availableModules[module_name] = c
+                        self._available_modules[module_name] = c
 
 
         # we should move this functionality to the graphEditor.  "segments"
@@ -629,9 +629,9 @@ class ModuleManager:
         # this is purely a list of segment filenames
         self.availableSegmentsList = segmentList
 
-        # self._availableModules is a dict keyed on module_name with
+        # self._available_modules is a dict keyed on module_name with
         # module description class as value
-        self.module_search.build_search_index(self._availableModules,
+        self.module_search.build_search_index(self._available_modules,
                                               self.availableSegmentsList)
 
         # report on accumulated errors - this is still a non-critical error
@@ -645,26 +645,23 @@ class ModuleManager:
 
         self._devide_app.log_info(
             '%d modules and %d segments scanned.' %
-            (len(self._availableModules), len(self.availableSegmentsList)))
+            (len(self._available_modules), len(self.availableSegmentsList)))
         
     ########################################################################
 
     def get_appdir(self):
         return self._devide_app.get_appdir()
 
-    # for backwards compatibility
-    getAppDir = get_appdir
-
     def get_app_main_config(self):
         return self._devide_app.main_config
 	
-    def getAvailableModules(self):
-        """Return the availableModules, a dictionary keyed on fully qualified
+    def get_available_modules(self):
+        """Return the available_modules, a dictionary keyed on fully qualified
         module name (e.g. modules.Readers.vtiRDR) with values the classes
         defined in module_index files.
         """
         
-	return self._availableModules
+        return self._available_modules
 
 
     def get_instance(self, instance_name):
@@ -709,14 +706,14 @@ class ModuleManager:
 
     def get_module_view_parent_window(self):
         # this could change
-        return self.getModuleViewParentWindow()
+        return self.get_module_view_parent_window()
 
     def get_module_spec(self, module_instance):
         """Given a module instance, return the full module spec.
         """
         return 'module:%s' % (module_instance.__class__.__module__,)
 
-    def getModuleViewParentWindow(self):
+    def get_module_view_parent_window(self):
         """Get parent window for module windows.
 
         THIS METHOD WILL BE DEPRECATED.  The ModuleManager and view-less
@@ -730,7 +727,7 @@ class ModuleManager:
             # the interface has no main_window
             return None
     
-    def createModule(self, fullName, instance_name=None):
+    def create_module(self, fullName, instance_name=None):
         """Try and create module fullName.
 
         @param fullName: The complete module spec below application directory,
@@ -742,7 +739,7 @@ class ModuleManager:
         module.
         """
 
-        if fullName not in self._availableModules:
+        if fullName not in self._available_modules:
             raise ModuleManagerException(
                 '%s is not available in the current Module Manager / '
                 'Kit configuration.' % (fullName,))
@@ -751,12 +748,12 @@ class ModuleManager:
             # think up name for this module (we have to think this up now
             # as the module might want to know about it whilst it's being
             # constructed
-            instance_name = self._makeUniqueInstanceName(instance_name)
+            instance_name = self._make_unique_instance_name(instance_name)
             self._halfBornInstanceName = instance_name
             
             # perform the conditional import/reload
-            self.importReload(fullName)
-            # importReload requires this afterwards for safety reasons
+            self.import_reload(fullName)
+            # import_reload requires this afterwards for safety reasons
             exec('import %s' % fullName)
             # in THIS case, there is a McMillan hook which'll tell the
             # installer about all the devide modules. :)
@@ -806,7 +803,7 @@ class ModuleManager:
         # return the instance
         return module_instance
 
-    def importReload(self, fullName):
+    def import_reload(self, fullName):
         """This will import and reload a module if necessary.  Use this only
         for things in modules or userModules.
 
@@ -822,11 +819,11 @@ class ModuleManager:
         This is one of the reasons we try to avoid unnecessary reloads.
 
         You should use this as follows:
-        ModuleManager.importReloadModule('full.path.to.my.module')
+        ModuleManager.import_reloadModule('full.path.to.my.module')
         import full.path.to.my.module
         so that the module is actually brought into the calling namespace.
 
-        importReload used to return the modulePrefix object, but this has
+        import_reload used to return the modulePrefix object, but this has
         been changed to force module writers to use a conventional import
         afterwards so that the McMillan installer will know about dependencies.
         """
@@ -846,25 +843,14 @@ class ModuleManager:
             
         # there can only be a reload if this is not a newModule
         if not newModule:
-            #if not self.isInstalled() or \
-            #       modulePrefix == 'userModules':
-
-            # we've changed the logic of this.  bugs in Installer have been
-            # fixed, this shouldn't break things too badly.
-
-            # we only reload if we're not running from an Installer
-            # package (the __importsub__ check) OR if we are running
-            # from Installer, but it's a userModule; there's no sense
-            # in reloading a module from an Installer package as these
-            # can never change in anycase
-            exec('reload(' + fullName + ')')
+           exec('reload(' + fullName + ')')
 
         # we need to inject the import into the calling dictionary...
         # importing my.module results in "my" in the dictionary, so we
         # split at '.' and return the object bound to that name
         # return locals()[modulePrefix]
         # we DON'T do this anymore, so that module writers are forced to
-        # use an import statement straight after calling importReload (or
+        # use an import statement straight after calling import_reload (or
         # somewhere else in the module)
 
     def isInstalled(self):
@@ -910,7 +896,7 @@ class ModuleManager:
             raise ModuleManagerException, es, sys.exc_info()[2]
         
             
-    def executeNetwork(self, startingModule=None):
+    def execute_network(self, startingModule=None):
         """Execute local network in order, starting from startingModule.
 
         This is a utility method used by module_utils to bind to the Execute
@@ -932,10 +918,10 @@ class ModuleManager:
             self._devide_app.log_error_with_exception(str(e))
 
 			      
-    def viewModule(self, instance):
+    def view_module(self, instance):
         instance.view()
     
-    def deleteModule(self, instance):
+    def delete_module(self, instance):
         """Destroy module.
 
         This will disconnect all module inputs and outputs and call the
@@ -962,7 +948,7 @@ class ModuleManager:
                 # we just want to walk through the dictionary tuples
                 for consumer in output:
                     # disconnect all consumers
-                    self.disconnectModules(consumer[0], consumer[1])
+                    self.disconnect_modules(consumer[0], consumer[1])
 
         # inputs is a list of tuples, each tuple containing module_instance
         # and output_idx of the producer/supplier module
@@ -970,7 +956,7 @@ class ModuleManager:
             try:
                 # also make sure we fully disconnect ourselves from
                 # our producers
-                self.disconnectModules(instance, input_idx)
+                self.disconnect_modules(instance, input_idx)
             except Exception, e:
                 # we can't allow this to prevent a destruction, just log
                 self.log_error_with_exception(
@@ -1016,7 +1002,7 @@ class ModuleManager:
             # see: http://docs.python.org/ref/raise.html
             raise ModuleManagerException, es, sys.exc_info()[2]
 
-    def connectModules(self, output_module, output_idx,
+    def connect_modules(self, output_module, output_idx,
                         input_module, input_idx):
         """Connect output_idx'th output of provider output_module to
         input_idx'th input of consumer input_module.  If an error occurs
@@ -1036,7 +1022,7 @@ class ModuleManager:
             output_idx, input_module, input_idx)
 
 	
-    def disconnectModules(self, input_module, input_idx):
+    def disconnect_modules(self, input_module, input_idx):
         """Disconnect a consumer module from its provider.
 
         This method will disconnect input_module from its provider by
@@ -1082,7 +1068,7 @@ class ModuleManager:
         # anymore
         self._module_dict[input_module].disconnectInput(input_idx)
 
-    def deserialiseModuleInstances(self, pmsDict, connectionList):
+    def deserialise_module_instances(self, pmsDict, connectionList):
         """Given a pickled stream, this method will recreate all modules,
         configure them and connect them up.  
 
@@ -1108,7 +1094,7 @@ class ModuleManager:
             # we're only going to try to create a module if the module_man
             # says it's available!
             try:
-                newModule = self.createModule(pmsTuple[1].module_name)
+                newModule = self.create_module(pmsTuple[1].module_name)
                 
             except ModuleManagerException, e:
                 self._devide_app.log_error_with_exception(
@@ -1138,7 +1124,7 @@ class ModuleManager:
                 # try to rename the module to the pickled unique instance name
                 # if this name is already taken, use the generated unique instance
                 # name
-                self.renameModule(newModule,pmsTuple[1].instance_name)
+                self.rename_module(newModule,pmsTuple[1].instance_name)
                 
                 # and record that it's been recreated (once again keyed
                 # on the OLD unique instance name)
@@ -1164,7 +1150,7 @@ class ModuleManager:
                            targetM.__class__.__name__, connection.input_idx)
 
                     try:
-                        self.connectModules(sourceM, connection.output_idx,
+                        self.connect_modules(sourceM, connection.output_idx,
                                             targetM, connection.input_idx)
                     except:
                         pass
@@ -1196,7 +1182,7 @@ class ModuleManager:
         # the newly created module-instance and a list with the connections
         return (newModulesDict, newConnections)
 
-    def requestAutoExecuteNetwork(self, module_instance):
+    def request_auto_execute_network(self, module_instance):
         """Method that can be called by an interaction/view module to
         indicate that some action by the user should result in a network
         update.  The execution will only be performed if the
@@ -1205,9 +1191,9 @@ class ModuleManager:
 
         if self.auto_execute:
             print "auto_execute ##### #####"
-            self.executeNetwork()
+            self.execute_network()
 
-    def serialiseModuleInstances(self, module_instances):
+    def serialise_module_instances(self, module_instances):
         """Given 
         """
 
@@ -1301,7 +1287,7 @@ class ModuleManager:
 
         return (pmsDict, connectionList)
 
-    def genericProgressCallback(self, progressObject,
+    def generic_progress_callback(self, progressObject,
                                 progressObjectName, progress, progressText):
         """progress between 0.0 and 1.0.
         """
@@ -1336,7 +1322,7 @@ class ModuleManager:
             self._inProgressCallback.unlock()
     
 
-    def getConsumers(self, meta_module):
+    def get_consumers(self, meta_module):
         """Determine meta modules that are connected to the outputs of
         meta_module.
 
@@ -1369,7 +1355,7 @@ class ModuleManager:
 
         return consumers
 
-    def getProducers(self, meta_module):
+    def get_producers(self, meta_module):
         """Return a list of meta modules, output indices and the input
         index through which they supply 'meta_module' with data.
 
@@ -1422,7 +1408,7 @@ class ModuleManager:
 
     setProgress = set_progress
 
-    def _makeUniqueInstanceName(self, instance_name=None):
+    def _make_unique_instance_name(self, instance_name=None):
         """Ensure that instance_name is unique or create a new unique
         instance_name.
 
@@ -1460,7 +1446,7 @@ class ModuleManager:
         
         return instance_name
 
-    def renameModule(self, instance, name):
+    def rename_module(self, instance, name):
         """Rename a module in the module dictionary
         """
 
@@ -1496,7 +1482,7 @@ class ModuleManager:
 
         self._module_dict[module_instance].modify(part)
 
-    modifyModule = modify_module
+    modify_module = modify_module
 
     def recreate_module_in_place(self, meta_module):
         """Destroy, create and reconnect a module in place.
@@ -1515,10 +1501,10 @@ class ModuleManager:
 
         # prod_tuple contains a list of (prod_meta_module, output_idx,
         # input_idx) tuples
-        prod_tuples = self.getProducers(meta_module)
+        prod_tuples = self.get_producers(meta_module)
         # cons_tuples contains a list of (output_index, consumer_meta_module,
         # consumer input index)
-        cons_tuples = self.getConsumers(meta_module)
+        cons_tuples = self.get_consumers(meta_module)
         # store the instance name
         instance_name = meta_module.instance_name
         # and the full module spec name
@@ -1533,13 +1519,13 @@ class ModuleManager:
         # we still have the old one lying around
 
         # instantiate
-        new_instance = self.createModule(full_name, instance_name)
+        new_instance = self.create_module(full_name, instance_name)
         # and give it its old config back
         new_instance.set_config(module_config)
 
         # 3. delete the old module
         #############################################################
-        self.deleteModule(meta_module.instance)
+        self.delete_module(meta_module.instance)
 
         # 4. now rename the new module
         #############################################################
@@ -1552,12 +1538,12 @@ class ModuleManager:
         # 5. connect it up
         #############################################################
         for producer_meta_module, output_idx, input_idx in prod_tuples:
-            self.connectModules(
+            self.connect_modules(
                 producer_meta_module.instance, output_idx,
                 new_instance, input_idx)
 
         for output_idx, consumer_meta_module, input_idx in cons_tuples:
-            self.connectModules(
+            self.connect_modules(
                 new_instance, output_idx,
                 consumer_meta_module.instance, input_idx)
 
@@ -1565,7 +1551,7 @@ class ModuleManager:
         return meta_module
         
 
-    def shouldExecuteModule(self, meta_module, part=0):
+    def should_execute_module(self, meta_module, part=0):
 
         """Determine whether module_instance requires execution to become
         up to date.
@@ -1579,7 +1565,7 @@ class ModuleManager:
 
         return meta_module.shouldExecute(part)
 
-    def shouldTransferOutput(
+    def should_transfer_output(
         self,
         meta_module, output_idx, consumer_meta_module,
         consumer_input_idx, streaming=False):
@@ -1600,12 +1586,12 @@ class ModuleManager:
         @return: True if output should be transferred, False if not.
         """
         
-        return meta_module.shouldTransferOutput(
+        return meta_module.should_transfer_output(
             output_idx, consumer_meta_module, consumer_input_idx,
             streaming)
 
         
-    def transferOutput(
+    def transfer_output(
         self,
         meta_module, output_idx, consumer_meta_module,
         consumer_input_idx, streaming=False):
@@ -1616,7 +1602,7 @@ class ModuleManager:
         This will be called by the scheduler right before execution to
         transfer the given output from module_instance instance to the correct
         input on the consumerInstance.  In general, this is only done if
-        shouldTransferOutput is true, so the number of unnecessary transfers
+        should_transfer_output is true, so the number of unnecessary transfers
         should be minimised.
 
         This method is in ModuleManager and not in MetaModule because it
@@ -1644,7 +1630,7 @@ class ModuleManager:
         if meta_module.findConsumerInOutputConnections(
             output_idx, consumer_instance, consumer_input_idx) == -1:
 
-            raise Exception, 'ModuleManager.transferOutput called for ' \
+            raise Exception, 'ModuleManager.transfer_output called for ' \
                   'connection that does not exist.'
         
         try:
@@ -1657,7 +1643,7 @@ class ModuleManager:
             module_name = meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
-            es = 'Faulty transferOutput (get_output on module %s (%s)): %s' \
+            es = 'Faulty transfer_output (get_output on module %s (%s)): %s' \
                  % (instance_name, module_name, str(e))
                  
             # we use the three argument form so that we can add a new
@@ -1688,7 +1674,7 @@ class ModuleManager:
             module_name = consumer_meta_module.instance.__class__.__name__
 
             # and raise the relevant exception
-            es = 'Faulty transferOutput (set_input on module %s (%s)): %s' \
+            es = 'Faulty transfer_output (set_input on module %s (%s)): %s' \
                  % (instance_name, module_name, str(e))
 
             # we use the three argument form so that we can add a new

@@ -46,7 +46,7 @@ class SimpleAPIMixin:
         self.devide_app.network_manager.execute_network(meta_modules)
 
     def clear_network(self):
-        # graphEditor.clearAllGlyphsFromCanvas() - delete network func
+        # graphEditor.clear_all_glyphs_from_canvas() - delete network func
         # has to be moved to NetworkManager
         self.devide_app.network_manager.clear_network()
 

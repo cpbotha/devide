@@ -105,13 +105,13 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
 
     # execute
     wx.EVT_BUTTON(viewFrame, viewFrame.executeButtonId,
-               lambda e: (mm.applyModuleViewToLogic(d3module),
-                          mm.executeNetwork(d3module)))
+               lambda e: (mm.apply_module_view_to_logic(d3module),
+                          mm.execute_network(d3module)))
     
     # OK (apply and close)
     wx.EVT_BUTTON(viewFrame, viewFrame.id_ok_button,
                lambda e, vf=viewFrame:
-               (mm.applyModuleViewToLogic(d3module),
+               (mm.apply_module_view_to_logic(d3module),
                    vf.Show(False)))
     
     # Cancel
@@ -124,7 +124,7 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
     
     # Apply
     wx.EVT_BUTTON(viewFrame, viewFrame.applyButtonId,
-               lambda e: mm.applyModuleViewToLogic(d3module))
+               lambda e: mm.apply_module_view_to_logic(d3module))
 
     # make sure that OK is the default button
     # unless the user specifies otherwise - in frames where we make
@@ -247,7 +247,7 @@ def getModuleIcon():
         resources.graphics.images.getdevidelogom32x32Bitmap())
     return icon
 
-def createModuleViewFrameTitle(d3module):
+def create_module_view_frame_title(d3module):
     return '%s View' % \
            (d3module.__class__.__name__,)
 
@@ -262,7 +262,7 @@ def instantiateModuleViewFrame(d3module, module_manager, frameClass):
               lambda e: viewFrame.Show(False))
 
     # set its title (is there not an easier way to get the class name?)
-    viewFrame.SetTitle(createModuleViewFrameTitle(d3module))
+    viewFrame.SetTitle(create_module_view_frame_title(d3module))
 
     # set its icon!
     viewFrame.SetIcon(getModuleIcon())
@@ -315,7 +315,7 @@ def setupVTKObjectProgress(d3module, obj, progressText):
     mm = d3module._module_manager
     obj.AddObserver(
         'ProgressEvent', lambda vtko, name:
-        mm.genericProgressCallback(vtko,
+        mm.generic_progress_callback(vtko,
                                    vtko.GetClassName(),
                                    vtko.GetProgress(),
                                    progressText))

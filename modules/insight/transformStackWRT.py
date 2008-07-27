@@ -92,7 +92,7 @@ class transformStackWRT(ModuleBase, FilenameViewModuleMixin):
     def _writeTransformStack(self, transformStack, filename):
         if not transformStack:
             md = wx.MessageDialog(
-                self._module_manager.getModuleViewParentWindow(),
+                self._module_manager.get_module_view_parent_window(),
                 'Input transform Stack is empty or not connected, not saving.',
                 "Information",
                 wx.OK | wx.ICON_INFORMATION)

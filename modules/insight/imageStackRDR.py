@@ -129,7 +129,7 @@ class imageStackRDR(ModuleBase, FileOpenDialogModuleMixin):
                       self._handlerAddButton)
 
     def _createViewFrame(self):
-        self._module_manager.importReload(
+        self._module_manager.import_reload(
             'modules.Insight.resources.python.imageStackRDRViewFrame')
         import modules.Insight.resources.python.imageStackRDRViewFrame
 

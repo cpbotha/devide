@@ -17,10 +17,10 @@ class GraphEditorTestBase(unittest.TestCase):
         self._iface._handlerMenuGraphEditor(None)
         # make sure we begin with a clean slate, so we can do
         # some module counting
-        self._ge.clearAllGlyphsFromCanvas()
+        self._ge.clear_all_glyphs_from_canvas()
 
     def tearDown(self):
-        self._ge.clearAllGlyphsFromCanvas()
+        self._ge.clear_all_glyphs_from_canvas()
         del self._ge
         del self._iface
         del self._ge_frame
@@ -97,7 +97,7 @@ class GraphEditorBasic(GraphEditorTestBase):
             10, 10, 'modules.misc.superQuadric')
         self.failUnless(mod and glyph)
 
-        ret = self._ge._deleteModule(glyph)
+        ret = self._ge._delete_module(glyph)
         self.failUnless(ret)
 
     def test_module_help(self):
@@ -114,14 +114,14 @@ class GraphEditorBasic(GraphEditorTestBase):
         # DURNIT!  We can't read back the help HTML from the HtmlWindow!
         # make sure that the help is actually displayed in the doc window
         #mm = self._devide_app.get_module_manager()
-        #ht = mm._availableModules[module_name].help
+        #ht = mm._available_modules[module_name].help
         #p = self._ge_frame.doc_window.GetPage()
 
         # fail if it's not there
         #self.failUnless(p == self._ge._module_doc_to_html(module_name, ht))
 
         # take it away
-        ret = self._ge._deleteModule(glyph)
+        ret = self._ge._delete_module(glyph)
         self.failUnless(ret)
 
     def test_module_search(self):
@@ -180,7 +180,7 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         self.failUnless(sqmod and sqglyph)
 
-        self._ge._viewConfModule(sqmod)
+        self._ge._view_conf_module(sqmod)
 
         # superQuadric is a standard ScriptedConfigModuleMixin, so it has
         # a _viewFrame ivar
@@ -199,7 +199,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         sqmod.closeVtkObjectConfigure()
 
         # remove the module as well
-        ret = self._ge._deleteModule(sqglyph)
+        ret = self._ge._delete_module(sqglyph)
         self.failUnless(ret)
         
 
@@ -221,7 +221,7 @@ class TestModulesMisc(GraphEditorTestBase):
 
         # we tested all the vtk_basic modules once with VTK5.0
         # but this causes trouble on Weendows.
-        ml = mm.getAvailableModules().keys()
+        ml = mm.get_available_modules().keys()
         ml = [i for i in ml
               if not i.startswith('modules.vtk_basic') and
               not i.startswith('modules.user')]
@@ -250,7 +250,7 @@ class TestModulesMisc(GraphEditorTestBase):
                             'Error creating %s' % (module_name,))
 
             # destroy
-            ret = self._ge._deleteModule(
+            ret = self._ge._delete_module(
                 cglyph)
             print 'Destroyed %s.' % (module_name,)
             self.failUnless(ret,
@@ -277,13 +277,13 @@ class TestModulesMisc(GraphEditorTestBase):
             # call up view window
             print 'About to bring up view-conf window'
             try:
-                self._ge._viewConfModule(cmod)
+                self._ge._view_conf_module(cmod)
             except Exception, e:
                 self.fail(
                     'Error invoking view of %s (%s)' % (module_name,str(e)))
 
             # destroy
-            ret = self._ge._deleteModule(
+            ret = self._ge._delete_module(
                 cglyph)
             print 'Destroyed %s.' % (module_name,)
             self.failUnless(ret,

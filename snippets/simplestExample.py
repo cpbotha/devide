@@ -5,5 +5,5 @@
 # it will print the directory where devide is installed and then show
 # the main application help
 
-print devideApp.getAppDir()
+print devideApp.get_appdir()
 devideApp.showHelp()

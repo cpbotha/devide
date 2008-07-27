@@ -110,7 +110,7 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
         print values
 
         # do the actual callback
-        mm.genericProgressCallback(getattr(dvModule, objAttrString),
+        mm.generic_progress_callback(getattr(dvModule, objAttrString),
             nameOfObject, getattr(dvModule, objAttrString).GetProgress(),
             progressText % values)
 

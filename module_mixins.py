@@ -427,7 +427,7 @@ class NoConfigModuleMixin(IntrospectModuleMixin):
         parent_window = self._module_manager.get_module_view_parent_window()
 
         viewFrame = wx.Frame(parent_window, -1,
-                            module_utils.createModuleViewFrameTitle(self))
+                            module_utils.create_module_view_frame_title(self))
         viewFrame.viewFramePanel = wx.Panel(viewFrame, -1)
 
         viewFramePanelSizer = wx.BoxSizer(wx.VERTICAL)
@@ -546,7 +546,7 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin):
             del self._view_frame
 
     def _create_view_frame(self):
-        parentWindow = self._module_manager.getModuleViewParentWindow()
+        parentWindow = self._module_manager.get_module_view_parent_window()
 
         import resources.python.defaultModuleViewFrame
         reload(resources.python.defaultModuleViewFrame)

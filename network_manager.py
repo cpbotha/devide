@@ -156,13 +156,13 @@ class NetworkManager(SubjectMixin):
         realise the given network and return the realised new_modules_dict and
         new_connections.
 
-        @TODO: move network-related code from mm.deserialiseModuleInstances
+        @TODO: move network-related code from mm.deserialise_module_instances
         here.
         """
         
         mm = self._devide_app.get_module_manager()
         
-        new_modules_dict, new_connections = mm.deserialiseModuleInstances(
+        new_modules_dict, new_connections = mm.deserialise_module_instances(
             pms_dict, connection_list)
 
         return new_modules_dict, new_connections
@@ -170,7 +170,7 @@ class NetworkManager(SubjectMixin):
     def save_network(self, pms_dict, connection_list, glyph_pos_dict,
             filename):
         """Given the serialised network representation as returned by
-        ModuleManager._serialiseNetwork, write the whole thing to disk
+        ModuleManager._serialise_network, write the whole thing to disk
         as a config-style DVN file.
         """
 

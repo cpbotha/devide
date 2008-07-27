@@ -15,7 +15,7 @@ class shellSplatSimple(IntrospectModuleMixin,
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
         ColourDialogMixin.__init__(
-            self, module_manager.getModuleViewParentWindow())
+            self, module_manager.get_module_view_parent_window())
 
         # setup the whole VTK pipeline that we're going to use
         self._createPipeline()
@@ -271,7 +271,7 @@ class shellSplatSimple(IntrospectModuleMixin,
 
         mm = self._module_manager
         # import/reload the viewFrame (created with wxGlade)
-        mm.importReload(
+        mm.import_reload(
             'modules.filters.resources.python.shellSplatSimpleFLTViewFrame')
         # this line is harmless due to Python's import caching, but we NEED
         # to do it so that the Installer knows that this devide module

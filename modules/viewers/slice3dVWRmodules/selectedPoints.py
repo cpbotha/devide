@@ -525,8 +525,8 @@ class selectedPoints(s3dcGridMixin):
             # that it has been modified
             mm = self.slice3dVWR._module_manager
             # sub-part 1 is responsible for producing the points
-            mm.modifyModule(self.slice3dVWR, 1)
-            mm.requestAutoExecuteNetwork(self.slice3dVWR)
+            mm.modify_module(self.slice3dVWR, 1)
+            mm.request_auto_execute_network(self.slice3dVWR)
 
     
 

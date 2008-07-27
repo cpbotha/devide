@@ -199,7 +199,7 @@ class Scheduler:
         # consumers is a list of (output_idx, consumerMetaModule,
         # consumerInputIdx) tuples
         mm = self._devideApp.get_module_manager()        
-        consumers = mm.getConsumers(p_meta_module)
+        consumers = mm.get_consumers(p_meta_module)
         
         sConsumers = []
         for output_idx, consumerMetaModule, consumerInputIdx in consumers:
@@ -235,7 +235,7 @@ class Scheduler:
         # producers is a list of (producerMetaModule, output_idx, input_idx)
         # tuples
         mm = self._devideApp.get_module_manager()        
-        producers = mm.getProducers(c_meta_module)
+        producers = mm.get_producers(c_meta_module)
 
         sProducers = []
         for p_meta_module, outputIndex, consumerInputIdx in producers:
@@ -415,7 +415,7 @@ class Scheduler:
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
                 for pmodule, output_index, input_index in producers:
-                    if mm.shouldTransferOutput(
+                    if mm.should_transfer_output(
                         pmodule.meta_module, output_index,
                         sm.meta_module, input_index):
 
@@ -425,12 +425,12 @@ class Scheduler:
                                sm.meta_module.instance.__class__.__name__,
                                input_index)
 
-                        mm.transferOutput(pmodule.meta_module, output_index,
+                        mm.transfer_output(pmodule.meta_module, output_index,
                                           sm.meta_module, input_index)
 
                 # finally: execute module if
                 # ModuleManager thinks it's necessary
-                if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                if mm.should_execute_module(sm.meta_module, sm.part):
                     print 'executing part %d of %s' % \
                           (sm.part, sm.meta_module.instance.__class__.__name__)
 
@@ -517,7 +517,7 @@ class HybridScheduler(Scheduler):
                         streaming_transfer = False
 
 
-                    if mm.shouldTransferOutput(
+                    if mm.should_transfer_output(
                             pmodule.meta_module, output_index, 
                             sm.meta_module, input_index,
                             streaming_transfer):
@@ -531,7 +531,7 @@ class HybridScheduler(Scheduler):
                                sm.meta_module.instance.__class__.__name__,
                                input_index)
 
-                        mm.transferOutput(pmodule.meta_module, output_index,
+                        mm.transfer_output(pmodule.meta_module, output_index,
                                           sm.meta_module, input_index,
                                           streaming_transfer)
 
@@ -540,7 +540,7 @@ class HybridScheduler(Scheduler):
                 if streaming_module: 
                     if streamables_dict[smt] == 2:
                         # terminating module in streamable subset
-                        if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                        if mm.should_execute_module(sm.meta_module, sm.part):
                             print 'streaming executing part %d of %s' % \
                                   (sm.part, \
                                    sm.meta_module.instance.__class__.__name__)
@@ -561,7 +561,7 @@ class HybridScheduler(Scheduler):
 
                 else:
                     # this is not a streaming module, normal semantics
-                    if mm.shouldExecuteModule(sm.meta_module, sm.part):
+                    if mm.should_execute_module(sm.meta_module, sm.part):
                         print 'executing part %d of %s' % \
                               (sm.part, \
                                sm.meta_module.instance.__class__.__name__)

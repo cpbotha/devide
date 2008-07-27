@@ -270,7 +270,7 @@ class dicomRDR(ModuleBase,
 
         if not self._fileDialog:
             self._fileDialog = wx.FileDialog(
-                self._module_manager.getModuleViewParentWindow(),
+                self._module_manager.get_module_view_parent_window(),
                 'Select files to add to the list', "", "",
                 "DICOM files (*.dcm)|*.dcm|All files (*)|*",
                 wx.OPEN | wx.MULTIPLE)

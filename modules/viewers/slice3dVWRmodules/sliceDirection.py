@@ -939,8 +939,8 @@ class sliceDirection:
         # been modified, but we only do it for the output part that's
         # responsible for the slices polydata
         m = self.sliceDirections.slice3dVWR
-        m._module_manager.modifyModule(m, 3) # part 3 does the slices
-        m._module_manager.requestAutoExecuteNetwork(m)
+        m._module_manager.modify_module(m, 3) # part 3 does the slices
+        m._module_manager.request_auto_execute_network(m)
 
 
 

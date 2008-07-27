@@ -94,7 +94,7 @@ class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
             cptBaseName = os.tempnam()
 
             # first convert mesh data to brep
-            cbw = self._module_manager.createModule(
+            cbw = self._module_manager.create_module(
                 'modules.writers.cptBrepWRT')
             cbw.set_input(0, self._meshInput)
             cfg = cbw.get_config()
@@ -145,7 +145,7 @@ class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
             self._flipper.GetOutput().SetUpdateExtentToWholeExtent()
             self._flipper.Update()
 
-            self._module_manager.deleteModule(cbw)
+            self._module_manager.delete_module(cbw)
 
             print "CPT Basename == %s" % (cptBaseName,)
 

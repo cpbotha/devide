@@ -389,7 +389,7 @@ class MetaModule:
         print "?? mod > touch? :", self.modifiedTimes[part], self.streaming_touch_times[part]
         return self.modifiedTimes[part] > self.streaming_touch_times[part]
 
-    def shouldTransferOutput(
+    def should_transfer_output(
         self, output_idx, consumer_meta_module, consumer_input_idx,
         streaming=False):
         """Determine whether output should be transferred through

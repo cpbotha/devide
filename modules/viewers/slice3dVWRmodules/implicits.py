@@ -747,5 +747,5 @@ class implicits(s3dcGridMixin):
         
         mm = self.slice3dVWR._module_manager
         # part 2 is responsible for the implicit output
-        mm.modifyModule(self.slice3dVWR, 2)
-        mm.requestAutoExecuteNetwork(self.slice3dVWR)
+        mm.modify_module(self.slice3dVWR, 2)
+        mm.request_auto_execute_network(self.slice3dVWR)

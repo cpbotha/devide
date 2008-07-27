@@ -197,7 +197,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         self._outputFunctions = outputFunctions
 
     def _createViewFrame(self):
-        parentWindow = self._module_manager.getModuleViewParentWindow()
+        parentWindow = self._module_manager.get_module_view_parent_window()
 
         import resources.python.defaultModuleViewFrame
         reload(resources.python.defaultModuleViewFrame)
