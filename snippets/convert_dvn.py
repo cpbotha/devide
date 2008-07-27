@@ -2,8 +2,11 @@
 #
 # usage:
 # load your old network in DeVIDE 8.5, then execute this snippet in
-# the main Python introspection window (main menu: Window | Python
-# Shell).
+# the main Python introspection window.  To open the main Python
+# introspection window, select from the main DeVIDE menu: "Window |
+# Python Shell".  In the window that opens, select "File | Open file
+# to current edit" from the main menu to load the file.  Now select
+# "File | Run current edit" to execute.
 
 import ConfigParser
 import os
