@@ -203,8 +203,12 @@ class ModuleBase(object):
 
         In general, you should never need to override this.
         """
-        
-        self._config = aConfig
+       
+        # we update the dict of the existing config with the passed
+        # parameter.  This means that the new config is merged with
+        # the old, which should mean more robust loading of old
+        # networks.
+        self._config.__dict__.update(aConfig.__dict__)
         # apply the config to the underlying logic
         self.config_to_logic()
         # bring it back all the way up to the view
