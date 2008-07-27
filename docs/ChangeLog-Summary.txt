@@ -5,6 +5,16 @@ Changes since previous release (8.5.3085)
    has the vtkFixedPointVolumeRaycastMapper as default (trust me, it's
    better).  You can now also use the TFEditor to edit and create
    great new transfer functions!  (send me the nice ones)
+ * DVN format radically changed.  It's now human-readable/editable as
+   well as more robust.  Maintaining backwards compatibility in the 
+   future, even through radical software updates, will be much easier.  
+   Use this snippet to convert old-style DVNs to new-style:
+   http://code.google.com/p/devide/source/browse/trunk/devide/
+   snippets/convert_dvn.py
+ * The DICOMBrowser shows a progress dialog whilst scanning your DICOM
+   files.  This keeps frustration under control when scanning large
+   repositories.  You can also cancel the scan if it takes too long.
+ * Internal code-cleanups.
 
 Changes since previous release (8.2.2807)
  * DICOMBrowser: you can now visually browse your complete local DICOM
