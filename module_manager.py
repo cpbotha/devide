@@ -206,7 +206,7 @@ class ModuleSearch:
 #########################################################################
 class PickledModuleState:
     def __init__(self):
-        self.module_config = None
+        self.module_config = DefaultConfigClass()
         # e.g. modules.Viewers.histogramSegment
         self.module_name = None
         # this is the unique name of the module, e.g. dvm15

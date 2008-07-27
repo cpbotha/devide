@@ -2006,7 +2006,7 @@ class GraphEditor:
             self._devide_app.log_error_with_exception(str(e))
 
 
-    def _saveNetwork(self, glyphs, filename):
+    def _saveNetwork_DEPRECATED(self, glyphs, filename):
         (pmsDict, connectionList, glyphPosDict) = \
                   self._serialiseNetwork(glyphs)
 
@@ -2027,6 +2027,20 @@ class GraphEditor:
         if f:
             f.close()
 
+    def _saveNetwork(self, glyphs, filename):
+        (pms_dict, connection_list, glyph_pos_dict) = \
+                  self._serialiseNetwork(glyphs)
+
+        nm = self._devide_app.network_manager 
+
+        try:
+            nm.save_network(pms_dict, connection_list, glyph_pos_dict,
+                    filename)
+        except Exception, e:
+            self._devide_app.log_error_with_exception(
+                'Could not write network to %s: %s' % (filename,
+                                                       str(e)))
+ 
     def _exportNetworkAsDOT(self, glyphs, filename):
         (pmsDict, connectionList, glyphPosDict) = \
                   self._serialiseNetwork(glyphs)
