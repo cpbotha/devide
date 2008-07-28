@@ -138,6 +138,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         # done with VTK de-init
 
         self._view_frame.close()
+        self._view_frame = None
         IntrospectModuleMixin.close(self)
 
     def get_input_descriptions(self):
@@ -421,6 +422,11 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         dlg.Destroy()
 
     def _handler_file_selected(self, event):
+        # this handler gets called one more time AFTER we've destroyed
+        # the DICOMBrowserViewFrame, so we have to check.
+        if not self._view_frame:
+            return
+
         lc = self._view_frame.files_lc
         idx = lc.GetItemData(event.m_itemIndex)
         filename = self._item_data_to_file[idx]
