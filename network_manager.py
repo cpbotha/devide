@@ -3,6 +3,7 @@
 # See COPYRIGHT for details.
 
 import ConfigParser
+from ConfigParser import NoOptionError
 from module_kits.misc_kit.mixins import SubjectMixin
 from module_manager import PickledModuleState, PickledConnection
 import time
@@ -122,19 +123,38 @@ class NetworkManager(SubjectMixin):
             if sec.startswith('modules/'):
                 pms = PickledModuleState()
                 pms.instance_name = sec.split('/')[-1]
-                pms.module_name = cp.get(sec, 'module_name')
-                # we have to use this relatively safe eval trick to
-                # unpack and interpret the dict
-                cd = eval(cp.get(sec, 'module_config_dict'),
-                        {"__builtins__": {}, 
-                         'True' : True, 'False' : False})
-                pms.module_config.__dict__.update(cd)
+                try:
+                    pms.module_name = cp.get(sec, 'module_name')
+                except NoOptionError:
+                    # there's no module name, so we're ignoring this
+                    # section
+                    continue
+
+                try:
+                    mcd = cp.get(sec, 'module_config_dict')
+                except NoOptionError:
+                    # no config in DVN file, pms will have default
+                    # module_config
+                    pass
+                else:
+                    # we have to use this relatively safe eval trick to
+                    # unpack and interpret the dict
+                    cd = eval(mcd,
+                            {"__builtins__": {}, 
+                             'True' : True, 'False' : False})
+                    pms.module_config.__dict__.update(cd)
+
                 # store in main pms dict
                 pms_dict[pms.instance_name] = pms
 
-                # same eval trick to get out the glyph position
-                gp = eval(cp.get(sec, 'glyph_position'),
-                         {"__builtins__": {}})
+                try:
+                    # same eval trick to get out the glyph position
+                    gp = eval(cp.get(sec, 'glyph_position'),
+                             {"__builtins__": {}})
+                except NoOptionError:
+                    # no glyph_pos, so we assign it the default origin
+                    gp = (0,0)
+
                 glyph_pos_dict[pms.instance_name] = gp
 
             elif sec.startswith('connections/'):
@@ -142,9 +162,17 @@ class NetworkManager(SubjectMixin):
 
                 for a, getter in conn_attrs.items():
                     get_method = getattr(cp, getter) 
-                    setattr(pc, a, get_method(sec, a))
-
-                connection_list.append(pc)
+                    try:
+                        setattr(pc, a, get_method(sec, a))
+                    except NoOptionError:
+                        # if an option is missing, we discard the
+                        # whole connection
+                        break
+                else:
+                    # this else clause is only entered if the for loop
+                    # above was NOT broken out of, i.e. we only store
+                    # valid connections
+                    connection_list.append(pc)
 
         return pms_dict, connection_list, glyph_pos_dict
 
