@@ -2026,7 +2026,7 @@ class GraphEditor:
         if f:
             f.close()
 
-    def _save_network(self, glyphs, filename):
+    def _save_network(self, glyphs, filename, export=False):
         (pms_dict, connection_list, glyph_pos_dict) = \
                   self._serialise_network(glyphs)
 
@@ -2034,7 +2034,7 @@ class GraphEditor:
 
         try:
             nm.save_network(pms_dict, connection_list, glyph_pos_dict,
-                    filename)
+                    filename, export)
         except Exception, e:
             self._devide_app.log_error_with_exception(
                 'Could not write network to %s: %s' % (filename,
@@ -2272,7 +2272,7 @@ class GraphEditor:
                     filename = '%s.dvn' % (filename,)
 
                 self.set_current_filename(filename)
-                self._save_network(allGlyphs, filename)
+                self._save_network(allGlyphs, filename, True)
 
                 msg1 = 'Saved %s' % (filename,)
                 # set message on statusbar

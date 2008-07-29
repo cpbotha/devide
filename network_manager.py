@@ -4,9 +4,12 @@
 
 import ConfigParser
 from ConfigParser import NoOptionError
+import copy
 from module_kits.misc_kit.mixins import SubjectMixin
 from module_manager import PickledModuleState, PickledConnection
+import os
 import time
+import types
 
 
 class NetworkManager(SubjectMixin):
@@ -195,29 +198,83 @@ class NetworkManager(SubjectMixin):
 
         return new_modules_dict, new_connections
 
+    def _transform_relative_paths(self, module_config_dict, dvn_dir):
+        """Given a module_config_dict and the directory that a DVN is
+        being saved to, transform all values of which the keys contain
+        'filename' or 'file_name' so that:
+        * if the value is a directory somewhere under the dvn_dir,
+          replace the dvn_dir part with %(dvn_dir)s
+        * if the value is a list of directories, do the substitution
+          for each element.
+        """
+
+        # make a copy, we don't want to modify what the user
+        # gave us.
+        new_mcd = copy.deepcopy(module_config_dict)
+        # then we iterate through the original
+        for k in module_config_dict:
+            if k.find('filename') >= 0 or \
+                    k.find('file_name') >= 0:
+
+                v = module_config_dict[k]
+                if type(v) in [
+                        types.StringType,
+                        types.UnicodeType]:
+                    v = os.path.abspath(v)
+                    if v.find(dvn_dir) == 0:
+                        # do the modification in the copy.
+                        # (probably not necessary to be this
+                        # careful)
+                        new_mcd[k] = v.replace(dvn_dir, '%(dvn_dir)s')
+
+        return new_mcd
+
     def save_network(self, pms_dict, connection_list, glyph_pos_dict,
-            filename):
+            filename, export=False):
         """Given the serialised network representation as returned by
         ModuleManager._serialise_network, write the whole thing to disk
         as a config-style DVN file.
         """
 
         cp = ConfigParser.ConfigParser()
+
+        # general section with network configuration
+        sec = 'general'
+        cp.add_section(sec)
+        cp.set(sec, 'export', export)
+
+        if export:
+            # convert all stored filenames, if they are below the
+            # network directory, to relative pathnames with
+            # substitutions: $(dvn_dir)s/the/rest/somefile.txt
+            # on ConfigParser.read we'll supply the NEW dvn_dir
+            dvn_dir = os.path.abspath(os.path.dirname(filename))
+
         # create a section for each module
         for pms in pms_dict.values():
             sec = 'modules/%s' % (pms.instance_name,)
             cp.add_section(sec)
             cp.set(sec, 'module_name', pms.module_name)
-            cp.set(sec, 'module_config_dict', pms.module_config.__dict__)
+
+            if export:
+                mcd = self._transform_relative_paths(
+                        pms.module_config.__dict__, dvn_dir)
+                        
+            else:
+                # no export, so we don't have to transform anything
+                mcd = pms.module_config.__dict__
+
+            cp.set(sec, 'module_config_dict', mcd)
             cp.set(sec, 'glyph_position', glyph_pos_dict[pms.instance_name])
 
-        sec = 'connections'
         for idx, pconn in enumerate(connection_list):
             sec = 'connections/%d' % (idx,)
             cp.add_section(sec)
             attrs = pconn.__dict__.keys()
             for a in attrs:
                 cp.set(sec, a, getattr(pconn, a))
+
+
 
 
         cfp = file(filename, 'wb')
