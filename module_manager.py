@@ -1114,7 +1114,16 @@ class ModuleManager:
                     # thing and load it: note that the two readers are now
                     # reading the same file!
                     configCopy = copy.deepcopy(pmsTuple[1].module_config)
-                    newModule.set_config(configCopy)
+                    # the API says we have to call get_config() first,
+                    # so that the module has another place where it
+                    # could lazy prepare the thing (slice3dVWR does
+                    # this)
+                    cfg = newModule.get_config()
+                    # now we merge the stored config with the new
+                    # module config
+                    cfg.__dict__.update(configCopy.__dict__)
+                    # and then we set it back with set_config
+                    newModule.set_config(cfg)
                 except Exception, e:
                     # it could be a module with no defined config logic
                     self._devide_app.log_warning(

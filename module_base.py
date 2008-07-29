@@ -206,8 +206,8 @@ class ModuleBase(object):
        
         # we update the dict of the existing config with the passed
         # parameter.  This means that the new config is merged with
-        # the old, which should mean more robust loading of old
-        # networks.
+        # the old, but all new members overwrite old one.  This is
+        # more robust.
         self._config.__dict__.update(aConfig.__dict__)
         # apply the config to the underlying logic
         self.config_to_logic()
