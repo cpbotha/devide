@@ -295,6 +295,7 @@ class MainWXFrame(wx.Frame):
         self.fileOpenSegmentId = wx.NewId()
         self.fileSaveId = wx.NewId()
         self.id_file_save_as = wx.NewId()
+        self.id_file_export = wx.NewId()
         self.fileSaveSelectedId = wx.NewId()
         self.fileExportAsDOTId = wx.NewId()
         self.fileExportSelectedAsDOTId = wx.NewId()
@@ -317,13 +318,16 @@ class MainWXFrame(wx.Frame):
                          "Save the current network.", wx.ITEM_NORMAL)
         file_menu.Append(self.id_file_save_as, "Save &As",
                          "Save the current network with a new filename.", wx.ITEM_NORMAL)
+        file_menu.Append(self.id_file_export, "&Export\tCtrl-E",
+                "Export the current network with relative filenames",
+                wx.ITEM_NORMAL)
         file_menu.Append(self.fileSaveSelectedId,
                          "Save se&lected Glyphs\tCtrl-L",
                          "Save the selected glyphs as a network.",
                          wx.ITEM_NORMAL)
         file_menu.AppendSeparator()
         file_menu.Append(
-            self.fileExportAsDOTId, "&Export as DOT file\tCtrl-E",
+            self.fileExportAsDOTId, "Export as DOT file",
             "Export the current network as a GraphViz DOT file.",
             wx.ITEM_NORMAL)
         file_menu.Append(self.fileExportSelectedAsDOTId,

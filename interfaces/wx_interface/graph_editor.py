@@ -212,6 +212,9 @@ class GraphEditor:
         wx.EVT_MENU(mf, mf.id_file_save_as,
                 self._handler_file_save_as)
 
+        wx.EVT_MENU(mf, mf.id_file_export,
+                self._handler_file_export)
+
         wx.EVT_MENU(mf, mf.fileSaveSelectedId,
                  self._handlerFileSaveSelected)
 
@@ -2239,21 +2242,32 @@ class GraphEditor:
             self.canvas.reset_view()
             self.set_current_filename(filename)
 
-    def _helper_file_save(self, always_ask=True):
+    def _helper_file_save(self, always_ask=True,
+            export=False):
         """Save current network to file.
 
         If always_ask is True, will popup a file selector dialogue.
         If always_ask is False, will only popup a file selector
         dialogue if there is no current filename set.
+
+        If export is True, it will invoke the relative path
+        substitution mode during saving, i.e. all filename paths that
+        are below the network directory will be stored in relative
+        form.  This will not change the current filename, and will
+        always ask where to export to.
         """
         # make a list of all glyphs
         allGlyphs = self.canvas.getObjectsOfClass(
             DeVIDECanvasGlyph)
         
         if allGlyphs:
-            if always_ask or self._current_filename is None:
-                filename = wx.FileSelector(
-                    "Choose filename for DeVIDE network",
+            if always_ask or export or self._current_filename is None:
+                if export:
+                    msg = "Choose filename for EXPORTED DeVIDE network"
+                else:
+                    msg = "Choose filename for DeVIDE network" 
+
+                filename = wx.FileSelector(msg,
                     self._last_fileselector_dir, "", "dvn",
                     "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
                     wx.SAVE)
@@ -2271,10 +2285,15 @@ class GraphEditor:
                 if os.path.splitext(filename)[1] == '':
                     filename = '%s.dvn' % (filename,)
 
-                self.set_current_filename(filename)
-                self._save_network(allGlyphs, filename, True)
+                if export:
+                    self._save_network(
+                            allGlyphs, filename, export=True)
+                    msg1 = 'EXPORTED to %s' % (filename,)
+                else:
+                    self.set_current_filename(filename)
+                    self._save_network(allGlyphs, filename)
+                    msg1 = 'Saved %s' % (filename,)
 
-                msg1 = 'Saved %s' % (filename,)
                 # set message on statusbar
                 self._interface.set_status_message(
                         '%s - %s' % 
@@ -2288,6 +2307,9 @@ class GraphEditor:
 
     def _handler_file_save_as(self, event):
         self._helper_file_save(always_ask=True)
+
+    def _handler_file_export(self, event):
+        self._helper_file_save(always_ask=True, export=True)
 
     def _get_all_glyphs(self):
         """Return list with all glyphs on canvas.

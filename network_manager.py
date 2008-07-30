@@ -91,8 +91,12 @@ class NetworkManager(SubjectMixin):
         (pmsDict, connectionList, glyphPosDict) if successful.  If not
         successful, an exception will be raised.
         """
-        
-        cp = ConfigParser.ConfigParser()
+      
+        # need this for substitution during reading of
+        # module_config_dict
+        dvn_dir = os.path.dirname(filename)
+
+        cp = ConfigParser.ConfigParser({'dvn_dir' : dvn_dir})
 
         try:
             # load the fileData
@@ -234,6 +238,10 @@ class NetworkManager(SubjectMixin):
         """Given the serialised network representation as returned by
         ModuleManager._serialise_network, write the whole thing to disk
         as a config-style DVN file.
+
+        @param export: If True, will transform all filenames that are
+        below the network directory to relative pathnames.  These will
+        be expanded (relative to the loaded network) at load-time.
         """
 
         cp = ConfigParser.ConfigParser()
