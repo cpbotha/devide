@@ -90,6 +90,9 @@ class NetworkManager(SubjectMixin):
         """Given a filename, read it as a DVN file and return a tuple with
         (pmsDict, connectionList, glyphPosDict) if successful.  If not
         successful, an exception will be raised.
+
+        All occurrences of %(dvn_dir)s will be expanded to the
+        directory that the DVN file is being loaded from.
         """
       
         # need this for substitution during reading of
@@ -212,6 +215,17 @@ class NetworkManager(SubjectMixin):
           for each element.
         """
 
+        def transform_single_path(p):
+            p = os.path.abspath(p)
+            if p.find(dvn_dir) == 0:
+                # do the modification in the copy.
+                # (probably not necessary to be this
+                # careful)
+                p = p.replace(dvn_dir, '%(dvn_dir)s')
+                p = p.replace('\\', '/')
+
+            return p
+
         # make a copy, we don't want to modify what the user
         # gave us.
         new_mcd = copy.deepcopy(module_config_dict)
@@ -224,12 +238,20 @@ class NetworkManager(SubjectMixin):
                 if type(v) in [
                         types.StringType,
                         types.UnicodeType]:
-                    v = os.path.abspath(v)
-                    if v.find(dvn_dir) == 0:
-                        # do the modification in the copy.
-                        # (probably not necessary to be this
-                        # careful)
-                        new_mcd[k] = v.replace(dvn_dir, '%(dvn_dir)s')
+                    new_mcd[k] = transform_single_path(v)
+
+                elif type(v) == types.ListType:
+                    # it's a list, so try to transform every element
+                    # copy everything into a new list new_v
+                    new_v = v[:]
+                    for i,p in enumerate(v):
+                        if type(p) in [
+                                types.StringType,
+                                types.UnicodeType]:
+                            new_v[i] = transform_single_path(p)
+
+
+                    new_mcd[k] = new_v
 
         return new_mcd
 
