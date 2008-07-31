@@ -14,6 +14,11 @@ Changes since previous release (8.5.3085)
  * The DICOMBrowser shows a progress dialog whilst scanning your DICOM
    files.  This keeps frustration under control when scanning large
    repositories.  You can also cancel the scan if it takes too long.
+ * There is now an export mode for DVN files: this changes all
+   file and path names to be relative to the directory containing the
+   DVN file, if they are somewhere below that directory.  This makes
+   it easy to transport complete packages containing datasets and DVN
+   files.
  * Internal code-cleanups.
 
 Changes since previous release (8.2.2807)
