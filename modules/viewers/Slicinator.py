@@ -12,9 +12,13 @@
 
 # see design notes on p39 of AM2 moleskine
 
+# add reset image button just like the DICOMBrowser
+# mouse wheel should go to next/previous slice
+
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
+import vtk
 
 class Slicinator(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
@@ -41,39 +45,19 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         self.config_to_view()
 
 
-    def _bind_events(self):
-        pass
-
-    def _create_view_frame(self):
-        import resources.python.slicinator_frames
-        reload(resources.python.slicinator_frames)
-
-        self._view_frame = module_utils.instantiate_module_view_frame(
-            self, self._module_manager,
-            resources.python.slicinator_frames.SlicinatorFrame)
-
-        vf = self._view_frame
-
-    def _create_vtk_pipeline(self):
-        vf = self._view_frame
-
-        # create the necessary VTK objects: we only need a renderer,
-        # the RenderWindowInteractor in the view_frame has the rest.
-        self.ren = vtk.vtkRenderer()
-        self.ren.SetBackground(0.5,0.5,0.5)
-        self._view_frame.rwi.GetRenderWindow().AddRenderer(self.ren)
-
     def close(self):
         # with this complicated de-init, we make sure that VTK is 
         # properly taken care of
-        self.ren.RemoveAllViewProps()
+        self._image_viewer.GetRenderer().RemoveAllViewProps()
+        self._image_viewer.SetupInteractor(None)
+        self._image_viewer.SetRenderer(None)
         # this finalize makes sure we don't get any strange X
         # errors when we kill the module.
-        self._view_frame.rwi.GetRenderWindow().Finalize()
-        self._view_frame.rwi.SetRenderWindow(None)
-        del self._view_frame.rwi
+        self._image_viewer.GetRenderWindow().Finalize()
+        self._image_viewer.SetRenderWindow(None)
+        del self._image_viewer
         # done with VTK de-init
-       
+     
         self._view_frame.Destroy()
         del self._view_frame
 
@@ -105,6 +89,34 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
     def view(self):
         self._view_frame.Show()
         self._view_frame.Raise()
+
+    # end of API calls
+
+    def _bind_events(self):
+        pass
+
+    def _create_view_frame(self):
+        import resources.python.slicinator_frames
+        reload(resources.python.slicinator_frames)
+
+        self._view_frame = module_utils.instantiate_module_view_frame(
+            self, self._module_manager,
+            resources.python.slicinator_frames.SlicinatorFrame)
+
+        vf = self._view_frame
+
+    def _create_vtk_pipeline(self):
+        vf = self._view_frame
+
+        self._image_viewer = vtk.vtkImageViewer2()
+        self._image_viewer.SetupInteractor(self._view_frame.rwi)
+        self._image_viewer.GetRenderer().SetBackground(0.3,0.3,0.3)
+
+        self._set_image_viewer_dummy_input()
+
+    def _set_image_viewer_dummy_input(self):
+        ds = vtk.vtkImageGridSource()
+        self._image_viewer.SetInput(ds.GetOutput())
 
 
 
