@@ -92,7 +92,7 @@ class ModuleBase(object):
         raise NotImplementedError
 
     def get_output(self, idx):
-	"""Get the n-th output.
+        """Get the n-th output.
 
         This will be used for connecting this output to the input of another
         module.  Whatever is returned by this object MUST have an Update()
@@ -100,7 +100,7 @@ class ModuleBase(object):
         sure that the whole chain of logic resulting in the data object has
         executed so that the data object is up to date.
         """
-	raise NotImplementedError
+        raise NotImplementedError
 
     def logic_to_config(self):
         """Synchronise internal configuration information (usually
