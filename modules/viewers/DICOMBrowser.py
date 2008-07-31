@@ -77,7 +77,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
             self,
             {'Module (self)' : self})
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, 
             DICOMBrowserFrame.DICOMBrowserFrame)
         # change the title to something more spectacular

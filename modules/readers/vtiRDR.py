@@ -23,7 +23,7 @@ class vtiRDR(FilenameViewModuleMixin, ModuleBase):
             {'vtkXMLImageDataReader': self._reader,
              'Module (self)' : self})
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._reader,
             'Reading VTK ImageData')
 

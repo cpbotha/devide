@@ -25,12 +25,12 @@ class DICOMWriter(ScriptedConfigModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._writer = vtkgdcm.vtkGDCMImageWriter()
-        module_utils.setupVTKObjectProgress(self, self._writer,
+        module_utils.setup_vtk_object_progress(self, self._writer,
                                            'Writing DICOM data')
 
         self._caster = vtk.vtkImageCast()
         self._caster.SetOutputScalarTypeToShort()
-        module_utils.setupVTKObjectProgress(self, self._caster,
+        module_utils.setup_vtk_object_progress(self, self._caster,
                 'Casting DICOM data to short')
 
         self._input_data = None

@@ -16,7 +16,7 @@ class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
         else: # contourFilter == 'contourFilter'
             self._contourFilter = vtk.vtkContourFilter()
 
-        module_utils.setupVTKObjectProgress(self, self._contourFilter,
+        module_utils.setup_vtk_object_progress(self, self._contourFilter,
                                            'Extracting iso-surface')
 
         # now setup some defaults before our sync
@@ -87,16 +87,16 @@ class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
         import modules.Filters.resources.python.contourFLTBaseViewFrame
         reload(modules.Filters.resources.python.contourFLTBaseViewFrame)
 
-        self._viewFrame = module_utils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.Filters.resources.python.contourFLTBaseViewFrame.\
             contourFLTBaseViewFrame)
 
         objectDict = {'contourFilter' : self._contourFilter}
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             objectDict, None)
 
-        module_utils.createECASButtons(
+        module_utils.create_eoca_buttons(
             self, self._viewFrame, self._viewFrame.viewFramePanel)
             

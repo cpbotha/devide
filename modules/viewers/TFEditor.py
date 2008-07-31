@@ -185,11 +185,11 @@ class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
         import resources.python.tfeditorframe
         reload(resources.python.tfeditorframe)
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             resources.python.tfeditorframe.TFEditorFrame)
 
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             {'Module (self)' : self})
 

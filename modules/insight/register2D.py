@@ -253,7 +253,7 @@ class register2D(ModuleBase):
 
         viewerFrame = modules.Insight.resources.python.register2DViewFrames.\
                       viewerFrame
-        self.viewerFrame = module_utils.instantiateModuleViewFrame(
+        self.viewerFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, viewerFrame)
 
         self._threedRenderer = vtk.vtkRenderer()
@@ -270,7 +270,7 @@ class register2D(ModuleBase):
         # controlFrame creation
         controlFrame = modules.Insight.resources.python.\
                        register2DViewFrames.controlFrame
-        self.controlFrame = module_utils.instantiateModuleViewFrame(
+        self.controlFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, controlFrame)
 
         # display

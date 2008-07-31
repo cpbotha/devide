@@ -28,10 +28,10 @@ class decimate(ScriptedConfigModuleMixin, ModuleBase):
         self._decimate.PreserveTopologyOn()
         self._decimate.SetInput(self._triFilter.GetOutput())
 
-        module_utils.setupVTKObjectProgress(self, self._triFilter,
+        module_utils.setup_vtk_object_progress(self, self._triFilter,
                                            'Converting to triangles')
         
-        module_utils.setupVTKObjectProgress(self, self._decimate,
+        module_utils.setup_vtk_object_progress(self, self._decimate,
                                            'Decimating mesh')
         
                                            

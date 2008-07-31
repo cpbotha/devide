@@ -17,11 +17,11 @@ class closing(ScriptedConfigModuleMixin, ModuleBase):
         self._imageErode = vtk.vtkImageContinuousErode3D()
         self._imageErode.SetInput(self._imageDilate.GetOutput())
         
-        module_utils.setupVTKObjectProgress(self, self._imageDilate,
+        module_utils.setup_vtk_object_progress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
         
 
-        module_utils.setupVTKObjectProgress(self, self._imageErode,
+        module_utils.setup_vtk_object_progress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
         
 

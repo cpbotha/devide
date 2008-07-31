@@ -22,13 +22,13 @@ class extractHDomes(ScriptedConfigModuleMixin, ModuleBase):
 
         self._imageMathSubtractR.SetInput(1, self._reconstruct.GetOutput())
 
-        module_utils.setupVTKObjectProgress(self, self._imageMathSubtractH,
+        module_utils.setup_vtk_object_progress(self, self._imageMathSubtractH,
                                            'Preparing marker image.')
 
-        module_utils.setupVTKObjectProgress(self, self._reconstruct,
+        module_utils.setup_vtk_object_progress(self, self._reconstruct,
                                            'Performing reconstruction.')
 
-        module_utils.setupVTKObjectProgress(self, self._imageMathSubtractR,
+        module_utils.setup_vtk_object_progress(self, self._imageMathSubtractR,
                                            'Subtracting reconstruction.')
 
         self._config.h = 50

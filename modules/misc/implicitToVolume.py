@@ -31,7 +31,7 @@ class implicitToVolume(ScriptedConfigModuleMixin, ModuleBase):
         # this is more than good enough.
         self._sampleFunction.SetOutputScalarTypeToFloat()
         # setup progress for the processObject
-        module_utils.setupVTKObjectProgress(self, self._sampleFunction,
+        module_utils.setup_vtk_object_progress(self, self._sampleFunction,
                                            "Sampling implicit function.")
         
 

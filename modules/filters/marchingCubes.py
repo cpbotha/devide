@@ -13,7 +13,7 @@ class marchingCubes(ScriptedConfigModuleMixin, ModuleBase):
 
         self._contourFilter = vtk.vtkMarchingCubes()
 
-        module_utils.setupVTKObjectProgress(self, self._contourFilter,
+        module_utils.setup_vtk_object_progress(self, self._contourFilter,
                                            'Extracting iso-surface')
         
 

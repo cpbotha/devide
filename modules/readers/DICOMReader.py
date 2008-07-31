@@ -54,7 +54,7 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
                 self._reader.GetDirectionCosines()
         self._output_mmd = mmd
 
-        module_utils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setup_vtk_object_progress(self, self._reader,
                                            'Reading DICOM data')
 
         self._view_frame = None
@@ -234,7 +234,7 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
         import modules.readers.resources.python.DICOMReaderViewFrame
         reload(modules.readers.resources.python.DICOMReaderViewFrame)
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.readers.resources.python.DICOMReaderViewFrame.\
             DICOMReaderViewFrame)
@@ -245,11 +245,11 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
         object_dict = {
                 'Module (self)'      : self,
                 'vtkGDCMImageReader' : self._reader}
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
 
-        module_utils.createECASButtons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                       self._view_frame.view_frame_panel)
 
         # now add the event handlers

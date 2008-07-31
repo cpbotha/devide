@@ -15,7 +15,7 @@ class cptBrepWRT(FilenameViewModuleMixin, ModuleBase):
 
         self._triFilter = vtk.vtkTriangleFilter()
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._triFilter,
             'Converting to triangles')
 

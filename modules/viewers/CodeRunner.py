@@ -173,7 +173,7 @@ class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin):
         import resources.python.code_runner_frame
         reload(resources.python.code_runner_frame)
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             resources.python.code_runner_frame.\
             CodeRunnerFrame)

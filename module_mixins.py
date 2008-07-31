@@ -44,7 +44,7 @@ class IntrospectModuleMixin(object):
             self._python_shells = {}
 
         if obj not in self._python_shells:
-            icon = module_utils.getModuleIcon()
+            icon = module_utils.get_module_icon()
 
             
             self._python_shells[obj] = PythonShell(
@@ -162,7 +162,7 @@ class IntrospectModuleMixin(object):
     def _defaultObjectChoiceCallback(self, viewFrame, renderWin,
                                      objectChoice, objectDict):
         """This callack is required for the
-        createStandardObjectAndPipelineIntrospection method in module_utils.
+        create_standard_object_introspection method in module_utils.
         """
         objectName = objectChoice.GetStringSelection()
         if objectDict.has_key(objectName):
@@ -176,7 +176,7 @@ class IntrospectModuleMixin(object):
         
     def _defaultPipelineCallback(self, viewFrame, renderWin, objectDict):
         """This callack is required for the
-        createStandardObjectAndPipelineIntrospection method in module_utils.
+        create_standard_object_introspection method in module_utils.
         """
         
         # check that all objects are VTK objects (probably not necessary)
@@ -303,7 +303,7 @@ class FilenameViewModuleMixin(FileOpenDialogModuleMixin,
                 'Eror calling view-dependent createViewFrame() in '
                 'backend-type DeVIDE.')
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             resources.python.filename_view_module_mixin_frame.\
             FilenameViewModuleMixinFrame)
@@ -319,7 +319,7 @@ class FilenameViewModuleMixin(FileOpenDialogModuleMixin,
                 self._object_dict, None)
 
         # new style standard ECAS buttons
-        module_utils.createECASButtons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)
 
         # following module_base convention
@@ -448,7 +448,7 @@ class NoConfigModuleMixin(IntrospectModuleMixin):
                 self, viewFrame, viewFrame.viewFramePanel,
                 self._object_dict, None)
 
-        module_utils.createECASButtons(self, viewFrame,
+        module_utils.create_eoca_buttons(self, viewFrame,
                                       viewFrame.viewFramePanel)
 
         # make sure that a close of that window does the right thing
@@ -456,7 +456,7 @@ class NoConfigModuleMixin(IntrospectModuleMixin):
                   lambda e: viewFrame.Show(False))
 
         # set cute icon
-        viewFrame.SetIcon(module_utils.getModuleIcon())
+        viewFrame.SetIcon(module_utils.get_module_icon())
 
         # follow ModuleBase convention to indicate that view is
         # available
@@ -552,7 +552,7 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin):
         reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
-        viewFrame = module_utils.instantiateModuleViewFrame(
+        viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, dMVF)
 
         # this viewFrame doesn't have the 7-sizer yet
@@ -653,7 +653,7 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin):
                 self, viewFrame, viewFrame.viewFramePanel,
                 self._object_dict, None)
 
-        module_utils.createECASButtons(self, viewFrame,
+        module_utils.create_eoca_buttons(self, viewFrame,
                                       viewFrame.viewFramePanel)
            
         # following ModuleBase convention to indicate that view is

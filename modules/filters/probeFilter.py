@@ -30,7 +30,7 @@ class probeFilter(NoConfigModuleMixin, ModuleBase):
             {'Module (self)' : self,
              'vtkProbeFilter' : self._probeFilter})
 
-        module_utils.setupVTKObjectProgress(self, self._probeFilter,
+        module_utils.setup_vtk_object_progress(self, self._probeFilter,
                                            'Mapping source on input')
         
         self.sync_module_logic_with_config()

@@ -18,7 +18,7 @@ class transformVolumeData(NoConfigModuleMixin, ModuleBase):
              'vtkImageReslice' : self._imageReslice})
 
 
-        module_utils.setupVTKObjectProgress(self, self._imageReslice,
+        module_utils.setup_vtk_object_progress(self, self._imageReslice,
                                            'Resampling volume')
 
         self.sync_module_logic_with_config()

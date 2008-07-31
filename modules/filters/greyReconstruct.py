@@ -18,7 +18,7 @@ class greyReconstruct(NoConfigModuleMixin, ModuleBase):
             {'Module (self)' : self,
              'vtkImageGreyscaleReconstruct3D' : self._greyReconstruct})
         
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._greyReconstruct,
             'Performing greyscale reconstruction')
 

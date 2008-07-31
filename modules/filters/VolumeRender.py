@@ -151,13 +151,13 @@ class VolumeRender(
         self._volume_mapper.SetVolumeRayCastFunction(
             self._volume_raycast_function)
         
-        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
 
     def _setup_for_2d_texture(self):
         self._volume_mapper = vtk.vtkVolumeTextureMapper2D()
         
-        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
 
         
@@ -165,7 +165,7 @@ class VolumeRender(
     def _setup_for_3d_texture(self):
         self._volume_mapper = vtk.vtkVolumeTextureMapper3D()
         
-        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
 
     def _setup_for_shell_splatting(self):
@@ -175,7 +175,7 @@ class VolumeRender(
         # high-quality rendermode
         self._volume_mapper.SetRenderMode(0)
 
-        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
 
     def _setup_for_fixed_point(self):
@@ -187,7 +187,7 @@ class VolumeRender(
         self._volume_mapper.SetBlendModeToComposite()
         #self._volume_mapper.SetBlendModeToMaximumIntensity()
 
-        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
         
     def execute_module(self):

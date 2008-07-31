@@ -598,7 +598,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         # threedFrame creation and basic setup -------------------
         threedFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                       threedFrame
-        self.threedFrame = module_utils.instantiateModuleViewFrame(
+        self.threedFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, threedFrame)
         self.threedFrame.SetTitle('slice3dVWR 3D view')
             
@@ -620,7 +620,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         # controlFrame creation and basic setup -------------------
         controlFrame = modules.viewers.resources.python.slice3dVWRFrames.\
                        controlFrame
-        self.controlFrame = module_utils.instantiateModuleViewFrame(
+        self.controlFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, controlFrame)
         self.controlFrame.SetTitle('slice3dVWR Controls')
 
@@ -705,7 +705,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         # objectAnimationFrame creation and basic setup -------------------
         oaf = modules.viewers.resources.python.slice3dVWRFrames.\
               objectAnimationFrame
-        self.objectAnimationFrame = module_utils.instantiateModuleViewFrame(
+        self.objectAnimationFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, oaf)
 
         # display the windows (but we don't show the oaf yet)

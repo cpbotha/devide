@@ -18,7 +18,7 @@ class StreamerVTK(NoConfigModuleMixin, ModuleBase):
                  'vtkImageDataStreamer' : self._image_data_streamer,
                  'vtkPolyDataStreamer' : self._poly_data_streamer})
 
-        module_utils.setupVTKObjectProgress(self,
+        module_utils.setup_vtk_object_progress(self,
                 self._image_data_streamer, 'Streaming image data')
 
         self._current_mode = None

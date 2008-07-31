@@ -278,18 +278,18 @@ class shellSplatSimple(IntrospectModuleMixin,
         # requires it and so that it's available in this namespace.
         import modules.filters.resources.python.shellSplatSimpleFLTViewFrame
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, mm,
             modules.filters.resources.python.shellSplatSimpleFLTViewFrame.\
             shellSplatSimpleFLTViewFrame)
 
         # setup introspection with default everythings
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.viewFramePanel,
             self._object_dict, None)
 
         # create and configure the standard ECAS buttons
-        module_utils.createECASButtons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)
 
         

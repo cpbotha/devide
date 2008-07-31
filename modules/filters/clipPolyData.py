@@ -19,7 +19,7 @@ class clipPolyData(NoConfigModuleMixin, ModuleBase):
 
 
         self._clipPolyData = vtk.vtkClipPolyData()
-        module_utils.setupVTKObjectProgress(self, self._clipPolyData,
+        module_utils.setup_vtk_object_progress(self, self._clipPolyData,
                                            'Calculating normals')
 
         NoConfigModuleMixin.__init__(

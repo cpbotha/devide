@@ -20,7 +20,7 @@ class pngWRT(ScriptedConfigModuleMixin, ModuleBase):
 	self._shiftScale = vtk.vtkImageShiftScale()
         self._shiftScale.SetOutputScalarTypeToUnsignedShort()
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._shiftScale,
             'Converting input to unsigned short.')
 
@@ -30,7 +30,7 @@ class pngWRT(ScriptedConfigModuleMixin, ModuleBase):
 	self._writer.SetFileDimensionality(3)
         self._writer.SetInput(self._shiftScale.GetOutput())
         
-	module_utils.setupVTKObjectProgress(
+	module_utils.setup_vtk_object_progress(
             self, self._writer, 'Writing PNG file(s)')
 
         

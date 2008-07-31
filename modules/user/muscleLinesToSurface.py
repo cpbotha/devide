@@ -58,15 +58,15 @@ class muscleLinesToSurface(ModuleBase, NoConfigModuleMixin):
         self._cpd.SetInput(self._mc.GetOutput())
         #self._cpd.InsideOutOn()
 
-        module_utils.setupVTKObjectProgress(self, self._distance,
+        module_utils.setup_vtk_object_progress(self, self._distance,
                                            'Calculating distance field...')
-        module_utils.setupVTKObjectProgress(self, self._pf1,
+        module_utils.setup_vtk_object_progress(self, self._pf1,
                                            'Signing distance field...')
-        module_utils.setupVTKObjectProgress(self, self._pf2,
+        module_utils.setup_vtk_object_progress(self, self._pf2,
                                            'Creating implicit volume...')
-        module_utils.setupVTKObjectProgress(self, self._mc,
+        module_utils.setup_vtk_object_progress(self, self._mc,
                                            'Extracting isosurface...')
-        module_utils.setupVTKObjectProgress(self, self._cpd,
+        module_utils.setup_vtk_object_progress(self, self._cpd,
                                            'Clipping isosurface...')
         
         

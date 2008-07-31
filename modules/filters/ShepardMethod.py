@@ -16,7 +16,7 @@ class ShephardMethod(ScriptedConfigModuleMixin, ModuleBase):
 
         self._shepardFilter = vtk.vtkShepardMethod()
         
-        module_utils.setupVTKObjectProgress(self, self._shepardFilter,
+        module_utils.setup_vtk_object_progress(self, self._shepardFilter,
                                            'Applying Shepard Method.')
         
                                            

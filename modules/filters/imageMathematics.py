@@ -21,7 +21,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
         self._imageMath.SetInput1(None)
         self._imageMath.SetInput2(None)
         
-        module_utils.setupVTKObjectProgress(self, self._imageMath,
+        module_utils.setup_vtk_object_progress(self, self._imageMath,
                                            'Performing image math')
         
                                            

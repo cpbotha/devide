@@ -19,7 +19,7 @@ class imageFlip(NoConfigModuleMixin, ModuleBase):
         self._imageFlip.SetFilteredAxis(2)
         self._imageFlip.GetOutput().SetUpdateExtentToWholeExtent()
         
-        module_utils.setupVTKObjectProgress(self, self._imageFlip,
+        module_utils.setup_vtk_object_progress(self, self._imageFlip,
                                            'Flipping image')
 
         NoConfigModuleMixin.__init__(

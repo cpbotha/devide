@@ -28,7 +28,7 @@ class stlWRT(FilenameViewModuleMixin, ModuleBase):
         for textobj in (('Cleaning data', self._cleaner),
                         ('Converting to triangles', self._tf),
                         ('Writing STL data', self._writer)):
-            module_utils.setupVTKObjectProgress(self, textobj[1],
+            module_utils.setup_vtk_object_progress(self, textobj[1],
                                                textobj[0])
 
             

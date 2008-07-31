@@ -10,7 +10,7 @@ class myImageClip(ScriptedConfigModuleMixin, ModuleBase):
 
         self._clipper = vtk.vtkImageClip()
 
-        module_utils.setupVTKObjectProgress(self, self._clipper,
+        module_utils.setup_vtk_object_progress(self, self._clipper,
                                            'Reading PNG images.')
 
         self._config.outputWholeExtent = (0,-1,0,-1,0,-1)

@@ -18,7 +18,7 @@ class extractGrid(ScriptedConfigModuleMixin, ModuleBase):
 
         self._extractGrid = vtkdevide.vtkPVExtractVOI()
         
-        module_utils.setupVTKObjectProgress(self, self._extractGrid,
+        module_utils.setup_vtk_object_progress(self, self._extractGrid,
                                            'Subsampling structured grid.')
 
         ScriptedConfigModuleMixin.__init__(

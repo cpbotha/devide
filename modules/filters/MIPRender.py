@@ -123,7 +123,7 @@ class MIPRender(
             self._volume_raycast_function)
 
         
-        module_utils.setupVTKObjectProgress(self, self._volume_mapper,
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
 
         self._volume = vtk.vtkVolume()

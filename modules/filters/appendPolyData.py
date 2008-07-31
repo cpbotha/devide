@@ -18,7 +18,7 @@ class appendPolyData(NoConfigModuleMixin, ModuleBase):
         # our own list of inputs
         self._inputStreams = self._numInputs * [None]
 
-        module_utils.setupVTKObjectProgress(self, self._appendPolyData,
+        module_utils.setup_vtk_object_progress(self, self._appendPolyData,
                                            'Appending PolyData')
 
         NoConfigModuleMixin.__init__(

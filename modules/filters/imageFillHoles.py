@@ -25,11 +25,11 @@ class imageFillHoles(ScriptedConfigModuleMixin, ModuleBase):
         self._imageGreyReconstruct.SetInput(
             1, self._imageBorderMask.GetOutput())
 
-        module_utils.setupVTKObjectProgress(self, self._imageBorderMask,
+        module_utils.setup_vtk_object_progress(self, self._imageBorderMask,
                                            'Creating image mask.')
         
         
-        module_utils.setupVTKObjectProgress(self, self._imageGreyReconstruct,
+        module_utils.setup_vtk_object_progress(self, self._imageGreyReconstruct,
                                            'Performing reconstruction.')
         
 

@@ -24,7 +24,7 @@ class imageMedian3D(ScriptedConfigModuleMixin, ModuleBase):
             {'Module (self)' : self,
              'vtkImageMedian3D' : self._imageMedian3D})
         
-        module_utils.setupVTKObjectProgress(self, self._imageMedian3D,
+        module_utils.setup_vtk_object_progress(self, self._imageMedian3D,
                                            'Filtering with median')
 
         self.sync_module_logic_with_config()

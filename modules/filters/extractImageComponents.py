@@ -12,7 +12,7 @@ class extractImageComponents(ScriptedConfigModuleMixin, ModuleBase):
 
         self._extract = vtk.vtkImageExtractComponents()
 
-        module_utils.setupVTKObjectProgress(self, self._extract,
+        module_utils.setup_vtk_object_progress(self, self._extract,
                                            'Extracting components.')
         
 

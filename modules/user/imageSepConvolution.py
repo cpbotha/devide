@@ -15,7 +15,7 @@ class imageSepConvolution(ScriptedConfigModuleMixin, ModuleBase):
 
         self._imageSepConvolution = vtktud.vtkImageSepConvolution()
 
-#        module_utils.setupVTKObjectProgress(self, self._clipper,
+#        module_utils.setup_vtk_object_progress(self, self._clipper,
 #                                           'Reading PNG images.')
 
         # set information for ScriptedConfigModuleMixin

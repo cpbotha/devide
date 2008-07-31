@@ -27,7 +27,7 @@ class advectionProperties(ScriptedConfigModuleMixin, ModuleBase):
 
         self._inputs = [None] * self._numberOfInputs
         
-        #module_utils.setupVTKObjectProgress(self, self._warpVector,
+        #module_utils.setup_vtk_object_progress(self, self._warpVector,
         #                                   'Warping points.')
 
         ScriptedConfigModuleMixin.__init__(

@@ -15,7 +15,7 @@ class BMPReader(ScriptedConfigModuleMixin, ModuleBase):
         self._reader.SetFileDimensionality(3)
         self._reader.SetAllow8BitBMP(1)
 
-        module_utils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setup_vtk_object_progress(self, self._reader,
                                            'Reading BMP images.')
 
         

@@ -117,7 +117,7 @@ class EditMedicalMetaData(IntrospectModuleMixin, ModuleBase):
         import modules.filters.resources.python.EditMedicalMetaDataViewFrame
         reload(modules.filters.resources.python.EditMedicalMetaDataViewFrame)
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.filters.resources.python.EditMedicalMetaDataViewFrame.\
             EditMedicalMetaDataViewFrame)
@@ -171,7 +171,7 @@ class EditMedicalMetaData(IntrospectModuleMixin, ModuleBase):
         object_dict = {
                 'Module (self)'      : self}
 
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             object_dict, None)
 

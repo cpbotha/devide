@@ -28,7 +28,7 @@ class reconstructionRDR(ScriptedConfigModuleMixin, ModuleBase):
 		# this is our output
 		self._transformStack = transformStackClass( self )
 
-#		module_utils.setupVTKObjectProgress(self, self._reader,
+#		module_utils.setup_vtk_object_progress(self, self._reader,
 #		                                   'Fetching transformStack from database...')
 
 		self._config.databaseFile = ""

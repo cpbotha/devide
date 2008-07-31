@@ -18,7 +18,7 @@ class polyDataConnect(NoConfigModuleMixin, ModuleBase):
         #
         self._polyDataConnect.SetExtractionModeToPointSeededRegions()
 
-        module_utils.setupVTKObjectProgress(self, self._polyDataConnect,
+        module_utils.setup_vtk_object_progress(self, self._polyDataConnect,
                                            'Finding connected surfaces')
         
         # and the mixin constructor

@@ -24,7 +24,7 @@ class vtiWRT(FilenameViewModuleMixin, ModuleBase):
 
 
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._writer,
             'Writing VTK ImageData')
 

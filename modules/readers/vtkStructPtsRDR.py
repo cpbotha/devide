@@ -22,7 +22,7 @@ class vtkStructPtsRDR(FilenameViewModuleMixin, ModuleBase):
             {'vtkStructuredPointsReader': self._reader})
 
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._reader,
             'Reading vtk structured points data')
 

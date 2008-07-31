@@ -27,7 +27,7 @@ class streamTracer(ScriptedConfigModuleMixin, ModuleBase):
             {'Module (self)' : self,
              'vtkStreamTracer' : self._streamTracer})
 
-        module_utils.setupVTKObjectProgress(self, self._streamTracer,
+        module_utils.setup_vtk_object_progress(self, self._streamTracer,
                                            'Tracing stream lines.')
         
         self.sync_module_logic_with_config()

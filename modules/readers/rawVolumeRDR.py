@@ -20,7 +20,7 @@ class rawVolumeRDR(ModuleBase,
         # FIXME: make configurable (or disable)
         #self._reader.SetFileLowerLeft(1)        
 
-        module_utils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setup_vtk_object_progress(self, self._reader,
                                            'Reading raw volume data')
 
         
@@ -188,7 +188,7 @@ class rawVolumeRDR(ModuleBase,
         import modules.readers.resources.python.rawVolumeRDRViewFrame
         reload(modules.readers.resources.python.rawVolumeRDRViewFrame)
 
-        self._viewFrame = module_utils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.readers.resources.python.rawVolumeRDRViewFrame.\
             rawVolumeRDRViewFrame)
@@ -200,12 +200,12 @@ class rawVolumeRDR(ModuleBase,
                    
         # setup object introspection
         objectDict = {'vtkImageReader' : self._reader}
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             objectDict, None)
 
         # standard module buttons + events
-        module_utils.createECASButtons(self, self._viewFrame,
+        module_utils.create_eoca_buttons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
         # finish setting up the output datatype choice

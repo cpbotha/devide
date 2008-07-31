@@ -24,7 +24,7 @@ class histogram1D(IntrospectModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._imageAccumulate = vtk.vtkImageAccumulate()
-        module_utils.setupVTKObjectProgress(self, self._imageAccumulate,
+        module_utils.setup_vtk_object_progress(self, self._imageAccumulate,
                                            'Calculating histogram')
 
         self._viewFrame = None
@@ -167,7 +167,7 @@ class histogram1D(IntrospectModuleMixin, ModuleBase):
         import modules.viewers.resources.python.histogram1DFrames
         reload(modules.viewers.resources.python.histogram1DFrames)
 
-        self._viewFrame = module_utils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.viewers.resources.python.histogram1DFrames.\
             histogram1DFrame)
@@ -178,11 +178,11 @@ class histogram1D(IntrospectModuleMixin, ModuleBase):
         objectDict = {'Module (self)' : self,
                       'vtkImageAccumulate' : self._imageAccumulate}
 
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             objectDict, None)
 
-        module_utils.createECASButtons(self, self._viewFrame,
+        module_utils.create_eoca_buttons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
         
         

@@ -23,9 +23,9 @@ class testModule(NoConfigModuleMixin, ModuleBase):
                     'vtkTriangleFilter' : self._triangleFilter,
                     'vtkCurvatures' : self._curvatures})
 
-        module_utils.setupVTKObjectProgress(self, self._triangleFilter,
+        module_utils.setup_vtk_object_progress(self, self._triangleFilter,
                                            'Triangle filtering...')
-        module_utils.setupVTKObjectProgress(self, self._curvatures,
+        module_utils.setup_vtk_object_progress(self, self._curvatures,
                                            'Calculating curvatures...')
         
         

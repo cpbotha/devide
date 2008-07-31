@@ -18,7 +18,7 @@ class vtkPolyDataWRT(FilenameViewModuleMixin, ModuleBase):
         # in ASCII - I'll make this a gui option later.
         self._writer.SetFileTypeToBinary()
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._writer,
             'Writing VTK Polygonal data')
 

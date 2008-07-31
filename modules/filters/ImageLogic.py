@@ -20,12 +20,12 @@ class ImageLogic(ScriptedConfigModuleMixin, ModuleBase):
 
         self._image_logic = vtk.vtkImageLogic()
         
-        module_utils.setupVTKObjectProgress(self, self._image_logic,
+        module_utils.setup_vtk_object_progress(self, self._image_logic,
                                            'Performing image logic')
         
 
         self._image_cast = vtk.vtkImageCast()
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._image_cast,
             'Casting scalar type before image logic')
         

@@ -15,7 +15,7 @@ class imageGaussianSmooth(IntrospectModuleMixin, ModuleBase):
 
         self._imageGaussianSmooth = vtk.vtkImageGaussianSmooth()
 
-        module_utils.setupVTKObjectProgress(self, self._imageGaussianSmooth,
+        module_utils.setup_vtk_object_progress(self, self._imageGaussianSmooth,
                                            'Smoothing image with Gaussian')
         
 
@@ -102,16 +102,16 @@ class imageGaussianSmooth(IntrospectModuleMixin, ModuleBase):
             'modules.filters.resources.python.imageGaussianSmoothViewFrame')
         import modules.filters.resources.python.imageGaussianSmoothViewFrame
 
-        self._view_frame = module_utils.instantiateModuleViewFrame(
+        self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.filters.resources.python.imageGaussianSmoothViewFrame.\
             imageGaussianSmoothViewFrame)
 
         objectDict = {'vtkImageGaussianSmooth' : self._imageGaussianSmooth}
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.viewFramePanel,
             objectDict, None)
 
-        module_utils.createECASButtons(self, self._view_frame,
+        module_utils.create_eoca_buttons(self, self._view_frame,
                                       self._view_frame.viewFramePanel)
 

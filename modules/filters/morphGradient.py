@@ -31,25 +31,25 @@ class morphGradient(ScriptedConfigModuleMixin, ModuleBase):
         self._outerImageMath.SetInput2(None) # has to take image
         
         
-        module_utils.setupVTKObjectProgress(self, self._imageDilate,
+        module_utils.setup_vtk_object_progress(self, self._imageDilate,
                                            'Performing greyscale 3D dilation')
         
 
-        module_utils.setupVTKObjectProgress(self, self._imageErode,
+        module_utils.setup_vtk_object_progress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
         
 
-        module_utils.setupVTKObjectProgress(self, self._imageMath,
+        module_utils.setup_vtk_object_progress(self, self._imageMath,
                                            'Subtracting erosion from '
                                            'dilation')
         
 
-        module_utils.setupVTKObjectProgress(self, self._innerImageMath,
+        module_utils.setup_vtk_object_progress(self, self._innerImageMath,
                                            'Subtracting erosion from '
                                            'image (inner)')
         
 
-        module_utils.setupVTKObjectProgress(self, self._outerImageMath,
+        module_utils.setup_vtk_object_progress(self, self._outerImageMath,
                                            'Subtracting image from '
                                            'dilation (outer)')
         

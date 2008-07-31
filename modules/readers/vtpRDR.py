@@ -20,7 +20,7 @@ class vtpRDR(FilenameViewModuleMixin, ModuleBase):
             'VTK Poly Data (*.vtp)|*.vtp|All files (*)|*',
             {'vtkXMLPolyDataReader': self._reader})
 
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._reader,
             'Reading VTK PolyData')
 

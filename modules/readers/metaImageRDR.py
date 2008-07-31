@@ -14,7 +14,7 @@ class metaImageRDR(ScriptedConfigModuleMixin, ModuleBase):
 
         self._reader = vtk.vtkMetaImageReader()
 
-        module_utils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setup_vtk_object_progress(self, self._reader,
                                            'Reading MetaImage data.')
         
 

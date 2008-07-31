@@ -345,7 +345,7 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
         self._lookup.SetInput1(self._lookupAppend.GetOutput())        
         self._lookup.SetInput2(self._stencil.GetOutput())
 
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._viewFrame, self._viewFrame.viewFramePanel,
             {'Module (self)' : self,
              'vtkHistogram2D' : self._histogram,
@@ -353,7 +353,7 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
             self._renderer.GetRenderWindow())
 
         # add the ECASH buttons
-        module_utils.createECASButtons(self, self._viewFrame,
+        module_utils.create_eoca_buttons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
     def _createIPW(self):
@@ -435,7 +435,7 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
                     viewFrame
 
         # DeVIDE takes care of the icon and the window close handlers
-        self._viewFrame = module_utils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, viewFrame)
         
 

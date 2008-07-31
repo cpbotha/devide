@@ -373,7 +373,7 @@ class sliceDirection:
                 self.sliceDirections.slice3dVWR.threedFrame, id=-1,
                 title='dummy')
 
-            self._orthoViewFrame.SetIcon(module_utils.getModuleIcon())
+            self._orthoViewFrame.SetIcon(module_utils.get_module_icon())
 
             self._renderer = vtk.vtkRenderer()
             self._renderer.SetBackground(0.5, 0.5, 0.5)

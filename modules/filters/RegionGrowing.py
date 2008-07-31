@@ -25,10 +25,10 @@ class RegionGrowing(ScriptedConfigModuleMixin, ModuleBase):
 
         self._seed_connect.SetInput(self._image_threshold.GetOutput())
 
-        module_utils.setupVTKObjectProgress(self, self._seed_connect,
+        module_utils.setup_vtk_object_progress(self, self._seed_connect,
                                            'Performing region growing')
         
-        module_utils.setupVTKObjectProgress(self, self._image_threshold,
+        module_utils.setup_vtk_object_progress(self, self._image_threshold,
                                            'Thresholding data')
 
         # we'll use this to keep a binding (reference) to the passed object

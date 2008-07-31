@@ -164,8 +164,6 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
         # this is the only way to capture escape on a frame
         viewFrame.Bind(wx.EVT_CHAR_HOOK, handler_evt_char_hook)
 
-createECASButtons = create_eoca_buttons
-
 def create_standard_object_introspection(d3module, 
                                          viewFrame, viewFramePanel,
                                          objectDict,
@@ -237,11 +235,7 @@ def create_standard_object_introspection(d3module,
                                renderWindow,
                                objectChoice, introspect_button_id)
 
-# make sure the old method name still works.
-createStandardObjectAndPipelineIntrospection = \
-        create_standard_object_introspection
-
-def getModuleIcon():
+def get_module_icon():
     icon = wx.EmptyIcon()
     icon.CopyFromBitmap(
         resources.graphics.images.getdevidelogom32x32Bitmap())
@@ -251,7 +245,7 @@ def create_module_view_frame_title(d3module):
     return '%s View' % \
            (d3module.__class__.__name__,)
 
-def instantiateModuleViewFrame(d3module, module_manager, frameClass):
+def instantiate_module_view_frame(d3module, module_manager, frameClass):
     # instantiate the frame
     pw = module_manager.get_module_view_parent_window()
     # name becomes the WM_CLASS under X
@@ -265,7 +259,7 @@ def instantiateModuleViewFrame(d3module, module_manager, frameClass):
     viewFrame.SetTitle(create_module_view_frame_title(d3module))
 
     # set its icon!
-    viewFrame.SetIcon(getModuleIcon())
+    viewFrame.SetIcon(get_module_icon())
 
     return viewFrame
 
@@ -302,10 +296,7 @@ def setup_object_introspection(d3module, viewFrame, objectDict,
                   lambda e: d3module._defaultObjectChoiceCallback(
         viewFrame, renderWindow, objectChoice, objectDict))
 
-# old method name should still work
-setupObjectAndPipelineIntrospection = setup_object_introspection
-
-def setupVTKObjectProgress(d3module, obj, progressText):
+def setup_vtk_object_progress(d3module, obj, progressText):
     # we DON'T use SetProgressMethod, as the handler object then needs
     # to store a binding to the vtkProcessObject, which means that
     # the objects never die... this way, there are no refs

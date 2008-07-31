@@ -29,7 +29,7 @@ class objRDR(FilenameViewModuleMixin, ModuleBase):
             'Wavefront OBJ data (*.obj)|*.obj|All files (*)|*',
             {'vtkOBJReader': self._reader})
 
-        module_utils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setup_vtk_object_progress(self, self._reader,
                                            'Reading Wavefront OBJ data')
 
         # set up some defaults

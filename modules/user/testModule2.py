@@ -21,7 +21,7 @@ class testModule2(NoConfigModuleMixin, ModuleBase):
         self._matrixToHT.Inverse()
 
 
-        module_utils.setupVTKObjectProgress(self, self._imageReslice,
+        module_utils.setup_vtk_object_progress(self, self._imageReslice,
                                            'Resampling volume')
 
         self._viewFrame = self._createViewFrame(

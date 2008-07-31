@@ -133,12 +133,12 @@ class imageStackRDR(ModuleBase, FileOpenDialogModuleMixin):
             'modules.Insight.resources.python.imageStackRDRViewFrame')
         import modules.Insight.resources.python.imageStackRDRViewFrame
 
-        self._viewFrame = module_utils.instantiateModuleViewFrame(
+        self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
             modules.Insight.resources.python.imageStackRDRViewFrame.\
             imageStackRDRViewFrame)
 
-        module_utils.createECASButtons(self, self._viewFrame,
+        module_utils.create_eoca_buttons(self, self._viewFrame,
                                       self._viewFrame.viewFramePanel)
 
         self._bindEvents()

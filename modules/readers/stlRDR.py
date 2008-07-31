@@ -29,7 +29,7 @@ class stlRDR(FilenameViewModuleMixin, ModuleBase):
             'STL data (*.stl)|*.stl|All files (*)|*',
             {'vtkSTLReader': self._reader})
 
-        module_utils.setupVTKObjectProgress(self, self._reader,
+        module_utils.setup_vtk_object_progress(self, self._reader,
                                            'Reading STL data')
 
         # set up some defaults

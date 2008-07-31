@@ -14,7 +14,7 @@ class imageGreyErode(ScriptedConfigModuleMixin, ModuleBase):
 
         self._imageErode = vtk.vtkImageContinuousErode3D()
         
-        module_utils.setupVTKObjectProgress(self, self._imageErode,
+        module_utils.setup_vtk_object_progress(self, self._imageErode,
                                            'Performing greyscale 3D erosion')
         
                                            

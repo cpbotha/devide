@@ -51,7 +51,7 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
             self, self._module_manager,
             resources.python.slicinator_frame.SlicinatorFrame)
 
-        module_utils.createStandardObjectAndPipelineIntrospection(
+        module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             {'Module (self)' : self})
 

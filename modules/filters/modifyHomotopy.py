@@ -48,7 +48,7 @@ class modifyHomotopy(NoConfigModuleMixin, ModuleBase):
         self._imageThresholdObserverID = self._imageThreshold.AddObserver(
             'EndEvent', self._observerImageThreshold)
         
-        module_utils.setupVTKObjectProgress(
+        module_utils.setup_vtk_object_progress(
             self, self._dualGreyReconstruct,
             'Performing dual greyscale reconstruction')
 

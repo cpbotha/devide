@@ -18,7 +18,7 @@ class imageBacktracker(NoConfigModuleMixin, ModuleBase):
 
 	self._imageBacktracker = vtkdevide.vtkImageBacktracker()
 
-        module_utils.setupVTKObjectProgress(self, self._imageBacktracker,
+        module_utils.setup_vtk_object_progress(self, self._imageBacktracker,
                                            'Backtracking...')
         
         # we'll use this to keep a binding (reference) to the passed object

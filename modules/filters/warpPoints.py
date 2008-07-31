@@ -30,7 +30,7 @@ class warpPoints(InputArrayChoiceMixin, ScriptedConfigModuleMixin,
             {'Module (self)' : self,
              'vtkWarpVector' : self._warpVector})
         
-        module_utils.setupVTKObjectProgress(self, self._warpVector,
+        module_utils.setup_vtk_object_progress(self, self._warpVector,
                                            'Warping points.')
         
 
