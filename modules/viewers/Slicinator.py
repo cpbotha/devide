@@ -17,5 +17,29 @@ from module_mixins import IntrospectModuleMixin
 import module_utils
 
 class Slicinator(IntrospectModuleMixin, ModuleBase):
-    pass
+    def __init__(self, module_manager):
+        ModuleBase.__init__(self, module_manager)
+
+        # internal variables
+
+        # config variables
+        self._config.somevar = 3
+
+        self._view_frame = None
+        self._create_view_frame()
+        self._bind_events()
+
+        self.view()
+
+        # all modules should toggle this once they have shown their
+        # stuff.
+        self.view_initialised = True
+
+        self.config_to_logic()
+        self.logic_to_config()
+        self.config_to_view()
+
+
+    def _bind_events(self):
+        pass
 
