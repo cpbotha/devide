@@ -27,10 +27,11 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
 
         self._view_frame = None
         self._create_view_frame()
+        self._create_vtk_pipeline()
+
         self._bind_events()
 
         self.view()
-
         # all modules should toggle this once they have shown their
         # stuff.
         self.view_initialised = True
@@ -44,28 +45,70 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         pass
 
     def _create_view_frame(self):
-        import resources.python.slicinator_frame
-        reload(resources.python.slicinator_frame
+        import resources.python.slicinator_frames
+        reload(resources.python.slicinator_frames)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
-            resources.python.slicinator_frame.SlicinatorFrame)
+            resources.python.slicinator_frames.SlicinatorFrame)
 
-        module_utils.create_standard_object_introspection(
-            self, self._view_frame, self._view_frame.view_frame_panel,
-            {'Module (self)' : self})
-
-        # add the ECASH buttons
-        module_utils.create_eoca_buttons(self, self._view_frame,
-                                        self._view_frame.view_frame_panel)
-
-        # and customize the presets choice
         vf = self._view_frame
-        keys = TF_LIBRARY.keys()
-        keys.sort()
-        vf.preset_choice.Clear()
-        for key in keys:
-            vf.preset_choice.Append(key)
 
-        vf.preset_choice.Select(0)
+    def _create_vtk_pipeline(self):
+        vf = self._view_frame
+
+        # create the necessary VTK objects: we only need a renderer,
+        # the RenderWindowInteractor in the view_frame has the rest.
+        self.ren = vtk.vtkRenderer()
+        self.ren.SetBackground(0.5,0.5,0.5)
+        self._view_frame.rwi.GetRenderWindow().AddRenderer(self.ren)
+
+    def close(self):
+        # with this complicated de-init, we make sure that VTK is 
+        # properly taken care of
+        self.ren.RemoveAllViewProps()
+        # this finalize makes sure we don't get any strange X
+        # errors when we kill the module.
+        self._view_frame.rwi.GetRenderWindow().Finalize()
+        self._view_frame.rwi.SetRenderWindow(None)
+        del self._view_frame.rwi
+        # done with VTK de-init
+       
+        self._view_frame.Destroy()
+        del self._view_frame
+
+        IntrospectModuleMixin.close(self)
+        ModuleBase.close(self)
+
+    def execute_module(self):
+        pass
+
+    def get_input_descriptions(self):
+        return ()
+
+    def get_output_descriptions(self):
+        return ()
+
+    def logic_to_config(self):
+        pass
+
+    def config_to_logic(self):
+        pass
+
+    def config_to_view(self):
+        pass
+
+    def view_to_config(self):
+        pass
+
+
+    def view(self):
+        self._view_frame.Show()
+        self._view_frame.Raise()
+
+
+
+
+    
+
 

@@ -91,6 +91,13 @@ class slice3dVWR:
     the main application menu) to see it.
     """
 
+class Slicinator:
+    kits = ['wx_kit', 'vtk_kit']
+    cats = ['Viewers']
+    keywords = ['segmentation', 'contour']
+    help = """The Slicinator.  It will be back!
+    """
+
 class TFEditor:
     kits = ['wx_kit', 'numpy_kit']
     cats = ['Viewers']
