@@ -2,6 +2,9 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+# NOTES:
+# you can't put the RWI in a StaticBox, it never manages to appear.
+
 # general requirements:
 # * multiple objects (i.e. multiple coloured contours per slice)
 
@@ -12,6 +15,9 @@
 
 # see design notes on p39 of AM2 moleskine
 
+# mask volume import! (user clicks import, gets to select from which
+# input) - mask volume is contoured.
+
 # add reset image button just like the DICOMBrowser
 # mouse wheel should go to next/previous slice
 
@@ -19,6 +25,7 @@ from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
 import vtk
+import wx
 
 class Slicinator(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
@@ -45,6 +52,7 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         self.config_to_view()
 
 
+
     def close(self):
         # with this complicated de-init, we make sure that VTK is 
         # properly taken care of
@@ -55,6 +63,7 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         # errors when we kill the module.
         self._image_viewer.GetRenderWindow().Finalize()
         self._image_viewer.SetRenderWindow(None)
+        self._image_viewer.DebugOn()
         del self._image_viewer
         # done with VTK de-init
      
@@ -90,10 +99,18 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         self._view_frame.Show()
         self._view_frame.Raise()
 
+        # because we have an RWI involved, we have to do this
+        # SafeYield, so that the window does actually appear before we
+        # call the render.  If we don't do this, we get an initial
+        # empty renderwindow.
+        wx.SafeYield()
+        self._render()
+
     # end of API calls
 
     def _bind_events(self):
-        pass
+        self._view_frame.reset_image_button.Bind(
+                wx.EVT_BUTTON, self._handler_reset_image_button)
 
     def _create_view_frame(self):
         import resources.python.slicinator_frames
@@ -106,13 +123,50 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         vf = self._view_frame
 
     def _create_vtk_pipeline(self):
-        vf = self._view_frame
+        if False:
+            vf = self._view_frame
+            ren = vtk.vtkRenderer()
+            vf.rwi.GetRenderWindow().AddRenderer(ren)
 
-        self._image_viewer = vtk.vtkImageViewer2()
-        self._image_viewer.SetupInteractor(self._view_frame.rwi)
-        self._image_viewer.GetRenderer().SetBackground(0.3,0.3,0.3)
+        else:
+            self._image_viewer = vtk.vtkImageViewer2()
+            self._image_viewer.SetupInteractor(self._view_frame.rwi)
+            self._image_viewer.GetRenderer().SetBackground(0.3,0.3,0.3)
 
-        self._set_image_viewer_dummy_input()
+            self._set_image_viewer_dummy_input()
+
+    def _handler_reset_image_button(self, event):
+        self._reset_image()
+
+    def _render(self):
+        self._image_viewer.Render()
+        #self._view_frame.rwi.Render()
+
+    def _reset_image(self):
+        self._reset_image_wl()
+        self._reset_image_pz()
+        self._render()
+
+    def _reset_image_pz(self):
+        """Reset the pan/zoom of the current image.
+        """
+
+        ren = self._image_viewer.GetRenderer()
+        ren.ResetCamera()
+
+    def _reset_image_wl(self):
+        """Reset the window/level of the current image.
+
+        This assumes that the image has already been read and that it
+        has a valid scalar range.
+        """
+        iv = self._image_viewer
+        inp = iv.GetInput()
+        if inp:
+            r = inp.GetScalarRange()
+            iv.SetColorWindow(r[1] - r[0])
+            iv.SetColorLevel(0.5 * (r[1] + r[0]))
+       
 
     def _set_image_viewer_dummy_input(self):
         ds = vtk.vtkImageGridSource()
