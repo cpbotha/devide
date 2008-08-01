@@ -5,6 +5,9 @@
 # NOTES:
 # you can't put the RWI in a StaticBox, it never manages to appear.
 
+# http://www.nabble.com/vtkContourWidget-with-vtkImageViewer2-td18485627.html
+# has more information on how to use the vtkContourWidget
+
 # general requirements:
 # * multiple objects (i.e. multiple coloured contours per slice)
 
