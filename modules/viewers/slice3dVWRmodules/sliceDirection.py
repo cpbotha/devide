@@ -713,7 +713,9 @@ class sliceDirection:
                 ipw_cols[ipw.GetPlaneOrientation()])
 
             # set the window and level
-            ipw.SetWindowLevel(window, level)
+            # mystery third parameter with VTK-5-2: in C++ it's
+            # copy=0 default.
+            ipw.SetWindowLevel(window, level, 0)
             ipw.On()
 
     def setAllOverlayLookupTables(self):
