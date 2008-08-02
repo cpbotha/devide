@@ -141,6 +141,19 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
     def _handler_reset_image_button(self, event):
         self._reset_image()
 
+    def _init_cw(self):
+        self._cw = vtk.vtkContourWidget()
+
+        rep = vtk.vtkOrientedGlyphContourRepresentation()
+        self._cw.SetRepresentation(rep)
+
+        iapp = vtk.vtkImageActorPointPlacer()
+        iapp.SetImageActor(self._image_viewer.GetImageActor())
+        rep.SetPointPlacer(iapp)
+
+        self._cw.SetInteractor(self._view_frame.rwi)
+        self._cw.On()
+
     def _render(self):
         self._image_viewer.Render()
         #self._view_frame.rwi.Render()
