@@ -30,8 +30,9 @@ class DeVIDETesting:
                       basic_vtk.get_suite(self),
                       basic_wx.get_suite(self),
                       graph_editor.get_suite(self),
-                      numpy_tests.get_suite(self),
-                      matplotlib_tests.get_suite(self)]
+                      numpy_tests.get_suite(self), 
+                      matplotlib_tests.get_suite(self)
+                      ]
 
         self.main_suite = unittest.TestSuite(tuple(suite_list))
         
@@ -42,13 +43,13 @@ class DeVIDETesting:
         print "Complete suite consists of 17 (multi-part) tests."
 
     def runSomeTest(self):
-        #some_suite = misc.get_suite(self)
-        #some_suite = matplotlib_tests.get_suite(self)
-        some_suite = graph_editor.get_some_suite(self)
+        some_suite = misc.get_suite(self)
         #some_suite = basic_vtk.get_suite(self)
-        #some_suite = numpy_tests.get_suite(self)
         #some_suite = basic_wx.get_suite(self)
-        
+        some_suite = graph_editor.get_some_suite(self)
+        #some_suite = numpy_tests.get_suite(self)
+        #some_suite = matplotlib_tests.get_suite(self)
+
         runner = unittest.TextTestRunner()
         runner.run(some_suite)
 

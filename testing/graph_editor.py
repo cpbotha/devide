@@ -438,11 +438,8 @@ def get_some_suite(devide_testing):
     
     some_suite = unittest.TestSuite()
 
-    t = TestITKBasic('test_confidence_seed_connect')
+    t = TestModulesMisc('test_create_destroy')
     t._devide_app = devide_app
-
-    #t = create_geb_test('test_module_search', devide_app)
-    
     some_suite.addTest(t)
 
     return some_suite
