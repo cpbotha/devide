@@ -256,31 +256,6 @@ class marchingCubes:
     algorithm.
     """
 
-class modifyHomotopy:
-    kits = ['vtk_kit']
-    cats = ['Filters', 'Morphology']
-    keywords = ['morphology']
-    help = """IMPORTANT: this module needs to be updated to the new
-    event-driven execution scheme.  It should still work, but it may also
-    blow up your computer.
-
-    Modifies homotopy of input image I so that the only minima will
-    be at the user-specified seed-points or marker image, all other
-    minima will be suppressed and ridge lines separating minima will
-    be preserved.
-
-    Either the seed-points or the marker image (or both) can be used.
-    The marker image has to be >1 at the minima that are to be enforced
-    and 0 otherwise.
-
-    This module is often used as a pre-processing step to ensure that
-    the watershed doesn't over-segment.
-
-    This module uses a DeVIDE-specific implementation of Luc Vincent's
-    fast greyscale reconstruction algorithm, extended for 3D.
-    
-    """
-
 class morphGradient:
     kits = ['vtk_kit']
     cats = ['Filters', 'Morphology']
