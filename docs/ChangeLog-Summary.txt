@@ -19,6 +19,7 @@ Changes since previous release (8.5.3085)
    DVN file, if they are somewhere below that directory.  This makes
    it easy to transport complete packages containing datasets and DVN
    files.
+ * Upgraded to VTK 5.2 (pre-release), ITK 3.8
  * Internal code-cleanups.
 
 Changes since previous release (8.2.2807)
