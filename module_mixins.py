@@ -15,6 +15,11 @@ import wx.lib.masked
 from external.filebrowsebutton import \
         FileBrowseButton, FileBrowseButtonWithHistory,DirBrowseButton
 
+# so that modules using the file open mixins don't have to import wx
+# directly.
+WX_OPEN = wx.OPEN
+WX_SAVE = wx.SAVE
+
 import resources.python.filename_view_module_mixin_frame
 import re
 import module_kits
