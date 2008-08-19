@@ -101,5 +101,7 @@ class imageMask(ScriptedConfigModuleMixin, ModuleBase):
     def execute_module(self):
         self._imageMask.Update()
         
+    def streaming_execute_module(self):
+        self._imageMask.Update()
 
 
