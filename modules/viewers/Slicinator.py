@@ -30,6 +30,12 @@ import module_utils
 import vtk
 import wx
 
+class Contour:
+    pass
+
+class Object:
+    pass
+
 class Slicinator(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
@@ -43,6 +49,11 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         self._create_view_frame()
         self._create_vtk_pipeline()
 
+        # dummy input has been set by create_vtk_pipeline, we this
+        # ivar we record that we are not connected.
+        self._input_data = None
+
+
         self._bind_events()
 
         self.view()
@@ -53,7 +64,7 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         self.config_to_logic()
         self.logic_to_config()
         self.config_to_view()
-
+        
 
 
     def close(self):
@@ -80,7 +91,23 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         pass
 
     def get_input_descriptions(self):
-        return ()
+        return ('Input VTK image data',)
+
+    def set_input(self, idx, input_data):
+        if input_data == self._input_data:
+            return
+
+        # handle disconnects
+        if input_data is None:
+            self._input_data = None
+            self._set_image_viewer_dummy_input()
+
+        else:
+            # try and link this up
+            # method will throw an exception if not valid
+            self._set_image_viewer_input(input_data)
+            # if we get here, connection was successful
+            self._input_data = input_data
 
     def get_output_descriptions(self):
         return ()
@@ -188,7 +215,27 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
         ds = vtk.vtkImageGridSource()
         self._image_viewer.SetInput(ds.GetOutput())
 
+    def _set_image_viewer_input(self, input_data):
+        try:
+            if not input_data.IsA('vtkImageData'):
+                raise RuntimeError('Invalid input data.')
+        except AttributeError:
+            raise RuntimeError('Invalid input data.')
 
+        self._image_viewer.SetInput(input_data)
+        # module.set_input() only gets called right before an
+        # execute_module, so we can do our thing here.
+        self._reset_image()
+        
+        we = input_data.GetWholeExtent()
+        min,max = we[4], we[5]
+        self._reset_slice_spin(min, min, max)
+
+    def _reset_slice_spin(self, val, min, max):
+        self._view_frame.slice_spin.SetValue(val)
+        self._view_frame.slice_spin.SetRange(min,max)
+
+        
 
 
     
