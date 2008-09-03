@@ -23,7 +23,7 @@ conn_trans = {
 
 def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
     """Given the serialised network representation as returned by
-    ModuleManager._serialise_network, write the whole thing to disk
+    ModuleManager._serialiseNetwork, write the whole thing to disk
     as a config-style DVN file.
     """
 
@@ -72,7 +72,7 @@ def save_current_network():
             filename = '%s.dvn' % (filename,)
 
         glyphs = ge._get_all_glyphs()
-        pms_dict, connection_list, glyph_pos_dict = ge._serialise_network(glyphs)
+        pms_dict, connection_list, glyph_pos_dict = ge._serialiseNetwork(glyphs)
         save_network(pms_dict, connection_list, glyph_pos_dict,
                 filename)
 
