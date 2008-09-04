@@ -98,7 +98,7 @@ class Slicinator:
     help = """The Slicinator.  It will be back!
     """
 
-class TFEditor:
+class TransferFunctionEditor:
     kits = ['wx_kit', 'numpy_kit']
     cats = ['Viewers']
     help = """Transfer function editor.

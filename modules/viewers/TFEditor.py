@@ -41,7 +41,7 @@ TF_LIBRARY = {
             (3072.0, (255, 255, 255), 1)] 
         }
 
-class TFEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
+class TransferFunctionEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
