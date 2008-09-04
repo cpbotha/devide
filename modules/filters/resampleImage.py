@@ -119,6 +119,12 @@ class resampleImage(IntrospectModuleMixin, ModuleBase):
     def view(self, parent_window=None):
         if self._view_frame is None:
             self._createViewFrame()
+
+            # following ModuleBase convention to indicate that view is
+            # available.
+            self.view_initialised = True
+            # and make sure the view is up to date
+            self._module_manager.sync_module_view_with_logic(self)
             
         # if the window was visible already. just raise it
         self._view_frame.Show(True)
