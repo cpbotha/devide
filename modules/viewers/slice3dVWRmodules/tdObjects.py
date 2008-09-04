@@ -813,7 +813,7 @@ class tdObjects(s3dcGridMixin):
                         exec('prop.%s' % (methodName,))
                         
             except Exception:
-                self._module_manager.log_error_with_exception(
+                self.slice3dVWR._module_manager.log_error_with_exception(
                     'Could not execute %s on object %s\'s prop.' % \
                     (methodName,
                      self._tdObjectsDict[obj]['objectName']))
