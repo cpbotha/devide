@@ -14,7 +14,9 @@ STAMP = "20080612-1420"
 
 # the main release version: year.month (ubuntu-style) on release
 # branches (the branch is also named vYEAR.MONTH), DEV for trunk
-VERSION = "DEV"
+#VERSION = "DEV"
+# special ASCI a17 2008 build
+VERSION = "A17"
 
 try:
     SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
