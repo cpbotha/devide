@@ -180,6 +180,10 @@ class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin):
 
         self._view_frame.main_splitter.SetMinimumPaneSize(50)
 
+        # tried both self._view_frame.shell_window setFocus /
+        # SetFocus.  On Ubuntu 8.04, wxPython 2.8.7.1 this doesn't
+        # seem to work.
+
     def _handler_file_open(self, evt):
         try:
             filename, t = self._open_python_file(self._view_frame)
