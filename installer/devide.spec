@@ -60,6 +60,10 @@ APP_DIR = os.path.split(specpath)[0]
 from distutils import sysconfig
 MPL_DATA_DIR = os.path.join(sysconfig.get_python_lib(), 'matplotlib/mpl-data')
 
+import gdcm
+gdcm_p3xml_fn = os.path.join(gdcm.GDCM_SOURCE_DIR,
+'Source/InformationObjectDefinition', 'Part3.xml')
+
 if sys.platform.startswith('win'):
     exeName = 'builddevide/devide.exe'
 
@@ -223,6 +227,10 @@ vpli = [(os.path.join('Icons', i),
 # MATPLOTLIB data dir
 mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
 
+# GDCM Part3.xml
+gdcm_tree = [(gdcm_p3xml_fn, '%s/gdcmdata/Part3.xml' % (APP_DIR,),
+'DATA')]
+
 if False:
     from distutils import sysconfig
     numpy_tree = Tree(
@@ -297,7 +305,7 @@ exe = EXE(pyz,
 all_binaries = a.binaries + modules_tree + module_kits_tree + vpli + \
     mpl_data_dir + \
     extraLibs + segTree + snipTree + dataTree + docsTree + misc_tree + \
-    testing_tree
+    testing_tree + gdcm_tree
 
 coll = COLLECT(exe,
                all_binaries,
