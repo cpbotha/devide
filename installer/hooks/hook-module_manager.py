@@ -1,3 +1,7 @@
+# this hook is responsible for including everything that the DeVIDE
+# modules could need.  The top-level spec file explicitly excludes
+# them.
+
 import os
 import sys
 
@@ -39,8 +43,7 @@ other_imports = ['genMixins', 'gen_utils', 'ModuleBase', 'module_mixins',
                  'modules.viewers.DICOMBrowser',
                  'modules.viewers.slice3dVWR',
                  'modules.viewers.histogram1D',
-                 'modules.viewers.TFEditor']
-# slice3dVWR is temporary, just to see if we can get it going this way.
+                 'modules.viewers.TransferFunctionEditor']
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
 
