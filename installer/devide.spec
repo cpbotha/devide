@@ -228,7 +228,7 @@ vpli = [(os.path.join('Icons', i),
 mpl_data_dir = Tree(MPL_DATA_DIR, 'matplotlibdata')
 
 # GDCM Part3.xml
-gdcm_tree = [('gdcmdata/Part3.xml', gdcm_p3xml_fn, 'DATA')]
+gdcm_tree = [('gdcmdata/XML/Part3.xml', gdcm_p3xml_fn, 'DATA')]
 
 if False:
     from distutils import sysconfig
