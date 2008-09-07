@@ -15,11 +15,6 @@ import sys
 VERSION = ''
 
 def init(module_manager):
-    if hasattr(sys, 'frozen') and sys.frozen:
-        gdcm_data_dir = os.path.join(module_manager.get_appdir(), 
-                'gdcmdata')
-        os.environ['GDCM_DATA_DIR'] = gdcm_data_dir
-
     # as of 20080628, the order of importing vtkgdcm and gdcm IS
     # important on Linux.  vtkgdcm needs to go before gdcm, else very
     # strange things happen due to the dl (dynamic loading) switches.
