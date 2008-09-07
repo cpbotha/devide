@@ -9,6 +9,7 @@ This pre-loads GDCM2, the second generation Grass Roots Dicom library,
 used since 2008 by DeVIDE for improved DICOM loading / saving support.
 """
 
+import os
 import sys
 
 VERSION = ''
