@@ -21,6 +21,22 @@ def init(module_manager):
     global vtkgdcm
     import vtkgdcm
 
+    # gdcm post 2.0.8 will have a new scheme for locating Part3.xml:
+
+    # 2. Or directly from your application / python code, simply
+    # Append/Prepend your exotic path:
+
+    # Example in python:
+
+    #  import gdcm
+    #  g=gdcm.Global.GetInstance()
+    #  g.Prepend( my_exotic_path )
+    #  g.LoadResourcesFiles()
+
+    # -> should return True when set properly
+    # -------------------------
+
+
     global gdcm
     import gdcm
 
