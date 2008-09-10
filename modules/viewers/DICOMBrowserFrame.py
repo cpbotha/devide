@@ -229,6 +229,7 @@ class DICOMBrowserFrame(wx.Frame):
         del self.studies_lc
         del self.series_lc
         del self.files_lc
+        del self.files_pane
         self.Destroy()
 
     def _create_dirs_pane(self):
@@ -252,8 +253,18 @@ class DICOMBrowserFrame(wx.Frame):
         return panel
 
     def _create_files_pane(self):
-        sl = SortedListCtrl(self, -1, 
-                style=wx.LC_REPORT)
+        # instantiated wxGlade frame
+        iff = DICOMBrowserPanels.ImageFilesFrame(self, id=-1, 
+                size=(400,300))
+        panel = iff.files_panel
+        # reparent the panel to us
+        panel.Reparent(self)
+
+        iff.Destroy()
+
+        panel.ipp_sort_button = iff.ipp_sort_button
+        sl = iff.files_lc
+
         sl.InsertColumn(FilesColumns.name, "Full name")
         # we'll autosize this column later
         sl.SetColumnWidth(FilesColumns.name, 300)
@@ -262,7 +273,8 @@ class DICOMBrowserFrame(wx.Frame):
 
         self.files_lc = sl
 
-        return sl
+        self.files_pane = panel
+        return panel
 
     def _create_image_pane(self):
         # instantiate the wxGlade-created frame

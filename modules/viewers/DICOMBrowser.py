@@ -239,6 +239,10 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         # catch drag events (so user can drag and drop selected files)
         lc.Bind(wx.EVT_MOTION, self._handler_files_motion)
 
+        # the IPP sort button in the files pane
+        ipp_sort_button = self._view_frame.files_pane.ipp_sort_button
+        ipp_sort_button.Bind(wx.EVT_BUTTON, self._handler_ipp_sort)
+
         # keep track of the image viewer controls
         ip = self._view_frame.image_pane
         ip.lock_pz_cb.Bind(wx.EVT_CHECKBOX,
@@ -248,6 +252,17 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         ip.reset_b.Bind(wx.EVT_BUTTON,
                 self._handler_image_reset_b)
 
+    def _helper_files_to_files_listctrl(self, filenames):
+        lc = self._view_frame.files_lc
+        lc.DeleteAllItems()
+
+        self._item_data_to_file = {}
+
+        for filename in filenames:
+            idx = lc.InsertStringItem(sys.maxint, filename)
+            lc.SetItemData(idx, idx)
+            self._item_data_to_file[idx] = filename
+
     def _fill_files_listctrl(self):
         # get out current Study instance
         study = self._study_dict[self._selected_study_uid]
@@ -256,20 +271,10 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         # and finally the specific series instance
         series = series_dict[self._selected_series_uid]
 
-        lc = self._view_frame.files_lc
-        lc.DeleteAllItems()
+        # finally copy the filenames to the listctrl
+        self._helper_files_to_files_listctrl(series.filenames)
 
-        self._item_data_to_file = {}
-
-        for filename in series.filenames:
-            idx = lc.InsertStringItem(sys.maxint, filename)
-            lc.SetItemData(idx, idx)
-            self._item_data_to_file[idx] = filename
-        
-        # make sure the column shows the full length of the fn
-        # why does this sometimes not capture the full length?
-        lc.auto_size_columns()
-
+        lc = self._view_frame.files_lc 
         # select the first file
         if lc.GetItemCount() > 0:
             lc.Select(0)
@@ -465,6 +470,46 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         self._update_meta_data_pane(r)
 
         self._current_filename = filename
+
+    def _handler_ipp_sort(self, event):
+        # get out current Study instance
+        study = self._study_dict[self._selected_study_uid]
+        # then the series_dict belonging to that Study
+        series_dict = study.series_dict
+        # and finally the specific series instance
+        series = series_dict[self._selected_series_uid]
+
+        # have to  cast to normal strings (from unicode)
+        filenames = [str(i) for i in series.filenames]
+
+        sorter = gdcm.IPPSorter()
+        ret = sorter.Sort(filenames)
+
+        if not ret:
+            self._module_manager.log_error(
+                    'Could not sort DICOM filenames. ' + 
+                    'It could be that this is an invalid collection.')
+            return
+
+        selected_idx = -1
+        del series.filenames[:]
+        for idx,fn in enumerate(sorter.GetFilenames()):
+            series.filenames.append(fn)
+            if idx >= 0 and fn == self._current_filename:
+                selected_idx = idx
+
+        lc = self._view_frame.files_lc
+        
+
+        # now overwrite the listctrl with these sorted filenames
+        self._helper_files_to_files_listctrl(series.filenames)
+        
+        # select the file that was selected prior to the sort
+        if selected_idx >= 0:
+            lc.Select(selected_idx)
+            lc.Focus(selected_idx)
+
+
 
     def _handler_mousewheel(self, event):
         # event.GetWheelRotation() is + or - 120 depending on
