@@ -8,6 +8,24 @@
 # http://www.nabble.com/vtkContourWidget-with-vtkImageViewer2-td18485627.html
 # has more information on how to use the vtkContourWidget
 
+# MITK does segmentation on all three orthogonal directions.  For more
+# info: http://www.mitk.org/slicebasedsegmentation.html
+
+# to scan convert polygon, you could use: vtkPolyDataToImageStencil
+# see the example linked to in the VTK documentation (should be the
+# same as the ImageTracerWidget example)
+# I checked the documentation, it SHOULD work for 2D as well.
+
+# NBNBNB
+# think about having bitmaps as the primary storage (or stencils)
+# you also start with a regiongrowing (for example)
+# can always convert to polygon to do stuff there, convert back
+# add mode, subtract mode, current object, delete (like MITK)
+# also list of objects with checkboxes for vis and buttons to change
+# colour
+# snake still missing
+
+
 # general requirements:
 # * multiple objects (i.e. multiple coloured contours per slice)
 
