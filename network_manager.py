@@ -104,13 +104,17 @@ class NetworkManager(SubjectMixin):
         try:
             # load the fileData
             cfp = open(filename, 'rb')
+        except Exception, e:
+            raise RuntimeError, 'Could not open network file %s:\n%s' % \
+                    (filename,str(e))
+
+        try:
             cp.readfp(cfp)
         except Exception, e:
-            if cfp:
-                cfp.close()
-
             raise RuntimeError, 'Could not load network from %s:\n%s' % \
                   (filename,str(e))
+        finally:
+            cfp.close()
 
 
         pms_dict = {}
