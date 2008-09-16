@@ -43,7 +43,7 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
         FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
-	return ('ITK Image',)
+        return ('ITK Image',)
     
     def set_input(self, idx, inputStream):
         # should we take an explicit ref?
@@ -63,7 +63,7 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
                 self._input = inputStream
     
     def get_output_descriptions(self):
-	return ()
+        return ()
     
     def get_output(self, idx):
         raise Exception
@@ -124,3 +124,5 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
             # activating this crashes DeVIDE *BOOM*
             #self._writer.GetImageIO().SetUseCompression(True)
             self._writer.Write()
+
+
