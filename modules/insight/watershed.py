@@ -36,10 +36,11 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
             self, self._watershed, 'itkWatershedImageFilter',
             'Performing watershed')
 
+        # self._watershed could be changed later, so we don't add it
+        # to the introspection list.
         ScriptedConfigModuleMixin.__init__(
             self, configList,
-            {'Module (self)' : self,
-             'itkWatershedImageFilter' : self._watershed})
+            {'Module (self)' : self})
 
         self.sync_module_logic_with_config()
         
@@ -68,7 +69,34 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
         return ('ITK Image (3D, float)',)
 
     def set_input(self, idx, inputStream):
-        self._watershed.SetInput(inputStream)
+        try:
+            self._watershed.SetInput(inputStream)
+
+        except TypeError, e:
+            # deduce the type
+            itku = module_kits.itk_kit.utils
+            ss = itku.get_img_type_and_dim_shortstring(inputStream)
+            try:
+                w = itk.WatershedImageFilter[getattr(itk.Image,ss)].New()
+            except KeyError, e:
+                emsg = 'Could not create Watershed with input type %s. '\
+                        'Please try a different input type.' % (ss,)
+                raise TypeError, emsg
+
+            # if we get here, we have a new filter
+            # disconnect old one
+            self._watershed.SetInput(None)
+            # replace with new one (old one should be garbage
+            # collected)
+            self._watershed = w
+            # setup progress
+            module_kits.itk_kit.utils.setupITKObjectProgress(
+                self, self._watershed, 'itkWatershedImageFilter',
+                'Performing watershed')
+            # re-apply config
+            self.sync_module_logic_with_config()
+            # connect input and hope it works.
+            self._watershed.SetInput(inputStream)
 
     def get_output_descriptions(self):
         return ('ITK Image (3D, unsigned long)',)
