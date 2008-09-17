@@ -5,6 +5,13 @@
 # NOTES:
 # you can't put the RWI in a StaticBox, it never manages to appear.
 
+# mode: add / subtract
+# tool: new region growing, level set (with existing mask), draw
+# closed polygon, delete
+
+# ARGH.  region growing results in bitmask, but polyline and level set
+# require a more accurate representation.
+
 # http://www.nabble.com/vtkContourWidget-with-vtkImageViewer2-td18485627.html
 # has more information on how to use the vtkContourWidget
 
