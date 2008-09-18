@@ -11,6 +11,8 @@ Changes since previous release (8.5.3085)
    Use this snippet to convert old-style DVNs to new-style:
    http://code.google.com/p/devide/source/browse/trunk/devide/
    snippets/convert_dvn.py
+ * CPT distance field (EXPERIMENTAL)
+ * QuickInfo module to describe your data.
  * The DICOMBrowser shows a progress dialog whilst scanning your DICOM
    files.  This keeps frustration under control when scanning large
    repositories.  You can also cancel the scan if it takes too long.
