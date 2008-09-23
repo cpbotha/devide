@@ -25,6 +25,9 @@ class DICOMWriter(ScriptedConfigModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._writer = vtkgdcm.vtkGDCMImageWriter()
+        # NB NB NB: for now we're SWITCHING off the VTK-compatible
+        # Y-flip, until the X-mirror issues can be solved.
+        self._writer.SetFileLowerLeft(1)
         module_utils.setup_vtk_object_progress(self, self._writer,
                                            'Writing DICOM data')
 
