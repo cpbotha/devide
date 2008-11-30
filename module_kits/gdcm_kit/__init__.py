@@ -21,24 +21,20 @@ def init(module_manager):
     global vtkgdcm
     import vtkgdcm
 
-    # gdcm post 2.0.8 will have a new scheme for locating Part3.xml:
-
-    # 2. Or directly from your application / python code, simply
-    # Append/Prepend your exotic path:
-
-    # Example in python:
-
-    #  import gdcm
-    #  g=gdcm.Global.GetInstance()
-    #  g.Prepend( my_exotic_path )
-    #  g.LoadResourcesFiles()
-
-    # -> should return True when set properly
-    # -------------------------
-
 
     global gdcm
     import gdcm
+
+    # since 2.0.9, we do the following to locate part3.xml:
+    if hasattr(sys, 'frozen') and sys.frozen:
+        g = gdcm.Global.GetInstance()
+        # devide.spec puts Part3.xml in devide_dir/gdcmdata/XML/
+        g.Prepend(os.path.join(
+            module_manager.get_appdir(), 'gdcmdata/XML/'))
+
+        if not g.LoadResourcesFiles():
+            raise RuntimeError('Could not setup GDCM resource files.')
+
 
     # will be available as module_kits.gdcm_kit.utils after the client
     # programmer has done module_kits.gdcm_kit
