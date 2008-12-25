@@ -259,82 +259,8 @@ class ModuleManager:
         # initialise module Kits - Kits are collections of libraries
         # that modules can depend on.  The Kits also make it possible
         # for us to write hooks for when these libraries are imported
-
-        self._module_kits_dir = os.path.join(appdir, 'module_kits')
-        mkd_fnames = glob.glob(
-                os.path.join(self._module_kits_dir, '*.mkd'))
-
-        mkd_defaults = {
-                'crucial' : False,
-                'dependencies' : []
-                }
-
-        for mkd_fname in mkd_fnames:
-            cp = ConfigParser.ConfigParser(mkd_defaults)
-            cp.read(mkd_fname)
-            print cp
-
-
         import module_kits
-        # remove no-kits from module_kit_list:
-        nmkl = [mk for mk in module_kits.module_kit_list
-                if mk not in self.get_app_main_config().nokits]
-        module_kits.module_kit_list = nmkl
-
-        # now import the kits that remain ##########################
-        
-        # this will record the kits that successfully load
-        loaded_kits = []
-        # convenience binding for deps dict
-        dd = module_kits.dependencies_dict
-
-        for module_kit in module_kits.module_kit_list:
-
-            # first check that all dependencies are satisfied
-            deps_satisfied = True
-            if module_kit in dd:
-                dl = dd[module_kit]
-                for d in dl:
-                    if d not in loaded_kits:
-                        deps_satisfied = False
-                        # break out of the for loop
-                        break
-                    
-            if not deps_satisfied:
-                # skip this iteration of the for, go to the next iteration
-                # (we don't want to try loading this module)
-                continue
-            
-            try:
-                # import module_kit into module_kits namespace
-                exec('import module_kits.%s' % (module_kit,))
-                # call module_kit.init()
-                getattr(module_kits, module_kit).init(self)
-                # add it to the loaded_kits for dependency checking
-                loaded_kits.append(module_kit)
-
-            except Exception, e:
-                # if it's a crucial module_kit, we re-raise with our own
-                # message added using th three argument raise form
-                # see: http://docs.python.org/ref/raise.html
-                if module_kit in module_kits.crucial_kit_list:
-                    es = 'Error loading required module_kit %s: %s.' \
-                         % (module_kit, str(e))
-                    raise Exception, es, sys.exc_info()[2]
-                
-                
-                # if not we can report the error and continue
-                else:
-                    self._devide_app.log_error_with_exception(
-                        'Unable to load non-critical module_kit %s: '
-                        '%s.  Continuing with startup.' %
-                        (module_kit, str(e)))
-
-        # if we got this far, startup was successful, but not all kits
-        # were loaded: some not due to failure, and some not due to
-        # unsatisfied dependencies.  set the current list to the list of
-        # module_kits that did actually load.
-        module_kits.module_kit_list = loaded_kits
+        module_kits.load(self)
 
         # binding to module that can be used without having to do
         # import module_kits

@@ -1,0 +1,5 @@
+[default]
+priority = 40 
+crucial = true
+dependencies = vtk_kit
+
