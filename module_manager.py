@@ -2,10 +2,12 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+import ConfigParser
 import sys, os, fnmatch
 import re
 import copy
 import gen_utils
+import glob
 from meta_module import MetaModule
 import modules
 import mutex
@@ -257,6 +259,22 @@ class ModuleManager:
         # initialise module Kits - Kits are collections of libraries
         # that modules can depend on.  The Kits also make it possible
         # for us to write hooks for when these libraries are imported
+
+        self._module_kits_dir = os.path.join(appdir, 'module_kits')
+        mkd_fnames = glob.glob(
+                os.path.join(self._module_kits_dir, '*.mkd'))
+
+        mkd_defaults = {
+                'crucial' : False,
+                'dependencies' : []
+                }
+
+        for mkd_fname in mkd_fnames:
+            cp = ConfigParser.ConfigParser(mkd_defaults)
+            cp.read(mkd_fname)
+            print cp
+
+
         import module_kits
         # remove no-kits from module_kit_list:
         nmkl = [mk for mk in module_kits.module_kit_list
