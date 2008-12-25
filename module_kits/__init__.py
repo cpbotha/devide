@@ -10,35 +10,14 @@ import sys
 
 """Top-level __init__ of the module_kits.
 
-@ivar module_kits_list: All moduleKits in this list will have their init()s
-called with the ModuleManager as parameter (after being imported).  Before
-this happens though, members of this list that are also in the no-kits list
-(defined by defaults.py or command-line) will be removed.  The kits will be
-imported in the order that they are specified.  Make sure that kits dependent
-on other kits occur after those kits in the list, the dependency checker is
-that simple.  After all kit loading is complete, the module_kit_list will
-contain the names of the kits that were successfully loaded.
-
-@ivar crucial_kits: Usually, when a kit raises an exception during its init()
-call, this is ignored and DeVIDE starts up as usual.  However, if the module
-is in the crucial_kit_list, DeVIDE will refuse to start up.
+All .mkd files in the module_kits directory are parsed and their
+corresponding module_kits are loaded.  MKD specify the priority (order
+of loading), the dependencies and whether they are crucial kits or
+not.  Error on loading a crucial kit terminates the application, error
+on loading a non-crucial kit simply notifies the user.
 """
 
 module_kit_list = []
-
-module_kit_list2 = ['sqlite_kit', 'wx_kit', 'vtk_kit', 'vtktudoss_kit',
-                   'gdcm_kit',
-                   'itk_kit', 'itktudoss_kit',
-                   'numpy_kit', 'matplotlib_kit', 'stats_kit',
-                   'geometry_kit', 'misc_kit']
-
-dependencies_dict2 = {'vtktudoss_kit' : ['vtk_kit'],
-                     'gdcm_kit' : ['vtk_kit'],
-                     'matplotlib_kit' : ['numpy_kit'],
-                     'itktudoss_kit' : ['itk_kit'],
-                     'geometry_kit' : ['numpy_kit']}
-
-crucial_kit_list2 = ['wx_kit', 'vtk_kit']
 
 class MKDef:
     def __init__(self):
