@@ -55,7 +55,7 @@ def resetDLFlags(data):
     except:
         pass
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
 
     if hasattr(sys, 'frozen') and sys.frozen:
         # if we're frozen, make sure we grab the wrapitk contained in this kit
@@ -95,13 +95,14 @@ def init(theModuleManager):
 
     theModuleManager.setProgress(45, 'Initialising ITK: VXLNumerics, Base')
 
-    # then ItkVtkGlue (at the moment this is fine, VTK is always there;
-    # keep in mind for later when we allow VTK-less startups)
-    a = itk.VTKImageToImageFilter
+    if pre_import:
+        # then ItkVtkGlue (at the moment this is fine, VTK is always there;
+        # keep in mind for later when we allow VTK-less startups)
+        a = itk.VTKImageToImageFilter
 
-    theModuleManager.setProgress(
-        75,
-        'Initialising ITK: BaseTransforms, SimpleFilters, ItkVtkGlue')
+        theModuleManager.setProgress(
+            75,
+            'Initialising ITK: BaseTransforms, SimpleFilters, ItkVtkGlue')
     
     # user can address this as module_kits.itk_kit.utils.blaat()
     import module_kits.itk_kit.utils as utils

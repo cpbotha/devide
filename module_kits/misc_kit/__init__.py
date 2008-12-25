@@ -18,7 +18,7 @@ else:
         pass
 
 
-def init(module_manager):
+def init(module_manager, pre_import=True):
     global misc_utils
     import misc_utils
 

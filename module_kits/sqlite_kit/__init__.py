@@ -9,7 +9,7 @@ With this we make sure that sqlite3 is always packaged.
 
 VERSION = ''
 
-def init(module_manager):
+def init(module_manager, pre_import=True):
     global sqlite3
     import sqlite3
 

@@ -16,7 +16,7 @@ import sys
 # you have to define this
 VERSION = 'Strangman - May 10, 2002'
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
     # import the main module itself
     global stats
     import stats

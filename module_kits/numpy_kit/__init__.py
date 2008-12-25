@@ -19,7 +19,7 @@ import types
 # you have to define this
 VERSION = ''
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
     theModuleManager.setProgress(5, 'Initialising numpy_kit: start')
 
     # import numpy into the global namespace

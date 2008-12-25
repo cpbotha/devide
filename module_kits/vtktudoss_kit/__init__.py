@@ -18,7 +18,7 @@ import types
 # you have to define this
 VERSION = 'SVN'
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
     # import the main module itself
     import vtktudoss
 

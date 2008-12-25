@@ -14,7 +14,7 @@ import sys
 
 VERSION = ''
 
-def init(module_manager):
+def init(module_manager, pre_import=True):
     # as of 20080628, the order of importing vtkgdcm and gdcm IS
     # important on Linux.  vtkgdcm needs to go before gdcm, else very
     # strange things happen due to the dl (dynamic loading) switches.

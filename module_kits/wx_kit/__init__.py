@@ -14,7 +14,7 @@ Inserts the following modules in sys.modules: wx.
 # you have to define this
 VERSION = ''
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
     # import the main module itself
     global wx
     import wx

@@ -19,7 +19,7 @@ import types
 # you have to define this
 VERSION = ''
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
 
     if hasattr(sys, 'frozen') and sys.frozen:
         # matplotlib supports py2exe by checking for matplotlibdata in the appdir

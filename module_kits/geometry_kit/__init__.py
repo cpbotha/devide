@@ -18,7 +18,7 @@ import sys
 # you have to define this
 VERSION = 'INTEGRATED'
 
-def init(module_manager):
+def init(module_manager, pre_import=True):
     global geometry
     import geometry
 

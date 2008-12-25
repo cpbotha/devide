@@ -19,7 +19,7 @@ import types
 # you have to define this
 VERSION = 'SVN'
 
-def init(theModuleManager):
+def init(theModuleManager, pre_import=True):
     theModuleManager.setProgress(80, 'Initialising itktudoss_kit: TPGAC')
     import itk # this will have been pre-imported by the itk_kit
     a = itk.TPGACLevelSetImageFilter
