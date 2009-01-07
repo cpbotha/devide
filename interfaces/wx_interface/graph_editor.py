@@ -64,15 +64,24 @@ class geCanvasDropTarget(wx.PyDropTarget):
         self._graphEditor.canvas.update_picked_cobject_at_drop(x, y)
         
         if self.GetData():
+            # single line starting with 'module:' OR
+            # single line starting with 'segment:' OR
+            # multiple lines (with newlines), each specifying a
+            # filename (URI)
             text = self._tdo.GetText()
+            # array of unicode filenames
             filenames = self._fdo.GetFilenames()
             
             if len(text) > 0:
                 # set the string to zero so we know what to do when
                 self._tdo.SetText('')
-                self._graphEditor.canvasDropText(x,y,text)
+                tlines = self._graphEditor.canvasDropText(x,y,text)
+                # if text is NOT a segment or module spec,
+                # canvasDropText will return an array of text lines
+                # we assume that these could be filenames
+                filenames.extend(tlines)
 
-            elif len(filenames) > 0:
+            if len(filenames) > 0:
                 # handle the list of filenames
                 dropFilenameErrors = self._graphEditor.canvasDropFilenames(
                     x,y,filenames)
@@ -566,6 +575,9 @@ class GraphEditor:
         segment:/home/cpbotha/work/code/devide/networkSegments/blaat.dvn
 
         x,y are in wx coordinates.
+
+        @returns: empty list, or list with unhandled lines in
+        itemText.
         """
 
         modp = 'module:'
@@ -582,6 +594,7 @@ class GraphEditor:
             # some viewer modules takes focus.  Thanks Peter Krekel.
             self.canvas._rwi.SetFocus()
             wx.SafeYield()
+            return []
           
 
         elif itemText.startswith(segp):
@@ -591,6 +604,13 @@ class GraphEditor:
             # see explanation above for the SetFocus
             self.canvas._rwi.SetFocus()
             wx.SafeYield()
+            return []
+
+        else:
+            # not a module or segment spec, might be a list of URIs,
+            # including filenames; we return an array
+            # text/uri-list (RFC 2483)
+            return itemText.split('\r\n')
             
 
 
