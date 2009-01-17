@@ -71,6 +71,12 @@ class Measure2D:
     processing setting.
     """
 
+class QuickInfo:
+    kits = []
+    cats = ['Viewers']
+    help = """Gives information about any data in DeVIDE.
+    """
+
 class SkeletonAUIViewer:
     kits = ['vtk_kit', 'wx_kit']
     cats = ['Viewers']
