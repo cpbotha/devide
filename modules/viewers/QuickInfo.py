@@ -71,7 +71,35 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
 
     def execute_module(self):
         ot = self._view_frame.output_text
-        ot.SetValue('line 1\nline2')
+        ip = self._input
+       
+        txt = ''
+        if ip is None:
+            txt = 'There is no input (None).'
+
+        elif self.check_vtk(ip, txt):
+            pass
+        elif self.check_itk(ip, txt):
+            pass
+        else:
+            txt = 'Could not determine type of data.'
+
+        ot.SetValue(txt)
+
+    def check_vtk(self, ip, txt):
+        try:
+            cn = ip.GetClassName()
+        except AttributeError:
+            return False
+        else:
+            if cn.startswith('vtk'):
+                txt = 'VTK Object'
+                return True
+
+        return False
+
+    def check_itk(self, ip, txt):
+        return False
 
         
 
