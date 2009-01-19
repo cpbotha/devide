@@ -5,6 +5,9 @@
 import wx
 
 # begin wxGlade: extracode
+from wx.html import HtmlWindow
+
+
 # end wxGlade
 
 
@@ -15,7 +18,7 @@ class QuickInfoFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.view_frame_panel = wx.Panel(self, -1)
-        self.output_text = wx.TextCtrl(self.view_frame_panel, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_AUTO_URL|wx.TE_LINEWRAP|wx.TE_WORDWRAP)
+        self.output_html = HtmlWindow(self.view_frame_panel, -1)
 
         self.__set_properties()
         self.__do_layout()
@@ -24,7 +27,6 @@ class QuickInfoFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: QuickInfoFrame.__set_properties
         self.SetTitle("frame_1")
-        self.output_text.SetMinSize((100, 34))
         # end wxGlade
 
     def __do_layout(self):
@@ -33,7 +35,7 @@ class QuickInfoFrame(wx.Frame):
         sizer_3 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
         sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_4.Add(self.output_text, 1, wx.EXPAND, 0)
+        sizer_4.Add(self.output_html, 1, wx.EXPAND, 0)
         sizer_4.Add((0, 400), 0, 0, 0)
         sizer_2.Add(sizer_4, 1, wx.EXPAND, 0)
         sizer_2.Add((400, 0), 0, 0, 0)
