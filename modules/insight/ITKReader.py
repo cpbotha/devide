@@ -121,7 +121,7 @@ class ITKReader(ScriptedConfigModuleMixin, ModuleBase):
             if short_type == 'S':
                 short_type = 'SS'
 
-            dim = self._config.dimensionality
+            dim = int(self._config.dimensionality)
             num_comp = 1
 
         # e.g. F3

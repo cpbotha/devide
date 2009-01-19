@@ -1,12 +1,21 @@
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
+import operator
 
 HTML_START = '<html><body>'
 HTML_END = '</body></html>'
 
 def render_actions(lines):
-    return '<p><b>%s</b>' % ('<br>'.join(lines),)
+    ms = '<p><b><ul>%s</ul></b></p>'
+    # this should yield: <li>thing 1\n<li>thing 2\n<li>thing 3 etc
+    bullets = '\n'.join(['<li>%s</li>' % l for l in lines])
+    return ms % (bullets,)
+
+    #return '<p><b>%s</b>' % ('<br>'.join(lines),)
+
+def render_description(lines):
+    return '<p>%s' % ('<br>'.join(lines),)
 
 def render_main_type(line):
     return '<h2>%s</h2>' % (line,)
@@ -94,7 +103,6 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
 
         oh.SetPage(html)
 
-
     def analyse_vtk(self, ip):
         lines = [HTML_START]
         # main data type
@@ -180,6 +188,47 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
         noc = ip.GetNameOfClass()
         mt = 'itk::%s' % (noc,)
         lines.append(render_main_type(mt))
+
+
+        if noc == 'Image':
+            # general description ##################################
+            from module_kits.misc_kit.misc_utils import \
+                    get_itk_img_type_and_dim
+            itype, dim, vector = get_itk_img_type_and_dim(ip)
+            dim = int(dim)
+
+            if vector:
+                vs = 'vector'
+            else:
+                vs = 'scalar'
+
+            dl = ['ITK format %d-dimensional %s %s image / volume' % \
+                    (dim, itype, vs)]
+
+            s = ip.GetLargestPossibleRegion().GetSize()
+            dims = [s.GetElement(i) for i in range(dim)]
+            # this results in 234 x 234 x 123 x 123 (depending on num
+            # of dimensions)
+            dstr = ' x '.join(['%s'] * dim) % tuple(dims)
+            # the reduce multiplies all dims with each other
+            dl.append('%s = %d pixels' % \
+                    (dstr, reduce(operator.mul, dims)))
+            comps = ip.GetNumberOfComponentsPerPixel() 
+            dl.append('%d component(s) per pixel' % (comps,))
+            # spacing string
+            spacing = [ip.GetSpacing().GetElement(i) 
+                    for i in range(dim)]
+            sstr = ' x '.join(['%.2f'] * dim) % tuple(spacing)
+            dl.append('physical spacing %s' % (sstr,))
+
+            lines.append(render_description(dl))
+
+
+            # possible actions ######################################
+            al = ["Process with other ITK filters", 
+                    "Convert to VTK with ITKtoVTK"]
+            lines.append(render_actions(al))
+
 
 
         lines.append(HTML_END)
