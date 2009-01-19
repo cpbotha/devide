@@ -8,6 +8,9 @@ HTML_END = '</body></html>'
 def render_actions(lines):
     return '<p><b>%s</b>' % ('<br>'.join(lines),)
 
+def render_main_type(line):
+    return '<h2>%s</h2>' % (line,)
+
 class QuickInfo(IntrospectModuleMixin, ModuleBase):
 
     def __init__(self, module_manager):
@@ -84,7 +87,7 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
 
         elif self.check_vtk(ip):
             html = self.analyse_vtk(ip)
-        elif self.check_itk(ip, txt):
+        elif self.check_itk(ip):
             html = self.analyse_itk(ip)
         else:
             html = 'Could not determine type of data.'
@@ -173,10 +176,20 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
 
 
     def analyse_itk(self, ip):
-        return "ITK Object"
+        lines = [HTML_START]
+        noc = ip.GetNameOfClass()
+        mt = 'itk::%s' % (noc,)
+        lines.append(render_main_type(mt))
 
-    def check_itk(self, ip, txt):
-        return False
+
+        lines.append(HTML_END)
+        return '\n'.join(lines)
+
+    def check_itk(self, ip):
+        if repr(ip).startswith('<C itk::'):
+            return True
+        else:
+            return False
 
         
 
