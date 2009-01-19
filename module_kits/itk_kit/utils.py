@@ -5,43 +5,8 @@
 import itk
 import re
 
-def get_img_type_and_dim(itk_img):
-    """Returns itk image type as a tuple with ('type', 'dim', 'v').
-    """
-
-    try:
-        t = itk_img.this
-    except AttributeError, e:
-        raise TypeError, 'This method requires an ITK image as input.'
-    else:
-        # g will be e.g. ('float', '3') or ('unsigned_char', '2')
-        # note that we use the NON-greedy version so it doesn't break
-        # on vectors
-        # example strings: 
-        # Image.F3: _f04b4f1b_p_itk__SmartPointerTitk__ImageTfloat_3u_t_t
-        # Image.VF33: _600e411b_p_itk__SmartPointerTitk__ImageTitk__VectorTfloat_3u_t_3u_t_t'
-        mo = re.search('.*itk__ImageT(.*?)_([0-9]+)u*_t',
-                      itk_img.this)
-
-        if not mo:
-            raise TypeError, 'This method requires an ITK Image as input.'
-        else:
-            g = mo.groups()
-        
-    # see if it's a vector
-    if g[0].startswith('itk__VectorT'):
-        vectorString = 'V'
-        # it's a vector, so let's remove the 'itk__VectorT' bit
-        g = list(g)
-        g[0] = g[0][len('itk__VectorT'):]
-        g = tuple(g)
-        
-    else:
-        vectorString = ''
-
-    # this could also be ('float', '3', 'V'), or ('unsigned_char', '2', '')
-    return g + (vectorString,)
-        
+from module_kits.misc_kit.misc_utils import get_itk_img_type_and_dim
+get_img_type_and_dim = get_itk_img_type_and_dim
                 
 
 def get_img_type_and_dim_shortstring(itk_img):

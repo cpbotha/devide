@@ -1,6 +1,6 @@
 [default]
 priority = 70 
-crucial = true
+crucial = false
 dependencies = itk_kit
 
 
