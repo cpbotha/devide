@@ -74,7 +74,9 @@ class Measure2D:
 class QuickInfo:
     kits = []
     cats = ['Viewers']
-    help = """Gives information about any data in DeVIDE.
+    help = """Gives more information about any module's output port.
+
+    Use this to help identify any type of data.
     """
 
 class SkeletonAUIViewer:
