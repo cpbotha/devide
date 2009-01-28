@@ -163,6 +163,19 @@ class DeVIDECanvas(SubjectMixin):
         self._ren.WorldToDisplay()
         return self._ren.GetDisplayPoint()
 
+    def flip_y(self, y):
+        return self._rwi.GetSize()[1] - y - 1
+
+    def wx_to_world(self, wx_x, wx_y):
+        disp_x = wx_x
+        disp_y = self.flip_y(wx_y)
+        world_depth = 0.0
+        disp_z = self.world_to_display((0.0,0.0, world_depth))[2]
+
+        wex, wey, wez = self.display_to_world((disp_x,disp_y,disp_z))
+
+        return (wex, wey, wez)
+
     def _helper_handler_preamble(self, e, focus=True):
         e.Skip(False) 
         # Skip(False) won't search for other event
@@ -319,8 +332,20 @@ class DeVIDECanvas(SubjectMixin):
         self._zoom(1.1 ** factor)
         #event.GetWheelDelta()
 
-    def flip_y(self, y):
-        return self._rwi.GetSize()[1] - y - 1
+
+    def get_top_left_world(self):
+        """Return top-left of canvas (0,0 in wx) in world coords.
+        """
+
+        return self.wx_to_world(0,0)
+
+    def get_bottom_right_world(self):
+        """Return bottom-right of canvas (sizex, sizey in wx) in world
+        coords.
+        """
+
+        x,y = self._rwi.GetSize()
+        return self.wx_to_world(x-1, y-1)
 
     def get_motion_vector_world(self, world_depth):
         """Calculate motion vector in world space represented by last
@@ -354,7 +379,7 @@ class DeVIDECanvas(SubjectMixin):
         self.event.wx_event = event
 
         # event position is viewport relative (i.e. in pixels,
-        # bottom-left is 0,0)
+        # top-left is 0,0)
         ex, ey = event.GetX(), event.GetY() 
        
         # we need to flip Y to get VTK display coords

@@ -399,6 +399,11 @@ class GraphEditor:
             y = ry
 
 
+            tl = self.canvas.get_top_left_world()
+            br = self.canvas.get_bottom_right_world()
+            x = (br[0] - tl[0]) / 2.0 + tl[0]
+            y = (tl[1] - br[1]) / 2.0 + br[1]
+
             modp = 'module:'
             segp = 'segment:'
             if module_name.startswith(modp):
