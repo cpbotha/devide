@@ -45,6 +45,15 @@ other_imports = ['genMixins', 'gen_utils', 'ModuleBase', 'module_mixins',
                  'modules.viewers.histogram1D',
                  'modules.viewers.TransferFunctionEditor']
 
+# seems on Linux we have to make sure readline comes along (else
+# vtkObject introspection windows complain)
+try:
+    import readline
+except ImportError:
+    pass
+else:
+    other_imports.append('readline')
+
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
 
 print "[*] hook-ModuleManager.py - HIDDENIMPORTS"
