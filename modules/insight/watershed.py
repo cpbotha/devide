@@ -36,6 +36,21 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
             self, self._watershed, 'itkWatershedImageFilter',
             'Performing watershed')
 
+        iul3 = itk.Image[itk.UL, 3]
+        # change this to SI or UI when this becomes available in the
+        # wrappings
+        iss3 = itk.Image[itk.SS, 3]
+        self._relabel_components = \
+                itk.RelabelComponentImageFilter[iul3, iss3].New()
+
+        self._relabel_components.SetInput(self._watershed.GetOutput())
+
+        module_kits.itk_kit.utils.setupITKObjectProgress(
+            self, self._relabel_components,
+            'itk.RelabelComponentImageFilter',
+            'Relabeling watershed output components')
+
+
         # self._watershed could be changed later, so we don't add it
         # to the introspection list.
         ScriptedConfigModuleMixin.__init__(
@@ -59,11 +74,10 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
         del self._watershed
 
     def execute_module(self):
-        self._watershed.Update()
-        self._watershed.GetOutput().Update()
+        self._relabel_components.Update()
         # the watershed module is REALLY CRAP about setting progress to 100,
         # so we do it here.
-        self._module_manager.setProgress(100, "Watershed complete.")
+        #self._module_manager.setProgress(100, "Watershed complete.")
 
     def get_input_descriptions(self):
         return ('ITK Image (3D, float)',)
@@ -89,6 +103,8 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
             # replace with new one (old one should be garbage
             # collected)
             self._watershed = w
+            # reconnect it to the input of the relabeler
+            self._relabel_components.SetInput(self._watershed.GetOutput())
             # setup progress
             module_kits.itk_kit.utils.setupITKObjectProgress(
                 self, self._watershed, 'itkWatershedImageFilter',
@@ -102,7 +118,7 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
         return ('ITK Image (3D, unsigned long)',)
 
     def get_output(self, idx):
-        return self._watershed.GetOutput()
+        return self._relabel_components.GetOutput()
 
     def config_to_logic(self):
         self._config.threshold = gen_utils.clampVariable(
