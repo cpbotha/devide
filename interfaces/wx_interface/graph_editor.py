@@ -73,13 +73,17 @@ class geCanvasDropTarget(wx.PyDropTarget):
             filenames = self._fdo.GetFilenames()
             
             if len(text) > 0:
-                # set the string to zero so we know what to do when
+                # text gets precedence over filenames
+                filenames = []
+                # we have to zero this, else filenames never get a
+                # chance (fdo and tdo are persistent)
                 self._tdo.SetText('')
                 tlines = self._graphEditor.canvasDropText(x,y,text)
                 # if text is NOT a segment or module spec,
                 # canvasDropText will return an array of text lines
                 # we assume that these could be filenames
-                filenames.extend(tlines)
+                if tlines:
+                    filenames = tlines
 
             if len(filenames) > 0:
                 # handle the list of filenames
