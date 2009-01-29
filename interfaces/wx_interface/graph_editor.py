@@ -359,8 +359,6 @@ class GraphEditor:
         This method is called when the user double clicks on a module in the
         module list or when she presses <enter> during module searching.
 
-        FIXME: improve this!!  Just plonk the glyph down in the middle
-        of the canvas, avoiding any other glyph there at this moment.
         """
         
         # place currently selected module below the bottom-most module
@@ -375,34 +373,55 @@ class GraphEditor:
                                  mlb.GetClientData(sel))
 
         if module_name:
-
-            # default position
-            x, y = (10,10)
-
             canvas = self.canvas
-            all_glyphs = canvas.getObjectsOfClass(DeVIDECanvasGlyph)
 
-            # rx and ry will contain the first position to the right of
-            # the bounding box of all glyphs, ry the first position below
-            # the bounding box of all glyphs
-            rx, ry = x, y
-            for glyph in all_glyphs:
-                # this is the bottom right; (0,0) is bottom left
-                cx,cy = glyph.get_position()
-
-                if cx >= rx:
-                    rx = cx + glyph.get_bounds()[0] + 20
-                
-                if cy <= ry:
-                    ry = cy - glyph.get_bounds()[1] - 20
-
-            y = ry
-
-
+            # find all glyphs that are visible at the moment
+            all_glyphs = self._get_all_glyphs()
             tl = self.canvas.get_top_left_world()
             br = self.canvas.get_bottom_right_world()
-            x = (br[0] - tl[0]) / 2.0 + tl[0]
-            y = (tl[1] - br[1]) / 2.0 + br[1]
+            bl = tl[0], br[1]
+            w,h = canvas.get_wh_world()
+ 
+            # determine all visible glyphs
+            visible_glyphs = []
+            for g in all_glyphs:
+                if g.is_inside_rect(bl, w, h):
+                    visible_glyphs.append(g)
+
+            # determine minx and miny of all glyphs
+            last_height = 0
+            if visible_glyphs:
+                minx,miny = visible_glyphs[0].get_position()
+                last_height = visible_glyphs[0].get_bounds()[1]
+
+                for g in visible_glyphs:
+                    x,y = g.get_position()
+                    if y < miny:
+                        miny = y
+                        last_height = g.get_bounds()[1]
+
+                    if x < minx:
+                        minx = x
+
+                ph = DeVIDECanvasGlyph._pHeight
+                x = minx
+                y = miny - last_height - 2.0*ph - 10
+
+            else:
+                # default position is in the centre; but below all other
+                # glyphs if there are any
+                y = tl[1] - h / 2.0
+                # default position is the centre; but lined up with the
+                # left of all other glyphs if there are any
+                x = tl[0] + w / 2.0
+
+
+
+           
+            if y < bl[1]:
+                # glyph would end up below the visible viewport
+                canvas.pan_canvas_world(0, - h / 4.0)
+
 
             modp = 'module:'
             segp = 'segment:'

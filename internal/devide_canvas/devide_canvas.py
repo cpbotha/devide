@@ -335,6 +335,8 @@ class DeVIDECanvas(SubjectMixin):
 
     def get_top_left_world(self):
         """Return top-left of canvas (0,0 in wx) in world coords.
+
+        In world coordinates, top_y > bottom_y.
         """
 
         return self.wx_to_world(0,0)
@@ -342,10 +344,22 @@ class DeVIDECanvas(SubjectMixin):
     def get_bottom_right_world(self):
         """Return bottom-right of canvas (sizex, sizey in wx) in world
         coords.
+
+        In world coordinates, bottom_y < top_y.
         """
 
         x,y = self._rwi.GetSize()
         return self.wx_to_world(x-1, y-1)
+
+    def get_wh_world(self):
+        """Return width and height of visible canvas in world
+        coordinates.
+        """
+
+        tl = self.get_top_left_world()
+        br = self.get_bottom_right_world()
+
+        return br[0] - tl[0], tl[1] - br[1]
 
     def get_motion_vector_world(self, world_depth):
         """Calculate motion vector in world space represented by last
@@ -583,6 +597,21 @@ class DeVIDECanvas(SubjectMixin):
         npos = (cpos[0] + delta[0], cpos[1] + delta[1])
         cobj.set_position(npos)
         cobj.update_geometry()
+
+    def pan_canvas_world(self, delta_x, delta_y):
+        c = self._ren.GetActiveCamera()
+
+        cfp = list(c.GetFocalPoint())
+        cfp[0] += delta_x
+        cfp[1] += delta_y
+        c.SetFocalPoint(cfp)
+
+        cp = list(c.GetPosition())
+        cp[0] += delta_x
+        cp[1] += delta_y
+        c.SetPosition(cp)
+
+        self.redraw()
 
 
 
