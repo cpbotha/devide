@@ -190,8 +190,8 @@ class GraphEditor:
         mf = self._interface._main_frame
         em = mf.edit_menu
         self._append_edit_commands(em,
-                                 mf,
-                                 (0,0), False)
+                                   mf,
+                                   None, False)
 
         self._append_network_commands(mf.network_menu,
                                       mf, False)
@@ -414,9 +414,6 @@ class GraphEditor:
                 # default position is the centre; but lined up with the
                 # left of all other glyphs if there are any
                 x = tl[0] + w / 2.0
-
-
-
            
             if y < bl[1]:
                 # glyph would end up below the visible viewport
@@ -1507,8 +1504,67 @@ class GraphEditor:
 
             self.show_module_help(cdata)
 
+
+    def _determine_paste_pos(self):
+        """Determine position to paste a network in the copy buffer.
+        This is used if the user triggers the paste via hotkey and
+        there's no event position.  Network will be pasted to the
+        right of all visible modules.
+        """
+
+        canvas = self.canvas
+
+        # find all glyphs that are visible at the moment
+        all_glyphs = self._get_all_glyphs()
+        tl = self.canvas.get_top_left_world()
+        br = self.canvas.get_bottom_right_world()
+        bl = tl[0], br[1]
+        w,h = canvas.get_wh_world()
+
+        # determine all visible glyphs
+        visible_glyphs = []
+        for g in all_glyphs:
+            if g.is_origin_inside_rect(bl, w, h):
+                visible_glyphs.append(g)
+
+        # determine maxx
+        last_width = 0
+        if visible_glyphs:
+            last_width = visible_glyphs[0].get_bounds()[0]
+            maxx = visible_glyphs[0].get_position()[0] + last_width
+
+            for g in visible_glyphs:
+                x = g.get_position()[0] + g.get_bounds()[0]
+                if x > maxx:
+                    maxx = x
+
+            pw = DeVIDECanvasGlyph._pWidth
+            x = maxx + 2.0 * pw
+
+        else:
+            # default position is the centre
+            x = tl[0] + w / 2.0
+
+        # default y is 10% from the bottom
+        y = br[1] + 0.1 * h
+   
+        if x > br[0]- 0.1 * w:
+            # glyph would end up to the right of the visible viewport
+            canvas.pan_canvas_world(w / 4.0, 0)
+
+        return x,y
+
+
+
     def _handlerPaste(self, event, position):
+        """If position is None, a paste position will be automatically
+        determined.
+        """
+
         if self._copyBuffer:
+            if position is None:
+                position = self._determine_paste_pos()
+
             self._realise_network(
                 # when we paste, we want the thing to reposition!
                 self._copyBuffer[0], self._copyBuffer[1], self._copyBuffer[2],

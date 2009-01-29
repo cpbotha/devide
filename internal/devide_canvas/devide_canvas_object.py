@@ -637,6 +637,29 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
                     inside = False
 
         return inside
+
+    def is_origin_inside_rect(self, bottom_left, w, h):
+        """Only check origin (bottom-left) of glyph for containtment
+        in specified rectangle.
+        """
+
+        bl = list(bottom_left)
+        tr = list((bl[0] + w, bl[1] + h))
+
+        if bl[0] > tr[0]:
+            # swap!
+            bl[0],tr[0] = tr[0],bl[0]
+
+        if bl[1] > tr[1]:
+            bl[1],tr[1] = tr[1],bl[1]
+
+        inside = True
+
+        if self._position[0] < bl[0] or self._position[1] < bl[1]:
+            inside = False
+
+        return inside
+
         
     def setLabelList(self,labelList):
         self._labelList = labelList
