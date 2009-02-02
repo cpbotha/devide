@@ -21,8 +21,8 @@ Changes since previous release (8.5.3085)
    DVN file, if they are somewhere below that directory.  This makes
    it easy to transport complete packages containing datasets and DVN
    files.
- * Upgraded to VTK 5.2, ITK 3.10, gdcm 2.0.10, numpy 1.2.1, 
-   matplotlib 0.98.3
+ * Upgraded to VTK 5.2.1, ITK 3.10.2, gdcm 2.0.10, numpy 1.2.1, 
+   matplotlib 0.98.5.2, Python 2.5.4
  * Numerous internal code-cleanups.
 
 Changes since previous release (8.2.2807)
