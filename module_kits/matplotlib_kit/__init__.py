@@ -60,9 +60,9 @@ def init(theModuleManager, pre_import=True):
     # we make sure that "from numpy.ma import *" actually brings in
     # numpy.core.ma by importing that and associating the module
     # binding to the global numpy.ma.
-    if hasattr(sys, 'frozen') and sys.frozen:
-        import numpy.core.ma
-        sys.modules['numpy.ma'] = sys.modules['numpy.core.ma']
+    #if hasattr(sys, 'frozen') and sys.frozen:
+    #    import numpy.core.ma
+    #    sys.modules['numpy.ma'] = sys.modules['numpy.core.ma']
 
     # import the pylab interface, make sure it's available from this namespace
     global pylab
