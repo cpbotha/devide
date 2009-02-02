@@ -26,11 +26,12 @@ class MKDef:
         self.priority = 100
         self.dependencies = []
 
+def get_sorted_mkds(module_kits_dir):
+    """Given the module_kits dir, return list, sorted according to
+    priority, of MKDef instances representing the mkd files that are
+    found and parsed.  NoKits are NOT removed yet.
+    """
 
-def load(module_manager):
-
-    module_kits_dir = os.path.join(
-            module_manager.get_appdir(), 'module_kits')
     mkd_fnames = glob.glob(
             os.path.join(module_kits_dir, '*.mkd'))
 
@@ -64,8 +65,17 @@ def load(module_manager):
             return 0
 
     mkds.sort(cmp)
-    print [i.priority for i in mkds]
 
+    return mkds
+
+
+def load(module_manager):
+
+    module_kits_dir = os.path.join(
+            module_manager.get_appdir(), 'module_kits')
+
+    mkds = get_sorted_mkds(module_kits_dir) 
+    
     # then remove the nokits
     nokits = module_manager.get_app_main_config().nokits
     mkds = [mkd for mkd in mkds
