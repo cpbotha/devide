@@ -29,12 +29,13 @@ cp = ConfigParser.ConfigParser(config_defaults)
 cp.read(os.path.join(devideDir, 'devide.cfg'))
 nokits = [i.strip() for i in cp.get('DEFAULT', 'nokits').split(',')]
 
-# get a list of module kits
-mkl = module_kits.module_kit_list[:] + ['numpy_kit']
+module_kits_dir = os.path.join(devideDir, 'module_kits')
+mkds = module_kits.get_sorted_mkds(module_kits_dir)
+
 # 1. remove the no_kits
 # 2. explicitly remove itk_kit, it's handled completely separately by
 # the makePackage.sh script file
-mkl = [i for i in mkl if i not in nokits and i not in
+mkl = [i.name for i in mkds if i.name not in nokits and i.name not in
         ['itk_kit','itktudoss_kit']]
 
 # other imports
