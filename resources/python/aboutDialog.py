@@ -14,7 +14,7 @@ class aboutDialog(wx.Dialog):
         self.sizer_5_staticbox = wx.StaticBox(self.toplevel_panel, -1, "Component Versions")
         self.name_version_text = wx.StaticText(self.toplevel_panel, -1, "DeVIDE v8.2.0000", style=wx.ALIGN_CENTRE)
         self.icon_bitmap = wx.StaticBitmap(self.toplevel_panel, -1, wx.NullBitmap)
-        self.label_2 = wx.StaticText(self.toplevel_panel, -1, "DeVIDE is copyright (c) 2002-2008 Charl P. Botha, TU Delft\nAll rights reserved.  See COPYRIGHT for details.\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
+        self.label_2 = wx.StaticText(self.toplevel_panel, -1, "DeVIDE is copyright (c) 2002-2009 Charl P. Botha, TU Delft\nAll rights reserved.  See COPYRIGHT for details.\nContributions by Joris van Zwieten, Stef Busking, Emiel van IJsseldijk.\n\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
         self.versions_listbox = wx.ListBox(self.toplevel_panel, -1, choices=[], style=wx.LB_NEEDED_SB)
         self.button_1 = wx.Button(self.toplevel_panel, wx.ID_OK, "OK")
 
@@ -27,7 +27,7 @@ class aboutDialog(wx.Dialog):
         self.SetTitle("About DeVIDE")
         self.name_version_text.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, ""))
         self.icon_bitmap.SetMinSize((64, 64))
-        self.versions_listbox.SetMinSize((350, 100))
+        self.versions_listbox.SetMinSize((350, 200))
         self.button_1.SetDefault()
         # end wxGlade
 
@@ -39,7 +39,7 @@ class aboutDialog(wx.Dialog):
         sizer_5 = wx.StaticBoxSizer(self.sizer_5_staticbox, wx.VERTICAL)
         sizer_4.Add(self.name_version_text, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
         sizer_4.Add(self.icon_bitmap, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 10)
-        sizer_4.Add(self.label_2, 0, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 0)
+        sizer_4.Add(self.label_2, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
         sizer_5.Add(self.versions_listbox, 1, wx.ALL|wx.EXPAND, 4)
         sizer_4.Add(sizer_5, 1, wx.TOP|wx.BOTTOM|wx.EXPAND, 7)
         sizer_4.Add(self.button_1, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL, 0)
