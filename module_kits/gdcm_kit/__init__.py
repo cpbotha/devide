@@ -30,7 +30,7 @@ def init(module_manager, pre_import=True):
         g = gdcm.Global.GetInstance()
         # devide.spec puts Part3.xml in devide_dir/gdcmdata/XML/
         g.Prepend(os.path.join(
-            module_manager.get_appdir(), 'gdcmdata/XML/'))
+            module_manager.get_appdir(), 'gdcmdata','XML'))
 
         if not g.LoadResourcesFiles():
             raise RuntimeError('Could not setup GDCM resource files.')
