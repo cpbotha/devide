@@ -4,14 +4,16 @@ from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
-class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
+OPS = ['add', 'subtract', 'multiply', 'divide', 'invert',
+       'sin', 'cos', 'exp', 'log', 'abs', 'sqr', 'sqrt', 'min',
+       'max', 'atan', 'atan2', 'multiply by k', 'add c', 'conjugate',
+       'complex multiply', 'replace c by k']
+OPS_DICT = {}
 
-    # get these values from vtkImageMathematics.h
-    _operations = {'Add' : 0,
-                   'Subtract' : 1,
-                   'Maximum' : 13,
-                   'Add constant C' : 17}
-    
+for i,o in enumerate(OPS):
+    OPS_DICT[o] = i
+
+class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -25,7 +27,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
                                            'Performing image math')
         
                                            
-        self._config.operation = 'Subtract'
+        self._config.operation = 'subtract'
         self._config.constantC = 0.0
         self._config.constantK = 1.0
 
@@ -33,7 +35,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
         configList = [
             ('Operation:', 'operation', 'base:str', 'choice',
              'The operation that should be performed.',
-             tuple(self._operations.keys())),
+             tuple(OPS_DICT.keys())),
             ('Constant C:', 'constantC', 'base:float', 'text',
              'The constant C used in some operations.'),
             ('Constant K:', 'constantK', 'base:float', 'text',
@@ -45,7 +47,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
              'vtkImageMathematics' : self._imageMath})
 
         self.sync_module_logic_with_config()
-        
+
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
         # disconnected us by now)
@@ -78,7 +80,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
     def logic_to_config(self):
         o = self._imageMath.GetOperation()
         # search for o in _operations
-        for name,idx in self._operations.items():
+        for name,idx in OPS_DICT.items():
             if idx == o:
                 break
 
@@ -92,7 +94,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
         self._config.constantK = self._imageMath.GetConstantK()
     
     def config_to_logic(self):
-        idx = self._operations[self._config.operation]
+        idx = OPS_DICT[self._config.operation]
         self._imageMath.SetOperation(idx)
 
         self._imageMath.SetConstantC(self._config.constantC)
