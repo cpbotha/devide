@@ -66,8 +66,12 @@ class MainConfigClass(object):
 
         # then apply configuration file and defaults #################
         ##############################################################
-        self.nokits = [i.strip() for i in cp.get(CSEC, \
+        nokits = [i.strip() for i in cp.get(CSEC, \
                 'nokits').split(',')]
+        # get rid of empty strings (this is not as critical here as it
+        # is for emps later, but we like to be consistent)
+        self.nokits = [i for i in nokits if i]
+
         self.streaming_pieces = cp.getint(CSEC, 'streaming_pieces')
         self.streaming_memory = cp.getint(CSEC, 'streaming_memory')
 
@@ -75,9 +79,10 @@ class MainConfigClass(object):
 
         self.scheduler = cp.get(CSEC, 'scheduler')
 
-        self.extra_module_paths = [i.strip() for i in cp.get(CSEC, \
+        emps = [i.strip() for i in cp.get(CSEC, \
                 'extra_module_paths').split(',')]
-
+        # ''.split(',') will yield [''], which we have to get rid of
+        self.extra_module_paths = [i for i in emps if i]
 
         # finally apply command line switches ############################
         ##################################################################
@@ -200,7 +205,9 @@ class MainConfigClass(object):
                     pcl_data.scheduler = 'hybrid'
 
             elif o in ('--extra-module-paths',):
-                pcl_data.extra_module_paths = [i.strip() for i in a.split(',')]
+                emps = [i.strip() for i in a.split(',')]
+                # get rid of empty paths
+                pcl_data.extra_module_paths = [i for i in emps if i]
 
             elif o in ('--stereo',):
                 pcl_data.stereo = True
