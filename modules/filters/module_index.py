@@ -105,6 +105,17 @@ class extractImageComponents:
     of components.
     """
 
+class FastSurfaceToDistanceField:
+    kits = ['vtk_kit','vtktudoss_kit']
+    cats = ['Filters']
+    keywords = ['distance','distance field', 'mauch', 'polydata',
+    'implicit']
+    help = """Given an input surface (vtkPolyData), create a signed
+    distance field with the surface at distance 0.  Uses Mauch's very
+    fast CPT / distance field implementation.
+    """
+
+
 class FitEllipsoidToMask:
     kits = ['numpy_kit', 'vtk_kit']
     cats = ['Filters']
