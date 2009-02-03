@@ -271,8 +271,8 @@ class ModuleManager:
 
         self.module_search = ModuleSearch()
         
-	# make first scan of available modules
-	self.scan_modules()
+        # make first scan of available modules
+        self.scan_modules()
 
         # auto_execute mode, still need to link this up with the GUI
         self.auto_execute = True
