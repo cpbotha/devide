@@ -1330,6 +1330,8 @@ class GraphEditor:
                     shortname = os.path.splitext(os.path.basename(mn))[0]
 
                 else:
+                    # changes module:blaat.boo into boo and also
+                    # module:bar into bar.
                     shortname = mn.split(':')[-1].split('.')[-1]
                 
                 mlb.Append(shortname, mn, refresh=False)
