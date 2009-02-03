@@ -244,7 +244,7 @@ class DeVIDEApp:
         else:
             dirname = os.path.dirname(sys.argv[0])
             if dirname and dirname != os.curdir:
-                self._appdir = dirname
+                self._appdir = os.path.abspath(dirname)
             else:
                 self._appdir = os.getcwd()
 
