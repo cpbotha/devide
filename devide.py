@@ -56,6 +56,7 @@ class MainConfigClass(object):
                 'nokits': '', 
                 'interface' : 'wx',
                 'scheduler' : 'hybrid',
+                'extra_module_paths' : '',
                 'streaming_pieces' : 5,
                 'streaming_memory' : 100000}
 
@@ -74,6 +75,10 @@ class MainConfigClass(object):
 
         self.scheduler = cp.get(CSEC, 'scheduler')
 
+        self.extra_module_paths = [i.strip() for i in cp.get(CSEC, \
+                'extra_module_paths').split(',')]
+
+
         # finally apply command line switches ############################
         ##################################################################
 
@@ -85,6 +90,9 @@ class MainConfigClass(object):
 
         if pcl_data.scheduler:
             self.scheduler = pcl_data.scheduler
+
+        if pcl_data.extra_module_paths:
+            self.extra_module_paths = pcl_data.extra_module_paths
 
         # command-line only, defaults set in PCLData ctor
         # so we DON'T have to check if config file has already set
@@ -109,6 +117,8 @@ class MainConfigClass(object):
         print "--kits kit1,kit2      : Load the specified kits."
         print "--scheduler hybrid|event"
         print "                      : Select scheduler (def: hybrid)"
+        print "--extra-module-paths path1,path2"
+        print "                      : Specify extra module paths."
         print "--interface wx|script"
         print "                      : Load 'wx' or 'script' interface."
         print "--stereo              : Allocate stereo visuals."
@@ -129,6 +139,7 @@ class MainConfigClass(object):
                 self.nokits = None
                 self.interface = None
                 self.scheduler = None
+                self.extra_module_paths = None
                 self.stereo = False
                 self.test = False
                 self.script = None
@@ -142,7 +153,7 @@ class MainConfigClass(object):
                 sys.argv[1:], 'hv',
                 ['help', 'version', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
                  'script=', 'script-params=', 'config-profile=',
-                 'scheduler='])
+                 'scheduler=', 'extra-module-paths='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -187,6 +198,9 @@ class MainConfigClass(object):
                     pcl_data.scheduler = 'event'
                 else:
                     pcl_data.scheduler = 'hybrid'
+
+            elif o in ('--extra-module-paths',):
+                pcl_data.extra_module_paths = [i.strip() for i in a.split(',')]
 
             elif o in ('--stereo',):
                 pcl_data.stereo = True

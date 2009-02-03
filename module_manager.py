@@ -471,39 +471,55 @@ class ModuleManager:
         # found in the module_index.py files
         self._available_modules = {}
         appDir = self._devide_app.get_appdir()
+        # module path without trailing slash
         modulePath = self.get_modules_dir()
 
         # search through modules hierarchy and pick up all module_index files
         ####################################################################
 
-        moduleIndices = []
+        module_indices = []
 
         def miwFunc(arg, dirname, fnames):
-            moduleIndices.extend(
-                [os.path.join(dirname, fname)
-                 for fname in fnames
-                 if fnmatch.fnmatch(fname, 'module_index.py')])
+            """arg is top-level module path.
+            """
+            module_path = arg
+            for fname in fnames:
+                mi_full_name = os.path.join(dirname, fname)
+                if not fnmatch.fnmatch(fname, 'module_index.py'):
+                    continue
 
-        os.path.walk(modulePath, miwFunc, arg=None)
+                # e.g. /viewers/module_index
+                mi2 = os.path.splitext(
+                        mi_full_name.replace(module_path, ''))[0]
+                # e.g. .viewers.module_index
+                mim = mi2.replace(os.path.sep, '.')
+                # remove . before
+                if mim.startswith('.'):
+                    mim = mim[1:]
+
+                # special case: modules in the central devide
+                # module dir should be modules.viewers.module_index
+                # this is mostly for backward compatibility
+                if module_path == modulePath:
+                    mim = 'modules.%s' % (mim)
+
+                module_indices.append(mim)
+
+        os.path.walk(modulePath, miwFunc, arg=modulePath)
+
+        for emp in self.get_app_main_config().extra_module_paths:
+            if emp not in sys.path:
+                sys.path.insert(0,emp)
+
+            os.path.walk(emp, miwFunc, arg=emp)
 
         # iterate through the moduleIndices, building up the available
         # modules list.
         import module_kits # we'll need this to check available kits
         failed_mis = {}
-        for mi in moduleIndices:
-            # mi is a full path
-            # remove modulePath from the beginning and extension from the end
-            mi2 = os.path.splitext(mi.replace(modulePath, ''))[0]
-            # replace path separator with .
-            mim = mi2.replace(os.path.sep, '.')
-
-            # Class.mod style
-            # and remove possible '.' at beginning
-            #if mim.startswith('.'):
-            #    mim = mim[1:]
-
-            # modules.Class.mod style
-            mim = 'modules%s' % (mim,)
+        for mim in module_indices:
+            # mim is importable module_index spec, e.g.
+            # modules.viewers.module_index
 
             # if this thing was imported before, we have to remove it, else
             # classes that have been removed from the module_index file
@@ -522,7 +538,7 @@ class ModuleManager:
 
                 # and log them as mesages
                 self._devide_app.log_info(
-                    'Error loading %s: %s.' % (mi, str(e)))
+                    'Error loading %s: %s.' % (mim, str(e)))
 
                 for m in msgs:
                     self._devide_app.log_info(m.strip(), timeStamp=False)
