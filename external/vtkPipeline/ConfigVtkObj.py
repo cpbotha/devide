@@ -364,7 +364,10 @@ class ConfigVtkObj:
                                           introText="'obj' is bound to the " \
                                           "introspected object.",
                                           size=(400,200), style=0,
-                                          locals={'obj' : self._vtk_obj})
+                                          locals={'obj' :
+                                              self._vtk_obj},
+                                          execStartupScript=False)
+
         command_sizer.Add(command_entry, proportion=1, flag=wx.EXPAND)
 
 

@@ -15,7 +15,7 @@ class DVShell(py.shell.Shell):
     def __init__(self, parent, id=-1, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.CLIP_CHILDREN,
                  introText='', locals=None, InterpClass=None,
-                 startupScript=None, execStartupScript=True,
+                 startupScript=None, execStartupScript=False,
                  *args, **kwds):
 
         # default behaviour for InteractiveInterpreter
