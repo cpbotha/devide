@@ -14,7 +14,7 @@ STAMP = "20090202-1351"
 
 # the main release version: year.month (ubuntu-style) on release
 # branches (the branch is also named vYEAR.MONTH), DEV for trunk
-VERSION = "DEV"
+VERSION = "9.1"
 
 try:
     SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
@@ -23,7 +23,7 @@ except Exception, e:
     SVN_REVISION = 'xXx'
 
 # if built with johannes, the SVN_REVISION part might be rewritten.
-DEVIDE_VERSION = '%s.%s' % (VERSION, SVN_REVISION)
+DEVIDE_VERSION = '%s.%s' % (VERSION, "3352")
 
 # standard Python imports
 import getopt
@@ -66,8 +66,12 @@ class MainConfigClass(object):
 
         # then apply configuration file and defaults #################
         ##############################################################
-        self.nokits = [i.strip() for i in cp.get(CSEC, \
+        nokits = [i.strip() for i in cp.get(CSEC, \
                 'nokits').split(',')]
+        # get rid of empty strings (this is not as critical here as it
+        # is for emps later, but we like to be consistent)
+        self.nokits = [i for i in nokits if i]
+
         self.streaming_pieces = cp.getint(CSEC, 'streaming_pieces')
         self.streaming_memory = cp.getint(CSEC, 'streaming_memory')
 
@@ -75,9 +79,10 @@ class MainConfigClass(object):
 
         self.scheduler = cp.get(CSEC, 'scheduler')
 
-        self.extra_module_paths = [i.strip() for i in cp.get(CSEC, \
+        emps = [i.strip() for i in cp.get(CSEC, \
                 'extra_module_paths').split(',')]
-
+        # ''.split(',') will yield [''], which we have to get rid of
+        self.extra_module_paths = [i for i in emps if i]
 
         # finally apply command line switches ############################
         ##################################################################
@@ -200,7 +205,9 @@ class MainConfigClass(object):
                     pcl_data.scheduler = 'hybrid'
 
             elif o in ('--extra-module-paths',):
-                pcl_data.extra_module_paths = [i.strip() for i in a.split(',')]
+                emps = [i.strip() for i in a.split(',')]
+                # get rid of empty paths
+                pcl_data.extra_module_paths = [i for i in emps if i]
 
             elif o in ('--stereo',):
                 pcl_data.stereo = True

@@ -271,8 +271,8 @@ class ModuleManager:
 
         self.module_search = ModuleSearch()
         
-        # make first scan of available modules
-        self.scan_modules()
+	# make first scan of available modules
+	self.scan_modules()
 
         # auto_execute mode, still need to link this up with the GUI
         self.auto_execute = True
@@ -508,10 +508,17 @@ class ModuleManager:
         os.path.walk(modulePath, miwFunc, arg=modulePath)
 
         for emp in self.get_app_main_config().extra_module_paths:
-            if emp not in sys.path:
-                sys.path.insert(0,emp)
+            # make sure there are no extra spaces at the ends, as well
+            # as normalize and absolutize path (haha) for this
+            # platform
+            emp = os.path.abspath(emp.strip())
+            if emp and os.path.exists(emp):
+                # make doubly sure we only process an EMP if it's
+                # really there
+                if emp not in sys.path:
+                    sys.path.insert(0,emp)
 
-            os.path.walk(emp, miwFunc, arg=emp)
+                os.path.walk(emp, miwFunc, arg=emp)
 
         # iterate through the moduleIndices, building up the available
         # modules list.
