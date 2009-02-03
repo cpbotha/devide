@@ -1330,8 +1330,7 @@ class GraphEditor:
                     shortname = os.path.splitext(os.path.basename(mn))[0]
 
                 else:
-                    mParts = mn.split('.')
-                    shortname = mParts[-1]
+                    shortname = mn.split(':')[-1].split('.')[-1]
                 
                 mlb.Append(shortname, mn, refresh=False)
 
