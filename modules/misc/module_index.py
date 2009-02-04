@@ -57,6 +57,20 @@ class manualTransform:
 
     """
 
+class MarschnerLobb:
+    kits = ['vtk_kit']
+    cats = ['Sources']
+    help = """Pure Python filter to generate Marschner-Lobb test
+    volume.
+
+    When resolution is left at the default value of 40, the generated
+    volume should be at the Nyquist frequency of the signal (analytic
+    function) that it has sampled.
+
+    Pure Python implementation: for the default resolution, takes a
+    second or two, 200 cubed takes about 20 seconds on Core2 hardware.
+    """
+
 class PassThrough:
     kits = []
     cats = ['Filters', 'System']
