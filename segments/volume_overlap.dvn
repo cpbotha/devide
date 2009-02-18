@@ -1,0 +1,32 @@
+[connections/1]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm6 (1)
+input_idx = 1
+source_instance_name = binary vol 2
+
+[connections/0]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm6 (1)
+input_idx = 0
+source_instance_name = binary vol 1
+
+[general]
+export = False
+
+[modules/binary vol 2]
+module_name = modules.misc.PassThrough
+module_config_dict = {}
+glyph_position = (-169.65960154594575, 595.87528548116995)
+
+[modules/binary vol 1]
+module_name = modules.misc.PassThrough
+module_config_dict = {}
+glyph_position = (-377.63516883370562, 596.66060014684012)
+
+[modules/dvm6 (1)]
+module_name = modules.viewers.CodeRunner
+module_config_dict = {'execute_src': u'threshes[0].SetInput(obj.inputs[0])\r\nthreshes[1].SetInput(obj.inputs[1])\r\nia.Update()\r\n\r\niasc = ia.GetOutput().GetPointData().GetScalars()\r\ncells = [0] * 4\r\nfor i in range(4):\r\n    cells[i] = iasc.GetTuple1(i)\r\n\r\n# tuple 0: not in a, not in b\r\n# tuple 1: in a, not in b\r\n# tuple 2: in b, not in a\r\n# tuple 3: in a, in b\r\n\r\n# percentage overlap: (a intersect b) / (a union b)\r\n\r\nprint "Overlap percentage: %.2f%%" % (100.0 * cells[3] / (cells[3] + cells[1] + cells[2]),)\r\n\r\n', 'scratch_src': u'', 'setup_src': u'# Given two binary volumes, this CodeRunner will implement\n# the percentage volume overlap.  This is useful for\n# doing validation with ground truth / golden standard /\n# manually segmented volumes.  This is also called the Dice\n# coefficient and ranges from 0.0 to 1.0.\n\n# interesting paper w.r.t. segmentation validation:\r\n# Valmet: A new validation tool for assessing and\r\n# improving 3D object segmentation\r\n\n# basic idea:\r\n# threshold data (so we have >0 == 1 and everything else 0)\r\n# then histogram into two bins.\r\n\r\nthreshes = []\r\n\r\nfor _ in range(2):\r\n    t = vtk.vtkImageThreshold()\r\n    threshes.append(t)\r\n    # anything equal to or lower than 0.0 will be "In"\r\n    t.ThresholdByLower(0.0)\r\n    # <= 0 -> 0\r\n    t.SetInValue(0)\r\n    # > 0 -> 1\r\n    t.SetOutValue(1)\r\n    t.SetOutputScalarTypeToUnsignedChar()\r\n\r\n# have to stuff all components into one image\r\niac = vtk.vtkImageAppendComponents()\r\niac.SetInput(0, threshes[0].GetOutput())\r\niac.SetInput(1, threshes[1].GetOutput())\r\n\r\n# generate 2 by 2 matrix (histogram)\r\n# see execute for explanation\r\nia = vtk.vtkImageAccumulate()\r\nia.SetInput(iac.GetOutput())\r\nia.SetComponentExtent(0,1, 0,1, 0,0)\r\n'}
+glyph_position = (-338.43753077209021, 351.63058421781324)
+
