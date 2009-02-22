@@ -5,6 +5,9 @@
 # skeleton of an AUI-based viewer module
 # copy and modify for your own purposes.
 
+# set to False for 3D viewer, True for 2D image viewer
+IMAGE_VIEWER = True
+
 # import the frame, i.e. the wx window containing everything
 import SkeletonAUIViewerFrame
 # and do a reload, so that the GUI is also updated at reloads of this
