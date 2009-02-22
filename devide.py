@@ -23,7 +23,7 @@ except Exception, e:
     SVN_REVISION = 'xXx'
 
 # if built with johannes, the SVN_REVISION part might be rewritten.
-DEVIDE_VERSION = '%s.%s' % (VERSION, SVN_REVISION)
+DEVIDE_VERSION = '%s.%s' % (VERSION, "3361")
 
 # standard Python imports
 import getopt

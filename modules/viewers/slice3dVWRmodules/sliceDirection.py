@@ -89,14 +89,14 @@ class sliceDirection:
             stripper.SetInput(cutter.GetOutput())
             
             #
-            tubef = vtk.vtkTubeFilter()
-            tubef.SetNumberOfSides(12)
-            tubef.SetRadius(0.5)
-            tubef.SetInput(stripper.GetOutput())
+            #tubef = vtk.vtkTubeFilter()
+            #tubef.SetNumberOfSides(12)
+            #tubef.SetRadius(0.5)
+            #tubef.SetInput(stripper.GetOutput())
 
             # and create the overlay at least for the 3d renderer
             mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInput(tubef.GetOutput())
+            mapper.SetInput(stripper.GetOutput())
             mapper.ScalarVisibilityOff()
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
