@@ -30,6 +30,11 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
         the required setup actions.
         """
 
+        # we record the setting here, in case the user changes it
+        # during the lifetime of this model, leading to different
+        # states at init and shutdown.
+        self.IMAGE_VIEWER = IMAGE_VIEWER
+
         ModuleBase.__init__(self, module_manager)
 
         IntrospectModuleMixin.__init__(
