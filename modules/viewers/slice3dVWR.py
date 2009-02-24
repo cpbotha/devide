@@ -610,7 +610,17 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         self._background_renderer = vtk.vtkRenderer()
 
         renwin = self.threedFrame.threedRWI.GetRenderWindow()
-   
+
+        # I've not yet been able to get depth peeling working on my
+        # NV 8800 on Ubuntu 8.10 Linux x86_64.  Will continue later...
+        #renwin.SetMultiSamples(0)
+        #renwin.SetAlphaBitPlanes(1)
+        #self._threedRenderer.SetUseDepthPeeling(1)
+        #self._threedRenderer.SetMaximumNumberOfPeels(100)
+        #self._threedRenderer.SetOcclusionRatio(0.1)
+        #renwin.AddRenderer(self._threedRenderer)
+
+
         # use function to setup fg and bg renderers so we can have a
         # nice gradient background.
         import module_kits.vtk_kit
