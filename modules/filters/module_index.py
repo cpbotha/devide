@@ -247,14 +247,20 @@ class landmarkTransform:
     help = """The landmarkTransform will calculate a 4x4 linear transform
     that maps from a set of source landmarks to a set of target landmarks.
 
-    The mapping is optimised with a least-squares metric.  You have to supply
-    two sets of points, all points names in the source set have to start with
-    'Source' and all the points names in the target set have to start with
-    'Target'.
+    The mapping is optimised with a least-squares metric.  
+
+    For convenience, there are two inputs that you can use in any
+    combination (either or both).  All points that you supply (for
+    example the output of slice3dVWR modules) will be combined
+    internally into one list and then divided into two groups based on
+    the point names: the one group with names starting with 'source'
+    the other with 'target'.  Points will then be matched up by name,
+    so 'source example 1' will be matched with 'target example 1'.  
 
     This module will supply a vtkTransform at its output.  By
-    connecting the vtkTransform to a transformPolyData module, you'll
-    be able to perform the actual transformation.
+    connecting the vtkTransform to a transformPolyData or a
+    transformVolume module, you'll be able to perform the actual
+    transformation.
 
     See the "Performing landmark registration on two volumes" example in the
     "Useful Patterns" section of the DeVIDE F1 central help.
