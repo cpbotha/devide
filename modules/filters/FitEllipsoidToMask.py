@@ -88,7 +88,7 @@ class FitEllipsoidToMask(NoConfigModuleMixin, ModuleBase):
 
         # determine centre (x,y,z)
         points2 = numpy.array(points)
-        centre = numpy.average(points2)
+        centre = numpy.average(points2, 0)
         cx,cy,cz = centre
         
         # subtract centre from all points
@@ -99,8 +99,7 @@ class FitEllipsoidToMask(NoConfigModuleMixin, ModuleBase):
         # eigen-analysis (u eigenvalues, v eigenvectors)
         u,v = numpy.linalg.eig(covariance)
 
-        # some magic: the sqrt came out of my M thesis, but the 2
-        # (actually 4.0, because this is a half-axis) is a mystery
+        # estimate length at 2.0 * standard deviation in both directions
         axis_lengths = [4.0 * numpy.sqrt(eigval) for eigval in u]
 
         radius_vectors = numpy.zeros((3,3), float)
@@ -124,15 +123,17 @@ class FitEllipsoidToMask(NoConfigModuleMixin, ModuleBase):
 def pca(points):
     """PCA factored out of execute_module and made N-D.  not being used yet.
 
-    points is a list of n-d tuples.
+    points is a list of M N-d tuples.
 
     returns eigenvalues (u), eigenvectors (v), axis_lengths and
     radius_vectors.
     """
-    
-    # determine centre (x,y,z)
+   
+    # for a list of M N-d tuples, returns an array with M rows and N
+    # columns
     points2 = numpy.array(points)
-    centre = numpy.average(points2)
+    # determine centre by averaging over 0th axis (over rows)
+    centre = numpy.average(points2, 0)
 
     # subtract centre from all points
     points_c = points2 - centre
@@ -141,9 +142,8 @@ def pca(points):
 
     # eigen-analysis (u eigenvalues, v eigenvectors)
     u,v = numpy.linalg.eig(covariance)
-    
-    # some magic: the sqrt came out of my M thesis, but the 2
-    # (actually 4.0, because this is a half-axis) is a mystery
+   
+    # estimate length at 2.0 * standard deviation in both directions
     axis_lengths = [4.0 * numpy.sqrt(eigval) for eigval in u]
 
     N = len(u)
