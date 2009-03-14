@@ -38,20 +38,25 @@ class pointsToSpheres(ScriptedConfigModuleMixin, ModuleBase):
 
 
         self._appendPolyData = vtk.vtkAppendPolyData()
-        # we do need a dummy sphere, else the appender complains
-        dummySphere = vtk.vtkSphereSource()
-        dummySphere.SetRadius(0.0)
 
-        # and a dummy calc, with -1 index
-        # if we don't add the VolumeIndex array here as well, the append
-        # polydata discards all the others
-        calc = vtk.vtkArrayCalculator()
-        calc.SetAttributeModeToUsePointData()
-        calc.SetFunction('-1')
-        calc.SetResultArrayName('VolumeIndex')
-        calc.SetInput(dummySphere.GetOutput())
-        
-        self._appendPolyData.AddInput(calc.GetOutput())
+        if False:
+            # checked on 20090314: dummy not required anymore
+
+            # we do need a dummy sphere, else the appender complains
+            dummySphere = vtk.vtkSphereSource()
+            dummySphere.SetRadius(0.0)
+
+            # and a dummy calc, with -1 index
+            # if we don't add the VolumeIndex array here as well, the append
+            # polydata discards all the others
+            calc = vtk.vtkArrayCalculator()
+            calc.SetAttributeModeToUsePointData()
+            calc.SetFunction('-1')
+            calc.SetResultArrayName('VolumeIndex')
+            calc.SetInput(dummySphere.GetOutput())
+            
+            self._appendPolyData.AddInput(calc.GetOutput())
+
         # this will be a list of lists containing tuples
         # (vtkArrayCalculator, vtkSphereSource)
         self._sphereSources = []
