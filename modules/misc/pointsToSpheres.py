@@ -40,7 +40,8 @@ class pointsToSpheres(ScriptedConfigModuleMixin, ModuleBase):
         self._appendPolyData = vtk.vtkAppendPolyData()
 
         if False:
-            # checked on 20090314: dummy not required anymore
+            # checked on 20090314: dummy input is very definitely
+            # required 
 
             # we do need a dummy sphere, else the appender complains
             dummySphere = vtk.vtkSphereSource()
@@ -56,6 +57,8 @@ class pointsToSpheres(ScriptedConfigModuleMixin, ModuleBase):
             calc.SetInput(dummySphere.GetOutput())
             
             self._appendPolyData.AddInput(calc.GetOutput())
+        else:
+            self._appendPolyData.AddInput(vtk.vtkPolyData())
 
         # this will be a list of lists containing tuples
         # (vtkArrayCalculator, vtkSphereSource)
