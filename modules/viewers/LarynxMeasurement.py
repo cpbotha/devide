@@ -169,6 +169,11 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
     def _start(self, new_reader):
         self._reader = new_reader
         self._viewer.SetInput(self._reader.GetOutput())
+        # FIXME:
+        # reset pan/zoom
+        # check if you can prevent window/level changes as these
+        # discard the colour.  can you change the brightness and
+        # contrast of the colour?
         self.render()
 
         
