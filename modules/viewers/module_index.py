@@ -40,7 +40,7 @@ class CodeRunner:
     """
 
 class DICOMBrowser:
-    kits = ['vtk_kit'] # will add gdcm_kit later
+    kits = ['vtk_kit', 'gdcm_kit']
     cats = ['Viewers', 'Readers', 'DICOM', 'Medical']
     help = \
     """DICOMBrowser.  Does for DICOM reading what slice3dVWR does for
@@ -63,7 +63,7 @@ class histogramSegment:
     cats = ['Viewers']
 
 class LarynxMeasurement:
-    kits = ['wx_kit', 'vtk_kit']
+    kits = ['wx_kit', 'vtk_kit', 'sqlite_kit', 'gdcm_kit']
     cats = ['Viewers']
     help = """Module for performing 2D measurements on image
     slices.

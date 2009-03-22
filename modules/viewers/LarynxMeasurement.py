@@ -8,9 +8,11 @@ from module_mixins import IntrospectModuleMixin,\
         FileOpenDialogModuleMixin
 import module_utils
 import vtk
+import vtkgdcm
 import wx
 
 STATE_INIT = 0
+STATE_IMAGE_LOADED = 1
 
 
 class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
@@ -19,6 +21,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         ModuleBase.__init__(self, module_manager)
 
         self._state = STATE_INIT
+        self._config.filename = None
 
         self._view_frame = None
         self._viewer = None
@@ -40,6 +43,10 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
     def _bind_events(self):
         self._view_frame.start_button.Bind(
                 wx.EVT_BUTTON, self._handler_start_button)
+
+        self._view_frame.rwi.AddObserver(
+                'LeftButtonPressEvent',
+                self._handler_rwi_lbp)
         
 
     def _create_view_frame(self):
@@ -61,10 +68,18 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
         # now setup the VTK stuff
         if self._viewer is None and not self._view_frame is None:
-            self._viewer = vtk.vtkImageViewer2()
+            # vtkImageViewer() does not zoom but retains colour
+            # vtkImageViewer2() does zoom but discards colour at
+            # first window-level action.
+            # vtkgdcm.vtkImageColorViewer() does both right!
+            self._viewer = vtkgdcm.vtkImageColorViewer()
             self._viewer.SetupInteractor(self._view_frame.rwi)
             self._viewer.GetRenderer().SetBackground(0.3,0.3,0.3)
             self._set_image_viewer_dummy_input()
+
+            pp = vtk.vtkPointPicker()
+            pp.SetTolerance(0.0)
+            self._view_frame.rwi.SetPicker(pp)
     
 
 
@@ -109,10 +124,16 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         pass
 
     def view_to_config(self):
+        # there is no explicit apply step in this viewer module, so we
+        # keep the config up to date throughout (this is common for
+        # pure viewer modules)
         pass
 
     def config_to_view(self):
-        pass
+        # this will happen right after module reload / network load
+        if self._config.filename is not None:
+            self._start(self._config.filename)
+
 
     def view(self):
         self._view_frame.Show()
@@ -135,7 +156,14 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
     def execute_module(self):
         pass
 
-
+    def _handler_rwi_lbp(self, vtk_o, vtk_e):
+        pp = vtk_o.GetPicker() # this will be our pointpicker
+        x,y = vtk_o.GetEventPosition()
+        if not pp.Pick(x,y,0,self._viewer.GetRenderer()):
+            print "off image!"
+        else:
+            print pp.GetMapperPosition()
+        
     def _handler_start_button(self, evt):
         # let user pick image
         # - close down any running analysis
@@ -149,36 +177,60 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         style=wx.OPEN)
 
         if filename:
-            # create a new instance of the current reader
-            # to check that we can read this file
-            nr = self._reader.NewInstance()
-            nr.SetFileName(filename)
-            # FIXME: trap this error
-            nr.Update()
-
-            self._stop()
-            self._start(nr)
+            self._start(filename)
 
     def render(self):
         self._viewer.Render()
 
+    def _reset_image_pz(self):
+        """Reset the pan/zoom of the current image.
+        """
+
+        ren = self._viewer.GetRenderer()
+        ren.ResetCamera()
+
     def _stop(self):
         # close down any running analysis
-        pass
+        self._set_image_viewer_dummy_input()
+        self._state = STATE_INIT
 
-    def _start(self, new_reader):
+    def _start(self, new_filename):
+        # first see if we can open the new file
+        new_reader = self._open_image_file(new_filename)
+        # FIXME: also check if we can open / create sqlite file
+
+        # if so, stop previous session
+        self._stop()
+
+        # replace reader and show the image
         self._reader = new_reader
         self._viewer.SetInput(self._reader.GetOutput())
-        # FIXME:
-        # reset pan/zoom
-        # check if you can prevent window/level changes as these
-        # discard the colour.  can you change the brightness and
-        # contrast of the colour?
+
+        # show the new filename in the correct image box
+        self._view_frame.current_image_txt.SetValue(new_filename)
+        self._config.filename = new_filename
+
+        self._reset_image_pz()
         self.render()
+
+        # FIXME: get new polydata ready
+
+        self._state = STATE_IMAGE_LOADED
 
         
     def _set_image_viewer_dummy_input(self):
         ds = vtk.vtkImageGridSource()
         self._viewer.SetInput(ds.GetOutput())
+
+    def _open_image_file(self, filename):
+        # create a new instance of the current reader
+        # to read the passed file.
+        nr = self._reader.NewInstance()
+        nr.SetFileName(filename)
+        # FIXME: trap this error
+        nr.Update()
+        return nr
+
+
 
 
