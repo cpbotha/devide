@@ -1031,11 +1031,10 @@ class GraphEditor:
             # if the module_manager did its trick, we can make a glyph
             if temp_module:
 
-                # the modulemanager generates a random module name, which
-                # we can query with mm.get_instance_name(temp_module).  However,
-                # this is a new module, so we don't actually display the name
-                # in the glyph label.
-                gLabel = [module_name.split('.')[-1]]
+                # the modulemanager generates a random module name,
+                # which we query with get_instance_name
+                gLabel = [module_name.split('.')[-1],
+                        mm.get_instance_name(temp_module)]
                 glyph = self.create_glyph(x,y,gLabel,temp_module)
 
                 # route all lines
@@ -1443,13 +1442,12 @@ class GraphEditor:
     def _rename_module(self, module, glyph, newModuleName):
         if newModuleName:
             # try to rename the module...
-            if self._devide_app.get_module_manager().rename_module(
-                module,newModuleName):
-
+            new_name = self._devide_app.get_module_manager().rename_module(
+                module,newModuleName)
+            if new_name:
                 # if no conflict, set label and redraw
                 ll = [module.__class__.__name__]
-                if not newModuleName.startswith('dvm'):
-                    ll.append(newModuleName)
+                ll.append(new_name)
 
                 # change the list of labels
                 glyph.setLabelList(ll)
@@ -1474,7 +1472,7 @@ class GraphEditor:
             uin = self._devide_app.get_module_manager()._make_unique_instance_name()
             rr = self._devide_app.get_module_manager().rename_module(module, uin)
             if rr:
-                glyph.setLabelList([module.__class__.__name__])
+                glyph.setLabelList([module.__class__.__name__, rr])
                 self.canvas.redraw()
                 return True
 

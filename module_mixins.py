@@ -358,6 +358,7 @@ class FilenameViewModuleMixin(FileOpenDialogModuleMixin,
         # and show the UI
         self._view_frame.Show(True)
         self._view_frame.Raise()
+
             
 
 # ----------------------------------------------------------------------------
@@ -492,6 +493,10 @@ class NoConfigModuleMixin(IntrospectModuleMixin):
 
     def view_to_config(self):
         pass
+
+    def rename(self, new_name):
+        if self._view_frame:
+            self._view_frame.SetTitle(module_utils.create_module_view_frame_title(self))
 
 class ScriptedConfigModuleMixin(IntrospectModuleMixin):
 
@@ -840,6 +845,10 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin):
         # and show the UI
         self._view_frame.Show(True)
         self._view_frame.Raise()
+
+    def rename(self, new_name):
+        if self._view_frame:
+            self._view_frame.SetTitle(module_utils.create_module_view_frame_title(self))
             
     
                 

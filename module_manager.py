@@ -1447,8 +1447,18 @@ class ModuleManager:
         except Exception:
             return False
 
+        # some modules and mixins support the rename call and use it
+        # to change their window titles.  Neat.
+        # this was added on 20090322, so it's not supported
+        # everywhere.
+        try:
+            instance.rename(name)
+        except AttributeError:
+            pass
+
         # everything proceeded according to plan.        
-        return True
+        # so return the new name
+        return name
 
     def modify_module(self, module_instance, part=0):
         """Call this whenever module state has changed in such a way that
