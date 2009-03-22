@@ -203,7 +203,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             self._start(filename)
 
     def render(self):
-        self._viewer.Render()
+        # if you call self._viewer.Render() here, you get the
+        # VTK-window out of main window effect at startup.  So don't.
+        self._view_frame.rwi.Render()
 
     def _reset_image_pz(self):
         """Reset the pan/zoom of the current image.
