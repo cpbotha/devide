@@ -159,10 +159,33 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
     def _handler_rwi_lbp(self, vtk_o, vtk_e):
         pp = vtk_o.GetPicker() # this will be our pointpicker
         x,y = vtk_o.GetEventPosition()
+
+        #iapp = vtk.vtkImageActorPointPlacer()
+        #ren = self._viewer.GetRenderer()
+        #iapp.SetImageActor(our_actor)
+        #iapp.ComputeWorldPosition(ren, display_pos, 3xdouble,
+        #        9xdouble)
+
+
         if not pp.Pick(x,y,0,self._viewer.GetRenderer()):
             print "off image!"
         else:
             print pp.GetMapperPosition()
+
+
+            # now also get WorldPos
+            ren = self._viewer.GetRenderer()
+            ren.SetDisplayPoint(x,y,0)
+            ren.DisplayToWorld()
+            w = ren.GetWorldPoint()[0:3]
+            ss = vtk.vtkSphereSource()
+            m = vtk.vtkPolyDataMapper()
+            m.SetInput(ss.GetOutput())
+            a = vtk.vtkActor()
+            a.SetMapper(m)
+            a.SetPosition(w)
+            self._viewer.GetRenderer().AddActor(a)
+            self.render()
         
     def _handler_start_button(self, evt):
         # let user pick image
