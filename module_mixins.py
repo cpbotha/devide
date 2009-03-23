@@ -25,6 +25,17 @@ import re
 import module_kits
 from module_kits.wx_kit.python_shell import PythonShell
 
+class WindowRenameMixin:
+    """Use this mixin if your class / module binds its main window to
+    self._view_frame (the default) and you want to support renaming
+    your window title.
+    """
+
+    def rename(self, new_name):
+        if self._view_frame:
+            self._view_frame.SetTitle(module_utils.create_module_view_frame_title(self))
+ 
+
 class IntrospectModuleMixin(object):
     """Mixin to use for modules that want to make use of the vtkPipeline
     functionality.
@@ -399,7 +410,7 @@ class ColourDialogMixin(object):
 
 # ----------------------------------------------------------------------------
 
-class NoConfigModuleMixin(IntrospectModuleMixin):
+class NoConfigModuleMixin(IntrospectModuleMixin, WindowRenameMixin):
     """Mixin class for those modules that don't make use of any user-config
     views.
 
@@ -494,11 +505,9 @@ class NoConfigModuleMixin(IntrospectModuleMixin):
     def view_to_config(self):
         pass
 
-    def rename(self, new_name):
-        if self._view_frame:
-            self._view_frame.SetTitle(module_utils.create_module_view_frame_title(self))
 
-class ScriptedConfigModuleMixin(IntrospectModuleMixin):
+class ScriptedConfigModuleMixin(IntrospectModuleMixin,
+        WindowRenameMixin):
 
     """
 
@@ -846,9 +855,8 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin):
         self._view_frame.Show(True)
         self._view_frame.Raise()
 
-    def rename(self, new_name):
-        if self._view_frame:
-            self._view_frame.SetTitle(module_utils.create_module_view_frame_title(self))
-            
+
+
+           
     
                 
