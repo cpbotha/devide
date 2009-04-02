@@ -322,6 +322,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _pHeight = 20
 
     _glyph_z_len = 0.1
+    _glyph_outline_z = 0.2
     _text_z = 0.4
 
     _glyph_normal_col = (0.75, 0.75, 0.75)
@@ -422,9 +423,38 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # GLYPH BLOCK BORDER #######################################
         
-        # putting another cube behind the glyph cube doesn't work as
-        # desired.  line around glyph sporadically disappears during
-        # zooming.
+        # you should really turn this into a class
+
+        # let's make a line from scratch
+        lp = vtk.vtkPolyData()
+        pts = vtk.vtkPoints()
+        pts.InsertPoint(0, 0, 0, self._glyph_outline_z)
+        pts.InsertPoint(1, 1, 0, self._glyph_outline_z)
+        pts.InsertPoint(2, 1, 1, self._glyph_outline_z)
+        pts.InsertPoint(3, 0, 1, self._glyph_outline_z)
+        lp.SetPoints(pts)
+
+        cells = vtk.vtkCellArray()
+        cells.InsertNextCell(5)
+        cells.InsertCellPoint(0)
+        cells.InsertCellPoint(1)
+        cells.InsertCellPoint(2)
+        cells.InsertCellPoint(3)
+        cells.InsertCellPoint(0)
+        lp.SetLines(cells)
+
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(lp)
+
+        a = vtk.vtkActor()
+        a.SetMapper(m)
+        self.prop1.AddPart(a)
+        prop = a.GetProperty()
+        prop.SetColor(0.1,0.1,0.1)
+        prop.SetLineWidth(1.5)
+
+        self._glyph_outline_polydata = lp
+
 
         # INPUTS #################################################### 
         
@@ -506,6 +536,12 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self._cs.SetYLength(self._size[1])
         self._cs.SetXLength(self._size[0])
 
+        # update glyph outline ################################
+        lp = self._glyph_outline_polydata
+        pts = lp.GetPoints()
+        pts.SetPoint(1, self._size[0], 0, self._glyph_outline_z)
+        pts.SetPoint(2, self._size[0], self._size[1], self._glyph_outline_z)
+        pts.SetPoint(3, 0, self._size[1], self._glyph_outline_z)
         # calc and update glyph colour ########################
         gcol = self._glyph_normal_col
 
