@@ -322,7 +322,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _pHeight = 20
 
     _glyph_z_len = 0.1
-    _glyph_outline_z = 0.2
+    _glyph_outline_z = 0.15
+    _port_z = 0.2
     _text_z = 0.4
 
     _glyph_normal_col = (0.75, 0.75, 0.75)
@@ -566,7 +567,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             a.GetProperty().SetColor(col)
             a.SetPosition(
                     (horizOffset + i * horizStep + 0.5 * self._pWidth,
-                self._size[1], 0.1))
+                self._size[1], self._port_z))
 
         for i in range(self._numOutputs):
             col = [self._port_disconn_col,
@@ -575,7 +576,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             a.GetProperty().SetColor(col)
             a.SetPosition(
                     (horizOffset + i * horizStep + 0.5 * self._pWidth, 
-                        0, 0.1))
+                        0, self._port_z))
 
     def get_port_containing_mouse(self):
         """Given the current has_mouse and has_mouse_sub_prop
