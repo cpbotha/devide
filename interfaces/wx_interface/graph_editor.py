@@ -1064,7 +1064,6 @@ class GraphEditor:
 
         # finally change the contents of the new/existing module help window
         return '<html><body>%s</body></html>' % (htmlDoc,)
-        
 	
 
     def fill_module_lists(self, scan_modules=True):

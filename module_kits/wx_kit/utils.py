@@ -5,7 +5,8 @@
 import wx
 
 def get_system_font_size():
-    ft = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
+    #ft = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
+    ft = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
     return ft.GetPointSize()
 
 def create_html_font_size_array():
@@ -21,7 +22,7 @@ def create_html_font_size_array():
 
     fsa = [0,0,0,0,0,0,0]
     for i in range(7):
-        fsa[i] = sfs - (i-2)*2
+        fsa[i] = sfs + (i-2)*2
 
     return fsa
 
