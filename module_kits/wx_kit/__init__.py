@@ -1,4 +1,6 @@
-# $Id: __init__.py 1945 2006-03-05 01:06:37Z cpbotha $
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
 
 # importing this module shouldn't directly cause other large imports
 # do large imports in the init() hook so that you can call back to the
@@ -23,6 +25,7 @@ def init(theModuleManager, pre_import=True):
     import dvshell
     import python_shell_mixin
     import python_shell
+    import utils
 
     # build up VERSION
     global VERSION

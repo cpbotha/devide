@@ -5,6 +5,7 @@
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
+from module_kits.wx_kit import utils as wxutils
 
 # wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
 # http://trac.wxwidgets.org/ticket/9716
@@ -72,7 +73,7 @@ class SimpleHTMLListBox(wx.HtmlListBox):
         
     def OnGetItem(self, n):
         try:
-            return self.items[n][0]
+            return '<font size=-1>%s</font>' % (self.items[n][0],)
         except IndexError:
             return ''
 
@@ -189,6 +190,8 @@ class MainWXFrame(wx.Frame):
 
     def _create_documentation_window(self):
         self.doc_window = HtmlWindow(self, -1, size=(200,80))
+        fsa = wxutils.create_html_font_size_array()
+        self.doc_window.SetFonts("", "", fsa) 
         return self.doc_window
 
     def _create_graph_canvas(self):
@@ -225,7 +228,6 @@ class MainWXFrame(wx.Frame):
         tc = wx.TextCtrl(
             self, -1, "", size=(200, 80),
             style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
-        tc.SetFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, ""))
         self.message_log_text_ctrl = tc
         return tc
 
