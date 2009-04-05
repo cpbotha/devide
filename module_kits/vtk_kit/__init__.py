@@ -122,14 +122,5 @@ def init(module_manager, pre_import=True):
     # setup the kit version
     global VERSION
 
-    # moo
-    vsv = vtk.vtkVersion.GetVTKSourceVersion()
-    # VTK source nightly date
-    mo = re.match('.*Date: ([0-9]+[/-][0-9]+[/-][0-9]+).*', vsv)
-    if mo:
-        vnd = mo.group(1)
-    else:
-        vnd = 'NO-DATE'
-
-    VERSION = '%s (%s)' % (vtk.vtkVersion.GetVTKVersion(), vnd)
+    VERSION = '%s' % (vtk.vtkVersion.GetVTKVersion(),)
     
