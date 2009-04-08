@@ -543,6 +543,12 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         pts.SetPoint(1, self._size[0], 0, self._glyph_outline_z)
         pts.SetPoint(2, self._size[0], self._size[1], self._glyph_outline_z)
         pts.SetPoint(3, 0, self._size[1], self._glyph_outline_z)
+        # FIXME: is there no cleaner way of explaining to the polydata
+        # that it has been updated?
+        lp.SetPoints(None)
+        lp.SetPoints(pts)
+        
+
         # calc and update glyph colour ########################
         gcol = self._glyph_normal_col
 
