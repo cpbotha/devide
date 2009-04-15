@@ -63,7 +63,12 @@ class InputArrayChoiceMixin:
             choice_widget.SetSelection(0)
 
     def config_to_logic(self, input_array_filter,
-                        array_idx=0, port=0, conn=0):
+                        array_idx=1, port=0, conn=0):
+        """Makes sure 'vectorsSelection' from self._config is applied
+        to the used vtkGlyph3D filter.
+
+        array_idx needs to be 1 if you want to process vectors.
+        """
 
         if self._config.vectorsSelection == \
                 DEFAULT_SELECTION_STRING:

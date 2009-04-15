@@ -2,7 +2,6 @@ from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
-import vtkdevide
 import input_array_choice_mixin
 reload(input_array_choice_mixin)
 from input_array_choice_mixin import InputArrayChoiceMixin
@@ -47,9 +46,8 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._config.scaleMode = glyphScaleMode.index('SCALE_BY_VECTOR')
         self._config.colourMode = glyphColourMode.index('COLOUR_BY_VECTOR')
         self._config.vectorMode = glyphVectorMode.index('USE_VECTOR')
-        self._config.maskPoints = True
-        self._config.maskMax = 5000
-        self._config.maskRandom = True
+        self._config.mask_on_ratio = 5
+        self._config.mask_random = True
 
 
         configList = [
@@ -70,17 +68,20 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
             ('Vectors selection:', 'vectorsSelection', 'base:str', 'choice',
              'The attribute that will be used as vectors for the warping.',
              (input_array_choice_mixin.DEFAULT_SELECTION_STRING,)),
-            ('Mask points:', 'maskPoints', 'base:bool', 'checkbox',
-             'Only a selection of the input points will be glyphed.'),
-            ('Number of masked points:', 'maskMax', 'base:int', 'text',
-             'If masking is active, this is the maximum number of input '
-             'points that will be masked.'),
-            ('Random masking:', 'maskRandom', 'base:bool', 'checkbox',
-             'If masking is active, pick random points.')]
+            ('Mask on ratio:', 'mask_on_ratio', 'base:int', 'text',
+             'Every Nth point will be glyphed.'),
+            ('Random masking:', 'mask_random', 'base:bool', 'checkbox',
+             'Pick random distribution of Nth points.')]
 
-        self._glyphFilter = vtkdevide.vtkPVGlyphFilter()
+        self._mask_points = vtk.vtkMaskPoints()
+        module_utils.setup_vtk_object_progress(self,
+                self._mask_points, 'Masking points.')
+
+        self._glyphFilter = vtk.vtkGlyph3D()
         as = vtk.vtkArrowSource()
         self._glyphFilter.SetSource(0, as.GetOutput())
+
+        self._glyphFilter.SetInput(self._mask_points.GetOutput())
         
         module_utils.setup_vtk_object_progress(self, self._glyphFilter,
                                            'Creating glyphs.')
@@ -88,7 +89,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
-             'vtkPVGlyphFilter' : self._glyphFilter})
+             'vtkGlyph3D' : self._glyphFilter})
 
         self.sync_module_logic_with_config()
 
@@ -102,6 +103,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         ScriptedConfigModuleMixin.close(self)
         
         # get rid of our reference
+        del self._mask_points
         del self._glyphFilter
 
     def execute_module(self):
@@ -116,7 +118,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         return ('VTK Vector dataset',)
 
     def set_input(self, idx, inputStream):
-        self._glyphFilter.SetInput(inputStream)
+        self._mask_points.SetInput(inputStream)
 
     def get_output_descriptions(self):
         return ('3D glyphs',)
@@ -130,10 +132,10 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._config.scaleMode = self._glyphFilter.GetScaleMode()
         self._config.colourMode = self._glyphFilter.GetColorMode()
         self._config.vectorMode = self._glyphFilter.GetVectorMode()
-        self._config.maskPoints = bool(self._glyphFilter.GetUseMaskPoints())
-        self._config.maskMax = \
-                             self._glyphFilter.GetMaximumNumberOfPoints()
-        self._config.maskRandom = bool(self._glyphFilter.GetRandomMode())
+
+        self._config.mask_on_ratio = \
+                             self._mask_points.GetOnRatio()
+        self._config.mask_random = bool(self._mask_points.GetRandomMode())
 
         # this will extract the possible choices
         InputArrayChoiceMixin.logic_to_config(self, self._glyphFilter)
@@ -153,11 +155,11 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._glyphFilter.SetScaleMode(self._config.scaleMode)
         self._glyphFilter.SetColorMode(self._config.colourMode)
         self._glyphFilter.SetVectorMode(self._config.vectorMode)
-        self._glyphFilter.SetUseMaskPoints(self._config.maskPoints)
-        self._glyphFilter.SetMaximumNumberOfPoints(self._config.maskMax)
-        self._glyphFilter.SetRandomMode(self._config.maskRandom)
+        self._mask_points.SetOnRatio(self._config.mask_on_ratio)
+        self._mask_points.SetRandomMode(int(self._config.mask_random))
 
-        # array indexing has been fixed in 5.2: array_idx is now 0
-        # instead of 1
-        InputArrayChoiceMixin.config_to_logic(self, self._glyphFilter, 0)
+        # it seems that array_idx == 1 refers to vectors
+        # array_idx 0 gives me only the x-component of multi-component
+        # arrays
+        InputArrayChoiceMixin.config_to_logic(self, self._glyphFilter, 1)
 
