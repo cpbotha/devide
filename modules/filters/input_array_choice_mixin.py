@@ -1,12 +1,11 @@
 import vtk
 
+DEFAULT_SELECTION_STRING = 'Default active array'
+
 class InputArrayChoiceMixin:
 
-    _defaultVectorsSelectionString = 'Default Active Vectors'
-    _userDefinedString = 'User Defined'
-
     def __init__(self):
-        self._config.vectorsSelection = self._defaultVectorsSelectionString
+        self._config.vectorsSelection = DEFAULT_SELECTION_STRING
         self._config.input_array_names = []
         self._config.actual_input_array = None
 
@@ -32,16 +31,18 @@ class InputArrayChoiceMixin:
         # default and the "user defined")
         choiceNames = []
         ccnt = choice_widget.GetCount()
-        for i in range(2,ccnt):
-            choiceNames.append(choice_widget.GetString(i))
-
+        for i in range(ccnt):
+            # cast unicode strings to python default strings
+            choice_string = str(choice_widget.GetString(i))
+            if choice_string != DEFAULT_SELECTION_STRING:
+                choiceNames.append(choice_string)
+        
         names = self._config.input_array_names
         if choiceNames != names:
             # this means things have changed, we have to rebuild
             # the choice
             choice_widget.Clear()
-            choice_widget.Append(self._defaultVectorsSelectionString)
-            choice_widget.Append(self._userDefinedString)
+            choice_widget.Append(DEFAULT_SELECTION_STRING)
             for name in names:
                 choice_widget.Append(name)
 
@@ -65,7 +66,7 @@ class InputArrayChoiceMixin:
                         array_idx=0, port=0, conn=0):
 
         if self._config.vectorsSelection == \
-               self._defaultVectorsSelectionString:
+                DEFAULT_SELECTION_STRING:
             # default: idx, port, connection, fieldassociation (points), name
             input_array_filter.SetInputArrayToProcess(
                 array_idx, port, conn, 0, None)
@@ -73,6 +74,19 @@ class InputArrayChoiceMixin:
         else:
             input_array_filter.SetInputArrayToProcess(
                     array_idx, port, conn, 0, self._config.vectorsSelection)
+
+
+    def execute_module(self, input_array_filter, choice_widget):
+        """Hook to be called by the class that uses this mixin to
+        ensure that after the first execute with a displayed view, the
+        choice widget has been updated.  
+
+        See glyph module for an example.
+        
+        """
+
+        InputArrayChoiceMixin.logic_to_config(self, input_array_filter)
+        InputArrayChoiceMixin.config_to_view(self, choice_widget)
 
         
         

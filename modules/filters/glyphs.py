@@ -3,6 +3,8 @@ from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
+import input_array_choice_mixin
+reload(input_array_choice_mixin)
 from input_array_choice_mixin import InputArrayChoiceMixin
 
 # scale vector glyph with scalar, vector magnitude, or separately for each
@@ -67,7 +69,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
              glyphVectorModeTexts),
             ('Vectors selection:', 'vectorsSelection', 'base:str', 'choice',
              'The attribute that will be used as vectors for the warping.',
-             (self._defaultVectorsSelectionString, self._userDefinedString)),
+             (input_array_choice_mixin.DEFAULT_SELECTION_STRING,)),
             ('Mask points:', 'maskPoints', 'base:bool', 'checkbox',
              'Only a selection of the input points will be glyphed.'),
             ('Number of masked points:', 'maskMax', 'base:int', 'text',
@@ -104,6 +106,10 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
 
     def execute_module(self):
         self._glyphFilter.Update()
+        if self.view_initialised:
+            choice = self._getWidget(5)
+            InputArrayChoiceMixin.execute_module(
+                    self, self._glyphFilter, choice)
         
 
     def get_input_descriptions(self):
@@ -151,6 +157,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._glyphFilter.SetMaximumNumberOfPoints(self._config.maskMax)
         self._glyphFilter.SetRandomMode(self._config.maskRandom)
 
-        # for some or other reason, this requires array_idx 1
-        InputArrayChoiceMixin.config_to_logic(self, self._glyphFilter, 1)
+        # array indexing has been fixed in 5.2: array_idx is now 0
+        # instead of 1
+        InputArrayChoiceMixin.config_to_logic(self, self._glyphFilter, 0)
 
