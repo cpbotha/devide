@@ -138,7 +138,8 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._config.mask_random = bool(self._mask_points.GetRandomMode())
 
         # this will extract the possible choices
-        InputArrayChoiceMixin.logic_to_config(self, self._glyphFilter)
+        InputArrayChoiceMixin.logic_to_config(
+                self, self._glyphFilter, 1)
 
     def config_to_view(self):
         # first get our parent mixin to do its thing

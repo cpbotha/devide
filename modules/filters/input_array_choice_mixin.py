@@ -9,7 +9,10 @@ class InputArrayChoiceMixin:
         self._config.input_array_names = []
         self._config.actual_input_array = None
 
-    def logic_to_config(self, input_array_filter):
+    def logic_to_config(self, input_array_filter, array_idx=1):
+        """This array_idx of course has to match the one passed to
+        config_to_logic.  1 usually refers to vectors.
+        """
         names = []
         # this is the new way of checking input connections
         if input_array_filter.GetNumberOfInputConnections(0):
@@ -21,7 +24,7 @@ class InputArrayChoiceMixin:
 
         self._config.input_array_names = names
                 
-        inf = input_array_filter.GetInputArrayInformation(0)
+        inf = input_array_filter.GetInputArrayInformation(array_idx)
         vs = inf.Get(vtk.vtkDataObject.FIELD_NAME())
 
         self._config.actual_input_array = vs
