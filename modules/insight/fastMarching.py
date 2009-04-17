@@ -20,8 +20,8 @@ class fastMarching(ScriptedConfigModuleMixin, ModuleBase):
             ('Stopping value:', 'stoppingValue', 'base:float', 'text',
              'When an arrival time is greater than the stopping value, the '
              'algorithm terminates.'),
-            ('Normalisation factor:', 'normalisationFactor', 'base:int',
-             'text',
+            ('Normalisation factor:', 'normalisationFactor',
+                'base:float', 'text',
              'Values in the speed image are divide by this factor.'),
             ('Initial distance:', 'initial_distance', 'base:int', 'text',
              'Initial distance of fast marching seed points.')]
