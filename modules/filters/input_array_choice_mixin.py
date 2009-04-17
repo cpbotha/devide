@@ -101,9 +101,8 @@ class InputArrayChoiceMixin:
         
         """
 
-        InputArrayChoiceMixin.logic_to_config(self,
-                input_array_filter, array_idx)
-        InputArrayChoiceMixin.config_to_view(self, choice_widget)
+        self.iac_logic_to_config(input_array_filter, array_idx)
+        self.iac_config_to_view(choice_widget)
 
         
         
