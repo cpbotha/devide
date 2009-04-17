@@ -1,10 +1,16 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
+import input_array_choice_mixin # need this for constants
+reload(input_array_choice_mixin)
 from input_array_choice_mixin import InputArrayChoiceMixin
 
-class warpPoints(InputArrayChoiceMixin, ScriptedConfigModuleMixin,
+class warpPoints(ScriptedConfigModuleMixin, InputArrayChoiceMixin,
                  ModuleBase):
     
     _defaultVectorsSelectionString = 'Default Active Vectors'
@@ -51,6 +57,11 @@ class warpPoints(InputArrayChoiceMixin, ScriptedConfigModuleMixin,
     def execute_module(self):
         self._warpVector.Update()
 
+        if self.view_initialised:
+            # second element in configuration list
+            choice = self._getWidget(1)
+            self.iac_execute_module(self._warpVector, choice, 0)
+
     def get_input_descriptions(self):
         return ('VTK points/polydata with vector attribute',)
 
@@ -72,7 +83,7 @@ class warpPoints(InputArrayChoiceMixin, ScriptedConfigModuleMixin,
         self._config.scaleFactor = self._warpVector.GetScaleFactor()
 
         # this will extract the possible choices
-        InputArrayChoiceMixin.logic_to_config(self, self._warpVector)
+        self.iac_logic_to_config(self._warpVector, 0)
 
     def config_to_view(self):
         # first get our parent mixin to do its thing
@@ -80,10 +91,10 @@ class warpPoints(InputArrayChoiceMixin, ScriptedConfigModuleMixin,
 
         # the vector choice is the second configTuple
         choice = self._getWidget(1)
-        InputArrayChoiceMixin.config_to_view(self, choice)
+        self.iac_config_to_view(choice)
 
     def config_to_logic(self):
         self._warpVector.SetScaleFactor(self._config.scaleFactor)
 
-        InputArrayChoiceMixin.config_to_logic(self, self._warpVector)
+        self.iac_config_to_logic(self._warpVector, 0)
 

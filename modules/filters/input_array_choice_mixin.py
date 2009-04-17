@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 import vtk
 
 DEFAULT_SELECTION_STRING = 'Default active array'
@@ -9,9 +13,11 @@ class InputArrayChoiceMixin:
         self._config.input_array_names = []
         self._config.actual_input_array = None
 
-    def logic_to_config(self, input_array_filter, array_idx=1):
-        """This array_idx of course has to match the one passed to
-        config_to_logic.  1 usually refers to vectors.
+    def iac_logic_to_config(self, input_array_filter, array_idx=1):
+        """VTK documentation doesn't really specify what the parameter
+        to GetInputArrayInformation() expects.  If you know, please
+        let me know.  It *seems* like it should match the one given to
+        SetInputArrayToProcess.
         """
         names = []
         # this is the new way of checking input connections
@@ -29,7 +35,7 @@ class InputArrayChoiceMixin:
 
         self._config.actual_input_array = vs
         
-    def config_to_view(self, choice_widget):
+    def iac_config_to_view(self, choice_widget):
         # find out what the choices CURRENTLY are (except for the
         # default and the "user defined")
         choiceNames = []
@@ -65,12 +71,13 @@ class InputArrayChoiceMixin:
             # no vector selection, so default
             choice_widget.SetSelection(0)
 
-    def config_to_logic(self, input_array_filter,
+    def iac_config_to_logic(self, input_array_filter,
                         array_idx=1, port=0, conn=0):
         """Makes sure 'vectorsSelection' from self._config is applied
         to the used vtkGlyph3D filter.
 
-        array_idx needs to be 1 if you want to process vectors.
+        For some filters (vtkGlyph3D) array_idx needs to be 1, for
+        others (vtkWarpVector) it needs to be 0.
         """
 
         if self._config.vectorsSelection == \
@@ -84,7 +91,8 @@ class InputArrayChoiceMixin:
                     array_idx, port, conn, 0, self._config.vectorsSelection)
 
 
-    def execute_module(self, input_array_filter, choice_widget):
+    def iac_execute_module(
+            self, input_array_filter, choice_widget, array_idx):
         """Hook to be called by the class that uses this mixin to
         ensure that after the first execute with a displayed view, the
         choice widget has been updated.  
@@ -93,7 +101,8 @@ class InputArrayChoiceMixin:
         
         """
 
-        InputArrayChoiceMixin.logic_to_config(self, input_array_filter)
+        InputArrayChoiceMixin.logic_to_config(self,
+                input_array_filter, array_idx)
         InputArrayChoiceMixin.config_to_view(self, choice_widget)
 
         

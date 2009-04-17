@@ -1,5 +1,3 @@
-# $Id$
-
 # this one was generated with:
 # for i in *.py; do n=`echo $i | cut -f 1 -d .`; \
 # echo -e "class $n:\n    kits = ['vtk_kit']\n    cats = ['Filters']\n" \
@@ -131,6 +129,10 @@ class glyphs:
     kits = ['vtk_kit']
     cats = ['Filters']
     help = """Visualise vector field with glyphs.
+
+    After connecting this module, execute your network once, then you
+    can select the relevant vector attribute to glyph from the
+    'Vectors Selection' choice in the interface.
     """
 
 class greyReconstruct:
@@ -438,10 +440,9 @@ class warpPoints:
     cats = ['Filters']
     help = """Warp input points according to their associated vectors.
 
-    After connecting this module up, you have to execute the network, then
-    click on the 'Sync' button to update the Vectors Selection drop down
-    list.  At this point, you can select the correct input array, and
-    'Apply'.  This input array is the one that will be used to warp the input.
+    After connecting this module up, you have to execute the network
+    once, then select the relevant vectors from the 'Vectors
+    Selection' choice in the interface.
     """
 
 class wsMeshSmooth:

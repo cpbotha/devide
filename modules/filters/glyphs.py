@@ -1,3 +1,7 @@
+# Copyright (c) Charl P. Botha, TU Delft
+# All rights reserved.
+# See COPYRIGHT for details.
+
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils
@@ -110,8 +114,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._glyphFilter.Update()
         if self.view_initialised:
             choice = self._getWidget(5)
-            InputArrayChoiceMixin.execute_module(
-                    self, self._glyphFilter, choice)
+            self.iac_execute_module(self._glyphFilter, choice, 1)
         
 
     def get_input_descriptions(self):
@@ -138,8 +141,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._config.mask_random = bool(self._mask_points.GetRandomMode())
 
         # this will extract the possible choices
-        InputArrayChoiceMixin.logic_to_config(
-                self, self._glyphFilter, 1)
+        self.iac_logic_to_config(self._glyphFilter, 1)
 
     def config_to_view(self):
         # first get our parent mixin to do its thing
@@ -147,7 +149,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
 
         # the vector choice is the second configTuple
         choice = self._getWidget(5)
-        InputArrayChoiceMixin.config_to_view(self, choice)
+        self.iac_config_to_view(choice)
 
         
     def config_to_logic(self):
@@ -162,5 +164,5 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         # it seems that array_idx == 1 refers to vectors
         # array_idx 0 gives me only the x-component of multi-component
         # arrays
-        InputArrayChoiceMixin.config_to_logic(self, self._glyphFilter, 1)
+        self.iac_config_to_logic(self._glyphFilter, 1)
 
