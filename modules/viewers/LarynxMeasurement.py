@@ -40,6 +40,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
         self._current_measurement = None
         # pogo line first
+        # outline of larynx second
         self._actors = []
 
         # list of pointwidgets, first is apex, second is lm, others
@@ -47,6 +48,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         self._markers = []
 
         self._pogo_line_source = None
+        self._area_polydata = None
 
         self._view_frame = None
         self._viewer = None
@@ -189,6 +191,10 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         pw = self._add_marker(world_pos, (0,1,0), 0.005)
         self._markers.append(pw)
 
+        self._markers[-1].AddObserver(
+                'InteractionEvent',
+                self._handler_nm_ie)
+
     def _add_pogo_line(self):
         ls = vtk.vtkLineSource()
         self._pogo_line_source = ls
@@ -281,6 +287,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         self._update_pogo_distance()
         self._update_area()
 
+    def _handler_nm_ie(self, pw=None, vtk_e=None):
+        self._update_area()
+
 
     def _handler_rwi_lbp(self, vtk_o, vtk_e):
         # we only handle this if the user is pressing shift
@@ -327,6 +336,15 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
                 self._state = STATE_NORMAL_MARKERS
                 # now create the polydata
                 #self._create_area_polydata()
+                pd = vtk.vtkPolyData()
+                self._area_polydata = pd
+                m = vtk.vtkPolyDataMapper()
+                m.SetInput(pd)
+                a = vtk.vtkActor()
+                a.SetMapper(m)
+                self._viewer.GetRenderer().AddActor(a)
+                self._actors.append(a)
+                
                 self._update_area()
             elif self._state == STATE_NORMAL_MARKERS:
                 self._add_normal_marker(w)
@@ -447,6 +465,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             # left.
 
             p1,p2 = [self._markers[i].GetPosition()[0:2] for i in range(2)] 
+            z = self._markers[i].GetPosition()[2]
 
             # gradient
             #m = (p2[1] - p1[1]) / float(p2[0] - p1[0])
@@ -471,17 +490,57 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
                 # rl is positive for right hemisphere, negative for
                 # otherwise
                 rl = geometry.dot(no, v_ortho_n)
-                if rl > 0:
+                if rl >= 0:
                     right_pts.append(p)
                 elif rl < 0:
                     left_pts.append(p)
-                else:
-                    # we ignore points on the line
-                    pass
 
-            
+            vpts = vtk.vtkPoints()
+            vpts.InsertPoint(0,p1[0],p1[1],z)
+            for i,j in enumerate(right_pts):
+                vpts.InsertPoint(i+1,j[0],j[1],z)
 
-            
+            if len(right_pts) == 0:
+                i = -1 
+
+            vpts.InsertPoint(i+2,p2[0],p2[1],z)
+
+            for k,j in enumerate(left_pts):
+                vpts.InsertPoint(i+3+k,j[0],j[1],z)
+
+            num_points = 2 + len(left_pts) + len(right_pts)
+            assert(vpts.GetNumberOfPoints() == num_points)
+
+            self._area_polydata.SetPoints(vpts)
+
+            cells = vtk.vtkCellArray()
+            # we repeat the first point
+            cells.InsertNextCell(num_points + 1) 
+            for i in range(num_points):
+                cells.InsertCellPoint(i)
+
+            cells.InsertCellPoint(0)
+
+            self._area_polydata.SetLines(cells)
+
+            # now calculate the polygon area according to:
+            # http://local.wasp.uwa.edu.au/~pbourke/geometry/polyarea/
+            all_pts = [p1] + right_pts + [p2] + left_pts + [p1]
+
+            tot = 0
+            for i in range(len(all_pts)-1):
+                pi = all_pts[i]
+                pip = all_pts[i+1]
+                tot += pi[0]*pip[1] - pip[0]*pi[1]
+
+            area = - tot / 2.0
+
+            self._view_frame.area_txt.SetValue('%.2f' % (area,))
+
+
+
+
+
 
 
 
