@@ -48,11 +48,6 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # change the title to something more spectacular
         self._view_frame.SetTitle('CoMedI')
 
-        # create the necessary VTK objects: we only need a renderer,
-        # the RenderWindowInteractor in the view_frame has the rest.
-        self.ren = vtk.vtkRenderer()
-        self.ren.SetBackground(0.5,0.5,0.5)
-        self._view_frame.rwi.GetRenderWindow().AddRenderer(self.ren)
 
         # hook up all event handlers
         self._bind_events()
@@ -76,16 +71,6 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         deleted.
         """
         
-        # with this complicated de-init, we make sure that VTK is 
-        # properly taken care of
-        self.ren.RemoveAllViewProps()
-        # this finalize makes sure we don't get any strange X
-        # errors when we kill the module.
-        self._view_frame.rwi.GetRenderWindow().Finalize()
-        self._view_frame.rwi.SetRenderWindow(None)
-        del self._view_frame.rwi
-        # done with VTK de-init
-
         # now take care of the wx window
         self._view_frame.close()
         # then shutdown our introspection mixin
@@ -139,7 +124,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # call the render.  If we don't do this, we get an initial
         # empty renderwindow.
         wx.SafeYield()
-        self.render()
+        self.render_all()
 
     def add_superquadric(self):
         """Add a new superquadric at a random position.
@@ -174,14 +159,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         """Bind wx events to Python callable object event handlers.
         """
 
-        vf = self._view_frame
-        vf.Bind(wx.EVT_MENU, self._handler_file_open,
-                id = vf.id_file_open)
-
-        self._view_frame.button1.Bind(wx.EVT_BUTTON,
-                self._handler_button1)
-        self._view_frame.button2.Bind(wx.EVT_BUTTON,
-                self._handler_button2)
+        pass
 
     def _handler_button1(self, event):
         print "button1 pressed"
@@ -197,11 +175,11 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def _handler_file_open(self, event):
         print "could have opened file now"
 
-    def render(self):
+    def render_all(self):
         """Method that calls Render() on the embedded RenderWindow.
         Use this after having made changes to the scene.
         """
-        self._view_frame.render()
+        self._view_frame.render_all()
 
 
 

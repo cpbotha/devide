@@ -3,6 +3,7 @@
 # See COPYRIGHT for details.
 
 import cStringIO
+import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
 
@@ -19,6 +20,15 @@ else:
 # one could have loaded a wxGlade created resource like this:
 #from resources.python import DICOMBrowserPanels
 #reload(DICOMBrowserPanels)
+
+
+class CMIPane:
+    """Class for anything that would like to populate the interface.
+    Each _create* method returns an instance of this class, populated
+    with the various required ivars.
+    """
+    def __init__(self):
+        self.window = None
 
 class CoMedIFrame(wx.Frame):
     """wx.Frame child class used by SkeletonAUIViewer for its
@@ -63,27 +73,26 @@ class CoMedIFrame(wx.Frame):
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
 
-        self._mgr.AddPane(self._create_series_pane(), wx.aui.AuiPaneInfo().
-                          Name("series").Caption("Series").Top().
-                          BestSize(wx.Size(600, 100)).
-                          CloseButton(False).MaximizeButton(True))
-
-        self._mgr.AddPane(self._create_files_pane(), wx.aui.AuiPaneInfo().
-                          Name("files").Caption("Image Files").
-                          Left().
-                          BestSize(wx.Size(200,400)).
-                          CloseButton(False).MaximizeButton(True))
-
-        self._mgr.AddPane(self._create_meta_pane(), wx.aui.AuiPaneInfo().
-                          Name("meta").Caption("Image Metadata").
-                          Left().
-                          BestSize(wx.Size(200,400)).
-                          CloseButton(False).MaximizeButton(True))
-
-        self._mgr.AddPane(self._create_rwi_pane(), wx.aui.AuiPaneInfo().
-                          Name("rwi").Caption("3D Renderer").
-                          Center().
+       
+        self.rwi_pane_dummy = self._create_rwi_pane()
+        self._mgr.AddPane(self.rwi_pane_dummy.window, wx.aui.AuiPaneInfo().
+                          Name("dummy rwi").Caption("3D Renderer").
+                          Top().Left().
                           BestSize(wx.Size(400,400)).
+                          CloseButton(False).MaximizeButton(True))
+
+        self.rwi_pane_data1 = self._create_rwi_pane()
+        self._mgr.AddPane(self.rwi_pane_data1.window, wx.aui.AuiPaneInfo().
+                          Name("data2 rwi").Caption("3D Renderer").
+                          Bottom().Left().
+                          BestSize(wx.Size(400,400)).
+                          CloseButton(False).MaximizeButton(True))
+
+        self.rwi_pane_compvis = self._create_rwi_pane()
+        self._mgr.AddPane(self.rwi_pane_compvis.window, wx.aui.AuiPaneInfo().
+                          Name("compvis1 rwi").Caption("3D Renderer").
+                          Center().
+                          BestSize(wx.Size(800,800)).
                           CloseButton(False).MaximizeButton(True))
 
 
@@ -120,7 +129,10 @@ class CoMedIFrame(wx.Frame):
 
 
     def close(self):
-       self.Destroy()
+        for rwi_pane in self.get_rwi_panes():
+            self._close_rwi_pane(rwi_pane)
+
+        self.Destroy()
 
     def _create_files_pane(self):
         sl = wx.ListCtrl(self, -1, 
@@ -136,10 +148,12 @@ class CoMedIFrame(wx.Frame):
         return sl
 
     def _create_rwi_pane(self):
+        """Return pane with renderer and buttons.
+        """
 
         panel = wx.Panel(self, -1)
 
-        self.rwi = wxVTKRenderWindowInteractor(panel, -1, (400,400))
+        rwi = wxVTKRenderWindowInteractor(panel, -1, (400,400))
         self.button1 = wx.Button(panel, -1, "Add Superquadric")
         self.button2 = wx.Button(panel, -1, "Reset Camera")
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -147,7 +161,7 @@ class CoMedIFrame(wx.Frame):
         button_sizer.Add(self.button2)
 
         sizer1 = wx.BoxSizer(wx.VERTICAL)
-        sizer1.Add(self.rwi, 1, wx.EXPAND|wx.BOTTOM, 7)
+        sizer1.Add(rwi, 1, wx.EXPAND|wx.BOTTOM, 7)
         sizer1.Add(button_sizer)
 
         tl_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -156,8 +170,24 @@ class CoMedIFrame(wx.Frame):
         panel.SetSizer(tl_sizer)
         tl_sizer.Fit(panel)
 
-        return panel
+        ren = vtk.vtkRenderer()
+        ren.SetBackground(0.5,0.5,0.5)
+        rwi.GetRenderWindow().AddRenderer(ren)
 
+        cmi_pane = CMIPane()
+        cmi_pane.window = panel
+        cmi_pane.renderer = ren
+        cmi_pane.rwi = rwi
+
+        return cmi_pane
+
+    def _close_rwi_pane(self, cmi_pane):
+        cmi_pane.renderer.RemoveAllViewProps()
+        cmi_pane.rwi.GetRenderWindow().Finalize()
+        cmi_pane.rwi.SetRenderWindow(None)
+        del cmi_pane.rwi
+        del cmi_pane.renderer # perhaps not...
+        
     def _create_meta_pane(self):
         ml = wx.ListCtrl(self, -1, 
                 style=wx.LC_REPORT | 
@@ -188,11 +218,20 @@ class CoMedIFrame(wx.Frame):
         self.series_lc = sl
 
         return sl
+    
+    def get_rwi_panes(self):
+        return [self.rwi_pane_dummy, self.rwi_pane_data1,
+                self.rwi_pane_compvis]
 
-    def render(self):
+    def get_rwis(self):
+        return [rwi_pane.rwi for rwi_pane in self.get_rwi_panes()]
+
+    def render_all(self):
         """Update embedded RWI, i.e. update the image.
         """
-        self.rwi.Render()
+
+        for rwi in self.get_rwis():
+            rwi.Render()
        
     def _handler_default_view(self, event):
         """Event handler for when the user selects View | Default from
