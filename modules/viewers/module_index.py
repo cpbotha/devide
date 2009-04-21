@@ -41,6 +41,18 @@ class CodeRunner:
     
     """
 
+class CoMedI:
+    kits = ['vtk_kit', 'wx_kit']
+    cats = ['Viewers']
+    keywords = ['compare', 'comparative visualisation',
+            'comparative', 'comparative visualization']
+    help = \
+            """CoMedI: Compare Medical Images
+
+            Viewer module for the comparison of arbitrary 2-D and 3-D
+            medical images.
+            """
+
 class DICOMBrowser:
     kits = ['vtk_kit', 'gdcm_kit']
     cats = ['Viewers', 'Readers', 'DICOM', 'Medical']
