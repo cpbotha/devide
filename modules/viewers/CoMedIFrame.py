@@ -73,24 +73,39 @@ class CoMedIFrame(wx.Frame):
         self._mgr = wx.aui.AuiManager()
         self._mgr.SetManagedWindow(self)
 
-       
-        self.rwi_pane_dummy = self._create_rwi_pane()
-        self._mgr.AddPane(self.rwi_pane_dummy.window, wx.aui.AuiPaneInfo().
-                          Name("dummy rwi").Caption("3D Renderer").
-                          Top().Left().
+      
+        self.pane_controls = self._create_controls_pane()
+        self._mgr.AddPane(self.pane_controls.window, wx.aui.AuiPaneInfo().
+                          Name("controls").Caption("Controls").
+                          Left().Position(0).Layer(2).
+                          BestSize(wx.Size(400,400)).
+                          CloseButton(False).MaximizeButton(True))
+
+        self.rwi_pane_data2 = self._create_rwi_pane()
+        self._mgr.AddPane(self.rwi_pane_data2.window, wx.aui.AuiPaneInfo().
+                          Name("data2 rwi").Caption("Data 2").
+                          Left().Position(1).Layer(2).
                           BestSize(wx.Size(400,400)).
                           CloseButton(False).MaximizeButton(True))
 
         self.rwi_pane_data1 = self._create_rwi_pane()
         self._mgr.AddPane(self.rwi_pane_data1.window, wx.aui.AuiPaneInfo().
-                          Name("data2 rwi").Caption("3D Renderer").
-                          Bottom().Left().
+                          Name("data1 rwi").Caption("Data 1").
+                          Left().Position(0).Layer(1).
+                          BestSize(wx.Size(400,400)).
+                          CloseButton(False).MaximizeButton(True))
+
+
+        self.rwi_pane_data2m = self._create_rwi_pane()
+        self._mgr.AddPane(self.rwi_pane_data2m.window, wx.aui.AuiPaneInfo().
+                          Name("data2m rwi").Caption("Data 2 Matched").
+                          Left().Position(1).Layer(1).
                           BestSize(wx.Size(400,400)).
                           CloseButton(False).MaximizeButton(True))
 
         self.rwi_pane_compvis = self._create_rwi_pane()
         self._mgr.AddPane(self.rwi_pane_compvis.window, wx.aui.AuiPaneInfo().
-                          Name("compvis1 rwi").Caption("3D Renderer").
+                          Name("compvis1 rwi").Caption("Main CompVis").
                           Center().
                           BestSize(wx.Size(800,800)).
                           CloseButton(False).MaximizeButton(True))
@@ -146,6 +161,13 @@ class CoMedIFrame(wx.Frame):
         self.files_lc = sl
 
         return sl
+
+    def _create_controls_pane(self):
+        panel = wx.Panel(self, -1)
+
+        cmi_pane = CMIPane()
+        cmi_pane.window = panel
+        return cmi_pane
 
     def _create_rwi_pane(self):
         """Return pane with renderer and buttons.
@@ -220,7 +242,8 @@ class CoMedIFrame(wx.Frame):
         return sl
     
     def get_rwi_panes(self):
-        return [self.rwi_pane_dummy, self.rwi_pane_data1,
+        return [self.rwi_pane_data1, 
+                self.rwi_pane_data2, self.rwi_pane_data2m,
                 self.rwi_pane_compvis]
 
     def get_rwis(self):
