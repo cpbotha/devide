@@ -92,6 +92,64 @@ class DVOrientationWidget:
         aca.SetZMinusFaceText(labels[4])
         aca.SetZPlusFaceText(labels[5])
 
+class SyncSliceViewers:
+    """Class to link a number of CMSliceViewer instances w.r.t.
+    camera.
+    """
+
+    def __init__(self):
+        # store all slice viewer instances that are being synced
+        self.slice_viewers = []
+
+    def add_slice_viewer(self, slice_viewer):
+        if slice_viewer in self.slice_viewers:
+            return
+
+        istyle = slice_viewer.rwi.GetInteractorStyle()
+        istyle.AddObserver('InteractionEvent', 
+                lambda o,e: self._observer_camera(slice_viewer))
+        self.slice_viewers.append(slice_viewer)
+
+    def close(self):
+        for sv in self.slice_viewers:
+            self.remove_slice_viewer(sv)
+
+    def _observer_camera(self, sv):
+        """This observer will keep the cameras of all the
+        participating slice viewers synched.
+        """
+        self.sync_cameras(sv)
+
+    def remove_slice_viewer(self, slice_viewer):
+        if slice_viewer in self.slice_viewers:
+            # hmmm, this will remove other InteractionEvent observers too.
+            slice_viewer.RemoveObserver('InteractionEvent')
+            idx = self.slice_viewers.index(slice_viewer)
+            del self.slice_viewers[idx]
+
+    def sync_cameras(self, sv, dest_svs=None):
+        """Sync all cameras to that of sv.
+        """
+        cam = sv.renderer.GetActiveCamera()
+        pos = cam.GetPosition()
+        fp = cam.GetFocalPoint()
+        vu = cam.GetViewUp()
+
+        if dest_svs is None:
+            dest_svs = self.slice_viewers
+
+        for other_sv in dest_svs:
+            if not other_sv is sv:
+                other_ren = other_sv.renderer
+                other_cam = other_ren.GetActiveCamera()
+                other_cam.SetPosition(pos)
+                other_cam.SetFocalPoint(fp)
+                other_cam.SetViewUp(vu)
+                other_ren.UpdateLightsGeometryToFollowCamera()
+                other_ren.ResetCameraClippingRange()
+                other_sv.render()
+
+
 
 
 class CMSliceViewer:
@@ -99,8 +157,8 @@ class CMSliceViewer:
     """
 
     def __init__(self, rwi, renderer):
-        self._rwi = rwi
-        self._renderer = renderer
+        self.rwi = rwi
+        self.renderer = renderer
 
         istyle = vtk.vtkInteractorStyleTrackballCamera()
         rwi.SetInteractorStyle(istyle)
@@ -125,10 +183,10 @@ class CMSliceViewer:
         return self.ipw1.GetInput()
 
     def render(self):
-        self._rwi.GetRenderWindow().Render()
+        self.rwi.GetRenderWindow().Render()
 
     def reset_camera(self):
-        self._renderer.ResetCamera()
+        self.renderer.ResetCamera()
         
 
     def set_input(self, input):
@@ -139,7 +197,7 @@ class CMSliceViewer:
             self.dv_orientation_widget.set_input(None)
             self.ipw1.SetInput(None)
             self.ipw1.Off()
-            self._renderer.RemoveViewProp(self.outline_actor)
+            self.renderer.RemoveViewProp(self.outline_actor)
             self.outline_source.SetInput(None)
 
         else:
@@ -148,7 +206,7 @@ class CMSliceViewer:
             self.ipw1.SetSliceIndex(0)
             self.ipw1.On()
             self.outline_source.SetInput(input)
-            self._renderer.AddViewProp(self.outline_actor)
+            self.renderer.AddViewProp(self.outline_actor)
             self.dv_orientation_widget.set_input(input)
 
 
@@ -232,13 +290,26 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             self._data1_slice_viewer.set_input(input_stream)
             if not self._data2_slice_viewer.get_input():
                 self._data1_slice_viewer.reset_camera()
-            self._data1_slice_viewer.render()
+                self._data1_slice_viewer.render()
+
+            else:
+                # sync ourselves to data2
+                self._sync_slice_viewers.sync_cameras(
+                        self._data2_slice_viewer,
+                        [self._data1_slice_viewer])
+
 
         if idx == 1:
             self._data2_slice_viewer.set_input(input_stream)
             if not self._data1_slice_viewer.get_input():
                 self._data2_slice_viewer.reset_camera()
-            self._data2_slice_viewer.render()
+                self._data2_slice_viewer.render()
+
+            else:
+                self._sync_slice_viewers.sync_cameras(
+                        self._data1_slice_viewer,
+                        [self._data2_slice_viewer])
+
 
     def get_output(self, idx):
         # this can get called at any time when a consumer module wants
@@ -341,6 +412,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self._data2m_slice_viewer = CMSliceViewer(
                 self._view_frame.rwi_pane_data2m.rwi,
                 self._view_frame.rwi_pane_data2m.renderer)
+
+        self._sync_slice_viewers = ssv = SyncSliceViewers()
+        ssv.add_slice_viewer(self._data1_slice_viewer)
+        ssv.add_slice_viewer(self._data2_slice_viewer)
+        ssv.add_slice_viewer(self._data2m_slice_viewer)
+        
               
 
     def _close_vis(self):
