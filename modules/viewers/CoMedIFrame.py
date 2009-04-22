@@ -40,7 +40,7 @@ class CoMedIFrame(wx.Frame):
 
     def __init__(self, parent, id=-1, title="", name=""):
         wx.Frame.__init__(self, parent, id=id, title=title, 
-                pos=wx.DefaultPosition, size=(800,800), name=name)
+                pos=wx.DefaultPosition, size=(1000,600), name=name)
 
 
         self.menubar = wx.MenuBar()
@@ -66,6 +66,12 @@ class CoMedIFrame(wx.Frame):
                          wx.ITEM_NORMAL)
 
         self.menubar.Append(views_menu, "&Views")
+
+        adv_menu = wx.Menu()
+        self.id_adv_introspect = wx.NewId()
+        adv_menu.Append(self.id_adv_introspect, '&Introspect\tAlt-I',
+                'Introspect this CoMedI instance.', wx.ITEM_NORMAL)
+        self.menubar.Append(adv_menu, '&Advanced')
 
 
 
@@ -175,19 +181,21 @@ class CoMedIFrame(wx.Frame):
 
         panel = wx.Panel(self, -1)
 
-        rwi = wxVTKRenderWindowInteractor(panel, -1, (400,400))
-        self.button1 = wx.Button(panel, -1, "Add Superquadric")
-        self.button2 = wx.Button(panel, -1, "Reset Camera")
-        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        button_sizer.Add(self.button1)
-        button_sizer.Add(self.button2)
+        rwi = wxVTKRenderWindowInteractor(panel, -1, (300,300))
 
-        sizer1 = wx.BoxSizer(wx.VERTICAL)
-        sizer1.Add(rwi, 1, wx.EXPAND|wx.BOTTOM, 7)
-        sizer1.Add(button_sizer)
+        if False:
+            self.button1 = wx.Button(panel, -1, "Add Superquadric")
+            self.button2 = wx.Button(panel, -1, "Reset Camera")
+            button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            button_sizer.Add(self.button1)
+            button_sizer.Add(self.button2)
+
+            sizer1 = wx.BoxSizer(wx.VERTICAL)
+            sizer1.Add(rwi, 1, wx.EXPAND|wx.BOTTOM, 7)
+            sizer1.Add(button_sizer)
 
         tl_sizer = wx.BoxSizer(wx.VERTICAL)
-        tl_sizer.Add(sizer1, 1, wx.ALL|wx.EXPAND, 7)
+        tl_sizer.Add(rwi, 1, wx.ALL|wx.EXPAND, 7)
 
         panel.SetSizer(tl_sizer)
         tl_sizer.Fit(panel)
