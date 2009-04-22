@@ -95,6 +95,9 @@ class DVOrientationWidget:
 class SyncSliceViewers:
     """Class to link a number of CMSliceViewer instances w.r.t.
     camera.
+
+    FIXME: consider adding option to block certain slice viewers from
+    participation.  Is this better than just removing them?
     """
 
     def __init__(self):
@@ -106,6 +109,16 @@ class SyncSliceViewers:
             return
 
         istyle = slice_viewer.rwi.GetInteractorStyle()
+
+        # the following two observers are workarounds for a bug in VTK
+        # the interactorstyle does NOT invoke an InteractionEvent at
+        # mousewheel, so we make sure it does in our workaround
+        # observers.
+        istyle.AddObserver('MouseWheelForwardEvent',
+                self._observer_mousewheel_forward)
+        istyle.AddObserver('MouseWheelBackwardEvent',
+                self._observer_mousewheel_backward)
+
         istyle.AddObserver('InteractionEvent', 
                 lambda o,e: self._observer_camera(slice_viewer))
         self.slice_viewers.append(slice_viewer)
@@ -120,10 +133,20 @@ class SyncSliceViewers:
         """
         self.sync_cameras(sv)
 
+    def _observer_mousewheel_forward(self, vtk_o, vtk_e):
+        vtk_o.OnMouseWheelForward()
+        vtk_o.InvokeEvent('InteractionEvent')
+
+    def _observer_mousewheel_backward(self, vtk_o, vtk_e):
+        vtk_o.OnMouseWheelBackward()
+        vtk_o.InvokeEvent('InteractionEvent')
+
     def remove_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
+            istyle = slice_viewer.rwi.GetInteractorStyle()
             # hmmm, this will remove other InteractionEvent observers too.
-            slice_viewer.RemoveObserver('InteractionEvent')
+            istyle.RemoveObserver('InteractionEvent')
+            istyle.RemoveObserver('MouseWheelForwardEvent')
             idx = self.slice_viewers.index(slice_viewer)
             del self.slice_viewers[idx]
 
