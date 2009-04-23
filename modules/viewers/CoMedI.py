@@ -195,11 +195,16 @@ class SyncSliceViewers:
         for other_sv in dest_svs:
             if other_sv is not sv:
                 other_ipw = other_sv.ipw1
-                other_ipw.SetOrigin(o)
-                other_ipw.SetPoint1(p1)
-                other_ipw.SetPoint2(p2)
-                other_ipw.UpdatePlacement()
-                other_sv.render()
+                # we only synchronise slice position if it's actually
+                # changed.
+                if o != other_ipw.GetOrigin() or \
+                        p1 != other_ipw.GetPoint1() or \
+                        p2 != other_ipw.GetPoint2():
+                    other_ipw.SetOrigin(o)
+                    other_ipw.SetPoint1(p1)
+                    other_ipw.SetPoint2(p2)
+                    other_ipw.UpdatePlacement()
+                    other_sv.render()
 
     def sync_all(self, sv, dest_svs=None):
         """Convenience function that performs all syncing possible of
