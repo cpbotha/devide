@@ -19,6 +19,7 @@ from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
 import os
+import random #temp testing
 import sys
 import traceback
 import vtk
@@ -119,8 +120,13 @@ class SyncSliceViewers:
         istyle.AddObserver('MouseWheelBackwardEvent',
                 self._observer_mousewheel_backward)
 
+        # this one only gets called for camera interaction (of course)
         istyle.AddObserver('InteractionEvent', 
                 lambda o,e: self._observer_camera(slice_viewer))
+
+        slice_viewer.ipw1.AddObserver('InteractionEvent',
+                lambda o,e: self._observer_ipw(slice_viewer))
+
         self.slice_viewers.append(slice_viewer)
 
     def close(self):
@@ -141,12 +147,16 @@ class SyncSliceViewers:
         vtk_o.OnMouseWheelBackward()
         vtk_o.InvokeEvent('InteractionEvent')
 
+    def _observer_ipw(self, slice_viewer):
+        self.sync_ipws(slice_viewer)
+
     def remove_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
             istyle = slice_viewer.rwi.GetInteractorStyle()
             # hmmm, this will remove other InteractionEvent observers too.
             istyle.RemoveObserver('InteractionEvent')
             istyle.RemoveObserver('MouseWheelForwardEvent')
+            slice_viewer.ipw1.RemoveObserver('InteractionEvent')
             idx = self.slice_viewers.index(slice_viewer)
             del self.slice_viewers[idx]
 
@@ -172,8 +182,24 @@ class SyncSliceViewers:
                 other_ren.ResetCameraClippingRange()
                 other_sv.render()
 
+    def sync_ipws(self, sv, dest_svs=None):
+        """
+        """
 
+        o,p1,p2 = sv.ipw1.GetOrigin(), \
+                sv.ipw1.GetPoint1(), sv.ipw1.GetPoint2()
 
+        if dest_svs is None:
+            dest_svs = self.slice_viewers
+
+        for other_sv in dest_svs:
+            if other_sv is not sv:
+                other_ipw = other_sv.ipw1
+                other_ipw.SetOrigin(o)
+                other_ipw.SetPoint1(p1)
+                other_ipw.SetPoint2(p2)
+                other_ipw.UpdatePlacement()
+                other_sv.render()
 
 class CMSliceViewer:
     """Simple class for enabling 1 or 3 ortho slices in a 3D scene.
@@ -367,55 +393,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         wx.SafeYield()
         self.render_all()
 
-    def add_superquadric(self):
-        """Add a new superquadric at a random position.
-
-        This is called by the event handler for the 'Add Superquadric'
-        button.
-        """
-
-        import random
-
-        # let's add a superquadric actor to the renderer
-        sqs = vtk.vtkSuperquadricSource()
-        sqs.ToroidalOn()
-        sqs.SetSize(0.1) # default is 0.5
-        m = vtk.vtkPolyDataMapper()
-        m.SetInput(sqs.GetOutput())
-        a = vtk.vtkActor()
-        a.SetMapper(m)
-        pos = [random.random() for _ in range(3)]
-        a.SetPosition(pos)
-        a.GetProperty().SetColor([random.random() for _ in range(3)])
-        self.ren.AddActor(a)
-        self.render()
-
-        # add string to files listcontrol showing where the
-        # superquadric was placed.
-        self._view_frame.files_lc.InsertStringItem(
-                sys.maxint, 'Position (%.2f, %.2f, %.2f)' % tuple(pos))
-
-
     def _bind_events(self):
         """Bind wx events to Python callable object event handlers.
         """
         vf = self._view_frame
         vf.Bind(wx.EVT_MENU, self._handler_introspect,
                 id = vf.id_adv_introspect)
-
-    def _handler_button1(self, event):
-        print "button1 pressed"
-
-        self.add_superquadric()
-
-    def _handler_button2(self, event):
-        print "button2 pressed"
-
-        self.ren.ResetCamera()
-        self.render()
-
-    def _handler_file_open(self, event):
-        print "could have opened file now"
 
     def render_all(self):
         """Method that calls Render() on the embedded RenderWindow.
