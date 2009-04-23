@@ -201,6 +201,14 @@ class SyncSliceViewers:
                 other_ipw.UpdatePlacement()
                 other_sv.render()
 
+    def sync_all(self, sv, dest_svs=None):
+        """Convenience function that performs all syncing possible of
+        dest_svs to sv.
+        """
+
+        self.sync_cameras(sv, dest_svs)
+        self.sync_ipws(sv, dest_svs)
+
 class CMSliceViewer:
     """Simple class for enabling 1 or 3 ortho slices in a 3D scene.
     """
@@ -343,7 +351,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
             else:
                 # sync ourselves to data2
-                self._sync_slice_viewers.sync_cameras(
+                self._sync_slice_viewers.sync_all(
                         self._data2_slice_viewer,
                         [self._data1_slice_viewer])
 
@@ -355,7 +363,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 self._data2_slice_viewer.render()
 
             else:
-                self._sync_slice_viewers.sync_cameras(
+                self._sync_slice_viewers.sync_all(
                         self._data1_slice_viewer,
                         [self._data2_slice_viewer])
 
