@@ -313,11 +313,36 @@ class CMSliceViewer:
         return self.ipw1.GetInput()
 
     def render(self):
-        print random.random()
         self.rwi.GetRenderWindow().Render()
 
     def reset_camera(self):
         self.renderer.ResetCamera()
+
+    def reset_to_default_view(self, view_index):
+        """
+        @param view_index 2 for XY
+        """
+
+        if view_index == 2:
+            
+            cam = self.renderer.GetActiveCamera()
+            # then make sure it's up is the right way
+            cam.SetViewUp(0,1,0)
+            # just set the X,Y of the camera equal to the X,Y of the
+            # focal point.
+            fp = cam.GetFocalPoint()
+            cp = cam.GetPosition()
+            if cp[2] < fp[2]:
+                z = fp[2] + (fp[2] - cp[2])
+            else:
+                z = cp[2]
+
+            cam.SetPosition(fp[0], fp[1], z)
+
+            # first reset the camera
+            self.renderer.ResetCamera()
+
+        self.render()
         
 
     def set_input(self, input):
