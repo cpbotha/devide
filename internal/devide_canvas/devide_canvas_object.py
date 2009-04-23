@@ -137,8 +137,8 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
     # with a certain border; this is also used by updateEndPoints to bring
     # the connection out of the connection port initially
     routingOvershoot = 5
-    _normal_width = 2.5
-    _highlight_width = 5
+    _normal_width = 2
+    _highlight_width = 2 
 
     def __init__(self, canvas, fromGlyph, fromOutputIdx, toGlyph, toInputIdx):
 
@@ -269,8 +269,8 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         prop = self.props[0].GetProperty()
         # for more stipple patterns, see:
         # http://fly.cc.fer.hr/~unreal/theredbook/chapter02.html
-        prop.SetLineStipplePattern(0x00FF)
-        prop.SetLineStippleRepeatFactor(1)
+        prop.SetLineStipplePattern(0xAAAA)
+        prop.SetLineStippleRepeatFactor(2)
         prop.SetLineWidth(self._highlight_width)
 
     def set_normal(self):
