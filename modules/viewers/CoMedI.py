@@ -124,8 +124,13 @@ class SyncSliceViewers:
         istyle.AddObserver('InteractionEvent', 
                 lambda o,e: self._observer_camera(slice_viewer))
 
+        # this gets call for all interaction with the slice
+        # (cursoring, slice pushing, perhaps WL)
         slice_viewer.ipw1.AddObserver('InteractionEvent',
                 lambda o,e: self._observer_ipw(slice_viewer))
+
+        slice_viewer.ipw1.AddObserver('WindowLevelEvent',
+                lambda o,e: self._observer_window_level(slice_viewer))
 
         self.slice_viewers.append(slice_viewer)
 
@@ -136,8 +141,11 @@ class SyncSliceViewers:
     def _observer_camera(self, sv):
         """This observer will keep the cameras of all the
         participating slice viewers synched.
+
+        It's only called when the camera is moved.
         """
-        self.sync_cameras(sv)
+        cc = self.sync_cameras(sv)
+        [sv.render() for sv in cc]
 
     def _observer_mousewheel_forward(self, vtk_o, vtk_e):
         vtk_o.OnMouseWheelForward()
@@ -148,7 +156,18 @@ class SyncSliceViewers:
         vtk_o.InvokeEvent('InteractionEvent')
 
     def _observer_ipw(self, slice_viewer):
-        self.sync_ipws(slice_viewer)
+        """This is called whenever the user does ANYTHING with the
+        IPW.
+        """
+        cc = self.sync_ipws(slice_viewer)
+        [sv.render() for sv in cc]
+
+    def _observer_window_level(self, slice_viewer):
+        """This is called whenever the window/level is changed.  We
+        don't have to render, because the SetWindowLevel() call does
+        that already.
+        """
+        self.sync_window_level(slice_viewer)
 
     def remove_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
@@ -156,12 +175,17 @@ class SyncSliceViewers:
             # hmmm, this will remove other InteractionEvent observers too.
             istyle.RemoveObserver('InteractionEvent')
             istyle.RemoveObserver('MouseWheelForwardEvent')
+            istyle.RemoveObserver('MouseWheelBackwardEvent')
             slice_viewer.ipw1.RemoveObserver('InteractionEvent')
+            slice_viewer.ipw1.RemoveObserver('WindowLevelEvent')
             idx = self.slice_viewers.index(slice_viewer)
             del self.slice_viewers[idx]
 
     def sync_cameras(self, sv, dest_svs=None):
         """Sync all cameras to that of sv.
+
+        Returns a list of changed SVs (so that you know which ones to
+        render).
         """
         cam = sv.renderer.GetActiveCamera()
         pos = cam.GetPosition()
@@ -171,6 +195,7 @@ class SyncSliceViewers:
         if dest_svs is None:
             dest_svs = self.slice_viewers
 
+        changed_svs = []
         for other_sv in dest_svs:
             if not other_sv is sv:
                 other_ren = other_sv.renderer
@@ -180,10 +205,15 @@ class SyncSliceViewers:
                 other_cam.SetViewUp(vu)
                 other_ren.UpdateLightsGeometryToFollowCamera()
                 other_ren.ResetCameraClippingRange()
-                other_sv.render()
+                changed_svs.append(other_sv)
+
+        return changed_svs
 
     def sync_ipws(self, sv, dest_svs=None):
-        """
+        """Sync all slice positions to that of sv.
+
+        Returns a list of cahnged SVs so that you know on which to
+        call render.
         """
 
         o,p1,p2 = sv.ipw1.GetOrigin(), \
@@ -192,6 +222,7 @@ class SyncSliceViewers:
         if dest_svs is None:
             dest_svs = self.slice_viewers
 
+        changed_svs = []
         for other_sv in dest_svs:
             if other_sv is not sv:
                 other_ipw = other_sv.ipw1
@@ -204,15 +235,52 @@ class SyncSliceViewers:
                     other_ipw.SetPoint1(p1)
                     other_ipw.SetPoint2(p2)
                     other_ipw.UpdatePlacement()
-                    other_sv.render()
+                    changed_svs.append(other_sv)
+
+        return changed_svs
+
+    def sync_window_level(self, sv, dest_svs=None):
+        """Sync all window level settings with that of SV.
+
+        Returns list of changed SVs: due to the SetWindowLevel call,
+        these have already been rendered!
+        """
+
+        w,l = sv.ipw1.GetWindow(), sv.ipw1.GetLevel()
+
+        if dest_svs is None:
+            dest_svs = self.slice_viewers
+
+        changed_svs = []
+        for other_sv in dest_svs:
+            if other_sv is not sv:
+                other_ipw = other_sv.ipw1
+
+                if w != other_ipw.GetWindow() or \
+                        l != other_ipw.GetLevel():
+                            other_ipw.SetWindowLevel(w,l,0)
+                            changed_svs.append(other_sv)
+
+
+        return changed_svs
+
+                
 
     def sync_all(self, sv, dest_svs=None):
         """Convenience function that performs all syncing possible of
-        dest_svs to sv.
+        dest_svs to sv.  It also take care of making only the
+        necessary render calls.
         """
 
-        self.sync_cameras(sv, dest_svs)
-        self.sync_ipws(sv, dest_svs)
+        c1 = set(self.sync_cameras(sv, dest_svs))
+        c2 = set(self.sync_ipws(sv, dest_svs))
+        c3 = set(self.sync_window_level(sv, dest_svs))
+
+        # we only need to call render on SVs that are in c1 or c2, but
+        # NOT in c3, because WindowLevel syncing already does a
+        # render.  Use set operations for this: 
+        c4 = (c1 | c2) - c3
+        [sv.render() for svn in c4]
 
 class CMSliceViewer:
     """Simple class for enabling 1 or 3 ortho slices in a 3D scene.
@@ -245,6 +313,7 @@ class CMSliceViewer:
         return self.ipw1.GetInput()
 
     def render(self):
+        print random.random()
         self.rwi.GetRenderWindow().Render()
 
     def reset_camera(self):
@@ -350,6 +419,11 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         if idx == 0:
             self._data1_slice_viewer.set_input(input_stream)
+
+            if input_stream is None:
+                # we're done disconnecting, no syncing necessary
+                return
+
             if not self._data2_slice_viewer.get_input():
                 self._data1_slice_viewer.reset_camera()
                 self._data1_slice_viewer.render()
@@ -363,6 +437,11 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         if idx == 1:
             self._data2_slice_viewer.set_input(input_stream)
+
+            if input_stream is None:
+                # done here, we can go now.
+                return
+
             if not self._data1_slice_viewer.get_input():
                 self._data2_slice_viewer.reset_camera()
                 self._data2_slice_viewer.render()

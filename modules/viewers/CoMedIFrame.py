@@ -17,6 +17,12 @@ if wx.Platform == "__WXGTK__":
 else:
     import wx.aui
 
+# using Andrea Gavana's latest Python AUI:
+#from external import aui
+#wx.aui = aui
+# this works fine on Windows.  Have not been able to test on Linux
+# whilst in Magdeburg.
+
 # one could have loaded a wxGlade created resource like this:
 #from resources.python import DICOMBrowserPanels
 #reload(DICOMBrowserPanels)
