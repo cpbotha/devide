@@ -104,10 +104,16 @@ class SyncSliceViewers:
     def __init__(self):
         # store all slice viewer instances that are being synced
         self.slice_viewers = []
+        self.observer_tags = {}
 
     def add_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
             return
+
+        # we'll use this to store all observer tags for this
+        # slice_viewer
+        t = self.observer_tags[slice_viewer] = {}
+
 
         istyle = slice_viewer.rwi.GetInteractorStyle()
 
@@ -115,21 +121,27 @@ class SyncSliceViewers:
         # the interactorstyle does NOT invoke an InteractionEvent at
         # mousewheel, so we make sure it does in our workaround
         # observers.
-        istyle.AddObserver('MouseWheelForwardEvent',
+        t['istyle MouseWheelForwardEvent'] = \
+                istyle.AddObserver('MouseWheelForwardEvent',
                 self._observer_mousewheel_forward)
-        istyle.AddObserver('MouseWheelBackwardEvent',
+
+        t['istyle MouseWheelBackwardEvent'] = \
+                istyle.AddObserver('MouseWheelBackwardEvent',
                 self._observer_mousewheel_backward)
 
         # this one only gets called for camera interaction (of course)
-        istyle.AddObserver('InteractionEvent', 
+        t['istyle InteractionEvent'] = \
+                istyle.AddObserver('InteractionEvent',
                 lambda o,e: self._observer_camera(slice_viewer))
 
         # this gets call for all interaction with the slice
         # (cursoring, slice pushing, perhaps WL)
-        slice_viewer.ipw1.AddObserver('InteractionEvent',
+        t['ipw1 InteractionEvent'] = \
+                slice_viewer.ipw1.AddObserver('InteractionEvent',
                 lambda o,e: self._observer_ipw(slice_viewer))
 
-        slice_viewer.ipw1.AddObserver('WindowLevelEvent',
+        t['ipw1 WindowLevelEvent'] = \
+                slice_viewer.ipw1.AddObserver('WindowLevelEvent',
                 lambda o,e: self._observer_window_level(slice_viewer))
 
         self.slice_viewers.append(slice_viewer)
@@ -171,13 +183,25 @@ class SyncSliceViewers:
 
     def remove_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
+
+            # first remove all observers that we might have added
+            t = self.observer_tags[slice_viewer]
             istyle = slice_viewer.rwi.GetInteractorStyle()
-            # hmmm, this will remove other InteractionEvent observers too.
-            istyle.RemoveObserver('InteractionEvent')
-            istyle.RemoveObserver('MouseWheelForwardEvent')
-            istyle.RemoveObserver('MouseWheelBackwardEvent')
-            slice_viewer.ipw1.RemoveObserver('InteractionEvent')
-            slice_viewer.ipw1.RemoveObserver('WindowLevelEvent')
+            istyle.RemoveObserver(
+                    t['istyle InteractionEvent'])
+            istyle.RemoveObserver(
+                    t['istyle MouseWheelForwardEvent'])
+            istyle.RemoveObserver(
+                    t['istyle MouseWheelBackwardEvent'])
+            slice_viewer.ipw1.RemoveObserver(
+                    t['ipw1 InteractionEvent'])
+            slice_viewer.ipw1.RemoveObserver(
+                    t['ipw1 WindowLevelEvent'])
+
+            # then delete our record of these observer tags
+            del self.observer_tags[slice_viewer]
+
+            # then delete our record of the slice_viewer altogether
             idx = self.slice_viewers.index(slice_viewer)
             del self.slice_viewers[idx]
 
