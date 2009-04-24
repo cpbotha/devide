@@ -317,6 +317,11 @@ class CMSliceViewer:
         istyle = vtk.vtkInteractorStyleTrackballCamera()
         rwi.SetInteractorStyle(istyle)
 
+        # we unbind the existing mousewheel handler so it doesn't
+        # interfere
+        rwi.Unbind(wx.EVT_MOUSEWHEEL)
+        rwi.Bind(wx.EVT_MOUSEWHEEL, self._handler_mousewheel)
+
         self.ipw1 = vtk.vtkImagePlaneWidget()
         self.ipw1.SetInteractor(rwi)
 
@@ -335,6 +340,37 @@ class CMSliceViewer:
 
     def get_input(self):
         return self.ipw1.GetInput()
+
+    def _handler_mousewheel(self, event):
+        # event.GetWheelRotation() is + or - 120 depending on
+        # direction of turning.
+        if event.ControlDown():
+            delta = 10
+        elif event.ShiftDown():
+            delta = 1
+        else:
+            # if user is NOT doing shift / control, we pass on to the
+            # default handling which will give control to the VTK
+            # mousewheel handlers.
+            self.rwi.OnMouseWheel(event)
+            return
+            
+        if event.GetWheelRotation() > 0:
+            self._ipw1_delta_slice(+delta)
+        else:
+            self._ipw1_delta_slice(-delta)
+
+        self.render()
+        self.ipw1.InvokeEvent('InteractionEvent')
+
+    def _ipw1_delta_slice(self, delta):
+        """Move to the delta slices fw/bw, IF the IPW is currently
+        aligned with one of the axes.
+        """
+
+        if self.ipw1.GetPlaneOrientation() < 3:
+            ci = self.ipw1.GetSliceIndex()
+            self.ipw1.SetSliceIndex(ci + delta)
 
     def render(self):
         self.rwi.GetRenderWindow().Render()
