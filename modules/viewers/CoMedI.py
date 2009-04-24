@@ -215,6 +215,7 @@ class SyncSliceViewers:
         pos = cam.GetPosition()
         fp = cam.GetFocalPoint()
         vu = cam.GetViewUp()
+        ps = cam.GetParallelScale()
 
         if dest_svs is None:
             dest_svs = self.slice_viewers
@@ -227,6 +228,9 @@ class SyncSliceViewers:
                 other_cam.SetPosition(pos)
                 other_cam.SetFocalPoint(fp)
                 other_cam.SetViewUp(vu)
+                # you need this too, else the parallel mode does not
+                # synchronise.
+                other_cam.SetParallelScale(ps)
                 other_ren.UpdateLightsGeometryToFollowCamera()
                 other_ren.ResetCameraClippingRange()
                 changed_svs.append(other_sv)
@@ -341,6 +345,14 @@ class CMSliceViewer:
     def get_input(self):
         return self.ipw1.GetInput()
 
+    def set_perspective(self):
+        cam = self.renderer.GetActiveCamera()
+        cam.ParallelProjectionOff()
+
+    def set_parallel(self):
+        cam = self.renderer.GetActiveCamera()
+        cam.ParallelProjectionOn()
+
     def _handler_mousewheel(self, event):
         # event.GetWheelRotation() is + or - 120 depending on
         # direction of turning.
@@ -426,7 +438,7 @@ class CMSliceViewer:
             self.dv_orientation_widget.set_input(input)
 
 
-
+###########################################################################
 class CoMedI(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         """Standard constructor.  All DeVIDE modules have these, we do
@@ -451,14 +463,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # change the title to something more spectacular
         self._view_frame.SetTitle('CoMedI')
 
+
         self._setup_vis()
 
 
         # hook up all event handlers
         self._bind_events()
-
-        # anything you stuff into self._config will be saved
-        self._config.my_string = 'la la'
 
         # make our window appear (this is a viewer after all)
         self.view()
@@ -466,10 +476,14 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # views. 
         self.view_initialised = True
 
+        # this will cause the correct set_cam_* call to be made
+        self._config.cam_parallel = False
+
         # apply config information to underlying logic
         self.sync_module_logic_with_config()
         # then bring it all the way up again to the view
         self.sync_module_view_with_logic()
+
 
     def close(self):
         """Clean-up method called on all DeVIDE modules when they are
@@ -494,8 +508,28 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # generate output data.
         return ()
 
+    def _handler_cam_parallel(self, event):
+        self.set_cam_parallel()
+
+    def _handler_cam_perspective(self, event):
+        self.set_cam_perspective()
+
     def _handler_introspect(self, e):
         self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
+
+    def set_cam_perspective(self):
+        for sv in self._slice_viewers:
+            sv.set_perspective()
+            sv.render()
+
+        self._config.cam_parallel = False
+
+    def set_cam_parallel(self):
+        for sv in self._slice_viewers:
+            sv.set_parallel()
+            sv.render()
+
+        self._config.cam_parallel = True
 
     def set_input(self, idx, input_stream):
         # this gets called right before you get executed.  take the
@@ -554,7 +588,14 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         pass
 
     def config_to_view(self):
-        pass
+        if self._config.cam_parallel:
+            self.set_cam_parallel()
+            # also make sure this is reflected in the menu
+            self._view_frame.set_cam_parallel()
+        else:
+            self.set_cam_perspective()
+            # also make sure this is reflected in the menu
+            self._view_frame.set_cam_perspective()
 
     def view_to_config(self):
         pass
@@ -574,6 +615,13 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         """Bind wx events to Python callable object event handlers.
         """
         vf = self._view_frame
+
+        vf.Bind(wx.EVT_MENU, self._handler_cam_perspective,
+                id = vf.id_camera_perspective)
+        vf.Bind(wx.EVT_MENU, self._handler_cam_parallel,
+                id = vf.id_camera_parallel)
+
+
         vf.Bind(wx.EVT_MENU, self._handler_introspect,
                 id = vf.id_adv_introspect)
 
@@ -596,15 +644,16 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 self._view_frame.rwi_pane_data2m.rwi,
                 self._view_frame.rwi_pane_data2m.renderer)
 
+        self._slice_viewers = [ \
+                self._data1_slice_viewer,
+                self._data2_slice_viewer,
+                self._data2m_slice_viewer]
+
         self._sync_slice_viewers = ssv = SyncSliceViewers()
-        ssv.add_slice_viewer(self._data1_slice_viewer)
-        ssv.add_slice_viewer(self._data2_slice_viewer)
-        ssv.add_slice_viewer(self._data2m_slice_viewer)
-        
-              
+        for sv in self._slice_viewers:
+            ssv.add_slice_viewer(sv)
 
     def _close_vis(self):
-        self._data1_slice_viewer.close()
-        self._data2_slice_viewer.close()
-        self._data2m_slice_viewer.close()
+        for sv in self._slice_viewers:
+            sv.close()
 

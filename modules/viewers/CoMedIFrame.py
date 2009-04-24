@@ -60,7 +60,31 @@ class CoMedIFrame(wx.Frame):
         self.menubar.Append(file_menu, "&File")
        
 
+
+
+
+        ###################################################################
+        camera_menu = wx.Menu()
+
+        self.id_camera_perspective = wx.NewId()
+        camera_menu.Append(self.id_camera_perspective, "&Perspective",
+                "Perspective projection mode", wx.ITEM_RADIO)
+
+        self.id_camera_parallel = wx.NewId()
+        camera_menu.Append(self.id_camera_parallel, "Pa&rallel",
+                "Parallel projection mode", wx.ITEM_RADIO)
+
+        camera_menu.AppendSeparator()
+
+        camera_xyzp_id = wx.NewId()
+        camera_menu.Append(camera_xyzp_id, "View XY from Z+",
+                "View XY plane face-on from Z+", wx.ITEM_NORMAL)
+
+        self.menubar.Append(camera_menu, "&Camera")
+
+        ###################################################################
         views_menu = wx.Menu()
+
         views_default_id = wx.NewId()
         views_menu.Append(views_default_id, "&Default\tCtrl-0",
                          "Activate default view layout.", wx.ITEM_NORMAL)
@@ -269,6 +293,18 @@ class CoMedIFrame(wx.Frame):
 
         for rwi in self.get_rwis():
             rwi.Render()
+
+    def set_cam_parallel(self):
+        """Set check next to "parallel" menu item.
+        """
+        mi = self.menubar.FindItemById(self.id_camera_parallel)
+        mi.Check(True)
+
+    def set_cam_perspective(self):
+        """Set check next to "perspective" menu item.
+        """
+        mi = self.menubar.FindItemById(self.id_camera_perspective)
+        mi.Check(True)
        
     def _handler_default_view(self, event):
         """Event handler for when the user selects View | Default from
