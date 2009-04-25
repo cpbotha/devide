@@ -440,8 +440,54 @@ class CMSliceViewer:
             self.renderer.AddViewProp(self.outline_actor)
             self.dv_orientation_widget.set_input(input)
 
-
 ###########################################################################
+class Transformation:
+    """Class to represent the current transformation from data2 to
+    data2m.
+    """
+
+    def set_input(self, input_data):
+        raise NotImplementedError
+
+    def get_output(self):
+        raise NotImplementedError
+
+    def transform(self):
+        """After calling this method, the output will be available and
+        ready.
+        """
+        raise NotImplementedError
+
+class LandmarkTransformation(Transformation):
+    """Class representing simple landmark-transform between two sets
+    of points.
+    """
+    def __init__(self):
+        # rememeber, this turns out to be the transform itself
+        self._landmark = vtk.vtkLandmarkTransform()
+        # and this guy is going to do the work
+        self._trfm = vtk.vtkImageReslice()
+
+    def set_input(self, input_data):
+        self._trfm.SetInput(input_data)
+
+    def get_output(self, output_data):
+        return self._trfm.GetOutput()
+
+    def transform(self):
+        self._landmark.Update()
+        # reslice transform transforms the sampling grid. 
+        self._trfm.SetResliceTransform(self._landmark.GetInverse())
+
+    def set_source_landmarks(self, source_landmarks):
+        """This should be an iterable with 3-element tuples or lists
+        representing the source landmarks.
+        """
+        source_points = vtk.vtkPoints()
+
+    def set_target_landmarks(self, target_landmarks):
+        target_points = vtk.vtkPoints()
+
 class CoMedI(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         """Standard constructor.  All DeVIDE modules have these, we do
