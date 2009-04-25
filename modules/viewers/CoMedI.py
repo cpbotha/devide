@@ -25,6 +25,7 @@ import traceback
 import vtk
 import wx
 
+###########################################################################
 class DVOrientationWidget:
     """Convenience class for embedding orientation widget in any
     renderwindowinteractor.  If the data has DeVIDE style orientation
@@ -93,6 +94,7 @@ class DVOrientationWidget:
         aca.SetZMinusFaceText(labels[4])
         aca.SetZPlusFaceText(labels[5])
 
+###########################################################################
 class SyncSliceViewers:
     """Class to link a number of CMSliceViewer instances w.r.t.
     camera.
@@ -310,6 +312,7 @@ class SyncSliceViewers:
         c4 = (c1 | c2) - c3
         [sv.render() for svn in c4]
 
+###########################################################################
 class CMSliceViewer:
     """Simple class for enabling 1 or 3 ortho slices in a 3D scene.
     """
@@ -508,28 +511,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # generate output data.
         return ()
 
-    def _handler_cam_parallel(self, event):
-        self.set_cam_parallel()
 
-    def _handler_cam_perspective(self, event):
-        self.set_cam_perspective()
-
-    def _handler_introspect(self, e):
-        self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
-
-    def set_cam_perspective(self):
-        for sv in self._slice_viewers:
-            sv.set_perspective()
-            sv.render()
-
-        self._config.cam_parallel = False
-
-    def set_cam_parallel(self):
-        for sv in self._slice_viewers:
-            sv.set_parallel()
-            sv.render()
-
-        self._config.cam_parallel = True
 
     def set_input(self, idx, input_stream):
         # this gets called right before you get executed.  take the
@@ -621,15 +603,48 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         vf.Bind(wx.EVT_MENU, self._handler_cam_parallel,
                 id = vf.id_camera_parallel)
 
+        vf.Bind(wx.EVT_MENU, self._handler_cam_xyzp,
+                id = vf.id_camera_xyzp)
+
 
         vf.Bind(wx.EVT_MENU, self._handler_introspect,
                 id = vf.id_adv_introspect)
 
+    def _handler_cam_parallel(self, event):
+        self.set_cam_parallel()
+
+    def _handler_cam_perspective(self, event):
+        self.set_cam_perspective()
+
+    def _handler_cam_xyzp(self, event):
+        for sv in self._slice_viewers:
+            sv.reset_to_default_view(2)
+
+    def _handler_introspect(self, e):
+        self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
+
+
+        
     def render_all(self):
         """Method that calls Render() on the embedded RenderWindow.
         Use this after having made changes to the scene.
         """
         self._view_frame.render_all()
+
+    def set_cam_perspective(self):
+        for sv in self._slice_viewers:
+            sv.set_perspective()
+            sv.render()
+
+        self._config.cam_parallel = False
+
+    def set_cam_parallel(self):
+        for sv in self._slice_viewers:
+            sv.set_parallel()
+            sv.render()
+
+        self._config.cam_parallel = True    
+
 
     def _setup_vis(self):
         self._data1_slice_viewer = CMSliceViewer(

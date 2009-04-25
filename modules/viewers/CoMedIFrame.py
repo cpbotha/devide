@@ -76,8 +76,8 @@ class CoMedIFrame(wx.Frame):
 
         camera_menu.AppendSeparator()
 
-        camera_xyzp_id = wx.NewId()
-        camera_menu.Append(camera_xyzp_id, "View XY from Z+",
+        self.id_camera_xyzp = wx.NewId()
+        camera_menu.Append(self.id_camera_xyzp, "View XY from Z+",
                 "View XY plane face-on from Z+", wx.ITEM_NORMAL)
 
         self.menubar.Append(camera_menu, "&Camera")
