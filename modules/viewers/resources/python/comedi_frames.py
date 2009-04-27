@@ -15,12 +15,16 @@ class CoMedIControlsFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.main_panel = wx.Panel(self, -1)
-        self.notebook = wx.Notebook(self.main_panel, -1, style=0)
+        self.comparison_mode_notebook = wx.Notebook(self.main_panel, -1, style=0)
+        self.match_mode_notebook = wx.Notebook(self.main_panel, -1, style=0)
+        self.sizer_7_staticbox = wx.StaticBox(self.main_panel, -1, "Match Mode")
+        self.sizer_6_staticbox = wx.StaticBox(self.main_panel, -1, "Comparison Mode")
         self.sizer_4_staticbox = wx.StaticBox(self.main_panel, -1, "General")
-        self.sync_checkbox = wx.CheckBox(self.main_panel, -1, "Synchronise Views")
         self.label_1 = wx.StaticText(self.main_panel, -1, "Current 3D cursor")
         self.cursor_text = wx.TextCtrl(self.main_panel, -1, "")
-        self.notebook_pane_ssl = wx.Panel(self.notebook, -1)
+        self.notebook_pane_ssl = wx.Panel(self.match_mode_notebook, -1)
+        self.notebook_1_pane_1 = wx.Panel(self.comparison_mode_notebook, -1)
+        self.notebook_1_pane_2 = wx.Panel(self.comparison_mode_notebook, -1)
 
         self.__set_properties()
         self.__do_layout()
@@ -29,7 +33,6 @@ class CoMedIControlsFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: CoMedIControlsFrame.__set_properties
         self.SetTitle("frame_1")
-        self.sync_checkbox.SetValue(1)
         # end wxGlade
 
     def __do_layout(self):
@@ -37,15 +40,21 @@ class CoMedIControlsFrame(wx.Frame):
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
         sizer_3 = wx.BoxSizer(wx.VERTICAL)
+        sizer_6 = wx.StaticBoxSizer(self.sizer_6_staticbox, wx.VERTICAL)
+        sizer_7 = wx.StaticBoxSizer(self.sizer_7_staticbox, wx.VERTICAL)
         sizer_4 = wx.StaticBoxSizer(self.sizer_4_staticbox, wx.VERTICAL)
         sizer_5 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_4.Add(self.sync_checkbox, 0, wx.TOP|wx.BOTTOM, 7)
         sizer_5.Add(self.label_1, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 4)
         sizer_5.Add(self.cursor_text, 1, wx.ALIGN_CENTER_VERTICAL, 0)
         sizer_4.Add(sizer_5, 0, wx.BOTTOM|wx.EXPAND, 7)
         sizer_3.Add(sizer_4, 0, wx.EXPAND, 0)
-        self.notebook.AddPage(self.notebook_pane_ssl, "Single Structure Landmarks")
-        sizer_3.Add(self.notebook, 1, wx.EXPAND, 0)
+        self.match_mode_notebook.AddPage(self.notebook_pane_ssl, "Single Structure Landmarks")
+        sizer_7.Add(self.match_mode_notebook, 1, wx.EXPAND, 0)
+        sizer_3.Add(sizer_7, 1, wx.EXPAND, 0)
+        self.comparison_mode_notebook.AddPage(self.notebook_1_pane_1, "Data 2 Matched")
+        self.comparison_mode_notebook.AddPage(self.notebook_1_pane_2, "Checkerboard")
+        sizer_6.Add(self.comparison_mode_notebook, 1, wx.EXPAND, 0)
+        sizer_3.Add(sizer_6, 1, wx.EXPAND, 0)
         sizer_2.Add(sizer_3, 1, wx.ALL|wx.EXPAND, 7)
         self.main_panel.SetSizer(sizer_2)
         sizer_1.Add(self.main_panel, 1, wx.EXPAND, 0)

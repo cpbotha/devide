@@ -327,7 +327,7 @@ class SyncSliceViewers:
         # NOT in c3, because WindowLevel syncing already does a
         # render.  Use set operations for this: 
         c4 = (c1 | c2) - c3
-        [sv.render() for svn in c4]
+        [isv.render() for isv in c4]
 
 ###########################################################################
 class CMSliceViewer:
@@ -745,9 +745,8 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         vf.Bind(wx.EVT_MENU, self._handler_introspect,
                 id = vf.id_adv_introspect)
 
-
-        vf.pane_controls.window.sync_checkbox.Bind(
-                wx.EVT_CHECKBOX, self._handler_sync_checkbox)
+        vf.Bind(wx.EVT_MENU, self._handler_synced,
+                id = vf.id_views_synchronised)
 
     def _handler_cam_parallel(self, event):
         self.set_cam_parallel()
@@ -762,8 +761,17 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def _handler_introspect(self, e):
         self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
 
-    def _handler_sync_checkbox(self, event):
-        print event.GetEventObject()
+    def _handler_synced(self, event):
+        #cb = event.GetEventObject()
+        if event.IsChecked():
+            if not self._sync_slice_viewers.sync:
+                self._sync_slice_viewers.sync = True
+                # now do the initial sync to data1
+                self._sync_slice_viewers.sync_all(
+                        self._data1_slice_viewer)
+
+        else:
+            self._sync_slice_viewers.sync = False
 
 
         
@@ -797,14 +805,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 self._view_frame.rwi_pane_data2.rwi,
                 self._view_frame.rwi_pane_data2.renderer)
 
-        self._data2m_slice_viewer = CMSliceViewer(
-                self._view_frame.rwi_pane_data2m.rwi,
-                self._view_frame.rwi_pane_data2m.renderer)
-
         self._slice_viewers = [ \
                 self._data1_slice_viewer,
-                self._data2_slice_viewer,
-                self._data2m_slice_viewer]
+                self._data2_slice_viewer]
 
         self._sync_slice_viewers = ssv = SyncSliceViewers()
         for sv in self._slice_viewers:

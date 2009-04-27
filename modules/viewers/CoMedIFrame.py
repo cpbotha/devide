@@ -83,6 +83,13 @@ class CoMedIFrame(wx.Frame):
         ###################################################################
         views_menu = wx.Menu()
 
+        self.id_views_synchronised = wx.NewId()
+        mi = views_menu.Append(self.id_views_synchronised, "&Synchronised",
+                "Toggle view synchronisation", wx.ITEM_CHECK)
+        mi.Check(True)
+
+        views_menu.AppendSeparator()
+
         views_default_id = wx.NewId()
         views_menu.Append(views_default_id, "&Default\tCtrl-0",
                          "Activate default view layout.", wx.ITEM_NORMAL)
@@ -111,14 +118,7 @@ class CoMedIFrame(wx.Frame):
         self.pane_controls = self._create_controls_pane()
         self._mgr.AddPane(self.pane_controls.window, wx.aui.AuiPaneInfo().
                           Name("controls").Caption("Controls").
-                          Left().Position(0).Layer(2).
-                          BestSize(wx.Size(400,400)).
-                          CloseButton(False).MaximizeButton(True))
-
-        self.rwi_pane_data2 = self._create_rwi_pane()
-        self._mgr.AddPane(self.rwi_pane_data2.window, wx.aui.AuiPaneInfo().
-                          Name("data2 rwi").Caption("Data 2").
-                          Left().Position(1).Layer(2).
+                          Left().Layer(2).
                           BestSize(wx.Size(400,400)).
                           CloseButton(False).MaximizeButton(True))
 
@@ -129,10 +129,9 @@ class CoMedIFrame(wx.Frame):
                           BestSize(wx.Size(400,400)).
                           CloseButton(False).MaximizeButton(True))
 
-
-        self.rwi_pane_data2m = self._create_rwi_pane()
-        self._mgr.AddPane(self.rwi_pane_data2m.window, wx.aui.AuiPaneInfo().
-                          Name("data2m rwi").Caption("Data 2 Matched").
+        self.rwi_pane_data2 = self._create_rwi_pane()
+        self._mgr.AddPane(self.rwi_pane_data2.window, wx.aui.AuiPaneInfo().
+                          Name("data2 rwi").Caption("Data 2").
                           Left().Position(1).Layer(1).
                           BestSize(wx.Size(400,400)).
                           CloseButton(False).MaximizeButton(True))
@@ -208,7 +207,6 @@ class CoMedIFrame(wx.Frame):
         # but we can destroy fpf (everything has been reparented)
         f.Destroy()
 
-        panel.sync_checkbox = f.sync_checkbox
         panel.cursor_text = f.cursor_text
 
         cmi_pane = CMIPane()
@@ -291,7 +289,7 @@ class CoMedIFrame(wx.Frame):
     
     def get_rwi_panes(self):
         return [self.rwi_pane_data1, 
-                self.rwi_pane_data2, self.rwi_pane_data2m,
+                self.rwi_pane_data2, 
                 self.rwi_pane_compvis]
 
     def get_rwis(self):
