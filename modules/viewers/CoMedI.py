@@ -571,13 +571,13 @@ class SStructLandmarksMM(MatchMode):
         cp = comedi._view_frame.pane_controls.window
 
         cp.source_landmarks_olv.SetColumns([
-            ColumnDefn("Name", "left", 30, "name"),
+            ColumnDefn("Name", "left", 50, "name"),
             ColumnDefn("Position", "left", 200, "get_world_pos_str",
                 isSpaceFilling=True)])
         cp.source_landmarks_olv.SetObjects(self._source_landmarks)
 
         cp.target_landmarks_olv.SetColumns([
-            ColumnDefn("Name", "left", 30, "name"),
+            ColumnDefn("Name", "left", 50, "name"),
             ColumnDefn("Position", "left", 200, "get_world_pos_str",
                 isSpaceFilling=True)])
         cp.target_landmarks_olv.SetObjects(self._target_landmarks)
@@ -588,6 +588,22 @@ class SStructLandmarksMM(MatchMode):
         self._landmark = vtk.vtkLandmarkTransform()
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
+
+    def _add_source_landmark(self, world_pos, name=None):
+        cp = self._comedi._view_frame.pane_controls.window
+        if name is None:
+            name = str(len(self._source_landmarks))
+
+        self._source_landmarks.append(Landmark(name, world_pos))
+        cp.source_landmarks_olv.SetObjects(self._source_landmarks)
+
+    def _add_target_landmark(self, world_pos, name=None):
+        cp = self._comedi._view_frame.pane_controls.window
+        if name is None:
+            name = str(len(self._target_landmarks))
+
+        self._target_landmarks.append(Landmark(name, world_pos))
+        cp.target_landmarks_olv.SetObjects(self._target_landmarks)
 
     def _bind_events(self):
         cp = self._comedi._view_frame.pane_controls.window
@@ -600,14 +616,10 @@ class SStructLandmarksMM(MatchMode):
         v = cp.cursor_text.GetValue()
         if v.startswith('d1'):
             wp = self._comedi._data1_slice_viewer.current_world_pos
-            new_name = str(len(self._source_landmarks))
-            self._source_landmarks.append(Landmark(new_name, wp))
-            cp.source_landmarks_olv.SetObjects(self._source_landmarks)
+            self._add_source_landmark(wp)
         elif v.startswith('d2'):
             wp = self._comedi._data2_slice_viewer.current_world_pos
-            new_name = str(len(self._target_landmarks))
-            self._target_landmarks.append(Landmark(new_name, wp))
-            cp.target_landmarks_olv.SetObjects(self._target_landmarks)
+            self._add_target_landmark(wp)
 
     def set_input(self, input_data):
         self._trfm.SetInput(input_data)
