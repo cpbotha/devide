@@ -8,6 +8,12 @@
 # set to False for 3D viewer, True for 2D image viewer
 IMAGE_VIEWER = True
 
+MATCH_MODE_LANDMARK_SS = 1
+
+MATCH_MODE_STRINGS = [ \
+        'Single structure landmarks'
+        ]
+
 # import the frame, i.e. the wx window containing everything
 import CoMedIFrame
 # and do a reload, so that the GUI is also updated at reloads of this
@@ -107,6 +113,10 @@ class SyncSliceViewers:
         # store all slice viewer instances that are being synced
         self.slice_viewers = []
         self.observer_tags = {}
+        # if set to False, no syncing is done.
+        # user is responsible for doing the initial sync with sync_all
+        # after this variable is toggled from False to True
+        self.sync = True
 
     def add_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
@@ -158,6 +168,9 @@ class SyncSliceViewers:
 
         It's only called when the camera is moved.
         """
+        if not self.sync:
+            return
+
         cc = self.sync_cameras(sv)
         [sv.render() for sv in cc]
 
@@ -173,6 +186,9 @@ class SyncSliceViewers:
         """This is called whenever the user does ANYTHING with the
         IPW.
         """
+        if not self.sync:
+            return
+
         cc = self.sync_ipws(slice_viewer)
         [sv.render() for sv in cc]
 
@@ -181,6 +197,9 @@ class SyncSliceViewers:
         don't have to render, because the SetWindowLevel() call does
         that already.
         """
+        if not self.sync:
+            return
+
         self.sync_window_level(slice_viewer)
 
     def remove_slice_viewer(self, slice_viewer):
@@ -293,8 +312,6 @@ class SyncSliceViewers:
 
 
         return changed_svs
-
-                
 
     def sync_all(self, sv, dest_svs=None):
         """Convenience function that performs all syncing possible of
@@ -441,7 +458,7 @@ class CMSliceViewer:
             self.dv_orientation_widget.set_input(input)
 
 ###########################################################################
-class Transformation:
+class MatchMode:
     """Class to represent the current transformation from data2 to
     data2m.
     """
@@ -458,12 +475,26 @@ class Transformation:
         """
         raise NotImplementedError
 
-class LandmarkTransformation(Transformation):
+###########################################################################
+class SStructLandmarksMM(MatchMode):
     """Class representing simple landmark-transform between two sets
     of points.
     """
-    def __init__(self):
-        # rememeber, this turns out to be the transform itself
+    def __init__(self, comedi, config_dict):
+        """
+        @param comedi: Instance of comedi that will be used to update
+        GUI and views.
+        @param config_dict: This dict, part of the main module config,
+        will be kept up to date throughout.
+        """
+
+        self._comedi = comedi
+        self._cfg = config_dict
+
+        self._source_landmarks = []
+        self._target_landmarks = []
+
+        # remember, this turns out to be the transform itself
         self._landmark = vtk.vtkLandmarkTransform()
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
@@ -483,11 +514,43 @@ class LandmarkTransformation(Transformation):
         """This should be an iterable with 3-element tuples or lists
         representing the source landmarks.
         """
+        if source_landmarks == self._source_landmarks:
+            return
+
+        self._source_landmarks = source_landmarks
         source_points = vtk.vtkPoints()
+        source_points.SetNumberOfPoints(len(source_landmarks))
+        for idx,pt in enumerate(source_landmarks):
+            source_points.SetPoint(idx, pt)
+
+        self._landmark.SetSourceLandmarks(source_points)
 
     def set_target_landmarks(self, target_landmarks):
-        target_points = vtk.vtkPoints()
+        """Set the target landmarks matching the source landmarks.
 
+        @param target_landmarks iterable containing 3-element tuples
+        or list that represent the coordinates of the matching points.
+        """
+
+        if target_landmarks == self._target_landmarks:
+            return
+
+        self._target_landmarks = target_landmarks
+        target_points = vtk.vtkPoints()
+        target_points.SetNumberOfPoints(len(target_landmarks))
+        for idx,pt in enumerate(target_landmarks):
+            target_points.SetPoint(idx, pt)
+
+        self._landmark.SetTargetLandmarks(target_points)
+
+    def update_view(self):
+        """Based on the config dictionary, setup all relevant GUI and
+        3D view elements.
+        """
+        pass
+
+###########################################################################
+###########################################################################
 class CoMedI(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         """Standard constructor.  All DeVIDE modules have these, we do
@@ -527,6 +590,17 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         # this will cause the correct set_cam_* call to be made
         self._config.cam_parallel = False
+
+        # setup all match modes here.  even if the user switches
+        # modes, all metadata should be serialised, so that after a
+        # network reload, the user can switch and will get her old
+        # metadata back from a previous session.
+        self._config.match_mode = MATCH_MODE_LANDMARK_SS
+        self._config.sstructlandmarksmm_cfg = None
+
+        # this will hold a binding to the current match mode that will
+        # be initially setup by config_to_logic
+        self.match_mode = None
 
         # apply config information to underlying logic
         self.sync_module_logic_with_config()
@@ -609,11 +683,22 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # execution, this gets called.
         pass
 
+    # as per usual with viewer modules, we're keeping the config up to
+    # date throughout execution, so only the config_to_logic and
+    # config_to_view are implemented, so that things correctly restore
+    # after a deserialisation.
+
     def logic_to_config(self):
         pass
 
     def config_to_logic(self):
-        pass
+        # we need to be able to build up the correct MatchMode based
+        # on the config.
+        if self._config.match_mode == MATCH_MODE_LANDMARK_SS:
+            mm = self.match_mode
+            if mm.__class__.__name__ != SStructLandmarksMM.__name__:
+                self.match_mode = SStructLandmarksMM(
+                        self, self._config.sstructlandmarksmm_cfg)
 
     def config_to_view(self):
         if self._config.cam_parallel:
@@ -624,6 +709,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             self.set_cam_perspective()
             # also make sure this is reflected in the menu
             self._view_frame.set_cam_perspective()
+
+        # this will get the current match mode to update the GUI and
+        # all relevent renderers.
+        self.match_mode.update_view()
 
     def view_to_config(self):
         pass
@@ -656,6 +745,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         vf.Bind(wx.EVT_MENU, self._handler_introspect,
                 id = vf.id_adv_introspect)
 
+
+        vf.pane_controls.window.sync_checkbox.Bind(
+                wx.EVT_CHECKBOX, self._handler_sync_checkbox)
+
     def _handler_cam_parallel(self, event):
         self.set_cam_parallel()
 
@@ -668,6 +761,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
     def _handler_introspect(self, e):
         self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
+
+    def _handler_sync_checkbox(self, event):
+        print event.GetEventObject()
 
 
         

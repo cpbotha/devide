@@ -23,10 +23,8 @@ else:
 # this works fine on Windows.  Have not been able to test on Linux
 # whilst in Magdeburg.
 
-# one could have loaded a wxGlade created resource like this:
-#from resources.python import DICOMBrowserPanels
-#reload(DICOMBrowserPanels)
-
+import resources.python.comedi_frames
+reload(resources.python.comedi_frames)
 
 class CMIPane:
     """Class for anything that would like to populate the interface.
@@ -199,7 +197,19 @@ class CoMedIFrame(wx.Frame):
         return sl
 
     def _create_controls_pane(self):
-        panel = wx.Panel(self, -1)
+
+        f = resources.python.comedi_frames.CoMedIControlsFrame(self)
+
+        # reparent the panel to us
+        panel = f.main_panel
+        panel.Reparent(self)
+
+        # still need fpf.* to bind everything
+        # but we can destroy fpf (everything has been reparented)
+        f.Destroy()
+
+        panel.sync_checkbox = f.sync_checkbox
+        panel.cursor_text = f.cursor_text
 
         cmi_pane = CMIPane()
         cmi_pane.window = panel
