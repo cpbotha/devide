@@ -90,6 +90,18 @@ class CoMedIFrame(wx.Frame):
 
         views_menu.AppendSeparator()
 
+        self.id_views_slice2 = wx.NewId()
+        mi = views_menu.Append(self.id_views_slice2, "Slice &2",
+                "Toggle slice 2", wx.ITEM_CHECK)
+        mi.Check(False)
+
+        self.id_views_slice3 = wx.NewId()
+        mi = views_menu.Append(self.id_views_slice3, "Slice &3",
+                "Toggle slice 3", wx.ITEM_CHECK)
+        mi.Check(False)
+
+        views_menu.AppendSeparator()
+
         views_default_id = wx.NewId()
         views_menu.Append(views_default_id, "&Default\tCtrl-0",
                          "Activate default view layout.", wx.ITEM_NORMAL)

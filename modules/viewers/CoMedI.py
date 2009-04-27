@@ -148,13 +148,18 @@ class SyncSliceViewers:
 
         # this gets call for all interaction with the slice
         # (cursoring, slice pushing, perhaps WL)
-        t['ipw1 InteractionEvent'] = \
-                slice_viewer.ipw1.AddObserver('InteractionEvent',
-                lambda o,e: self._observer_ipw(slice_viewer))
+        for idx in range(3):
+            # note the i=idx in the lambda expression.  This is
+            # because that gets evaluated at define time, whilst the
+            # body of the lambda expression gets evaluated at
+            # call-time
+            t['ipw%d InteractionEvent' % (idx,)] = \
+                slice_viewer.ipws[idx].AddObserver('InteractionEvent',
+                lambda o,e,i=idx: self._observer_ipw(slice_viewer, i))
 
-        t['ipw1 WindowLevelEvent'] = \
-                slice_viewer.ipw1.AddObserver('WindowLevelEvent',
-                lambda o,e: self._observer_window_level(slice_viewer))
+            t['ipw%d WindowLevelEvent' % (idx,)] = \
+                slice_viewer.ipws[idx].AddObserver('WindowLevelEvent',
+                lambda o,e,i=idx: self._observer_window_level(slice_viewer,i))
 
         self.slice_viewers.append(slice_viewer)
 
@@ -182,17 +187,17 @@ class SyncSliceViewers:
         vtk_o.OnMouseWheelBackward()
         vtk_o.InvokeEvent('InteractionEvent')
 
-    def _observer_ipw(self, slice_viewer):
+    def _observer_ipw(self, slice_viewer, idx=0):
         """This is called whenever the user does ANYTHING with the
         IPW.
         """
         if not self.sync:
             return
 
-        cc = self.sync_ipws(slice_viewer)
+        cc = self.sync_ipws(slice_viewer, idx)
         [sv.render() for sv in cc]
 
-    def _observer_window_level(self, slice_viewer):
+    def _observer_window_level(self, slice_viewer, idx=0):
         """This is called whenever the window/level is changed.  We
         don't have to render, because the SetWindowLevel() call does
         that already.
@@ -200,7 +205,7 @@ class SyncSliceViewers:
         if not self.sync:
             return
 
-        self.sync_window_level(slice_viewer)
+        self.sync_window_level(slice_viewer, idx)
 
     def remove_slice_viewer(self, slice_viewer):
         if slice_viewer in self.slice_viewers:
@@ -214,10 +219,13 @@ class SyncSliceViewers:
                     t['istyle MouseWheelForwardEvent'])
             istyle.RemoveObserver(
                     t['istyle MouseWheelBackwardEvent'])
-            slice_viewer.ipw1.RemoveObserver(
-                    t['ipw1 InteractionEvent'])
-            slice_viewer.ipw1.RemoveObserver(
-                    t['ipw1 WindowLevelEvent'])
+
+            for idx in range(3):
+                ipw = slice_viewer.ipws[idx]
+                ipw.RemoveObserver(
+                    t['ipw%d InteractionEvent' % (idx,)])
+                ipw.RemoveObserver(
+                    t['ipw%d WindowLevelEvent' % (idx,)])
 
             # then delete our record of these observer tags
             del self.observer_tags[slice_viewer]
@@ -258,15 +266,16 @@ class SyncSliceViewers:
 
         return changed_svs
 
-    def sync_ipws(self, sv, dest_svs=None):
+    def sync_ipws(self, sv, idx=0, dest_svs=None):
         """Sync all slice positions to that of sv.
 
         Returns a list of cahnged SVs so that you know on which to
         call render.
         """
 
-        o,p1,p2 = sv.ipw1.GetOrigin(), \
-                sv.ipw1.GetPoint1(), sv.ipw1.GetPoint2()
+        ipw = sv.ipws[idx]
+        o,p1,p2 = ipw.GetOrigin(), \
+                ipw.GetPoint1(), ipw.GetPoint2()
 
         if dest_svs is None:
             dest_svs = self.slice_viewers
@@ -274,7 +283,7 @@ class SyncSliceViewers:
         changed_svs = []
         for other_sv in dest_svs:
             if other_sv is not sv:
-                other_ipw = other_sv.ipw1
+                other_ipw = other_sv.ipws[idx]
                 # we only synchronise slice position if it's actually
                 # changed.
                 if o != other_ipw.GetOrigin() or \
@@ -288,14 +297,15 @@ class SyncSliceViewers:
 
         return changed_svs
 
-    def sync_window_level(self, sv, dest_svs=None):
+    def sync_window_level(self, sv, idx=0, dest_svs=None):
         """Sync all window level settings with that of SV.
 
         Returns list of changed SVs: due to the SetWindowLevel call,
         these have already been rendered!
         """
 
-        w,l = sv.ipw1.GetWindow(), sv.ipw1.GetLevel()
+        ipw = sv.ipws[idx]
+        w,l = ipw.GetWindow(), ipw.GetLevel()
 
         if dest_svs is None:
             dest_svs = self.slice_viewers
@@ -303,7 +313,7 @@ class SyncSliceViewers:
         changed_svs = []
         for other_sv in dest_svs:
             if other_sv is not sv:
-                other_ipw = other_sv.ipw1
+                other_ipw = other_sv.ipws[idx]
 
                 if w != other_ipw.GetWindow() or \
                         l != other_ipw.GetLevel():
@@ -319,9 +329,10 @@ class SyncSliceViewers:
         necessary render calls.
         """
 
+        # FIXME: take into account all other slices too.
         c1 = set(self.sync_cameras(sv, dest_svs))
-        c2 = set(self.sync_ipws(sv, dest_svs))
-        c3 = set(self.sync_window_level(sv, dest_svs))
+        c2 = set(self.sync_ipws(sv, 0, dest_svs))
+        c3 = set(self.sync_window_level(sv, 0, dest_svs))
 
         # we only need to call render on SVs that are in c1 or c2, but
         # NOT in c3, because WindowLevel syncing already does a
@@ -346,14 +357,22 @@ class CMSliceViewer:
         rwi.Unbind(wx.EVT_MOUSEWHEEL)
         rwi.Bind(wx.EVT_MOUSEWHEEL, self._handler_mousewheel)
 
-        self.ipw1 = vtk.vtkImagePlaneWidget()
-        self.ipw1.SetInteractor(rwi)
+        self.ipws = [vtk.vtkImagePlaneWidget() for _ in range(3)]
+        for ipw in self.ipws:
+            ipw.SetInteractor(rwi)
+
+        # we only set the picker on the visible IPW, else the
+        # invisible IPWs block picking!
+        self.picker = vtk.vtkCellPicker()
+        self.picker.SetTolerance(0.005)
+        self.ipws[0].SetPicker(self.picker)
 
         self.outline_source = vtk.vtkOutlineCornerFilter()
         m = vtk.vtkPolyDataMapper()
         m.SetInput(self.outline_source.GetOutput())
         a = vtk.vtkActor()
         a.SetMapper(m)
+        a.PickableOff()
         self.outline_actor = a
 
         self.dv_orientation_widget = DVOrientationWidget(rwi)
@@ -362,8 +381,19 @@ class CMSliceViewer:
         self.set_input(None)
         self.dv_orientation_widget.close()
 
+    def activate_slice(self, idx):
+        if idx in [1,2]:
+            self.ipws[idx].SetEnabled(1)
+            self.ipws[idx].SetPicker(self.picker)
+
+
+    def deactivate_slice(self, idx):
+        if idx in [1,2]:
+            self.ipws[idx].SetEnabled(0)
+            self.ipws[idx].SetPicker(None)
+
     def get_input(self):
-        return self.ipw1.GetInput()
+        return self.ipws[0].GetInput()
 
     def set_perspective(self):
         cam = self.renderer.GetActiveCamera()
@@ -393,16 +423,17 @@ class CMSliceViewer:
             self._ipw1_delta_slice(-delta)
 
         self.render()
-        self.ipw1.InvokeEvent('InteractionEvent')
+        self.ipws[0].InvokeEvent('InteractionEvent')
 
     def _ipw1_delta_slice(self, delta):
         """Move to the delta slices fw/bw, IF the IPW is currently
         aligned with one of the axes.
         """
 
-        if self.ipw1.GetPlaneOrientation() < 3:
-            ci = self.ipw1.GetSliceIndex()
-            self.ipw1.SetSliceIndex(ci + delta)
+        ipw = self.ipws[0]
+        if ipw.GetPlaneOrientation() < 3:
+            ci = ipw.GetSliceIndex()
+            ipw.SetSliceIndex(ci + delta)
 
     def render(self):
         self.rwi.GetRenderWindow().Render()
@@ -438,23 +469,31 @@ class CMSliceViewer:
         
 
     def set_input(self, input):
-        if input == self.ipw1.GetInput():
+        ipw = self.ipws[0]
+        if input == ipw.GetInput():
             return
 
         if input is None:
             self.dv_orientation_widget.set_input(None)
-            self.ipw1.SetInput(None)
-            self.ipw1.Off()
+            for ipw in self.ipws:
+                ipw.SetInput(None)
+                ipw.Off()
+
             self.renderer.RemoveViewProp(self.outline_actor)
             self.outline_source.SetInput(None)
 
         else:
-            self.ipw1.SetInput(input)
-            self.ipw1.SetPlaneOrientation(2) # axial
-            self.ipw1.SetSliceIndex(0)
-            self.ipw1.On()
             self.outline_source.SetInput(input)
             self.renderer.AddViewProp(self.outline_actor)
+
+            orientations = [2, 0, 1]
+            active = [1, 0, 0]
+            for i, ipw in enumerate(self.ipws):
+                ipw.SetInput(input)
+                ipw.SetPlaneOrientation(orientations[i]) # axial
+                ipw.SetSliceIndex(0)
+                ipw.SetEnabled(active[i])
+
             self.dv_orientation_widget.set_input(input)
 
 ###########################################################################
@@ -748,6 +787,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         vf.Bind(wx.EVT_MENU, self._handler_synced,
                 id = vf.id_views_synchronised)
 
+        vf.Bind(wx.EVT_MENU, self._handler_slice2,
+                id = vf.id_views_slice2)
+
+        vf.Bind(wx.EVT_MENU, self._handler_slice3,
+                id = vf.id_views_slice3)
+
     def _handler_cam_parallel(self, event):
         self.set_cam_parallel()
 
@@ -761,6 +806,20 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def _handler_introspect(self, e):
         self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
 
+    def _handler_slice2(self, e):
+        for sv in self._slice_viewers:
+            if e.IsChecked():
+                sv.activate_slice(1)
+            else:
+                sv.deactivate_slice(1)
+
+    def _handler_slice3(self, e):
+        for sv in self._slice_viewers:
+            if e.IsChecked():
+                sv.activate_slice(2)
+            else:
+                sv.deactivate_slice(2)
+
     def _handler_synced(self, event):
         #cb = event.GetEventObject()
         if event.IsChecked():
@@ -772,6 +831,21 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         else:
             self._sync_slice_viewers.sync = False
+
+    def _observer_cursor(self, vtk_o, vtk_e, txt):
+        """
+        @param txt: Text identifier that will be prepended to the
+        cursor position update in the UI.
+        """
+        cd =  [0,0,0,0]
+        cdv = vtk_o.GetCursorData(cd)
+        if not cdv:
+            # we're not cursoring
+            return
+
+        c = tuple([int(i) for i in cd])
+        self._view_frame.pane_controls.window.cursor_text.SetValue(
+                '%s : %s = %d' % (txt, c[0:3], c[3]))
 
 
         
@@ -797,13 +871,25 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
 
     def _setup_vis(self):
+        # setup data1 slice viewer, instrument its slice viewers with
+        # observers so that the cursor information is output to the
+        # GUI
         self._data1_slice_viewer = CMSliceViewer(
                 self._view_frame.rwi_pane_data1.rwi,
                 self._view_frame.rwi_pane_data1.renderer)
+        for ipw in self._data1_slice_viewer.ipws:
+            ipw.AddObserver(
+                'InteractionEvent', 
+                lambda o,e: self._observer_cursor(o,e,'d1') )
 
+        # do the same for the data2 slice viewer
         self._data2_slice_viewer = CMSliceViewer(
                 self._view_frame.rwi_pane_data2.rwi,
                 self._view_frame.rwi_pane_data2.renderer)
+        for ipw in self._data2_slice_viewer.ipws:
+            ipw.AddObserver(
+                'InteractionEvent', 
+                lambda o,e: self._observer_cursor(o,e,'d2') )
 
         self._slice_viewers = [ \
                 self._data1_slice_viewer,
