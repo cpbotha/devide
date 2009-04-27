@@ -20,10 +20,12 @@ import CoMedIFrame
 # module.
 reload(CoMedIFrame)
 
+from external.ObjectListView import ColumnDefn
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
+import operator
 import os
 import random #temp testing
 import sys
@@ -377,6 +379,10 @@ class CMSliceViewer:
 
         self.dv_orientation_widget = DVOrientationWidget(rwi)
 
+        # this can be used by clients to store the current world
+        # position
+        self.current_world_pos = (0,0,0)
+
     def close(self):
         self.set_input(None)
         self.dv_orientation_widget.close()
@@ -394,6 +400,25 @@ class CMSliceViewer:
 
     def get_input(self):
         return self.ipws[0].GetInput()
+
+    def get_world_pos(self, image_pos):
+        """Given image coordinates, return the corresponding world
+        position.
+        """
+
+        idata = self.get_input()
+        if not idata:
+            return None
+
+        ispacing = idata.GetSpacing()
+        iorigin = idata.GetOrigin()
+        # calculate real coords
+        world = map(operator.add, iorigin,
+                    map(operator.mul, ispacing, image_pos[0:3]))
+
+        return world
+
+
 
     def set_perspective(self):
         cam = self.renderer.GetActiveCamera()
@@ -515,6 +540,14 @@ class MatchMode:
         raise NotImplementedError
 
 ###########################################################################
+class Landmark:
+    def __init__(self, name='', world_pos=(0,0,0)):
+        self.name = name 
+        self.world_pos = world_pos
+
+    def get_world_pos_str(self):
+        return '%.2f, %.2f, %.2f' % tuple(self.world_pos)
+
 class SStructLandmarksMM(MatchMode):
     """Class representing simple landmark-transform between two sets
     of points.
@@ -530,13 +563,51 @@ class SStructLandmarksMM(MatchMode):
         self._comedi = comedi
         self._cfg = config_dict
 
+        # both of these should be list of Landmark instances
         self._source_landmarks = []
         self._target_landmarks = []
+
+        # do the list
+        cp = comedi._view_frame.pane_controls.window
+
+        cp.source_landmarks_olv.SetColumns([
+            ColumnDefn("Name", "left", 30, "name"),
+            ColumnDefn("Position", "left", 200, "get_world_pos_str",
+                isSpaceFilling=True)])
+        cp.source_landmarks_olv.SetObjects(self._source_landmarks)
+
+        cp.target_landmarks_olv.SetColumns([
+            ColumnDefn("Name", "left", 30, "name"),
+            ColumnDefn("Position", "left", 200, "get_world_pos_str",
+                isSpaceFilling=True)])
+        cp.target_landmarks_olv.SetObjects(self._target_landmarks)
+
+        self._bind_events()
 
         # remember, this turns out to be the transform itself
         self._landmark = vtk.vtkLandmarkTransform()
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
+
+    def _bind_events(self):
+        cp = self._comedi._view_frame.pane_controls.window
+
+        # bind to the add button
+        cp.lm_add_button.Bind(wx.EVT_BUTTON, self._handler_add_button)
+
+    def _handler_add_button(self, e):
+        cp = self._comedi._view_frame.pane_controls.window
+        v = cp.cursor_text.GetValue()
+        if v.startswith('d1'):
+            wp = self._comedi._data1_slice_viewer.current_world_pos
+            new_name = str(len(self._source_landmarks))
+            self._source_landmarks.append(Landmark(new_name, wp))
+            cp.source_landmarks_olv.SetObjects(self._source_landmarks)
+        elif v.startswith('d2'):
+            wp = self._comedi._data2_slice_viewer.current_world_pos
+            new_name = str(len(self._target_landmarks))
+            self._target_landmarks.append(Landmark(new_name, wp))
+            cp.target_landmarks_olv.SetObjects(self._target_landmarks)
 
     def set_input(self, input_data):
         self._trfm.SetInput(input_data)
@@ -847,7 +918,14 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self._view_frame.pane_controls.window.cursor_text.SetValue(
                 '%s : %s = %d' % (txt, c[0:3], c[3]))
 
-
+        # also store the current cursor position in an ivar, we need
+        # it.  we probably need to replace this text check with
+        # something else...
+        w = self._data1_slice_viewer.get_world_pos(c)
+        if txt.startswith('d1'):
+            self._data1_slice_viewer.current_world_pos = w
+        elif txt.startswith('d2'):
+            self._data2_slice_viewer.current_world_pos = w
         
     def render_all(self):
         """Method that calls Render() on the embedded RenderWindow.
