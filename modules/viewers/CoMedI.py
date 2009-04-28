@@ -529,6 +529,12 @@ class MatchMode:
     registration.
     """
 
+    def __init__(self, comedi, config_dict):
+        raise NotImplementedError
+
+    def close(self):
+        raise NotImplementedError
+
     def set_input(self, input_data):
         raise NotImplementedError
 
@@ -621,6 +627,7 @@ class Landmark:
 
     name = property(get_name, set_name)
 
+###########################################################################
 class LandmarkList:
     """List of landmarks that also maintains a config dictionary.
     """
@@ -782,6 +789,16 @@ class SStructLandmarksMM(MatchMode):
         # bind to the add button
         cp.lm_add_button.Bind(wx.EVT_BUTTON, self._handler_add_button)
 
+
+        cp.source_landmarks_olv.Bind(
+                wx.EVT_LIST_ITEM_RIGHT_CLICK,
+                self._handler_solv_right_click)
+
+        cp.source_landmarks_olv.Bind(
+                wx.EVT_LIST_ITEM_RIGHT_CLICK,
+                self._handler_solv_right_click)
+
+
     def _handler_add_button(self, e):
         cp = self._comedi._view_frame.pane_controls.window
         v = cp.cursor_text.GetValue()
@@ -791,6 +808,12 @@ class SStructLandmarksMM(MatchMode):
         elif v.startswith('d2'):
             wp = self._comedi._data2_slice_viewer.current_world_pos
             self._add_target_landmark(wp)
+
+    # FIXME: continue here!
+    def _handler_solv_right_click(self, evt):
+        print evt.GetEventObject().GetSelectedObjects()
+
+
 
     def set_input(self, input_data):
         self._trfm.SetInput(input_data)
