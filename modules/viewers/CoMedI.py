@@ -558,11 +558,8 @@ class Landmark:
 
     def _create_actors(self):
 
-        b = self.ren.ComputeVisiblePropBounds()
-        # calculate XY-plane diagonal, take a 50th of that
-        d = math.hypot(b[1] - b[0], b[3] - b[2]) / 50.0
-
         # 1. create really small 3D cursor to place at relevant point
+        d = 2 # 2 mm dimension 
         cs = vtk.vtkCursor3D()
         cs.AllOff()
         cs.AxesOn()
@@ -688,15 +685,12 @@ class LandmarkList:
         """This can get called only for "name" column edits, nothing
         else.
         """
-        self.rowModel # should be the corresponding model
-        self.cellValue # this is the edited cell vallue
-
-        if self.cellValue == self.rowModel.name:
+        if evt.cellValue == evt.rowModel.name:
             # we don't care, name stays the same
             return
 
-        if len(self.cellValue) > 0 and \
-                self.cellValue not in self._landmark_dict:
+        if len(evt.cellValue) > 0 and \
+                evt.cellValue not in self._landmark_dict:
                     # unique value, go ahead and change
                     # our olv_setter will be called at the right
                     # moment
@@ -710,7 +704,9 @@ class LandmarkList:
         # delete the old binding from the dictionary
         del self._landmark_dict[lm_object.name]
         # change the name in the object
-        lm_object.name = new_name
+        # ARGH!  why does this setting clobber the property?!
+        #lm_object.name = new_name
+        lm_object.set_name(new_name)
         # insert it at its correct spot
         self._landmark_dict[new_name] = lm_object
         # update the config dict
