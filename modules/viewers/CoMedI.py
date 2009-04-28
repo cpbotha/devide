@@ -20,7 +20,7 @@ import CoMedIFrame
 # module.
 reload(CoMedIFrame)
 
-from external.ObjectListView import ColumnDefn
+from external.ObjectListView import ColumnDefn, EVT_CELL_EDIT_FINISHING
 import math
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
@@ -524,8 +524,9 @@ class CMSliceViewer:
 
 ###########################################################################
 class MatchMode:
-    """Class to represent the current transformation from data2 to
-    data2m.
+    """Plugin class that takes care of the Match Mode UI panel,
+    interaction for indicating matching structures, and the subsequent
+    registration.
     """
 
     def set_input(self, input_data):
@@ -623,6 +624,107 @@ class Landmark:
 
     name = property(get_name, set_name)
 
+class LandmarkList:
+    """List of landmarks that also maintains a config dictionary.
+    """
+
+    def __init__(self, config_dict, olv, ren):
+        """
+        @param config_list: list that we will fill with (name,
+        world_pos) tuples.
+        @param olv: ObjectListView that will be configured to handle
+        the UI to the list.
+        """
+
+        self._config_dict = config_dict
+        self._landmark_dict = {}
+        self._olv = olv
+        self._ren = ren
+
+        # there we go, sync internal state to passed config
+        for name,world_pos in config_dict.items():
+            self.add_landmark(world_pos, name)
+
+        olv.Bind(EVT_CELL_EDIT_FINISHING,
+                self._handler_olv_edit_finishing)
+
+        # if you don't set valueSetter, this thing overwrites my
+        # pretty property!!
+        olv.SetColumns([
+            ColumnDefn("Name", "left", 50, "name",
+            valueSetter=self.olv_setter),
+            ColumnDefn("Position", "left", 200, "get_world_pos_str",
+                isSpaceFilling=True, isEditable=False)])
+
+        olv.SetObjects(self.olv_landmark_list)
+
+    def add_landmark(self, world_pos, name=None):
+        if name is None:
+            name = str(len(self._landmark_dict))
+
+        lm = Landmark(name, world_pos, self._ren)
+        self._landmark_dict[lm.name] = lm
+        # set the config_dict.  cheap operation, so we do the whole
+        # thing every time.
+        self.update_config_dict()
+        # then update the olv
+        self._olv.SetObjects(self.olv_landmark_list)
+
+    def close(self):
+        [lm.close() for lm in self._landmark_dict.values()]
+
+    def _get_olv_landmark_list(self):
+        """Returns list of Landmark objects, sorted by name.  This is
+        given to the ObjectListView.
+        """
+        ld = self._landmark_dict
+        keys,values = ld.keys(),ld.values()
+        keys.sort()
+        return [ld[key] for key in keys]
+
+    olv_landmark_list = property(_get_olv_landmark_list)
+
+    def _handler_olv_edit_finishing(self, evt):
+        """This can get called only for "name" column edits, nothing
+        else.
+        """
+        self.rowModel # should be the corresponding model
+        self.cellValue # this is the edited cell vallue
+
+        if self.cellValue == self.rowModel.name:
+            # we don't care, name stays the same
+            return
+
+        if len(self.cellValue) > 0 and \
+                self.cellValue not in self._landmark_dict:
+                    # unique value, go ahead and change
+                    # our olv_setter will be called at the right
+                    # moment
+                    return
+
+        # else we veto this change
+        # message box?!
+        evt.Veto()
+
+    def olv_setter(self, lm_object, new_name):
+        # delete the old binding from the dictionary
+        del self._landmark_dict[lm_object.name]
+        # change the name in the object
+        lm_object.name = new_name
+        # insert it at its correct spot
+        self._landmark_dict[new_name] = lm_object
+        # update the config dict
+        self.update_config_dict()
+
+    def update_config_dict(self):
+        # re-init the whole thing; note that we don't re-assign, that
+        # would just bind to a new dictionary and not modify the
+        # passed one.
+        self._config_dict.clear()
+        for key,value in self._landmark_dict.items():
+            self._config_dict[key] = value.world_pos
+
+
 ###########################################################################
 class SStructLandmarksMM(MatchMode):
     """Class representing simple landmark-transform between two sets
@@ -635,32 +737,31 @@ class SStructLandmarksMM(MatchMode):
         @param config_dict: This dict, part of the main module config,
         will be kept up to date throughout.
         """
-
+        
         self._comedi = comedi
         self._cfg = config_dict
 
-        # both of these should be list of Landmark instances
-        self._source_landmarks = []
-        self._target_landmarks = []
+        # if we get an empty config dict, configure!
+        if 'source_landmarks' not in self._cfg:
+            self._cfg['source_landmarks'] = {}
 
         # do the list
         cp = comedi._view_frame.pane_controls.window
+        r1 = comedi._data1_slice_viewer.renderer
+        self._source_landmarks = \
+                LandmarkList(
+                        self._cfg['source_landmarks'], 
+                        cp.source_landmarks_olv, r1)
 
-        # if you don't set valueSetter, this thing overwrites my
-        # pretty property!!
-        cp.source_landmarks_olv.SetColumns([
-            ColumnDefn("Name", "left", 50, "name",
-            valueSetter="set_name"),
-            ColumnDefn("Position", "left", 200, "get_world_pos_str",
-                isSpaceFilling=True, isEditable=False)])
-        cp.source_landmarks_olv.SetObjects(self._source_landmarks)
+        if 'target_landmarks' not in self._cfg:
+            self._cfg['target_landmarks'] = {}
 
-        cp.target_landmarks_olv.SetColumns([
-            ColumnDefn("Name", "left", 50, "name",
-            valueSetter="set_name"),
-            ColumnDefn("Position", "left", 200, "get_world_pos_str",
-                isSpaceFilling=True, isEditable=False)])
-        cp.target_landmarks_olv.SetObjects(self._target_landmarks)
+
+        r2 = comedi._data2_slice_viewer.renderer
+        self._target_landmarks = \
+                LandmarkList(
+                        self._cfg['target_landmarks'],
+                        cp.target_landmarks_olv, r2)
 
         self._bind_events()
 
@@ -670,31 +771,14 @@ class SStructLandmarksMM(MatchMode):
         self._trfm = vtk.vtkImageReslice()
 
     def close(self):
-        # close all landmarks.
-        [lm.close() for lm in self._source_landmarks]
-        [lm.close() for lm in self._target_landmarks]
+        self._source_landmarks.close()
+        self._target_landmarks.close()
 
     def _add_source_landmark(self, world_pos, name=None):
-        cp = self._comedi._view_frame.pane_controls.window
-        if name is None:
-            name = str(len(self._source_landmarks))
-
-        self._source_landmarks.append(
-                Landmark(name, world_pos, 
-                    self._comedi._data1_slice_viewer.renderer))
-
-        cp.source_landmarks_olv.SetObjects(self._source_landmarks)
+        self._source_landmarks.add_landmark(world_pos)
 
     def _add_target_landmark(self, world_pos, name=None):
-        cp = self._comedi._view_frame.pane_controls.window
-        if name is None:
-            name = str(len(self._target_landmarks))
-
-        self._target_landmarks.append(
-                Landmark(name, world_pos,
-                    self._comedi._data2_slice_viewer.renderer))
-
-        cp.target_landmarks_olv.SetObjects(self._target_landmarks)
+        self._target_landmarks.add_landmark(world_pos)
 
     def _bind_events(self):
         cp = self._comedi._view_frame.pane_controls.window
@@ -809,7 +893,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # network reload, the user can switch and will get her old
         # metadata back from a previous session.
         self._config.match_mode = MATCH_MODE_LANDMARK_SS
-        self._config.sstructlandmarksmm_cfg = None
+        self._config.sstructlandmarksmm_cfg = {}
 
         # this will hold a binding to the current match mode that will
         # be initially setup by config_to_logic
@@ -911,9 +995,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # we need to be able to build up the correct MatchMode based
         # on the config.
         if self._config.match_mode == MATCH_MODE_LANDMARK_SS:
-            mm = self.match_mode
-            if mm.__class__.__name__ != SStructLandmarksMM.__name__:
-                self.match_mode = SStructLandmarksMM(
+            # we have to create a new one in anycase!  This gets
+            # called if we get a brand new config given to us, too
+            # much could have changed.
+            #mm = self.match_mode
+            #if mm.__class__.__name__ != SStructLandmarksMM.__name__:
+            self.match_mode = SStructLandmarksMM(
                         self, self._config.sstructlandmarksmm_cfg)
 
     def config_to_view(self):
