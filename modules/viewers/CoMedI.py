@@ -21,6 +21,7 @@ import CoMedIFrame
 reload(CoMedIFrame)
 
 from external.ObjectListView import ColumnDefn
+import math
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
@@ -541,13 +542,88 @@ class MatchMode:
 
 ###########################################################################
 class Landmark:
-    def __init__(self, name='', world_pos=(0,0,0)):
-        self.name = name 
-        self.world_pos = world_pos
+    def __init__(self, name, world_pos, ren):
+        # we'll use this to create new actors.
+        self.ren = ren
+
+        self._create_actors()
+
+        self.set_name(name)
+        self.set_world_pos(world_pos)
+       
+    def close(self):
+        self.ren.RemoveViewProp(self.c3da)
+        self.ren.RemoveViewProp(self.ca)
+
+    def _create_actors(self):
+
+        b = self.ren.ComputeVisiblePropBounds()
+        # calculate XY-plane diagonal, take a 50th of that
+        d = math.hypot(b[1] - b[0], b[3] - b[2]) / 50.0
+
+        # 1. create really small 3D cursor to place at relevant point
+        cs = vtk.vtkCursor3D()
+        cs.AllOff()
+        cs.AxesOn()
+        cs.SetModelBounds(-d, +d, -d, +d, -d, +d)
+        cs.SetFocalPoint(0,0,0)
+
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(cs.GetOutput())
+
+        self.c3da = vtk.vtkActor()
+        self.c3da.SetPickable(0)
+        self.c3da.SetMapper(m)
+
+        self.ren.AddActor(self.c3da)
+
+        # 2. create caption actor with label
+        ca = vtk.vtkCaptionActor2D()
+        ca.GetProperty().SetColor(1,1,0)
+        tp = ca.GetCaptionTextProperty()
+        tp.SetColor(1,1,0)
+        tp.ShadowOff()
+        ca.SetPickable(0)
+        ca.SetAttachmentPoint(0,0,0) # we'll move this later
+        ca.SetPosition(25,10)
+        ca.BorderOff()
+        ca.SetWidth(0.3)
+        ca.SetHeight(0.04)
+
+        # this will be changed at the first property set
+        ca.SetCaption('.')
+
+        self.ca = ca
+        self.ren.AddActor(ca)
+
 
     def get_world_pos_str(self):
         return '%.2f, %.2f, %.2f' % tuple(self.world_pos)
 
+    def get_world_pos(self):
+        return self._world_pos
+
+    def set_world_pos(self, world_pos):
+        self.c3da.SetPosition(world_pos)
+        self.ca.SetAttachmentPoint(world_pos)
+
+        self._world_pos = world_pos
+
+    # why have I not been doing this forever?
+    world_pos = property(get_world_pos, set_world_pos)
+
+    def get_name(self):
+        """Test doc string!
+        """
+        return self._name
+
+    def set_name(self, name):
+        self.ca.SetCaption(name)
+        self._name = name
+
+    name = property(get_name, set_name)
+
+###########################################################################
 class SStructLandmarksMM(MatchMode):
     """Class representing simple landmark-transform between two sets
     of points.
@@ -570,16 +646,20 @@ class SStructLandmarksMM(MatchMode):
         # do the list
         cp = comedi._view_frame.pane_controls.window
 
+        # if you don't set valueSetter, this thing overwrites my
+        # pretty property!!
         cp.source_landmarks_olv.SetColumns([
-            ColumnDefn("Name", "left", 50, "name"),
+            ColumnDefn("Name", "left", 50, "name",
+            valueSetter="set_name"),
             ColumnDefn("Position", "left", 200, "get_world_pos_str",
-                isSpaceFilling=True)])
+                isSpaceFilling=True, isEditable=False)])
         cp.source_landmarks_olv.SetObjects(self._source_landmarks)
 
         cp.target_landmarks_olv.SetColumns([
-            ColumnDefn("Name", "left", 50, "name"),
+            ColumnDefn("Name", "left", 50, "name",
+            valueSetter="set_name"),
             ColumnDefn("Position", "left", 200, "get_world_pos_str",
-                isSpaceFilling=True)])
+                isSpaceFilling=True, isEditable=False)])
         cp.target_landmarks_olv.SetObjects(self._target_landmarks)
 
         self._bind_events()
@@ -589,12 +669,20 @@ class SStructLandmarksMM(MatchMode):
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
 
+    def close(self):
+        # close all landmarks.
+        [lm.close() for lm in self._source_landmarks]
+        [lm.close() for lm in self._target_landmarks]
+
     def _add_source_landmark(self, world_pos, name=None):
         cp = self._comedi._view_frame.pane_controls.window
         if name is None:
             name = str(len(self._source_landmarks))
 
-        self._source_landmarks.append(Landmark(name, world_pos))
+        self._source_landmarks.append(
+                Landmark(name, world_pos, 
+                    self._comedi._data1_slice_viewer.renderer))
+
         cp.source_landmarks_olv.SetObjects(self._source_landmarks)
 
     def _add_target_landmark(self, world_pos, name=None):
@@ -602,7 +690,10 @@ class SStructLandmarksMM(MatchMode):
         if name is None:
             name = str(len(self._target_landmarks))
 
-        self._target_landmarks.append(Landmark(name, world_pos))
+        self._target_landmarks.append(
+                Landmark(name, world_pos,
+                    self._comedi._data2_slice_viewer.renderer))
+
         cp.target_landmarks_olv.SetObjects(self._target_landmarks)
 
     def _bind_events(self):
@@ -632,7 +723,7 @@ class SStructLandmarksMM(MatchMode):
         # reslice transform transforms the sampling grid. 
         self._trfm.SetResliceTransform(self._landmark.GetInverse())
 
-    def set_source_landmarks(self, source_landmarks):
+    def _set_source_landmarks(self, source_landmarks):
         """This should be an iterable with 3-element tuples or lists
         representing the source landmarks.
         """
@@ -647,7 +738,7 @@ class SStructLandmarksMM(MatchMode):
 
         self._landmark.SetSourceLandmarks(source_points)
 
-    def set_target_landmarks(self, target_landmarks):
+    def _set_target_landmarks(self, target_landmarks):
         """Set the target landmarks matching the source landmarks.
 
         @param target_landmarks iterable containing 3-element tuples
@@ -734,6 +825,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         """Clean-up method called on all DeVIDE modules when they are
         deleted.
         """
+
+        # get rid of match_mode
+        self.match_mode.close()
 
         self._close_vis()
         
@@ -933,10 +1027,11 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # also store the current cursor position in an ivar, we need
         # it.  we probably need to replace this text check with
         # something else...
-        w = self._data1_slice_viewer.get_world_pos(c)
         if txt.startswith('d1'):
+            w = self._data1_slice_viewer.get_world_pos(c)
             self._data1_slice_viewer.current_world_pos = w
         elif txt.startswith('d2'):
+            w = self._data2_slice_viewer.get_world_pos(c)
             self._data2_slice_viewer.current_world_pos = w
         
     def render_all(self):
