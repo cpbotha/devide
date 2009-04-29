@@ -14,6 +14,8 @@ MATCH_MODE_STRINGS = [ \
         'Single structure landmarks'
         ]
 
+COMPARISON_MODE_DATA2M = 1
+
 # import the frame, i.e. the wx window containing everything
 import CoMedIFrame
 # and do a reload, so that the GUI is also updated at reloads of this
@@ -767,26 +769,26 @@ class SStructLandmarksMM(MatchMode):
         self._cfg = config_dict
 
         # if we get an empty config dict, configure!
-        if 'source_landmarks' not in self._cfg:
-            self._cfg['source_landmarks'] = {}
+        if 'data1_landmarks' not in self._cfg:
+            self._cfg['data1_landmarks'] = {}
 
         # do the list
         cp = comedi._view_frame.pane_controls.window
         r1 = comedi._data1_slice_viewer.renderer
-        self._source_landmarks = \
+        self._data1_landmarks = \
                 LandmarkList(
-                        self._cfg['source_landmarks'], 
-                        cp.source_landmarks_olv, r1)
+                        self._cfg['data1_landmarks'], 
+                        cp.data1_landmarks_olv, r1)
 
-        if 'target_landmarks' not in self._cfg:
-            self._cfg['target_landmarks'] = {}
+        if 'data2_landmarks' not in self._cfg:
+            self._cfg['data2_landmarks'] = {}
 
 
         r2 = comedi._data2_slice_viewer.renderer
-        self._target_landmarks = \
+        self._data2_landmarks = \
                 LandmarkList(
-                        self._cfg['target_landmarks'],
-                        cp.target_landmarks_olv, r2)
+                        self._cfg['data2_landmarks'],
+                        cp.data2_landmarks_olv, r2)
 
         self._setup_ui()
         self._bind_events()
@@ -798,16 +800,17 @@ class SStructLandmarksMM(MatchMode):
         self._landmark = vtk.vtkLandmarkTransform()
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
+        self._trfm.SetInterpolationModeToCubic()
 
     def close(self):
-        self._source_landmarks.close()
-        self._target_landmarks.close()
+        self._data1_landmarks.close()
+        self._data2_landmarks.close()
 
-    def _add_source_landmark(self, world_pos, name=None):
-        self._source_landmarks.add_landmark(world_pos)
+    def _add_data1_landmark(self, world_pos, name=None):
+        self._data1_landmarks.add_landmark(world_pos)
 
-    def _add_target_landmark(self, world_pos, name=None):
-        self._target_landmarks.add_landmark(world_pos)
+    def _add_data2_landmark(self, world_pos, name=None):
+        self._data2_landmarks.add_landmark(world_pos)
 
     def _bind_events(self):
         vf = self._comedi._view_frame
@@ -817,11 +820,11 @@ class SStructLandmarksMM(MatchMode):
         cp.lm_add_button.Bind(wx.EVT_BUTTON, self._handler_add_button)
 
 
-        cp.source_landmarks_olv.Bind(
+        cp.data1_landmarks_olv.Bind(
                 wx.EVT_LIST_ITEM_RIGHT_CLICK,
                 self._handler_solv_right_click)
 
-        cp.target_landmarks_olv.Bind(
+        cp.data2_landmarks_olv.Bind(
                 wx.EVT_LIST_ITEM_RIGHT_CLICK,
                 self._handler_tolv_right_click)
 
@@ -830,22 +833,22 @@ class SStructLandmarksMM(MatchMode):
         v = cp.cursor_text.GetValue()
         if v.startswith('d1'):
             wp = self._comedi._data1_slice_viewer.current_world_pos
-            self._add_source_landmark(wp)
+            self._add_data1_landmark(wp)
         elif v.startswith('d2'):
             wp = self._comedi._data2_slice_viewer.current_world_pos
-            self._add_target_landmark(wp)
+            self._add_data2_landmark(wp)
 
     def _handler_delete_selected_lms(self, evt, i):
         cp = self._comedi._view_frame.pane_controls.window
         if i == 0:
-            olv = cp.source_landmarks_olv
+            olv = cp.data1_landmarks_olv
             dobjs = olv.GetSelectedObjects()
-            self._source_landmarks.remove_landmarks(
+            self._data1_landmarks.remove_landmarks(
                     [o.name for o in dobjs])
         else:
-            olv = cp.target_landmarks_olv
+            olv = cp.data2_landmarks_olv
             dobjs = olv.GetSelectedObjects()
-            self._target_landmarks.remove_landmarks(
+            self._data2_landmarks.remove_landmarks(
                     [o.name for o in dobjs])
 
     def _handler_move_selected_lm(self, evt, i):
@@ -855,23 +858,23 @@ class SStructLandmarksMM(MatchMode):
             # get the current world position
             wp = self._comedi._data1_slice_viewer.current_world_pos
             # get the currently selected object
-            olv = cp.source_landmarks_olv
+            olv = cp.data1_landmarks_olv
             mobjs = olv.GetSelectedObjects()
             if mobjs:
                 mobj = mobjs[0]
                 # now move...
-                self._source_landmarks.move_landmark(mobj.name, wp)
+                self._data1_landmarks.move_landmark(mobj.name, wp)
                 
         elif v.startswith('d2') and i == 1:
             # get the current world position
             wp = self._comedi._data2_slice_viewer.current_world_pos
             # get the currently selected object
-            olv = cp.target_landmarks_olv
+            olv = cp.data2_landmarks_olv
             mobjs = olv.GetSelectedObjects()
             if mobjs:
                 mobj = mobjs[0]
                 # now move...
-                self._target_landmarks.move_landmark(mobj.name, wp)
+                self._data2_landmarks.move_landmark(mobj.name, wp)
 
     def _handler_solv_right_click(self, evt):
         olv = evt.GetEventObject()
@@ -895,7 +898,7 @@ class SStructLandmarksMM(MatchMode):
         self._solv_menu = wx.Menu('Landmarks context menu')
         self._tolv_menu = wx.Menu('Landmarks context menu')
 
-        # i = [0,1] for source and target landmarks respectively
+        # i = [0,1] for data1 and data2 landmarks respectively
         for i,m in enumerate([self._solv_menu, self._tolv_menu]):
             # move landmarks
             id_move_landmark = wx.NewId()
@@ -919,7 +922,7 @@ class SStructLandmarksMM(MatchMode):
                 id = id_delete_landmark)
         
 
-    def get_output(self, output_data):
+    def get_output(self):
         return self._output
 
     def _transfer_landmarks_to_vtk(self):
@@ -927,8 +930,8 @@ class SStructLandmarksMM(MatchMode):
         then set on our landmark transform filter.
         """
        
-        sld = self._source_landmarks.landmark_dict
-        tld = self._target_landmarks.landmark_dict
+        sld = self._data1_landmarks.landmark_dict
+        tld = self._data2_landmarks.landmark_dict
 
         names = sld.keys()
 
@@ -939,25 +942,26 @@ class SStructLandmarksMM(MatchMode):
                 tposs.append(tld[name].world_pos)
             except KeyError:
                 raise RuntimeError(
-                        'Could not find target landmark with name %s.'
+                        'Could not find data2 landmark with name %s.'
                         % (name,))
 
         # now transfer the two lists to vtkPoint lists
         # SOURCE:
-        source_points = vtk.vtkPoints()
-        source_points.SetNumberOfPoints(len(sposs))
+        data1_points = vtk.vtkPoints()
+        data1_points.SetNumberOfPoints(len(sposs))
         for idx,pt in enumerate(sposs):
-            source_points.SetPoint(idx, pt)
+            data1_points.SetPoint(idx, pt)
 
-        self._landmark.SetSourceLandmarks(source_points)
 
         # TARGET:
-        target_points = vtk.vtkPoints()
-        target_points.SetNumberOfPoints(len(tposs))
+        data2_points = vtk.vtkPoints()
+        data2_points.SetNumberOfPoints(len(tposs))
         for idx,pt in enumerate(tposs):
-            target_points.SetPoint(idx, pt)
+            data2_points.SetPoint(idx, pt)
 
-        self._landmark.SetTargetLandmarks(target_points)
+        # we want to map data2 onto data1
+        self._landmark.SetSourceLandmarks(data2_points)
+        self._landmark.SetTargetLandmarks(data1_points)
        
 
     def transform(self):
@@ -966,6 +970,7 @@ class SStructLandmarksMM(MatchMode):
         """
         d1i = self._comedi._data1_slice_viewer.get_input()
         d2i = self._comedi._data2_slice_viewer.get_input()
+
         if d1i and d2i:
             # we force the landmark to do its thing
             try:
@@ -992,7 +997,7 @@ class SStructLandmarksMM(MatchMode):
 
 ###########################################################################
 class ComparisonMode:
-    def __init__(self, comedi):
+    def __init__(self, comedi, cfg_dict):
         pass
 
     def set_inputs(self, data1, data2, data2m, distance):
@@ -1000,15 +1005,19 @@ class ComparisonMode:
 
     def update_vis(self):
         """If all inputs are available, update the visualisation.
+
+        This also has to be called if there is no valid registered
+        output anymore so that the view can be disabled.
         """
         pass
 
-class Data2CM(ComparisonMode):
+class Data2MCM(ComparisonMode):
     """Match mode that only displays the matched data2.
     """
 
-    def __init__(self, comedi):
+    def __init__(self, comedi, cfg_dict):
         self._comedi = comedi
+        self._cfg = cfg_dict
 
         rwi,ren = comedi.get_compvis_vtk()
         self._sv = CMSliceViewer(rwi, ren)
@@ -1019,7 +1028,27 @@ class Data2CM(ComparisonMode):
         self._sv.close()
 
     def update_vis(self):
-        pass
+        # if there's valid data, do the vis man!
+        o = self._comedi.match_mode.get_output()
+
+        # get current input
+        ci = self._sv.get_input()
+
+        if o != ci:
+            # new data!  do something!
+            self._sv.set_input(o)
+
+            # if it's not null, sync with primary viewer
+            if o is not None:
+                sv1 = self._comedi._data1_slice_viewer
+                self._comedi.sync_slice_viewers.sync_all(
+                        sv1, [self._sv])
+
+
+        # we do render to update the 3D view
+        self._sv.render()
+            
+
 
     
 
@@ -1079,6 +1108,8 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # be initially setup by config_to_logic
         self.match_mode = None
 
+        self._config.data2mcm_cfg = {}
+
         self._config.comparison_mode = COMPARISON_MODE_DATA2M
         self.comparison_mode = None
 
@@ -1126,6 +1157,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
             if input_stream is None:
                 # we're done disconnecting, no syncing necessary
+                # but we do need to tell the current match_mode
+                # something is going on.
+                self._update_mmcm()
                 return
 
             if not self._data2_slice_viewer.get_input():
@@ -1143,7 +1177,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             self._data2_slice_viewer.set_input(input_stream)
 
             if input_stream is None:
-                # done here, we can go now.
+                self._update_mmcm()
                 return
 
             if not self._data1_slice_viewer.get_input():
@@ -1187,6 +1221,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             self.match_mode = SStructLandmarksMM(
                         self, self._config.sstructlandmarksmm_cfg)
 
+        if self._config.comparison_mode == COMPARISON_MODE_DATA2M:
+            self.comparison_mode = Data2MCM(
+                    self, self._config.data2mcm_cfg)
+
     def config_to_view(self):
         if self._config.cam_parallel:
             self.set_cam_parallel()
@@ -1197,9 +1235,6 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             # also make sure this is reflected in the menu
             self._view_frame.set_cam_perspective()
 
-        # this will get the current match mode to update the GUI and
-        # all relevent renderers.
-        self.match_mode.update_view()
 
     def view_to_config(self):
         pass
@@ -1242,6 +1277,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         vf.Bind(wx.EVT_MENU, self._handler_slice3,
                 id = vf.id_views_slice3)
 
+        cp = vf.pane_controls.window
+        cp.compare_button.Bind(wx.EVT_BUTTON, self._handler_compare)
+
     def _handler_cam_parallel(self, event):
         self.set_cam_parallel()
 
@@ -1251,6 +1289,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def _handler_cam_xyzp(self, event):
         for sv in self._slice_viewers:
             sv.reset_to_default_view(2)
+
+    def _handler_compare(self, e):
+        self._update_mmcm()
 
     def _handler_introspect(self, e):
         self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
@@ -1305,6 +1346,13 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         elif txt.startswith('d2'):
             w = self._data2_slice_viewer.get_world_pos(c)
             self._data2_slice_viewer.current_world_pos = w
+
+    def _update_mmcm(self):
+        """Update the current match mode and the comparison mode.
+        """
+
+        self.match_mode.transform()
+        self.comparison_mode.update_vis()
        
     # PUBLIC methods
 

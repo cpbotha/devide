@@ -220,8 +220,8 @@ class CoMedIFrame(wx.Frame):
         f.Destroy()
 
         panel.cursor_text = f.cursor_text
-        panel.source_landmarks_olv = f.source_landmarks_olv
-        panel.target_landmarks_olv = f.target_landmarks_olv
+        panel.data1_landmarks_olv = f.data1_landmarks_olv
+        panel.data2_landmarks_olv = f.data2_landmarks_olv
         panel.lm_add_button = f.lm_add_button
         panel.compare_button = f.compare_button
 
