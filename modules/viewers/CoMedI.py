@@ -535,10 +535,11 @@ class MatchMode:
     def close(self):
         raise NotImplementedError
 
-    def set_input(self, input_data):
-        raise NotImplementedError
-
     def get_output(self):
+        """Return the transformed data2.  Returns None if this is not
+        possible, due to the lack of input data for example.  Call
+        after having called transform.
+        """
         raise NotImplementedError
 
     def transform(self):
@@ -641,7 +642,7 @@ class LandmarkList:
         """
 
         self._config_dict = config_dict
-        self._landmark_dict = {}
+        self.landmark_dict = {}
         self._olv = olv
         self._ren = ren
 
@@ -664,10 +665,10 @@ class LandmarkList:
 
     def add_landmark(self, world_pos, name=None):
         if name is None:
-            name = str(len(self._landmark_dict))
+            name = str(len(self.landmark_dict))
 
         lm = Landmark(name, world_pos, self._ren)
-        self._landmark_dict[lm.name] = lm
+        self.landmark_dict[lm.name] = lm
         # set the config_dict.  cheap operation, so we do the whole
         # thing every time.
         self.update_config_dict()
@@ -675,13 +676,13 @@ class LandmarkList:
         self._olv.SetObjects(self.olv_landmark_list)
 
     def close(self):
-        [lm.close() for lm in self._landmark_dict.values()]
+        [lm.close() for lm in self.landmark_dict.values()]
 
     def _get_olv_landmark_list(self):
         """Returns list of Landmark objects, sorted by name.  This is
         given to the ObjectListView.
         """
-        ld = self._landmark_dict
+        ld = self.landmark_dict
         keys,values = ld.keys(),ld.values()
         keys.sort()
         return [ld[key] for key in keys]
@@ -697,7 +698,7 @@ class LandmarkList:
             return
 
         if len(evt.cellValue) > 0 and \
-                evt.cellValue not in self._landmark_dict:
+                evt.cellValue not in self.landmark_dict:
                     # unique value, go ahead and change
                     # our olv_setter will be called at the right
                     # moment
@@ -709,24 +710,24 @@ class LandmarkList:
 
     def olv_setter(self, lm_object, new_name):
         # delete the old binding from the dictionary
-        del self._landmark_dict[lm_object.name]
+        del self.landmark_dict[lm_object.name]
         # change the name in the object
         # ARGH!  why does this setting clobber the property?!
         #lm_object.name = new_name
         lm_object.set_name(new_name)
         # insert it at its correct spot
-        self._landmark_dict[new_name] = lm_object
+        self.landmark_dict[new_name] = lm_object
         # update the config dict
         self.update_config_dict()
 
     def remove_landmarks(self, names_list):
         for name in names_list:
             # get the landmark
-            lm = self._landmark_dict[name]
+            lm = self.landmark_dict[name]
             # de-init the landmark
             lm.close()
             # remove it from the dictionary
-            del self._landmark_dict[name]
+            del self.landmark_dict[name]
 
         # finally update the config dictionary
         self.update_config_dict()
@@ -734,7 +735,7 @@ class LandmarkList:
         self._olv.SetObjects(self.olv_landmark_list)
 
     def move_landmark(self, name, world_pos):
-        lm = self._landmark_dict[name]
+        lm = self.landmark_dict[name]
         #lm.world_pos = world_pos
         lm.set_world_pos(world_pos)
         self.update_config_dict()
@@ -745,7 +746,7 @@ class LandmarkList:
         # would just bind to a new dictionary and not modify the
         # passed one.
         self._config_dict.clear()
-        for key,value in self._landmark_dict.items():
+        for key,value in self.landmark_dict.items():
             self._config_dict[key] = value.world_pos
 
 
@@ -789,6 +790,9 @@ class SStructLandmarksMM(MatchMode):
 
         self._setup_ui()
         self._bind_events()
+
+        # we'll use this to store a binding to the current output
+        self._output = None
 
         # remember, this turns out to be the transform itself
         self._landmark = vtk.vtkLandmarkTransform()
@@ -882,9 +886,6 @@ class SStructLandmarksMM(MatchMode):
         olv.PopupMenu(self._tolv_menu, evt.GetPosition())
 
 
-    def set_input(self, input_data):
-        self._trfm.SetInput(input_data)
-
     def _setup_ui(self):
         """Do some UI-specific setup.
         """
@@ -919,55 +920,114 @@ class SStructLandmarksMM(MatchMode):
         
 
     def get_output(self, output_data):
-        return self._trfm.GetOutput()
+        return self._output
 
-    def transform(self):
-        self._landmark.Update()
-        # reslice transform transforms the sampling grid. 
-        self._trfm.SetResliceTransform(self._landmark.GetInverse())
-
-    def _set_source_landmarks(self, source_landmarks):
-        """This should be an iterable with 3-element tuples or lists
-        representing the source landmarks.
+    def _transfer_landmarks_to_vtk(self):
+        """Copy landmarks from internal vars to sets of vtkPoints,
+        then set on our landmark transform filter.
         """
-        if source_landmarks == self._source_landmarks:
-            return
+       
+        sld = self._source_landmarks.landmark_dict
+        tld = self._target_landmarks.landmark_dict
 
-        self._source_landmarks = source_landmarks
+        names = sld.keys()
+
+        sposs, tposs = [],[]
+        for name in names:
+            sposs.append(sld[name].world_pos)
+            try:
+                tposs.append(tld[name].world_pos)
+            except KeyError:
+                raise RuntimeError(
+                        'Could not find target landmark with name %s.'
+                        % (name,))
+
+        # now transfer the two lists to vtkPoint lists
+        # SOURCE:
         source_points = vtk.vtkPoints()
-        source_points.SetNumberOfPoints(len(source_landmarks))
-        for idx,pt in enumerate(source_landmarks):
+        source_points.SetNumberOfPoints(len(sposs))
+        for idx,pt in enumerate(sposs):
             source_points.SetPoint(idx, pt)
 
         self._landmark.SetSourceLandmarks(source_points)
 
-    def _set_target_landmarks(self, target_landmarks):
-        """Set the target landmarks matching the source landmarks.
-
-        @param target_landmarks iterable containing 3-element tuples
-        or list that represent the coordinates of the matching points.
-        """
-
-        if target_landmarks == self._target_landmarks:
-            return
-
-        self._target_landmarks = target_landmarks
+        # TARGET:
         target_points = vtk.vtkPoints()
-        target_points.SetNumberOfPoints(len(target_landmarks))
-        for idx,pt in enumerate(target_landmarks):
+        target_points.SetNumberOfPoints(len(tposs))
+        for idx,pt in enumerate(tposs):
             target_points.SetPoint(idx, pt)
 
         self._landmark.SetTargetLandmarks(target_points)
+       
 
-    def update_view(self):
-        """Based on the config dictionary, setup all relevant GUI and
-        3D view elements.
+    def transform(self):
+        """If we have valid data and a valid set of matching
+        landmarks, transform data2.
+        """
+        d1i = self._comedi._data1_slice_viewer.get_input()
+        d2i = self._comedi._data2_slice_viewer.get_input()
+        if d1i and d2i:
+            # we force the landmark to do its thing
+            try:
+                self._transfer_landmarks_to_vtk()
+            except RuntimeError, e:
+                # could not transfer points
+                self._output = None
+                # tell the user why
+                self._comedi._module_manager.log_error(
+                        str(e))
+            else:
+                # points are set, update the transformation
+                self._landmark.Update()
+                # reslice transform transforms the sampling grid. 
+                self._trfm.SetResliceTransform(self._landmark.GetInverse())
+                self._trfm.SetInput(d2i)
+                self._trfm.Update()
+                self._output = self._trfm.GetOutput()
+
+        else:
+            # not enough valid inputs, so no data.
+            self._output = None
+
+
+###########################################################################
+class ComparisonMode:
+    def __init__(self, comedi):
+        pass
+
+    def set_inputs(self, data1, data2, data2m, distance):
+        pass
+
+    def update_vis(self):
+        """If all inputs are available, update the visualisation.
         """
         pass
+
+class Data2CM(ComparisonMode):
+    """Match mode that only displays the matched data2.
+    """
+
+    def __init__(self, comedi):
+        self._comedi = comedi
+
+        rwi,ren = comedi.get_compvis_vtk()
+        self._sv = CMSliceViewer(rwi, ren)
+        comedi.sync_slice_viewers.add_slice_viewer(self._sv)
+
+    def close(self):
+        self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
+        self._sv.close()
+
+    def update_vis(self):
+        pass
+
+    
+
 
 ###########################################################################
 ###########################################################################
 class CoMedI(IntrospectModuleMixin, ModuleBase):
+    # API methods
     def __init__(self, module_manager):
         """Standard constructor.  All DeVIDE modules have these, we do
         the required setup actions.
@@ -1011,12 +1071,16 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # modes, all metadata should be serialised, so that after a
         # network reload, the user can switch and will get her old
         # metadata back from a previous session.
-        self._config.match_mode = MATCH_MODE_LANDMARK_SS
         self._config.sstructlandmarksmm_cfg = {}
 
+        # default match mode is the landmark thingy
+        self._config.match_mode = MATCH_MODE_LANDMARK_SS
         # this will hold a binding to the current match mode that will
         # be initially setup by config_to_logic
         self.match_mode = None
+
+        self._config.comparison_mode = COMPARISON_MODE_DATA2M
+        self.comparison_mode = None
 
         # apply config information to underlying logic
         self.sync_module_logic_with_config()
@@ -1070,7 +1134,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
             else:
                 # sync ourselves to data2
-                self._sync_slice_viewers.sync_all(
+                self.sync_slice_viewers.sync_all(
                         self._data2_slice_viewer,
                         [self._data1_slice_viewer])
 
@@ -1087,9 +1151,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 self._data2_slice_viewer.render()
 
             else:
-                self._sync_slice_viewers.sync_all(
+                self.sync_slice_viewers.sync_all(
                         self._data1_slice_viewer,
                         [self._data2_slice_viewer])
+
 
 
     def get_output(self, idx):
@@ -1150,6 +1215,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         wx.SafeYield()
         self.render_all()
 
+    # PRIVATE methods
     def _bind_events(self):
         """Bind wx events to Python callable object event handlers.
         """
@@ -1206,14 +1272,14 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def _handler_synced(self, event):
         #cb = event.GetEventObject()
         if event.IsChecked():
-            if not self._sync_slice_viewers.sync:
-                self._sync_slice_viewers.sync = True
+            if not self.sync_slice_viewers.sync:
+                self.sync_slice_viewers.sync = True
                 # now do the initial sync to data1
-                self._sync_slice_viewers.sync_all(
+                self.sync_slice_viewers.sync_all(
                         self._data1_slice_viewer)
 
         else:
-            self._sync_slice_viewers.sync = False
+            self.sync_slice_viewers.sync = False
 
     def _observer_cursor(self, vtk_o, vtk_e, txt):
         """
@@ -1239,7 +1305,24 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         elif txt.startswith('d2'):
             w = self._data2_slice_viewer.get_world_pos(c)
             self._data2_slice_viewer.current_world_pos = w
-        
+       
+    # PUBLIC methods
+
+    def get_compvis_vtk(self):
+        """Return rwi and renderer used for the compvis.  Used mostly
+        by the various comparison modes.
+        """
+        return (
+                self._view_frame.rwi_pane_compvis.rwi,
+                self._view_frame.rwi_pane_compvis.renderer
+                )
+
+    def get_data2m(self):
+        """Return currently matched data2, i.e. the output of the
+        current match mode.
+        """
+        return self.match_mode.get_output()
+
     def render_all(self):
         """Method that calls Render() on the embedded RenderWindow.
         Use this after having made changes to the scene.
@@ -1286,7 +1369,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 self._data1_slice_viewer,
                 self._data2_slice_viewer]
 
-        self._sync_slice_viewers = ssv = SyncSliceViewers()
+        self.sync_slice_viewers = ssv = SyncSliceViewers()
         for sv in self._slice_viewers:
             ssv.add_slice_viewer(sv)
 

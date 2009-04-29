@@ -223,7 +223,7 @@ class CoMedIFrame(wx.Frame):
         panel.source_landmarks_olv = f.source_landmarks_olv
         panel.target_landmarks_olv = f.target_landmarks_olv
         panel.lm_add_button = f.lm_add_button
-        panel.lm_transform_button = f.lm_transform_button
+        panel.compare_button = f.compare_button
 
         cmi_pane = CMIPane()
         cmi_pane.window = panel
