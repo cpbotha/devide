@@ -733,6 +733,13 @@ class LandmarkList:
         # then tell the olv about the changed situation
         self._olv.SetObjects(self.olv_landmark_list)
 
+    def move_landmark(self, name, world_pos):
+        lm = self._landmark_dict[name]
+        #lm.world_pos = world_pos
+        lm.set_world_pos(world_pos)
+        self.update_config_dict()
+        self._olv.SetObjects(self.olv_landmark_list)
+
     def update_config_dict(self):
         # re-init the whole thing; note that we don't re-assign, that
         # would just bind to a new dictionary and not modify the
@@ -799,7 +806,8 @@ class SStructLandmarksMM(MatchMode):
         self._target_landmarks.add_landmark(world_pos)
 
     def _bind_events(self):
-        cp = self._comedi._view_frame.pane_controls.window
+        vf = self._comedi._view_frame
+        cp = vf.pane_controls.window
 
         # bind to the add button
         cp.lm_add_button.Bind(wx.EVT_BUTTON, self._handler_add_button)
@@ -836,7 +844,31 @@ class SStructLandmarksMM(MatchMode):
             self._target_landmarks.remove_landmarks(
                     [o.name for o in dobjs])
 
-    # FIXME: continue here!
+    def _handler_move_selected_lm(self, evt, i):
+        cp = self._comedi._view_frame.pane_controls.window
+        v = cp.cursor_text.GetValue()
+        if v.startswith('d1') and i == 0:
+            # get the current world position
+            wp = self._comedi._data1_slice_viewer.current_world_pos
+            # get the currently selected object
+            olv = cp.source_landmarks_olv
+            mobjs = olv.GetSelectedObjects()
+            if mobjs:
+                mobj = mobjs[0]
+                # now move...
+                self._source_landmarks.move_landmark(mobj.name, wp)
+                
+        elif v.startswith('d2') and i == 1:
+            # get the current world position
+            wp = self._comedi._data2_slice_viewer.current_world_pos
+            # get the currently selected object
+            olv = cp.target_landmarks_olv
+            mobjs = olv.GetSelectedObjects()
+            if mobjs:
+                mobj = mobjs[0]
+                # now move...
+                self._target_landmarks.move_landmark(mobj.name, wp)
+
     def _handler_solv_right_click(self, evt):
         olv = evt.GetEventObject()
 
@@ -864,9 +896,22 @@ class SStructLandmarksMM(MatchMode):
 
         # i = [0,1] for source and target landmarks respectively
         for i,m in enumerate([self._solv_menu, self._tolv_menu]):
+            # move landmarks
+            id_move_landmark = wx.NewId()
+            m.Append(id_move_landmark,
+                    "Move first selected",
+                    "Move first selected landmark to current cursor.")
+
+            vf.Bind(wx.EVT_MENU,
+                    lambda e, i=i:
+                    self._handler_move_selected_lm(e,i),
+                    id = id_move_landmark)
+
+            # deletion of landmarks
             id_delete_landmark = wx.NewId()
             m.Append(id_delete_landmark,
-            "Delete selected landmarks")
+                    "Delete selected",
+                    "Delete all selected landmarks.")
 
             vf.Bind(wx.EVT_MENU, 
                 lambda e, i=i: self._handler_delete_selected_lms(e,i),

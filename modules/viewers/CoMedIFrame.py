@@ -118,7 +118,7 @@ class CoMedIFrame(wx.Frame):
         self.id_adv_introspect = wx.NewId()
         adv_menu.Append(self.id_adv_introspect, '&Introspect\tAlt-I',
                 'Introspect this CoMedI instance.', wx.ITEM_NORMAL)
-        self.menubar.Append(adv_menu, 'Ad&vanced')
+        self.menubar.Append(adv_menu, '&Advanced')
 
 
 
