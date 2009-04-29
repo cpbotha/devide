@@ -14,7 +14,7 @@ STAMP = "20090202-1351"
 
 # the main release version: year.month (ubuntu-style) on release
 # branches (the branch is also named vYEAR.MONTH), DEV for trunk
-VERSION = "9.1"
+VERSION = "DEV"
 
 try:
     SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
@@ -23,7 +23,7 @@ except Exception, e:
     SVN_REVISION = 'xXx'
 
 # if built with johannes, the SVN_REVISION part might be rewritten.
-DEVIDE_VERSION = '%s.%s' % (VERSION, "3361")
+DEVIDE_VERSION = '%s.%s' % (VERSION, SVN_REVISION)
 
 # standard Python imports
 import getopt
