@@ -719,6 +719,20 @@ class LandmarkList:
         # update the config dict
         self.update_config_dict()
 
+    def remove_landmarks(self, names_list):
+        for name in names_list:
+            # get the landmark
+            lm = self._landmark_dict[name]
+            # de-init the landmark
+            lm.close()
+            # remove it from the dictionary
+            del self._landmark_dict[name]
+
+        # finally update the config dictionary
+        self.update_config_dict()
+        # then tell the olv about the changed situation
+        self._olv.SetObjects(self.olv_landmark_list)
+
     def update_config_dict(self):
         # re-init the whole thing; note that we don't re-assign, that
         # would just bind to a new dictionary and not modify the
@@ -766,6 +780,7 @@ class SStructLandmarksMM(MatchMode):
                         self._cfg['target_landmarks'],
                         cp.target_landmarks_olv, r2)
 
+        self._setup_ui()
         self._bind_events()
 
         # remember, this turns out to be the transform itself
@@ -794,10 +809,9 @@ class SStructLandmarksMM(MatchMode):
                 wx.EVT_LIST_ITEM_RIGHT_CLICK,
                 self._handler_solv_right_click)
 
-        cp.source_landmarks_olv.Bind(
+        cp.target_landmarks_olv.Bind(
                 wx.EVT_LIST_ITEM_RIGHT_CLICK,
-                self._handler_solv_right_click)
-
+                self._handler_tolv_right_click)
 
     def _handler_add_button(self, e):
         cp = self._comedi._view_frame.pane_controls.window
@@ -809,14 +823,55 @@ class SStructLandmarksMM(MatchMode):
             wp = self._comedi._data2_slice_viewer.current_world_pos
             self._add_target_landmark(wp)
 
+    def _handler_delete_selected_lms(self, evt, i):
+        cp = self._comedi._view_frame.pane_controls.window
+        if i == 0:
+            olv = cp.source_landmarks_olv
+            dobjs = olv.GetSelectedObjects()
+            self._source_landmarks.remove_landmarks(
+                    [o.name for o in dobjs])
+        else:
+            olv = cp.target_landmarks_olv
+            dobjs = olv.GetSelectedObjects()
+            self._target_landmarks.remove_landmarks(
+                    [o.name for o in dobjs])
+
     # FIXME: continue here!
     def _handler_solv_right_click(self, evt):
-        print evt.GetEventObject().GetSelectedObjects()
+        olv = evt.GetEventObject()
 
+        # popup that menu
+        olv.PopupMenu(self._solv_menu, evt.GetPosition())
+
+    def _handler_tolv_right_click(self, evt):
+        olv = evt.GetEventObject()
+
+        # popup that menu
+        olv.PopupMenu(self._tolv_menu, evt.GetPosition())
 
 
     def set_input(self, input_data):
         self._trfm.SetInput(input_data)
+
+    def _setup_ui(self):
+        """Do some UI-specific setup.
+        """
+
+        vf = self._comedi._view_frame
+
+        self._solv_menu = wx.Menu('Landmarks context menu')
+        self._tolv_menu = wx.Menu('Landmarks context menu')
+
+        # i = [0,1] for source and target landmarks respectively
+        for i,m in enumerate([self._solv_menu, self._tolv_menu]):
+            id_delete_landmark = wx.NewId()
+            m.Append(id_delete_landmark,
+            "Delete selected landmarks")
+
+            vf.Bind(wx.EVT_MENU, 
+                lambda e, i=i: self._handler_delete_selected_lms(e,i),
+                id = id_delete_landmark)
+        
 
     def get_output(self, output_data):
         return self._trfm.GetOutput()
