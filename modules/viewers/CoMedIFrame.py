@@ -224,8 +224,13 @@ class CoMedIFrame(wx.Frame):
         panel.data2_landmarks_olv = f.data2_landmarks_olv
         panel.lm_add_button = f.lm_add_button
         panel.compare_button = f.compare_button
+        panel.update_compvis_button = f.update_compvis_button
         panel.match_mode_notebook = f.match_mode_notebook
         panel.comparison_mode_notebook = f.comparison_mode_notebook
+
+        panel.cm_checkerboard_divx = f.cm_checkerboard_divx
+        panel.cm_checkerboard_divy = f.cm_checkerboard_divy
+        panel.cm_checkerboard_divz = f.cm_checkerboard_divz
 
         cmi_pane = CMIPane()
         cmi_pane.window = panel

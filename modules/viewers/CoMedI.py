@@ -1155,6 +1155,16 @@ class CheckerboardCM(ComparisonMode):
                 # disable the slice viewer
                 self._sv.set_input(None)
 
+        # now check for UI things
+        cp = self._comedi._view_frame.pane_controls.window
+        divx = cp.cm_checkerboard_divx.GetValue()
+        divy = cp.cm_checkerboard_divy.GetValue()
+        divz = cp.cm_checkerboard_divz.GetValue()
+
+        ndiv = self._cb.GetNumberOfDivisions()
+        if ndiv != (divx, divy, divz):
+            self._cb.SetNumberOfDivisions((divx, divy, divz))
+
 
 
         # we do render to update the 3D view
@@ -1393,10 +1403,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         cp = vf.pane_controls.window
         cp.compare_button.Bind(wx.EVT_BUTTON, self._handler_compare)
+        cp.update_compvis_button.Bind(wx.EVT_BUTTON,
+                self._handler_update_compvis)
 
         cp.match_mode_notebook.Bind(
                 wx.EVT_NOTEBOOK_PAGE_CHANGED,
-                self._handler_cm_nbp_changed)
+                self._handler_mm_nbp_changed)
 
         cp.comparison_mode_notebook.Bind(
                 wx.EVT_NOTEBOOK_PAGE_CHANGED,
@@ -1423,8 +1435,15 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self._sync_cm_with_config()
         self.comparison_mode.update_vis()
 
+        # we have to call this skip so that wx also changes the page
+        # contents.
+        evt.Skip()
+
     def _handler_mm_nbp_changed(self, evt):
         print "hello you too"
+        # we have to call this skip so wx also changes the actual tab
+        # contents.
+        evt.Skip()
 
     def _handler_compare(self, e):
         self._update_mmcm()
@@ -1457,6 +1476,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         else:
             self.sync_slice_viewers.sync = False
+
+    def _handler_update_compvis(self, evt):
+        self.comparison_mode.update_vis()
 
     def _observer_cursor(self, vtk_o, vtk_e, txt):
         """
