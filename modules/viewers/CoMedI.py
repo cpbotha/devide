@@ -8,14 +8,15 @@
 # set to False for 3D viewer, True for 2D image viewer
 IMAGE_VIEWER = True
 
+MATCH_MODE_PASSTHROUGH = 0
 MATCH_MODE_LANDMARK_SS = 1
 
 MATCH_MODE_STRINGS = [ \
         'Single structure landmarks'
         ]
 
-COMPARISON_MODE_DATA2M = 1
-COMPARISON_MODE_CHECKERBOARD = 2
+COMPARISON_MODE_DATA2M = 0
+COMPARISON_MODE_CHECKERBOARD = 1
 
 # import the frame, i.e. the wx window containing everything
 import CoMedIFrame
@@ -770,6 +771,8 @@ class SStructLandmarksMM(MatchMode):
     """Class representing simple landmark-transform between two sets
     of points.
     """
+
+    # API methods #####
     def __init__(self, comedi, config_dict):
         """
         @param comedi: Instance of comedi that will be used to update
@@ -824,6 +827,48 @@ class SStructLandmarksMM(MatchMode):
         self._data2_landmarks.close()
         self._unbind_events()
 
+    def get_output(self):
+        return self._output
+
+    def transform(self):
+        """If we have valid data and a valid set of matching
+        landmarks, transform data2.
+
+        Even if nothing has changed, this WILL perform the actual
+        transformation, so don't call this method unnecessarily.
+        """
+
+        d1i = self._comedi._data1_slice_viewer.get_input()
+        d2i = self._comedi._data2_slice_viewer.get_input()
+
+        if d1i and d2i:
+            # we force the landmark to do its thing
+            try:
+                self._transfer_landmarks_to_vtk()
+            except RuntimeError, e:
+                # could not transfer points
+                self._output = None
+                # tell the user why
+                self._comedi._module_manager.log_error(
+                        str(e))
+            else:
+                # points are set, update the transformation
+                self._landmark.Update()
+                # reslice transform transforms the sampling grid. 
+                self._trfm.SetResliceTransform(self._landmark.GetInverse())
+                self._trfm.SetInput(d2i)
+                self._trfm.SetInformationInput(d1i)
+                self._trfm.Update()
+                self._output = self._trfm.GetOutput()
+
+        else:
+            # not enough valid inputs, so no data.
+            self._output = None
+            # also disconnect the transform, so we don't keep data
+            # hanging around
+            self._trfm.SetInput(None)
+
+    # PRIVATE methods #####
     def _add_data1_landmark(self, world_pos, name=None):
         self._data1_landmarks.add_landmark(world_pos)
 
@@ -848,20 +893,6 @@ class SStructLandmarksMM(MatchMode):
         cp.data2_landmarks_olv.Bind(
                 wx.EVT_LIST_ITEM_RIGHT_CLICK,
                 self._handler_tolv_right_click)
-
-    def _unbind_events(self):
-        vf = self._comedi._view_frame
-        cp = vf.pane_controls.window
-
-        # bind to the add button
-        cp.lm_add_button.Unbind(wx.EVT_BUTTON)
-
-        cp.data1_landmarks_olv.Unbind(
-                wx.EVT_LIST_ITEM_RIGHT_CLICK)
-
-        cp.data2_landmarks_olv.Unbind(
-                wx.EVT_LIST_ITEM_RIGHT_CLICK)
-
 
     def _handler_add_button(self, e):
         cp = self._comedi._view_frame.pane_controls.window
@@ -923,7 +954,6 @@ class SStructLandmarksMM(MatchMode):
         # popup that menu
         olv.PopupMenu(self._tolv_menu, evt.GetPosition())
 
-
     def _setup_ui(self):
         """Do some UI-specific setup.
         """
@@ -957,8 +987,6 @@ class SStructLandmarksMM(MatchMode):
                 id = id_delete_landmark)
         
 
-    def get_output(self):
-        return self._output
 
     def _transfer_landmarks_to_vtk(self):
         """Copy landmarks from internal vars to sets of vtkPoints,
@@ -998,44 +1026,21 @@ class SStructLandmarksMM(MatchMode):
         self._landmark.SetSourceLandmarks(data2_points)
         self._landmark.SetTargetLandmarks(data1_points)
        
+    def _unbind_events(self):
+        vf = self._comedi._view_frame
+        cp = vf.pane_controls.window
 
-    def transform(self):
-        """If we have valid data and a valid set of matching
-        landmarks, transform data2.
+        # bind to the add button
+        cp.lm_add_button.Unbind(wx.EVT_BUTTON)
 
-        Even if nothing has changed, this WILL perform the actual
-        transformation, so don't call this method unnecessarily.
-        """
+        cp.data1_landmarks_olv.Unbind(
+                wx.EVT_LIST_ITEM_RIGHT_CLICK)
 
-        d1i = self._comedi._data1_slice_viewer.get_input()
-        d2i = self._comedi._data2_slice_viewer.get_input()
+        cp.data2_landmarks_olv.Unbind(
+                wx.EVT_LIST_ITEM_RIGHT_CLICK)
 
-        if d1i and d2i:
-            # we force the landmark to do its thing
-            try:
-                self._transfer_landmarks_to_vtk()
-            except RuntimeError, e:
-                # could not transfer points
-                self._output = None
-                # tell the user why
-                self._comedi._module_manager.log_error(
-                        str(e))
-            else:
-                # points are set, update the transformation
-                self._landmark.Update()
-                # reslice transform transforms the sampling grid. 
-                self._trfm.SetResliceTransform(self._landmark.GetInverse())
-                self._trfm.SetInput(d2i)
-                self._trfm.SetInformationInput(d1i)
-                self._trfm.Update()
-                self._output = self._trfm.GetOutput()
 
-        else:
-            # not enough valid inputs, so no data.
-            self._output = None
-            # also disconnect the transform, so we don't keep data
-            # hanging around
-            self._trfm.SetInput(None)
+
 
 
 ###########################################################################
@@ -1091,7 +1096,69 @@ class Data2MCM(ComparisonMode):
         # we do render to update the 3D view
         self._sv.render()
             
+class CheckerboardCM(ComparisonMode):
+    """Comparison mode that shows a checkerboard of the two matched
+    datasets.
+    """
 
+    def __init__(self, comedi, cfg_dict):
+        self._comedi = comedi
+        self._cfg = cfg_dict
+        
+        rwi,ren = comedi.get_compvis_vtk()
+        self._sv = CMSliceViewer(rwi, ren)
+        comedi.sync_slice_viewers.add_slice_viewer(self._sv)
+
+        self._cb = vtk.vtkImageCheckerboard()
+
+        # we'll store our local bindings here
+        self._d1 = None
+        self._d2m = None
+
+    def close(self):
+        self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
+        self._sv.close()
+        # disconnect the checkerboard
+        self._cb.SetInput1(None)
+        self._cb.SetInput2(None)
+
+    def update_vis(self):
+        # if there's valid data, do the vis man!
+        d2m = self._comedi.get_data2m()
+        d1 = self._comedi.get_data1()
+
+        new_data = False
+
+        if d1 != self._d1:
+            self._d1 = d1
+            self._cb.SetInput1(d1)
+            new_data = True
+
+        if d2m != self._d2m:
+            self._d2m = d2m
+            self._cb.SetInput2(d2m)
+            new_data = True
+
+        if new_data:
+            # this means the situation has changed
+            if d1 and d2m:
+                # we have two datasets and can checkerboard them
+                # enable the slice viewer
+                self._sv.set_input(self._cb.GetOutput())
+                # sync it to data1
+                sv1 = self._comedi._data1_slice_viewer
+                self._comedi.sync_slice_viewers.sync_all(
+                        sv1, [self._sv])
+
+            else:
+                # this means one of our datasets is NULL
+                # disable the slice viewer
+                self._sv.set_input(None)
+
+
+
+        # we do render to update the 3D view
+        self._sv.render()
 
 
 ###########################################################################
@@ -1150,6 +1217,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self.match_mode = None
 
         self._config.data2mcm_cfg = {}
+        self._config.checkerboardcm_cfg = {}
 
         self._config.comparison_mode = COMPARISON_MODE_DATA2M
         self.comparison_mode = None
@@ -1268,6 +1336,19 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             # also make sure this is reflected in the menu
             self._view_frame.set_cam_perspective()
 
+        # now also set the correct pages in the match mode and
+        # comparison mode notebooks.
+        vf = self._view_frame
+        cp = vf.pane_controls.window
+
+        # ChangeSelection does not trigger the event handlers
+        cp.match_mode_notebook.ChangeSelection(
+                self._config.match_mode)
+
+        cp.comparison_mode_notebook.ChangeSelection(
+                self._config.comparison_mode)
+
+
 
     def view_to_config(self):
         pass
@@ -1313,9 +1394,17 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         cp = vf.pane_controls.window
         cp.compare_button.Bind(wx.EVT_BUTTON, self._handler_compare)
 
+        cp.match_mode_notebook.Bind(
+                wx.EVT_NOTEBOOK_PAGE_CHANGED,
+                self._handler_cm_nbp_changed)
+
         cp.comparison_mode_notebook.Bind(
                 wx.EVT_NOTEBOOK_PAGE_CHANGED,
                 self._handler_cm_nbp_changed)
+
+    def _close_vis(self):
+        for sv in self._slice_viewers:
+            sv.close()
 
     def _handler_cam_parallel(self, event):
         self.set_cam_parallel()
@@ -1329,7 +1418,13 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self.sync_slice_viewers.sync_all(self._data1_slice_viewer)
 
     def _handler_cm_nbp_changed(self, evt):
-        print "hello"
+        # tab indices match the constant value.
+        self._config.comparison_mode = evt.GetSelection()
+        self._sync_cm_with_config()
+        self.comparison_mode.update_vis()
+
+    def _handler_mm_nbp_changed(self, evt):
+        print "hello you too"
 
     def _handler_compare(self, e):
         self._update_mmcm()
@@ -1388,6 +1483,35 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             w = self._data2_slice_viewer.get_world_pos(c)
             self._data2_slice_viewer.current_world_pos = w
 
+    def _setup_vis(self):
+        # setup data1 slice viewer, instrument its slice viewers with
+        # observers so that the cursor information is output to the
+        # GUI
+        self._data1_slice_viewer = CMSliceViewer(
+                self._view_frame.rwi_pane_data1.rwi,
+                self._view_frame.rwi_pane_data1.renderer)
+        for ipw in self._data1_slice_viewer.ipws:
+            ipw.AddObserver(
+                'InteractionEvent', 
+                lambda o,e: self._observer_cursor(o,e,'d1') )
+
+        # do the same for the data2 slice viewer
+        self._data2_slice_viewer = CMSliceViewer(
+                self._view_frame.rwi_pane_data2.rwi,
+                self._view_frame.rwi_pane_data2.renderer)
+        for ipw in self._data2_slice_viewer.ipws:
+            ipw.AddObserver(
+                'InteractionEvent', 
+                lambda o,e: self._observer_cursor(o,e,'d2') )
+
+        self._slice_viewers = [ \
+                self._data1_slice_viewer,
+                self._data2_slice_viewer]
+
+        self.sync_slice_viewers = ssv = SyncSliceViewers()
+        for sv in self._slice_viewers:
+            ssv.add_slice_viewer(sv)
+
     def _sync_cm_with_config(self):
         """Synchronise comparison mode with what's specified in the
         config.  This is used by config_to_logic as well as the
@@ -1397,9 +1521,16 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             self.comparison_mode.close()
             self.comparison_mode = None
 
+
         if self._config.comparison_mode == COMPARISON_MODE_DATA2M:
             self.comparison_mode = Data2MCM(
                     self, self._config.data2mcm_cfg)
+
+        elif self._config.comparison_mode == \
+                COMPARISON_MODE_CHECKERBOARD:
+                    self.comparison_mode = CheckerboardCM(
+                            self, self._config.checkerboardcm_cfg)
+
 
     def _sync_mm_with_config(self):
         """Synchronise match mode with what's specified in the config.
@@ -1438,6 +1569,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 self._view_frame.rwi_pane_compvis.rwi,
                 self._view_frame.rwi_pane_compvis.renderer
                 )
+    def get_data1(self):
+        """Return data1 input.
+        """
+        return self._data1_slice_viewer.get_input()
 
     def get_data2m(self):
         """Return currently matched data2, i.e. the output of the
@@ -1466,36 +1601,4 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self._config.cam_parallel = True    
 
 
-    def _setup_vis(self):
-        # setup data1 slice viewer, instrument its slice viewers with
-        # observers so that the cursor information is output to the
-        # GUI
-        self._data1_slice_viewer = CMSliceViewer(
-                self._view_frame.rwi_pane_data1.rwi,
-                self._view_frame.rwi_pane_data1.renderer)
-        for ipw in self._data1_slice_viewer.ipws:
-            ipw.AddObserver(
-                'InteractionEvent', 
-                lambda o,e: self._observer_cursor(o,e,'d1') )
-
-        # do the same for the data2 slice viewer
-        self._data2_slice_viewer = CMSliceViewer(
-                self._view_frame.rwi_pane_data2.rwi,
-                self._view_frame.rwi_pane_data2.renderer)
-        for ipw in self._data2_slice_viewer.ipws:
-            ipw.AddObserver(
-                'InteractionEvent', 
-                lambda o,e: self._observer_cursor(o,e,'d2') )
-
-        self._slice_viewers = [ \
-                self._data1_slice_viewer,
-                self._data2_slice_viewer]
-
-        self.sync_slice_viewers = ssv = SyncSliceViewers()
-        for sv in self._slice_viewers:
-            ssv.add_slice_viewer(sv)
-
-    def _close_vis(self):
-        for sv in self._slice_viewers:
-            sv.close()
 
