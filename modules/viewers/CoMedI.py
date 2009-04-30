@@ -816,7 +816,7 @@ class SStructLandmarksMM(MatchMode):
         self._landmark = vtk.vtkLandmarkTransform()
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
-        self._trfm.SetInterpolationModeToCubic()
+        self._trfm.SetInterpolationModeToLinear()
         # setup a progress message:
         module_utils.setup_vtk_object_progress(
                 self._comedi, self._trfm,
@@ -1452,14 +1452,14 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self.miscObjectConfigure(self._view_frame, self, 'CoMedI')
 
     def _handler_slice2(self, e):
-        for sv in self._slice_viewers:
+        for sv in self.sync_slice_viewers.slice_viewers:
             if e.IsChecked():
                 sv.activate_slice(1)
             else:
                 sv.deactivate_slice(1)
 
     def _handler_slice3(self, e):
-        for sv in self._slice_viewers:
+        for sv in self.sync_slice_viewers.slice_viewers:
             if e.IsChecked():
                 sv.activate_slice(2)
             else:
