@@ -15,6 +15,7 @@ MATCH_MODE_STRINGS = [ \
         ]
 
 COMPARISON_MODE_DATA2M = 1
+COMPARISON_MODE_CHECKERBOARD = 2
 
 # import the frame, i.e. the wx window containing everything
 import CoMedIFrame
@@ -502,13 +503,17 @@ class CMSliceViewer:
             return
 
         if input is None:
+            # remove outline actor, else this will cause errors when
+            # we disable the IPWs (they call a render!)
+            self.renderer.RemoveViewProp(self.outline_actor)
+            self.outline_source.SetInput(None)
+
             self.dv_orientation_widget.set_input(None)
             for ipw in self.ipws:
                 ipw.SetInput(None)
-                ipw.Off()
+                # argh, this disable causes a render
+                ipw.SetEnabled(0)
 
-            self.renderer.RemoveViewProp(self.outline_actor)
-            self.outline_source.SetInput(None)
 
         else:
             self.outline_source.SetInput(input)
@@ -535,6 +540,13 @@ class MatchMode:
         raise NotImplementedError
 
     def close(self):
+        """De-init everything.
+
+        it's important that you de-init everything (including event
+        bindings) as close() is called many times during normal
+        application use.  Each time the user changes the match mode
+        tab, the previous match mode is completely de-initialised.
+        """
         raise NotImplementedError
 
     def get_output(self):
@@ -678,6 +690,7 @@ class LandmarkList:
         self._olv.SetObjects(self.olv_landmark_list)
 
     def close(self):
+        self._olv.Unbind(EVT_CELL_EDIT_FINISHING)
         [lm.close() for lm in self.landmark_dict.values()]
 
     def _get_olv_landmark_list(self):
@@ -806,10 +819,10 @@ class SStructLandmarksMM(MatchMode):
                 self._comedi, self._trfm,
                 'Transforming Data 2')
 
-
     def close(self):
         self._data1_landmarks.close()
         self._data2_landmarks.close()
+        self._unbind_events()
 
     def _add_data1_landmark(self, world_pos, name=None):
         self._data1_landmarks.add_landmark(world_pos)
@@ -818,6 +831,9 @@ class SStructLandmarksMM(MatchMode):
         self._data2_landmarks.add_landmark(world_pos)
 
     def _bind_events(self):
+        # remember to UNBIND all of these in _unbind_events!
+
+
         vf = self._comedi._view_frame
         cp = vf.pane_controls.window
 
@@ -832,6 +848,20 @@ class SStructLandmarksMM(MatchMode):
         cp.data2_landmarks_olv.Bind(
                 wx.EVT_LIST_ITEM_RIGHT_CLICK,
                 self._handler_tolv_right_click)
+
+    def _unbind_events(self):
+        vf = self._comedi._view_frame
+        cp = vf.pane_controls.window
+
+        # bind to the add button
+        cp.lm_add_button.Unbind(wx.EVT_BUTTON)
+
+        cp.data1_landmarks_olv.Unbind(
+                wx.EVT_LIST_ITEM_RIGHT_CLICK)
+
+        cp.data2_landmarks_olv.Unbind(
+                wx.EVT_LIST_ITEM_RIGHT_CLICK)
+
 
     def _handler_add_button(self, e):
         cp = self._comedi._view_frame.pane_controls.window
@@ -972,7 +1002,11 @@ class SStructLandmarksMM(MatchMode):
     def transform(self):
         """If we have valid data and a valid set of matching
         landmarks, transform data2.
+
+        Even if nothing has changed, this WILL perform the actual
+        transformation, so don't call this method unnecessarily.
         """
+
         d1i = self._comedi._data1_slice_viewer.get_input()
         d2i = self._comedi._data2_slice_viewer.get_input()
 
@@ -992,12 +1026,16 @@ class SStructLandmarksMM(MatchMode):
                 # reslice transform transforms the sampling grid. 
                 self._trfm.SetResliceTransform(self._landmark.GetInverse())
                 self._trfm.SetInput(d2i)
+                self._trfm.SetInformationInput(d1i)
                 self._trfm.Update()
                 self._output = self._trfm.GetOutput()
 
         else:
             # not enough valid inputs, so no data.
             self._output = None
+            # also disconnect the transform, so we don't keep data
+            # hanging around
+            self._trfm.SetInput(None)
 
 
 ###########################################################################
@@ -1054,8 +1092,6 @@ class Data2MCM(ComparisonMode):
         self._sv.render()
             
 
-
-    
 
 
 ###########################################################################
@@ -1217,18 +1253,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def config_to_logic(self):
         # we need to be able to build up the correct MatchMode based
         # on the config.
-        if self._config.match_mode == MATCH_MODE_LANDMARK_SS:
-            # we have to create a new one in anycase!  This gets
-            # called if we get a brand new config given to us, too
-            # much could have changed.
-            #mm = self.match_mode
-            #if mm.__class__.__name__ != SStructLandmarksMM.__name__:
-            self.match_mode = SStructLandmarksMM(
-                        self, self._config.sstructlandmarksmm_cfg)
+        self._sync_mm_with_config()
+        # do the same for the comparison mode
+        self._sync_cm_with_config()
 
-        if self._config.comparison_mode == COMPARISON_MODE_DATA2M:
-            self.comparison_mode = Data2MCM(
-                    self, self._config.data2mcm_cfg)
 
     def config_to_view(self):
         if self._config.cam_parallel:
@@ -1285,6 +1313,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         cp = vf.pane_controls.window
         cp.compare_button.Bind(wx.EVT_BUTTON, self._handler_compare)
 
+        cp.comparison_mode_notebook.Bind(
+                wx.EVT_NOTEBOOK_PAGE_CHANGED,
+                self._handler_cm_nbp_changed)
+
     def _handler_cam_parallel(self, event):
         self.set_cam_parallel()
 
@@ -1295,6 +1327,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self._data1_slice_viewer.reset_to_default_view(2)
         # then synchronise the rest
         self.sync_slice_viewers.sync_all(self._data1_slice_viewer)
+
+    def _handler_cm_nbp_changed(self, evt):
+        print "hello"
 
     def _handler_compare(self, e):
         self._update_mmcm()
@@ -1353,12 +1388,45 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             w = self._data2_slice_viewer.get_world_pos(c)
             self._data2_slice_viewer.current_world_pos = w
 
+    def _sync_cm_with_config(self):
+        """Synchronise comparison mode with what's specified in the
+        config.  This is used by config_to_logic as well as the
+        run-time comparison mode tab switching.
+        """
+        if self.comparison_mode:
+            self.comparison_mode.close()
+            self.comparison_mode = None
+
+        if self._config.comparison_mode == COMPARISON_MODE_DATA2M:
+            self.comparison_mode = Data2MCM(
+                    self, self._config.data2mcm_cfg)
+
+    def _sync_mm_with_config(self):
+        """Synchronise match mode with what's specified in the config.
+        This is used by config_to_logic as well as the run-time match
+        mode tab switching.
+        """
+
+        if self.match_mode:
+            self.match_mode.close()
+            self.match_mode = None
+
+        if self._config.match_mode == MATCH_MODE_LANDMARK_SS:
+            # we have to create a new one in anycase!  This gets
+            # called if we get a brand new config given to us, too
+            # much could have changed.
+            #if mm.__class__.__name__ != SStructLandmarksMM.__name__:
+            self.match_mode = SStructLandmarksMM(
+                        self, self._config.sstructlandmarksmm_cfg)
+
+
     def _update_mmcm(self):
         """Update the current match mode and the comparison mode.
         """
 
         self.match_mode.transform()
         self.comparison_mode.update_vis()
+
        
     # PUBLIC methods
 
