@@ -801,6 +801,11 @@ class SStructLandmarksMM(MatchMode):
         # and this guy is going to do the work
         self._trfm = vtk.vtkImageReslice()
         self._trfm.SetInterpolationModeToCubic()
+        # setup a progress message:
+        module_utils.setup_vtk_object_progress(
+                self._comedi, self._trfm,
+                'Transforming Data 2')
+
 
     def close(self):
         self._data1_landmarks.close()
@@ -1287,8 +1292,9 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self.set_cam_perspective()
 
     def _handler_cam_xyzp(self, event):
-        for sv in self._slice_viewers:
-            sv.reset_to_default_view(2)
+        self._data1_slice_viewer.reset_to_default_view(2)
+        # then synchronise the rest
+        self.sync_slice_viewers.sync_all(self._data1_slice_viewer)
 
     def _handler_compare(self, e):
         self._update_mmcm()
@@ -1378,14 +1384,14 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         self._view_frame.render_all()
 
     def set_cam_perspective(self):
-        for sv in self._slice_viewers:
+        for sv in self.sync_slice_viewers.slice_viewers:
             sv.set_perspective()
             sv.render()
 
         self._config.cam_parallel = False
 
     def set_cam_parallel(self):
-        for sv in self._slice_viewers:
+        for sv in self.sync_slice_viewers.slice_viewers:
             sv.set_parallel()
             sv.render()
 
