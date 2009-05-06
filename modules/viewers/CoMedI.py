@@ -387,6 +387,7 @@ class CMSliceViewer:
         # this can be used by clients to store the current world
         # position
         self.current_world_pos = (0,0,0)
+        self.current_index_pos = (0,0,0)
 
     def close(self):
         self.set_input(None)
@@ -565,7 +566,7 @@ class MatchMode:
 
 ###########################################################################
 class Landmark:
-    def __init__(self, name, world_pos, ren):
+    def __init__(self, name, index_pos, world_pos, ren):
         # we'll use this to create new actors.
         self.ren = ren
 
@@ -573,6 +574,7 @@ class Landmark:
 
         self.set_name(name)
         self.set_world_pos(world_pos)
+        self.set_index_pos(index_pos)
        
     def close(self):
         self.ren.RemoveViewProp(self.c3da)
@@ -630,6 +632,7 @@ class Landmark:
         self._world_pos = world_pos
 
     # why have I not been doing this forever?
+    # - because these properties get clobbered real easy.  *sigh*
     world_pos = property(get_world_pos, set_world_pos)
 
     def get_name(self):
@@ -642,6 +645,15 @@ class Landmark:
         self._name = name
 
     name = property(get_name, set_name)
+
+    def get_index_pos(self):
+        return self._index_pos
+
+    def set_index_pos(self, index_pos):
+        self._index_pos = index_pos
+
+    index_pos = property(get_index_pos, set_index_pos)
+
 
 ###########################################################################
 class LandmarkList:
@@ -662,8 +674,8 @@ class LandmarkList:
         self._ren = ren
 
         # there we go, sync internal state to passed config
-        for name,world_pos in config_dict.items():
-            self.add_landmark(world_pos, name)
+        for name,(index_pos, world_pos) in config_dict.items():
+            self.add_landmark(index_pos, world_pos, name)
 
         olv.Bind(EVT_CELL_EDIT_FINISHING,
                 self._handler_olv_edit_finishing)
@@ -678,11 +690,11 @@ class LandmarkList:
 
         olv.SetObjects(self.olv_landmark_list)
 
-    def add_landmark(self, world_pos, name=None):
+    def add_landmark(self, index_pos, world_pos, name=None):
         if name is None:
             name = str(len(self.landmark_dict))
 
-        lm = Landmark(name, world_pos, self._ren)
+        lm = Landmark(name, index_pos, world_pos, self._ren)
         self.landmark_dict[lm.name] = lm
         # set the config_dict.  cheap operation, so we do the whole
         # thing every time.
@@ -763,7 +775,7 @@ class LandmarkList:
         # passed one.
         self._config_dict.clear()
         for key,value in self.landmark_dict.items():
-            self._config_dict[key] = value.world_pos
+            self._config_dict[key] = value.index_pos, value.world_pos
 
 
 ###########################################################################
@@ -869,11 +881,11 @@ class SStructLandmarksMM(MatchMode):
             self._trfm.SetInput(None)
 
     # PRIVATE methods #####
-    def _add_data1_landmark(self, world_pos, name=None):
-        self._data1_landmarks.add_landmark(world_pos)
+    def _add_data1_landmark(self, index_pos, world_pos, name=None):
+        self._data1_landmarks.add_landmark(index_pos, world_pos)
 
-    def _add_data2_landmark(self, world_pos, name=None):
-        self._data2_landmarks.add_landmark(world_pos)
+    def _add_data2_landmark(self, index_pos, world_pos, name=None):
+        self._data2_landmarks.add_landmark(index_pos, world_pos)
 
     def _bind_events(self):
         # remember to UNBIND all of these in _unbind_events!
@@ -898,11 +910,13 @@ class SStructLandmarksMM(MatchMode):
         cp = self._comedi._view_frame.pane_controls.window
         v = cp.cursor_text.GetValue()
         if v.startswith('d1'):
+            ip = self._comedi._data1_slice_viewer.current_index_pos
             wp = self._comedi._data1_slice_viewer.current_world_pos
-            self._add_data1_landmark(wp)
+            self._add_data1_landmark(ip, wp)
         elif v.startswith('d2'):
+            ip = self._comedi._data2_slice_viewer.current_index_pos
             wp = self._comedi._data2_slice_viewer.current_world_pos
-            self._add_data2_landmark(wp)
+            self._add_data2_landmark(ip, wp)
 
     def _handler_delete_selected_lms(self, evt, i):
         cp = self._comedi._view_frame.pane_controls.window
@@ -922,6 +936,7 @@ class SStructLandmarksMM(MatchMode):
         v = cp.cursor_text.GetValue()
         if v.startswith('d1') and i == 0:
             # get the current world position
+            ip = self._comedi._data1_slice_viewer.current_index_pos
             wp = self._comedi._data1_slice_viewer.current_world_pos
             # get the currently selected object
             olv = cp.data1_landmarks_olv
@@ -929,10 +944,11 @@ class SStructLandmarksMM(MatchMode):
             if mobjs:
                 mobj = mobjs[0]
                 # now move...
-                self._data1_landmarks.move_landmark(mobj.name, wp)
+                self._data1_landmarks.move_landmark(mobj.name, ip, wp)
                 
         elif v.startswith('d2') and i == 1:
             # get the current world position
+            ip = self._comedi._data2_slice_viewer.current_index_pos
             wp = self._comedi._data2_slice_viewer.current_world_pos
             # get the currently selected object
             olv = cp.data2_landmarks_olv
@@ -940,7 +956,7 @@ class SStructLandmarksMM(MatchMode):
             if mobjs:
                 mobj = mobjs[0]
                 # now move...
-                self._data2_landmarks.move_landmark(mobj.name, wp)
+                self._data2_landmarks.move_landmark(mobj.name, ip, wp)
 
     def _handler_solv_right_click(self, evt):
         olv = evt.GetEventObject()
@@ -1499,9 +1515,11 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         # it.  we probably need to replace this text check with
         # something else...
         if txt.startswith('d1'):
+            self._data1_slice_viewer.current_index_pos = c
             w = self._data1_slice_viewer.get_world_pos(c)
             self._data1_slice_viewer.current_world_pos = w
         elif txt.startswith('d2'):
+            self._data1_slice_viewer.current_index_pos = c
             w = self._data2_slice_viewer.get_world_pos(c)
             self._data2_slice_viewer.current_world_pos = w
 
