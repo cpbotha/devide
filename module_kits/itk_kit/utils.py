@@ -65,8 +65,18 @@ def get_img_type_and_dim_shortstring(itk_img):
 
     return shortstring
 
-def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
-                           objEvals=None):
+def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
+                              objEvals=None, module_manager=None):
+    """
+    @param dvModlue: instance containing binding to obj.  Usually this
+    is a DeVIDE module.  If not, remember to pass module_manager
+    parameter.
+    @param obj: The ITK object that needs to be progress updated.
+    @param module_manager: If set, will be used as binding to
+    module_manager.  If set to None, dvModule._module_manager will be
+    used.  This can be used in cases when obj is NOT a member of a
+    DeVIDE module, iow when dvModule is not a DeVIDE module.
+    """
 
     # objEvals is on optional TUPLE of obj attributes that will be called
     # at each progress callback and filled into progressText via the Python
@@ -92,7 +102,10 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
         raise Exception, 'Could not determine attribute string for ' \
               'object %s.' % (obj.__class__.__name__)
 
-    mm = dvModule._module_manager
+    if module_manager is None:
+        mm = dvModule._module_manager
+    else:
+        mm = module_manager
 
     # sanity check objEvals
     if type(objEvals) != type(()) and objEvals != None:
@@ -108,7 +121,6 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
                     eval('dvModule.%s.%s' % (objAttrString, objEval)))
 
         values = tuple(values)
-        print values
 
         # do the actual callback
         mm.generic_progress_callback(getattr(dvModule, objAttrString),
@@ -126,3 +138,5 @@ def setupITKObjectProgress(dvModule, obj, nameOfObject, progressText,
     # the ITK object makes its own copy.  The ITK object will also take care
     # of destroying the observer when it (the ITK object) is destroyed
     #obj.progressPyCommand = pc
+
+setupITKObjectProgress = setup_itk_object_progress
