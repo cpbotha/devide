@@ -1,4 +1,6 @@
-# $Id$
+# Copyright (c) Charl P. Botha, TU Delft.
+# All rights reserved.
+# See COPYRIGHT for details.
 
 """Utility methods for vtk_kit module kit.
 
