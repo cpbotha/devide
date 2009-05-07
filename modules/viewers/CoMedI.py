@@ -27,6 +27,7 @@ reload(CoMedIFrame)
 from external.ObjectListView import ColumnDefn, EVT_CELL_EDIT_FINISHING
 import math
 from module_kits.misc_kit import misc_utils
+from module_kits.vtk_kit.utils import DVOrientationWidget
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
@@ -37,75 +38,6 @@ import sys
 import traceback
 import vtk
 import wx
-
-###########################################################################
-class DVOrientationWidget:
-    """Convenience class for embedding orientation widget in any
-    renderwindowinteractor.  If the data has DeVIDE style orientation
-    metadata, this class will show the little LRHFAP block, otherwise
-    x-y-z cursor.
-    """
-
-    def __init__(self, rwi):
-
-
-        self._orientation_widget = vtk.vtkOrientationMarkerWidget()
-        self._orientation_widget.SetInteractor(rwi)
-
-        # we'll use this if there is no orientation metadata
-        # just a thingy with x-y-z indicators
-        self._axes_actor = vtk.vtkAxesActor()
-
-        # we'll use this if there is orientation metadata
-        self._annotated_cube_actor = aca = vtk.vtkAnnotatedCubeActor()
-
-        # configure the thing with better colours and no stupid edges 
-        #aca.TextEdgesOff()
-        aca.GetXMinusFaceProperty().SetColor(1,0,0)
-        aca.GetXPlusFaceProperty().SetColor(1,0,0)
-        aca.GetYMinusFaceProperty().SetColor(0,1,0)
-        aca.GetYPlusFaceProperty().SetColor(0,1,0)
-        aca.GetZMinusFaceProperty().SetColor(0,0,1)
-        aca.GetZPlusFaceProperty().SetColor(0,0,1)
-       
-
-    def close(self):
-        self.set_input(None)
-        self._orientation_widget.SetInteractor(None)
-
-
-    def set_input(self, input_data):
-        if input_data is None:
-            self._orientation_widget.Off()
-            return
-
-        ala = input_data.GetFieldData().GetArray('axis_labels_array')
-        if ala:
-            lut = list('LRPAFH')
-            labels = []
-            for i in range(6):
-                labels.append(lut[ala.GetValue(i)])
-                
-            self._set_annotated_cube_actor_labels(labels)
-            self._orientation_widget.Off()
-            self._orientation_widget.SetOrientationMarker(
-                self._annotated_cube_actor)
-            self._orientation_widget.On()
-            
-        else:
-            self._orientation_widget.Off()
-            self._orientation_widget.SetOrientationMarker(
-                self._axes_actor)
-            self._orientation_widget.On()
-
-    def _set_annotated_cube_actor_labels(self, labels):
-        aca = self._annotated_cube_actor
-        aca.SetXMinusFaceText(labels[0])
-        aca.SetXPlusFaceText(labels[1])
-        aca.SetYMinusFaceText(labels[2])
-        aca.SetYPlusFaceText(labels[3])
-        aca.SetZMinusFaceText(labels[4])
-        aca.SetZPlusFaceText(labels[5])
 
 ###########################################################################
 class SyncSliceViewers:
