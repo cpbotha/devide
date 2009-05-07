@@ -46,7 +46,6 @@ import traceback
 import vtk
 import wx
 
-
 class CoMedI(IntrospectModuleMixin, ModuleBase):
     # API methods
     def __init__(self, module_manager):
@@ -136,7 +135,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def get_output_descriptions(self):
         # define this as a tuple of output descriptions if you want to
         # generate output data.
-        return ()
+        return ('Matched Data 2', 'Confidence Field')
 
 
 
@@ -187,7 +186,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def get_output(self, idx):
         # this can get called at any time when a consumer module wants
         # you output data.
-        pass
+        if idx == 0:
+            return self.match_mode.get_output()
+        else:
+            return self.match_mode.get_confidence()
 
     def execute_module(self):
         # when it's you turn to execute as part of a network

@@ -3,6 +3,8 @@
 # See COPYRIGHT for details.
 
 from external.ObjectListView import ColumnDefn, EVT_CELL_EDIT_FINISHING
+import itk
+from module_kits import itk_kit
 import module_utils
 import vtk
 import wx
@@ -32,6 +34,13 @@ class MatchMode:
         possible, due to the lack of input data for example.  Call
         after having called transform.
         """
+        raise NotImplementedError
+
+    def get_confidence(self):
+        """Return confidence field, usually a form of distance field
+        to the matching structures.
+        """
+
         raise NotImplementedError
 
     def transform(self):
@@ -126,7 +135,7 @@ class Landmark:
         return self._index_pos
 
     def set_index_pos(self, index_pos):
-        self._index_pos = index_pos
+        self._index_pos = index_pos[0:3]
 
     index_pos = property(get_index_pos, set_index_pos)
 
@@ -193,6 +202,16 @@ class LandmarkList:
 
     olv_landmark_list = property(_get_olv_landmark_list)
 
+    def get_index_pos_list(self):
+        """Retuns a list of 3-element discrete coordinates for the
+        current landmarks, sorted by name.
+        """
+
+        ld = self.landmark_dict
+        keys = ld.keys()
+        keys.sort()
+        return [ld[key].index_pos for key in keys]
+
     def _handler_olv_edit_finishing(self, evt):
         """This can get called only for "name" column edits, nothing
         else.
@@ -255,6 +274,11 @@ class LandmarkList:
 
 
 ###########################################################################
+
+KEY_DATA1_LANDMARKS = 'data1_landmarks'
+KEY_DATA2_LANDMARKS = 'data2_landmarks'
+KEY_MAX_DISTANCE = 'max_distance'
+
 class SStructLandmarksMM(MatchMode):
     """Class representing simple landmark-transform between two sets
     of points.
@@ -299,6 +323,8 @@ class SStructLandmarksMM(MatchMode):
 
         # we'll use this to store a binding to the current output
         self._output = None
+        # and this to store a binding to the current confidence
+        self._confidence = None
 
         # remember, this turns out to be the transform itself
         self._landmark = vtk.vtkLandmarkTransform()
@@ -310,10 +336,60 @@ class SStructLandmarksMM(MatchMode):
                 self._comedi, self._trfm,
                 'Transforming Data 2')
 
+
+        # distance field will be calculated up to this distance,
+        # saving you time and money!
+        if KEY_MAX_DISTANCE not in self._cfg:
+            self._cfg[KEY_MAX_DISTANCE] = 43
+
+        md = self._cfg[KEY_MAX_DISTANCE]
+
+        # use itk fast marching to generate confidence field
+        self._fm = itk.FastMarchingImageFilter.IF3IF3.New()
+        self._fm.SetStoppingValue(md)
+        self._fm.SetSpeedConstant(1.0)
+        # setup a progress message
+        itk_kit.utils.setup_itk_object_progress(
+            self, self._fm, 'itkFastMarchingImageFilter',
+            'Propagating confidence front.', None,
+            comedi._module_manager)
+
+
+        # and a threshold to clip off the really high values that fast
+        # marching inserts after its max distance
+        self._thresh = t = itk.ThresholdImageFilter.IF3.New()
+        t.SetOutsideValue(md)
+        # values equal to or greater than this are set to outside value
+        t.ThresholdAbove(md)
+        itk_kit.utils.setup_itk_object_progress(
+                self, self._thresh, 'itkThresholdImageFilter',
+                'Clipping high values in confidence field.', None,
+                comedi._module_manager)
+
+        t.SetInput(self._fm.GetOutput())
+
+        # and a little something to convert it back to VTK world
+        self._itk2vtk = itk.ImageToVTKImageFilter.IF3.New()
+        self._itk2vtk.SetInput(t.GetOutput())
+
     def close(self):
         self._data1_landmarks.close()
         self._data2_landmarks.close()
         self._unbind_events()
+
+        # get rid of the transform
+        self._trfm.SetInput(None)
+        del self._trfm
+
+        # nuke landmark
+        del self._landmark
+
+        # nuke fastmarching
+        del self._fm
+        del self._thresh
+
+    def get_confidence(self):
+        return self._confidence
 
     def get_output(self):
         return self._output
@@ -349,12 +425,48 @@ class SStructLandmarksMM(MatchMode):
                 self._trfm.Update()
                 self._output = self._trfm.GetOutput()
 
+                # then calculate distance field #####################
+                c2vc = itk_kit.utils.coordinates_to_vector_container
+                lm = self._data1_landmarks
+                seeds = c2vc(lm.get_index_pos_list(), 0)
+                self._fm.SetTrialPoints(seeds)
+                # now make sure the output has exactly the right
+                # dimensions and everyfink
+                o = d1i.GetOrigin()
+                s = d1i.GetSpacing()
+                d = d1i.GetDimensions()
+
+                fmo = itk.Point.D3()
+                for i,e in enumerate(o):
+                    fmo.SetElement(i,e)
+
+                fms = itk.Vector.D3()
+                for i,e in enumerate(s):
+                    fms.SetElement(i,e)
+
+                fmr = itk.ImageRegion._3()
+                fmsz = fmr.GetSize()
+                for i,e in enumerate(d):
+                    fmsz.SetElement(i,e)
+                
+
+                self._fm.SetOutputOrigin(fmo)
+                self._fm.SetOutputSpacing(fms)
+                self._fm.SetOutputRegion(fmr)
+
+                # drag the whole thing through the vtk2itk converter
+                self._itk2vtk.Update()
+                self._confidence = self._itk2vtk.GetOutput()
+
         else:
             # not enough valid inputs, so no data.
             self._output = None
             # also disconnect the transform, so we don't keep data
             # hanging around
             self._trfm.SetInput(None)
+
+            #
+            self._confidence = None
 
     # PRIVATE methods #####
     def _add_data1_landmark(self, index_pos, world_pos, name=None):
