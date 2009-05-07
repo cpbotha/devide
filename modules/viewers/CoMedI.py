@@ -1060,6 +1060,14 @@ class SStructLandmarksMM(MatchMode):
 
 
 ###########################################################################
+# 2D:
+# * vtkRectilinearWipeWidget, de-emphasize anything outside focus:
+#   yellow blue inside, grey outside
+# * IPW with yellow-blue difference inside focus, grey data1 outside
+# 3D:
+# * context gray (silhouette, data1), focus animated
+# * context gray (silhouette, data2), focus difference image
+
 class ComparisonMode:
     def __init__(self, comedi, cfg_dict):
         pass
