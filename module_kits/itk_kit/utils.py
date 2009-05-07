@@ -7,7 +7,41 @@ import re
 
 from module_kits.misc_kit.misc_utils import get_itk_img_type_and_dim
 get_img_type_and_dim = get_itk_img_type_and_dim
-                
+
+def coordinates_to_vector_container(points, initial_distance=0):
+    """Convert list of 3-D index coordinates to an ITK
+    VectorContainer for use with the FastMarching filter.
+
+    @param points: Python iterable containing 3-D index (integer)
+    coordinates.
+    @param initial_distance: Initial distance that will be set on
+    these nodes for the fast marching.
+    """
+
+    vc = itk.VectorContainer[itk.UI,
+                             itk.LevelSetNode[itk.F, 3]].New()
+    # this will clear it
+    vc.Initialize()
+
+    for pt_idx, pt in enumerate(points):
+        # cast each coordinate element to integer
+        x,y,z = [int(e) for e in pt]
+
+        idx = itk.Index[3]()
+        idx.SetElement(0, x)
+        idx.SetElement(1, y)
+        idx.SetElement(2, z)
+
+        node = itk.LevelSetNode[itk.F, 3]()
+        node.SetValue(initial_distance)
+        node.SetIndex(idx)
+
+        vc.InsertElement(pt_idx, node)
+
+    return vc
+            
+
+            
 
 def get_img_type_and_dim_shortstring(itk_img):
 

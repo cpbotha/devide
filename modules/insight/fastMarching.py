@@ -109,29 +109,15 @@ class fastMarching(ScriptedConfigModuleMixin, ModuleBase):
 
         if len(self._inputPoints) > 0:
 
-            seeds = itk.VectorContainer[itk.UI,
-                                        itk.LevelSetNode[itk.F, 3]].New()
-            # this will clear it
-            seeds.Initialize()
 
-            for ip,nodePos in zip(self._inputPoints,
-                                  range(len(self._inputPoints))):
-                # bugger, it could be that our input dataset has an extent
-                # that doesn't start at 0,0,0... ITK doesn't understand this
-                x,y,z = [int(i) for i in ip['discrete']]
+            # get list of discrete coordinates
+            dcoords = [p['discrete'] for p in self._inputPoints]
 
-                idx = itk.Index[3]()
-                idx.SetElement(0, x)
-                idx.SetElement(1, y)
-                idx.SetElement(2, z)
-
-                node = itk.LevelSetNode[itk.F, 3]()
-                node.SetValue(self._config.initial_distance)
-                node.SetIndex(idx)
-
-                seeds.InsertElement(nodePos, node)
-                
-                print "Added %d,%d,%d at %d" % (x,y,z,nodePos)
+            # use utility function to convert these to vector
+            # container
+            seeds = \
+                itk_kit.utils.coordinates_to_vector_container(
+                        dcoords, self._config.initial_distance)
 
             self._fastMarching.SetTrialPoints(seeds)
 
