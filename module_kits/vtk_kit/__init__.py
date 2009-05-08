@@ -118,6 +118,7 @@ def init(module_manager, pre_import=True):
     import module_kits.vtk_kit.mixins as mixins
     import module_kits.vtk_kit.utils as utils
     import module_kits.vtk_kit.constants as constants
+    import module_kits.vtk_kit.color_scales as color_scales
 
     # setup the kit version
     global VERSION
