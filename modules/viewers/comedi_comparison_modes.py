@@ -6,6 +6,7 @@ import comedi_utils
 reload(comedi_utils)
 import vtk
 import vtktudoss
+from module_kits import vtk_kit
 
 
 ###########################################################################
@@ -158,6 +159,9 @@ class FocusDiffCM(ComparisonMode):
         self._comedi = comedi
         self._cfg = cfg_dict
 
+        # color scales thingy
+        self._color_scales = vtk_kit.color_scales.ColorScales()
+
         # instantiate us a slice viewer
         rwi,ren = comedi.get_compvis_vtk()
         self._sv = comedi_utils.CMSliceViewer(rwi, ren)
@@ -181,9 +185,23 @@ class FocusDiffCM(ComparisonMode):
         self._sub.SetInput1(self._ss1.GetOutput())
         self._sub.SetInput2(self._ss2.GetOutput())
 
+        # we have to cast the confidence to shorts as well
+        self._ssc = vtk.vtkImageShiftScale()
+        self._ssc.SetOutputScalarTypeToShort()
+
+        self._iac = vtk.vtkImageAppendComponents()
+        # data1 will form the context
+        self._iac.SetInput(0, self._ss1.GetOutput())
+        # subtraction will form the focus
+        self._iac.SetInput(1, self._sub.GetOutput())
+        # third input will be the confidence
+        self._iac.SetInput(2, self._ssc.GetOutput())
+
+
         # we'll store our local bindings here
         self._d1 = None
         self._d2m = None
+        self._conf = None
 
     def close(self):
         self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
@@ -196,22 +214,48 @@ class FocusDiffCM(ComparisonMode):
 
     def update_vis(self):
         # if there's valid data, do the vis man!
-        o = self._comedi.match_mode.get_output()
+        d2m = self._comedi.get_data2m()
+        d1 = self._comedi.get_data1()
+        conf = self._comedi.match_mode.get_confidence()
 
-        # get current input
-        ci = self._ss1.GetInput()
+        new_data = False
 
-        if o != ci:
-            # new data!  do something!
-            self._ss1.SetInput(o)
-            self._sv.set_input(self._ss1.GetOutput())
+        if d1 != self._d1:
+            self._d1 = d1
+            self._ss1.SetInput(d1)
+            new_data = True
 
-            # if it's not null, sync with primary viewer
-            if o is not None:
+        if d2m != self._d2m:
+            self._d2m = d2m
+            self._ss2.SetInput(d2m)
+            new_data = True
+
+        if conf != self._conf:
+            self._conf = conf
+            self._ssc.SetInput(self._conf)
+
+        if new_data:
+            if d1 and d2m and conf:
+                self._sub.Update()
+                r = self._sub.GetOutput().GetScalarRange()
+                #lut = self._color_scales.LUT_Linear_BlueToYellow(r)
+                lut = self._color_scales.LUT_BlueToYellow(r)
+                self._sv.ipws[0].GetColorMap().SetLookupTable2(lut)
+
+                print "about to update iac"
+                self._iac.SetNumberOfThreads(1)
+                self._iac.Update()
+                print "done updating iac"
+
+                self._sv.set_input(self._iac.GetOutput())
+
+                # sync it to data1
                 sv1 = self._comedi._data1_slice_viewer
                 self._comedi.sync_slice_viewers.sync_all(
                         sv1, [self._sv])
 
+            else:
+                self._sv.set_input(None)
 
         # we do render to update the 3D view
         self._sv.render()
