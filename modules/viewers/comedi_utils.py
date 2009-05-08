@@ -3,6 +3,7 @@
 # See COPYRIGHT for details.
 
 from module_kits.vtk_kit.utils import DVOrientationWidget
+import operator
 import vtk
 import wx
 
