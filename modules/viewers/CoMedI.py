@@ -17,6 +17,7 @@ MATCH_MODE_STRINGS = [ \
 
 COMPARISON_MODE_DATA2M = 0
 COMPARISON_MODE_CHECKERBOARD = 1
+COMPARISON_MODE_DIFFERENCE = 2
 
 # import the frame, i.e. the wx window containing everything
 import CoMedIFrame
@@ -101,6 +102,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
 
         self._config.data2mcm_cfg = {}
         self._config.checkerboardcm_cfg = {}
+        self._config.focusdiffcm_cfg = {}
 
         self._config.comparison_mode = COMPARISON_MODE_DATA2M
         self.comparison_mode = None
@@ -433,6 +435,12 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                     cm = comedi_comparison_modes.CheckerboardCM
                     self.comparison_mode = cm(
                             self, self._config.checkerboardcm_cfg)
+
+        elif self._config.comparison_mode == \
+                COMPARISON_MODE_DIFFERENCE:
+                    cm = comedi_comparison_modes.FocusDiffCM
+                    self.comparison_mode = cm(
+                            self, self._config.focusdiffcm_cfg)
 
 
     def _sync_mm_with_config(self):

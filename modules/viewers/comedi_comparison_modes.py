@@ -5,6 +5,7 @@
 import comedi_utils
 reload(comedi_utils)
 import vtk
+import vtktudoss
 
 
 ###########################################################################
@@ -12,10 +13,14 @@ import vtk
 # * vtkRectilinearWipeWidget, de-emphasize anything outside focus:
 #   yellow blue inside, grey outside
 # * IPW with yellow-blue difference inside focus, grey data1 outside
+# * gradient of data2 overlaid on data1
+# * two colour channels, for scalar and for gradient combination (you
+#   should be able to do this wiht pre-proc, colourise data BEFORE)
 # 3D:
 # * context gray (silhouette, data1), focus animated
 # * context gray (silhouette, data2), focus difference image
 
+###########################################################################
 class ComparisonMode:
     def __init__(self, comedi, cfg_dict):
         pass
@@ -31,43 +36,7 @@ class ComparisonMode:
         """
         pass
 
-class Data2MCM(ComparisonMode):
-    """Match mode that only displays the matched data2.
-    """
-
-    def __init__(self, comedi, cfg_dict):
-        self._comedi = comedi
-        self._cfg = cfg_dict
-
-        rwi,ren = comedi.get_compvis_vtk()
-        self._sv = comedi_utils.CMSliceViewer(rwi, ren)
-        comedi.sync_slice_viewers.add_slice_viewer(self._sv)
-
-    def close(self):
-        self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
-        self._sv.close()
-
-    def update_vis(self):
-        # if there's valid data, do the vis man!
-        o = self._comedi.match_mode.get_output()
-
-        # get current input
-        ci = self._sv.get_input()
-
-        if o != ci:
-            # new data!  do something!
-            self._sv.set_input(o)
-
-            # if it's not null, sync with primary viewer
-            if o is not None:
-                sv1 = self._comedi._data1_slice_viewer
-                self._comedi.sync_slice_viewers.sync_all(
-                        sv1, [self._sv])
-
-
-        # we do render to update the 3D view
-        self._sv.render()
-            
+###########################################################################
 class CheckerboardCM(ComparisonMode):
     """Comparison mode that shows a checkerboard of the two matched
     datasets.
@@ -137,6 +106,111 @@ class CheckerboardCM(ComparisonMode):
         if ndiv != (divx, divy, divz):
             self._cb.SetNumberOfDivisions((divx, divy, divz))
 
+
+
+        # we do render to update the 3D view
+        self._sv.render()
+
+###########################################################################
+class Data2MCM(ComparisonMode):
+    """Match mode that only displays the matched data2.
+    """
+
+    def __init__(self, comedi, cfg_dict):
+        self._comedi = comedi
+        self._cfg = cfg_dict
+
+        rwi,ren = comedi.get_compvis_vtk()
+        self._sv = comedi_utils.CMSliceViewer(rwi, ren)
+        comedi.sync_slice_viewers.add_slice_viewer(self._sv)
+
+    def close(self):
+        self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
+        self._sv.close()
+
+    def update_vis(self):
+        # if there's valid data, do the vis man!
+        o = self._comedi.match_mode.get_output()
+
+        # get current input
+        ci = self._sv.get_input()
+
+        if o != ci:
+            # new data!  do something!
+            self._sv.set_input(o)
+
+            # if it's not null, sync with primary viewer
+            if o is not None:
+                sv1 = self._comedi._data1_slice_viewer
+                self._comedi.sync_slice_viewers.sync_all(
+                        sv1, [self._sv])
+
+
+        # we do render to update the 3D view
+        self._sv.render()
+
+class FocusDiffCM(ComparisonMode):
+    """Match mode that displays difference between data in focus area
+    with blue/yellow colour scale, normal greyscale for the context.
+    """
+
+    def __init__(self, comedi, cfg_dict):
+        self._comedi = comedi
+        self._cfg = cfg_dict
+
+        # instantiate us a slice viewer
+        rwi,ren = comedi.get_compvis_vtk()
+        self._sv = comedi_utils.CMSliceViewer(rwi, ren)
+        # now make our own MapToColors
+        lut = self._sv.ipws[0].GetLookupTable()
+        m2c = vtktudoss.vtkCVImageMapToColors()
+        #m2c = vtk.vtkImageMapToColors()
+        m2c.SetLookupTable(lut)
+        self._sv.ipws[0].SetColorMap(m2c)
+        comedi.sync_slice_viewers.add_slice_viewer(self._sv)
+
+        # now build up the VTK pipeline #############################
+        # we'll use these to scale data between 0 and max.
+        self._ss1 = vtk.vtkImageShiftScale()
+        self._ss1.SetOutputScalarTypeToShort()
+        self._ss2 = vtk.vtkImageShiftScale()
+        self._ss2.SetOutputScalarTypeToShort()
+        # then something to subtract the two
+        self._sub = vtk.vtkImageMathematics()
+        self._sub.SetOperationToSubtract()
+        self._sub.SetInput1(self._ss1.GetOutput())
+        self._sub.SetInput2(self._ss2.GetOutput())
+
+        # we'll store our local bindings here
+        self._d1 = None
+        self._d2m = None
+
+    def close(self):
+        self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
+        self._sv.close()
+
+        # take care of all our bindings to VTK classes
+        del self._ss1
+        del self._ss2
+        del self._sub
+
+    def update_vis(self):
+        # if there's valid data, do the vis man!
+        o = self._comedi.match_mode.get_output()
+
+        # get current input
+        ci = self._ss1.GetInput()
+
+        if o != ci:
+            # new data!  do something!
+            self._ss1.SetInput(o)
+            self._sv.set_input(self._ss1.GetOutput())
+
+            # if it's not null, sync with primary viewer
+            if o is not None:
+                sv1 = self._comedi._data1_slice_viewer
+                self._comedi.sync_slice_viewers.sync_all(
+                        sv1, [self._sv])
 
 
         # we do render to update the 3D view
