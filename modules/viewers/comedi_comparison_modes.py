@@ -180,11 +180,17 @@ class FocusDiffCM(ComparisonMode):
         rwi,ren = comedi.get_compvis_vtk()
         self._sv = comedi_utils.CMSliceViewer(rwi, ren)
         # now make our own MapToColors
+        ct = 32
         lut = self._sv.ipws[0].GetLookupTable()
-        m2c = vtktudoss.vtkCVImageMapToColors()
-        m2c.SetLookupTable(lut)
-        self._sv.ipws[0].SetColorMap(m2c)
-        self._cmap = m2c
+        self._cmaps = [vtktudoss.vtkCVImageMapToColors() for _ in range(3)]
+        for i,cmap in enumerate(self._cmaps):
+            cmap.SetLookupTable(lut)
+            cmap.SetConfidenceThreshold(ct)
+            self._sv.ipws[i].SetColorMap(cmap)
+
+        self._set_confidence_threshold_ui(ct)
+
+
         comedi.sync_slice_viewers.add_slice_viewer(self._sv)
 
         # now build up the VTK pipeline #############################
@@ -242,8 +248,8 @@ class FocusDiffCM(ComparisonMode):
             self._conf = conf
             self._ssc.SetInput(self._conf)
 
-        if new_data:
-            if d1 and d2m and conf:
+        if d1 and d2m and conf:
+            if new_data:
                 self._ss1.Update()
                 self._ss2.Update()
                 r = self._ss1.GetOutput().GetScalarRange()
@@ -262,9 +268,15 @@ class FocusDiffCM(ComparisonMode):
                 sv1 = self._comedi._data1_slice_viewer
                 self._comedi.sync_slice_viewers.sync_all(
                         sv1, [self._sv])
-
             else:
-                self._sv.set_input(None)
+                # now new data, but we might want to update the
+                # vis-settings
+                self._handler_conf_thresh(event)
+                self._sync_cmap_type_and_range_with_ui()
+
+        else:
+            self._sv.set_input(None)
+
 
         # we do render to update the 3D view
         self._sv.render()
@@ -274,6 +286,10 @@ class FocusDiffCM(ComparisonMode):
     def _bind_events(self):
         vf = self._comedi._view_frame
         panel = vf.pane_controls.window
+
+        panel.cm_diff_conf_thresh_txt.Bind(
+                wx.EVT_TEXT_ENTER,
+                self._handler_conf_thresh)
 
         panel.cm_diff_context_target_choice.Bind(
                 wx.EVT_CHOICE,
@@ -298,13 +314,29 @@ class FocusDiffCM(ComparisonMode):
     def _handler_cmap_choice(self, event):
         self._sync_cmap_type_and_range_with_ui()
 
+    def _handler_conf_thresh(self, event):
+        vf = self._comedi._view_frame
+        panel = vf.pane_controls.window
+
+        v = panel.cm_diff_conf_thresh_txt.GetValue()
+
+        try:
+            v = float(v)
+        except ValueError:
+            v = self._cmaps[0].GetConfidenceThreshold()
+            self._set_confidence_threshold_ui(v)
+        else:
+            [cmap.SetConfidenceThreshold(v) for cmap in self._cmaps]
+
+        self._sv.render()
+
     def _handler_focus_context_choice(self, event):
         c = event.GetEventObject()
         val = c.GetSelection()
-        if val != self._cmap.GetContextTarget():
-            self._cmap.SetContextTarget(val)
+        if val != self._cmaps[0].GetContextTarget():
+            [cmap.SetContextTarget(val) for cmap in self._cmaps]
 
-        self._sv.render()
+            self._sv.render()
 
     def _handler_range0(self, event):
         self._sync_cmap_type_and_range_with_ui()
@@ -315,10 +347,16 @@ class FocusDiffCM(ComparisonMode):
     def _handler_focus_target_choice(self, event):
         c = event.GetEventObject()
         val = c.GetSelection()
-        if val != self._cmap.GetFocusTarget():
-            self._cmap.SetFocusTarget(val)
+        if val != self._cmaps[0].GetFocusTarget():
+            [cmap.SetFocusTarget(val) for cmap in self._cmaps]
 
-        self._sv.render()
+            self._sv.render()
+
+    def _set_confidence_threshold_ui(self, thresh):
+        vf = self._comedi._view_frame
+        panel = vf.pane_controls.window
+
+        panel.cm_diff_conf_thresh_txt.SetValue('%.1f' % (thresh,))
 
     def _set_range_ui(self, range):
         """Set the given range in the interface.
@@ -399,7 +437,9 @@ class FocusDiffCM(ComparisonMode):
             elif cmap_type == CMAP_BLACK_TO_WHITE_PL:
                 lut = self._color_scales.LUT_Linear_BlackToWhite(r)
 
-            self._cmap.SetLookupTable2(lut)
+            for cmap in self._cmaps:
+                cmap.SetLookupTable2(lut)
+
             self._sv.render()
 
         # we return the possibly corrected range
