@@ -27,6 +27,15 @@ class ComparisonMode:
     def __init__(self, comedi, cfg_dict):
         pass
 
+    def disable_vis(self):
+        """This will be called by CoMedI when it sees that we're about
+        to lose input data, before it calls update_vis().  This is to
+        give us time to de-init all visual elements whilst data is
+        still available.  This is mostly because the vtkIPW calls
+        render whenever you try to disable or disconnect it.
+        """
+        pass
+
     def set_inputs(self, data1, data2, data2m, distance):
         pass
 
@@ -64,6 +73,9 @@ class CheckerboardCM(ComparisonMode):
         # disconnect the checkerboard
         self._cb.SetInput1(None)
         self._cb.SetInput2(None)
+
+    def disable_vis(self):
+        self._sv.set_input(None)
 
     def update_vis(self):
         # if there's valid data, do the vis man!
@@ -129,6 +141,9 @@ class Data2MCM(ComparisonMode):
     def close(self):
         self._comedi.sync_slice_viewers.remove_slice_viewer(self._sv)
         self._sv.close()
+
+    def disable_vis(self):
+        self._sv.set_input(None)
 
     def update_vis(self):
         # if there's valid data, do the vis man!
@@ -225,6 +240,9 @@ class FocusDiffCM(ComparisonMode):
         # take care of all our bindings to VTK classes
         del self._ss1
         del self._ss2
+
+    def disable_vis(self):
+        self._sv.set_input(None)
 
     def update_vis(self):
         # if there's valid data, do the vis man!

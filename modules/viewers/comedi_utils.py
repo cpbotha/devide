@@ -264,8 +264,10 @@ class CMSliceViewer:
         rwi.Bind(wx.EVT_MOUSEWHEEL, self._handler_mousewheel)
 
         self.ipws = [vtk.vtkImagePlaneWidget() for _ in range(3)]
+        lut = self.ipws[0].GetLookupTable()
         for ipw in self.ipws:
             ipw.SetInteractor(rwi)
+            ipw.SetLookupTable(lut)
 
         # we only set the picker on the visible IPW, else the
         # invisible IPWs block picking!
@@ -410,11 +412,11 @@ class CMSliceViewer:
             self.outline_source.SetInput(None)
 
             self.dv_orientation_widget.set_input(None)
+
             for ipw in self.ipws:
-                ipw.SetInput(None)
                 # argh, this disable causes a render
                 ipw.SetEnabled(0)
-
+                ipw.SetInput(None)
 
         else:
             self.outline_source.SetInput(input)

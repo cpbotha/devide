@@ -153,7 +153,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                 # we're done disconnecting, no syncing necessary
                 # but we do need to tell the current match_mode
                 # something is going on.
-                self._update_mmcm()
+                self._update_mmcm(True)
                 return
 
             if not self._data2_slice_viewer.get_input():
@@ -171,7 +171,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
             self._data2_slice_viewer.set_input(input_stream)
 
             if input_stream is None:
-                self._update_mmcm()
+                self._update_mmcm(True)
                 return
 
             if not self._data1_slice_viewer.get_input():
@@ -462,13 +462,15 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
                         self, self._config.sstructlandmarksmm_cfg)
 
 
-    def _update_mmcm(self):
+    def _update_mmcm(self, disable_vis=False):
         """Update the current match mode and the comparison mode.
         """
 
+        if disable_vis:
+            self.comparison_mode.disable_vis()
+
         self.match_mode.transform()
         self.comparison_mode.update_vis()
-
        
     # PUBLIC methods
 
