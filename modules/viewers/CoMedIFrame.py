@@ -131,21 +131,21 @@ class CoMedIFrame(wx.Frame):
         self._mgr.AddPane(self.pane_controls.window, wx.aui.AuiPaneInfo().
                           Name("controls").Caption("Controls").
                           Left().Layer(2).
-                          BestSize(wx.Size(400,400)).
+                          BestSize(wx.Size(500,800)).
                           CloseButton(False).MaximizeButton(True))
 
         self.rwi_pane_data1 = self._create_rwi_pane()
         self._mgr.AddPane(self.rwi_pane_data1.window, wx.aui.AuiPaneInfo().
                           Name("data1 rwi").Caption("Data 1").
                           Left().Position(0).Layer(1).
-                          BestSize(wx.Size(400,400)).
+                          BestSize(wx.Size(500,400)).
                           CloseButton(False).MaximizeButton(True))
 
         self.rwi_pane_data2 = self._create_rwi_pane()
         self._mgr.AddPane(self.rwi_pane_data2.window, wx.aui.AuiPaneInfo().
                           Name("data2 rwi").Caption("Data 2").
                           Left().Position(1).Layer(1).
-                          BestSize(wx.Size(400,400)).
+                          BestSize(wx.Size(500,400)).
                           CloseButton(False).MaximizeButton(True))
 
         self.rwi_pane_compvis = self._create_rwi_pane()
@@ -231,6 +231,19 @@ class CoMedIFrame(wx.Frame):
         panel.cm_checkerboard_divx = f.cm_checkerboard_divx
         panel.cm_checkerboard_divy = f.cm_checkerboard_divy
         panel.cm_checkerboard_divz = f.cm_checkerboard_divz
+
+        # ok, so this is easier and cleaner.
+        cm_diff_controls = [
+                'cm_diff_conf_thresh_txt',
+                'cm_diff_focus_target_choice',
+                'cm_diff_context_target_choice',
+                'cm_diff_cmap_choice',
+                'cm_diff_range0_text',
+                'cm_diff_range1_text',
+                'cm_diff_autorange_button'
+                ]
+        for ivar in cm_diff_controls:
+            setattr(panel, ivar, getattr(f, ivar))
 
         cmi_pane = CMIPane()
         cmi_pane.window = panel
