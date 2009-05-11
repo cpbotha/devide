@@ -257,9 +257,10 @@ class LandmarkList:
         # then tell the olv about the changed situation
         self._olv.SetObjects(self.olv_landmark_list)
 
-    def move_landmark(self, name, world_pos):
+    def move_landmark(self, name, index_pos, world_pos):
         lm = self.landmark_dict[name]
         #lm.world_pos = world_pos
+        lm.set_index_pos(index_pos)
         lm.set_world_pos(world_pos)
         self.update_config_dict()
         self._olv.SetObjects(self.olv_landmark_list)
