@@ -112,6 +112,13 @@ class WXInterface(wx.App):
     def _handlerHelpContents(self, event):
         self.showHelp()
 
+    def _handler_load_network_at_startup(self, event):
+        ge = self._graph_editor
+        fn = self._devide_app.main_config.load_network
+        ge._load_and_realise_network(fn)
+        ge.canvas.reset_view()
+        ge.set_current_filename(fn)
+
     def _handler_test_all(self, event):
         import testing
         reload(testing)
@@ -144,6 +151,14 @@ class WXInterface(wx.App):
             wx.EVT_TIMER(self, 999999, self._handler_test_all)
             self.timer = wx.Timer(self, 999999)
             self.timer.Start(150, True)
+
+        if self._devide_app.main_config.load_network:
+            self.timer_ln = wx.Timer(self, -1)
+            self.Bind(
+                    wx.EVT_TIMER,
+                    self._handler_load_network_at_startup,
+                    self.timer_ln)
+            self.timer_ln.Start(150, True)
             
 
     def quit(self):

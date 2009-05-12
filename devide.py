@@ -107,6 +107,7 @@ class MainConfigClass(object):
         self.test = pcl_data.test
         self.script = pcl_data.script
         self.script_params = pcl_data.script_params
+        self.load_network = pcl_data.load_network
 
         # now sanitise some options
         if type(self.nokits) != type([]):
@@ -129,6 +130,7 @@ class MainConfigClass(object):
         print "--stereo              : Allocate stereo visuals."
         print "--test                : Perform built-in unit testing."
         print "--script              : Run specified .py in script mode."
+        print "--load-network        : Load specified DVN after startup."
 
     def disp_version(self):
         print "DeVIDE v%s" % (DEVIDE_VERSION,)
@@ -149,6 +151,7 @@ class MainConfigClass(object):
                 self.test = False
                 self.script = None
                 self.script_params = None
+                self.load_network = None
 
         pcl_data = PCLData()
 
@@ -158,7 +161,7 @@ class MainConfigClass(object):
                 sys.argv[1:], 'hv',
                 ['help', 'version', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
                  'script=', 'script-params=', 'config-profile=',
-                 'scheduler=', 'extra-module-paths='])
+                 'scheduler=', 'extra-module-paths=', 'load-network='])
             
         except getopt.GetoptError,e:
             self.dispUsage()
@@ -220,6 +223,9 @@ class MainConfigClass(object):
 
             elif o in ('--script-params',):
                 pcl_data.script_params = a
+
+            elif o in ('--load-network',):
+                pcl_data.load_network = a
 
         return pcl_data
 
