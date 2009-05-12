@@ -153,11 +153,15 @@ class WXInterface(wx.App):
             self.timer.Start(150, True)
 
         if self._devide_app.main_config.load_network:
+            # you have to keep a binding to the timer like this, or it
+            # doesn't work at all.
             self.timer_ln = wx.Timer(self, -1)
+            # now bind the timer event
             self.Bind(
                     wx.EVT_TIMER,
                     self._handler_load_network_at_startup,
                     self.timer_ln)
+            # then tell the timer to trigger it in 150ms
             self.timer_ln.Start(150, True)
             
 
