@@ -6,6 +6,7 @@ import ConfigParser
 import glob
 import os
 import sys
+import time
 
 
 """Top-level __init__ of the module_kits.
@@ -70,6 +71,7 @@ def get_sorted_mkds(module_kits_dir):
 
 
 def load(module_manager):
+    tot_start_time = time.time()
 
     module_kits_dir = os.path.join(
             module_manager.get_appdir(), 'module_kits')
@@ -97,7 +99,8 @@ def load(module_manager):
             # skip this iteration of the for, go to the next iteration
             # (we don't want to try loading this module)
             continue
-        
+
+        start_time = time.time()
         try:
             # import module_kit into module_kits namespace
             exec('import module_kits.%s' % (mkd.name,))
@@ -123,12 +126,21 @@ def load(module_manager):
                     '%s.  Continuing with startup.' %
                     (mkd.name, str(e)))
 
-        # if we got this far, startup was successful, but not all kits
-        # were loaded: some not due to failure, and some not due to
-        # unsatisfied dependencies.  set the current list to the list of
-        # module_kits that did actually load.
-        global module_kit_list
-        module_kit_list = loaded_kit_names
+        end_time = time.time()
+        module_manager.log_info('Loaded %s in %.2f seconds.' %
+                (mkd.name, end_time - start_time))
+
+    # if we got this far, startup was successful, but not all kits
+    # were loaded: some not due to failure, and some not due to
+    # unsatisfied dependencies.  set the current list to the list of
+    # module_kits that did actually load.
+    global module_kit_list
+    module_kit_list = loaded_kit_names
+
+    tot_end_time = time.time()
+    module_manager.log_info(
+            'Loaded ALL module_kits in %.2f seconds.' %
+            (tot_end_time - tot_start_time))
        
    
 
