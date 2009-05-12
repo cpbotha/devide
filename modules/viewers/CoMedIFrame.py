@@ -276,6 +276,8 @@ class CoMedIFrame(wx.Frame):
 
         ren = vtk.vtkRenderer()
         ren.SetBackground(0.5,0.5,0.5)
+        ren.SetBackground2(1,1,1)
+        ren.SetGradientBackground(1)
         rwi.GetRenderWindow().AddRenderer(ren)
 
         cmi_pane = CMIPane()

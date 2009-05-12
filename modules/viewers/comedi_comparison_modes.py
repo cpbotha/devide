@@ -12,12 +12,13 @@ import wx
 
 ###########################################################################
 # 2D:
-# * vtkRectilinearWipeWidget, de-emphasize anything outside focus:
-#   yellow blue inside, grey outside
-# * IPW with yellow-blue difference inside focus, grey data1 outside
-# * gradient of data2 overlaid on data1
-# * two colour channels, for scalar and for gradient combination (you
-#   should be able to do this wiht pre-proc, colourise data BEFORE)
+
+# * Checkerboard.
+# * difference mode: configurable combinations of LUTs and data
+#   components.  Limited animation possible.
+# * magic lens: either in IPW (this is going to be hard) or on 
+#   vtkGDCMImageActor.
+
 # 3D:
 # * context gray (silhouette, data1), focus animated
 # * context gray (silhouette, data2), focus difference image
