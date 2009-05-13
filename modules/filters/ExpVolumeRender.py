@@ -6,6 +6,7 @@ from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 import vtkdevide
+import vtktudoss
 
 class ExpVolumeRender(
     ScriptedConfigModuleMixin, ModuleBase):
@@ -54,8 +55,10 @@ class ExpVolumeRender(
             {'Module (self)' : self})
 
         self._input_data = None
-        self._input_otf = None
-        self._input_ctf = None
+        self._input_otf0 = None
+        self._input_ctf0 = None
+        self._input_otf1 = None
+        self._input_ctf1 = None
 
         self._volume_raycast_function = None
         self._create_pipeline()
@@ -79,18 +82,27 @@ class ExpVolumeRender(
 
     def get_input_descriptions(self):
 	return ('input image data',
-                'opacity transfer function',
-                'colour transfer function')
+                'opacity transfer function 0',
+                'colour transfer function 0',
+                'opacity transfer function 1',
+                'colour transfer function 1'
+                )
 
     def set_input(self, idx, inputStream):
         if idx == 0:
             self._input_data = inputStream
             
         elif idx == 1:
-            self._input_otf = inputStream
+            self._input_otf0 = inputStream
+
+        elif idx == 2:
+            self._input_ctf0 = inputStream
+
+        elif idx == 3:
+            self._input_otf1 = inputStream
 
         else:
-            self._input_ctf = inputStream
+            self._input_ctf1 = inputStream
 
     def get_output_descriptions(self):
         return ('vtkVolume',)
@@ -193,14 +205,21 @@ class ExpVolumeRender(
     def execute_module(self):
         otf, ctf = self._create_tfs()
         
-        if self._input_otf is not None:
-            otf = self._input_otf
+        #if self._input_otf is not None:
+        #    otf = self._input_otf
 
-        if self._input_ctf is not None:
-            ctf = self._input_ctf
+        #if self._input_ctf is not None:
+        #    ctf = self._input_ctf
 
-        self._volume_property.SetScalarOpacity(otf)
-        self._volume_property.SetColor(ctf)
+        self._volume_property.SetScalarOpacity(
+                0, self._input_otf0)
+        self._volume_property.SetColor(
+                0, self._input_ctf0)
+
+        self._volume_property.SetScalarOpacity(
+                1, self._input_otf1)
+        self._volume_property.SetColor(
+                1, self._input_ctf1)
 
         self._volume_mapper.SetInput(self._input_data)
 
