@@ -421,6 +421,20 @@ class transformVolumeData:
     help = """Transform volume according to 4x4 homogeneous transform.
     """
 
+class ExpVolumeRender:
+    kits = ['vtk_kit']
+    cats = ['Volume Rendering']
+    help = """EXPERIMENTAL Volume Render.
+
+    This is an experimental volume renderer module used to test out
+    new ideas.  Handle with EXTREME caution, it might open portals to
+    other dimensions, letting through its evil minions into ours, and
+    forcing you to take a stand with only a crowbar at your disposal.
+
+    If you would rather just volume render some data, please use the
+    non-experimental VolumeRender module.
+    """
+
 class VolumeRender:
     kits = ['vtk_kit']
     cats = ['Volume Rendering']
