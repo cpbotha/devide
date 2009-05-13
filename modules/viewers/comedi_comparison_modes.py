@@ -172,6 +172,7 @@ CMAP_HEAT_PL = 1
 CMAP_BLUE_TO_YELLOW_PL = 2
 CMAP_BLACK_TO_WHITE_PL = 3
 
+###########################################################################
 class FocusDiffCM(ComparisonMode):
     """Match mode that displays difference between data in focus area
     with blue/yellow colour scale, normal greyscale for the context.

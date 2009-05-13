@@ -42,7 +42,7 @@ class CodeRunner:
     """
 
 class CoMedI:
-    kits = ['vtk_kit', 'wx_kit']
+    kits = ['vtk_kit', 'itk_kit', 'wx_kit']
     cats = ['Viewers']
     keywords = ['compare', 'comparative visualisation',
             'comparative', 'comparative visualization']
