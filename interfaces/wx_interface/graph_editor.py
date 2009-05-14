@@ -2633,8 +2633,18 @@ class GraphEditor:
 
                 else:
                     # the user was dragging a port and dropped us
-                    # inside a glyph... we do nothing
-                    pass
+                    # inside a glyph... try to connect us to the first
+                    # unconnected input port on 'glyph'
+                    try:
+                        first_available_port_idx = glyph.inputLines.index(None)
+                    except ValueError:
+                        # no available port, do nothing.
+                        pass
+                    else:
+                        self._checkAndConnect(
+                            canvas.getDraggedObject(),
+                            canvas.getDraggedObject().draggedPort,
+                            glyph, first_available_port_idx)
 
             else:
                 # this means the drag is ended above an input port!
