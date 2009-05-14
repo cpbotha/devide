@@ -5,6 +5,9 @@ Changes since previous release (9.1.3361)
    VTK with exception handling.
  * You can now drop a dragged output connection anywwhere on a glyph.
    It will connect it to the first available input port.
+ * New command-line switch: --load-network - use this to get DeVIDE to
+   load a network at startup.  Useful if you're developing C++ modules
+   and have to restart DeVIDE often.
  * CoMedI viewer module for Comparative Medical Imaging.
  * landmarkTransform module greatly improved.  You can now add
    landmarks in any combination at either or both of the input ports.
@@ -12,6 +15,7 @@ Changes since previous release (9.1.3361)
  * Pure-Python MarschnerLobb module for generating Marschner Lobb
    volumes.
  * Fine-tuning to Graph Editor canvas appearance.
+ * Upraded to VTK 5.4.x
 
 Changes since previous release (8.5.3085)
  * Volume rendering functionality greatly improved.  VolumeRender now
