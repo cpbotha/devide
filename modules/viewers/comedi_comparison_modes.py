@@ -17,11 +17,12 @@ import wx
 # * difference mode: configurable combinations of LUTs and data
 #   components.  Limited animation possible.
 # * magic lens: either in IPW (this is going to be hard) or on 
-#   vtkGDCMImageActor.
+#   vtkGDCMImageActor. TODO.
 
 # 3D:
 # * context gray (silhouette, data1), focus animated
 # * context gray (silhouette, data2), focus difference image
+# * thick slab rendering with f+c
 
 ###########################################################################
 class ComparisonMode:

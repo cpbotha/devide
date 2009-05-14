@@ -436,6 +436,7 @@ class SStructLandmarksMM(MatchMode):
                 o = d1i.GetOrigin()
                 s = d1i.GetSpacing()
                 d = d1i.GetDimensions()
+                we = d1i.GetWholeExtent()
 
                 fmo = itk.Point.D3()
                 for i,e in enumerate(o):
@@ -447,10 +448,15 @@ class SStructLandmarksMM(MatchMode):
 
                 fmr = itk.ImageRegion._3()
                 fmsz = fmr.GetSize()
+                fmi = fmr.GetIndex()
                 for i,e in enumerate(d):
                     fmsz.SetElement(i,e)
+                    # aaah! so that's what the index is for! :)
+                    # some VTK volumes have a 0,0,0 origin, but their
+                    # whole extent does not begin at 0,0,0.  For
+                    # example the output of a vtkExtractVOI does this.
+                    fmi.SetElement(i, we[2*i])
                 
-
                 self._fm.SetOutputOrigin(fmo)
                 self._fm.SetOutputSpacing(fms)
                 self._fm.SetOutputRegion(fmr)
