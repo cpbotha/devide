@@ -1,4 +1,17 @@
-This is Release 8.9 
+This is Release 9.x
+
+Changes since previous release (9.1.3361)
+ * Planned: Fixing of great big multi-threading bug between Python and
+   VTK with exception handling.
+ * You can now drop a dragged output connection anywwhere on a glyph.
+   It will connect it to the first available input port.
+ * CoMedI viewer module for Comparative Medical Imaging.
+ * landmarkTransform module greatly improved.  You can now add
+   landmarks in any combination at either or both of the input ports.
+   Points will be matched on name.
+ * Pure-Python MarschnerLobb module for generating Marschner Lobb
+   volumes.
+ * Fine-tuning to Graph Editor canvas appearance.
 
 Changes since previous release (8.5.3085)
  * Volume rendering functionality greatly improved.  VolumeRender now
