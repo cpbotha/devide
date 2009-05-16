@@ -6,7 +6,170 @@ from module_kits.misc_kit.mixins import SubjectMixin
 import vtk
 
 # z-coord of RBB box
-RBBOX_HEIGHT = 0.5 
+RBBOX_HEIGHT = 1 
+
+class UnfilledBlock:
+    """Create block outline.
+    """
+    def __init__(self):
+
+        self.polydata = lp = vtk.vtkPolyData()
+
+        pts = vtk.vtkPoints()
+        pts.InsertPoint(0, 0, 0, 0)
+        pts.InsertPoint(1, 1, 0, 0)
+        pts.InsertPoint(2, 1, 1, 0)
+        pts.InsertPoint(3, 0, 1, 0)
+        lp.SetPoints(pts)
+
+        cells = vtk.vtkCellArray()
+        cells.InsertNextCell(5)
+        cells.InsertCellPoint(0)
+        cells.InsertCellPoint(1)
+        cells.InsertCellPoint(2)
+        cells.InsertCellPoint(3)
+        cells.InsertCellPoint(0)
+        lp.SetLines(cells)
+
+    def update_geometry(self, width, height, z):
+        lp = self.polydata
+        pts = lp.GetPoints()
+        pts.SetPoint(0, 0,0,z)
+        pts.SetPoint(1, width, 0, z)
+        pts.SetPoint(2, width, height, z)
+        pts.SetPoint(3, 0, height, c)
+        # FIXME: is there no cleaner way of explaining to the polydata
+        # that it has been updated?
+        lp.SetPoints(None)
+        lp.SetPoints(pts)
+
+class FilledBlock:
+    """Create filled block.
+    """
+    def __init__(self):
+
+        self.polydata = lp = vtk.vtkPolyData()
+
+        pts = vtk.vtkPoints()
+        pts.InsertPoint(0, 0, 0, 0)
+        pts.InsertPoint(1, 1, 0, 0)
+        pts.InsertPoint(2, 1, 1, 0)
+        pts.InsertPoint(3, 0, 1, 0)
+        lp.SetPoints(pts)
+
+        cells = vtk.vtkCellArray()
+        cells.InsertNextCell(5)
+        cells.InsertCellPoint(0)
+        cells.InsertCellPoint(1)
+        cells.InsertCellPoint(2)
+        cells.InsertCellPoint(3)
+        lp.SetPolys(cells)
+
+    def update_geometry(self, width, height, z):
+        lp = self.polydata
+        pts = lp.GetPoints()
+        pts.SetPoint(0, 0,0,z)
+        pts.SetPoint(1, width, 0, z)
+        pts.SetPoint(2, width, height, z)
+        pts.SetPoint(3, 0, height, z)
+        # FIXME: is there no cleaner way of explaining to the polydata
+        # that it has been updated?
+        lp.SetPoints(None)
+        lp.SetPoints(pts)
+
+
+
+class BeveledEdgeBlock:
+    """Create PolyData beveled edge block.
+    """
+
+    def __init__(self):
+        """Create all required geometry according to default size.
+        Call update_geometry to update this to new specifications.
+        """
+
+        self.polydata = vtk.vtkPolyData()
+
+        # width of the edge
+        self.edge = edge = 5 
+        # how much higher is inside rectangle than the outside (this
+        # is what creates the beveled effect)
+        self.eps = eps = 1.0/100.0
+
+        # dummy variable for now
+        width = 1
+        
+        # create points defining the geometry
+        pts = vtk.vtkPoints()
+        # InsertPoint takes care of memory allocation
+        pts.InsertPoint(0, 0, 0, 0)
+        pts.InsertPoint(1, width, 0, 0)
+        pts.InsertPoint(2, width, 1, 0)
+        pts.InsertPoint(3, 0, 1, 0)
+
+
+        pts.InsertPoint(4, 0+edge, 0+edge, eps)
+        pts.InsertPoint(5, width-edge, 0+edge, eps)
+        pts.InsertPoint(6, width-edge, 1-edge, eps)
+        pts.InsertPoint(7, 0+edge, 1-edge, eps)
+        self.polydata.SetPoints(pts) # assign to the polydata
+        self.pts = pts
+
+        # create cells connecting points to each other
+        cells = vtk.vtkCellArray()
+        cells.InsertNextCell(4)
+        cells.InsertCellPoint(0)
+        cells.InsertCellPoint(1)
+        cells.InsertCellPoint(2)
+        cells.InsertCellPoint(3)
+
+        cells.InsertNextCell(4)
+        cells.InsertCellPoint(4)
+        cells.InsertCellPoint(5)
+        cells.InsertCellPoint(6)
+        cells.InsertCellPoint(7)
+        self.polydata.SetPolys(cells) # assign to the polydata
+
+        # create pointdata
+        arr = vtk.vtkUnsignedCharArray()
+        arr.SetNumberOfComponents(4)
+        arr.SetNumberOfTuples(8)
+        arr.SetTuple4(0, 92,92,92,255)
+        arr.SetTuple4(1, 130,130,130,255)
+        arr.SetTuple4(2, 92,92,92,255)
+        arr.SetTuple4(3, 0,0,0,255)
+        arr.SetTuple4(4, 92,92,92,255)
+        arr.SetTuple4(5, 0,0,0,255)
+        arr.SetTuple4(6, 92,92,92,255)
+        arr.SetTuple4(7, 192,192,192,255)
+        arr.SetName('my_array')
+        # and assign it as "scalars"
+        self.polydata.GetPointData().SetScalars(arr)
+
+    def update_geometry(self, width, height, z):
+        """Update the geometry to the given specs.  self.polydata will
+        be modified so that any downstream logic knows to update.
+        """
+
+        pts = self.pts
+        edge = self.edge
+        eps = self.eps
+
+        # outer rectangle
+        pts.SetPoint(0, 0,0,z)
+        pts.SetPoint(1, width, 0, z)
+        pts.SetPoint(2, width, height, z)
+        pts.SetPoint(3, 0, height, z)
+
+        # inner rectangle
+        pts.SetPoint(4, 0+edge, 0+edge, z+eps)
+        pts.SetPoint(5, width-edge, 0+edge, z+eps)
+        pts.SetPoint(6, width-edge, height-edge, z+eps)
+        pts.SetPoint(7, 0+edge, height-edge, z+eps)
+
+        self.polydata.SetPoints(None)
+        self.polydata.SetPoints(pts)
+
 
 #############################################################################
 class DeVIDECanvasObject(SubjectMixin):
@@ -313,7 +476,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     """
 
     # at start and end of glyph
-    _horizBorder = 5 
+    # this has to take into account the bevel edge too
+    _horizBorder = 12 
     # between ports
     _horizSpacing = 10 
     # at top and bottom of glyph
@@ -321,8 +485,11 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _pWidth = 20
     _pHeight = 20
 
-    _glyph_z_len = 0.1
+    _glyph_bevel_edge = 7
+    _glyph_z = 0.1
     _glyph_outline_z = 0.15
+    _glyph_selection_z = 0.6  
+    _glyph_blocked_z = 0.7 
     _port_z = 0.2
     _text_z = 0.4
 
@@ -364,7 +531,10 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # we'll collect the glyph and its ports in this assembly
         self.prop1 = vtk.vtkAssembly()
         # the main body glyph
-        self._cs = vtk.vtkCubeSource()
+        self._beb = BeveledEdgeBlock()
+        self._selection_block = FilledBlock()
+        self._blocked_block = FilledBlock()
+
         self._rbsa = vtk.vtkActor()
         # and of course the label
         self._tsa = vtk.vtkTextActor3D()
@@ -400,15 +570,13 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # remember this depth, others things have to be 'above' this
         # to be visible (such as the text!)
-        self._cs.SetZLength(self._glyph_z_len)
-
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._cs.GetOutput())
+        m.SetInput(self._beb.polydata)
         self._rbsa.SetMapper(m)
 
-        # i prefer flat shading, okay?
+        # we need Phong shading for the gradients
         p = self._rbsa.GetProperty()
-        p.SetInterpolationToFlat()
+        p.SetInterpolationToPhong()
         
         # Ka, background lighting coefficient
         p.SetAmbient(0.1)
@@ -422,39 +590,42 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         self.prop1.AddPart(self._rbsa)
 
-        # GLYPH BLOCK BORDER #######################################
+        # GLYPH SELECTION OVERLAY #######################################
+
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._selection_block.polydata)
+        a = vtk.vtkActor()
+        a.SetMapper(m)
+        a.GetProperty().SetOpacity(0.3)
+        a.GetProperty().SetColor(self._glyph_selected_col)
+        self.prop1.AddPart(a)
+        self._selection_actor = a
+
+        # GLYPH BLOCKED OVERLAY #######################################
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(self._blocked_block.polydata)
+        a = vtk.vtkActor()
+        a.SetMapper(m)
+        a.GetProperty().SetOpacity(0.3)
+        a.GetProperty().SetColor(self._glyph_blocked_col)
+        self.prop1.AddPart(a)
+        self._blocked_actor = a
+
         
         # you should really turn this into a class
 
         # let's make a line from scratch
-        lp = vtk.vtkPolyData()
-        pts = vtk.vtkPoints()
-        pts.InsertPoint(0, 0, 0, self._glyph_outline_z)
-        pts.InsertPoint(1, 1, 0, self._glyph_outline_z)
-        pts.InsertPoint(2, 1, 1, self._glyph_outline_z)
-        pts.InsertPoint(3, 0, 1, self._glyph_outline_z)
-        lp.SetPoints(pts)
+        #m = vtk.vtkPolyDataMapper()
+        #m.SetInput(lp)
 
-        cells = vtk.vtkCellArray()
-        cells.InsertNextCell(5)
-        cells.InsertCellPoint(0)
-        cells.InsertCellPoint(1)
-        cells.InsertCellPoint(2)
-        cells.InsertCellPoint(3)
-        cells.InsertCellPoint(0)
-        lp.SetLines(cells)
+        #a = vtk.vtkActor()
+        #a.SetMapper(m)
+        #self.prop1.AddPart(a)
+        #prop = a.GetProperty()
+        #prop.SetColor(0.1,0.1,0.1)
+        #prop.SetLineWidth(1)
 
-        m = vtk.vtkPolyDataMapper()
-        m.SetInput(lp)
-
-        a = vtk.vtkActor()
-        a.SetMapper(m)
-        self.prop1.AddPart(a)
-        prop = a.GetProperty()
-        prop.SetColor(0.1,0.1,0.1)
-        prop.SetLineWidth(1.5)
-
-        self._glyph_outline_polydata = lp
+        #self._glyph_outline_polydata = lp
 
 
         # INPUTS #################################################### 
@@ -531,36 +702,19 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # usually the position is the CENTRE of the button, so we
         # adjust so that the bottom left corner ends up at 0,0
         # (this is all relative to the Assembly)
-        gc = (self._size[0] / 2.0, self._size[1] / 2.0, 0.0)
-        self._cs.SetCenter(gc)
-        
-        self._cs.SetYLength(self._size[1])
-        self._cs.SetXLength(self._size[0])
-
-        # update glyph outline ################################
-        lp = self._glyph_outline_polydata
-        pts = lp.GetPoints()
-        pts.SetPoint(1, self._size[0], 0, self._glyph_outline_z)
-        pts.SetPoint(2, self._size[0], self._size[1], self._glyph_outline_z)
-        pts.SetPoint(3, 0, self._size[1], self._glyph_outline_z)
-        # FIXME: is there no cleaner way of explaining to the polydata
-        # that it has been updated?
-        lp.SetPoints(None)
-        lp.SetPoints(pts)
+        self._beb.update_geometry(
+                self._size[0], self._size[1], self._glyph_z)
+        self._selection_block.update_geometry(
+                self._size[0], self._size[1], self._glyph_selection_z)
+        self._blocked_block.update_geometry(
+                self._size[0], self._size[1], self._glyph_blocked_z)
         
 
         # calc and update glyph colour ########################
-        gcol = self._glyph_normal_col
+        self._selection_actor.SetVisibility(self.selected)
+        self._blocked_actor.SetVisibility(self.blocked)
 
-        if self.selected:
-            gcol = [gcol[i] * 0.5 + self._glyph_selected_col[i] * 0.5
-                    for i in range(3)]
 
-        if self.blocked:
-            gcol = [gcol[i] * 0.5 + self._glyph_blocked_col[i] * 0.5
-                    for i in range(3)]
-
-        self._rbsa.GetProperty().SetColor(gcol)
 
         # position and colour all the inputs and outputs #####
         horizOffset = self._horizBorder

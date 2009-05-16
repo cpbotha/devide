@@ -5,6 +5,7 @@ Changes since previous release (9.1.3361)
    VTK with exception handling.
  * You can now drop a dragged output connection anywwhere on a glyph.
    It will connect it to the first available input port.
+ * Tweaked appearance of glyphs.  Now 20% prettier.
  * New command-line switch: --load-network - use this to get DeVIDE to
    load a network at startup.  Useful if you're developing C++ modules
    and have to restart DeVIDE often.
