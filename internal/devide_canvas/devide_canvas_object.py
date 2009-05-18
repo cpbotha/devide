@@ -490,7 +490,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
     _glyph_outline_z = 0.15
     _glyph_selection_z = 0.6  
     _glyph_blocked_z = 0.7 
-    _port_z = 0.2
+    _port_z = 0.8
     _text_z = 0.4
 
     _glyph_normal_col = (0.75, 0.75, 0.75)
@@ -713,8 +713,6 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # calc and update glyph colour ########################
         self._selection_actor.SetVisibility(self.selected)
         self._blocked_actor.SetVisibility(self.blocked)
-
-
 
         # position and colour all the inputs and outputs #####
         horizOffset = self._horizBorder
