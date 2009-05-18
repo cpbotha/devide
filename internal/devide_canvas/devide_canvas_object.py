@@ -58,7 +58,7 @@ class FilledBlock:
         lp.SetPoints(pts)
 
         cells = vtk.vtkCellArray()
-        cells.InsertNextCell(5)
+        cells.InsertNextCell(4)
         cells.InsertCellPoint(0)
         cells.InsertCellPoint(1)
         cells.InsertCellPoint(2)
