@@ -43,6 +43,40 @@ class BasicVTKTest(unittest.TestCase):
         else:
             self.fail('ProgressEvent handler masked RuntimeError.')
 
+    def test_vtk_pyexception_deadlock(self):
+        """Test if VTK has been patched to release the GIL during all
+        VTK method calls.
+        """
+
+        import vtk
+        # this gives floats by default
+        s = vtk.vtkImageGridSource()
+        c1 = vtk.vtkImageCast()
+        c1.SetOutputScalarTypeToShort()
+        c1.SetInput(s.GetOutput())
+        c2 = vtk.vtkImageCast()
+        c2.SetOutputScalarTypeToFloat()
+        c2.SetInput(s.GetOutput())
+
+        m = vtk.vtkImageMathematics()
+
+        # make sure we are multi-threaded
+        if m.GetNumberOfThreads() < 2:
+            m.SetNumberOfThreads(2)
+        m.SetInput1(c1.GetOutput())
+        m.SetInput2(c2.GetOutput())
+
+        # without the patch, this call will deadlock forever
+        try:
+            # with the patch this should generate a RuntimeError
+            m.Update()
+        except RuntimeError:
+            pass
+        else:
+            self.fail(
+            'Multi-threaded error vtkImageMathematics did not raise '
+            'exception.')
+
 
 def get_suite(devide_testing):
     devide_app = devide_testing.devide_app
@@ -58,6 +92,9 @@ def get_suite(devide_testing):
     basic_vtk_suite.addTest(t)
 
     t = BasicVTKTest('test_vtk_progress_exception_masking')
+    basic_vtk_suite.addTest(t)
+
+    t = BasicVTKTest('test_vtk_pyexception_deadlock')
     basic_vtk_suite.addTest(t)
 
     return basic_vtk_suite
