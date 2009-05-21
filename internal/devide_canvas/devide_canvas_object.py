@@ -6,7 +6,9 @@ from module_kits.misc_kit.mixins import SubjectMixin
 import vtk
 
 # z-coord of RBB box
-RBBOX_HEIGHT = 1 
+# when this is 1.0, the box does not appear until a canvas reset has
+# been done...
+RBBOX_HEIGHT = 0.9 
 
 class UnfilledBlock:
     """Create block outline.
