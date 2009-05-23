@@ -345,15 +345,18 @@ class SStructLandmarksMM(MatchMode):
 
         md = self._cfg[KEY_MAX_DISTANCE]
 
+        print "sslm starting itk init"
         # use itk fast marching to generate confidence field
         self._fm = itk.FastMarchingImageFilter.IF3IF3.New()
         self._fm.SetStoppingValue(md)
         self._fm.SetSpeedConstant(1.0)
         # setup a progress message
+        print "sslm fm progress start"
         itk_kit.utils.setup_itk_object_progress(
             self, self._fm, 'itkFastMarchingImageFilter',
             'Propagating confidence front.', None,
             comedi._module_manager)
+        print "sslm fm progress end"
 
 
         # and a threshold to clip off the really high values that fast
@@ -368,10 +371,10 @@ class SStructLandmarksMM(MatchMode):
                 comedi._module_manager)
 
         t.SetInput(self._fm.GetOutput())
-
         # and a little something to convert it back to VTK world
         self._itk2vtk = itk.ImageToVTKImageFilter.IF3.New()
         self._itk2vtk.SetInput(t.GetOutput())
+        print "sslm mm init end"
 
     def close(self):
         self._data1_landmarks.close()

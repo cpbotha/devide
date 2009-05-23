@@ -209,8 +209,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def config_to_logic(self):
         # we need to be able to build up the correct MatchMode based
         # on the config.
+        print "sync mm"
         self._sync_mm_with_config()
         # do the same for the comparison mode
+        print "sync cm"
         self._sync_cm_with_config()
 
 
