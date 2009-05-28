@@ -529,8 +529,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         dir = os.path.dirname(new_filename)
         all_images = glob.glob(os.path.join(dir, '*%s' % (ext,)))
         all_dacs = glob.glob(os.path.join(dir, '*%s.dac' % (ext,)))
-        print "completed %d / %d total measurements" % \
+        progress_msg = "%d / %d images" % \
                 (len(all_dacs), len(all_images))
+        self._view_frame.progress_txt.SetValue(progress_msg)
 
         
     def _set_image_viewer_dummy_input(self):
