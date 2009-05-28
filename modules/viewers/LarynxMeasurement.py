@@ -74,6 +74,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         self._view_frame.next_button.Bind(
                 wx.EVT_BUTTON, self._handler_next_button)
 
+        self._view_frame.reset_button.Bind(
+                wx.EVT_BUTTON, self._handler_reset_button)
+
         self._view_frame.rwi.AddObserver(
                 'LeftButtonPressEvent',
                 self._handler_rwi_lbp)
@@ -360,7 +363,10 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
                 self._add_normal_marker(w)
                 self._update_area()
 
-
+    def _handler_reset_button(self, evt):
+        if self._current_measurement.filename:
+            self._start(self._current_measurement.filename,
+                    reset=True)
         
     def _handler_start_button(self, evt):
         # let user pick image
@@ -417,64 +423,8 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             new_filename = all_files[0]
 
         self._start(new_filename)
-                
 
-
-    def render(self):
-        # if you call self._viewer.Render() here, you get the
-        # VTK-window out of main window effect at startup.  So don't.
-        self._view_frame.rwi.Render()
-
-    def _reset_image_pz(self):
-        """Reset the pan/zoom of the current image.
-        """
-
-        ren = self._viewer.GetRenderer()
-        ren.ResetCamera()
-
-    def _stop(self):
-        # close down any running analysis
-        # first remove all polydatas we might have added to the scene
-        for a in self._actors:
-            self._viewer.GetRenderer().RemoveViewProp(a)
-
-        for m in self._markers:
-            m.Off()
-            m.SetInteractor(None)
-
-        del self._markers[:]
-
-        # setup dummy image input.
-        self._set_image_viewer_dummy_input()
-        # set state to initialised
-        self._state = STATE_INIT
-
-    def _start(self, new_filename):
-        # first see if we can open the new file
-        new_reader = self._open_image_file(new_filename)
-
-        # if so, stop previous session
-        self._stop()
-
-        # replace reader and show the image
-        self._reader = new_reader
-        self._viewer.SetInput(self._reader.GetOutput())
-
-        # show the new filename in the correct image box
-        self._view_frame.current_image_txt.SetValue(new_filename)
-        self._config.filename = new_filename
-
-        cm = Measurement()
-        cm.filename = self._config.filename
-        self._current_measurement = cm
-
-        self._actors = []
-
-        self._reset_image_pz()
-        self.render()
-
-        self._state = STATE_IMAGE_LOADED
-
+    def _load_measurement(self, new_filename):
         # see if there's a points file that we can use
         points_name = '%s.pts' % (new_filename,)
         try:
@@ -523,15 +473,78 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             f.close()
             #self._current_measurement.clg1 = clg
             self._view_frame.clg1_cbox.SetValue(clg1)
+               
+
+
+    def render(self):
+        # if you call self._viewer.Render() here, you get the
+        # VTK-window out of main window effect at startup.  So don't.
+        self._view_frame.rwi.Render()
+
+    def _reset_image_pz(self):
+        """Reset the pan/zoom of the current image.
+        """
+
+        ren = self._viewer.GetRenderer()
+        ren.ResetCamera()
+
+    def _stop(self):
+        # close down any running analysis
+        # first remove all polydatas we might have added to the scene
+        for a in self._actors:
+            self._viewer.GetRenderer().RemoveViewProp(a)
+
+        for m in self._markers:
+            m.Off()
+            m.SetInteractor(None)
+
+        del self._markers[:]
+
+        # setup dummy image input.
+        self._set_image_viewer_dummy_input()
+        # set state to initialised
+        self._state = STATE_INIT
+
+    def _start(self, new_filename, reset=False):
+        # first see if we can open the new file
+        new_reader = self._open_image_file(new_filename)
+
+        # if so, stop previous session
+        self._stop()
+
+        # replace reader and show the image
+        self._reader = new_reader
+        self._viewer.SetInput(self._reader.GetOutput())
+
+        # show the new filename in the correct image box
+        self._view_frame.current_image_txt.SetValue(new_filename)
+        self._config.filename = new_filename
+
+        cm = Measurement()
+        cm.filename = self._config.filename
+        self._current_measurement = cm
+
+        self._actors = []
+
+        self._reset_image_pz()
+        self.render()
+
+        self._state = STATE_IMAGE_LOADED
+
+        # this means that the user doesn't want the stored data, for
+        # example when resetting the image measurement
+        if not reset:
+            self._load_measurement(new_filename)
 
         # now determine our current progress by tallying up DAC files
         ext = os.path.splitext(new_filename)[1]
         dir = os.path.dirname(new_filename)
         all_images = glob.glob(os.path.join(dir, '*%s' % (ext,)))
         all_dacs = glob.glob(os.path.join(dir, '*%s.dac' % (ext,)))
-        progress_msg = "%d / %d images" % \
+        progress_msg = "%d / %d images complete" % \
                 (len(all_dacs), len(all_images))
         self._view_frame.progress_txt.SetValue(progress_msg)
+
 
         
     def _set_image_viewer_dummy_input(self):
