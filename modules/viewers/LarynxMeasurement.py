@@ -395,15 +395,19 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             f.write(str(pts))
             f.close()
 
-        # then the distance, area and cormack lehane
-        dac_name = '%s.dac' % (fn,)
-        f = open(dac_name, 'w')
-        clg1 = int(self._view_frame.clg1_cbox.GetValue())
-        d = self._current_measurement.pogo_dist
-        a = self._current_measurement.area
-        dac = [d,a,clg1]
-        f.write(str(dac))
-        f.close()
+        if len(self._markers) >= 3:
+            # we only write the DAC if there are at least 3 markers,
+            # else the measurement is not valid...
+
+            # then the distance, area and cormack lehane
+            dac_name = '%s.dac' % (fn,)
+            f = open(dac_name, 'w')
+            clg1 = int(self._view_frame.clg1_cbox.GetValue())
+            d = self._current_measurement.pogo_dist
+            a = self._current_measurement.area
+            dac = [d,a,clg1]
+            f.write(str(dac))
+            f.close()
 
         # IS there a next file?
         # get ext and dir of current file
