@@ -379,6 +379,8 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
     def _handler_next_button(self, evt):
         # write everything to to measurement files
+
+        # first the points
         fn = self._current_measurement.filename
         if len(self._markers) > 0:
             points_name = '%s.pts' % (fn,)
@@ -387,10 +389,14 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             f.write(str(pts))
             f.close()
 
-        clg_name = '%s.clg' % (fn,)
-        f = open(clg_name, 'w')
-        clg1 = self._view_frame.clg1_cbox.GetValue()
-        f.write(str(int(clg1)))
+        # then the distance, area and cormack lehane
+        dac_name = '%s.dac' % (fn,)
+        f = open(dac_name, 'w')
+        clg1 = int(self._view_frame.clg1_cbox.GetValue())
+        d = self._current_measurement.pogo_dist
+        a = self._current_measurement.area
+        dac = [d,a,clg1]
+        f.write(str(dac))
         f.close()
 
         # IS there a next file?
@@ -399,7 +405,6 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         # ext is '.JPG'
         ext = os.path.splitext(current_fn)[1]
         dir = os.path.dirname(current_fn)
-        #import pdb; pdb.set_trace()
         all_files = glob.glob(os.path.join(dir, '*%s' % (ext,)))
         # we assume the user has this covered (filenames padded)
         all_files.sort()
@@ -508,16 +513,25 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             self._update_area()
 
         # cormack lehane grade
-        clg_name = '%s.clg' % (new_filename,)
+        dac_name = '%s.dac' % (new_filename,)
         try:
-            f = open(clg_name)
+            f = open(dac_name)
         except IOError:
             pass
         else:
-            clg = eval(f.read(), {"__builtins__":{}})
+            dist, area, clg1 = eval(f.read(), {"__builtins__":{}})
             f.close()
             #self._current_measurement.clg1 = clg
-            self._view_frame.clg1_cbox.SetValue(clg)
+            self._view_frame.clg1_cbox.SetValue(clg1)
+
+        # now determine our current progress by tallying up DAC files
+        ext = os.path.splitext(new_filename)[1]
+        dir = os.path.dirname(new_filename)
+        all_images = glob.glob(os.path.join(dir, '*%s' % (ext,)))
+        all_dacs = glob.glob(os.path.join(dir, '*%s.dac' % (ext,)))
+        print "completed %d / %d total measurements" % \
+                (len(all_dacs), len(all_images))
+
         
     def _set_image_viewer_dummy_input(self):
         ds = vtk.vtkImageGridSource()
