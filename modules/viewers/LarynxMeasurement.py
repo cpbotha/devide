@@ -3,6 +3,7 @@
 # See COPYRIGHT for details.
 
 import geometry
+import glob
 import os
 import math
 from module_base import ModuleBase
@@ -26,9 +27,8 @@ class Measurement:
     filename = ''
     apex = (0,0) # in pixels
     lm = (0,0)
-    # list of 2-element tuples for all other selected points
-    points = []
-
+    pogo_dist = 0 # distance between apex and lm in pixels
+    area = 0 # current area, in floating point pixels squared
 
 class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, ModuleBase):
 
@@ -71,6 +71,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         self._view_frame.start_button.Bind(
                 wx.EVT_BUTTON, self._handler_start_button)
 
+        self._view_frame.next_button.Bind(
+                wx.EVT_BUTTON, self._handler_next_button)
+
         self._view_frame.rwi.AddObserver(
                 'LeftButtonPressEvent',
                 self._handler_rwi_lbp)
@@ -87,11 +90,6 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         module_utils.create_standard_object_introspection(
             self, self._view_frame, self._view_frame.view_frame_panel,
             {'Module (self)' : self})
-
-        # add the ECASH buttons
-        #module_utils.create_eoca_buttons(self, self._view_frame,
-        #                                self._view_frame.view_frame_panel)
-
 
         # now setup the VTK stuff
         if self._viewer is None and not self._view_frame is None:
@@ -195,6 +193,17 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
                 'InteractionEvent',
                 self._handler_nm_ie)
 
+    def _add_area_polygon(self):
+        pd = vtk.vtkPolyData()
+        self._area_polydata = pd
+        m = vtk.vtkPolyDataMapper()
+        m.SetInput(pd)
+        a = vtk.vtkActor()
+        a.SetMapper(m)
+        self._viewer.GetRenderer().AddActor(a)
+        self._actors.append(a)
+
+
     def _add_pogo_line(self):
         ls = vtk.vtkLineSource()
         self._pogo_line_source = ls
@@ -282,6 +291,16 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
                 'InteractionEvent',
                 self._handler_alm_ie)
 
+    def _create_db(self, filename):
+        con = sqlite3.connect(filename)
+        con.execute(
+                """create table images 
+                (id integer primary key, filename varchar unique)""")
+        con.execute(
+                """create table coords
+                (
+                """)
+
 
     def _handler_alm_ie(self, pw=None, vtk_e=None):
         self._update_pogo_distance()
@@ -333,19 +352,10 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             elif self._state == STATE_LM:
                 # now we're putting down all other markers
                 self._add_normal_marker(w)
-                self._state = STATE_NORMAL_MARKERS
                 # now create the polydata
-                #self._create_area_polydata()
-                pd = vtk.vtkPolyData()
-                self._area_polydata = pd
-                m = vtk.vtkPolyDataMapper()
-                m.SetInput(pd)
-                a = vtk.vtkActor()
-                a.SetMapper(m)
-                self._viewer.GetRenderer().AddActor(a)
-                self._actors.append(a)
-                
+                self._add_area_polygon()                
                 self._update_area()
+                self._state = STATE_NORMAL_MARKERS
             elif self._state == STATE_NORMAL_MARKERS:
                 self._add_normal_marker(w)
                 self._update_area()
@@ -366,6 +376,44 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
         if filename:
             self._start(filename)
+
+    def _handler_next_button(self, evt):
+        # write everything to to measurement files
+        fn = self._current_measurement.filename
+        if len(self._markers) > 0:
+            points_name = '%s.pts' % (fn,)
+            f = open(points_name, 'w')
+            pts = [m.GetPosition()[0:3] for m in self._markers]
+            f.write(str(pts))
+            f.close()
+
+        clg_name = '%s.clg' % (fn,)
+        f = open(clg_name, 'w')
+        clg1 = self._view_frame.clg1_cbox.GetValue()
+        f.write(str(int(clg1)))
+        f.close()
+
+        # IS there a next file?
+        # get ext and dir of current file
+        current_fn = self._current_measurement.filename
+        # ext is '.JPG'
+        ext = os.path.splitext(current_fn)[1]
+        dir = os.path.dirname(current_fn)
+        #import pdb; pdb.set_trace()
+        all_files = glob.glob(os.path.join(dir, '*%s' % (ext,)))
+        # we assume the user has this covered (filenames padded)
+        all_files.sort()
+        # find index of current file, take next image
+        idx = all_files.index(current_fn) + 1
+        
+        if idx < len(all_files):
+            new_filename = all_files[idx]
+        else:
+            new_filename = all_files[0]
+
+        self._start(new_filename)
+                
+
 
     def render(self):
         # if you call self._viewer.Render() here, you get the
@@ -399,7 +447,6 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
     def _start(self, new_filename):
         # first see if we can open the new file
         new_reader = self._open_image_file(new_filename)
-        # FIXME: also check if we can open / create sqlite file
 
         # if so, stop previous session
         self._stop()
@@ -421,10 +468,56 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         self._reset_image_pz()
         self.render()
 
-        # FIXME: get new polydata ready
-
         self._state = STATE_IMAGE_LOADED
 
+        # see if there's a points file that we can use
+        points_name = '%s.pts' % (new_filename,)
+        try:
+            f = open(points_name)
+        except IOError:
+            pass
+        else:
+            # just evaluate what's in there, should be an array of
+            # three-element tuples (we're going to write away the
+            # world-pos coordinates)
+            points = eval(f.read(), {"__builtins__": {}})
+            f.close()
+
+            try:
+                self._add_apex_marker(points[0])
+                self.state = STATE_APEX
+
+                self._add_lm_marker(points[1])
+                self._add_pogo_line()
+                self.state = STATE_LM
+
+                self._add_normal_marker(points[2])
+                self._add_area_polygon()
+                self._update_area()
+                self._state = STATE_NORMAL_MARKERS
+
+                for pt in points[3:]:
+                    self._add_normal_marker(pt)
+                    self._update_area()
+
+            except IndexError:
+                pass
+
+            # now make sure everything else is updated
+            self._update_pogo_distance()
+            self._update_area()
+
+        # cormack lehane grade
+        clg_name = '%s.clg' % (new_filename,)
+        try:
+            f = open(clg_name)
+        except IOError:
+            pass
+        else:
+            clg = eval(f.read(), {"__builtins__":{}})
+            f.close()
+            #self._current_measurement.clg1 = clg
+            self._view_frame.clg1_cbox.SetValue(clg)
         
     def _set_image_viewer_dummy_input(self):
         ds = vtk.vtkImageGridSource()
@@ -450,6 +543,8 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             self._pogo_line_source.SetPoint2(p2)
 
             pogo_dist = math.hypot(p2[0] - p1[0], p2[1] - p1[0])
+            # store pogo_dist in Measurement
+            self._current_measurement.pogo_dist = pogo_dist
             self._view_frame.pogo_dist_txt.SetValue('%.2f' %
                     (pogo_dist,))
 
@@ -465,10 +560,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             # left.
 
             p1,p2 = [self._markers[i].GetPosition()[0:2] for i in range(2)] 
-            z = self._markers[i].GetPosition()[2]
-
-            # gradient
-            #m = (p2[1] - p1[1]) / float(p2[0] - p1[0])
+            z = self._markers[0].GetPosition()[2]
 
             n,mag,lv = geometry.normalise_line(p1,p2) 
 
@@ -534,6 +626,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
                 tot += pi[0]*pip[1] - pip[0]*pi[1]
 
             area = - tot / 2.0
+
+            # store area in current measurement
+            self._current_measurement.area = area
 
             self._view_frame.area_txt.SetValue('%.2f' % (area,))
 
