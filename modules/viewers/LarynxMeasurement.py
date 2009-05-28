@@ -492,6 +492,10 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         ren = self._viewer.GetRenderer()
         ren.ResetCamera()
 
+    def _save_dacs_to_csv(self, filename):
+        # make list of all filenames in current directory
+        # load all dacs
+
     def _stop(self):
         # close down any running analysis
         # first remove all polydatas we might have added to the scene
