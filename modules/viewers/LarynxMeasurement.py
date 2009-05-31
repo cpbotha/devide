@@ -495,6 +495,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
     def _save_dacs_to_csv(self, filename):
         # make list of all filenames in current directory
         # load all dacs
+        pass
 
     def _stop(self):
         # close down any running analysis

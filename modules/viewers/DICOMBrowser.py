@@ -73,10 +73,6 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)
 
-        IntrospectModuleMixin.__init__(
-            self,
-            {'Module (self)' : self})
-
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, 
             DICOMBrowserFrame.DICOMBrowserFrame)

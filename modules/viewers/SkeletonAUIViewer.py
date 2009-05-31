@@ -37,10 +37,6 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
 
         ModuleBase.__init__(self, module_manager)
 
-        IntrospectModuleMixin.__init__(
-            self,
-            {'Module (self)' : self})
-
         # create the view frame
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager, 
