@@ -82,8 +82,8 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
                 self._mask_points, 'Masking points.')
 
         self._glyphFilter = vtk.vtkGlyph3D()
-        as = vtk.vtkArrowSource()
-        self._glyphFilter.SetSource(0, as.GetOutput())
+        asrc = vtk.vtkArrowSource()
+        self._glyphFilter.SetSource(0, asrc.GetOutput())
 
         self._glyphFilter.SetInput(self._mask_points.GetOutput())
         
