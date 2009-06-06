@@ -2,6 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+import csv
 import geometry
 import glob
 import os
@@ -76,6 +77,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
         self._view_frame.reset_button.Bind(
                 wx.EVT_BUTTON, self._handler_reset_button)
+
+        self._view_frame.save_csv.Bind(
+                wx.EVT_BUTTON, self._handler_save_csv_button)
 
         self._view_frame.rwi.AddObserver(
                 'LeftButtonPressEvent',
@@ -367,6 +371,13 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         if self._current_measurement.filename:
             self._start(self._current_measurement.filename,
                     reset=True)
+
+    def _handler_save_csv_button(self, evt):
+        fn = self._current_measurement.filename
+        if not os.path.exists(fn):
+            return
+
+        self._save_dacs_to_csv(fn)
         
     def _handler_start_button(self, evt):
         # let user pick image
@@ -492,10 +503,28 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         ren = self._viewer.GetRenderer()
         ren.ResetCamera()
 
-    def _save_dacs_to_csv(self, filename):
+    def _save_dacs_to_csv(self, current_fn):
         # make list of all filenames in current directory
         # load all dacs
-        pass
+        img_ext = os.path.splitext(current_fn)[1]
+        dir = os.path.dirname(current_fn)
+        all_images = glob.glob(os.path.join(dir, '*%s' % (img_ext,)))
+        all_dacs = glob.glob(os.path.join(dir, '*%s.dac' % (img_ext,)))
+
+        if len(all_dacs) % 3 != 0:
+            self._module_manager.log_error(
+                    "Number of measurements not a multiple of 3!\n"
+                    "Can't write CSV file.")
+            return
+
+        if len(all_dacs) != len(all_images):
+            self._module_manager.log_warning(
+                    "You have not yet measured all images yet.\n"
+                    "Will write CSV anyway, please double-check.")
+
+        # sort the dacs
+        all_dacs.sort()
+
 
     def _stop(self):
         # close down any running analysis
@@ -526,7 +555,13 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         self._viewer.SetInput(self._reader.GetOutput())
 
         # show the new filename in the correct image box
-        self._view_frame.current_image_txt.SetValue(new_filename)
+        # first shorten it slightly: split it at the path separator,
+        # take the last two components (last dir comp, filename), then
+        # prepend a '...' and join them all together again.  example
+        # output: .../tmp/file.jpg
+        short_p = os.path.sep.join(
+                ['...']+new_filename.split(os.path.sep)[-2:])
+        self._view_frame.current_image_txt.SetValue(short_p)
         self._config.filename = new_filename
 
         cm = Measurement()
