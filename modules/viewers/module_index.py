@@ -88,6 +88,11 @@ class LarynxMeasurement:
     select border points in a clock-wise fashion.  The POGO distance
     and area will be updated with the addition of each new point.
 
+    You can move all points after having placed them.  Adjust the
+    brightness and contrast by dragging the left mouse button, zoom
+    by dragging the right button or using the mouse wheel, pan with
+    the middle mouse button.
+
     When you click on the 'next' button, all information about the
     current image will be saved and the next image in the directory
     will be loaded.  If the next image has already been measured by
@@ -95,12 +100,13 @@ class LarynxMeasurement:
     means that you can interrupt a measurement session at any time, as
     long as you've pressed the 'next' button after the LAST image.
 
-    When you have measured all images, you can click on the 'Save CSV'
-    button to write all measurements to disk.  You can also do this
-    even if you haven't done all measurements yet, as long as you have
-    measured a multiple of three images.  The measurements will be
-    written to disk in the same directory as the measured images and
-    will be called 'measurements.csv'.
+    When you have measured all images (check the progress message
+    box), you can click on the 'Save CSV' button to write all
+    measurements to disk.  You can also do this even if you haven't
+    done all measurements yet, as long as you have measured a multiple
+    of three images.  The measurements will be written to disk in the
+    same directory as the measured images and will be called
+    'measurements.csv'.  
     """
 
  
