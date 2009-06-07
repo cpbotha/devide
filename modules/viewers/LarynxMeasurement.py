@@ -511,6 +511,11 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         all_images = glob.glob(os.path.join(dir, '*%s' % (img_ext,)))
         all_dacs = glob.glob(os.path.join(dir, '*%s.dac' % (img_ext,)))
 
+        if len(all_dacs) == 0:
+            self._module_manager.log_error(
+                    "No measurements to save yet.")
+            return
+
         if len(all_dacs) % 3 != 0:
             self._module_manager.log_error(
                     "Number of measurements not a multiple of 3!\n"
@@ -525,6 +530,68 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         # sort the dacs
         all_dacs.sort()
 
+        csv_fn = os.path.join(dir, 'measurements.csv')
+        csv_f = open(csv_fn, 'w')
+        wrtr = csv.writer(csv_f, delimiter=',',
+                quotechar='"')
+        # write header row
+        wrtr.writerow([
+            'name', 'clg1 a', 'clg1 b', 'clg1 c',
+            'norm dist a', 'norm dist b', 'norm dist c',
+            'dist a', 'dist b', 'dist c',
+            'norm area a', 'norm area b', 'norm area c',
+            'area a', 'area b', 'area c'
+            ])
+
+        # now go through all the dac files and write them out in
+        # multiples of three
+        for i in range(len(all_dacs) / 3):
+            three_names = []
+            clg = []
+            norm_dist = []
+            dist = []
+            norm_area = []
+            area = []
+            for j in range(3):
+                # get dac filename and read its contents
+                dfn = all_dacs[i*3 + j]
+                d,a,c = eval(open(dfn).read(),
+                        {"__builtins__":{}})
+
+                # create short (extensionless) filename for creating
+                # the measurement title
+                sfn = os.path.splitext(os.path.basename(dfn))[0]
+                # we have to strip off the jpg as well
+                sfn = os.path.splitext(sfn)[0]
+
+                # store it for creating the string later
+                three_names.append(sfn)
+
+                if j == 0:
+                    # if this is the first of a three-element group,
+                    # store the distance and area to normalise the
+                    # other two with.
+                    nd = d
+                    na = a
+                    norm_dist.append(1.0)
+                    norm_area.append(1.0)
+                else:
+                    # if not, normalise and store
+                    norm_dist.append(d / nd)
+                    norm_area.append(a / na)
+
+                # store the pixel measurements
+                clg.append(c)
+                dist.append(d)
+                area.append(a)
+
+            # write out a measurement line to the CSV file
+            name3 = '%s-%s-%s' % tuple(three_names)
+            wrtr.writerow([name3] + clg + 
+                    norm_dist + dist + 
+                    norm_area + area)
+
+        csv_f.close()
 
     def _stop(self):
         # close down any running analysis
