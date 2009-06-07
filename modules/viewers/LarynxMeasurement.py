@@ -772,9 +772,3 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             self._view_frame.area_txt.SetValue('%.2f' % (area,))
 
 
-
-
-
-
-
-
