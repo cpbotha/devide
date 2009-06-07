@@ -77,10 +77,30 @@ class histogramSegment:
     cats = ['Viewers']
 
 class LarynxMeasurement:
-    kits = ['wx_kit', 'vtk_kit', 'sqlite_kit', 'gdcm_kit']
+    kits = ['wx_kit', 'vtk_kit', 'gdcm_kit']
     cats = ['Viewers']
-    help = """Module for performing 2D measurements on image
-    slices.
+    help = """Module for performing 2D measurements on photos of the
+    larynx.
+
+    Click the 'start' button to select a JPEG image.  On this image,
+    shift click to select the apex of the larynx, then shift click
+    again to select the bottom half-point.  You can now shift-click to
+    select border points in a clock-wise fashion.  The POGO distance
+    and area will be updated with the addition of each new point.
+
+    When you click on the 'next' button, all information about the
+    current image will be saved and the next image in the directory
+    will be loaded.  If the next image has already been measured by
+    you previously, the measurements will be loaded and shown.  This
+    means that you can interrupt a measurement session at any time, as
+    long as you've pressed the 'next' button after the LAST image.
+
+    When you have measured all images, you can click on the 'Save CSV'
+    button to write all measurements to disk.  You can also do this
+    even if you haven't done all measurements yet, as long as you have
+    measured a multiple of three images.  The measurements will be
+    written to disk in the same directory as the measured images and
+    will be called 'measurements.csv'.
     """
 
  
