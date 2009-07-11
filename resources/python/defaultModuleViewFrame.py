@@ -6,7 +6,7 @@ import wx
 class defaultModuleViewFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: defaultModuleViewFrame.__init__
-        kwds["style"] = wx.CAPTION|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
+        kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.viewFramePanel = wx.Panel(self, -1)
 
