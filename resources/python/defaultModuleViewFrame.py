@@ -6,7 +6,7 @@ import wx
 class defaultModuleViewFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: defaultModuleViewFrame.__init__
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
+        kwds["style"] = wx.CAPTION|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX|wx.SYSTEM_MENU|wx.RESIZE_BORDER
         wx.Frame.__init__(self, *args, **kwds)
         self.viewFramePanel = wx.Panel(self, -1)
 
@@ -23,15 +23,10 @@ class defaultModuleViewFrame(wx.Frame):
         # begin wxGlade: defaultModuleViewFrame.__do_layout
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
-        self.viewFramePanel.SetAutoLayout(1)
         self.viewFramePanel.SetSizer(sizer_2)
-        sizer_2.Fit(self.viewFramePanel)
-        sizer_2.SetSizeHints(self.viewFramePanel)
         sizer_1.Add(self.viewFramePanel, 1, wx.EXPAND, 0)
-        self.SetAutoLayout(1)
         self.SetSizer(sizer_1)
         sizer_1.Fit(self)
-        sizer_1.SetSizeHints(self)
         self.Layout()
         # end wxGlade
 
