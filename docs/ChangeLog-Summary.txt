@@ -1,7 +1,8 @@
 This is Release 9.x
 
 Changes since previous release (9.1.3361)
- * Planned: Fixing of great big multi-threading bug between Python and
+ * The DeVIDE Runtime Environment (DRE): TA-DAAAAAAAAAA!
+ * Fixing of great big multi-threading bug (deadlock) between Python and
    VTK with exception handling.
  * You can now drop a dragged output connection anywwhere on a glyph.
    It will connect it to the first available input port.
@@ -16,7 +17,7 @@ Changes since previous release (9.1.3361)
  * Pure-Python MarschnerLobb module for generating Marschner Lobb
    volumes.
  * Fine-tuning to Graph Editor canvas appearance.
- * Upraded to VTK 5.4.x
+ * Upraded to Python 2.6.2, VTK 5.4.2, ITK 3.0.14, GDCM 2.0.12
 
 Changes since previous release (8.5.3085)
  * Volume rendering functionality greatly improved.  VolumeRender now
