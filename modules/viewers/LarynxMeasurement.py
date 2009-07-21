@@ -455,11 +455,11 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
             try:
                 self._add_apex_marker(points[0])
-                self.state = STATE_APEX
+                self._state = STATE_APEX
 
                 self._add_lm_marker(points[1])
                 self._add_pogo_line()
-                self.state = STATE_LM
+                self._state = STATE_LM
 
                 self._add_normal_marker(points[2])
                 self._add_area_polygon()
