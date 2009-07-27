@@ -10,6 +10,8 @@ import input_array_choice_mixin
 reload(input_array_choice_mixin)
 from input_array_choice_mixin import InputArrayChoiceMixin
 
+ARRAY_IDX = 1
+
 # scale vector glyph with scalar, vector magnitude, or separately for each
 # direction (using vector components), or don't scale at all
 # default is SCALE_BY_VECTOR = 1
@@ -114,7 +116,8 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._glyphFilter.Update()
         if self.view_initialised:
             choice = self._getWidget(5)
-            self.iac_execute_module(self._glyphFilter, choice, 1)
+            self.iac_execute_module(self._glyphFilter, choice,
+                    ARRAY_IDX)
         
 
     def get_input_descriptions(self):
@@ -141,7 +144,7 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._config.mask_random = bool(self._mask_points.GetRandomMode())
 
         # this will extract the possible choices
-        self.iac_logic_to_config(self._glyphFilter, 1)
+        self.iac_logic_to_config(self._glyphFilter, ARRAY_IDX)
 
     def config_to_view(self):
         # first get our parent mixin to do its thing
@@ -161,8 +164,5 @@ class glyphs(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
         self._mask_points.SetOnRatio(self._config.mask_on_ratio)
         self._mask_points.SetRandomMode(int(self._config.mask_random))
 
-        # it seems that array_idx == 1 refers to vectors
-        # array_idx 0 gives me only the x-component of multi-component
-        # arrays
-        self.iac_config_to_logic(self._glyphFilter, 1)
+        self.iac_config_to_logic(self._glyphFilter, ARRAY_IDX)
 

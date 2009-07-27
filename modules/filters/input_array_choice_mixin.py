@@ -77,7 +77,7 @@ class InputArrayChoiceMixin:
         to the used vtkGlyph3D filter.
 
         For some filters (vtkGlyph3D) array_idx needs to be 1, for
-        others (vtkWarpVector) it needs to be 0.
+        others (vtkWarpVector, vtkStreamTracer) it needs to be 0.
         """
 
         if self._config.vectorsSelection == \
