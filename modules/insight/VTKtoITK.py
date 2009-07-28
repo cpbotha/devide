@@ -21,7 +21,7 @@ class VTKtoITK(ScriptedConfigModuleMixin, ModuleBase):
         # F3 or US3, etc.
         self._vtk2itk_short_string = None
 
-        self._config.autotype = True
+        self._config.autotype = False
         # this will store the current type as full text, e.g. "unsigned char"
         self._config.type = 'float'
 
