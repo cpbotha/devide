@@ -7,6 +7,10 @@ import vtk
 
 INTEG_TYPE = ['RK2', 'RK4', 'RK45']
 INTEG_TYPE_TEXTS = ['Runge-Kutta 2', 'Runge-Kutta 4', 'Runge-Kutta 45']
+INTEG_DIR = ['FORWARD', 'BACKWARD', 'BOTH']
+INTEG_DIR_TEXTS = ['Forward', 'Backward', 'Both']
+
+
 ARRAY_IDX = 0
 
 class streamTracer(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase):
@@ -18,11 +22,19 @@ class streamTracer(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase)
         # 1 = RK4
         # 2 = RK45
         self._config.integrator = INTEG_TYPE.index('RK2')
+        self._config.max_prop = 5.0
+        self._config.integration_direction = INTEG_DIR.index(
+                'FORWARD')
 
         configList = [
             ('Vectors selection:', 'vectorsSelection', 'base:str', 'choice',
              'The attribute that will be used as vectors for the warping.',
              (input_array_choice_mixin.DEFAULT_SELECTION_STRING,)),
+            ('Max propagation:', 'max_prop', 'base:float', 'text',
+                'The streamline will propagate up to this lenth.'),
+            ('Integration direction:', 'integration_direction', 'base:int', 'choice',
+             'Select an integration direction.',
+             INTEG_DIR_TEXTS),
             ('Integrator type:', 'integrator', 'base:int', 'choice',
              'Select an integrator for the streamlines.',
              INTEG_TYPE_TEXTS)]
@@ -76,12 +88,18 @@ class streamTracer(ScriptedConfigModuleMixin, InputArrayChoiceMixin, ModuleBase)
         return self._streamTracer.GetOutput()
 
     def logic_to_config(self):
+        self._config.max_prop = \
+            self._streamTracer.GetMaximumPropagation()
+        self._config.integration_direction = \
+                self._streamTracer.GetIntegrationDirection()
         self._config.integrator = self._streamTracer.GetIntegratorType()
     
         # this will extract the possible choices
         self.iac_logic_to_config(self._streamTracer, ARRAY_IDX)
 
     def config_to_logic(self):
+        self._streamTracer.SetMaximumPropagation(self._config.max_prop)
+        self._streamTracer.SetIntegrationDirection(self._config.integration_direction)
         self._streamTracer.SetIntegratorType(self._config.integrator)
 
         # it seems that array_idx == 1 refers to vectors

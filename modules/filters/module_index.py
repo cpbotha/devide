@@ -392,6 +392,10 @@ class streamTracer:
     kits = ['vtk_kit']
     cats = ['Filters']
     help = """Visualise a vector field with stream lines.
+
+    After connecting this module, execute your network once, then you
+    can select the relevant vector attribute to glyph from the
+    'Vectors Selection' choice in the interface.
     """
 
 class surfaceToDistanceField:
