@@ -86,7 +86,7 @@ class ITKtoVTK(NoConfigModuleMixin, ModuleBase):
         return ('VTK Image Data',)
 
     def get_output(self, idx):
-        if self._itk2vtk:
+        if self._itk2vtk is not None:
             return self._itk2vtk.GetOutput()
         else:
             return None
