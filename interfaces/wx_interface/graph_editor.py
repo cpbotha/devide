@@ -2622,29 +2622,40 @@ class GraphEditor:
             pcm = glyph.get_port_containing_mouse()
             dprint("_observer_glyph_left_button_up:: pcm",pcm)
             if pcm == (-1,-1):
-                # the user dropped us inside of the glyph, NOT above a port
-                # if the user was dragging an input port, we have to
-                # manually disconnect
-                if canvas.getDraggedObject().draggedPort[0] == 0:
-                    input_idx = canvas.getDraggedObject().draggedPort[1]
-                    self._disconnect(canvas.getDraggedObject(),
-                                     input_idx)
-                    self.canvas.redraw()
+                # the user was dragging an input or output port and
+                # dropped us inside a glyph... try to connect us to
+                # the first unconnected input port on 'glyph'
+                try:
+                    first_available_port_idx = glyph.inputLines.index(None)
+
+                except ValueError:
+                    # no available port #############################
+
+                    if canvas.getDraggedObject().draggedPort[0] == 0:
+                        # if the user was dragging an input port, that
+                        # means we disconnect
+                        input_idx = canvas.getDraggedObject().draggedPort[1]
+                        self._disconnect(canvas.getDraggedObject(),
+                                         input_idx)
+                        self.canvas.redraw()
+
+                    else:
+                        # the user was dragging an output port and
+                        # dropped us on a glyph with no available
+                        # inputs: do nothing.
+                        pass
 
                 else:
-                    # the user was dragging a port and dropped us
-                    # inside a glyph... try to connect us to the first
-                    # unconnected input port on 'glyph'
-                    try:
-                        first_available_port_idx = glyph.inputLines.index(None)
-                    except ValueError:
-                        # no available port, do nothing.
-                        pass
-                    else:
-                        self._checkAndConnect(
-                            canvas.getDraggedObject(),
-                            canvas.getDraggedObject().draggedPort,
-                            glyph, first_available_port_idx)
+                    # there IS an input port available!
+                    # checkAndConnect knows what to do if we were
+                    # dragging an output port (connect it to this
+                    # glyph) or an input port (first disconnect it
+                    # from its existing consumer module, then
+                    # reconnect to this glyph)
+                    self._checkAndConnect(
+                        canvas.getDraggedObject(),
+                        canvas.getDraggedObject().draggedPort,
+                        glyph, first_available_port_idx)
 
             else:
                 # this means the drag is ended above an input port!

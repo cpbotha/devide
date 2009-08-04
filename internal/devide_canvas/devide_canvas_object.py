@@ -525,6 +525,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         self.outputLines = [[] for i in range(self._numOutputs)]
         self._labelList = labelList
         self.module_instance = module_instance
+        # usually 2-element list.  elem0 is 0 for input port and 1 for
+        # output port.  elem1 is the index.
         self.draggedPort = None
         self.enteredPort = None
         self.selected = False
