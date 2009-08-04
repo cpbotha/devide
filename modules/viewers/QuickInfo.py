@@ -194,16 +194,11 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
             # general description ##################################
             from module_kits.misc_kit.misc_utils import \
                     get_itk_img_type_and_dim
-            itype, dim, vector = get_itk_img_type_and_dim(ip)
+            itype, dim, qual_str = get_itk_img_type_and_dim(ip)
             dim = int(dim)
 
-            if vector:
-                vs = 'vector'
-            else:
-                vs = 'scalar'
-
             dl = ['ITK format %d-dimensional %s %s image / volume' % \
-                    (dim, itype, vs)]
+                    (dim, itype, qual_str)]
 
             s = ip.GetLargestPossibleRegion().GetSize()
             dims = [s.GetElement(i) for i in range(dim)]
@@ -235,7 +230,7 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
         return '\n'.join(lines)
 
     def check_itk(self, ip):
-        if repr(ip).startswith('<C itk::'):
+        if repr(ip).startswith('<itk'):
             return True
         else:
             return False
