@@ -94,7 +94,7 @@ def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
     di = dvModule.__dict__.items()
     objAttrString = None
     for key, value in di:
-        if value == obj:
+        if value is obj:
             objAttrString = key
             break
 
