@@ -1,4 +1,4 @@
-This is Release 9.x
+This is Release 9.8
 
 Changes since previous release (9.1.3361)
  * The DeVIDE Runtime Environment (DRE): The DRE is a super delicious
