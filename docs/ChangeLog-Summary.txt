@@ -1,9 +1,15 @@
 This is Release 9.x
 
 Changes since previous release (9.1.3361)
- * The DeVIDE Runtime Environment (DRE): TA-DAAAAAAAAAA!
+ * The DeVIDE Runtime Environment (DRE): The DRE is a super delicious
+   Python distribution that is able to run your applications too.
+   DeVIDE itself is also a just such an application, or a DRE
+   application module (DREAM).
  * Fixing of great big multi-threading bug (deadlock) between Python and
    VTK with exception handling.
+ * I promised myself that I wouldn't, but somehow I managed to upgrade
+   to the fantastic new swig-only WrapITK 0.3.0.  This means that your
+   ITK experience will be 145% improved!
  * You can now drop a dragged output connection anywwhere on a glyph.
    It will connect it to the first available input port.
  * Tweaked appearance of glyphs and canvas.  Now 20% prettier.
