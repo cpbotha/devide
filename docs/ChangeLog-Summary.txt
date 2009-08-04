@@ -10,6 +10,8 @@ Changes since previous release (9.1.3361)
  * I promised myself that I wouldn't, but somehow I managed to upgrade
    to the fantastic new swig-only WrapITK 0.3.0.  This means that your
    ITK experience will be 145% improved!
+ * Online help has been moved to the Google Code wiki (F1 will start
+   your browser).
  * You can now drop a dragged output connection anywwhere on a glyph.
    It will connect it to the first available input port.
  * Tweaked appearance of glyphs and canvas.  Now 20% prettier.
