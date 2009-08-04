@@ -113,7 +113,7 @@ def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
 
     pc = itk.PyCommand.New()
     pc.SetCommandCallable(commandCallable)
-    res = obj.AddObserver(itk.ProgressEvent(), pc.GetPointer())
+    res = obj.AddObserver(itk.ProgressEvent(), pc)
 
     # we DON'T have to store a binding to the PyCommand; during AddObserver,
     # the ITK object makes its own copy.  The ITK object will also take care
