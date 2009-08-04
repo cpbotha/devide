@@ -31,7 +31,8 @@ class VTKtoITK(ScriptedConfigModuleMixin, ModuleBase):
              'input type.'),
             ('Data type:', 'type', 'base:str', 'choice',
              'Data will be cast to this type if AutoType is not used.',
-             ['float', 'signed short', 'unsigned long'])]
+             ['float', 'signed short', 'unsigned short', 
+              'unsigned char', 'unsigned long'])]
 
         ScriptedConfigModuleMixin.__init__(self, config_list,
                                            {'Module (self)' : self})
