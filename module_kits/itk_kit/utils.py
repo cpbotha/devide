@@ -6,7 +6,12 @@ import itk
 import re
 
 from module_kits.misc_kit.misc_utils import get_itk_img_type_and_dim
+from module_kits.misc_kit.misc_utils import \
+        get_itk_img_type_and_dim_shortstring
+
 get_img_type_and_dim = get_itk_img_type_and_dim
+get_img_type_and_dim_shortstring = \
+    get_itk_img_type_and_dim_shortstring
 
 def coordinates_to_vector_container(points, initial_distance=0):
     """Convert list of 3-D index coordinates to an ITK
@@ -40,30 +45,6 @@ def coordinates_to_vector_container(points, initial_distance=0):
 
     return vc
             
-
-            
-
-def get_img_type_and_dim_shortstring(itk_img):
-
-    tdv = get_img_type_and_dim(itk_img)
-    
-    # this turns 'unsigned_char' into 'UC' and 'float' into 'F'
-    itkTypeC = ''.join([i.upper()[0] for i in tdv[0].split('_')])
-
-    # the 'this' signature contains 'short_int', but the ITK shortstring for
-    # this is SS
-    if itkTypeC == 'SI':
-        itkTypeC = 'SS'
-
-    if len(tdv[2]) > 0:
-        # this will be for instance VF33 or VF22
-        shortstring = '%s%s%s%s' % (tdv[2], itkTypeC, tdv[1], tdv[1])
-
-    else:
-        # and this F3 or UC2
-        shortstring = '%s%s' % (itkTypeC, tdv[1])
-
-    return shortstring
 
 def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
                               objEvals=None, module_manager=None):

@@ -4,7 +4,87 @@
 
 import re
 
+# map from itk type string to string
+ITKTSTR_STRING = {
+        'C' : 'char',
+        'D' : 'double',
+        'F' : 'float',
+        'L' : 'long',
+        'S' : 'short'
+        }
+
+# map from itk type sign to string
+ITKTSGN_STRING = {
+        'U' : 'unsigned',
+        'S' : 'signed'
+        }
+
+
+def get_itk_img_type_and_dim_shortstring(itk_img):
+    """Return short string representing type and dimension of itk
+    image.
+
+    This method has been put here so that it's available to non-itk
+    dependent modules, such as the QuickInfo, and does not require
+    any access to the ITK library itself.
+    """
+
+    # repr is e.g.:
+    # <itkImagePython.itkImageSS3; proxy of <Swig Object of type 'itkImageSS3 *' at 0x6ec1570> >
+    rs = repr(itk_img)
+    # pick out the short code
+    mo = re.search('^<itkImagePython.itkImage(.*);.*>', rs)
+
+    if not mo:
+        raise TypeError, 'This method requires an ITK image as input.'
+    else:
+        return mo.groups()[0]
+
 def get_itk_img_type_and_dim(itk_img):
+    """Returns itk image type as a tuple with ('type', 'dim',
+    'qualifier'), e.g. ('float', '3', 'covariant vector')
+
+    This method has been put here so that it's available to non-itk
+    dependent modules, such as the QuickInfo, and does not require
+    any access to the ITK library itself.
+    """
+
+    ss = get_itk_img_type_and_dim_shortstring(itk_img)
+    # pull that sucker apart
+    # groups:
+    # 0: covariant / complex
+    # 1: vector
+    # 2: type shortstring
+    # 3: dimensions (in case of vector, doubled up)
+    mo = re.search('(C*)(V*)([^0-9]+)([0-9]+)', ss)
+
+    c, v, tss, dim = mo.groups()
+    if c and v:
+        qualifier = 'covariant vector'
+    elif c:
+        qualifier = 'complex'
+    elif v:
+        qualifier = 'vector'
+    else:
+        qualifier = ''
+
+    if len(tss) > 1:
+        sign_string = ITKTSGN_STRING[tss[0]]
+        type_string = ITKTSTR_STRING[tss[1]]
+    else:
+        sign_string = ''
+        type_string = ITKTSTR_STRING[tss[0]]
+   
+    # in the case of a vector of 10-dims, does that become 1010?
+    if qualifier == 'vector':
+        dim_string = dim[0:len(dim) / 2]
+    else:
+        dim_string = dim[0]
+
+    fss = '%s %s' % (sign_string, type_string)
+    return (fss.strip(), dim_string, qualifier) 
+
+def get_itk_img_type_and_dim_DEPRECATED(itk_img):
     """Returns itk image type as a tuple with ('type', 'dim', 'v').
 
     This method has been put here so that it's available to non-itk
