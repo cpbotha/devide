@@ -5,6 +5,7 @@ Changes since previous release (9.1.3361)
    Python distribution that is able to run your applications too.
    DeVIDE itself is also a just such an application, or a DRE
    application module (DREAM).
+ * Binaries also on Windows 64, albeit without numpy and matplotlib.
  * Fixing of great big multi-threading bug (deadlock) between Python and
    VTK with exception handling.
  * I promised myself that I wouldn't, but somehow I managed to upgrade
