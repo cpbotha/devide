@@ -558,6 +558,14 @@ class GraphEditor:
         try:
             self._devide_app.network_manager.execute_network(allMetaModules)
         except Exception, e:
+            # if an error occurred, but progress is not at 100% yet,
+            # we have to put it there, else app remains in visually
+            # busy state.
+            if self._devide_app.get_progress() < 100.0:
+                self._devide_app.set_progress(
+                        100.0, 'Error during network execution.')
+
+            # finally report the exception.
             self._devide_app.log_error_with_exception(str(e))
 
     def _handler_blockmodules(self, event):

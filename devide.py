@@ -400,6 +400,9 @@ class DeVIDEApp:
         
         self._interface.log_warning(message, timeStamp)
 
+    def get_progress(self):
+        return self._currentProgress
+
     def set_progress(self, progress, message, noTime=False):
         # 1. we shouldn't call setProgress whilst busy with setProgress
         # 2. only do something if the message or the progress has changed

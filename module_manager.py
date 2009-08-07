@@ -879,6 +879,13 @@ class ModuleManager:
                 self._module_dict.values())
 
         except Exception, e:
+            # if an error occurred, but progress is not at 100% yet,
+            # we have to put it there, else app remains in visually
+            # busy state.
+            if self._devide_app.get_progress() < 100.0:
+                self._devide_app.set_progress(
+                        100.0, 'Error during network execution.')
+
             # we are directly reporting the error, as this is used by
             # a utility function that is too compact to handle an
             # exception by itself.  Might change in the future.
