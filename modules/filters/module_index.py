@@ -312,9 +312,13 @@ class MIPRender:
 class polyDataConnect:
     kits = ['vtk_kit']
     cats = ['Filters']
-    help = """Given a number of seed points, extract all polydata that is
+    help = """Perform connected components analysis on polygonal data.
+
+    In the default 'point seeded regions' mode:
+    Given a number of seed points, extract all polydata that is
     directly or indirectly connected to those seed points.  You could see
     this as a polydata-based region growing.
+
     """
 
 class polyDataNormals:
