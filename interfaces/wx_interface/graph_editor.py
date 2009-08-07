@@ -303,6 +303,14 @@ class GraphEditor:
                                  self._observer_canvas_left_up)
         self.canvas.add_observer('dragging',
                               self._observer_canvas_drag)
+       
+        # bind some global hotkeys on the RWI (not on the whole main
+        # frame... we want to delete to keep working in the rest of
+        # the interface)
+        mf._rwi.SetAcceleratorTable(
+                wx.AcceleratorTable(
+                    [(wx.ACCEL_NORMAL, wx.WXK_DELETE, 
+                        self.ID_DELETE_GLYPHS)]))
 
         # initialise selection
         self._selected_glyphs = GlyphSelection(self.canvas,
@@ -898,6 +906,8 @@ class GraphEditor:
         if disable:
             if not self._selected_glyphs.getSelectedGlyphs():
                 ni.Enable(False)
+
+        self.ID_DELETE_GLYPHS = deleteId
 
 
         testId = wx.NewId()

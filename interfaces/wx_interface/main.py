@@ -161,7 +161,6 @@ class WXInterface(wx.App):
                     self.timer_ln)
             # then tell the timer to trigger it in 150ms
             self.timer_ln.Start(150, True)
-            
 
     def quit(self):
         """Event handler for quit request.
