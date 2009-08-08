@@ -77,7 +77,7 @@ class histogramSegment:
     cats = ['Viewers']
 
 class LarynxMeasurement:
-    kits = ['wx_kit', 'vtk_kit', 'gdcm_kit']
+    kits = ['wx_kit', 'vtk_kit', 'gdcm_kit', 'geometry_kit']
     cats = ['Viewers']
     help = """Module for performing 2D measurements on photos of the
     larynx.
