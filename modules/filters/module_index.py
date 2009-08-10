@@ -150,6 +150,25 @@ class greyReconstruct:
 
     """
 
+class ICPTransform:
+    kits = ['vtk_kit']
+    cats = ['Filters']
+    keywords = ['iterative closest point transform', 'map',
+            'register', 'registration']
+    help = """Use iterative closest point transform to map two
+    surfaces onto each other with an affine transform.
+
+    Three different transform modes are available:
+    <ul>
+      <li>Rigid: rotation + translation</li>
+      <li>Similarity: rigid + isotropic scaling</li>
+      <li>Affine: rigid + scaling + shear</li>
+    </ul>
+
+    The output of this class is a linear transform that can be used as
+    input to for example a transformPolydata class.
+    """
+
 class imageFillHoles:
     kits = ['vtk_kit']
     cats = ['Filters', 'Morphology']
