@@ -295,11 +295,9 @@ class DeVIDECanvas(SubjectMixin):
         self._helper_handler_preamble(e)
         self.event.middle_button = True
         self._helper_glyph_button_down('middle_button_down')
-        self._helper_handler_capture('m')
 
     def _handler_mu(self, e):
         self._helper_handler_preamble(e, focus=False)
-        self._helper_handler_capture_release('m')
         self.event.middle_button = False
         self._helper_glyph_button_up('middle_button_up')
 
@@ -309,12 +307,10 @@ class DeVIDECanvas(SubjectMixin):
             return
         self.event.right_button = True
         self._helper_glyph_button_down('right_button_down')
-        self._helper_handler_capture('r')
 
 
     def _handler_ru(self, e):
         self._helper_handler_preamble(e, focus=False)
-        self._helper_handler_capture_release('r')
         if e.Dragging():
             return
         self.event.right_button = False
