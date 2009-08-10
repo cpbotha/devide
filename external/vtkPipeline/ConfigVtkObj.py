@@ -728,38 +728,38 @@ class ConfigVtkObj:
         self._vtk_obj_doc_view.show()
 
     def apply_changes (self, event=None):
-	"Apply the changes made to configuration."
+        "Apply the changes made to configuration."
         if self.vtk_warn > -1:
-            self._vtk_obj.GlobalWarningDisplayOff ()
+                self._vtk_obj.GlobalWarningDisplayOff ()
 
-	n_meth = len (self.toggle_meths)
-	for i in range (0, n_meth):
-	    val = self.toggle_var[i]
-	    m = self.toggle_meths[i][:-2]
-	    if val == 1:
-		eval ("self._vtk_obj.%sOn ()"%m)
-	    else:
-		eval ("self._vtk_obj.%sOff ()"%m)		
+        n_meth = len (self.toggle_meths)
+        for i in range (0, n_meth):
+            val = self.toggle_var[i]
+            m = self.toggle_meths[i][:-2]
+            if val == 1:
+                eval ("self._vtk_obj.%sOn ()"%m)
+            else:
+                eval ("self._vtk_obj.%sOff ()"%m)		
 
-	n_meth = len (self.state_meths)
-	for i in range (0, n_meth):
-	    val = self.state_var[i]
-	    m = self.state_meths[i][val]
-	    if val != -1:
-		eval ("self._vtk_obj.%s ()"%m)
-	
-	n_meth = len (self.get_set_meths)
-	for i in range (0, n_meth):
-	    val = str(self.get_set_var[i])
-	    if string.find (val, "(") == 0:
-		val = val[1:-1]
+        n_meth = len (self.state_meths)
+        for i in range (0, n_meth):
+            val = self.state_var[i]
+            m = self.state_meths[i][val]
+            if val != -1:
+                eval ("self._vtk_obj.%s ()"%m)
+        
+        n_meth = len (self.get_set_meths)
+        for i in range (0, n_meth):
+            val = str(self.get_set_var[i])
+            if string.find (val, "(") == 0:
+                val = val[1:-1]
 
-	    val_tst = eval ("self._vtk_obj.Get%s ()"% self.get_set_meths[i])
+            val_tst = eval ("self._vtk_obj.Get%s ()"% self.get_set_meths[i])
 
             if type (val_tst) is types.StringType: 
-		st = 1
+                st = 1
             elif self.get_set_meths[i].endswith('FileName') or \
-                 self.get_set_meths[i] == 'Function':
+                     self.get_set_meths[i] == 'Function':
                 # we make an exception with Get/Set.*Filename, Get/SetFunction
                 # here and in vtkMethodParser
                 if val == 'None' or val == '':
@@ -770,22 +770,32 @@ class ConfigVtkObj:
 
             else:
                 st = 0
-                
-                
-	    m = "Set"+self.get_set_meths[i]
-	    if st is 0:
-		eval ("self._vtk_obj.%s (%s)"%(m, val))
-	    else:
+                    
+                    
+            m = "Set"+self.get_set_meths[i]
+            if st is 0:
+                try:
+                    eval ("self._vtk_obj.%s (%s)"%(m, val))
+                except TypeError:
+                    if type(val) in [types.TupleType, types.ListType]:
+                        # sometimes VTK wants the separate elements
+                        # and not the tuple / list
+                        eval("self._vtk_obj.%s(*%s)"%(m,val))
+                    else:
+                        # re-raise the exception if it wasn't a
+                        # tuple/list
+                        raise
+            else:
                 # we have to use raw strings here, so things like \r
                 # don't throw it... mmmkay?
-		eval ("self._vtk_obj.%s (r\"%s\")"%(m, val))
+                eval ("self._vtk_obj.%s (r\"%s\")"%(m, val))
 
-	n_meth = len (self.get_meths)
-	for i in range (0, n_meth):
-	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
-	    self.get_texts[i].SetLabel(str(res))
+        n_meth = len (self.get_meths)
+        for i in range (0, n_meth):
+            res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
+            self.get_texts[i].SetLabel(str(res))
 
-	self.render ()
+        self.render ()
         if self.vtk_warn > -1:
             self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
 		

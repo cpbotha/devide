@@ -11,6 +11,7 @@ from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin # temporary
 import module_utils # temporary, most of this should be in utils.
 import re
+import types
 import utils
 
 #########################################################################
@@ -132,7 +133,18 @@ class PickleVTKObjectsModuleMixin(object):
                             break
 
                 for method, val in vtkObjPD[2]:
-                    eval('vtkObj.Set%s(val)' % (method,))
+                    try:
+                        eval('vtkObj.Set%s(val)' % (method,))
+                    except TypeError:
+                        if type(val) in [types.TupleType, types.ListType]:
+                            # sometimes VTK wants the separate elements
+                            # and not the tuple / list
+                            eval("vtkObj.Set%s(*val)"%(method,))
+                        else:
+                            # re-raise the exception if it wasn't a
+                            # tuple/list
+                            raise
+
 
 #########################################################################    
 # note that the pickle mixin comes first, as its config_to_logic/logic_to_config
