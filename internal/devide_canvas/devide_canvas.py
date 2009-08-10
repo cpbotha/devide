@@ -53,6 +53,10 @@ class DeVIDECanvas(SubjectMixin):
         self._rwi = renderwindowinteractor
         self._ren = renderer
 
+        # need this to do same mouse capturing as original RWI under Win
+        self._rwi_use_capture = \
+                vtk.wx.wxVTKRenderWindowInteractor._useCapture
+
         # we can't switch on Line/Point/Polygon smoothing here,
         # because the renderwindow has already been initialised
         # we do it in main_frame.py right after we create the RWI
@@ -176,6 +180,43 @@ class DeVIDECanvas(SubjectMixin):
 
         return (wex, wey, wez)
 
+    def _helper_handler_capture_release(self, button):
+        """Helper method to be called directly after preamble
+        helper in button up handlers in order to release mouse.  
+        
+        @param button Text description of which button was pressed,
+        e.g. 'left' 
+        
+        """
+
+        # if the same button is released that captured the mouse,
+        # and we have the mouse, release it.  (we need to get rid
+        # of this as soon as possible; if we don't and one of the
+        # event handlers raises an exception, mouse is never
+        # released.)
+        if self._rwi_use_capture and self._rwi._own_mouse and \
+                button==self._rwi._mouse_capture_button:
+            self._rwi.ReleaseMouse()
+            self._rwi._own_mouse = False
+
+    def _helper_handler_capture(self, button):
+        """Helper method to be called at end after button down
+        helpers.
+
+        @param button Text description of button that was pressed,
+        e.g. 'left'.
+
+        """
+        # save the button and capture mouse until the button is
+        # released we only capture the mouse if it hasn't already
+        # been captured
+        if self._rwi_use_capture and not self._rwi._own_mouse:
+            self._rwi._own_mouse = True
+            self._rwi._mouse_capture_button = button
+            self._rwi.CaptureMouse()
+
+
+
     def _helper_handler_preamble(self, e, focus=True):
         e.Skip(False) 
         # Skip(False) won't search for other event
@@ -237,10 +278,12 @@ class DeVIDECanvas(SubjectMixin):
 
         self.event.left_button = True
         self._helper_glyph_button_down('left_button_down')
+        self._helper_handler_capture('l')
 
     def _handler_lu(self, e):
         dprint("_handler_lu::")
         self._helper_handler_preamble(e, focus=False)
+        self._helper_handler_capture_release('l')
         self.event.left_button = False
         self._helper_glyph_button_up('left_button_up')
 
@@ -252,9 +295,11 @@ class DeVIDECanvas(SubjectMixin):
         self._helper_handler_preamble(e)
         self.event.middle_button = True
         self._helper_glyph_button_down('middle_button_down')
+        self._helper_handler_capture('m')
 
     def _handler_mu(self, e):
         self._helper_handler_preamble(e, focus=False)
+        self._helper_handler_capture_release('m')
         self.event.middle_button = False
         self._helper_glyph_button_up('middle_button_up')
 
@@ -264,10 +309,12 @@ class DeVIDECanvas(SubjectMixin):
             return
         self.event.right_button = True
         self._helper_glyph_button_down('right_button_down')
+        self._helper_handler_capture('r')
 
 
     def _handler_ru(self, e):
         self._helper_handler_preamble(e, focus=False)
+        self._helper_handler_capture_release('r')
         if e.Dragging():
             return
         self.event.right_button = False
