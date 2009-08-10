@@ -41,7 +41,7 @@ class RegionGrowing(ScriptedConfigModuleMixin, ModuleBase):
         config_list = [
             ('Auto threshold interval:', '_thresh_interval', 'base:float',
              'text',
-             'Used to calculate automatic threshold.')]
+             'Used to calculate automatic threshold (unit %).')]
              
         ScriptedConfigModuleMixin.__init__(
             self, config_list,
@@ -98,10 +98,8 @@ class RegionGrowing(ScriptedConfigModuleMixin, ModuleBase):
             sums = 0.0
             for seed_point in self._seed_points:
                 # we assume 0'th component!
-                print seed_point
                 v = ii.GetScalarComponentAsDouble(
                     seed_point[0], seed_point[1], seed_point[2], 0)
-                print "BLAAT ", v
                 sums = sums + v
 
             means = sums / float(len(self._seed_points))

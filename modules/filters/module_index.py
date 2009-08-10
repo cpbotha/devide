@@ -342,7 +342,25 @@ class probeFilter:
 class RegionGrowing:
     kits = ['vtk_kit']
     cats = ['Filters']
-    help = """TBD"""
+    keywords = ['region growing', 'threshold', 'automatic',
+    'segmentation']
+    help = """Perform 3D region growing with automatic thresholding
+    based on seed positions.
+    
+    Given any number of seed positions (for example the first output
+    of a slice3dVWR), first calculate lower and upper thresholds
+    automatically as follows: 
+    <ol>
+    <li>calculate mean intensity over all seed positions.</li> 
+    <li>lower threshold = mean - auto_thresh_interval%
+    * [full input data scalar range].</li> 
+    <li>upper threshold = mean + auto_thresh_interval% * [full input
+    data scalar range].</li>
+    </ol>
+
+    After the data has been thresholded with the automatic thresholds,
+    a 3D region growing is started from all seed positions.
+    """
 
 class resampleImage:
     kits = ['vtk_kit']
