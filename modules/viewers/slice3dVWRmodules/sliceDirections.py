@@ -283,6 +283,9 @@ class sliceDirections(s3dcGridMixin):
                                    for sliceName in selectedSliceNames]
         return selectedSliceDirections
 
+    def get_all_slice_names(self):
+        return self._sliceDirectionsDict.keys()
+
     def _getSelectedSliceNames(self):
         """
         """

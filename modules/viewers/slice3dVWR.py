@@ -675,12 +675,17 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                    rw=self.threedFrame.threedRWI.GetRenderWindow():
                    s.vtkPipelineConfigure(pw, rw))
 
-#         wx.EVT_BUTTON(self.threedFrame, self.threedFrame.resetButtonId,
-#                    lambda e, s=self: s._resetAll())
+        def handler_freeze_slices_button(e):
+            names = self.sliceDirections.get_all_slice_names()
+            for n in names:
+                self.sliceDirections._setSliceInteraction(
+                        n, not e.IsChecked())
+
+        self.threedFrame.freeze_slices_button.Bind(
+                wx.EVT_TOGGLEBUTTON, handler_freeze_slices_button)
 
 
         # event logic for the voi panel
-
         wx.EVT_CHECKBOX(self.controlFrame,
                      self.controlFrame.voiEnabledCheckBoxId,
                      self._handlerWidgetEnabledCheckBox)
@@ -696,6 +701,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         wx.EVT_BUTTON(self.controlFrame,
                    self.controlFrame.voiSaveButton.GetId(),
                    self._handlerVoiSaveButton)
+
 
         def _ps_cb():
             # FIXME: update to new factoring
