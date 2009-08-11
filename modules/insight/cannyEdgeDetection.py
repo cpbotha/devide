@@ -12,25 +12,25 @@ class cannyEdgeDetection(ScriptedConfigModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         self._config.variance = (0.7, 0.7, 0.7)
-        self._config.maximumError = (0.01, 0.01, 0.01)
-        self._config.threshold = 0.0
-        self._config.outsideValue = 0.0
+        self._config.maximum_error = (0.01, 0.01, 0.01)
+        self._config.upper_threshold = 0.0
+        self._config.lower_threshold = 0.0
+        self._config.outside_value = 0.0
 
         configList = [
             ('Variance:', 'variance', 'tuple:float,3', 'text',
              'Variance of Gaussian used for smoothing the input image (units: '
              'true spacing).'),
-            ('Maximum error:', 'maximumError', 'tuple:float,3', 'text',
+            ('Maximum error:', 'maximum_error', 'tuple:float,3', 'text',
              'The discrete Gaussian kernel will be sized so that the '
              'truncation error is smaller than this.'),
-            ('Threshold:', 'threshold', 'base:float', 'text',
+            ('Upper threshold:', 'upper_threshold', 'base:float', 'text',
+             'Highest allowed value in the output image.'),
+            ('Lower threshold:', 'lower_threshold', 'base:float', 'text',
              'Lowest allowed value in the output image.'),
-            ('Outside value:', 'outsideValue', 'base:float', 'text',
+            ('Outside value:', 'outside_value', 'base:float', 'text',
              'Pixels lower than threshold will be set to this.')]
         
-
-
-
         # setup the pipeline
         if3 = itk.Image[itk.F, 3]
         self._canny = itk.CannyEdgeDetectionImageFilter[if3, if3].New()
@@ -41,8 +41,7 @@ class cannyEdgeDetection(ScriptedConfigModuleMixin, ModuleBase):
 
         ScriptedConfigModuleMixin.__init__(
             self, configList,
-            {'Module (self)' : self,
-             'itkCannyEdgeDetectionImageFilter' : self._canny})
+            {'Module (self)' : self})
             
         self.sync_module_logic_with_config()
         
@@ -61,6 +60,25 @@ class cannyEdgeDetection(ScriptedConfigModuleMixin, ModuleBase):
         del self._canny
 
     def execute_module(self):
+        # create a new canny filter
+        if3 = itk.Image.F3
+        c = itk.CannyEdgeDetectionImageFilter[if3, if3].New()
+        c.SetInput(self._canny.GetInput())
+
+        # disconnect the old one
+        self._canny.SetInput(None)
+        # replace it with the new one
+        self._canny = c
+
+        # setup new progress handler
+        itk_kit.utils.setupITKObjectProgress(
+            self, self._canny, 'itkCannyEdgeDetectionImageFilter',
+            'Performing Canny edge detection')
+
+        # apply our config
+        self.sync_module_logic_with_config()
+      
+        # and go!
         self._canny.Update()
 
     def get_input_descriptions(self):
@@ -76,49 +94,33 @@ class cannyEdgeDetection(ScriptedConfigModuleMixin, ModuleBase):
         return self._canny.GetOutput()
 
     def config_to_logic(self):
-        # VARIANCE
-        var = self._canny.GetVariance()
-        for i in range(3):
-            var.SetElement(i, self._config.variance[i])
+        # thanks to WrapITK, we can now set / get tuples / lists!
 
-        self._canny.SetVariance(var)
+        # VARIANCE
+        self._canny.SetVariance(self._config.variance)
 
         # MAXIMUM ERROR
-        me = self._canny.GetMaximumError()
-        for i in range(3):
-            me.SetElement(i, self._config.maximumError[i])
-
-        self._canny.SetMaximumError(me)
+        self._canny.SetMaximumError(self._config.maximum_error)
 
         # THRESHOLD
-        self._canny.SetUpperThreshold(self._config.threshold)
-        # this is to emulate the old behaviour where there was only
-        # one threshold.
-        # see: http://public.kitware.com/Bug/bug.php?op=show&bugid=1511
-        # we'll bring these into the GUI later
-        self._canny.SetLowerThreshold(self._config.threshold / 2.0)
+        self._canny.SetUpperThreshold(self._config.upper_threshold)
+        self._canny.SetLowerThreshold(self._config.lower_threshold)
 
         # OUTSIDE VALUE
-        self._canny.SetOutsideValue(self._config.outsideValue)
+        self._canny.SetOutsideValue(self._config.outside_value)
 
     def logic_to_config(self):
-        # Damnit!  This is returning mostly float parameters (instead of
-        # double), so that str() in Python is having a hard time formatting
-        # the things nicely.
-        
         # VARIANCE
-        var = self._canny.GetVariance()
-        self._config.variance = (var.GetElement(0), var.GetElement(1),
-                                 var.GetElement(2))
+        self._config.variance = tuple(self._canny.GetVariance())
 
         # MAXIMUM ERROR
-        me = self._canny.GetMaximumError()
-        self._config.maximumError = (me.GetElement(0), me.GetElement(1),
-                                     me.GetElement(2))
+        self._config.maximum_error = \
+            tuple(self._canny.GetMaximumError())
 
-        # THRESHOLD
-        self._config.threshold = self._canny.GetUpperThreshold()
+        # THRESHOLDS
+        self._config.upper_threshold = self._canny.GetUpperThreshold()
+        self._config.lower_threshold = self._canny.GetLowerThreshold()
 
         # OUTSIDE VALUE
-        self._config.outsideValue = self._canny.GetOutsideValue()
+        self._config.outside_value = self._canny.GetOutsideValue()
             

@@ -24,9 +24,17 @@ class cannyEdgeDetection:
     cats = ['Insight']
     help = """Performs 3D Canny edge detection on input image.
 
-    NOTE: due to a bug in ITK, this module will not update correctly when you
-    change parameters and re-execute.  Until I fix or work around the bug,
-    it's best to 'Reload' the module after parameter changes.
+    A rule of thumb for the thersholds: lower threshold == 0.5 * upper
+    threshold.
+
+    NOTE: Due to a bug in ITK [1], the Canny filter gives invalid
+    results when run more than once with different sets of parameters.
+    To work around this, DeVIDE re-instantiates the canny filter at
+    every execution.  This means that only parameters that you see in
+    the GUI are transferred to the new instance.
+
+    [1] http://www.itk.org/pipermail/insight-users/2009-August/032018.html
+
     """
 
 class confidenceSeedConnect:
