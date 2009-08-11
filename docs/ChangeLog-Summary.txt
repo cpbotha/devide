@@ -26,10 +26,12 @@ Changes since previous release (9.1.3361)
    Points will be matched on name.
  * Pure-Python MarschnerLobb module for generating Marschner Lobb
    volumes.
+ * ICPTransform module for performing Iterative Closest Point
+   transformation between two meshes.
  * glyphs, warpVectors and streamTracer modules improved with regards
    to the selection of input vectors.
- * Upraded to Python 2.6.2, VTK 5.4.2, ITK 3.0.14, GDCM 2.0.12, 
-   numpy 1.3.0, matplotlib 0.98.5.3.
+ * Upraded to Python 2.6.2, wxPython 2.8.10.1, VTK 5.4.2, ITK 3.0.14,
+   GDCM 2.0.12, numpy 1.3.0, matplotlib 0.98.5.3.
 
 Changes since previous release (8.5.3085)
  * Volume rendering functionality greatly improved.  VolumeRender now
