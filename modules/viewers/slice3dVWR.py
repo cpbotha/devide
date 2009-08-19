@@ -5,6 +5,11 @@
 # TODO: 'refresh' handlers in set_input()
 # TODO: front-end / back-end module split (someday)
 
+# should we use background renderer for gradient background, or
+# built-in VTK functionality?
+BACKGROUND_RENDERER = False
+GRADIENT_BACKGROUND = True
+
 import cPickle
 import gen_utils
 
@@ -210,9 +215,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         # take care of all our bindings to renderers
         del self._threedRenderer
 
-        # also do the background renderer
-        self._background_renderer.RemoveAllViewProps()
-        del self._background_renderer
+        if BACKGROUND_RENDERER:
+            # also do the background renderer
+            self._background_renderer.RemoveAllViewProps()
+            del self._background_renderer
 
         # the remaining bit of logic is quite crucial:
         # we can't explicitly Destroy() the frame, as the RWI that it contains
@@ -607,7 +613,9 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
         # create foreground and background renderers 
         self._threedRenderer = vtk.vtkRenderer()
-        self._background_renderer = vtk.vtkRenderer()
+
+        if BACKGROUND_RENDERER:
+            self._background_renderer = vtk.vtkRenderer()
 
         renwin = self.threedFrame.threedRWI.GetRenderWindow()
 
@@ -623,9 +631,17 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
         # use function to setup fg and bg renderers so we can have a
         # nice gradient background.
-        import module_kits.vtk_kit
-        module_kits.vtk_kit.utils.setup_renderers(renwin,
-                self._threedRenderer, self._background_renderer)
+        if BACKGROUND_RENDERER:
+            import module_kits.vtk_kit
+            module_kits.vtk_kit.utils.setup_renderers(renwin,
+                    self._threedRenderer, self._background_renderer)
+        else:
+            self._threedRenderer.SetBackground(0.5,0.5,0.5)
+            if GRADIENT_BACKGROUND:
+                self._threedRenderer.SetBackground2(1,1,1)
+                self._threedRenderer.SetGradientBackground(1)
+
+            renwin.AddRenderer(self._threedRenderer)
 
         # controlFrame creation and basic setup -------------------
         controlFrame = modules.viewers.resources.python.slice3dVWRFrames.\
