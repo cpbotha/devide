@@ -646,6 +646,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         # example when resetting the image measurement
         if not reset:
             self._load_measurement(new_filename)
+            self.render()
 
         # now determine our current progress by tallying up DAC files
         ext = os.path.splitext(new_filename)[1]
@@ -681,7 +682,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             self._pogo_line_source.SetPoint1(p1)
             self._pogo_line_source.SetPoint2(p2)
 
-            pogo_dist = math.hypot(p2[0] - p1[0], p2[1] - p1[0])
+            pogo_dist = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
             # store pogo_dist in Measurement
             self._current_measurement.pogo_dist = pogo_dist
             self._view_frame.pogo_dist_txt.SetValue('%.2f' %
