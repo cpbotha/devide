@@ -139,6 +139,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
 
         # setup orientation widget stuff
+        # NB NB NB: we switch interaction with this off later
+        # (InteractiveOff()), thus disabling direct translation and
+        # scaling.  If we DON'T do this, interaction with software 
+        # raycasters are greatly slowed down.
         self._orientation_widget = vtk.vtkOrientationMarkerWidget()
         
         self._annotated_cube_actor = aca = vtk.vtkAnnotatedCubeActor()
@@ -158,7 +162,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         self._orientation_widget.SetOrientationMarker(
             self._axes_actor)
         self._orientation_widget.On()
-        
+       
+        # make sure interaction is off; when on, interaction with
+        # software raycasters is greatly slowed down!
+        self._orientation_widget.InteractiveOff()
 
     #################################################################
     # module API methods
