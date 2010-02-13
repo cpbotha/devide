@@ -1,4 +1,9 @@
-This is Release 9.8
+This is Release 10.x
+
+Changes since previous release (9.8.3784)
+ * johannes now support per-project configurations, thus making it useful as
+   generic build-system.  In other words, if you just want something that can
+   build VTK and ITK and some of your own stuff, you're in the right place!
 
 Changes since previous release (9.1.3361)
  * The DeVIDE Runtime Environment (DRE): The DRE is a super delicious
