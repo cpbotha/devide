@@ -1,3 +1,16 @@
+# to use this code:
+# 1. load into slice3dVWR introspection window
+# 2. execute with ctrl-enter or File | Run current edit
+# 3. in the bottom window type lm1 = get_lookmark()
+# 4. do stuff
+# 5. to restore lookmark, do set_lookmark(lm1)
+
+# keep on bugging me to:
+# 1. fix slice3dVWR
+# 2. build this sort of functionality into the GUI
+
+# cpbotha
+
 def get_plane_infos():
     # get out all plane orientations and normals
     plane_infos = []
