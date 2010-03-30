@@ -5,7 +5,7 @@ import vtk
 import wx
 
 
-class jpgRDR(ScriptedConfigModuleMixin, ModuleBase):
+class JPEGReader(ScriptedConfigModuleMixin, ModuleBase):
     
     def __init__(self, module_manager):
         ModuleBase.__init__(self, module_manager)

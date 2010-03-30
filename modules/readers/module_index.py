@@ -48,7 +48,7 @@ class dicomRDR:
     canvas.
     """
 
-class jpgRDR:
+class JPEGReader:
     kits = ['vtk_kit']
     cats = ['Readers']
     help = """Reads a series of JPG (JPEG) files.
