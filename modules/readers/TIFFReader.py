@@ -30,7 +30,7 @@ class TIFFReader(ScriptedConfigModuleMixin, ModuleBase):
              'Filenames will be built with this.  See module help.',
              {'fileMode' : WX_OPEN,
               'fileMask' :
-              'TIFF files (*.tif)|*.tif|All files (*.*)|*.*'}),
+              'TIFF files (*.tif or *.tiff)|*.tif;*.tiff|All files (*.*)|*.*'}),
             ('First slice:', 'first_slice', 'base:int', 'text',
              '%d will iterate starting at this number.'),
             ('Last slice:', 'last_slice', 'base:int', 'text',
