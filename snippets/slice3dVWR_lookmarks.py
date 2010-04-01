@@ -66,3 +66,60 @@ def set_lookmark(lookmark):
     set_plane_infos(lookmark[0])
 
     obj.render3D()
+
+def reset_to_default_view(view_index):
+    """
+    @param view_index 0 for YZ, 1 for ZX, 2 for XY
+    """
+
+    cam = obj._threedRenderer.GetActiveCamera()
+    fp = cam.GetFocalPoint()
+    cp = cam.GetPosition()
+
+    if view_index == 0:
+        cam.SetViewUp(0,1,0)
+        if cp[0] < fp[0]:
+            x = fp[0] + (fp[0] - cp[0])
+        else:
+            x = cp[0]
+
+        # safety check so we don't put cam in focal point
+        # (renderer gets into unusable state!)
+        if x == fp[0]:
+            x = fp[0] + 1
+
+        cam.SetPosition(x, fp[1], fp[2])
+
+    elif view_index == 1:
+        cam.SetViewUp(0,0,1)
+        if cp[1] < fp[1]:
+            y = fp[1] + (fp[1] - cp[1])
+        else:
+            y = cp[1]
+
+        if y == fp[1]:
+            y = fp[1] + 1
+
+
+        cam.SetPosition(fp[0], y, fp[2])
+
+    elif view_index == 2:
+        # then make sure it's up is the right way
+        cam.SetViewUp(0,1,0)
+        # just set the X,Y of the camera equal to the X,Y of the
+        # focal point.
+        if cp[2] < fp[2]:
+            z = fp[2] + (fp[2] - cp[2])
+        else:
+            z = cp[2]
+
+        if z == fp[2]:
+            z = fp[2] + 1
+
+
+        cam.SetPosition(fp[0], fp[1], z)
+
+    # first reset the camera
+    obj._threedRenderer.ResetCamera()
+    obj.render3D()
+        
