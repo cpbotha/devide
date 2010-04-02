@@ -322,6 +322,52 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         call.
         """
 
+        def add_primary_init(input_stream):
+            """After a new primary has been added, a number of other
+            actions have to be performed.
+            """
+            # add outline actor and cube axes actor to renderer
+            self._threedRenderer.AddActor(self._outline_actor)
+            self._outline_actor.PickableOff()
+            self._threedRenderer.AddActor(self._cube_axes_actor2d)
+            self._cube_axes_actor2d.PickableOff()
+            # FIXME: make this toggle-able
+            self._cube_axes_actor2d.VisibilityOn()
+
+            # reset the VOI widget
+            self._voi_widget.SetInteractor(self.threedFrame.threedRWI)
+            self._voi_widget.SetInput(input_stream)
+
+            # we only want to placewidget if this is the first time
+            if self._voi_widget.NeedsPlacement:
+                self._voi_widget.PlaceWidget()
+                self._voi_widget.NeedsPlacement = False
+
+            self._voi_widget.SetPriority(0.6)
+            self._handlerWidgetEnabledCheckBox()
+
+
+            # also fix up orientation actor thingy...
+            ala = input_stream.GetFieldData().GetArray('axis_labels_array')
+            if ala:
+                lut = list('LRPAFH')
+                labels = []
+                for i in range(6):
+                    labels.append(lut[ala.GetValue(i)])
+                    
+                self._set_annotated_cube_actor_labels(labels)
+                self._orientation_widget.Off()
+                self._orientation_widget.SetOrientationMarker(
+                    self._annotated_cube_actor)
+                self._orientation_widget.On()
+                
+            else:
+                self._orientation_widget.Off()
+                self._orientation_widget.SetOrientationMarker(
+                    self._axes_actor)
+                self._orientation_widget.On()
+
+
         def _handleNewImageDataInput():
             connecteds = [i['Connected'] for i in self._inputs]
             if 'vtkImageDataOverlay' in connecteds and \
@@ -366,36 +412,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
             if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                 # things to setup when primary data is added
-                #self._extractVOI.SetInput(inputStream)
-
-                # add outline actor and cube axes actor to renderer
-                self._threedRenderer.AddActor(self._outline_actor)
-                self._outline_actor.PickableOff()
-                self._threedRenderer.AddActor(self._cube_axes_actor2d)
-                self._cube_axes_actor2d.PickableOff()
-                # FIXME: make this toggle-able
-                self._cube_axes_actor2d.VisibilityOn()
-
-                # also fix up orientation actor thingy...
-                ala = inputStream.GetFieldData().GetArray('axis_labels_array')
-                if ala:
-                    lut = list('LRPAFH')
-                    labels = []
-                    for i in range(6):
-                        labels.append(lut[ala.GetValue(i)])
-                        
-                    self._set_annotated_cube_actor_labels(labels)
-                    self._orientation_widget.Off()
-                    self._orientation_widget.SetOrientationMarker(
-                        self._annotated_cube_actor)
-                    self._orientation_widget.On()
-                    
-                else:
-                    self._orientation_widget.Off()
-                    self._orientation_widget.SetOrientationMarker(
-                        self._axes_actor)
-                    self._orientation_widget.On()
-
+                add_primary_init(inputStream)
 
                 # reset everything, including ortho camera
                 self._resetAll()
@@ -432,6 +449,9 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                 # first do accounting related to removal
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                     remove_primary_cleanup()
+                    primary_removed = True
+                else:
+                    primary_removed = False
 
                 # save this variable, need it to remove the data
                 the_data = self._inputs[idx]['inputData']
@@ -444,10 +464,33 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                 # we've already destroyed.
                 self.sliceDirections.removeData(the_data)
 
-                # fixme: primary-overlay handling
+                # primary-overlay handling ##############################
                 # now go through the remaining inputs to find all overlays
                 # remove them all, re-add them with the first as the new
-                # primary.
+                # primary. This is to allow a graceful removal of a primary
+                # where remaining overlays will simply re-arrange themselves
+                if primary_removed:
+                    overlay_idxs = []
+                    for idx,inp in enumerate(self._inputs):
+                        if inp['Connected'] == 'vtkImageDataOverlay':
+                            self.sliceDirections.removeData(
+                                    inp['inputData'])
+                            overlay_idxs.append(idx)
+
+                    for i,idx2 in enumerate(overlay_idxs):
+                        inp = self._inputs[idx2]
+                        if i == 0:
+                            # convert the first of the overlays to primary
+                            inp['Connected'] = 'vtkImageDataPrimary'
+                            self.sliceDirections.addData(inp['inputData'])
+                            add_primary_init(inp['inputData'])
+
+                        else:
+                            self.sliceDirections.addData(inp['inputData'])
+
+                    if overlay_idxs:
+                        self.render3D()
+                    
 
             elif self._inputs[idx]['Connected'] == 'namedWorldPoints':
                 pass
@@ -926,18 +969,6 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         self._cube_axes_actor2d.SetBounds(inputData.GetBounds())
         self._cube_axes_actor2d.SetCamera(
             self._threedRenderer.GetActiveCamera())
-
-        # reset the VOI widget
-        self._voi_widget.SetInteractor(self.threedFrame.threedRWI)
-        self._voi_widget.SetInput(inputData)
-
-        # we only want to placewidget if this is the first time
-        if self._voi_widget.NeedsPlacement:
-            self._voi_widget.PlaceWidget()
-            self._voi_widget.NeedsPlacement = False
-
-        self._voi_widget.SetPriority(0.6)
-        self._handlerWidgetEnabledCheckBox()
 
         self._threedRenderer.ResetCamera()
 
