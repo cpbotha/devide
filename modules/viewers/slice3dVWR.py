@@ -405,6 +405,20 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
         # end of function _handleImageData()
 
+        def remove_primary_cleanup():
+            """Get rid of other display elements that are related to
+            the primary.
+            """
+
+            self._threedRenderer.RemoveActor(self._outline_actor)
+            self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
+
+            # deactivate VOI widget as far as possible
+            self._voi_widget.SetInput(None)
+            self._voi_widget.Off()
+            self._voi_widget.SetInteractor(None)
+
+        # end of method remove_primary_cleanup
 
         if inputStream == None:
             if self._inputs[idx]['Connected'] == 'tdObject':
@@ -414,20 +428,26 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
             elif self._inputs[idx]['Connected'] == 'vtkImageDataPrimary' or \
                  self._inputs[idx]['Connected'] == 'vtkImageDataOverlay':
-                # remove data from the sliceDirections
-                self.sliceDirections.removeData(self._inputs[idx]['inputData'])
 
+                # first do accounting related to removal
                 if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
-                    self._threedRenderer.RemoveActor(self._outline_actor)
-                    self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
+                    remove_primary_cleanup()
 
-                    # deactivate VOI widget as far as possible
-                    self._voi_widget.SetInput(None)
-                    self._voi_widget.Off()
-                    self._voi_widget.SetInteractor(None)
+                # save this variable, need it to remove the data
+                the_data = self._inputs[idx]['inputData']
 
                 self._inputs[idx]['Connected'] = None
                 self._inputs[idx]['inputData'] = None
+
+                # then remove data from the sliceDirections
+                # this call doesn't require any of the accounting that
+                # we've already destroyed.
+                self.sliceDirections.removeData(the_data)
+
+                # fixme: primary-overlay handling
+                # now go through the remaining inputs to find all overlays
+                # remove them all, re-add them with the first as the new
+                # primary.
 
             elif self._inputs[idx]['Connected'] == 'namedWorldPoints':
                 pass
@@ -470,7 +490,6 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                     # and record the new object in our input lists
                     self._inputs[idx]['Connected'] = 'tdObject'
                     self._inputs[idx]['tdObject'] = inputStream
-                    
                 
             elif inputStream.IsA('vtkImageData'):
                 if self._inputs[idx]['Connected'] is None:
