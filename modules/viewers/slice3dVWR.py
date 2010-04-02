@@ -1,5 +1,4 @@
-# slice3d_vwr.py copyright (c) 2002 Charl P. Botha <cpbotha@ieee.org>
-# $Id$
+# slice3d_vwr.py copyright (c) 2002-2010 Charl P. Botha
 # next-generation of the slicing and dicing devide module
 
 # TODO: 'refresh' handlers in set_input()
@@ -367,17 +366,11 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                     self._axes_actor)
                 self._orientation_widget.On()
 
+            # end of method add_primary_init()
+
 
         def _handleNewImageDataInput():
             connecteds = [i['Connected'] for i in self._inputs]
-            if 'vtkImageDataOverlay' in connecteds and \
-                   'vtkImageDataPrimary' not in connecteds:
-                # this means the user has disconnected his primary and
-                # is trying to reconnect something in its place.  We
-                # don't like that...
-                raise Exception, \
-                      "Please remove all overlays first " \
-                      "before attempting to add primary data."
 
             # if we already have a primary, make sure the new inputStream
             # is added at a higher port number than all existing
@@ -418,7 +411,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                 self._resetAll()
 
             # update our 3d renderer
-            self.threedFrame.threedRWI.Render()
+            self.render3D()
 
         # end of function _handleImageData()
 
@@ -469,7 +462,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                 # remove them all, re-add them with the first as the new
                 # primary. This is to allow a graceful removal of a primary
                 # where remaining overlays will simply re-arrange themselves
+                # fixme: give the new primary the same plane geometry
+                # as the old primary.
                 if primary_removed:
+                    slice_geoms = self.sliceDirections.get_slice_geometries()
                     overlay_idxs = []
                     for idx,inp in enumerate(self._inputs):
                         if inp['Connected'] == 'vtkImageDataOverlay':
@@ -484,6 +480,12 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                             inp['Connected'] = 'vtkImageDataPrimary'
                             self.sliceDirections.addData(inp['inputData'])
                             add_primary_init(inp['inputData'])
+
+                            # we've added a primary, now is the best
+                            # time to set the geometry, before any
+                            # other re-added overlays
+                            self.sliceDirections.set_slice_geometries(
+                                    slice_geoms)
 
                         else:
                             self.sliceDirections.addData(inp['inputData'])

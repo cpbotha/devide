@@ -275,6 +275,29 @@ class sliceDirections(s3dcGridMixin):
         else:
             return -1
 
+    def get_slice_geometries(self):
+        """Return dict mapping from slice direction names to 
+        3-element tuples: origin, point1, point2.
+        """
+        geoms = {}
+        for name, sd in self._sliceDirectionsDict.items():
+            geoms[name] = sd.get_slice_geometry()
+
+        return geoms
+
+    def set_slice_geometries(self, geoms):
+        """Given the dict returned by get_slice_geometries(),
+        set all slices to the given plane geometries.
+        """
+
+        for name, geom in geoms.items():
+            try:
+                sd = self._sliceDirectionsDict[name]
+                sd.set_slice_geometry(geom)
+            except KeyError:
+                pass
+
+
     def getSelectedSliceDirections(self):
         """Returns list with bindings to user-selected sliceDirections.
         """

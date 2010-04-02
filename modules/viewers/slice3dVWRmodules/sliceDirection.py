@@ -467,6 +467,27 @@ class sliceDirection:
     def getNumberOfLayers(self):
         return len(self._ipws)
 
+    def get_slice_geometry(self):
+        # get the plane geometry of the slice
+        if self._ipws:
+            ipw = self._ipws[0]
+            return ipw.GetOrigin(), ipw.GetPoint1(), ipw.GetPoint2()
+        else:
+            return None
+
+    def set_slice_geometry(self, geometry):
+        # restore a plane geometry
+        if self._ipws and geometry:
+            # we only do the primary
+            ipw = self._ipws[0]
+            ipw.SetOrigin(geometry[0])
+            ipw.SetPoint1(geometry[1])
+            ipw.SetPoint2(geometry[2])
+            ipw.UpdatePlacement()
+
+            # and let this take care of the rest.
+            self._syncOverlays()
+
     def lockToPoints(self, p0, p1, p2):
         """Make the plane co-planar with the plane defined by the three points.
         """
