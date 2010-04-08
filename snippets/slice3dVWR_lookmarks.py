@@ -33,6 +33,7 @@ def set_plane_infos(plane_infos):
             ipw.SetPoint1(pi[1])
             ipw.SetPoint2(pi[2])
             ipw.SetWindowLevel(pi[3], pi[4], 0)
+            ipw.UpdatePlacement()
             sd._syncAllToPrimary()
 
 
