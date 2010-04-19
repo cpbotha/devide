@@ -233,9 +233,21 @@ class sliceDirection:
                           "[%s != %s]" % \
                           (inputData.GetSpacing(),
                            mainInput.GetSpacing())
-                
+
+
                 self._ipws.append(vtk.vtkImagePlaneWidget())
-                self._ipws[-1].SetInput(inputData)
+
+                try:
+                    # with invalid data, this will throw an exception!
+                    self._ipws[-1].SetInput(inputData)
+                except RuntimeError, e:
+                    # so we undo any changes so far, and re-raise the exception
+                    # calling code will then not make any accounting changes, so
+                    # no harm done.
+                    self._ipws[-1].SetInput(None)
+                    del self._ipws[-1]
+                    raise
+               
                 self._ipws[-1].UserControlledLookupTableOn()
                 self._ipws[-1].SetResliceInterpolateToNearestNeighbour()
                 
@@ -256,8 +268,18 @@ class sliceDirection:
                 self._ipws.append(vtk.vtkImagePlaneWidget())
                 #self._ipws[-1].GetPolyDataAlgorithm().SetXResolution(64)
                 #self._ipws[-1].GetPolyDataAlgorithm().SetYResolution(64)
-                
-                self._ipws[-1].SetInput(inputData)
+               
+                try:
+                    # with invalid data, this will throw an exception!
+                    self._ipws[-1].SetInput(inputData)
+                except RuntimeError, e:
+                    # so we undo any changes so far, and re-raise the exception
+                    # calling code will then not make any accounting changes, so
+                    # no harm done.
+                    self._ipws[-1].SetInput(None)
+                    del self._ipws[-1]
+                    raise
+
                 self._ipws[-1].SetPicker(self.sliceDirections.ipwPicker)
                 # GetColorMap() -- new VTK CVS
                 self._ipws[-1].GetColorMap().SetOutputFormatToRGB()

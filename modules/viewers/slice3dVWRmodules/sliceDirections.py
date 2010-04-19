@@ -61,34 +61,11 @@ class sliceDirections(s3dcGridMixin):
 
     def addData(self, theData):
 
-        # we'll use this dictionary to store the number of added layers
-        # before and after the addData() call of every sliceDirections
-        numLayers = {}
-        for name in self._sliceDirectionsDict.keys():
-            numLayers[name] = [0,0]
-            
-        try:
-            # add this input to all available sliceDirections
-            for sliceName, sliceDirection in \
-                    self._sliceDirectionsDict.items():
-                # store the number of layers before
-                numLayers[sliceName][0] = sliceDirection.getNumberOfLayers()
-                # try to add the data
-                sliceDirection.addData(theData)
-                # store the number of layers after
-                numLayers[sliceName][1] = sliceDirection.getNumberOfLayers()
-                    
-        except Exception, msg:
-
-            for sliceName, sliceDirection in \
-                    self._sliceDirectionsDict.items():
-                # the number of layers after is bigger than the number of
-                # layers before, that means something was added and THEN there
-                # was an error, in which case we have to remove
-                if numLayers[sliceName][1] > numLayers[sliceName][0]:
-                    sliceDirection.removeData(theData)
-                
-            raise Exception, msg
+        # add this input to all available sliceDirections
+        for sliceName, sliceDirection in \
+                self._sliceDirectionsDict.items():
+            # try to add the data
+            sliceDirection.addData(theData)
 
     def updateData(self, prevData, newData):
         """Replace prevData with newData.

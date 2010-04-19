@@ -319,6 +319,12 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
         This is the slice3dVWR specialisation of the module API set_input
         call.
+
+        Remember the following: DeVIDE makes connections when the user
+        requests, but set_input() is only called directly before the
+        execute call. This means that DeVIDE maintains module connections,
+        and the slice3dVWR maintains its own internal state w.r.t.
+        connections.
         """
 
         def add_primary_init(input_stream):
@@ -388,8 +394,11 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                           "than existing primary data and overlays."
 
             # tell all our sliceDirections about the new data
+            # this might throw an exception if the input image data
+            # is invalid, but that's ok, since we haven't done any
+            # accounting here yet.
             self.sliceDirections.addData(inputStream)
-                
+
             # find out whether this is  primary or an overlay, record it
             if 'vtkImageDataPrimary' in connecteds:
                 # there's no way there can be only overlays in the list,
@@ -402,6 +411,8 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
             # also store binding to the data itself
             self._inputs[idx]['inputData'] = inputStream
+
+
 
             if self._inputs[idx]['Connected'] == 'vtkImageDataPrimary':
                 # things to setup when primary data is added
