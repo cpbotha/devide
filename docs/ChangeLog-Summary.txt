@@ -1,8 +1,11 @@
 This is Release 10.x
 
 Changes since previous release (9.8.3784)
- * slice3dVWR refactor has been initiated. Started by fixing bug where empty
- image input would result in non-recoverable bad module state.
+ * slice3dVWR refactor has been initiated. Started by:
+   - Fixing bug where empty image input would result in non-recoverable bad
+   module state.
+   - Fixing bug where orientation marker would slow down volume rendering
+   interaction.
  * johannes now support per-project configurations, thus making it useful as
    generic build-system.  In other words, if you just want something that can
    build VTK and ITK and some of your own stuff, you're in the right place!
