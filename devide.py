@@ -108,6 +108,7 @@ class MainConfigClass(object):
         self.script = pcl_data.script
         self.script_params = pcl_data.script_params
         self.load_network = pcl_data.load_network
+        self.hide_devide_ui = pcl_data.hide_devide_ui
 
         # now sanitise some options
         if type(self.nokits) != type([]):
@@ -131,6 +132,7 @@ class MainConfigClass(object):
         print "--test                : Perform built-in unit testing."
         print "--script              : Run specified .py in script mode."
         print "--load-network        : Load specified DVN after startup."
+        print "--hide-devide-ui      : Hide the DeVIDE UI at startup."
 
     def disp_version(self):
         print "DeVIDE v%s" % (DEVIDE_VERSION,)
@@ -152,6 +154,7 @@ class MainConfigClass(object):
                 self.script = None
                 self.script_params = None
                 self.load_network = None
+                self.hide_devide_ui = None
 
         pcl_data = PCLData()
 
@@ -226,6 +229,9 @@ class MainConfigClass(object):
 
             elif o in ('--load-network',):
                 pcl_data.load_network = a
+
+            elif o in ('--hide-devide-ui',):
+                pcl_data.hide_devide_ui = a
 
         return pcl_data
 
