@@ -2,8 +2,10 @@ This is Release 10.x
 
 Changes since previous release (9.8.3784)
  * slice3dVWR refactor has been initiated. Started by:
+   - You can now remove a primary image input, remaining inputs will
+     re-arrange themselves automatically.
    - Fixing bug where empty image input would result in non-recoverable bad
-   module state.
+     module state.
    - Fixing bug where orientation marker would slow down volume rendering
    interaction.
  * johannes now support per-project configurations, thus making it useful as
