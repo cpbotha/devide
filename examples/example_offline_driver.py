@@ -10,23 +10,28 @@
 #   set_module_config(self, module_name, config)
 # See devide/interfaces/simple_api_mixin.py for details.
 
+# start the script with:
+# dre devide --interface script --script example_offline_driver.py
+
 def main():
     print "hello from offline DeVIDE!"
-    meta_modules = load_and_realise_network('/complete/path/to/dvnfile.dvn')
+    meta_modules = interface.load_and_realise_network(
+            '/complete/path/to/dvnfile.dvn')
     
-    # 1. First we are going to configure the reader module to load the file we want.
-    # you can get and change the config of any module that you have named in a previous
-    # DeVIDE session with right click | rename module.
+    # 1. First we are going to configure the reader module to load the file 
+    # we want. you can get and change the config of any module that you 
+    # have named in a previous DeVIDE session with right click | rename module.
     # a. get the configuration
-    config = get_module_config('named_reader')
-    # b. change the configuration
+    config = interface.get_module_config('named_reader')
+    # b. change the configuration (use the DeVIDE module introspection to find
+    # out which variables you can change in the config)
     config._filename = 'some_data_file.vti'
     # c. set he configuration back into the module
-    set_module_config('named_reader', config)
+    interface.set_module_config('named_reader', config)
 
-    # after having setup more modules (for example the module writing the output of your
-    # network), run the network.
-    execute_network()
+    # after having setup more modules (for example the module writing the
+    # output of your network), run the network.
+    interface.execute_network()
 
     # you could now repeat the process for other filenames or even other
     # networks.  You can also make use of any Python niceties!
