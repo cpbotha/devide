@@ -39,7 +39,8 @@ class geodesicActiveContour(ScriptedConfigModuleMixin, ModuleBase):
             {'Module (self)' : self})
 
         # create all pipeline thingies
-        self._createITKPipeline()
+        self._geodesicActiveContour = None
+        self._create_pipeline(itk.Image.F3)
 
         self.sync_module_logic_with_config()
         
@@ -57,12 +58,46 @@ class geodesicActiveContour(ScriptedConfigModuleMixin, ModuleBase):
         return ('Feature image (ITK)', 'Initial level set (ITK)' )
 
     def set_input(self, idx, inputStream):
-        if idx == 0:
-            self._geodesicActiveContour.SetFeatureImage(inputStream)
-            
-        else:
-            self._geodesicActiveContour.SetInput(inputStream)
-            
+        try:
+            if idx == 0:
+                self._geodesicActiveContour.SetFeatureImage(inputStream)
+            else:
+                self._geodesicActiveContour.SetInput(inputStream)
+
+        except TypeError, e:
+            feat = self._geodesicActiveContour.GetFeatureImage()
+            inp_img = self._geodesicActiveContour.GetInput()
+
+            # deduce the type
+            itku = itk_kit.utils
+            ss = itku.get_img_type_and_dim_shortstring(inputStream)
+
+            # either the other input has to be None, or match the type of the new input
+            if idx == 0:
+                if inp_img is not None:
+                    other_ss = itku.get_img_type_and_dim_shortstring(inp_img)
+                    if other_ss != ss:
+                        raise TypeError('Types of feature image and initial level set have to match.')
+            else:
+                if feat is not None:
+                    other_ss = itku.get_img_type_and_dim_shortstring(feat)
+                    if other_ss != ss:
+                        raise TypeError('Types of feature image and initial level set have to match.')
+
+            img_type = getattr(itk.Image,ss)
+            # try to build a new pipeline (will throw exception if it
+            # can't)
+            self._create_pipeline(img_type)
+
+            # re-apply config
+            self.sync_module_logic_with_config()
+            # connect everything up
+            if idx == 0:
+                self._geodesicActiveContour.SetFeatureImage(inputStream)
+                self._geodesicActiveContour.SetInput(inp_img)
+            else:
+                self._geodesicActiveContour.SetFeatureImage(feat)
+                self._geodesicActiveContour.SetInput(inputStream)
 
     def get_output_descriptions(self):
         return ('Final level set (ITK Float 3D)',)
@@ -100,19 +135,25 @@ class geodesicActiveContour(ScriptedConfigModuleMixin, ModuleBase):
     # END OF API CALLS
     # --------------------------------------------------------------------
 
-    def _createITKPipeline(self):
-        # input: smoothing.SetInput()
-        # output: thresholder.GetOutput()
+    def _create_pipeline(self, img_type):
+        try:
+            g = \
+                itk.GeodesicActiveContourLevelSetImageFilter[
+                        img_type,img_type,itk.F].New()
+        except KeyError, e:
+            emsg = 'Could not create GAC filter with input type %s. '\
+                    'Please try a different input type.' % (ss,)
+            raise TypeError, emsg
 
-        if3 = itk.Image[itk.F, 3]
-        gAC = \
-            itk.GeodesicActiveContourLevelSetImageFilter[if3,if3,itk.F].New()
-        
-        geodesicActiveContour = gAC
-        #geodesicActiveContour.SetMaximumRMSError( 0.1 );
-        self._geodesicActiveContour = geodesicActiveContour
+        # if successful, we can disconnect the old filter and store 
+        # the instance (needed for the progress call!)
+        if self._geodesicActiveContour:
+            self._geodesicActiveContour.SetInput(None)
+
+        self._geodesicActiveContour = g
+
         itk_kit.utils.setupITKObjectProgress(
-            self, geodesicActiveContour,
+            self, self._geodesicActiveContour,
             'GeodesicActiveContourLevelSetImageFilter',
             'Growing active contour')
         
