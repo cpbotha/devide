@@ -25,25 +25,18 @@ class DanielssonDistance(ScriptedConfigModuleMixin, ModuleBase):
              'Does the input contain marked objects, or binary (yes/no) '
              'objects.')]
              
-
-
         # setup the pipeline
         imageF3 = itk.Image[itk.F, 3]
-        self._dist_filter = itk.DanielssonDistanceMapImageFilter[
-            imageF3, imageF3].New()
+        self._dist_filter = None
+        self._create_pipeline(imageF3)
         
         # THIS HAS TO BE ON.  SO THERE.
         #self._dist_filter.SetUseImageSpacing(True)
         
-        itk_kit.utils.setupITKObjectProgress(
-            self, self._dist_filter, 'DanielssonDistanceMapImageFilter',
-            'Calculating distance map.')
-
         ScriptedConfigModuleMixin.__init__(
             self, configList,
             {'Module (self)' : self,
              'itkDanielssonDistanceMapImageFilter' : self._dist_filter})
-            
 
         self.sync_module_logic_with_config()
         
@@ -68,7 +61,22 @@ class DanielssonDistance(ScriptedConfigModuleMixin, ModuleBase):
         return ('ITK Image (3D, float)',)
 
     def set_input(self, idx, inputStream):
-        self._dist_filter.SetInput(inputStream)
+        try:
+            self._dist_filter.SetInput(inputStream)
+        except TypeError, e:
+            # deduce the type
+            itku = itk_kit.utils
+            ss = itku.get_img_type_and_dim_shortstring(inputStream)
+            img_type = getattr(itk.Image,ss)
+            # try to build a new pipeline (will throw exception if it
+            # can't)
+            self._create_pipeline(img_type)
+
+            # re-apply config
+            self.sync_module_logic_with_config()
+            # connect input and hope it works.
+            self._dist_filter.SetInput(inputStream)
+
 
     def get_output_descriptions(self):
         return ('Distance map (ITK 3D, float)', 'Voronoi map (ITK 3D float)')
@@ -85,4 +93,35 @@ class DanielssonDistance(ScriptedConfigModuleMixin, ModuleBase):
         self._config.binary_input = self._dist_filter.GetInputIsBinary()
         self._config.squared_distance = self._dist_filter.GetSquaredDistance()
         self._config._image_spacing = self._dist_filter.GetUseImageSpacing()
+
+    def _create_pipeline(self, img_type):
+        """Standard pattern to create ITK pipeline according to passed
+        image type.
+        """
+        try:
+            d = itk.DanielssonDistanceMapImageFilter[
+                    img_type, img_type].New()
+
+        except KeyError, e:
+            emsg = 'Could not create DanielssonDist with input type %s. '\
+                    'Please try a different input type.' % (ss,)
+            raise TypeError, emsg
+
+        # if successful, we can disconnect the old filter and store 
+        # the instance (needed for the progress call!)
+        if self._dist_filter:
+            self._dist_filter.SetInput(None)
+
+        self._dist_filter = d
+
+        # setup progress
+        itku = itk_kit.utils
+        itku.setupITKObjectProgress(
+                self, self._dist_filter, 'DanielssonDistanceMapImageFilter',
+                'Calculating distance map.')
+
+
+
+
+
         
