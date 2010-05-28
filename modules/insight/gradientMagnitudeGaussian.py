@@ -24,13 +24,9 @@ class gradientMagnitudeGaussian(ScriptedConfigModuleMixin, ModuleBase):
 
 
         # setup the pipeline
-        c = itk.GradientMagnitudeRecursiveGaussianImageFilter
-        self._gradientMagnitude = c[itk.Image.F3, itk.Image.F3].New()
-        
-        itk_kit.utils.setupITKObjectProgress(
-            self, self._gradientMagnitude,
-            'itkGradientMagnitudeRecursiveGaussianImageFilter',
-            'Calculating gradient image')
+        self._gradientMagnitude = None
+        img_type = itk.Image.F3
+        self._create_pipeline(img_type)
         
         ScriptedConfigModuleMixin.__init__(
             self, configList,
@@ -61,10 +57,25 @@ class gradientMagnitudeGaussian(ScriptedConfigModuleMixin, ModuleBase):
         return ('ITK Image (3D, float)',)
 
     def set_input(self, idx, inputStream):
-        self._gradientMagnitude.SetInput(inputStream)
+        try:
+            self._gradientMagnitude.SetInput(inputStream)
+        except TypeError, e:
+            # deduce the type
+            itku = itk_kit.utils
+            ss = itku.get_img_type_and_dim_shortstring(inputStream)
+            img_type = getattr(itk.Image,ss)
+            # try to build a new pipeline (will throw exception if it
+            # can't)
+            self._create_pipeline(img_type)
+
+            # re-apply config
+            self.sync_module_logic_with_config()
+            # connect input and hope it works.
+            self._gradientMagnitude.SetInput(inputStream)
+
 
     def get_output_descriptions(self):
-        return ('ITK Image (3D, float)',)
+        return ('ITK Image',)
 
     def get_output(self, idx):
         return self._gradientMagnitude.GetOutput()
@@ -78,3 +89,32 @@ class gradientMagnitudeGaussian(ScriptedConfigModuleMixin, ModuleBase):
         # durnit, there's no GetSigma().  Doh.
         self._config.normaliseAcrossScale = self._gradientMagnitude.\
                                             GetNormalizeAcrossScale()
+
+                                            
+    def _create_pipeline(self, img_type):
+        """Standard pattern to create ITK pipeline according to passed
+        image type.
+        """
+
+        c = itk.GradientMagnitudeRecursiveGaussianImageFilter
+        try:
+            g = c[img_type, img_type].New()
+
+        except KeyError, e:
+            emsg = 'Could not create GradMag with input type %s. '\
+                    'Please try a different input type.' % (ss,)
+            raise TypeError, emsg
+
+        # if successful, we can disconnect the old filter and store 
+        # the instance (needed for the progress call!)
+        if self._gradientMagnitude:
+            self._gradientMagnitude.SetInput(None)
+
+        self._gradientMagnitude = g
+
+        itk_kit.utils.setupITKObjectProgress(
+            self, self._gradientMagnitude,
+            'itkGradientMagnitudeRecursiveGaussianImageFilter',
+            'Calculating gradient image')
+
+        
