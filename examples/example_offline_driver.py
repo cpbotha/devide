@@ -11,30 +11,43 @@
 # See devide/interfaces/simple_api_mixin.py for details.
 
 # start the script with:
-# dre devide --interface script --script example_offline_driver.py
+# dre devide --interface script --script example_offline_driver.py --script-params 0.0,100.0
 
 def main():
-    print "hello from offline DeVIDE!"
-    meta_modules = interface.load_and_realise_network(
-            '/complete/path/to/dvnfile.dvn')
+    # script_params is everything that gets passed on the DeVIDE
+    # commandline after --script-params
+    # first get the two strings split by a comma
+    l,u = script_params.split(',')
+    # then cast to float
+    LOWER = float(l)
+    UPPER = float(u)
     
-    # 1. First we are going to configure the reader module to load the file 
-    # we want. you can get and change the config of any module that you 
-    # have named in a previous DeVIDE session with right click | rename module.
-    # a. get the configuration
-    config = interface.get_module_config('named_reader')
-    # b. change the configuration (use the DeVIDE module introspection to find
-    # out which variables you can change in the config)
-    config._filename = 'some_data_file.vti'
-    # c. set he configuration back into the module
-    interface.set_module_config('named_reader', config)
+    print "offline_driver.py starting"
 
-    # after having setup more modules (for example the module writing the
-    # output of your network), run the network.
-    interface.execute_network()
+    # load the DVN that you prepared
+    # load_and_realise_network returns module dictionary + connections
+    mdict,conn = interface.load_and_realise_network(
+        'BatchModeWithoutUI-ex.dvn')
 
-    # you could now repeat the process for other filenames or even other
-    # networks.  You can also make use of any Python niceties!
+    # parameter is the module name that you assigned in DeVIDE
+    # using right-click on the module, then "Rename"
+    thresh_conf = interface.get_module_config('threshold')
+    # what's returned is module_instance._config (try this in the
+    # devide module introspection interface by introspecting "Module
+    # (self)" and then typing "dir(obj._config)"
+    thresh_conf.lowerThreshold = LOWER
+    thresh_conf.upperThreshold = UPPER
+    # set module config back again
+    interface.set_module_config('threshold', thresh_conf)
+
+    # get, change and set writer config to change filename
+    writer_conf = interface.get_module_config('vtp_wrt')
+    writer_conf.filename = 'result_%s-%s.vtp' % (str(LOWER),str(UPPER))
+    interface.set_module_config('vtp_wrt', writer_conf)
+
+    # run the network
+    interface.execute_network(mdict.values())
+    
+    print "offline_driver.py done."
 
 main()
-
