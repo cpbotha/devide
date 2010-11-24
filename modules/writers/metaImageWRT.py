@@ -38,13 +38,13 @@ class metaImageWRT(FilenameViewModuleMixin, ModuleBase):
         FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
-	return ('vtkImageData',)
+        return ('vtkImageData',)
     
     def set_input(self, idx, input_stream):
         self._writer.SetInput(input_stream)
     
     def get_output_descriptions(self):
-	return ()
+        return ()
     
     def get_output(self, idx):
         raise Exception
@@ -71,4 +71,9 @@ class metaImageWRT(FilenameViewModuleMixin, ModuleBase):
             self._writer.GetInput().SetUpdateExtentToWholeExtent()
             self._writer.GetInput().Update()
             self._writer.Write()
+
+    def streaming_execute_module(self):
+        if len(self._writer.GetFileName()) and self._writer.GetInput():
+            self._writer.Update()
+
 
