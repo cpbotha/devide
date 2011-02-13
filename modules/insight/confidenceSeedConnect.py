@@ -17,7 +17,7 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
         self._config.multiplier = 2.5
         self._config.numberOfIterations = 4
         # segmented pixels will be replaced with this value
-        self._config.replaceValue = 1.0
+        self._config.replaceValue = 1
         # size of neighbourhood around candidate pixel
         self._config.initialRadius = 1
         
@@ -28,7 +28,7 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
              'The radius (in pixels) of the initial region.'),
             ('Number of Iterations:', 'numberOfIterations', 'base:int', 'text',
              'The region will be expanded so many times.'),
-            ('Replace value:', 'replaceValue', 'base:float', 'text',
+            ('Replace value:', 'replaceValue', 'base:int', 'text',
              'Segmented pixels will be assigned this value.')]
         
 
@@ -40,7 +40,9 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
         
         # setup the pipeline
         if3 = itk.Image[itk.F, 3]
-        self._cCIF = itk.ConfidenceConnectedImageFilter[if3, if3].New()
+        iss3 = itk.Image[itk.SS, 3]
+        
+        self._cCIF = itk.ConfidenceConnectedImageFilter[if3, iss3].New()
         
         itk_kit.utils.setupITKObjectProgress(
             self, self._cCIF, 'itkConfidenceConnectedImageFilter',
@@ -48,8 +50,7 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
 
         ScriptedConfigModuleMixin.__init__(
             self, configList,
-            {'Module (self)' : self,
-             'itkConfidenceConnectedImageFilter' : self._cCIF})
+            {'Module (self)' : self})
             
         self.sync_module_logic_with_config()
 
@@ -76,7 +77,32 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
 
     def set_input(self, idx, inputStream):
         if idx == 0:
-            self._cCIF.SetInput(inputStream)
+            try:
+                self._cCIF.SetInput(inputStream)
+            except TypeError, e:
+                # deduce the type
+                itku = module_kits.itk_kit.utils
+                ss = itku.get_img_type_and_dim_shortstring(inputStream)
+                try:
+                    c = itk.ConfidenceConnectedImageFilter[getattr(itk.Image,ss), itk.Image[itk.F, 3]].New()
+                except KeyError, e:
+                    emsg = 'Could not create ConfidenceConnectedImageFilter with input type %s. '\
+                            'Please try a different input type.' % (ss,)
+                    raise TypeError, emsg
+
+                # if we get here, we have a new filter
+                # disconnect old one
+                self._cCIF.SetInput(None)
+                # replace with new one (old one should be garbage
+                # collected)
+                self._cCIF = c
+                module_kits.itk_kit.utils.setupITKObjectProgress(
+                    self, self._cCIF, 'itkConfidenceConnectedImageFilter',
+                    'Region growing')
+                # re-apply config
+                self.sync_module_logic_with_config()
+                # connect input and hope it works.
+                self._cCIF.SetInput(inputStream)
 
         else:
             if inputStream != self._inputPoints:
