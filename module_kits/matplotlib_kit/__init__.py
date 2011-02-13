@@ -41,9 +41,11 @@ def init(theModuleManager, pre_import=True):
     # interface, changes will be made immediately and matplotlib cooperates
     # nicely with main WX event loop
     matplotlib.interactive(True)
+    
+    # with matplotlib 1.0.1 we can't do this anymore.
     # makes sure we use the numpy backend
-    from matplotlib import rcParams
-    rcParams['numerix'] = 'numpy'
+    #from matplotlib import rcParams
+    #rcParams['numerix'] = 'numpy'
 
     theModuleManager.setProgress(25, 'Initialising matplotlib_kit: config')
 
