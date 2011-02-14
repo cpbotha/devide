@@ -12,6 +12,11 @@
 # shift-middle click up and down: zoom out and in
 # mouse wheel: zoom
 
+# if you want to handle right-clicks on the ModulesListBox, seems EVT_CONTEXT_MENU
+# is the only way to go. See this discussion:
+# http://groups.google.com/group/wxpython-users/browse_thread/thread/0346be5e6d99a981
+# (there's a python sample a little ways down)
+
 import copy
 from internal.devide_canvas.devide_canvas import DeVIDECanvas 
 from internal.devide_canvas.devide_canvas_object import \
@@ -1510,6 +1515,9 @@ class GraphEditor:
             self._rename_module(module, glyph, newModuleName)
 
     def _handlerModulesListBoxSelected(self, event):
+        """Handler called when user selects a single item from the Module List
+        at the bottom left.
+        """
         mlb = self._interface._main_frame.module_list_box
         idx = mlb.GetSelection()
 

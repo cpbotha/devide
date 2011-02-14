@@ -64,6 +64,23 @@ class SimpleHTMLListBox(wx.HtmlListBox):
 
     def GetCount(self):
         return len(self.items)
+    
+    def GetSelections(self):
+        """Return list of selected indices just like the wx.ListBox.
+        """
+        
+        # coded up this method purely to see if we could use SimpleHTMLListBox also
+        # for the module categories thingy
+
+        sels = []
+        item, cookie = self.GetFirstSelected()            
+        while item != wx.NOT_FOUND:
+            sels.append(item)
+            # ... process item ...
+            item = self.GetNextSelected(cookie)
+            
+        return sels        
+        
 
     def GetString(self, n):
         if n >= 0 and n < len(self.items):
@@ -235,6 +252,7 @@ class MainWXFrame(wx.Frame):
         self.module_cats_list_box = wx.ListBox(
             self, -1, choices=[],
             style=wx.LB_EXTENDED|wx.LB_NEEDED_SB)
+        
         return self.module_cats_list_box 
 
     def _create_module_list(self):
