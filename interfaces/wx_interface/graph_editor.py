@@ -17,6 +17,9 @@
 # http://groups.google.com/group/wxpython-users/browse_thread/thread/0346be5e6d99a981
 # (there's a python sample a little ways down)
 
+# for opening stuff with the default application, see here:
+# http://stackoverflow.com/questions/434597/open-document-with-default-application-in-python
+
 import copy
 from internal.devide_canvas.devide_canvas import DeVIDECanvas 
 from internal.devide_canvas.devide_canvas_object import \
