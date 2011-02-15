@@ -20,6 +20,8 @@
 # for opening stuff with the default application, see here:
 # http://stackoverflow.com/questions/434597/open-document-with-default-application-in-python
 
+ALLCATS_STRING = "ALL categories"
+
 import copy
 from internal.devide_canvas.devide_canvas import DeVIDECanvas 
 from internal.devide_canvas.devide_canvas_object import \
@@ -270,12 +272,8 @@ class GraphEditor:
         mf.search.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN,
                 self._handler_search_x_button)
 
-        # not currently using wx.EVT_SEARCHCTRL_SEARCH_BTN
-
-        
-        wx.EVT_LISTBOX(mf,
-                       mf.module_cats_list_box.GetId(),
-                       self._update_search_results)
+        # when the user changes category, update the search results
+        mf.module_cats_choice.Bind(wx.EVT_CHOICE, self._update_search_results)
 
         wx.EVT_LISTBOX(mf,
                        mf.module_list_box.GetId(),
@@ -1111,7 +1109,7 @@ class GraphEditor:
         # that's reserved
         for mn,module_metadata in self._available_modules.items():
             # we add an ALL category implicitly to all modules
-            for cat in module_metadata.cats + ['ALL']:
+            for cat in module_metadata.cats + [ALLCATS_STRING]:
                 if cat in self._moduleCats:
                     self._moduleCats[cat].append('module:%s' % (mn,))
                 else:
@@ -1122,26 +1120,25 @@ class GraphEditor:
         if len(mm.availableSegmentsList) > 0:
             self._moduleCats['Segments'] = ['segment:%s' % (i,) for i in
                                             mm.availableSegmentsList]
-            # this should add all segments to the 'ALL' category
-            self._moduleCats['ALL'] += self._moduleCats['Segments']
+            # this should add all segments to the ALLCATS_STRING category
+            self._moduleCats[ALLCATS_STRING] += self._moduleCats['Segments']
 
         # setup all categories
-        self._interface._main_frame.module_cats_list_box.Clear()
+        self._interface._main_frame.module_cats_choice.Clear()
         idx = 0
 
         cats = self._moduleCats.keys()
         cats.sort()
 
         # but make sure that ALL is up front, no matter what
-        del cats[cats.index('ALL')]
-        cats = ['ALL'] + cats
+        del cats[cats.index(ALLCATS_STRING)]
+        cats = [ALLCATS_STRING] + cats
 
         for cat in cats:
-            self._interface._main_frame.module_cats_list_box.Append(cat)
+            self._interface._main_frame.module_cats_choice.Append(cat)
 
-        self._interface._main_frame.module_cats_list_box.Select(0)
+        self._interface._main_frame.module_cats_choice.Select(0)
 
-        #self._handlerModuleCatsListBoxSelected(None)
         self._update_search_results()
 
     def find_glyph(self, meta_module):
@@ -1280,12 +1277,8 @@ class GraphEditor:
             # None is different from an empty dictionary
             search_results = None
 
-        mclb = mf.module_cats_list_box
-        sels = mclb.GetSelections()
-
-        selectedCats = {}
-        for sel in sels:
-            selectedCats[mclb.GetString(sel)] = 1
+        mcc = mf.module_cats_choice
+        selected_cat = mcc.GetStringSelection()
 
         results_disp = {'misc' : [], 'name' : [],
                         'keywords' : [], 'help' : []}        
@@ -1297,13 +1290,13 @@ class GraphEditor:
             for srkey in search_results:
                 # srkey is a full module name and is guaranteed to be unique
                 cat_found = False
-                if 'ALL' in selectedCats:
+                if selected_cat == ALLCATS_STRING:
                     # we don't have to check categories
                     cat_found = True
                     
                 else:
                     if srkey.startswith('segment:'):
-                        if 'Segments' in selectedCats:
+                        if selected_cat == 'Segments':
                             cat_found = True
                             
                     else:
@@ -1311,7 +1304,7 @@ class GraphEditor:
                         # remove this
                         module_name = srkey.split(':')[1]
                         for c in mm._available_modules[module_name].cats:
-                            if c in selectedCats:
+                            if c == selected_cat:
                                 cat_found = True
                                 # stop with for iteration
                                 break
@@ -1324,15 +1317,7 @@ class GraphEditor:
                         results_disp[wf].append('%s' % (srkey,))
 
         else: # no search string, only selected categories
-            uniq_dict = {}
-            for cat in selectedCats:
-                for mn in self._moduleCats[cat]:
-                    # the dict eliminates duplicates
-                    # we set value to 'cat' so we can later check whether this
-                    # thing is a segment
-                    uniq_dict[mn] = 1
-
-            results_disp['misc'] = uniq_dict.keys()
+            results_disp['misc'] = self._moduleCats[selected_cat]
 
         # make sure separate results are sorted
         for where_found in results_disp:

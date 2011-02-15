@@ -7,15 +7,8 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
 from module_kits.wx_kit import utils as wxutils
 
-# wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
-# http://trac.wxwidgets.org/ticket/9716
-# Until this is fixed, use this PyAUI to which I've added a
-# wx.aui compatibility layer.
-if wx.Platform == "__WXGTK__":
-    from external import PyAUI
-    wx.aui = PyAUI
-else:
-    import wx.aui
+import wx.lib.agw.aui as aui
+wx.aui = aui
 
 from wx.html import HtmlWindow
 
@@ -140,7 +133,7 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             sp,
             wx.aui.AuiPaneInfo().Name('module_search').
-            Caption('Module Search').Left().Position(0).
+            Caption('Module Search and Categories').Left().Position(0).
             MinSize(sp.GetSize()).
             CloseButton(False))
 
@@ -148,13 +141,6 @@ class MainWXFrame(wx.Frame):
         # sure that the pane is as low (small y) as it can be
         p = self._mgr.GetPane('module_search')
         p.dock_proportion = 0
-
-
-        self.module_cats = self._create_module_cats()
-        self._mgr.AddPane(
-            self.module_cats,
-            wx.aui.AuiPaneInfo().Name('module_cats').Caption('Module Categories').
-            Left().CloseButton(False))
 
         self.module_list = self._create_module_list()
         self._mgr.AddPane(
@@ -171,7 +157,7 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             self._rwi,
             wx.aui.AuiPaneInfo().Name('graph_canvas').
-            Caption('Graph Canvas').Center().Floatable(False).CloseButton(False))
+            Caption('Graph Canvas').CenterPane())
 
         ##################################################################
         # these two also get swapped on GTK
@@ -179,7 +165,7 @@ class MainWXFrame(wx.Frame):
         self._mgr.AddPane(
             self._create_documentation_window(),
             wx.aui.AuiPaneInfo().Name('doc_window').
-            Caption('Documentation Window').Bottom().CloseButton(False))
+            Caption('Module Help').Bottom().CloseButton(False))
 
         self._mgr.AddPane(
             self._create_log_window(),
@@ -187,15 +173,15 @@ class MainWXFrame(wx.Frame):
             Caption('Log Messages').Bottom().CloseButton(False))
  
       
+        self._mgr.Update()
+        
         # save this perspective
         self.perspective_default = self._mgr.SavePerspective()
-
-        self._mgr.Update()
-
 
         wx.EVT_MENU(self, self.window_default_view_id,
                     lambda e: self._mgr.LoadPerspective(
             self.perspective_default) and self._mgr.Update())
+        
 
     def close(self):
         self._ren.RemoveAllViewProps()
@@ -248,16 +234,9 @@ class MainWXFrame(wx.Frame):
         self.message_log_text_ctrl = tc
         return tc
 
-    def _create_module_cats(self):
-        self.module_cats_list_box = wx.ListBox(
-            self, -1, choices=[],
-            style=wx.LB_EXTENDED|wx.LB_NEEDED_SB)
-        
-        return self.module_cats_list_box 
-
     def _create_module_list(self):
         self.module_list_box = SimpleHTMLListBox(
-            self, -1,
+            self, -1, size=(200,200),
             style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
         return self.module_list_box
 
@@ -267,10 +246,14 @@ class MainWXFrame(wx.Frame):
         self.search = wx.SearchCtrl(search_panel, size=(200,-1), style=wx.TE_PROCESS_ENTER)
         self.search.ShowSearchButton(1)
         self.search.ShowCancelButton(1)
+        
+        self.module_cats_choice = wx.Choice(search_panel,-1, size=(200,-1)) 
 
-        tl_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        # option=1 makes it stretch horizontally
-        tl_sizer.Add(self.search, 1, wx.ALL, 4)
+        tl_sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        # option=0 so it doesn't fill vertically
+        tl_sizer.Add(self.search, 0, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, 4)
+        tl_sizer.Add(self.module_cats_choice, 0, wx.EXPAND|wx.ALL, 4)
         
         search_panel.SetAutoLayout(True)
         search_panel.SetSizer(tl_sizer)
