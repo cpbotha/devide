@@ -10,6 +10,8 @@ from module_base import ModuleBase
 import module_utils
 import module_kits.vtk_kit.utils
 
+import os
+
 import wx
 import wx.lib.masked
 from external.filebrowsebutton import \
@@ -535,11 +537,12 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin,
                 radiobox - optional data is a list of choices; returns
                            integer 0-based index (so use base:int)
                 choice - optional data is a list of choices,
-                filebrowser - optional data is a dict with fileMask and
-                              fileMode keys, for example:
+                filebrowser - optional data is a dict with fileMask,
+                              fileMode and defaultExt keys, for example:
                               {'fileMode' : wx.SAVE,
                                'fileMask' :
-                        'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*'})
+                        'Matlab text file (*.txt)|*.txt|All files (*.*)|*.*',
+                               'defaultExt' : '.txt'})
                 dirbrowser,  
                 maskedText - optional data is the kwargs dict for
                              MaskedTextCtrl instantiation, e.g.:
@@ -724,6 +727,14 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin,
                     wv.append(w.GetValue())
 
                 wv = ','.join(wv)
+
+            elif configTuple[3] == 'filebrowser':
+                # get value from the widget
+                wv = widget.GetValue()
+                # if no extension has been supplied, but the programmer
+                # has specified a default, append this.
+                if not os.path.splitext(wv)[1]:
+                    wv += configTuple[5].get('defaultExt')
                 
             else:
                 wv = widget.GetValue()
