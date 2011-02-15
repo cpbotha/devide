@@ -1,12 +1,13 @@
 # $Id$
 
 from module_base import ModuleBase
-from module_mixins import FilenameViewModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
+import wx # need this for wx.SAVE
 
 
-class metaImageWRT(FilenameViewModuleMixin, ModuleBase):
+class metaImageWRT(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
 
         # call parent constructor
@@ -18,24 +19,33 @@ class metaImageWRT(FilenameViewModuleMixin, ModuleBase):
             self, self._writer,
             'Writing VTK ImageData')
 
-        
-        # ctor for this specific mixin
-        FilenameViewModuleMixin.__init__(
-            self,
-            'Select a filename',
-            'MetaImage file (*.mha)|*.mha|All files (*)|*',
-            {'vtkMetaImageWriter': self._writer},
-            fileOpen=False)
-
         # set up some defaults
         self._config.filename = ''
-        self.sync_module_logic_with_config()
-        
+        self._config.compression = True
+
+        config_list = [
+                ('Filename:', 'filename', 'base:str', 'filebrowser',
+                    'Output filename for MetaImage file.',
+                    {'fileMode' : wx.SAVE,
+                     'fileMask' : 'MetaImage single file (*.mha)|*.mha|MetaImage separate header/(z)raw files (*.mhd)|*.mhd|All files (*)|*',
+                     'defaultExt' : '.mha'}
+                    ),
+                ('Compression:', 'compression', 'base:bool', 'checkbox',
+                    'Compress the image / volume data')
+                ]
+
+        ScriptedConfigModuleMixin.__init__(self, config_list,
+                {'Module (self)' : self})
+
+       
     def close(self):
         # we should disconnect all inputs
         self.set_input(0, None)
         del self._writer
-        FilenameViewModuleMixin.close(self)
+       
+        # deinit our mixins
+        ScriptedConfigModuleMixin.close(self)
+        ModuleBase.close(self)
 
     def get_input_descriptions(self):
         return ('vtkImageData',)
@@ -56,24 +66,23 @@ class metaImageWRT(FilenameViewModuleMixin, ModuleBase):
 
         self._config.filename = filename
 
+        self._config.compression = self._writer.GetCompression()
+
     def config_to_logic(self):
         self._writer.SetFileName(self._config.filename)
+        self._writer.SetCompression(self._config.compression)
 
-    def view_to_config(self):
-        self._config.filename = self._getViewFrameFilename()
-
-    def config_to_view(self):
-        self._setViewFrameFilename(self._config.filename)
 
     def execute_module(self):
-        if len(self._writer.GetFileName()) and self._writer.GetInput():
+        if self._writer.GetFileName() and self._writer.GetInput():
             self._writer.GetInput().UpdateInformation()
             self._writer.GetInput().SetUpdateExtentToWholeExtent()
             self._writer.GetInput().Update()
             self._writer.Write()
 
     def streaming_execute_module(self):
-        if len(self._writer.GetFileName()) and self._writer.GetInput():
-            self._writer.Update()
+        if self._writer.GetFileName() and self._writer.GetInput():
+            # if you use Update(), everything crashes (VTK 5.6.1, Ubuntu 10.04 x86_64)
+            self._writer.Write()
 
 
