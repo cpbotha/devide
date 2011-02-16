@@ -256,9 +256,7 @@ class WXInterface(wx.App):
         wx.Log_FlushActive()
 
     def set_progress(self, progress, message, noTime=False):
-        self._main_frame.progress_gauge.SetValue(
-            int(round(progress)))
-        self._main_frame.progress_text.SetLabel(message)
+        self._main_frame.set_progress(int(round(progress)), message)
 
         # we also output an informative message to standard out
         # in cases where DeVIDE is very busy, this is quite

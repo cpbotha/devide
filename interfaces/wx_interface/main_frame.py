@@ -88,6 +88,55 @@ class SimpleHTMLListBox(wx.HtmlListBox):
             return ''
 
 
+class ProgressStatusBar(wx.StatusBar):
+    """
+    StatusBar with progress gauge embedded.
+    
+    Code adapted from wxPython demo.py | CustomStatusBar.
+    """
+
+    def __init__(self, parent):
+        wx.StatusBar.__init__(self, parent, -1)
+
+        # This status bar has three fields
+        self.SetFieldsCount(2)
+        # Sets the three fields to be relative widths to each other.
+        self.SetStatusWidths([-2, -1])
+        self.sizeChanged = False
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.Bind(wx.EVT_IDLE, self.OnIdle)
+
+        # Field 0 ... just text
+        #self.SetStatusText("A Custom StatusBar...", 0)
+
+        # This will fall into field 1 (the second field)
+        self.gauge = wx.Gauge(self, -1, 100)
+        self.gauge.SetValue(50)
+
+        # set the initial position of the checkbox
+        self.Reposition()
+
+    def OnSize(self, evt):
+        self.Reposition()  # for normal size events
+
+        # Set a flag so the idle time handler will also do the repositioning.
+        # It is done this way to get around a buglet where GetFieldRect is not
+        # accurate during the EVT_SIZE resulting from a frame maximize.
+        self.sizeChanged = True
+
+
+    def OnIdle(self, evt):
+        if self.sizeChanged:
+            self.Reposition()
+
+
+    # reposition the checkbox
+    def Reposition(self):
+        rect = self.GetFieldRect(1)
+        self.gauge.SetPosition((rect.x+2, rect.y+2))
+        self.gauge.SetSize((rect.width-4, rect.height-4))
+        self.sizeChanged = False
+
 class MainWXFrame(wx.Frame):
     """Class for building main user interface frame.
 
@@ -108,24 +157,14 @@ class MainWXFrame(wx.Frame):
         self._make_menu()
 
         # statusbar
-        self.statusbar = self.CreateStatusBar(2, wx.ST_SIZEGRIP)
-        self.statusbar.SetStatusWidths([-4, -1])
-        self.statusbar.SetStatusText("Ready", 0)
-        self.statusbar.SetStatusText("Welcome To DeVIDE!", 1)
+        self.statusbar = ProgressStatusBar(self)
+        self.SetStatusBar(self.statusbar)
 
         self.SetMinSize(wx.Size(400, 300))
 
         # could make toolbars here
 
         # now we need to add panes
-
-        # minsize is quite important here; progress-panel can never be
-        # obscured by moving one of the splitters
-        pp = self._create_progress_panel() 
-        self._mgr.AddPane(
-            pp,
-            wx.aui.AuiPaneInfo().Name('progress_panel').
-            Caption('Progress').CenterPane().Top().Row(0).MinSize(pp.GetSize()))
 
         # on GTK, this sequence is flipped!  search panel is at the
         # bottom, module list at the top.
@@ -389,4 +428,8 @@ class MainWXFrame(wx.Frame):
         
         self.menubar.Append(help_menu, "&Help")
         # Menu Bar end
+
+    def set_progress(self, percentage, message):
+        self.statusbar.gauge.SetValue(percentage)
+        self.statusbar.SetStatusText(message, 0)
         
