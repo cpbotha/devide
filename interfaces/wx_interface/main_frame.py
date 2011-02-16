@@ -115,6 +115,18 @@ class ProgressStatusBar(wx.StatusBar):
 
         # set the initial position of the checkbox
         self.Reposition()
+        
+        # i have this timer purely for the progress bar to pulsate
+        # up and down. personally, it's nice to see that the software
+        # is alive.
+        self.timer = wx.PyTimer(self.Notify)
+        self.timer.Start(50)
+        self.Notify()
+        
+    def Notify(self):
+        if self.gauge.GetValue() == 100:
+            self.gauge.Pulse()
+    
 
     def OnSize(self, evt):
         self.Reposition()  # for normal size events
@@ -132,9 +144,10 @@ class ProgressStatusBar(wx.StatusBar):
 
     # reposition the checkbox
     def Reposition(self):
+        border = 3
         rect = self.GetFieldRect(1)
-        self.gauge.SetPosition((rect.x+2, rect.y+2))
-        self.gauge.SetSize((rect.width-4, rect.height-4))
+        self.gauge.SetPosition((rect.x+border, rect.y+border))
+        self.gauge.SetSize((rect.width-border*2, rect.height-border*2))
         self.sizeChanged = False
 
 class MainWXFrame(wx.Frame):
