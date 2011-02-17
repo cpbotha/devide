@@ -156,7 +156,7 @@ class Slicinator:
     """
 
 class TransferFunctionEditor:
-    kits = ['wx_kit', 'numpy_kit']
+    kits = ['wx_kit']
     cats = ['Viewers', 'Volume Rendering']
     help = """Transfer function editor.
 

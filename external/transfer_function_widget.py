@@ -15,7 +15,6 @@
 # more info on DeVIDE: http://visualisation.tudelft.nl/Projects/DeVIDE
 
 import wx
-import numpy
 
 # ET is used in here for the CommandEvent
 EVT_CUR_PT_CHANGED_ET = wx.NewEventType()
@@ -514,9 +513,9 @@ class TransferFunctionWidget(wx.PyWindow):
     def interpolate(self, target, val1, val2):
         return [target*(v2) + (1.0 - target)*v1 for v1, v2 in zip(val1, val2)]
     
-    def get_map(self):
-        ''' Get the interpolated values '''
-        return numpy.array([self.rgba_from_value(i) for i in range(int(self.r_rangeWidth) + 1)], dtype=numpy.float32)
+#    def get_map(self):
+#        ''' Get the interpolated values '''
+#        return numpy.array([self.rgba_from_value(i) for i in range(int(self.r_rangeWidth) + 1)], dtype=numpy.float32)
 
 # You don't need anything below this
 class TGraphDemo(wx.Frame):
