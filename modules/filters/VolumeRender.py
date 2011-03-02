@@ -31,7 +31,8 @@ class VolumeRender(
         config_list = [
             ('Rendering type:', 'rendering_type', 'base:int', 'choice',
              'Direct volume rendering algorithm that will be used.',
-             ('Raycast (fixed point)', '2D Texture', '3D Texture',
+             ('Raycast (fixed point)', 'GPU raycasting', 
+                 '2D Texture', '3D Texture',
                  'ShellSplatting', 'Raycast (old)')),
             ('Interpolation:', 'interpolation', 'base:int', 'choice',
              'Linear (high quality, slower) or nearest neighbour (lower '
@@ -124,14 +125,18 @@ class VolumeRender(
                 self._setup_for_fixed_point()
 
             elif self._config.rendering_type == 1:
+                # gpu raycasting
+                self._setup_for_gpu_raycasting()
+
+            elif self._config.rendering_type == 2:
                 # 2d texture
                 self._setup_for_2d_texture()
                 
-            elif self._config.rendering_type == 2:
+            elif self._config.rendering_type == 3:
                 # 3d texture
                 self._setup_for_3d_texture()
 
-            elif self._config.rendering_type == 3:
+            elif self._config.rendering_type == 4:
                 # shell splatter
                 self._setup_for_shell_splatting()
 
@@ -190,6 +195,18 @@ class VolumeRender(
         module_utils.setup_vtk_object_progress(self, self._volume_mapper,
                                            'Preparing render.')
         
+    def _setup_for_gpu_raycasting(self):
+        """This doesn't seem to work.  After processing is complete,
+        it stalls on actually rendering the volume.  No idea.
+        """
+        
+        self._volume_mapper = vtk.vtkGPUVolumeRayCastMapper()
+        self._volume_mapper.SetBlendModeToComposite()
+        #self._volume_mapper.SetBlendModeToMaximumIntensity()
+
+        module_utils.setup_vtk_object_progress(self, self._volume_mapper,
+                                           'Preparing render.')
+
     def execute_module(self):
         otf, ctf = self._create_tfs()
         
