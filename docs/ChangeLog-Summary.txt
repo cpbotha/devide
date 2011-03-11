@@ -1,6 +1,12 @@
 This is Release 10.x
 
 Changes since previous release (9.8.3784)
+ * Main user interface has been greatly improved based on advice by 
+   Dr. Gerwin de Haan.
+ * Updated to Python 2.7.1, wxPython 2.8.11.0, VTK 5.6.1, ITK 3.20, 
+   GDCM 2.0.17, numpy 1.5.1, matplotlib 1.0.1
+ * The Windows64 binaries now also contain numpy and matplotlib, thanks to
+   Christoph Gohlke.
  * slice3dVWR refactor has been initiated. Started by:
    - You can now remove a primary image input, remaining inputs will
      re-arrange themselves automatically.
@@ -8,7 +14,9 @@ Changes since previous release (9.8.3784)
      module state.
    - Fixing bug where orientation marker would slow down volume rendering
    interaction.
- * johannes now support per-project configurations, thus making it useful as
+ * johannes now supports versioned dependencies. For example, you can have
+   one project using vtk 5.4.2 ("VTK") and another using 5.6.1 ("VTK56")
+ * johannes now supports per-project configurations, thus making it useful as
    generic build-system.  In other words, if you just want something that can
    build VTK and ITK and some of your own stuff, you're in the right place!
 
