@@ -899,7 +899,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             values = []
             for c in range(nc):
                 values.append(inputData.GetScalarComponentAsDouble(
-                    discretePos[0], discretePos[1], discretePos[2], c))
+                    int(discretePos[0]), int(discretePos[1]), int(discretePos[2]), c))
                 
         else:
             values = None
