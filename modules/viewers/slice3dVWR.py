@@ -921,10 +921,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             # then we have to update our internal record of this point
             ispacing = inputData.GetSpacing()
             iorigin = inputData.GetOrigin()
-            discrete = map(
+            discrete = map(int, map(
                 round, map(
                 operator.div,
-                map(operator.sub, worldPosition, iorigin), ispacing))
+                map(operator.sub, worldPosition, iorigin), ispacing)))
                 
             validPos = True
             extent = inputData.GetExtent()

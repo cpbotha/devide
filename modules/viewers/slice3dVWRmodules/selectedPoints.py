@@ -369,8 +369,9 @@ class selectedPoints(s3dcGridMixin):
         """
 
         # we first have to check that we don't have this pos already
+        new_discrete = (int(cursor[0]), int(cursor[1]), int(cursor[2]))
         discretes = [i['discrete'] for i in self._pointsList]
-        if tuple(cursor[0:3]) in discretes:
+        if new_discrete in discretes:
             return
         
         worldPos = self.slice3dVWR.getWorldPositionInInputData(cursor[0:3])
@@ -379,7 +380,7 @@ class selectedPoints(s3dcGridMixin):
 
         pointName = self.slice3dVWR.controlFrame.sliceCursorNameCombo.\
                     GetValue()
-        self._storePoint(tuple(cursor[0:3]), tuple(worldPos), cursor[3],
+        self._storePoint(new_discrete, tuple(worldPos), cursor[3],
                          pointName)
 
     def _storePoint(self, discrete, world, value, pointName,
