@@ -18,7 +18,7 @@ class implicitToVolume(ScriptedConfigModuleMixin, ModuleBase):
 
         # and then our scripted config
         configList = [
-            ('Sample dimensions: ', 'sampleDimensions', 'tuple:float,3',
+            ('Sample dimensions: ', 'sampleDimensions', 'tuple:int,3',
              'text', 'The dimensions of the output volume.'),
             ('Model bounds: ', 'modelBounds', 'tuple:float,6', 'text',
              'Region in world space over which the sampling is performed.'),
