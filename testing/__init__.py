@@ -40,11 +40,11 @@ class DeVIDETesting:
         runner = unittest.TextTestRunner()
         runner.run(self.main_suite)
 
-        print "Complete suite consists of 18 (multi-part) tests on "
-        print "lin32, lin64, win32.  On win64, 16."
+        print "Complete suite consists of 19 (multi-part) tests on "
+        print "lin32, lin64, win32, win64."
 
     def runSomeTest(self):
-        some_suite = misc.get_suite(self)
+        #some_suite = misc.get_suite(self)
         #some_suite = basic_vtk.get_suite(self)
         #some_suite = basic_wx.get_suite(self)
         some_suite = graph_editor.get_some_suite(self)
@@ -59,6 +59,11 @@ class DeVIDETesting:
         """
 
         return os.path.join(os.path.dirname(__file__), 'images')
+        
+    def get_networks_dir(self):
+        """Return full path of directory with test networks.
+        """
+        return os.path.join(os.path.dirname(__file__), 'networks')
         
     def compare_png_images(self, image1_filename, image2_filename,
                            threshold=16, allow_shift=False):

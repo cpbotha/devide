@@ -290,6 +290,62 @@ class TestModulesMisc(GraphEditorTestBase):
                             'Error destroying %s' % (module_name,))
 
 # ----------------------------------------------------------------------------
+class TestVTKBasic(GraphEditorTestBase):
+
+    def test_seedconnect(self):
+        """Test whether we can load and run a full network, select a point and 
+        do a region growing. This broke with the introduction of vtk 5.6.1 due
+        to more strict casting.
+        """
+                
+        # load our little test network #####
+        self._ge._load_and_realise_network(
+            os.path.join(self._devide_testing.get_networks_dir(), 
+                         'seedconnect.dvn'))
+        
+        # run the network once    
+        self._ge._handler_execute_network(None)
+        
+        self._ge.canvas.redraw()
+            
+        # now find the slice3dVWR #####
+        mm = self._devide_app.get_module_manager()
+        svmod = mm.get_instance("svmod")
+        # let's show the control frame
+        svmod._handlerShowControls(None)
+        
+        if True:
+            # we're doing this the long way to test more code paths
+            svmod.sliceDirections.setCurrentCursor([20.0, 20.0, 20.0, 1.0])
+            # this handler should result in the whole network being auto-executed
+            # but somehow it blocks execution (the vktImageSeedConnect sticks at 0.0)
+            svmod.selectedPoints._handlerStoreCursorAsPoint(None)
+            
+        else:        
+            # it seems to block here as well: the whole network is linked up,
+            # so it tries to execute when the storeCursor is called, and that
+            # blocks everything. WHY?!
+            #svmod.selectedPoints._storeCursor((20.0,20.0,20.0,1.0))
+            #self.failUnless(len(svmod.selectedPoints._pointsList) == 1)
+
+            # execute the network
+            self._ge._handler_execute_network(None)
+
+        # now count the number of voxels in the segmented result
+        import vtk
+        via = vtk.vtkImageAccumulate()
+        scmod = mm.get_instance("scmod")
+        via.SetInput(scmod.get_output(0))
+        via.Update()
+        # get second bin of output histogram: that should be the
+        # number of voxels
+        s = via.GetOutput().GetPointData().GetScalars()
+        print s.GetTuple1(1)
+        self.failUnless(s.GetTuple1(1) == 26728)
+        via.SetInput(None)
+        del via
+
+# ----------------------------------------------------------------------------
 class TestITKBasic(GraphEditorVolumeTestBase):
 
     def test_vtktoitk_types(self):
@@ -438,8 +494,9 @@ def get_some_suite(devide_testing):
     
     some_suite = unittest.TestSuite()
 
-    t = TestModulesMisc('test_create_destroy')
+    t = TestVTKBasic('test_seedconnect')
     t._devide_app = devide_app
+    t._devide_testing = devide_testing # need for networks path
     some_suite.addTest(t)
 
     return some_suite
@@ -473,6 +530,11 @@ def get_suite(devide_testing):
 
     t = TestModulesMisc('test_create_view_destroy')
     t._devide_app = devide_app
+    graph_editor_suite.addTest(t)
+    
+    t = TestVTKBasic('test_seedconnect')
+    t._devide_app = devide_app
+    t._devide_testing = devide_testing # need for networks path
     graph_editor_suite.addTest(t)
     
 
