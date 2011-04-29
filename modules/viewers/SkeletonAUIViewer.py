@@ -66,11 +66,27 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
         self.sync_module_logic_with_config()
         # then bring it all the way up again to the view
         self.sync_module_view_with_logic()
+        
+        # the self.timer bits demonstrate how to use a timer to trigger some event
+        # every few milliseconds. this can for example be used to poll a
+        # tracking device.
+        # to see this in action in this example, do the following:
+        # 1. instantiate the SkeletonAUIViewer
+        # 2. click on "add superquadric" a few times
+        # 3. click on "reset camera" so that they are all in view
+        # 4. click on "start timer event" and see them rotate while you can do
+        #    other things!
+        self.timer = None
 
     def close(self):
         """Clean-up method called on all DeVIDE modules when they are
         deleted.
         """
+        
+        # we have to take care of de-initialising the timer as well
+        if self.timer:
+            self.timer.Stop()
+            del self.timer
         
         # with this complicated de-init, we make sure that VTK is 
         # properly taken care of
@@ -178,6 +194,8 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
                 self._handler_button1)
         self._view_frame.button2.Bind(wx.EVT_BUTTON,
                 self._handler_button2)
+        self._view_frame.button3.Bind(wx.EVT_BUTTON,
+                self._handler_button3)                
 
     def _handler_button1(self, event):
         print "button1 pressed"
@@ -189,6 +207,30 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
 
         self.ren.ResetCamera()
         self.render()
+        
+    def _handler_button3(self, event):
+        print "button3 pressed"
+        
+        if not self.timer:
+            print "installing timer event"
+            # construct timer, associate it with the main view_frame
+            self.timer = wx.Timer(self._view_frame)
+            # then make sure we catch view_frame's EVT_TIMER events
+            self._view_frame.Bind(wx.EVT_TIMER, self._handler_timer, self.timer)
+            self.timer.Start(10, oneShot=False) # every 100ms
+            self._view_frame.button3.SetLabel("Stop Timer Event")
+            
+        else:
+            print "uninstalling timer event"
+            self.timer.Stop()
+            self.timer = None
+            self._view_frame.button3.SetLabel("Start Timer Event")
+            
+    def _handler_timer(self, event):
+        # at every timer event, rotate camera
+        self.ren.GetActiveCamera().Azimuth(5)
+        self.render()
+        
 
     def _handler_file_open(self, event):
         print "could have opened file now"

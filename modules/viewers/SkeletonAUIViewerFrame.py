@@ -142,9 +142,11 @@ class SkeletonAUIViewerFrame(wx.Frame):
         self.rwi = wxVTKRenderWindowInteractor(panel, -1, (400,400))
         self.button1 = wx.Button(panel, -1, "Add Superquadric")
         self.button2 = wx.Button(panel, -1, "Reset Camera")
+        self.button3 = wx.Button(panel, -1, "Start Timer Event")
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         button_sizer.Add(self.button1)
         button_sizer.Add(self.button2)
+        button_sizer.Add(self.button3)        
 
         sizer1 = wx.BoxSizer(wx.VERTICAL)
         sizer1.Add(self.rwi, 1, wx.EXPAND|wx.BOTTOM, 7)
