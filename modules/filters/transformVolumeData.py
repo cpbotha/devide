@@ -10,7 +10,8 @@ class transformVolumeData(NoConfigModuleMixin, ModuleBase):
 
         self._imageReslice = vtk.vtkImageReslice()
         self._imageReslice.SetInterpolationModeToCubic()
-
+        self._imageReslice.SetAutoCropOutput(1)
+        
         # initialise any mixins we might have
         NoConfigModuleMixin.__init__(
             self,
@@ -34,7 +35,7 @@ class transformVolumeData(NoConfigModuleMixin, ModuleBase):
         del self._imageReslice
 
     def get_input_descriptions(self):
-	return ('VTK Image Data', 'VTK Transform')
+        return ('VTK Image Data', 'VTK Transform')
 
     def set_input(self, idx, inputStream):
         if idx == 0:
