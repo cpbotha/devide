@@ -121,8 +121,14 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
             dx,dy,dz = ip.GetDimensions()
             lines.append('%d x %d x %d == %d voxels<br>' % \
                     (dx,dy,dz,dx*dy*dz))
-            lines.append('physical spacing %.2f x %.2f x %.2f<br>' % \
+            lines.append('physical spacing %.3f x %.3f x %.3f<br>' % \
                     ip.GetSpacing())
+            lines.append('<br>image origin (%.2f, %.2f, %.2f)<br>' % \
+                    ip.GetOrigin())					
+            lines.append('<br>image bounds (%.2f, %.2f, %.2f, %.2f, %.2f, %.2f)<br>' % \
+                    ip.GetBounds())					                    
+            lines.append('image extent (%d, %d, %d, %d, %d, %d)<br>' % \
+                    ip.GetExtent())										
             # how can the data be visualised
             lines.append(render_actions(
                 ["Slice through the data (MPR) with 'slice3dVWR'",
@@ -213,9 +219,16 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
             # spacing string
             spacing = [ip.GetSpacing().GetElement(i) 
                     for i in range(dim)]
-            sstr = ' x '.join(['%.2f'] * dim) % tuple(spacing)
+            sstr = ' x '.join(['%.3f'] * dim) % tuple(spacing)
             dl.append('physical spacing %s' % (sstr,))
 
+            # origin string
+            origin = [ip.GetOrigin().GetElement(i) 
+                    for i in range(dim)]
+            ostr = ', '.join(['%.2f'] * dim) % tuple(origin)
+            dl.append('<br>image origin (%s)' % (ostr,))
+
+			
             lines.append(render_description(dl))
 
 
