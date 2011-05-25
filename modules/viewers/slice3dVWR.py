@@ -1221,7 +1221,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             voi = 6 * [0]
             # excuse the for loop :)
             for i in range(6):
-                voi[i] = round((bounds[i] - iorigin[i / 2]) / ispacing[i / 2])
+                voi[i] = int(round((bounds[i] - iorigin[i / 2]) / ispacing[i / 2]))
 
             # store the VOI (this is a shallow copy)
             self._currentVOI = voi
