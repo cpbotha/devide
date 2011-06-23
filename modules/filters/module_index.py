@@ -49,6 +49,13 @@ class decimate:
     in areas of low detail.
     """
 
+class DICOMAligner:
+    kits = ['vtk_kit', 'wx_kit']
+    cats = ['DICOM','Filters']
+    help = """Aligns a vtkImageData volume (read from DICOM) to the world coordinate system.    
+    If alignment is not performed the world coordinates may be read incorrectly (in Slice3DViewer, for example).
+    Example use case:  Aligning multiple MRI sequences for fusion/averaging"""    
+    
 class doubleThreshold:
     kits = ['vtk_kit']
     cats = ['Filters']
