@@ -60,6 +60,9 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
         self._view_frame = None
         self._file_dialog = None
         self._config.dicom_filenames = []
+        # if this is true, module will still try to load set even if
+        # IPP sorting fails by sorting images alphabetically
+        self._config.robust_spacing = False
 
         self.sync_module_logic_with_config()
 
@@ -147,17 +150,30 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
             sorter.SetZSpacingTolerance(1e-2)
 
             ret = sorter.Sort(filenames)
+            alpha_sorted = False
             if not ret:
-                raise RuntimeError(
-                'Could not sort DICOM filenames before loading.')
+                if self._config.robust_spacing:
+                    self._module_manager.log_warning(
+                        'Could not sort DICOM filenames by IPP. Doing alphabetical sorting.')
+                    filenames.sort()
+                    alpha_sorted = True
+                    
+                else:
+                    raise RuntimeError(
+                    'Could not sort DICOM filenames before loading.')
 
-            if sorter.GetZSpacing() == 0.0:
+            if sorter.GetZSpacing() == 0.0 and not alpha_sorted:
                 msg = 'DICOM IPP sorting yielded incorrect results.'
                 raise RuntimeError(msg)
 
             # then give the reader the sorted list of files
             sa = vtk.vtkStringArray()
-            for fn in sorter.GetFilenames(): 
+            if alpha_sorted:
+                flist = filenames
+            else:
+                flist = sorter.GetFilenames()
+                
+            for fn in flist: 
                 sa.InsertNextValue(fn)
 
             self._reader.SetFileNames(sa)
@@ -175,16 +191,16 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
         # see what the reader thinks the spacing is
         spacing = list(self._reader.GetDataSpacing())
 
-        if len(filenames) > 1:
+        if len(filenames) > 1 and not alpha_sorted:
             # after the reader has done its thing,
             # impose derived spacing on the vtkImageChangeInformation
             # (by default it takes the SpacingBetweenSlices, which is
             # not always correct)
             spacing[2] = sorter.GetZSpacing()
-            print "SPACING", sorter.GetZSpacing()
 
         # single or multiple filenames, we have to set the correct
         # output spacing on the image change information
+        print "SPACING: ", spacing
         self._ici.SetOutputSpacing(spacing)
         self._ici.Update()
 
