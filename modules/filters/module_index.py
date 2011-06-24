@@ -52,9 +52,20 @@ class decimate:
 class DICOMAligner:
     kits = ['vtk_kit', 'wx_kit']
     cats = ['DICOM','Filters']
-    help = """Aligns a vtkImageData volume (read from DICOM) to the world coordinate system.    
-    If alignment is not performed the world coordinates may be read incorrectly (in Slice3DViewer, for example).
-    Example use case:  Aligning multiple MRI sequences for fusion/averaging"""    
+    keywords = ['align','reslice','rotate','orientation','dicom']
+    help = """Aligns a vtkImageData volume (as read from DICOM) to the 
+	standard DICOM LPH (Left-Posterior-Head) coordinate system. 
+	If alignment is not performed the image's "world" (patient LPH) 
+	coordinates may be computed incorrectly (e.g. in Slice3DViewer).
+    
+    The transformation reslices the original volume, then moves 
+	the image origin as required. The new origin has to be at the centre 
+	of the voxel with most negative LPH coordinates.
+    
+    Example use case:  Before aligning multiple MRI sequences 
+	for fusion/averaging
+    
+    (Module by Francois Malan)"""
     
 class doubleThreshold:
     kits = ['vtk_kit']

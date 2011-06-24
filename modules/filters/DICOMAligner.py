@@ -2,6 +2,7 @@
 
 from module_base import ModuleBase
 from module_mixins import NoConfigModuleMixin
+from module_kits.misc_kit import misc_utils
 import wx
 import os
 import vtk
@@ -19,7 +20,8 @@ class DICOMAligner(
             self, {'Module (self)' : self})
 
         self.sync_module_logic_with_config()    
-        self._ir = vtk.vtkImageReslice()        
+        self._ir = vtk.vtkImageReslice()
+        self._ici = vtk.vtkImageChangeInformation()
            
     def close(self):
         # we play it safe... (the graph_editor/module_manager should have
@@ -52,11 +54,11 @@ class DICOMAligner(
         Performs the required transformation to match the image to the world coordinate system defined by medmeta
         '''
 
-
         # the first two columns of the direction cosines matrix represent
-        # the x,y axes of the DICOM images in RAH space
-        # if we want to resample the images so that x,y are always RA
-        # the inverse should do the trick
+        # the x,y axes of the DICOM slices in the patient's LPH space
+        # if we want to resample the images so that x,y are always LP
+        # the inverse should do the trick (transpose should also work as long as boths sets of axes
+        # is right-handed but let's stick to inverse for safety)
         dcmatrix = vtk.vtkMatrix4x4()
         dcmatrix.DeepCopy(self._metadata.direction_cosines)
         dcmatrix.Invert()
@@ -78,30 +80,30 @@ class DICOMAligner(
         output = self._ir.GetOutput()
 
         #We now have to check whether the origin needs to be moved from its prior position
-        #Yes folks - the reslice operation screws up the origin and we must fix it. 
+        #Yes folks - the reslice operation screws up the origin and we must fix it.
+        #(Since the IPP is INDEPENDENT of the IOP a reslice operation to fix the axes' orientation
+        # should not rotate the origin)
         #
-        #The origin's coordinates (as provided by the DICOMreader) are in WORLD 
-        # coordinates. 
+        #The origin's coordinates (as provided by the DICOMreader) are expressed in PATIENT-LPH 
         #We are transforming the voxels (i.e. image coordiante axes) 
-        # FROM IMAGE TO WORLD coordinates. We must not transform the origin in this 
+        # FROM IMAGE TO LPH coordinates. We must not transform the origin in this 
         # sense- only the image axes (and therefore voxels). However, vtkImageReslice 
         # (for some strange reason) transforms the origin according to the 
         # transformation matrix (?). So we need to reset this.
-        #But, there is a caveat.
-        #In the WORLD coordinate system, a voxel's world coordinates 
+        #Once the image is aligned to the LPH coordinate axes, a voxel(centre)'s LPH coordinates 
         # = origin + image_coordinates * spacing.
+        #But, there is a caveat.
         # Since both image coordinates and spacing are positive, the origin must be at
-        # the "most negative" corner (in world coordinate terms). 
+        # the "most negative" corner (in LPH terms).
         # But the original origin is defined at the "most negative" corner in IMAGE 
         # coordinates(!). This means that the origin should, in most cases, be 
-        # translated from its original position, depending on the relative world and 
+        # translated from its original position, depending on the relative LPH and 
         # image axes' orientations.
-        #The new origin becomes the WORLD coordinates of the IMAGE corner
-        # corresponding to the most negative WORLD coordinates. 
+        #The new origin becomes the LPH coordinates of the IMAGE corner with the
+        # "most negative" LPH coordinates. 
         #To determine this we look along each of the IMAGE axes and see whether it
-        # has a negative component along ANY of the WORLD axes. If so, we move it to
-        # its most positive image coordinate along this IMAGE axis (most negative WORLD 
-        # coordinate along the corresponding world axis that had negative component).
+        # has a negative component along ANY of the LPH axes. If so, we move it to
+        # the most negative LPH coordinate along this IMAGE axis.
 
         #Remember that (in matlab syntax)
         #  p_world = dcm_matrix * diag(spacing)*p_image + origin
@@ -109,8 +111,8 @@ class DICOMAligner(
         # [p_x]   [ 1  0  0][nx*dx]   [ox]
         # [p_y] = [ 0  0  1][ny*dy] + [oy]
         # [p_z]   [ 0 -1  0][nz*dz]   [oz]
-        #, where p is the world coordinates, d is the spacing, n is the image 
-        #  coordinates and o is the origin.
+        #, where p is the LPH coordinates, d is the spacing, n is the image 
+        #  coordinates and o is the origin (IPP of the slice with the most negative IMAGE z coordinate).
 
         newOriginX = origin[0];
         newOriginY = origin[1];
@@ -133,9 +135,31 @@ class DICOMAligner(
             #Transform image coordinate [0, extent_y, 0] to world coordinates
             newOriginX = dcm[0][2]*extent[5]*spacing[2] + newOriginX
             newOriginY = dcm[1][2]*extent[5]*spacing[2] + newOriginY
-            newOriginZ = dcm[2][2]*extent[5]*spacing[2] + newOriginZ
-
+            newOriginZ = dcm[2][2]*extent[5]*spacing[2] + newOriginZ        
+        
+        #Since we set the direction cosine matrix to unity we have to reset the
+        #axis labels array as well.
+        self._ici.SetInput(output)
+        self._ici.Update()
+        fd = self._ici.GetOutput().GetFieldData()
+        fd.RemoveArray('axis_labels_array')
+        lut = {'L' : 0, 'R' : 1, 'P' : 2, 'A' : 3, 'F' : 4, 'H' : 5}
+        
+        fd.RemoveArray('axis_labels_array')
+        axis_labels_array = vtk.vtkIntArray()
+        axis_labels_array.SetName('axis_labels_array')
+        axis_labels_array.InsertNextValue(lut['R'])
+        axis_labels_array.InsertNextValue(lut['L'])
+        axis_labels_array.InsertNextValue(lut['A'])
+        axis_labels_array.InsertNextValue(lut['P'])
+        axis_labels_array.InsertNextValue(lut['F'])
+        axis_labels_array.InsertNextValue(lut['H'])
+        fd.AddArray(axis_labels_array)
+        self._ici.Update()
+        output = self._ici.GetOutput()
+        
         output.SetOrigin(newOriginX, newOriginY, newOriginZ)
+        
         self._output = output
 
     def execute_module(self):

@@ -1,6 +1,20 @@
+class batchConverter:
+    kits = ['vtk_kit', 'wx_kit']
+    cats = ['Readers','Writers','Converters']
+    keywords = ['batch','convert','read','write']
+    help = """A tool for batch converting 3D medical volume files 
+    between the VTK, ITK and GIPL formats.
+    
+    All the files in the specified directory matching the given 
+    source extension are converted. The user may specify whether
+    source files should be deleted or target files should be
+    automatically overwritten (be careful with these settings!)
+    
+    (Module by Francois Malan)"""
+
 class cptBrepWRT:
     kits = ['vtk_kit']
-    cats = ['Writers']
+    cats = ['Writers']    
     help = """Writes polydata to disc in the format required by the Closest
     Point Transform (CPT) driver software.  Input data is put through
     a triangle filter first, as that is what the CPT requires.
