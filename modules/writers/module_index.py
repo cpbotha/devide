@@ -1,14 +1,16 @@
 class batchConverter:
     kits = ['vtk_kit', 'wx_kit']
     cats = ['Readers','Writers','Converters']
-    keywords = ['batch','convert','read','write']
-    help = """A tool for batch converting 3D medical volume files 
-    between the VTK, ITK and GIPL formats.
+    keywords = ['batch','convert','read','write','vti','mha','gipl']
+    help = """Batch converts image volume files from one type to another.
+    Source and target types can be VTK ImageData (.vti), MetaImage (.mha), 
+	or Guys Image Processing Lab (.gipl).
     
     All the files in the specified directory matching the given 
-    source extension are converted. The user may specify whether
-    source files should be deleted or target files should be
-    automatically overwritten (be careful with these settings!)
+    source extension are converted. 
+    The user may specify whether source files should be deleted 
+    or target files should be automatically overwritten (be careful 
+    with these settings!)
     
     (Module by Francois Malan)"""
 
