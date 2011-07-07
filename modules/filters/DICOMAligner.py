@@ -1,4 +1,5 @@
 # DicomAligner.py by Francois Malan - 2011-06-23
+# Revised as version 2.0 on 2011-07-07
 
 from module_base import ModuleBase
 from module_mixins import NoConfigModuleMixin
@@ -8,6 +9,7 @@ import os
 import vtk
 import itk
 import math
+import numpy
 
 class DICOMAligner(
     NoConfigModuleMixin, ModuleBase):
@@ -66,7 +68,7 @@ class DICOMAligner(
         origin = self._imagedata.GetOrigin()
         spacing = self._imagedata.GetSpacing()
         extent = self._imagedata.GetExtent()
-
+        
         # convert our new cosines to something we can give the ImageReslice
         dcm = [[0,0,0] for _ in range(3)]
         for col in range(3):
@@ -76,12 +78,16 @@ class DICOMAligner(
         # do it.        
         self._ir.SetResliceAxesDirectionCosines(dcm[0], dcm[1], dcm[2])
         self._ir.SetInput(self._imagedata)
+        self._ir.SetAutoCropOutput(1)        
+        self._ir.SetInterpolationModeToCubic()
+        isotropic_sp = min(min(spacing[0],spacing[1]),spacing[2])
+        self._ir.SetOutputSpacing(isotropic_sp, isotropic_sp, isotropic_sp)
         self._ir.Update()
         output = self._ir.GetOutput()
 
         #We now have to check whether the origin needs to be moved from its prior position
         #Yes folks - the reslice operation screws up the origin and we must fix it.
-        #(Since the IPP is INDEPENDENT of the IOP a reslice operation to fix the axes' orientation
+        #(Since the IPP is INDEPENDENT of the IOP, a reslice operation to fix the axes' orientation
         # should not rotate the origin)
         #
         #The origin's coordinates (as provided by the DICOMreader) are expressed in PATIENT-LPH 
@@ -94,17 +100,18 @@ class DICOMAligner(
         # = origin + image_coordinates * spacing.
         #But, there is a caveat.
         # Since both image coordinates and spacing are positive, the origin must be at
-        # the "most negative" corner (in LPH terms).
+        # the "most negative" corner (in LPH terms). Even worse, if the LPH axes are not 
+        # perpendicular relative to the original image axes, this "most negative" corner will
+        # lie outside of the original image volume (in a zero-padded region) - see AutoCropOutput.
         # But the original origin is defined at the "most negative" corner in IMAGE 
         # coordinates(!). This means that the origin should, in most cases, be 
         # translated from its original position, depending on the relative LPH and 
-        # image axes' orientations.
-        #The new origin becomes the LPH coordinates of the IMAGE corner with the
-        # "most negative" LPH coordinates. 
-        #To determine this we look along each of the IMAGE axes and see whether it
-        # has a negative component along ANY of the LPH axes. If so, we move it to
-        # the most negative LPH coordinate along this IMAGE axis.
-
+        # image axes' orientations.        
+        #
+        #The (x,y,z) components of the new origin are, independently, the most negative x, 
+        #most negative y and most negative z LPH coordinates of the eight ORIGINAL IMAGE corners.
+        #To determine this we compute the eight corner coordinates and do a minimization.
+        #
         #Remember that (in matlab syntax)
         #  p_world = dcm_matrix * diag(spacing)*p_image + origin
         #for example: for a 90 degree rotation around the x axis this is
@@ -114,28 +121,28 @@ class DICOMAligner(
         #, where p is the LPH coordinates, d is the spacing, n is the image 
         #  coordinates and o is the origin (IPP of the slice with the most negative IMAGE z coordinate).
 
-        newOriginX = origin[0];
-        newOriginY = origin[1];
-        newOriginZ = origin[2];
-
-        #Look along the first image axis
-        if (dcm[0][0] < 0) | (dcm[1][0] < 0) | (dcm[2][0] < 0):
-            #Transform image coordinate [extent_x, 0, 0] to world coordinates
-            newOriginX = dcm[0][0]*extent[1]*spacing[0] + newOriginX
-            newOriginY = dcm[1][0]*extent[1]*spacing[0] + newOriginY
-            newOriginZ = dcm[2][0]*extent[1]*spacing[0] + newOriginZ  
-        #Look along the second image axis
-        if (dcm[0][1] < 0) | (dcm[1][1] < 0) | (dcm[2][1] < 0):
-            #Transform image coordinate [0, extent_y, 0] to world coordinates
-            newOriginX = dcm[0][1]*extent[3]*spacing[1] + newOriginX
-            newOriginY = dcm[1][1]*extent[3]*spacing[1] + newOriginY
-            newOriginZ = dcm[2][1]*extent[3]*spacing[1] + newOriginZ
-        #Look along the third image axis
-        if (dcm[0][2] < 0) | (dcm[1][2] < 0) | (dcm[2][2] < 0):
-            #Transform image coordinate [0, extent_y, 0] to world coordinates
-            newOriginX = dcm[0][2]*extent[5]*spacing[2] + newOriginX
-            newOriginY = dcm[1][2]*extent[5]*spacing[2] + newOriginY
-            newOriginZ = dcm[2][2]*extent[5]*spacing[2] + newOriginZ        
+        originn = numpy.array(origin)
+        dcmn = numpy.array(dcm)        
+        corners = numpy.zeros((3,8))
+        
+        #first column of the DCM is a unit LPH-space vector in the direction of the first IMAGE axis, etc.
+        #From this it follows that the displacements along the full IMAGE's x, y and z extents are:
+        sx = spacing[0]*extent[1]*dcmn[:,0]
+        sy = spacing[1]*extent[3]*dcmn[:,1]
+        sz = spacing[2]*extent[5]*dcmn[:,2]
+                
+        corners[:,0] = originn
+        corners[:,1] = originn + sx
+        corners[:,2] = originn + sy
+        corners[:,3] = originn + sx + sy
+        corners[:,4] = originn + sz
+        corners[:,5] = originn + sx + sz
+        corners[:,6] = originn + sy + sz
+        corners[:,7] = originn + sx + sy + sz
+                
+        newOriginX = min(corners[0,:]);
+        newOriginY = min(corners[1,:]);
+        newOriginZ = min(corners[2,:]);
         
         #Since we set the direction cosine matrix to unity we have to reset the
         #axis labels array as well.
@@ -158,8 +165,7 @@ class DICOMAligner(
         self._ici.Update()
         output = self._ici.GetOutput()
         
-        output.SetOrigin(newOriginX, newOriginY, newOriginZ)
-        
+        output.SetOrigin(newOriginX, newOriginY, newOriginZ)        
         self._output = output
 
     def execute_module(self):
