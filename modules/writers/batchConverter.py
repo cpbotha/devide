@@ -29,8 +29,8 @@ class batchConverter(
         self._vtk_data_types = (0, 1)   #The list of the above extensions which are VTK types
 
         #Make sure that these two dictionaries match the definitions in the config list!
-        self._config.data_types_by_number = {0 : 'auto', 1 : 'float', 2 : 'short', 3 : 'unsigned char'}
-        self._config.data_types_by_name = {'auto' : 0, 'float' : 1, 'short' : 2, 'unsigned char' : 3}
+        self._config.data_types_by_number = {0 : 'auto', 1 : 'float', 2 : 'short', 3 : 'unsigned char', 4 : 'char'}
+        self._config.data_types_by_name = {'auto' : 0, 'float' : 1, 'short' : 2, 'unsigned char' : 3, 'char' : 4}
 
         config_list = [
             ('Source Folder:', 'source_folder', 'base:str', 'dirbrowser',
@@ -151,6 +151,10 @@ class batchConverter(
             elif self._config.source_forced_numerical_type == 3:   #unsigned char
                 reader = itk.ImageFileReader.IUC3.New()
                 self._config.source_numerical_type = 3
+            elif self._config.source_forced_numerical_type == 4:   #char
+                self._config.source_numerical_type = 4
+                reader = None
+                raise Exception('ITK reader cannot currently handle type (char)')
             else:
                 raise Exception('Undefined input data type with numerical index %d' % self._config.source_forced_numerical_type)
         else:
@@ -203,6 +207,8 @@ class batchConverter(
                     caster.SetOutputScalarTypeToShort()
                 elif self._config.target_numerical_type == 3:    #unsigned char
                     caster.SetOutputScalarTypeToUnsignedChar()
+                elif self._config.target_numerical_type == 4:    #char
+                    caster.SetOutputScalarTypeToChar()
 
             if target_is_vtk:
                 if caster == None:
@@ -221,8 +227,10 @@ class batchConverter(
                     converter = itk.VTKImageToImageFilter[itk.Image.SS3].New()
                 elif self._config.target_numerical_type == 3:    #unsigned char
                     converter = itk.VTKImageToImageFilter[itk.Image.UC3].New()
+                elif self._config.target_numerical_type == 4:    #char -> we convert to signed short (due to lack of char support)
+                    converter = itk.VTKImageToImageFilter[itk.Image.SS3].New()
                 else:
-                    raise Exception('Conversion of VTK %s to ITK not currently supported.' % data_types_by_number[source_dt])
+                    raise Exception('Conversion of VTK to ITK (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
 
                 if caster == None:
                     converter.SetInput(input_data)
@@ -251,7 +259,7 @@ class batchConverter(
                     elif self._config.target_numerical_type == 3: #unsigned char
                         caster = itk.CastImageFilter.IF3IUC3()
                     else:
-                        raise Exceception('Error - this case should not occur!')
+                        raise Exception('Conversion of ITK (float) to (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
 
                 if self._config.source_numerical_type == 2:       #short
                     if self._config.target_numerical_type == 1:   #float
@@ -259,7 +267,7 @@ class batchConverter(
                     elif self._config.target_numerical_type == 3: #unsigned char
                         caster = itk.CastImageFilter.ISS3IUC3()
                     else:
-                        raise Exceception('Error - this case should not occur!')
+                        raise Exception('Conversion of ITK (short) to (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
 
                 if self._config.source_numerical_type == 3:       #unsigned short
                     if self._config.target_numerical_type == 1:   #float
@@ -267,7 +275,10 @@ class batchConverter(
                     elif self._config.target_numerical_type == 2: #short
                         caster = itk.CastImageFilter.IUC3ISS3()
                     else:
-                        raise Exceception('Error - this case should not occur!')
+                        raise Exception('Conversion of ITK (ushort) to (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                        
+                else:
+                    raise Exception('Conversion of ITK (%s) is currently not supported.' % self._config.data_types_by_number[self._config.source_numerical_type])
 
                 caster.SetInput(input_data)
 
@@ -288,8 +299,10 @@ class batchConverter(
                     converter = itk.ImageToVTKImageFilter[itk.Image.SS3].New()
                 elif self._config.target_numerical_type == 3:    #unsigned char
                     converter = itk.ImageToVTKImageFilter[itk.Image.UC3].New()
+                elif self._config.target_numerical_type == 4:    #char handled as signed short
+                    converter = itk.VTKImageToImageFilter[itk.Image.SS3].New()                    
                 else:
-                    raise Exception('Conversion of ITK %s to VTK not currently supported.' % data_types_by_number[source_dt])
+                    raise Exception('Conversion of ITK to VTK (%s) not currently supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
 
                 data_to_convert = None
                 if caster == None:
@@ -333,8 +346,10 @@ class batchConverter(
                 writer = itk.ImageFileWriter.ISS3.New()
             elif self._config.target_numerical_type == 3:    #unsigned char
                 writer = itk.ImageFileWriter.IUC3.New()
+            elif self._config.target_numerical_type == 4:    #handling char as signed short
+                writer = itk.ImageFileWriter.ISS3.New()
             else:
-                raise Exception('Writing ITK %s is not currently supported.' % data_types_by_number[source_dt])
+                raise Exception('Writing ITK (%s) is not currently supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
         else:
             raise Exception('Undefined file type with numerical index %d' % self._config.target_file_type)
 
