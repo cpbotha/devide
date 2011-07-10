@@ -201,7 +201,7 @@ class dicomRDR(ModuleBase,
         row = iop[0:3]
         col = iop[3:6]
         # the cross product (plane normal) based on the row and col will
-        # also be in the RAH system (I THINK)
+        # also be in the LPH coordinate system
         norm = [0,0,0]
         vtk.vtkMath.Cross(row, col, norm)
 

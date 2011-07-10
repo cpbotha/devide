@@ -206,8 +206,8 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
 
 
         # integrate DirectionCosines into output data ###############
-        # DirectionCosines: first two columns are X and Y in the RAH
-        # space
+        # DirectionCosines: first two columns are X and Y in the LPH
+        # coordinate system
         dc = self._reader.GetDirectionCosines()
 
         x_cosine = \
@@ -215,7 +215,7 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
         y_cosine = \
                 dc.GetElement(0,1), dc.GetElement(1,1), dc.GetElement(2,1)
 
-        # calculate plane normal, also in RAH space
+        # calculate plane normal (z axis) in LPH coordinate system by taking the cross product
         norm = [0,0,0]
         vtk.vtkMath.Cross(x_cosine, y_cosine, norm)
 

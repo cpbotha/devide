@@ -138,11 +138,10 @@ def major_axis_from_iop_cosine(iop_cosine):
     http://www.itk.org/pipermail/insight-users/2003-September/004762.html
     but we've flipped some things around to make more sense.
 
-    IOP direction cosines are always in the RAH system:
-     * x is left to right
-     * y is posterior to anterior
-     * z is foot to head <-- seems this might be the other way around,
-       judging by dclunie's code.
+    IOP direction cosines are always in the LPH coordinate system (patient-relative):
+     * x is right to left
+     * y is anterior to posterior
+     * z is foot to head
     """
 
     obliquity_threshold = 0.8

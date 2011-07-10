@@ -627,38 +627,38 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
         # now make the nice text overlay thingies!
 
-        # DirectionCosines: first two columns are X and Y in the RAH
-        # space
+        # DirectionCosines: first two columns are X and Y in the LPH
+        # coordinate system
         dc = r.GetDirectionCosines()
 
         x_cosine = \
                 dc.GetElement(0,0), dc.GetElement(1,0), dc.GetElement(2,0)
 
-        rah = misc_utils.major_axis_from_iop_cosine(x_cosine)
-        if rah:
-            self._image_viewer.xl_text_actor.SetInput(rah[0])
-            self._image_viewer.xr_text_actor.SetInput(rah[1])
+        lph = misc_utils.major_axis_from_iop_cosine(x_cosine)
+        if lph:
+            self._image_viewer.xl_text_actor.SetInput(lph[0])
+            self._image_viewer.xr_text_actor.SetInput(lph[1])
         else:
             self._image_viewer.xl_text_actor.SetInput('X')
             self._image_viewer.xr_text_actor.SetInput('X')
 
         y_cosine = \
                 dc.GetElement(0,1), dc.GetElement(1,1), dc.GetElement(2,1)
-        rah = misc_utils.major_axis_from_iop_cosine(y_cosine)
+        lph = misc_utils.major_axis_from_iop_cosine(y_cosine)
 
-        if rah:
+        if lph:
             if r.GetFileLowerLeft():
                 # no swap
-                b = rah[0]
-                t = rah[1]
+                b = lph[0]
+                t = lph[1]
             else:
                 # we have to swap these around because VTK has the
                 # convention of image origin at the upper left and GDCM
                 # dutifully swaps the images when loading to follow this
                 # convention.  Direction cosines (IOP) is not swapped, so
                 # we have to compensate here.
-                b = rah[1]
-                t = rah[0]
+                b = lph[1]
+                t = lph[0]
 
             self._image_viewer.yb_text_actor.SetInput(b)
             self._image_viewer.yt_text_actor.SetInput(t)
