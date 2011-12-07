@@ -470,6 +470,15 @@ class surfaceToDistanceField:
     you're doing.
     """
 
+class transformImageToTarget:
+    kits = ['vtk_kit']
+    cats = ['Filters']
+    keywords = ['align','reslice','rotate','orientation','transform','resample']
+    help = """Transforms input volume by the supplied geometrical transform, and maps it onto a new coordinate frame (orientation, extent, spacing) specified by the 
+    the specified target grid. The target is not overwritten, but a new volume is created with the desired orientation, dimensions and spacing.
+    This volume is then filled by probing the transformed source. Areas for which no values are found are zero-padded.
+    """      
+    
 class transformPolyData:
     kits = ['vtk_kit']
     cats = ['Filters']

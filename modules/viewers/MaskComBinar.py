@@ -285,7 +285,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
     def execute_module(self):
         # when it's your turn to execute as part of a network
         # execution, this gets called.
-	pass
+        pass
 
     def logic_to_config(self):
         pass
@@ -473,7 +473,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         self._view_frame.hausdorff_distance_button.Bind(wx.EVT_BUTTON, self._handler_compute_hausdorff_distance)
         self._view_frame.mean_hausdorff_distance_button.Bind(wx.EVT_BUTTON, self._handler_compute_mean_hausdorff_distance)
 
-	#self._view_frame.Bind(wx.EVT_SLIDER, self._handler_slider_update)
+    #self._view_frame.Bind(wx.EVT_SLIDER, self._handler_slider_update)
 
     def _handler_reset_cam2d_button(self, event):
         #self.slice_viewer.reset_camera()
@@ -656,12 +656,16 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
     def _handler_split_disconnected(self, event):
         """Splits the selected mask into disconnected regions"""
         if self.test_single_mask_selection():
-            name_set = self._view_frame.get_selected_mask_names_a()
-            if len(name_set) == 0:
-                name_set = self._view_frame.get_selected_mask_names_b()
-            
-            mask = self.masks[names_set.pop()]
-            self._split_disconnected_objects(mask)
+            names_a = self._view_frame.get_selected_mask_names_a()
+            names_b = self._view_frame.get_selected_mask_names_b()
+
+            mask_name = ''
+            if len(names_b) == 1:
+                mask_name = names_b.pop()
+            else:
+                mask_name = names_a.pop()
+
+            self._split_disconnected_objects(mask_name)
 
     def _handler_align_masks_icp(self, event):
         """Aligns two masks by using the Iterative Closest Point algorithm (rigid transformation)
@@ -1320,11 +1324,12 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         result.DeepCopy(thresholder.GetOutput())
         return result
 
-    def _split_disconnected_objects(self, source_mask):
+    def _split_disconnected_objects(self, mask_name):
         #This is done by labelling the objects from large to small
         #Convert to ITK
+        mask = self.masks[mask_name]
         thresholder = vtk.vtkImageThreshold()
-        thresholder.SetInput(source_mask.data)
+        thresholder.SetInput(mask.data)
         thresholder.ThresholdBetween(1, 9999)
         thresholder.SetInValue(1)
         thresholder.SetOutValue(0)

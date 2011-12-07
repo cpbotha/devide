@@ -1,5 +1,5 @@
 # imageGaussianSmooth copyright (c) 2003 by Charl P. Botha cpbotha@ieee.org
-# $Id$
+# $Id: resampleImage.py 3229 2008-09-04 17:06:13Z cpbotha $
 # performs image smoothing by convolving with a Gaussian
 
 import gen_utils
@@ -62,9 +62,7 @@ class resampleImage(IntrospectModuleMixin, ModuleBase):
         # are changed, we won't be affected
         self._config.interpolationMode = {'NearestNeighbor': 0,
                                           'Linear': 1,
-                                          'Cubic': 2}[istr]
-
-        
+                                          'Cubic': 3}[istr]
         for i in range(3):
             mfi = self._imageResample.GetAxisMagnificationFactor(i, None)
             self._config.magFactors[i] = mfi
