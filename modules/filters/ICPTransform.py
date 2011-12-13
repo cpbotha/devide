@@ -17,6 +17,7 @@ class ICPTransform(ScriptedConfigModuleMixin, ModuleBase):
 
         self._config.max_iterations = 50
         self._config.mode = 'RigidBody' 
+        self._config.align_centroids = True
 
         config_list = [
             ('Transformation mode:', 'mode', 'base:str', 'choice',
@@ -26,7 +27,9 @@ class ICPTransform(ScriptedConfigModuleMixin, ModuleBase):
               ('RigidBody', 'Similarity', 'Affine')),
             ('Maximum number of iterations:', 'max_iterations',
                 'base:int', 'text',
-             'Maximum number of iterations for ICP.')
+             'Maximum number of iterations for ICP.'),
+            ('Align centroids before start', 'align_centroids', 'base:bool', 'checkbox',
+             'Align centroids before iteratively optimizing closest points? (required for large relative translations)')
             ]
              
         ScriptedConfigModuleMixin.__init__(
@@ -64,6 +67,7 @@ class ICPTransform(ScriptedConfigModuleMixin, ModuleBase):
                 self._icp.GetLandmarkTransform().GetModeAsString()
         self._config.max_iterations = \
                 self._icp.GetMaximumNumberOfIterations()
+        self._config.align_centroids = self._icp.GetStartByMatchingCentroids()
     
     def config_to_logic(self):
         lmt = self._icp.GetLandmarkTransform()
@@ -76,6 +80,8 @@ class ICPTransform(ScriptedConfigModuleMixin, ModuleBase):
 
         self._icp.SetMaximumNumberOfIterations(
                 self._config.max_iterations)
+                
+        self._icp.SetStartByMatchingCentroids(self._config.align_centroids)
 
     def execute_module(self):
         self._module_manager.set_progress(
