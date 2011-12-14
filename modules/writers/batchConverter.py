@@ -1,3 +1,5 @@
+# BatchConverter.py by Francois Malan - 2010-03-05. Updated 2011-12-11#
+
 import os.path
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
@@ -25,32 +27,32 @@ class batchConverter(
         self._config.delete_after_conversion = False
 
         #Make sure that the values below match the definitions in the config list!
-        self._config.extensions = {0 : '.vti', 1 : '.mha', 2 : '.gipl'}
-        self._vtk_data_types = (0, 1)   #The list of the above extensions which are VTK types
+        self._config.extensions = {0 : '.vti', 1 : '.mha', 2 : '.mhd', 3 : 'gipl'}
+        self._vtk_data_types = (0, 1, 2)   #The list of the above extensions which are VTK types
 
         #Make sure that these two dictionaries match the definitions in the config list!
-        self._config.data_types_by_number = {0 : 'auto', 1 : 'float', 2 : 'short', 3 : 'unsigned char', 4 : 'char'}
-        self._config.data_types_by_name = {'auto' : 0, 'float' : 1, 'short' : 2, 'unsigned char' : 3, 'char' : 4}
+        self._config.data_types_by_number = {0 : 'auto', 1 : 'float', 2 : 'short', 3 : 'unsigned char', 4 : 'binary (uchar)'}
+        self._config.data_types_by_name = {'auto' : 0, 'float' : 1, 'short' : 2, 'unsigned char' : 3, 'binary (uchar)' : 4}
 
         config_list = [
             ('Source Folder:', 'source_folder', 'base:str', 'dirbrowser',
              'Select the source directory'),
             ('Source type:', 'source_file_type', 'base:int', 'choice',
              'The source file type',
-             ('VTK Imagedata (.vti)', 'MetaImage (.mha)', 'Guys Image Processing Lab (.gipl)')),
+             ('VTK Imagedata (.vti)', 'MetaImage (.mha)', 'MetaImage: header + raw (.mhd, .raw)', 'Guys Image Processing Lab (.gipl)')),
             ('Read input as:', 'source_forced_numerical_type', 'base:int', 'choice',
              'The data type we assume the input to be in',
-             ('auto detect', 'float', 'signed int', 'unsigned char')),
+             ('auto detect', 'float', 'signed int', 'unsigned char', 'binary (uchar)')),
             ('Delete source after conversion', 'delete_after_conversion', 'base:bool', 'checkbox',
              'Do you want to delete the source files after conversion? (not recommended)'),
             ('Destination Folder:', 'target_folder', 'base:str', 'dirbrowser',
              'Select the target directory'),
             ('Destination type:', 'target_file_type', 'base:int', 'choice',
              'The destination file type',
-             ('VTK Imagedata (.vti)', 'MetaImage (.mha)', 'Guys Image Processing Lab (.gipl)')),
+             ('VTK Imagedata (.vti)', 'MetaImage (.mha)', 'MetaImage: header + raw (.mhd, .raw)', 'Guys Image Processing Lab (.gipl)')),
             ('Cast output to:', 'target_forced_numerical_type', 'base:int', 'choice',
              'The data type we cast and write the output to',
-             ('auto detect', 'float', 'signed int', 'unsigned char')),
+             ('auto detect', 'float', 'signed int', 'unsigned char', 'binary (uchar)')),
             ('Automatically overwrite', 'overwrite', 'base:bool', 'checkbox',
              'Do you want to automatically overwrite existing files?'),
              ]
@@ -95,9 +97,9 @@ class batchConverter(
         reader = None
         if self._config.source_file_type == 0:       # VTI
             reader = vtk.vtkXMLImageDataReader()
-        elif self._config.source_file_type == 1:     # MHA
+        elif self._config.source_file_type == 1 or self._config.source_file_type == 2:     # MHA or MHD
             reader = vtk.vtkMetaImageReader()
-        elif self._config.source_file_type == 2:     # GIPL.
+        elif self._config.source_file_type == 3:     # GIPL.
             #GIPL needs an ITK reader, and that needs an explicit type
             if self._config.source_forced_numerical_type == 0:  #auto
 
@@ -148,13 +150,9 @@ class batchConverter(
             elif self._config.source_forced_numerical_type == 2:   #short
                 reader = itk.ImageFileReader.ISS3.New()
                 self._config.source_numerical_type = 2
-            elif self._config.source_forced_numerical_type == 3:   #unsigned char
+            elif self._config.source_forced_numerical_type == 3 or self._config.source_forced_numerical_type == 4:   #unsigned char
                 reader = itk.ImageFileReader.IUC3.New()
                 self._config.source_numerical_type = 3
-            elif self._config.source_forced_numerical_type == 4:   #char
-                self._config.source_numerical_type = 4
-                reader = None
-                raise Exception('ITK reader cannot currently handle type (char)')
             else:
                 raise Exception('Undefined input data type with numerical index %d' % self._config.source_forced_numerical_type)
         else:
@@ -205,10 +203,8 @@ class batchConverter(
                     caster.SetOutputScalarTypeToFloat()
                 elif self._config.target_numerical_type == 2:    #short
                     caster.SetOutputScalarTypeToShort()
-                elif self._config.target_numerical_type == 3:    #unsigned char
+                elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4:    #unsigned char
                     caster.SetOutputScalarTypeToUnsignedChar()
-                elif self._config.target_numerical_type == 4:    #char
-                    caster.SetOutputScalarTypeToChar()
 
             if target_is_vtk:
                 if caster == None:
@@ -225,12 +221,10 @@ class batchConverter(
                     converter = itk.VTKImageToImageFilter[itk.Image.F3].New()
                 elif self._config.target_numerical_type == 2:    #short
                     converter = itk.VTKImageToImageFilter[itk.Image.SS3].New()
-                elif self._config.target_numerical_type == 3:    #unsigned char
+                elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4:    #unsigned char
                     converter = itk.VTKImageToImageFilter[itk.Image.UC3].New()
-                elif self._config.target_numerical_type == 4:    #char -> we convert to signed short (due to lack of char support)
-                    converter = itk.VTKImageToImageFilter[itk.Image.SS3].New()
                 else:
-                    raise Exception('Conversion of VTK to ITK (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                    raise Exception('Conversion of VTK %s to ITK not currently supported.' % data_types_by_number[source_dt])
 
                 if caster == None:
                     converter.SetInput(input_data)
@@ -256,29 +250,26 @@ class batchConverter(
                 if self._config.source_numerical_type == 1:       #float
                     if self._config.target_numerical_type == 2:   #short
                         caster = itk.CastImageFilter.IF3ISS3()
-                    elif self._config.target_numerical_type == 3: #unsigned char
+                    elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4: #unsigned char
                         caster = itk.CastImageFilter.IF3IUC3()
                     else:
-                        raise Exception('Conversion of ITK (float) to (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                        raise Exceception('Error - this case should not occur!')
 
                 if self._config.source_numerical_type == 2:       #short
                     if self._config.target_numerical_type == 1:   #float
                         caster = itk.CastImageFilter.ISS3IF3()
-                    elif self._config.target_numerical_type == 3: #unsigned char
+                    elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4: #unsigned char
                         caster = itk.CastImageFilter.ISS3IUC3()
                     else:
-                        raise Exception('Conversion of ITK (short) to (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                        raise Exceception('Error - this case should not occur!')
 
-                if self._config.source_numerical_type == 3:       #unsigned short
+                if self._config.source_numerical_type == 3 or self._config.source_numerical_type == 4:       #unsigned short
                     if self._config.target_numerical_type == 1:   #float
                         caster = itk.CastImageFilter.IUC3IF3()
                     elif self._config.target_numerical_type == 2: #short
                         caster = itk.CastImageFilter.IUC3ISS3()
                     else:
-                        raise Exception('Conversion of ITK (ushort) to (%s) is currently not supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
-                        
-                else:
-                    raise Exception('Conversion of ITK (%s) is currently not supported.' % self._config.data_types_by_number[self._config.source_numerical_type])
+                        raise Exceception('Error - this case should not occur!')
 
                 caster.SetInput(input_data)
 
@@ -297,12 +288,10 @@ class batchConverter(
                     converter = itk.ImageToVTKImageFilter[itk.Image.F3].New()
                 elif self._config.target_numerical_type == 2:    #short
                     converter = itk.ImageToVTKImageFilter[itk.Image.SS3].New()
-                elif self._config.target_numerical_type == 3:    #unsigned char
+                elif self._config.target_numerical_type == 3 | self._config.target_numerical_type == 4:    #unsigned char
                     converter = itk.ImageToVTKImageFilter[itk.Image.UC3].New()
-                elif self._config.target_numerical_type == 4:    #char handled as signed short
-                    converter = itk.VTKImageToImageFilter[itk.Image.SS3].New()                    
                 else:
-                    raise Exception('Conversion of ITK to VTK (%s) not currently supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                    raise Exception('Conversion of ITK %s to VTK not currently supported.' % data_types_by_number[source_dt])
 
                 data_to_convert = None
                 if caster == None:
@@ -339,22 +328,35 @@ class batchConverter(
             writer = vtk.vtkMetaImageWriter()
             writer.SetCompression(True)
             writer.SetFileDimensionality(3)
-        elif self._config.target_file_type == 2:     # GIPL. We assume floating point values.
+        elif self._config.target_file_type == 2:     # MHD
+            writer = vtk.vtkMetaImageWriter()
+            writer.SetCompression(False)
+            writer.SetFileDimensionality(3)            
+        elif self._config.target_file_type == 3:     # GIPL. We assume floating point values.
             if self._config.target_numerical_type == 1:      #float
                 writer = itk.ImageFileWriter.IF3.New()
             elif self._config.target_numerical_type == 2:    #short
                 writer = itk.ImageFileWriter.ISS3.New()
-            elif self._config.target_numerical_type == 3:    #unsigned char
+            elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4:    #unsigned char
                 writer = itk.ImageFileWriter.IUC3.New()
-            elif self._config.target_numerical_type == 4:    #handling char as signed short
-                writer = itk.ImageFileWriter.ISS3.New()
             else:
-                raise Exception('Writing ITK (%s) is not currently supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                raise Exception('Writing ITK %s is not currently supported.' % data_types_by_number[source_dt])
         else:
             raise Exception('Undefined file type with numerical index %d' % self._config.target_file_type)
 
+        final_data = data
+        if self._config.target_numerical_type == 4:
+            th = vtk.vtkImageThreshold()
+            th.ThresholdByLower(0.0)
+            th.SetInValue(0.0)
+            th.SetOutValue(1.0)
+            th.SetOutputScalarTypeToUnsignedChar()
+            th.SetInput(data)
+            th.Update()
+            final_data = th.GetOutput()        
+            
         #Write the output
-        writer.SetInput(data)
+        writer.SetInput(final_data)
         writer.SetFileName(target_file_path)
         print "Writing %s ..." % target_file_path
         writer.Write()
