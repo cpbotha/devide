@@ -27,7 +27,7 @@ class batchConverter(
         self._config.delete_after_conversion = False
 
         #Make sure that the values below match the definitions in the config list!
-        self._config.extensions = {0 : '.vti', 1 : '.mha', 2 : '.mhd', 3 : 'gipl'}
+        self._config.extensions = {0 : '.vti', 1 : '.mha', 2 : '.mhd', 3 : '.gipl'}
         self._vtk_data_types = (0, 1, 2)   #The list of the above extensions which are VTK types
 
         #Make sure that these two dictionaries match the definitions in the config list!
