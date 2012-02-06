@@ -71,11 +71,16 @@ class shellSplatSimple(IntrospectModuleMixin,
             del self._view_frame
 
     def get_input_descriptions(self):
-	return ('input image data', 'optional gradient image data')
+        return ('input image data', 'optional gradient image data')
 
     def set_input(self, idx, inputStream):
         if idx == 0:
-            self._splatMapper.SetInput(inputStream)
+            if inputStream is None:
+                # we have to disconnect this way
+                self._splatMapper.SetInputConnection(0, None)
+            else:
+                self._splatMapper.SetInput(inputStream)
+
         else:
             self._splatMapper.SetGradientImageData(inputStream)
 
