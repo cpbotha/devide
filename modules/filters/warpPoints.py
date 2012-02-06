@@ -66,7 +66,10 @@ class warpPoints(ScriptedConfigModuleMixin, InputArrayChoiceMixin,
         return ('VTK points/polydata with vector attribute',)
 
     def set_input(self, idx, inputStream):
-        self._warpVector.SetInput(inputStream)
+        if inputStream is None:
+            self._warpVector.SetInputConnection(0, None)
+        else:
+            self._warpVector.SetInput(inputStream)
 
     def get_output_descriptions(self):
         return ('Warped data',)
