@@ -27,6 +27,8 @@ class ITKReader(ScriptedConfigModuleMixin, ModuleBase):
         wild_card_string = 'Meta Image all-in-one (*.mha)|*.mha|' \
                          'Meta Image separate header/data (*.mhd)|*.mhd|' \
                          'Analyze separate header/data (*.hdr)|*.hdr|' \
+                         'NIfTI (*.nii)|*.nii|' \
+                         'NIfTI compressed (*.nii.gz)|*.nii.gz|' \
                          'All files (*)|*'
         config_list = [
             ('Filename:', 'filename', 'base:str', 'filebrowser',

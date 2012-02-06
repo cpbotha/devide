@@ -21,6 +21,8 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
         wildCardString = 'Meta Image all-in-one (*.mha)|*.mha|' \
                          'Meta Image separate header/data (*.mhd)|*.mhd|' \
                          'Analyze separate header/data (*.hdr)|*.hdr|' \
+                         'NIfTI (*.nii)|*.nii|' \
+                         'NIfTI compressed (*.nii.gz)|*.nii.gz|' \
                          'All files (*)|*'
 
         # we now have a viewFrame in self._viewFrame
