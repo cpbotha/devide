@@ -6,24 +6,12 @@
 
 import re
 
-# the current revision of THIS file
-SVN_REVISION_TEXT = "$Revision$"
-# updated stamp to have SVN_REVISION_TEXT updated.  This is mostly
-# only relevant for DEV builds.
-STAMP = "20110311-1256"
-
 # the main release version: year.month (ubuntu-style) on release
 # branches (the branch is also named vYEAR.MONTH), DEV for trunk
 VERSION = "DEV"
 
-try:
-    SVN_REVISION = re.match("\$Revision: ([0-9]+) \$", 
-            SVN_REVISION_TEXT).group(1)
-except Exception, e:
-    SVN_REVISION = 'xXx'
-
 # if built with johannes, the SVN_REVISION part might be rewritten.
-DEVIDE_VERSION = '%s.%s' % (VERSION, SVN_REVISION)
+DEVIDE_VERSION = '%s' % (VERSION,)
 
 # standard Python imports
 import getopt
