@@ -120,7 +120,12 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
             self._input.Update()
                 
             self._writer.SetInput(self._input)
-            self._writer.SetFileName(self._config.filename)
+            # filename is unicode, ITK bombs out with:
+            # Unable to execute part 0 of module dvm2 (ITKWriter): invalid null reference in method 'itkImageFileWriterIF3_SetFileName', argument 2 of type 'std::string const &'
+            # so we have to down-convert.
+            # see bug report http://code.google.com/p/devide/issues/detail?id=203
+            self._writer.SetFileName(str(self._config.filename))
+
             # activating this crashes DeVIDE *BOOM*
             #self._writer.GetImageIO().SetUseCompression(True)
             self._writer.Write()
