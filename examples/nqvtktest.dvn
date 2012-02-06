@@ -1,0 +1,32 @@
+[connections/1]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm2
+input_idx = 1
+source_instance_name = Patient03-textured.vtp
+
+[connections/0]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm2
+input_idx = 0
+source_instance_name = Patient00-textured.vtp
+
+[modules/Patient00-textured.vtp]
+module_name = modules.readers.vtpRDR
+module_config_dict = {'filename': 'D:\\Data\\Luca\\PolyDataG0\\Patient00-textured.vtp'}
+glyph_position = (-327.88671023965139, 98.583877995642723)
+
+[general]
+export = False
+
+[modules/dvm2]
+module_name = modules.viewers.CodeRunner
+module_config_dict = {'execute_src': u'# IMPORTANT: we can only add NQVTK data when the GL context is \r\n# created, initialized AND made current\r\nwidget.InitializeIfNecessary()\r\nwidget.SetCurrent()\r\n\r\nadapter.SetSurface(0, obj.inputs[0]);\r\nadapter.SetSurfaceColor(0, 1.0, 0.5, 0.0, 0.3)\r\nadapter.SetSurface(1, obj.inputs[1]);\r\nadapter.SetSurfaceColor(1, 0.0, 0.5, 1.0, 0.3)\r\n', 'scratch_src': u'', 'setup_src': u'import wx\r\nimport vtk\r\nimport vtktud\r\nfrom vtktud.wx.wxNQVTKWindow import wxNQVTKWindow\r\n\r\nadapter = vtktud.vtkNQVTKIBISAdapter()\r\n\r\n# create the top-level frame, sizer and wxVTKRWI\r\nframe = wx.Frame(None, -1, "NQVTK window", size=(400,400))\r\nwidget = wxNQVTKWindow(frame, -1, adapter)\r\nsizer = wx.BoxSizer(wx.VERTICAL)\r\nsizer.Add(widget, 1, wx.EXPAND)\r\nframe.SetSizer(sizer)\r\nframe.Layout()\r\n\r\n# show the window\r\nframe.Show()\r\n'}
+glyph_position = (-110.02178649237463, -72.185185185185105)
+
+[modules/Patient03-textured.vtp]
+module_name = modules.readers.vtpRDR
+module_config_dict = {'filename': 'D:\\Data\\Luca\\PolyDataG0\\Patient03-textured.vtp'}
+glyph_position = (-10.8932461873638, 94.226579520697129)
+

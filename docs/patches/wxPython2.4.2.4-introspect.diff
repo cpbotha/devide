@@ -1,0 +1,13 @@
+--- introspect.py.orig	Thu Jul 15 10:28:08 2004
++++ introspect.py	Thu Jul 15 10:29:13 2004
+@@ -61,6 +61,10 @@
+     for item in attributes:
+         dict[item] = None
+     attributes = dict.keys()
++    # we have to remove all non-string items from the attributes list
++    # some wrappings (e.g. ITK + CableSwig) add non-string attribute names
++    attributes = [attribute for attribute in attributes
++                  if type(attribute) == types.StringType]
+     attributes.sort(lambda x, y: cmp(x.upper(), y.upper()))
+     if not includeSingle:
+         attributes = filter(lambda item: item[0]!='_' \

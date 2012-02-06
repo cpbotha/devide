@@ -1,0 +1,270 @@
+This is Release 11.x
+
+Changes since previous release (9.8.3784)
+ * Main user interface has been greatly improved based on advice by 
+   Dr. Gerwin de Haan.
+ * Updated to Python 2.7.1, wxPython 2.8.11.0, VTK 5.6.1, ITK 3.20, 
+   GDCM 2.0.17, numpy 1.5.1, matplotlib 1.0.1
+ * Due to VTK 5.6: GPU Raycasting! (VolumeRender module)
+ * The Windows64 binaries now also contain numpy and matplotlib, thanks to
+   Christoph Gohlke.
+ * slice3dVWR refactor has been initiated. Started by:
+   - You can now remove a primary image input, remaining inputs will
+     re-arrange themselves automatically.
+   - Fixing bug where empty image input would result in non-recoverable bad
+     module state.
+   - Fixing bug where orientation marker would slow down volume rendering
+   interaction.
+ * VTKConfig.cmake and VTKLibraryDepends.cmake that ship are ready
+   for building external VTK libraries based on the DRE. No editing required
+   as was the case for DeVIDE 9.8.
+ * johannes now supports versioned dependencies. For example, you can have
+   one project using vtk 5.4.2 ("VTK") and another using 5.6.1 ("VTK56")
+ * johannes now supports per-project configurations, thus making it useful as
+   generic build-system.  In other words, if you just want something that can
+   build VTK and ITK and some of your own stuff, you're in the right place!
+
+Changes since previous release (9.1.3361)
+ * The DeVIDE Runtime Environment (DRE): The DRE is a super delicious
+   Python distribution that is able to run your applications too.
+   DeVIDE itself is also a just such an application, or a DRE
+   application module (DREAM).
+ * Binaries also on Windows 64, albeit without numpy and matplotlib.
+ * Fixing of great big multi-threading bug (deadlock) between Python and
+   VTK with exception handling.
+ * I promised myself that I wouldn't, but somehow I managed to upgrade
+   to the fantastic new swig-only WrapITK 0.3.0.  This means that your
+   ITK experience will be 145% improved!
+ * Online help has been moved to the Google Code wiki (F1 will start
+   your browser).
+ * You can now drop a dragged output connection anywwhere on a glyph.
+   It will connect it to the first available input port.
+ * Tweaked appearance of glyphs and canvas.  Now 20% prettier.
+ * New command-line switch: --load-network - use this to get DeVIDE to
+   load a network at startup.  Useful if you're developing C++ modules
+   and have to restart DeVIDE often.
+ * CoMedI viewer module for Comparative Medical Imaging.  Work in
+   progress.
+ * landmarkTransform module greatly improved.  You can now add
+   landmarks in any combination at either or both of the input ports.
+   Points will be matched on name.
+ * Pure-Python MarschnerLobb module for generating Marschner Lobb
+   volumes.
+ * ICPTransform module for performing Iterative Closest Point
+   transformation between two meshes.
+ * glyphs, warpVectors and streamTracer modules improved with regards
+   to the selection of input vectors.
+ * Upraded to Python 2.6.2, wxPython 2.8.10.1, VTK 5.4.2, ITK 3.0.14,
+   GDCM 2.0.12, numpy 1.3.0, matplotlib 0.98.5.3.
+
+Changes since previous release (8.5.3085)
+ * Volume rendering functionality greatly improved.  VolumeRender now
+   has the vtkFixedPointVolumeRaycastMapper as default (trust me, it's
+   better).  You can now also use the TFEditor to edit and create
+   great new transfer functions!  (send me the nice ones)
+ * DVN format radically changed.  It's now human-readable/editable as
+   well as more robust.  Maintaining backwards compatibility in the 
+   future, even through radical software updates, will be much easier.  
+   Use this snippet to convert old-style DVNs to new-style:
+   http://code.google.com/p/devide/source/browse/trunk/devide/
+   snippets/convert_dvn.py
+ * You can now specify your own module directories with
+   --extra-module-paths
+ * FastSurfaceToDistanceField module incorporating Mauch's fast CPT /
+   distance field algorithm.  Thanks to Stef Busking for most of the
+   work creating the necessary VTK classes.
+ * QuickInfo module to describe your data.
+ * CPT distance field (EXPERIMENTAL)
+ * The DICOMBrowser shows a progress dialog whilst scanning your DICOM
+   files.  This keeps frustration under control when scanning large
+   repositories.  You can also cancel the scan if it takes too long.
+ * There is now an export mode for DVN files: this changes all
+   file and path names to be relative to the directory containing the
+   DVN file, if they are somewhere below that directory.  This makes
+   it easy to transport complete packages containing datasets and DVN
+   files.
+ * Upgraded to VTK 5.2.1, ITK 3.10.2, gdcm 2.0.10, numpy 1.2.1, 
+   matplotlib 0.98.5.2, Python 2.5.4
+ * Numerous internal code-cleanups.
+
+Changes since previous release (8.2.2807)
+ * DICOMBrowser: you can now visually browse your complete local DICOM
+   database! See http://www.youtube.com/watch?v=iLfu6JXkWP4 for a
+   demonstration. 
+ * New DICOMReader and DICOMWriter modules.  Both of these are based
+   on GDCM2.  You can drag-and-drop series or files from the
+   DICOMBrowser onto the DICOMReader.  You can also write arbitrary
+   volume datasets to DICOM slices or multi-frame files.  The old
+   dicomRDR is still the default if you drag and drop DCM files onto
+   the canvas, but in future versions DICOMReader will become the new
+   default.
+ * EditMedicalMetaData module: use this to edit or add medical meta
+   data (patient name, study description, etc.) before saving to
+   DICOM.
+ * Integrated GDCM2 DICOM library, in addition to existing DCMTK support
+ * Font rendering in the Graph Editor has been greatly improved (it's
+   still ugly, but now consistently so).
+ * UI improvements to the Graph Editor, e.g. larger connection ports,
+   feedback on connections when dragging a glyph.
+ * Your network now remembers the last filename it was saved to (or
+   loaded from) and proudly displays it in the title bar.
+ * If your network has a filename, it will auto-save (to
+   filename-autosave.dvn) before every execute.  
+ * Module view-config buttons have been simplified: you now have
+   Execute (ctrl-enter), OK (enter), Cancel and Apply.
+ * Upgraded to ITK 3.6, Python 2.5.2.
+
+Changes since previous release (2571 - Mon Sep 10 14:35:31 WEST 2007)
+ * 8.2 is the first open source release!
+ * Hybrid scheduler integrated, see our SimVis 2008 paper.
+ * Upgraded to: Python 2.5.1, wxPython 2.8.7.1, VTK 5.1 (ParaView-3-2-1 tag), 
+   ITK 3.4, numpy 1.0.4, matplotlib 0.91.2
+ * Brand-spanking new (read: fullabugs) OpenGL/VTK graph editor.
+   Zooming and panning on your graphics hardware.  150% sexier.
+ * Ported johannes (homegrown DeVIDE build system) to Windows.  DeVIDE builds
+   are now as consistent as possible across all platforms.
+ * Switched to config file instead of Python file for storing default
+   options.
+
+Changes since Release 2556 - Thu Sep  6 22:53:32 WEST 2007
+ * Scheduler now uses monotonically increasing counter instead of
+   system timer for keeping track of dirty modules.  The old way could
+   cause strange behaviour under some really obscure circumstances.
+   This new way is More Better(tm).
+ * Now using HelpMaker for help file authoring, generating CHM and HTB
+   (kinda) file.  DeVIDE selects the file based on operating system.
+ * Extended help documentation. *gasp*
+ * Added more unit tests, killed more bugs.
+
+Changes since Release 2543 - Sun Sep  2 19:15:16 WEST 2007
+ * Bug fix to VTK error-to-Python-exception code
+ * Added unit test for above-mentioned ProgressEvent masks
+   RuntimeError bug.
+ * Fixes to DICOM reader logic.
+ * Fixes to Measure2D.
+ * Fixes to numpy_kit: on systems with a Python+numpy installation, it could
+   import modules from the system installation instead of the shipping
+   kit.  Also added tests to make sure this doesn't happen again.
+
+Changes since ng1phase1 6.8.7 T
+
+ * Upgraded to ITK 3.2 (with WrapITK) and VTK 5.1 (pv-3-0 branch) !
+ * Highlights of new modules: 
+   - RegionGrowing: module emulates what MeVisLab regiongrowing does
+   - FitEllipsoidToMask: module that calculates a best fit ellipsoid 
+     given an image mask
+   - PassThrough: can be used as a fan-out cache (see the help)
+   - Measure2D: initial work on an interactive measurement tool for 2D
+     medical images.
+ * Tuned surface model appearance in slice3dVWR.  Now appears
+   to be completely tuned.
+ * Funky gradient background in slice3dVWR.  Enhances tuned
+   appearance.
+ * You can now drop files on existing modules: if they have a filename
+   attribute in the config, this will be modified.
+ * More tests in the unit testing framework.
+ * Complete build-system (johannes) available on *ix that can build
+   DeVIDE from scratch (given a fast network connection).  Use this
+   if you need the complete development environment.
+ * module_kits that support this API call can now be refreshed.
+ * Many fixes and improvements for ASCI A17 course.
+ * Finally fixed ancient 9-pixel offset routing bug thanks to Ork de
+   Rooij, Jorik Blaas and Maarten Loeffler.
+ * WrapITK: threw out unsigned short (0..65535) support, activated
+   signed short (-32768..32767) support.  This makes more sense for
+   for example DICOM datasets.
+ * slice3dVWR passes an instance of itself to its output.  Thanks Paul!
+ * CodeRunner now generates real exceptions during network execution
+   only.
+
+Changes since ng1phase1 6.3.9 (released on 9 march 2006):
+
+ * New unified interface with dockable windows.  Thanks to Gerwin de
+   Haan (g.dehaan|at|ewi.tudelft.nl) for significant conceptual
+   contributions to the new interface and the module quick search
+   described below!
+ * Module quick search.  (searches in module metadata: name, keywords,
+   help).  Create a module by pressing <ENTER> when you've found the 
+   module that you're looking for.  Up and down arrows select other
+   modules in the search results list.  You can hot-key to the module
+   search with Ctrl-F.
+ * Revamped Python|Shell introspection facility with multi-file tabbed
+   editor.
+ * the CodeRunner module.  Try it, you'll like it.
+ * All DLLs are explicitly rebased on Windows, resulting in faster
+   startup and significantly less memory use.
+ * Upgraded to ITK 2.8, and...
+ * WrapITK integration!  This next-generation wrapping interface makes
+   working with ITK fun.  Really.
+ * numpy, matplotlib and statistics kits
+    - you can now generate Matlab-quality figures in DeVIDE
+      (try some demos out by Main Menu | Window | Python Shell then
+       File | Open and select matplotlib_demo 1 2 and 3 from the
+       devide/snippets directory.  Execute a demo with File | Run
+       current edit in the Python Shell)
+    - numpy has some really fast matrix and linear algebra routines
+    - statistics contains a number of useful stats routines
+ * Modules can be blocked/unblocked from execution.  Select a module
+   or modules and right click to see the block/unblock commands.
+ * DICOM support much improved
+   . See also LR|AP|HF block in slice3dVWR
+   . Much more memory efficient
+ * Better VTK error handling.
+ * Much improved ITK to to VTK conversion.
+ * New and improved About window.
+ * Central help documentation (F1) ever so slightly updated.
+ * As always, various bug fixes.
+
+Changes since 20050330:
+
+ * Total conversion from demand driven to event driven.
+   - we now do all our own scheduling
+   - what this means to the user: you HAVE to press F5 in the Graph Editor, 
+     or select Network|Execute from the menu, or press the execute button
+     on any of the module configuration dialog boxes to execute a network.
+   - some modules, such as the slice3dVWR, explicitly request execution
+     of the network whilst you're interacting.  This is by design.
+ * Updated to VTK 5.0 and ITK 2.4.1.
+ * All WX functionality has been factored out of the DeVIDE core.  This is
+   part of the DeVIDE NG1 Phase 2 planning.
+ * Introduced concept of module_kits, a generic way for adding libraries
+   (such as VTK or ITK) to DeVIDE.
+ * Module "in-place" reload feature added.  Right click on module for
+   pop-up menu, select "Reload".
+ * Graph Editor:
+   - starts up by default
+   - module palette merged back into main interface
+ * Updates and fixes for 64 bit Linux build
+ * On Windows XP machines with the XP look active, DeVIDE should also have
+   this look and feel.
+ * Upgraded from wxPython 2.4.2.4 to wxPython 2.6.2.1.
+ * Worked around nasty NVIDIA driver bug on Linux (some machines, all 
+   driver versions from 6107 to 7667)
+ * More unit tests added.
+ * modules directory structure more consistent.
+
+Changes since 20041201:
+
+ * DeVIDE ITK installer now creates two icons on desktop: one for DeVIDE
+   with ITK and the other for DeVIDE without ITK.
+ * You can now run DeVIDE on your quad-buffered stereo devide (e.g.
+   PowerWall, CrystalEyes): startup with --stereo parameter, press '3' while
+   render window focused.
+ * Main help file extended: see new entries under "Useful patterns".  Other
+   documentation also updated.
+ * Opacity of slices in slice3dVWR can now be changed from slices menu.
+ * More flow visualization: amongst other additions, slice3dVWR now has a
+   slice polydata output; this can be fed through a probe and a glyph back into
+   the slice3dVWR to visualise flow directly on all slices.  See help under
+   "Useful patterns".
+ * Many advanced volume curvature modules coded and added by Joris van
+   Zwieten.  See userModules: imageCurvature, imageCurvatureMagnitude,
+   imageEigenvectors, imageGradientStructureTensor, etc.
+ * Now incorporating VTK ParaView-2-0-2: Cutting, but not bleeding, edge.
+   We're on our way to VTK 5.0.   
+ * Unit tests greatly extended, many bugs killed in the process.
+ * Build system improved.
+ * Fixed long-standing bug in slice3dVWR on Linux where render part would be
+   incorrectly sized at module instantiation.
+ * Fixed graphEditor wrong focus on drop bug.
+ 
