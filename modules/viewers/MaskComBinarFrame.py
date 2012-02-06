@@ -95,7 +95,7 @@ class MaskComBinarFrame(wx.Frame):
 #                id=views_max_image_id)
 
     def close(self):
-       self.Destroy()
+        self.Destroy()
 
     def _create_menubar(self):
         self.menubar = wx.MenuBar()
@@ -117,6 +117,10 @@ class MaskComBinarFrame(wx.Frame):
         self.id_save_mask = wx.NewId()
         menu_file.Append(self.id_save_mask, "&Save Mask\tCtrl-S",
                 "Save a mask", wx.ITEM_NORMAL)
+
+        self.id_save_multi_mask = wx.NewId()
+        menu_file.Append(self.id_save_multi_mask, "&Save multilabel Mask\tCtrl-Alt-S",
+                "Save selected (A) to multi-label (integer-labeled) mask", wx.ITEM_NORMAL)
 
         self.id_quit = wx.NewId()
         menu_file.Append(self.id_quit, "&Exit\tCtrl-Q",
@@ -324,9 +328,9 @@ class MaskComBinarFrame(wx.Frame):
         return [(dlg.ShowModal() == wx.ID_OK), dlg.GetValue()]
 
     def copy_text_to_clipboard(self, text_message):
-       clipdata = wx.TextDataObject()
-       clipdata.SetText(text_message)
-       wx.TheClipboard.Open()
-       wx.TheClipboard.SetData(clipdata)
-       wx.TheClipboard.Close()
-       print 'Text copied to clipboard: %s' % text_message
+        clipdata = wx.TextDataObject()
+        clipdata.SetText(text_message)
+        wx.TheClipboard.Open()
+        wx.TheClipboard.SetData(clipdata)
+        wx.TheClipboard.Close()
+        print 'Text copied to clipboard: %s' % text_message

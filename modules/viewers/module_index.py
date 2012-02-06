@@ -137,6 +137,10 @@ class MaskComBinar:
     
     Metro can be downloaded from http://vcg.sourceforge.net/index.php/Metro   
     
+    Known bug: Under some circumstances the module gets confused with pre-computed 3D isosurfaces (for display purposes).
+    This can make the module use (leak) working memory, or cause the wrong isosurface to be displayed. 
+    The output is unaffected (to our knowledge).    
+    
     (Module by Francois Malan)"""
     
 class Measure2D:

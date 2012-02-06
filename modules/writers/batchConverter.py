@@ -224,7 +224,7 @@ class batchConverter(
                 elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4:    #unsigned char
                     converter = itk.VTKImageToImageFilter[itk.Image.UC3].New()
                 else:
-                    raise Exception('Conversion of VTK %s to ITK not currently supported.' % data_types_by_number[source_dt])
+                    raise Exception('Conversion of VTK %s to ITK not currently supported.' % data_types_by_number[self._config.source_file_type])
 
                 if caster == None:
                     converter.SetInput(input_data)
@@ -288,11 +288,11 @@ class batchConverter(
                     converter = itk.ImageToVTKImageFilter[itk.Image.F3].New()
                 elif self._config.target_numerical_type == 2:    #short
                     converter = itk.ImageToVTKImageFilter[itk.Image.SS3].New()
-                elif self._config.target_numerical_type == 3 | self._config.target_numerical_type == 4:    #unsigned char
+                elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4:    #unsigned char
                     converter = itk.ImageToVTKImageFilter[itk.Image.UC3].New()
-                else:
-                    raise Exception('Conversion of ITK %s to VTK not currently supported.' % data_types_by_number[source_dt])
-
+                else:                    
+                    raise Exception('Conversion of ITK %s to VTK not currently supported.' % self._config.data_types_by_number[self._config.target_numerical_type])
+                
                 data_to_convert = None
                 if caster == None:
                     data_to_convert = input_data
@@ -340,7 +340,7 @@ class batchConverter(
             elif self._config.target_numerical_type == 3 or self._config.target_numerical_type == 4:    #unsigned char
                 writer = itk.ImageFileWriter.IUC3.New()
             else:
-                raise Exception('Writing ITK %s is not currently supported.' % data_types_by_number[source_dt])
+                raise Exception('Writing ITK %s is not currently supported.' % data_types_by_number[self._config.source_file_type])
         else:
             raise Exception('Undefined file type with numerical index %d' % self._config.target_file_type)
 
@@ -404,8 +404,7 @@ class batchConverter(
             #Read the input file
             source_file_name = '%s%s' % (file_prefix, source_file_type_str)
             source_file_path = os.path.join(self._config.source_folder, source_file_name)
-            input_data = self._read_input(source_file_path)
-
+            input_data = self._read_input(source_file_path)        
             converted_data = self._convert_input(input_data)
 
             target_file_name = '%s%s' % (file_prefix, target_extension_str)

@@ -12,6 +12,10 @@ class batchConverter:
     or target files should be automatically overwritten (be careful 
     with these settings!)
     
+    Known bug: writing to GIPL (forced binary uchar) will result in a thrown exception.
+    Circumvent this by first casting to binary uchar when writing to VTI, and then
+    converting to GIPL in a second pass.
+    
     (Module by Francois Malan)"""
 
 class cptBrepWRT:
