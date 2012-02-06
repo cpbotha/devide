@@ -308,7 +308,7 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
             self._file_dialog = wx.FileDialog(
                 self._view_frame,
                 'Select files to add to the list', "", "",
-                "DICOM files (*.dcm)|*.dcm|All files (*)|*",
+                "DICOM files (*.dcm)|*.dcm|DICOM files (*.img)|*.img|All files (*)|*",
                 wx.OPEN | wx.MULTIPLE)
             
         if self._file_dialog.ShowModal() == wx.ID_OK:
