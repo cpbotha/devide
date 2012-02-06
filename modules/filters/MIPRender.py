@@ -56,11 +56,17 @@ class MIPRender(
         del self._volume
 
     def get_input_descriptions(self):
-	return ('input image data', 'transfer functions')
+        return ('input image data', 'transfer functions')
 
     def set_input(self, idx, inputStream):
         if idx == 0:
-            self._volume_mapper.SetInput(inputStream)
+            if inputStream is None:
+                # disconnect this way, else we get:
+                # obj._volume_mapper.SetInput(None)
+                # TypeError: ambiguous call, multiple overloaded methods match the arguments 
+                self._volume_mapper.SetInputConnection(0, None)
+            else:
+                self._volume_mapper.SetInput(inputStream)
             
         else:
             pass
