@@ -174,11 +174,13 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
         mask = self.masks[mask_name]
         mask.file_path = file_path
-
-        filename = os.path.split(file_path)[1]
-
-        writer = None
+        self._save_image_to_file(mask.data, file_path)
+        print 'Wrote mask %s to %s' % (mask_name, file_path)
+            
+    def _save_image_to_file(self, imagedata, file_path):
+        filename = os.path.split(file_path)[1]        
         extension = os.path.splitext(filename)[1]
+        writer = None
         if extension == '.vti':       # VTI
             writer = vtk.vtkXMLImageDataWriter()
         elif extension == '.mha':     # MHA
@@ -189,8 +191,8 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             self._view_frame.dialog_error('Unknown file extension: %s' % extension, 'Unable to handle extension')
             return
         
-        writer.SetInput(mask.data)
-        writer.SetFileName(mask.file_path)
+        writer.SetInput(imagedata)
+        writer.SetFileName(file_path)
         writer.Update()
         result = writer.Write()
         if result == 0:
@@ -198,7 +200,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             print 'ERROR WRITING FILE!!!'
         else:
             self._view_frame.dialog_info('Successfully wrote %s' % filename, 'Success')
-            print 'Successfully wrote %s' % file_path
+            print 'Successfully wrote %s' % file_path        
         
     def add_mask(self, mask):
         [accept, name] = self._view_frame.dialog_inputtext('Please choose a name for the new mask','Choose a name', mask.name)
@@ -422,6 +424,9 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
         vf.Bind(wx.EVT_MENU, self._handler_open_multi_mask,
                 id = vf.id_open_multi_mask)
+        
+        vf.Bind(wx.EVT_MENU, self._handler_save_multi_mask,
+                id = vf.id_save_multi_mask)
 
         vf.Bind(wx.EVT_MENU, self._handler_open_mask_dir,
                 id = vf.id_open_mask_dir)
@@ -609,6 +614,55 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         dlg.Destroy()
         print 'Done!'
 
+    def _specify_output_file_path(self):
+        file_path = None
+        filters = 'Mask files (*.vti;*.mha)|*.vti;*.mha'        
+        dlg = wx.FileDialog(self._view_frame, "Choose a destination", self._config.last_used_dir, "", filters, wx.SAVE)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename=dlg.GetFilename()
+            self._config.last_used_dir=dlg.GetDirectory()
+            file_path = "%s\\%s" % (self._config.last_used_dir, filename)
+        dlg.Destroy()
+        return file_path
+
+    def _handler_save_multi_mask(self, event):
+        """Saves a multi-label mask file"""
+        if self.test_valid_mask_selection_multiple(): 
+            file_path = self._specify_output_file_path()
+            if file_path != None:
+                names_a = self._view_frame.get_selected_mask_names_a()
+                names_b = self._view_frame.get_selected_mask_names_b()
+                names = set()
+                for mask_name in names_a:
+                    names.add(mask_name)
+                for mask_name in names_b:
+                    names.add(mask_name)
+    
+                mask_name = names.pop()
+                imagedata = vtk.vtkImageData() 
+                maskdata = self.masks[mask_name].data
+                imagedata.DeepCopy(maskdata)            
+                
+                k = 1
+                for mask_name in names:
+                    k = k+1
+                    maskdata = self.masks[mask_name].data
+                    imath = vtk.vtkImageMathematics()
+                    imath.SetOperationToMultiplyByK()
+                    imath.SetConstantK(k)  
+                    print 'Multiplying %s with %d and adding to volume' % (mask_name, k)
+                    imath.SetInput(maskdata)
+                    imath.Update()  
+                    adder = vtk.vtkImageMathematics()
+                    adder.SetOperationToAdd()                
+                    adder.SetInput1(imagedata)
+                    adder.SetInput2(imath.GetOutput())
+                    adder.Update()
+                    imagedata.DeepCopy(adder.GetOutput()) 
+                
+                self._save_image_to_file(imagedata, file_path)
+                print 'Wrote multi-label mask with %d labels to %s' % (k, file_path)
+        
     def _handler_save_mask(self, event):
         """Saves a mask file"""
         if self.test_single_mask_selection():
@@ -621,15 +675,11 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             else:
                 mask_name = names_a.pop()
 
-            filters = 'Mask files (*.vti;*.mha)|*.vti;*.mha'
-            dlg = wx.FileDialog(self._view_frame, "Choose a destination", self._config.last_used_dir, "", filters, wx.SAVE)
-            if dlg.ShowModal() == wx.ID_OK:
-                filename=dlg.GetFilename()
-                self._config.last_used_dir=dlg.GetDirectory()
-                file_path = "%s\\%s" % (self._config.last_used_dir, filename)
+            file_path = self._specify_output_file_path()
+            if mask_name != None:
                 self.save_mask_to_file(mask_name, file_path)
-            dlg.Destroy()
-            print 'Done!'
+            else:
+                self._view_frame.dialog_exclaim("No valid file name specified")
 
     def _handler_align_masks_metadata(self, event):
         """Aligns two masks by copying metadata from the first to the second (origin, spacing, extent, wholeextent)
@@ -723,7 +773,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
     def _handler_compute_volume(self, event):
         """Computes the volume of of mask A (in milliliters)"""
-        if self.test_valid_mask_selection_a_only():
+        if self.test_valid_mask_selection_a():
             names_a = self._view_frame.get_selected_mask_names_a()
             union_masksA = self.compute_mask_union(names_a)
 
@@ -1053,11 +1103,11 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         masks_by_spacing = {}
 
         for mask_name in mask_names:
-            mask = self.masks[mask_name].data
-            dimensions = mask.GetDimensions()
-            spacing = mask.GetSpacing()
-            extent = mask.GetExtent()
-            whole_extent = mask.GetWholeExtent()
+            maskdata = self.masks[mask_name].data
+            dimensions = maskdata.GetDimensions()
+            spacing = maskdata.GetSpacing()
+            extent = maskdata.GetExtent()
+            whole_extent = maskdata.GetWholeExtent()
 
             if not masks_by_dimensions.has_key(dimensions):
                 masks_by_dimensions[dimensions] = [str(mask_name)]
@@ -1173,8 +1223,11 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         selectionCountA = self._view_frame.list_ctrl_maskA.GetSelectedItemCount()
         selectionCountB = self._view_frame.list_ctrl_maskB.GetSelectedItemCount()
 
-        if selectionCountA + selectionCountB > 1:
-            self._view_frame.dialog_info("Multiple masks are selected in columns A and/or B.\nThis operation requires a single mask, either in A or B (but not both).","Multiple maks selected - invalid operation")
+        if selectionCountA + selectionCountB == 0:
+            self._view_frame.dialog_info("No masks are selected in either column A or B.\nThis operation requires a single mask, either in A or B.","No masks selected - invalid operation")
+            return False            
+        elif selectionCountA + selectionCountB > 1:
+            self._view_frame.dialog_info("Multiple masks are selected in columns A and/or B.\nThis operation requires a single mask, either in A or B (but not both).","Multiple masks selected - invalid operation")
             return False
         return True
 
@@ -1232,7 +1285,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             return False
         return True
 
-    def test_valid_mask_selection_a_only(self, warn = True):
+    def test_valid_mask_selection_a(self, warn = True):
         selection_count_a = self._view_frame.list_ctrl_maskA.GetSelectedItemCount()
 
         if selection_count_a == 0:
@@ -1241,7 +1294,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             return False
         return True
 
-    def test_valid_mask_selection_b_only(self, warn = True):
+    def test_valid_mask_selection_b(self, warn = True):
         selection_count_b = self._view_frame.list_ctrl_maskB.GetSelectedItemCount()
 
         if selection_count_b == 0:
