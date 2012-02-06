@@ -1099,13 +1099,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             sd = selected_sds[0]
             
         if event.GetWheelRotation() > 0:
-            print delta
             sd.delta_slice(+delta)
-            #self._ipw1_delta_slice(+delta)
+
         else:
-            print -delta
             sd.delta_slice(-delta)
-            #self._ipw1_delta_slice(-delta)
 
         self.render3D()
         #self.ipws[0].InvokeEvent('InteractionEvent')
