@@ -13,6 +13,10 @@ VERSION = "12.2.6"
 # if built with johannes, the SVN_REVISION part might be rewritten.
 DEVIDE_VERSION = '%s' % (VERSION,)
 
+# will be filled in by johannes
+DEVIDE_REVISION_ID = "NOT SET"
+JOHANNES_REVISION_ID = "NOT SET"
+
 # standard Python imports
 import getopt
 import mutex
@@ -107,6 +111,7 @@ class MainConfigClass(object):
         print ""
         print "-h or --help          : Display this message."
         print "-v or --version       : Display DeVIDE version."
+        print "--version-more        : Display more DeVIDE version info."
         print "--config-profile name : Use config profile with name."
         print "--no-kits kit1,kit2   : Don't load the specified kits."
         print "--kits kit1,kit2      : Load the specified kits."
@@ -124,6 +129,10 @@ class MainConfigClass(object):
 
     def disp_version(self):
         print "DeVIDE v%s" % (DEVIDE_VERSION,)
+
+    def disp_more_version_info(self):
+        print "DeVIDE rID:", DEVIDE_REVISION_ID 
+        print "Constructed by johannes:", JOHANNES_REVISION_ID
 
     def _parseCommandLine(self):
         """Parse command-line, return all parsed parameters in
@@ -150,7 +159,7 @@ class MainConfigClass(object):
             # 'p:' means -p with something after
             optlist, args = getopt.getopt(
                 sys.argv[1:], 'hv',
-                ['help', 'version', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
+                ['help', 'version', 'version-more', 'no-kits=', 'kits=', 'stereo', 'interface=', 'test',
                  'script=', 'script-params=', 'config-profile=',
                  'scheduler=', 'extra-module-paths=', 'load-network='])
             
@@ -163,8 +172,12 @@ class MainConfigClass(object):
                 self.dispUsage()
                 sys.exit(0)
 
-            if o in ('-v', '--version'):
+            elif o in ('-v', '--version'):
                 self.disp_version()
+                sys.exit(0)
+
+            elif o in ('--version-more',):
+                self.disp_more_version_info()
                 sys.exit(0)
 
             elif o in ('--config-profile',):
