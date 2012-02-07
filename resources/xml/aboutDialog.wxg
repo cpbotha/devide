@@ -55,7 +55,7 @@
                                     <object class="wxStaticText" name="label_2" base="EditStaticText">
                                         <style>wxALIGN_CENTRE</style>
                                         <attribute>1</attribute>
-                                        <label>DeVIDE is copyright (c) 2002-2011 Charl P. Botha, TU Delft\nAll rights reserved.  See COPYRIGHT for details.\n\nSignificant contributions by:\nJoris van Zwieten, Gerwin de Haan, Stef Busking, \nEmiel van IJsseldijk, Peter Krekel.\n\nhttp://visualisation.tudelft.nl/Projects/DeVIDE</label>
+                                        <label>DeVIDE is copyright (c) 2002-2012 Charl P. Botha, TU Delft\nAll rights reserved.  See COPYRIGHT for details.\n\nSignificant contributions by:\nJoris van Zwieten, Gerwin de Haan, Stef Busking, \nEmiel van IJsseldijk, Peter Krekel, Peter Kok\nFrancois Malan.\n\nhttp://visualisation.tudelft.nl/Projects/DeVIDE</label>
                                     </object>
                                 </object>
                                 <object class="sizeritem">
