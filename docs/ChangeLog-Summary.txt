@@ -1,20 +1,28 @@
-This is Release 11.x
+This is Release 12.2.7
 
 Changes since previous release (9.8.3784)
- * Main user interface has been greatly improved based on advice by 
+ * Main user interface has been further improved based on advice by 
    Dr. Gerwin de Haan.
- * Updated to Python 2.7.1, wxPython 2.8.11.0, VTK 5.6.1, ITK 3.20, 
-   GDCM 2.0.17, numpy 1.5.1, matplotlib 1.0.1
- * Due to VTK 5.6: GPU Raycasting! (VolumeRender module)
+ * Updated to Python 2.7.2, wxPython 2.8.11.0, VTK 5.8.0, ITK 3.20, 
+   GDCM 2.0.17, numpy 1.6.1, matplotlib 1.1
+ * Due to VTK 5.8: GPU Raycasting! (VolumeRender module)
  * The Windows64 binaries now also contain numpy and matplotlib, thanks to
    Christoph Gohlke.
  * slice3dVWR refactor has been initiated. Started by:
+   - Slice through data with mousewheel (click on slice first) or by middle
+     button drag.
    - You can now remove a primary image input, remaining inputs will
      re-arrange themselves automatically.
    - Fixing bug where empty image input would result in non-recoverable bad
      module state.
    - Fixing bug where orientation marker would slow down volume rendering
    interaction.
+ * We ship with pip now. Install any missing Python functionality into your
+   DRE / DeVIDE with "dre shell" and then "pip install whatever_you_want"
+ * Core code has been moved to mercurial. Important parts of your DeVIDE
+   installations (e.g. devide core) are mercurial repositories, meaning you
+   can do in-place upgrades (hg pull -u) and track your own changes to the
+   core.
  * VTKConfig.cmake and VTKLibraryDepends.cmake that ship are ready
    for building external VTK libraries based on the DRE. No editing required
    as was the case for DeVIDE 9.8.
