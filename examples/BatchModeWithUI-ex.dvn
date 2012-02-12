@@ -1,0 +1,87 @@
+[connections/6]
+connection_type = 1
+output_idx = 0
+target_instance_name = vtp_wrt
+input_idx = 0
+source_instance_name = dvm5
+
+[connections/5]
+connection_type = 5
+output_idx = 0
+target_instance_name = dvm4
+input_idx = 2
+source_instance_name = dvm5
+
+[connections/4]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm5
+input_idx = 0
+source_instance_name = threshold
+
+[connections/3]
+connection_type = 5
+output_idx = 0
+target_instance_name = dvm4
+input_idx = 1
+source_instance_name = threshold
+
+[connections/1]
+connection_type = 1
+output_idx = 0
+target_instance_name = threshold
+input_idx = 0
+source_instance_name = dvm3
+
+[modules/threshold]
+module_name = modules.filters.doubleThreshold
+module_config_dict = {'lowerThreshold': 0.0, 'upperThreshold': 100.0, 'replaceOut': 1, 'outputScalarType': -1, 'replaceIn': 1, 'outValue': 0.0, 'inValue': 1.0}
+glyph_position = (-440.20962203259882, -169.97411967571551)
+
+[connections/0]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm3
+input_idx = 0
+source_instance_name = dvm2
+
+[modules/vtp_wrt]
+module_name = modules.writers.vtpWRT
+module_config_dict = {'filename': 'result.vtp'}
+glyph_position = (73.893602765788316, -316.75234346603821)
+
+[modules/dvm5]
+module_name = modules.filters.contour
+module_config_dict = {'iso_value': 0.5}
+glyph_position = (-118.49369965356667, -169.15424366765109)
+
+[modules/dvm4]
+module_name = modules.viewers.slice3dVWR
+module_config_dict = {'savedPoints': [], 'implicitsState': [], 'boundsForPoints': (-1.0158730745315552, 1.0158730745315552, -1.0158730745315552, 1.0158730745315552, -1.0, 1.0)}
+glyph_position = (-507.14604037937295, -437.34272854668347)
+
+[modules/dvm3]
+module_name = modules.misc.implicitToVolume
+module_config_dict = {'computeNormals': 0, 'sampleDimensions': (64, 64, 64), 'modelBounds': (-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)}
+glyph_position = (-554.72481658905053, -16.208925119264023)
+
+[modules/dvm2]
+module_name = modules.misc.superQuadric
+module_config_dict = {'scale': (1.0, 1.0, 1.0), 'center': (0.0, 0.0, 0.0), 'thetaRoundness': 0.80000000000000004, 'toroidal': 1, 'phiResolution': 64, 'thickness': 0.33329999999999999, 'thetaResolution': 64, 'phiRoundness': 0.20000000000000001, 'size': 0.5}
+glyph_position = (-476.12164925034079, 142.43082689686511)
+
+[modules/dvm0]
+module_name = modules.viewers.CodeRunner
+module_config_dict = {'execute_src': u'', 'scratch_src': u'def main():\n    print "CodeRunner batch mode starting"\n\n    # we\'re going to need the module_manager quite often for changing\n    # module configuration and for running the network.\n    mm = obj.module_manager\n\n    # parameter is the module name that you assigned\n    # what\'s returned is module_instance\n    thresh_mod = mm.get_instance(\'threshold\')\n    # then get the config from the module\n    thresh_conf = thresh_mod.get_config()\n    # change the parameters you need\n    thresh_conf.lowerThreshold = 0.0\n    thresh_conf.upperThreshold = 100.0\n    # set module config again\n    thresh_mod.set_config(thresh_conf)\n\n    # get, change and set writer config to change filename\n    writer_mod = mm.get_instance(\'vtp_wrt\')\n    writer_conf = writer_mod.get_config()\n    # this will write result.vtp to your current working directory\n    # change this to the full path if you want it somewhere else\n    writer_conf.filename = \'result.vtp\'\n    writer_mod.set_config(writer_conf)\n\n    # run the network\n    mm.execute_network()\n\n    # I could put the above code in a loop, to use the same network\n    # to process multiple datasets.\n    \n    print "CodeRunner batch mode example done."\nmain()\n', 'setup_src': u''}
+glyph_position = (36.839017460387225, 128.44361388175844)
+
+[general]
+export = False
+
+[connections/2]
+connection_type = 5
+output_idx = 0
+target_instance_name = dvm4
+input_idx = 0
+source_instance_name = dvm3
+

@@ -1,0 +1,26 @@
+/* XPM */
+static char *camera[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 4 1",
+"  c black",
+". c gray50",
+"X c white",
+"o c None",
+/* pixels */
+"oooooo      oooo",
+"ooooo XXXXXX ooo",
+"o    X.   .X   o",
+" XXXX       XXX ",
+" XXXX       XXX ",
+"       ...      ",
+" X..  .XX..  .. ",
+" X..  .X...  .. ",
+" X..  .....  .. ",
+" X...  ...  ... ",
+" X...       ... ",
+" X.....   ..... ",
+" X.....   ..... ",
+"o              o",
+"oooooooooooooooo",
+"oooooooooooooooo"
+};

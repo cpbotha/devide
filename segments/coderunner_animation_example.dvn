@@ -1,0 +1,53 @@
+[modules/dvm4sup4]
+module_name = modules.misc.superQuadric
+module_config_dict = {'scale': (1.0, 1.0, 1.0), 'center': (0.0, 0.0, 0.0), 'thetaRoundness': 0.80000000000000004, 'toroidal': 1, 'phiResolution': 64, 'thickness': 0.33329999999999999, 'thetaResolution': 64, 'phiRoundness': 0.20000000000000001, 'size': 0.5}
+glyph_position = (-731.61739043886814, 633.98958030303015)
+
+[connections/3]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm5lqd5
+input_idx = 1
+source_instance_name = dvm5 (1)
+
+[connections/2]
+connection_type = 5
+output_idx = 1
+target_instance_name = my_sliceviewer
+input_idx = 1
+source_instance_name = dvm4sup4
+
+[connections/1]
+connection_type = 1
+output_idx = 1
+target_instance_name = dvm5lqd5
+input_idx = 0
+source_instance_name = dvm5djr5
+
+[connections/0]
+connection_type = 5
+output_idx = 0
+target_instance_name = my_sliceviewer
+input_idx = 3
+source_instance_name = dvm5lqd5
+
+[modules/my_sliceviewer]
+module_name = modules.viewers.slice3dVWR
+module_config_dict = {'savedPoints': [], 'implicitsState': [], 'boundsForPoints': (1.0, -1.0, 1.0, -1.0, 1.0, -1.0)}
+glyph_position = (-608.34915000000001, 230.19858657622868)
+
+[modules/dvm5 (1)]
+module_name = modules.viewers.CodeRunner
+module_config_dict = {'execute_src': u'#print obj.input_file\r\n\r\nt = vtk.vtkTransform()\r\nt.Identity()\r\nprint obj.example_param\r\nt.RotateX(obj.example_param)\r\nobj.outputs[0] = t\r\n\r\n', 'scratch_src': u"# animation driver script\r\n\r\nimport vtk\r\n\r\ns = obj._moduleManager.get_instance('my_sliceviewer')\r\nri = vtk_get_render_info('my_sliceviewer')\r\n\r\nw2i = vtk.vtkWindowToImageFilter()\r\nw2i.SetInput(ri.renderer.GetRenderWindow())\r\n\r\ncamera = ri.renderer.GetActiveCamera()\r\n\r\navi = vtk.vtkAVIWriter()\r\navi.SetFileName('c:/temp/blaat.avi')\r\navi.SetInput(w2i.GetOutput())\r\navi.Start()\r\n\r\n\r\nfor i in range(360):\r\n    angle = i\r\n    obj.example_param = angle\r\n    obj._moduleManager.modifyModule(obj)\r\n    obj._moduleManager.executeNetwork()\r\n    camera.Azimuth(5)\r\n    s.view()\r\n    w2i.Modified()\r\n    avi.Write()\r\n\r\navi.End()    \r\n", 'setup_src': u'import vtk\r\nprint "running setup"\r\nobj.input_file = \'something_else\'\r\nobj.example_param = 1\r\n'}
+glyph_position = (-208.08493080206927, 642.42139903554073)
+
+[modules/dvm5lqd5]
+module_name = modules.filters.transformPolyData
+module_config_dict = {}
+glyph_position = (-516.70936031780116, 445.09606791938512)
+
+[modules/dvm5djr5]
+module_name = modules.misc.superQuadric
+module_config_dict = {'scale': (1.0, 1.0, 1.5), 'center': (0.20000000000000001, 0.0, 0.0), 'thetaRoundness': 0.80000000000000004, 'toroidal': 1, 'phiResolution': 64, 'thickness': 0.33329999999999999, 'thetaResolution': 64, 'phiRoundness': 0.80000000000000004, 'size': 0.5}
+glyph_position = (-459.42317460453745, 637.95483695456335)
+

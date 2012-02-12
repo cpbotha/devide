@@ -1,0 +1,12 @@
+# dscas3 dsem Geometry description
+# $Id$
+# the bony landmarks and all the surfaces have to be formulated in the same
+# coordinate system.  DSCAS3 will take care of all the back translations.
+
+[bonyLandmarks]
+ac = (0.0, 1.0, 2.3)
+ts = (0.3, 3.0, 8.9)
+
+[surfaces]
+scapula: %(dscas3dir)s/data/dsemGeometries/l10scapula.vtp
+humerus: %(dscas3dir)s/data/dsemGeometries/l10humerus.vtp

@@ -1,0 +1,98 @@
+[connections/7]
+connection_type = 5
+output_idx = 0
+target_instance_name = dvm5 (1)
+input_idx = 0
+source_instance_name = cutter + imagereslice
+
+[connections/6]
+connection_type = 1
+output_idx = 0
+target_instance_name = cutter + imagereslice
+input_idx = 1
+source_instance_name = dvm3
+
+[connections/5]
+connection_type = 5
+output_idx = 0
+target_instance_name = dvm1
+input_idx = 2
+source_instance_name = dvm3
+
+[connections/4]
+connection_type = 1
+output_idx = 1
+target_instance_name = cutter + imagereslice
+input_idx = 2
+source_instance_name = dvm2
+
+[connections/3]
+connection_type = 1
+output_idx = 1
+target_instance_name = dvm3
+input_idx = 0
+source_instance_name = dvm2
+
+[connections/2]
+connection_type = 5
+output_idx = 1
+target_instance_name = dvm1
+input_idx = 1
+source_instance_name = dvm2
+
+[connections/1]
+connection_type = 1
+output_idx = 4
+target_instance_name = cutter + imagereslice
+input_idx = 0
+source_instance_name = dvm1
+
+[connections/0]
+connection_type = 1
+output_idx = 2
+target_instance_name = cutter + imagereslice
+input_idx = 4
+source_instance_name = dvm1
+
+[connections/8]
+connection_type = 5
+output_idx = 1
+target_instance_name = dvm5 (1)
+input_idx = 1
+source_instance_name = cutter + imagereslice
+
+[connections/9]
+connection_type = 5
+output_idx = 2
+target_instance_name = dvm5 (1)
+input_idx = 2
+source_instance_name = cutter + imagereslice
+
+[modules/cutter + imagereslice]
+module_name = modules.viewers.CodeRunner
+module_config_dict = {'execute_src': u'sv = obj.inputs[0]\nipw = sv.sliceDirections._sliceDirectionsDict.values()[0]._ipws[0]\n\np1,p2,o,n = ipw.GetPoint1(), ipw.GetPoint2(), ipw.GetOrigin(), ipw.GetNormal()\np1,p2,o,n = array(p1), array(p2), array(o), array(n)\n\nv1 = p1 - o\nv1 = v1 / numpy.linalg.norm(v1)\nv2 = p2 - o\nv2 = v2 / numpy.linalg.norm(v2)\n\nir.SetResliceAxesDirectionCosines(tuple(v1), tuple(v2), tuple(n))\nir.SetResliceAxesOrigin(o)\nir.SetOutputDimensionality(2)\nir.SetInput(obj.inputs[1])\nir.SetAutoCropOutput(1)\nir.SetBorder(0)\nir.Update()\nobj.outputs[0] = ir.GetOutput()\n\nplane = vtk.vtkPlane()\nplane.SetOrigin(o)\nplane.SetNormal(n)\ncut = vtk.vtkCutter()\ncut.SetCutFunction(plane)\ncut.SetInput(obj.inputs[2])\ncut.Update()\nobj.outputs[1] = cut.GetOutput()\n\nim = vtk.vtkMatrix4x4()\nvtk.vtkMatrix4x4.Invert(ir.GetResliceAxes(), im)\nm2t = vtk.vtkMatrixToHomogeneousTransform()\nm2t.SetInput(im)\nm2t.Update()\n\ntrfm = vtk.vtkTransformPolyDataFilter()\ntrfm.SetInput(cut.GetOutput())\ntrfm.SetTransform(m2t)\ntrfm.Update()\nobj.outputs[2] = trfm.GetOutput()\n\n\n\n\n', 'scratch_src': u'# this example shows how to setup an imagereslice to extract a single\n# slice of data along an arbitrary plane given three points on a plane \n# and the plane normal normal.  It then also shows how to setup a cutter\n# to extract an intersection between input polydata and the specified\n# plane.  Furthermore, it shows how to transform the intersected\n# polydata to lie "flat" on the extracted slice of image data.\n', 'setup_src': u'import numpy\nfrom numpy import array\nir = vtk.vtkImageReslice()\n'}
+glyph_position = (335.36211699164346, -334.36894150417794)
+
+[modules/dvm5 (1)]
+module_name = modules.viewers.slice3dVWR
+module_config_dict = {'savedPoints': [], 'implicitsState': [], 'boundsForPoints': (-2.2532215118408203, 17.661603927612305, -1.2499063014984131, 4.0848174095153809, -0.05475940927863121, 4.7121834754943848)}
+glyph_position = (-446.99220055710333, -601.07562674094686)
+
+[modules/dvm3]
+module_name = modules.filters.FastSurfaceToDistanceField
+module_config_dict = {'padding': 0.5, 'max_dist': 1.0, 'dimensions': (64, 64, 64)}
+glyph_position = (244.79749303621162, -20.561002785515115)
+
+[modules/dvm2]
+module_name = modules.misc.superQuadric
+module_config_dict = {'scale': (1.0, 1.0, 1.0), 'center': (0.0, 0.0, 0.0), 'thetaRoundness': 0.80000000000000004, 'toroidal': 1, 'phiResolution': 64, 'thickness': 0.33329999999999999, 'thetaResolution': 64, 'phiRoundness': 0.20000000000000001, 'size': 5.0}
+glyph_position = (-43.816155988858057, -16.718662952646113)
+
+[modules/dvm1]
+module_name = modules.viewers.slice3dVWR
+module_config_dict = {'savedPoints': [], 'implicitsState': [], 'boundsForPoints': (-6.8739812240728275, 5.5, -2.1607663631439209, 2.1607663631439209, -5.5, 7.7495937347412109)}
+glyph_position = (-430.67910863509769, -218.38983286908052)
+
+[general]
+export = False
+

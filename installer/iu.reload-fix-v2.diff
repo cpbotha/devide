@@ -1,0 +1,22 @@
+--- iu.py.orig	2003-05-02 20:19:17.000000000 +0200
++++ iu.py	2003-05-02 20:28:00.000000000 +0200
+@@ -362,8 +362,18 @@
+         fqnm = mod.__name__
+         nm = namesplit(fqnm)[-1]
+         parentnm = packagename(fqnm)
++	# UNLIKE the normal reload(), this will replace sys.modules[fqnm] with
++	# the new instance newmod (i.e. id(newmod) != id(mod))
+         newmod = self.doimport(nm, parentnm, fqnm)
+-        mod.__dict__.update(newmod.__dict__)
++	# this replacement means that mod is now without reference and could
++	# soon die.  When it dies, it'll take its imports with it.  This
++	# will cause trouble, so we use the following workaround to maintain
++	# a reference to the old module
++	if not hasattr(self, '_oldModules'):
++	    self._oldModules = []
++	    
++	self._oldModules.append(mod)
++
+ ##        return newmod
+     def _acquire(self):
+         if self.rlock.locked():
