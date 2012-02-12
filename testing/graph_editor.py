@@ -4,6 +4,7 @@
 import os
 import time
 import unittest
+import wx
 
 class GraphEditorTestBase(unittest.TestCase):
     def setUp(self):
@@ -256,6 +257,9 @@ class TestModulesMisc(GraphEditorTestBase):
             self.failUnless(ret,
                             'Error destroying %s' % (module_name,))
 
+            # so wx can take a breath and catch up
+            wx.Yield()
+
 
     def test_create_view_destroy(self):
         """Create and destroy all core modules, also invoke view window.
@@ -288,6 +292,9 @@ class TestModulesMisc(GraphEditorTestBase):
             print 'Destroyed %s.' % (module_name,)
             self.failUnless(ret,
                             'Error destroying %s' % (module_name,))
+
+            # so wx can take a breath and catch up
+            wx.Yield()
 
 # ----------------------------------------------------------------------------
 class TestVTKBasic(GraphEditorTestBase):
