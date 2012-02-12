@@ -494,7 +494,7 @@ def get_some_suite(devide_testing):
     
     some_suite = unittest.TestSuite()
 
-    t = TestVTKBasic('test_seedconnect')
+    t = TestITKBasic('test_confidence_seed_connect')
     t._devide_app = devide_app
     t._devide_testing = devide_testing # need for networks path
     some_suite.addTest(t)

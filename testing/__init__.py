@@ -37,7 +37,7 @@ class DeVIDETesting:
         self.main_suite = unittest.TestSuite(tuple(suite_list))
         
     def runAllTests(self):
-        runner = unittest.TextTestRunner()
+        runner = unittest.TextTestRunner(verbosity=2)
         runner.run(self.main_suite)
 
         print "Complete suite consists of 19 (multi-part) tests on "
