@@ -8,7 +8,7 @@ import re
 
 # the main release version: year.month (ubuntu-style) on release
 # branches (the branch is also named vYEAR.MONTH), DEV for trunk
-VERSION = "12.2.7"
+VERSION = "12.2.D"
 
 # if built with johannes, the SVN_REVISION part might be rewritten.
 DEVIDE_VERSION = '%s' % (VERSION,)
