@@ -19,9 +19,9 @@ except ImportError:
     JOHANNES_REVISION_ID = "DEV"
 
 else:
-    DEVIDE_VERSION = versions.DEVIDE_VERSION
-    DEVIDE_REVISION_ID = versions.DEVIDE_REVISION_ID
-    JOHANNES_REVISION_ID = versions.JOHANNES_REVISION_ID
+    DEVIDE_VERSION = devide_versions.DEVIDE_VERSION
+    DEVIDE_REVISION_ID = devide_versions.DEVIDE_REVISION_ID
+    JOHANNES_REVISION_ID = devide_versions.JOHANNES_REVISION_ID
 
 # standard Python imports
 import getopt
