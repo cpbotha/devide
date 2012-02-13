@@ -7,8 +7,8 @@
 import re
 
 try:
-    # versions.py is written by johannes during building DeVIDE distribution
-    import versions
+    # devide_versions.py is written by johannes during building DeVIDE distribution
+    import devide_versions
 
 except ImportError:
     # if there's no versions.py, we have these defaults
