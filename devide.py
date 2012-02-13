@@ -6,16 +6,22 @@
 
 import re
 
-# the main release version: year.month (ubuntu-style) on release
-# branches (the branch is also named vYEAR.MONTH), DEV for trunk
-VERSION = "12.2.D"
+try:
+    # versions.py is written by johannes during building DeVIDE distribution
+    import versions
 
-# if built with johannes, the SVN_REVISION part might be rewritten.
-DEVIDE_VERSION = '%s' % (VERSION,)
+except ImportError:
+    # if there's no versions.py, we have these defaults
+    # DEVIDE_VERSION is usually y.m.d of the release, or y.m.D if
+    # development version
+    DEVIDE_VERSION = "12.2.D"
+    DEVIDE_REVISION_ID = "DEV"
+    JOHANNES_REVISION_ID = "DEV"
 
-# will be filled in by johannes
-DEVIDE_REVISION_ID = "5695faaaa814"
-JOHANNES_REVISION_ID = "5037c185ae81+"
+else:
+    DEVIDE_VERSION = versions.DEVIDE_VERSION
+    DEVIDE_REVISION_ID = versions.DEVIDE_REVISION_ID
+    JOHANNES_REVISION_ID = versions.JOHANNES_REVISION_ID
 
 # standard Python imports
 import getopt
