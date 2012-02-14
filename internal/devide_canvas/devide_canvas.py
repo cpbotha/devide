@@ -370,8 +370,9 @@ class DeVIDECanvas(SubjectMixin):
         self.redraw()
 
     def _handler_wheel(self, event):
-        
-        factor = [2.0, -2.0][event.GetWheelRotation() > 0.0] 
+        # wheel forward = zoom in
+        # wheel backward = zoom out
+        factor = [-2.0, 2.0][event.GetWheelRotation() > 0.0] 
         self._zoom(1.1 ** factor)
         #event.GetWheelDelta()
 
@@ -458,10 +459,11 @@ class DeVIDECanvas(SubjectMixin):
         self.event.realZ = wez 
 
         # dragging gets preference...
-        if event.Dragging() and event.MiddleIsDown() and \
-            event.ShiftDown():
+        if event.Dragging() and event.MiddleIsDown() and event.ShiftDown():
             centre = self._ren.GetCenter()
-            dyf = 10.0 * self.event.pos_delta[1] / centre[1]
+            # drag up = zoom in
+            # drag down = zoom out
+            dyf = - 10.0 * self.event.pos_delta[1] / centre[1]
             self._zoom(1.1 ** dyf)
 
         elif event.Dragging() and event.MiddleIsDown():
