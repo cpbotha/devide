@@ -61,7 +61,7 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
         del self._isol_connect
 
     def get_input_descriptions(self):
-	return ('ITK Image data', 'Seed points 1', 'Seed points 2')
+        return ('ITK Image data', 'Seed points 1', 'Seed points 2')
     
     def set_input(self, idx, input_stream):
         if idx == 0:
@@ -74,37 +74,51 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
                                         self._isol_connect.ClearSeeds2],
                         'AddSeeds' : [self._isol_connect.AddSeed1,
                                       self._isol_connect.AddSeed2],
+                        'SetSeeds' : [self._isol_connect.SetSeed1,
+                                      self._isol_connect.SetSeed2],
                         'seeds' : [self._seeds1, self._seeds2]}
-                          
+                     
+            # list of seeds we already have for this input
+            our_list = conn_map['seeds'][idx-1]     
+
             if input_stream == None:
-                # this means we get to nuke all seeds
-                conn_map['ClearSeeds'][idx-1]()
+                # only clear seeds if not already the case
+                if len(our_list) > 0:
+                    print "isolatedConnect: nuking list on input", idx-1
+                    # this means we get to nuke all seeds
+                    conn_map['ClearSeeds'][idx-1]()
+                    del our_list[:]
 
             elif hasattr(input_stream, 'devideType') and \
-                 input_stream.devideType == 'namedPoints':
+                input_stream.devideType == 'namedPoints':
 
                 dpoints = [i['discrete'] for i in input_stream]
-                our_list = conn_map['seeds'][idx-1]
                 # if the new list differs from ours, copy it
                 if dpoints != our_list:
-                    print "isolatedConnect: copying new list"
+                    print "isolatedConnect: copying new list on input", idx-1
                     del our_list[:]
                     our_list.extend(dpoints)
                     conn_map['ClearSeeds'][idx-1]()
 
                     for p in our_list:
-                        index = itk.Index[3]()
-                        for ei in range(3):
-                            index.SetElement(ei, int(p[ei]))
-                            
+                        index = itk.Index[3](p)
                         conn_map['AddSeeds'][idx-1](index)
 
             else:
                 raise TypeError, 'This input requires a named points type.'
 
+            #if len(our_list) == 0:
+            #    conn_map['ClearSeeds'][idx-1]()
+            #    index = itk.Index[3]()
+            #    for ei in range(3):
+            #        index.SetElement(ei, 0)
+            #    conn_map['SetSeeds'][idx-1](index)
+
+           
+
     
     def get_output_descriptions(self):
-	return ('Segmented ITK image', 'Derived threshold')
+        return ('Segmented ITK image', 'Derived threshold')
     
     def get_output(self, idx):
         if idx == 0:
