@@ -1,0 +1,56 @@
+[connections/3]
+connection_type = 1
+output_idx = 0
+target_instance_name = vtp_wrt
+input_idx = 0
+source_instance_name = dvm5
+
+[connections/1]
+connection_type = 1
+output_idx = 0
+target_instance_name = threshold
+input_idx = 0
+source_instance_name = dvm3
+
+[modules/threshold]
+module_name = modules.filters.doubleThreshold
+module_config_dict = {'lowerThreshold': 0.0, 'upperThreshold': 100.0, 'replaceOut': 1, 'outputScalarType': -1, 'replaceIn': 1, 'outValue': 0.0, 'inValue': 1.0}
+glyph_position = (-468.71479237834359, -166.17343029628282)
+
+[connections/0]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm3
+input_idx = 0
+source_instance_name = dvm2
+
+[modules/vtp_wrt]
+module_name = modules.writers.vtpWRT
+module_config_dict = {'filename': 'result.vtp'}
+glyph_position = (-205.45706662250961, -328.15441160433613)
+
+[modules/dvm5]
+module_name = modules.filters.contour
+module_config_dict = {'iso_value': 0.5}
+glyph_position = (-477.6588460099498, -324.98250822438871)
+
+[modules/dvm3]
+module_name = modules.misc.implicitToVolume
+module_config_dict = {'computeNormals': 0, 'sampleDimensions': (64, 64, 64), 'modelBounds': (-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)}
+glyph_position = (-554.72481658905053, -16.208925119264023)
+
+[modules/dvm2]
+module_name = modules.misc.superQuadric
+module_config_dict = {'scale': (1.0, 1.0, 1.0), 'center': (0.0, 0.0, 0.0), 'thetaRoundness': 0.80000000000000004, 'toroidal': 1, 'phiResolution': 64, 'thickness': 0.33329999999999999, 'thetaResolution': 64, 'phiRoundness': 0.20000000000000001, 'size': 0.5}
+glyph_position = (-476.12164925034079, 142.43082689686511)
+
+[general]
+export = False
+
+[connections/2]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm5
+input_idx = 0
+source_instance_name = threshold
+

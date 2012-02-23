@@ -1,0 +1,5 @@
+[default]
+priority = 110 
+crucial = false
+dependencies = numpy_kit
+

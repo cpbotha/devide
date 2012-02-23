@@ -1,0 +1,65 @@
+[connections/4]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm18
+input_idx = 1
+source_instance_name = dvm10
+
+[connections/3]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm18
+input_idx = 0
+source_instance_name = dvm11
+
+[connections/2]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm12
+input_idx = 0
+source_instance_name = dvm18
+
+[connections/1]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm11
+input_idx = 0
+source_instance_name = dvm19
+
+[connections/0]
+connection_type = 1
+output_idx = 0
+target_instance_name = dvm10
+input_idx = 0
+source_instance_name = dvm20
+
+[modules/dvm12]
+module_name = modules.insight.ITKtoVTK
+module_config_dict = {}
+glyph_position = (-346.35303030303038, 170.91121212121206)
+
+[modules/dvm11]
+module_name = modules.insight.VTKtoITK
+module_config_dict = {'type': 'float', 'autotype': False}
+glyph_position = (-496.86878787878737, 421.23696969696971)
+
+[modules/dvm10]
+module_name = modules.insight.VTKtoITK
+module_config_dict = {'type': 'float', 'autotype': False}
+glyph_position = (-255.24363636363654, 421.78090909090918)
+
+[modules/dvm20]
+module_name = modules.filters.doubleThreshold
+module_config_dict = {'inValue': -1.0, 'replaceIn': 1, 'lowerThreshold': 1.0, 'outValue': 1.0, 'upperThreshold': 1.0, 'replaceOut': 1, 'outputScalarType': 2}
+glyph_position = (-255.41075757575757, 551.6350000000001)
+
+[modules/dvm19]
+module_name = modules.filters.doubleThreshold
+module_config_dict = {'inValue': 0.0, 'replaceIn': 1, 'lowerThreshold': 1.0, 'outValue': 1.0, 'upperThreshold': 1.0, 'replaceOut': 1, 'outputScalarType': 2}
+glyph_position = (-496.27439393939414, 552.48363636363626)
+
+[modules/dvm18]
+module_name = modules.insight.geodesicActiveContour
+module_config_dict = {'advectionScaling': 1.0, 'numberOfIterations': 50, 'curvatureScaling': 1.0, 'propagationScaling': -1.0}
+glyph_position = (-345.57575757575751, 298.39393939393938)
+

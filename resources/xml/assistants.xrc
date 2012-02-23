@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<resource>
+  <object class="wxDialog" name="DLG_LOAD_DATA_A1">
+    <title>Load Data Assistant</title>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>Welome to the Load Data Assistant.\n\nIn order to start investigating a dataset, you have to load it into memory.\nPlease enter the filename (or select it by clicking the &quot;Browse&quot; button)\nof the data that you wish to examine.\n</label>
+          <style></style>
+        </object>
+        <flag>wxALL</flag>
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Filename to load:</label>
+            </object>
+            <flag>wxALL|wxALIGN_CENTRE_VERTICAL</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="LDA_ID_FN_TEXT"/>
+            <option>1</option>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="LDA_ID_FN_BROWSE">
+              <label>Browse</label>
+            </object>
+          </object>
+        </object>
+        <option>1</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_CANCEL">
+              <label>Cancel</label>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="wxID_OK">
+              <label>OK</label>
+              <default>1</default>
+            </object>
+            <flag>wxALL</flag>
+            <border>5</border>
+          </object>
+        </object>
+        <flag>wxALL|wxALIGN_CENTRE</flag>
+        <border>5</border>
+      </object>
+    </object>
+  </object>
+</resource>

@@ -1,0 +1,8 @@
+[modules/constrain glyphs to plane]
+module_name = modules.viewers.CodeRunner
+module_config_dict = {'execute_src': u"sv = obj.inputs[1]\nsd = sv.sliceDirections._sliceDirectionsDict.items()[0][1]\nn = sd._ipws[0].GetNormal()\nac.SetInput(obj.inputs[0])\nac.AddScalarVariable('vx', 'MetaImage', 0)\nac.AddScalarVariable('vy', 'MetaImage', 1)\nac.AddScalarVariable('vz', 'MetaImage', 2)\n# working example below (parens EVERYWHERE else it doesn't work!)\nac.SetFunction('(vx - vx*%f)*iHat + (vy - vy*%f)*jHat + (vz - vz*%f)*kHat' % n)\nac.SetResultArrayName('MetaImage')\nac.Update()\nobj.outputs[0] = ac.GetOutput()\n", 'scratch_src': u'# CodeRunner example to constrain vector glyphs to an arbitrary plane\n# can be used in addition to this kind of setup:\n# http://code.google.com/p/devide/wiki/HelpGlyphsOnPlane\n\n# 1. first input vector data, for example vectors probed onto slice3dVWR plane\n#    (i.e. the output of the probeFilter)\n# 2. second input the slice3dVWR itself\n# O. output will be vectors projected onto FIRST slice in slice3dVWR, this can\n#    be passed to a glyphs module.', 'setup_src': u'ac = vtk.vtkArrayCalculator()\n'}
+glyph_position = (-310.76012508116099, -55.980782214322005)
+
+[general]
+export = False
+
