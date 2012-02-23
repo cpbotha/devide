@@ -2,6 +2,9 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+# mini-changelog
+# * added work-around for empty input bug in ITK 3.20
+
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import itk
@@ -30,6 +33,11 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
         if3 = itk.Image.F3
         self._isol_connect = \
                               itk.IsolatedConnectedImageFilter[if3,if3].New()
+                              
+        # due to a bug in ITK, we can never have empty seed lists
+        # http://code.google.com/p/devide/issues/detail?id=221
+        self._isol_connect.SetSeed1(itk.Index[3]([0,0,0]))
+        self._isol_connect.SetSeed2(itk.Index[3]([0,0,0]))
 
         # this will be our internal list of points
         self._seeds1 = []
@@ -86,7 +94,8 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
                 if len(our_list) > 0:
                     print "isolatedConnect: nuking list on input", idx-1
                     # this means we get to nuke all seeds
-                    conn_map['ClearSeeds'][idx-1]()
+                    # due to bug in ITK 3.20, we have to add a dummy seed.                    
+                    conn_map['SetSeeds'][idx-1](itk.Index[3]([0,0,0]))
                     del our_list[:]
 
             elif hasattr(input_stream, 'devideType') and \
@@ -103,19 +112,13 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
                     for p in our_list:
                         index = itk.Index[3](p)
                         conn_map['AddSeeds'][idx-1](index)
+                    
+                    # work-around for bug in ITK 3.20. we can't have empty seed lists ever
+                    if len(our_list) == 0:
+                        conn_map['SetSeeds'][idx-1](itk.Index[3]([0,0,0]))
 
             else:
                 raise TypeError, 'This input requires a named points type.'
-
-            #if len(our_list) == 0:
-            #    conn_map['ClearSeeds'][idx-1]()
-            #    index = itk.Index[3]()
-            #    for ei in range(3):
-            #        index.SetElement(ei, 0)
-            #    conn_map['SetSeeds'][idx-1](index)
-
-           
-
     
     def get_output_descriptions(self):
         return ('Segmented ITK image', 'Derived threshold')
