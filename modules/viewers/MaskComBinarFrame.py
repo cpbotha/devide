@@ -124,15 +124,21 @@ class MaskComBinarFrame(wx.Frame):
 
         self.id_quit = wx.NewId()
         menu_file.Append(self.id_quit, "&Exit\tCtrl-Q",
-                "Exit MaskCo", wx.ITEM_NORMAL)
+                "Exit MaskComBinar", wx.ITEM_NORMAL)
 
         menu_advanced = wx.Menu()
         self.id_introspect = wx.NewId()
         menu_advanced.Append(self.id_introspect, "Introspect",
-                "Exit MaskCo", wx.ITEM_NORMAL)
+                "Open an introspection window", wx.ITEM_NORMAL)
+                
+        menu_help = wx.Menu()
+        self.id_about = wx.NewId()
+        menu_help.Append(self.id_about, "About",
+                "About MaskComBinar", wx.ITEM_NORMAL)                
                 
         self.menubar.Append(menu_file, "&File")
         self.menubar.Append(menu_advanced, "&Advanced")
+        self.menubar.Append(menu_help, "&Help")
 
     def _create_rwi2d_pane(self):
         panel = wx.Panel(self, -1)
