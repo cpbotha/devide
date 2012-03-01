@@ -58,7 +58,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             MaskComBinarFrame.MaskComBinarFrame)
         # change the title to something more spectacular
 
-        self._view_frame.SetTitle('Mask ComBinar \t (c) Francois Malan, LUMC & TU Delft')
+        self._view_frame.SetTitle('MaskComBinar - a tool for measuring and manipulating binary masks')
 
         #initialise data structures
         self._init_data_structures()
@@ -439,6 +439,9 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
         vf.Bind(wx.EVT_MENU, self._handler_introspect,
                 id = vf.id_introspect)
+                
+        vf.Bind(wx.EVT_MENU, self._handler_about,
+                id = vf.id_about)                
 
         self._view_frame.reset_cam2d_button.Bind(wx.EVT_BUTTON,
                 self._handler_reset_cam2d_button)
@@ -1309,6 +1312,9 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
     def _handler_introspect(self, event):
         self.miscObjectConfigure(self._view_frame, self, 'MaskComBinar')
+
+    def _handler_about(self, event):
+        self._view_frame.dialog_info("MaskComBinar:\nA tool for measuring and manipulating binary masks\n\nby Francois Malan","About MaskComBinar")
         
     def render(self):
         """Method that calls Render() on the embedded RenderWindow.
