@@ -41,7 +41,7 @@ if dev_version:
     # if there's no valid versions.py, we have these defaults
     # DEVIDE_VERSION is usually y.m.d of the release, or y.m.D if
     # development version
-    DEVIDE_VERSION = "12.2.D"
+    DEVIDE_VERSION = "12.3.D"
     DEVIDE_REVISION_ID = "DEV"
     JOHANNES_REVISION_ID = "DEV"
 
