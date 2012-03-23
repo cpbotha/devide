@@ -99,34 +99,23 @@ class ProgressStatusBar(wx.StatusBar):
         wx.StatusBar.__init__(self, parent, -1)
 
         # This status bar has three fields
-        self.SetFieldsCount(2)
+        self.SetFieldsCount(3)
+        
         # Sets the three fields to be relative widths to each other.
-        self.SetStatusWidths([-2, -1])
+        # status message gets the most room, then memory counter, then progress bar
+        self.SetStatusWidths([-4, -1, -2])
         self.sizeChanged = False
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_IDLE, self.OnIdle)
 
-        # Field 0 ... just text
-        #self.SetStatusText("A Custom StatusBar...", 0)
-
         # This will fall into field 1 (the second field)
+        # check the Reposition method to see how this is positioned
         self.gauge = wx.Gauge(self, -1, 100)
         self.gauge.SetValue(50)
 
         # set the initial position of the checkbox
         self.Reposition()
         
-        # i have this timer purely for the progress bar to pulsate
-        # up and down. personally, it's nice to see that the software
-        # is alive.
-        self.timer = wx.PyTimer(self.Notify)
-        self.timer.Start(50)
-        self.Notify()
-        
-    def Notify(self):
-        if self.gauge.GetValue() == 100:
-            self.gauge.Pulse()
-    
 
     def OnSize(self, evt):
         self.Reposition()  # for normal size events
@@ -145,7 +134,7 @@ class ProgressStatusBar(wx.StatusBar):
     # reposition the checkbox
     def Reposition(self):
         border = 3
-        rect = self.GetFieldRect(1)
+        rect = self.GetFieldRect(2)
         self.gauge.SetPosition((rect.x+border, rect.y+border))
         self.gauge.SetSize((rect.width-border*2, rect.height-border*2))
         self.sizeChanged = False

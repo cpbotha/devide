@@ -2,6 +2,12 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
+# we use psutil for keeping an eye on memory (and crashes)
+# if you don't have this yet, install with:
+# dre shell
+# pip install psutil
+import psutil
+
 import string
 import sys
 import time
@@ -78,6 +84,12 @@ class WXInterface(wx.App):
                     self._handlerHelpContents)
         wx.EVT_MENU(self._main_frame, self._main_frame.helpAboutId,
                     self.aboutCallback)
+        
+        # timer to update memory monitor every FIVE seconds
+        self.timer = wx.PyTimer(self._handler_update_memory_display)
+        self.timer.Start(5000)
+        self._handler_update_memory_display()
+        
 
         self._main_frame.Show(1)
         # here we also show twice: in wxPython 2.4.2.4 the TextCtrls sometimes
@@ -161,7 +173,17 @@ class WXInterface(wx.App):
                     self.timer_ln)
             # then tell the timer to trigger it in 150ms
             self.timer_ln.Start(150, True)
-
+            
+    def _handler_update_memory_display(self):
+        vmu = psutil.virtmem_usage() # SWAP / pagefile memory
+        pmu = psutil.phymem_usage() # physical RAM
+        # we show the user how much physical+swap they're using out of the total available
+        total_used = (vmu[1]+pmu[1]) / 1024 / 1024 / 1024.0
+        total_avail = (vmu[0]+vmu[0]) / 1024 / 1024 / 1024.0
+        mem_msg = "%.1f / %.1f GB" % (total_used , total_avail)
+        # write into the second section of the statusbar
+        self._main_frame.GetStatusBar().SetStatusText(mem_msg, 1)
+        
     def quit(self):
         """Event handler for quit request.
 
