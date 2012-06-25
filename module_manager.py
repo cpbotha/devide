@@ -1651,7 +1651,7 @@ class ModuleManager:
             # a shallowcopy is not able to get a VTK pipeline to execute.
             # TODO: somehow this should be part of one of the moduleKits
             # or some other module-related pluggable logic.
-            if od and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
+            if od is not None and hasattr(od, 'GetClassName') and hasattr(od, 'ShallowCopy'):
                 nod = od.__class__()
                 nod.ShallowCopy(od)
                 od = nod
