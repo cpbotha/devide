@@ -1,5 +1,5 @@
-#Hacked out of from a class contained in Charl Botha's comedi_utils.py
-#Incorporated edits by by Corine Slagboom & Noeska Smit which formed part of their comedi_utils used as part of their Emphysema Viewer.
+#Hacked out of a class contained in Charl Botha's comedi_utils.py
+#Incorporated edits by by Corine Slagboom & Noeska Smit which formed part of their comedi_utils module, used in their 'Emphysema Viewer'
 #Final version by Francois Malan (2010-2011)
 
 from module_kits.vtk_kit.utils import DVOrientationWidget
