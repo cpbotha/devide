@@ -185,7 +185,7 @@ class WXInterface(wx.App):
         self._main_frame.GetStatusBar().SetStatusText(mem_msg, 1)
         
         # and log a warning to the message window
-        if total_used / total_avail > 0.95:
+        if (total_avail > 0) and (total_used / total_avail > 0.95):
             self.log_info("You have almost exhausted all available memory. Free up memory to prevent crashing.")
         
     def quit(self):
