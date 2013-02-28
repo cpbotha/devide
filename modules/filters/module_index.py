@@ -346,6 +346,12 @@ class MIPRender:
     image.
     """
 
+class PerturbPolyPoints:
+    kits = ['vtk_kit']
+    cats = ['Filters']
+    keywords = ['polydata','move','perturb','random','noise','shuffle']
+    help = """Randomly perturbs each polydata vertex in a uniformly random direction"""    
+    
 class polyDataConnect:
     kits = ['vtk_kit']
     cats = ['Filters']

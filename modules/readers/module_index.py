@@ -78,6 +78,12 @@ class objRDR:
     help = """Reader for OBJ polydata format.
     """
 
+class plyRDR:	
+    kits = ['vtk_kit']
+    cats = ['Readers']
+    help = """Reader for the Polygon File Format (Stanford Triangle Format) polydata format.
+    """
+	
 class pngRDR:
     kits = ['vtk_kit']
     cats = ['Readers']

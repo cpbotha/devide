@@ -735,7 +735,8 @@ class GraphEditor:
                       'vtp' : ('modules.readers.vtpRDR', 'filename'),
                       'mha' : ('modules.readers.metaImageRDR', 'filename'),
                       'mhd' : ('modules.readers.metaImageRDR', 'filename'),
-                      'stl' : ('modules.readers.stlRDR', 'filename')}
+                      'stl' : ('modules.readers.stlRDR', 'filename'),
+                      'ply' : ('modules.readers.plyRDR', 'filename')}
 
         # list of tuples: (filename, errormessage)
         dropFilenameErrors = []
