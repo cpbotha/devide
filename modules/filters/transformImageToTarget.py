@@ -1,40 +1,43 @@
+# transformImageToTarget by Francois Malan, Aug 2011
+# fmalan@medvis.org
+
 from module_base import ModuleBase
 from module_mixins import NoConfigModuleMixin
 import module_utils
 import vtk
+
 
 class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
 
-        self._reslicer = vtk.vtkImageReslice()        
+        self._reslicer = vtk.vtkImageReslice()
         self._probefilter = vtk.vtkProbeFilter()
-        
+
         #This is retarded - we (sometimes, see below) need the padder 
         #to get the image extent big enough to satisfy the probe filter. 
         #No apparent logical reason, but it throws an exception if we don't.
         self._padder = vtk.vtkImageConstantPad()
-        
+
         # initialise any mixins we might have
         NoConfigModuleMixin.__init__(
             self,
-            {'Module (self)' : self,
-             'vtkImageReslice' : self._reslicer})
+            {'Module (self)': self,
+             'vtkImageReslice': self._reslicer})
 
         module_utils.setup_vtk_object_progress(self, self._reslicer,
-                                           'Transforming image (Image Reslice)')
+                                               'Transforming image (Image Reslice)')
         module_utils.setup_vtk_object_progress(self, self._probefilter,
-                                           'Performing remapping (Probe Filter)')
+                                               'Performing remapping (Probe Filter)')
 
         self.sync_module_logic_with_config()
 
     def close(self):
-        # we play it safe... (the graph_editor/module_manager should have
-        # Rdisconnected us by now)
+        # we play it safe... (the graph_editor/module_manager should have disconnected us by now)
         for input_idx in range(len(self.get_input_descriptions())):
             self.set_input(input_idx, None)
-        # don't forget to call the close() method of the vtkPipeline mixin
+            # don't forget to call the close() method of the vtkPipeline mixin
         NoConfigModuleMixin.close(self)
         # get rid of our reference
         del self._reslicer
@@ -42,13 +45,20 @@ class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
         del self._padder
 
     def get_input_descriptions(self):
-        return ('Source VTK Image Data', 'VTK Transform', 'Target VTK Image (supplies extent and spacing)')
+        return ('Image volume that will be transformed (vtkImageData)', 'Reference that supplies extent and spacing (vtkImageData)',
+                '(optional) Transform to apply to the target (vtkTransform)')
 
     def set_input(self, idx, inputStream):
         if idx == 0:
             self._imagedata = inputStream
             self._reslicer.SetInput(self._imagedata)
         elif idx == 1:
+            if inputStream != None:
+                self._outputVolumeExample = inputStream
+            else:
+                # define output extent same as input
+                self._outputVolumeExample = self._imagedata
+        else:
             if inputStream == None:
                 # disconnect
                 self._transform = vtk.vtkMatrix4x4()
@@ -57,52 +67,61 @@ class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
                 # is equivalent to transforming the volume with its inverse
                 self._transform = inputStream.GetMatrix()
                 self._transform.Invert()  #This is required
-        else:
-            if inputStream != None:
-                self._outputVolumeExample = inputStream
-            else:
-                # define output extent same as input
-                self._outputVolumeExample = self._imagedata
 
     def _convert_input(self):
         self._reslicer.SetInput(self._imagedata)
-        self._reslicer.SetResliceAxes(self._transform)        
-        self._reslicer.SetAutoCropOutput(1)        
+        self._reslicer.SetResliceAxes(self._transform)
+        self._reslicer.SetAutoCropOutput(1)
         self._reslicer.SetInterpolationModeToCubic()
         spacing_i = self._imagedata.GetSpacing()
-        isotropic_sp = min(min(spacing_i[0],spacing_i[1]),spacing_i[2])
+        isotropic_sp = min(min(spacing_i[0], spacing_i[1]), spacing_i[2])
         self._reslicer.SetOutputSpacing(isotropic_sp, isotropic_sp, isotropic_sp)
         self._reslicer.Update()
-        
+
         source = self._reslicer.GetOutput()
         source_extent = source.GetExtent()
         output_extent = self._outputVolumeExample.GetExtent()
-        
-        if (output_extent[0] < source_extent[0]) or (output_extent[2] < source_extent[2]) or (output_extent[4] < source_extent[4]):
-            raise Exception('Output extent starts at lower index than source extent. Assumed that both should be zero?')
-        elif (output_extent[1] > source_extent[1]) or (output_extent[3] > source_extent[3]) or (output_extent[5] > source_extent[5]):
-            extX = max(output_extent[1], source_extent[1])
-            extY = max(output_extent[3], source_extent[3])
-            extZ = max(output_extent[5], source_extent[5])            
-            padX = extX - source_extent[1]
-            padY = extY - source_extent[3]
-            padZ = extZ - source_extent[5]            
-            print 'Zero-padding source by (%d, %d, %d) voxels to force extent to match/exceed input''s extent. Lame, eh?' % (padX, padY, padZ)            
+
+        pad_start = (0, 0, 0)
+        pad_end = (0, 0, 0)
+        ext_X_min = source_extent[0]
+        ext_X_max = source_extent[1]
+        ext_Y_min = source_extent[2]
+        ext_Y_max = source_extent[3]
+        ext_Z_min = source_extent[4]
+        ext_Z_max = source_extent[5]
+
+        if (output_extent[0] < source_extent[0]) or (output_extent[2] < source_extent[2]) or (
+                output_extent[4] < source_extent[4]):
+            ext_X_min = min(output_extent[0], source_extent[0])
+            ext_Y_min = min(output_extent[2], source_extent[2])
+            ext_Z_min = min(output_extent[4], source_extent[4])
+            pad_start = (source_extent[0] - ext_X_min, source_extent[2] - ext_Y_min, source_extent[4] - ext_Z_min)
+        if (output_extent[1] > source_extent[1]) or (output_extent[3] > source_extent[3]) or (
+                output_extent[5] > source_extent[5]):
+            ext_X_max = max(output_extent[1], source_extent[1])
+            ext_Y_max = max(output_extent[3], source_extent[3])
+            ext_Z_max = max(output_extent[5], source_extent[5])
+            pad_end = (ext_X_max - source_extent[1], ext_Y_max - source_extent[3], ext_Z_max - source_extent[5])
+
+        if (max(pad_start) > 0) or (max(pad_end) > 0):
+            print 'Zero-padding source by %s voxels at start and  %s voxels at end to force extent to match/exceed ' \
+                  'input''s extent. Lame, eh?' % (str(pad_start), str(pad_end))
             self._padder.SetInput(source)
             self._padder.SetConstant(0.0)
-            self._padder.SetOutputWholeExtent(source_extent[0],extX,source_extent[2],extY,source_extent[4],extZ)
+            self._padder.SetOutputWholeExtent(ext_X_min, ext_X_max, ext_Y_min, ext_Y_max, ext_Z_min, ext_Z_max)
             self._padder.Update()
-            source = self._padder.GetOutput()        
-        
+            source = self._padder.GetOutput()
+
         #dataType = self._outputVolumeExample.GetScalarType()
         #if dataType == 2 | dataType == 4:
-                    
+
         output = vtk.vtkImageData()
-        output.DeepCopy(self._outputVolumeExample)        
+        output.DeepCopy(self._outputVolumeExample)
         self._probefilter.SetInput(output)
         self._probefilter.SetSource(source)
-        self._probefilter.Update()                
-        self._output = self._probefilter.GetOutput()                
+        self._probefilter.Update()
+        self._output = self._probefilter.GetOutput()
 
     def get_output_descriptions(self):
         return ('vtkImageData',)
@@ -115,13 +134,12 @@ class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
 
     def config_to_logic(self):
         pass
-    
 
     def view_to_config(self):
         pass
 
     def config_to_view(self):
         pass
-    
+
     def execute_module(self):
         self._convert_input()
