@@ -2,12 +2,12 @@
 # fmalan@medvis.org
 
 from module_base import ModuleBase
-from module_mixins import NoConfigModuleMixin
+from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
 
 
-class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
+class transformImageToTarget(ScriptedConfigModuleMixin, ModuleBase):
     def __init__(self, module_manager):
         # initialise our base class
         ModuleBase.__init__(self, module_manager)
@@ -15,16 +15,24 @@ class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
         self._reslicer = vtk.vtkImageReslice()
         self._probefilter = vtk.vtkProbeFilter()
 
+        self._config.paddingValue = 0.0
+        
         #This is retarded - we (sometimes, see below) need the padder 
         #to get the image extent big enough to satisfy the probe filter. 
         #No apparent logical reason, but it throws an exception if we don't.
         self._padder = vtk.vtkImageConstantPad()
 
+        configList = [
+            ('Padding value:', 'paddingValue', 'base:float', 'text',
+             'The value used to pad regions that are outside the supplied volume.')]        
+        
         # initialise any mixins we might have
-        NoConfigModuleMixin.__init__(
-            self,
+        ScriptedConfigModuleMixin.__init__(
+            self, configList,
             {'Module (self)': self,
-             'vtkImageReslice': self._reslicer})
+             'vtkImageReslice': self._reslicer,
+             'vtkProbeFilter': self._probefilter,
+             'vtkImageConstantPad': self._padder})
 
         module_utils.setup_vtk_object_progress(self, self._reslicer,
                                                'Transforming image (Image Reslice)')
@@ -38,7 +46,7 @@ class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
         for input_idx in range(len(self.get_input_descriptions())):
             self.set_input(input_idx, None)
             # don't forget to call the close() method of the vtkPipeline mixin
-        NoConfigModuleMixin.close(self)
+        ScriptedConfigModuleMixin.close(self)
         # get rid of our reference
         del self._reslicer
         del self._probefilter
@@ -130,16 +138,12 @@ class transformImageToTarget(NoConfigModuleMixin, ModuleBase):
         return self._output
 
     def logic_to_config(self):
-        pass
+        self._config.paddingValue = self._reslicer.GetBackgroundLevel()
+        assert self._padder.GetConstant() == self._config.paddingValue
 
     def config_to_logic(self):
-        pass
-
-    def view_to_config(self):
-        pass
-
-    def config_to_view(self):
-        pass
+        self._reslicer.SetBackgroundLevel(self._config.paddingValue)
+        self._padder.SetConstant(self._config.paddingValue)
 
     def execute_module(self):
         self._convert_input()
