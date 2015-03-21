@@ -1,0 +1,6 @@
+The development of this software was supported by the following institutions:
+
+| ![http://devide.googlecode.com/svn/wiki/help_images/logo_tudelft.png](http://devide.googlecode.com/svn/wiki/help_images/logo_tudelft.png) | The Delft University of Technology (TU Delft), my fabulous employer and permanent research home.  We Do Really Cool Stuff(tm). |
+|:------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| ![http://devide.googlecode.com/svn/wiki/help_images/logo_vle.png](http://devide.googlecode.com/svn/wiki/help_images/logo_vle.png) | The Virtual Laboratory for e-Science (VL-e) project has partly funded recent development of the software. |
+| ![http://devide.googlecode.com/svn/wiki/help_images/logo_dipex.png](http://devide.googlecode.com/svn/wiki/help_images/logo_dipex.png) | Development of Improved endo-Prostheses for the upper EXtremity, or DIPEX, is the research programme where it all began. DSCAS1, DSCAS3 and finally DeVIDE. |

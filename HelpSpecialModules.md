@@ -1,0 +1,1 @@
+This chapter has more documentation on some of the more complex modules in DeVIDE. Remember that all modules have module-specific documentation, available by right clicking on the module glyph and selecting "Help on Module'' or by querying the doc-string of the main module class.

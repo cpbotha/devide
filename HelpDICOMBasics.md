@@ -1,0 +1,7 @@
+The easiest way to load a DICOM dataset is to select the relevant DICOM files (often with a .dcm extension) in your file browser (e.g. Explorer in Windows and Konqueror in KDE) and to drag and drop the selected files on the Graph Editor Canvas. A DICOMReader module will be automatically created with the selected filenames added.
+
+Alternatively, you can create a DICOMReader module in the normal way, i.e. by dragging and dropping the module from the Module Palette onto the canvas. Double click on the module to open its View/Config window. Click on the Add Files button to add any number of DICOM filenames. Remember to click on Apply after having added the relevant filenames. Alternatively drag and drop a number of DICOM files onto the listbox, or directly onto the glyph on the canvas.  This is often far easier.
+
+To start visualising the volume that you have just loaded, create a [slice3dVWR](HelpSlice3dVWR.md) module and then connect the output of the DICOMReader module to any input of the slice3dVWR module. The module interface will automatically appear with the default axial slice. To read more about interacting with this slice, see the slices section of the slice3dVWR documentation.
+
+For a far more pleasant DICOM browsing experience, try the [DICOMBrowser](HelpDICOMBrowser.md).
