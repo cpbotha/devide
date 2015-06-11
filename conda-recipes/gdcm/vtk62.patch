@@ -1,0 +1,20 @@
+--- Utilities/VTK/CMakeLists.txt.orig	2015-03-21 11:41:39.290573355 +0200
++++ Utilities/VTK/CMakeLists.txt	2015-03-21 11:43:02.079181827 +0200
+@@ -67,7 +67,7 @@
+     vtkImagingSources
+     vtkIOImage
+     vtkIOLegacy
+-    vtksys
++    #vtksys
+   )
+   set(vtkgdcm_COND_LIBS
+     vtkIOMPIImage
+@@ -737,7 +737,7 @@
+     # do not set the version on the Python module:
+     #set_target_properties(${VTKGDCM_NAME}Python PROPERTIES ${GDCM_LIBRARY_PROPERTIES})
+     target_link_libraries(${VTKGDCM_NAME}PythonD ${VTKGDCM_NAME} ${PYTHON_LIBRARY})
+-    foreach(c ${vtkgdcm_LIBS} vtkFiltering)
++    foreach(c ${vtkgdcm_LIBS}) # vtkFiltering)
+       target_link_libraries(${VTKGDCM_NAME}PythonD ${c}Python${DEXTENSION})
+     endforeach()
+     if(TARGET vtkPythonCore)
