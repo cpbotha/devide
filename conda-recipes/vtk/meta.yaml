@@ -1,0 +1,35 @@
+package:
+  name: vtk
+  version: 6.2.0
+
+source:
+  url: http://www.vtk.org/files/release/6.2/VTK-6.2.0.tar.gz [not win]
+  fn: VTK-6.2.0.tar.gz                      [not win]
+  md5: 4790f8b3acdbc376997fbdc9d203f0b7      [not win]
+  # fn: VTK-5.10.1.win32-py2.6.exe             [win32 and py26]
+  # fn: VTK-5.10.1.win-amd64-py2.6.exe         [win64 and py26]
+  # fn: VTK-5.10.1.win32-py2.7.exe             [win32 and py27]
+  # fn: VTK-5.10.1.win-amd64-py2.7.exe         [win64 and py27]
+
+  patches:
+    - vtkerr_pyexcept.patch
+
+build:
+  number: 1                                  [linux]
+
+requirements:
+  build:
+    - cmake                                  [linux]
+    - python
+  run:
+    - python
+
+test:
+  commands:
+    - vtkpython -h                           [unix]
+  imports:
+    - vtk
+
+about:
+  home: http://www.vtk.org/
+  license: BSD

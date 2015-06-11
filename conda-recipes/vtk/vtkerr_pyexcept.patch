@@ -1,0 +1,141 @@
+--- Wrapping/PythonCore/vtkPythonUtil.cxx.orig	2015-03-21 23:30:32.689088108 +0200
++++ Wrapping/PythonCore/vtkPythonUtil.cxx	2015-03-21 23:41:03.477209383 +0200
+@@ -19,6 +19,7 @@
+ #include "vtkSystemIncludes.h"
+ 
+ #include "vtkObject.h"
++#include "vtkOutputWindow.h"
+ #include "vtkPythonCommand.h"
+ #include "vtkSmartPointerBase.h"
+ #include "vtkStdString.h"
+@@ -178,6 +179,113 @@
+     }
+ };
+ 
++
++
++// .NAME vtkPythonOutputWindow - output window to transform VTK error
++//                               messages to Python exceptions
++// .SECTION Description
++// The Python wrappings set an instance of this class to be the output
++// window.  When any VTK code makes use of e.g. vtkErrorMacro or
++// vtkWarningMacro, this class will turn the error message into a
++// Python RuntimeError exception and a warning into a Python
++// RuntimeWarning.  Debug text will be displayed with the Python
++// 'print' command.  VTK errors and warnings can now be handled in a
++// far more Pythonic way.
++//
++//  -- Charl P. Botha <http://cpbotha.net/>
++class vtkPythonOutputWindow : public vtkOutputWindow
++{
++public:
++    static vtkPythonOutputWindow *New() {
++        return new vtkPythonOutputWindow(); };
++    
++    virtual void DisplayText(const char*);
++    virtual void DisplayErrorText(const char*);
++    virtual void DisplayWarningText(const char*);
++    virtual void DisplayGenericWarningText(const char*);
++    virtual void DisplayDebugText(const char*);
++
++protected:
++    vtkPythonOutputWindow() {};
++    ~vtkPythonOutputWindow() {};
++    
++private:
++    vtkPythonOutputWindow(const vtkPythonOutputWindow&);  //Not implemented
++    void operator=(const vtkPythonOutputWindow&);  //Not implemented
++};
++
++
++void vtkPythonOutputWindow::DisplayText(const char* message)
++{
++    char command[4097]; // extra for 0-termination
++
++    // we have to do it this way to:
++    // 1. handle directory slashes correctly
++    // 2. handle EOLs correctly
++    snprintf(command, 4096, "import os; print os.path.normpath(r\"\"\"%s\"\"\")", message);
++    
++#ifndef VTK_NO_PYTHON_THREADS
++#if (PY_MAJOR_VERSION > 2) ||                                   \
++    ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION >= 3))
++    PyGILState_STATE state = PyGILState_Ensure();
++#endif
++#endif
++  
++    PyRun_SimpleString(command);
++
++#ifndef VTK_NO_PYTHON_THREADS
++#if (PY_MAJOR_VERSION > 2) ||                                   \
++    ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION >= 3))
++    PyGILState_Release(state);
++#endif
++#endif
++}
++
++void vtkPythonOutputWindow::DisplayErrorText(const char* message)
++{
++
++#ifndef VTK_NO_PYTHON_THREADS
++#if (PY_MAJOR_VERSION > 2) ||                                   \
++    ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION >= 3))
++    PyGILState_STATE state = PyGILState_Ensure();
++#endif
++#endif
++
++ if (!PyErr_Occurred())
++    PyErr_SetString(PyExc_RuntimeError, message);
++
++#ifndef VTK_NO_PYTHON_THREADS
++#if (PY_MAJOR_VERSION > 2) ||                                   \
++    ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION >= 3))
++ PyGILState_Release(state);
++#endif
++#endif
++}
++
++void vtkPythonOutputWindow::DisplayWarningText(const char* message)
++{
++  // one could have considered setting a PyExc_RuntimeWarning, but
++  // this causes all VTK warnings (usually non-critical conditions) to
++  // trigger Python exceptions that terminate the whole program flow.
++  this->DisplayText(message);
++}
++
++void vtkPythonOutputWindow::DisplayGenericWarningText(const char* message)
++{
++  // one could have considered setting a PyExc_RuntimeWarning, but
++  // this causes all VTK warnings (usually non-critical conditions) to
++  // trigger Python exceptions that terminate the whole program flow.
++  this->DisplayText(message);
++}
++
++void vtkPythonOutputWindow::DisplayDebugText(const char* message)
++{
++  this->DisplayText(message);
++}
++
++
++
++
+ //--------------------------------------------------------------------
+ // The singleton for vtkPythonUtil
+ 
+@@ -209,6 +317,11 @@
+   this->SpecialTypeMap = new vtkPythonSpecialTypeMap;
+   this->NamespaceMap = new vtkPythonNamespaceMap;
+   this->PythonCommandList = new vtkPythonCommandList;
++
++  // set the vtkPythonOutputWindow as the singleton instance
++  vtkPythonOutputWindow *ow = vtkPythonOutputWindow::New();
++  ow->SetInstance(ow);
++  ow->Delete();
+ }
+ 
+ //--------------------------------------------------------------------
+@@ -1271,3 +1384,4 @@
+   return NULL;
+ #endif
+ }
++
