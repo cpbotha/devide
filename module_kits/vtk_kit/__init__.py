@@ -96,7 +96,7 @@ def resetDLFlags(data):
 def init(module_manager, pre_import=True):
     # first do the VTK pre-imports: this is here ONLY to keep the user happy
     # it's not necessary for normal functioning
-    if pre_import:
+    if False and pre_import:
         preImportVTK(module_manager.setProgress)
 
     # import the main module itself
