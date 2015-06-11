@@ -1252,7 +1252,8 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
     def _set_image_viewer_dummy_input(self):
         ds = vtk.vtkImageGridSource()
-        self._image_viewer.SetInput(ds.GetOutput())
+        ds.Update()
+        self._image_viewer.SetInputData(ds.GetOutput())
 
 
     def _setup_image_viewer(self):

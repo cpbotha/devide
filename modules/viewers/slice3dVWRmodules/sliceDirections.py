@@ -209,7 +209,7 @@ class sliceDirections(s3dcGridMixin):
                 self._setSliceInteraction(sliceName, True)
 
                 # and initialise the output polydata
-                self.ipwAppendPolyData.AddInput(newSD.primaryPolyData)
+                self.ipwAppendPolyData.AddInputData(newSD.primaryPolyData)
 
                 return newSD
 
@@ -220,7 +220,7 @@ class sliceDirections(s3dcGridMixin):
             sliceDirection = self._sliceDirectionsDict[sliceName]
 
             # remove it from the polydata output
-            self.ipwAppendPolyData.RemoveInput(
+            self.ipwAppendPolyData.RemoveInputData(
                 sliceDirection.primaryPolyData)
 
             # this will disconnect all inputs

@@ -36,7 +36,6 @@ from modules.viewers.slice3dVWRmodules.implicits import implicits
 import os
 import time
 import vtk
-import vtkdevide
 
 import wx
 import weakref
@@ -89,7 +88,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
         self._outline_source = vtk.vtkOutlineSource()
         om = vtk.vtkPolyDataMapper()
-        om.SetInput(self._outline_source.GetOutput())
+        om.SetInputConnection(self._outline_source.GetOutputPort())
         self._outline_actor = vtk.vtkActor()
         self._outline_actor.SetMapper(om)
         self._cube_axes_actor2d = vtk.vtkCubeAxesActor2D()
@@ -286,7 +285,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
         else:
             # and make sure outputs and things are up to date!
-            self.get_output(2).Update()
+            # this used to call Update() on the output planes polydata
+            # with VTK6 this is not possible anymore
+            #self.get_output(2).Update()
+            pass
             
     def get_config(self):
         # implant some stuff into the _config object and return it

@@ -240,7 +240,7 @@ class DeVIDECanvasRBBox(DeVIDECanvasObject):
         self._plane_source.SetXResolution(1)
         self._plane_source.SetYResolution(1)
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._plane_source.GetOutput())
+        m.SetInputConnection(self._plane_source.GetOutputPort())
         a = vtk.vtkActor()
         a.SetMapper(m)
         a.GetProperty().SetOpacity(0.3)
@@ -575,7 +575,9 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # remember this depth, others things have to be 'above' this
         # to be visible (such as the text!)
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._beb.polydata)
+        # the BeveledEdgeBlock() polydata is created during construction, so
+        # we use SetInputData() here.
+        m.SetInputData(self._beb.polydata)
         self._rbsa.SetMapper(m)
 
         # we need Phong shading for the gradients
@@ -597,7 +599,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
         # GLYPH SELECTION OVERLAY #######################################
 
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._selection_block.polydata)
+        # SelectionBlock.polydata is kept up to date explicitly
+        m.SetInputData(self._selection_block.polydata)
         a = vtk.vtkActor()
         a.SetMapper(m)
         a.GetProperty().SetOpacity(0.3)
@@ -607,7 +610,8 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
 
         # GLYPH BLOCKED OVERLAY #######################################
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._blocked_block.polydata)
+        # FilledBlock.polydata is kept up to date explicitly
+        m.SetInputData(self._blocked_block.polydata)
         a = vtk.vtkActor()
         a.SetMapper(m)
         a.GetProperty().SetOpacity(0.3)
@@ -649,7 +653,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             s.SetYLength(self._pHeight)
             s.SetXLength(self._pWidth)
             m = vtk.vtkPolyDataMapper()
-            m.SetInput(s.GetOutput())
+            m.SetInputConnection(s.GetOutputPort())
             a.SetMapper(m)
 
             self.prop1.AddPart(a)
