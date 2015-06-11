@@ -282,7 +282,7 @@ class DeVIDECanvasSimpleLine(DeVIDECanvasObject):
     def _create_geometry(self):
         self._line_source = vtk.vtkLineSource()
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._line_source.GetOutput())
+        m.SetInputConnection(self._line_source.GetOutputPort())
         a = vtk.vtkActor()
         a.SetMapper(m)
         a.GetProperty().SetColor(0.0, 0.0, 0.0)
@@ -369,7 +369,7 @@ class DeVIDECanvasLine(DeVIDECanvasObject):
         self._spline_source.SetParametricFunction(s)
         
         m = vtk.vtkPolyDataMapper()
-        m.SetInput(self._spline_source.GetOutput())
+        m.SetInputConnection(self._spline_source.GetOutputPort())
 
         a = vtk.vtkActor()
         a.SetMapper(m)
@@ -643,7 +643,7 @@ class DeVIDECanvasGlyph(DeVIDECanvasObject):
             s.SetYLength(self._pHeight)
             s.SetXLength(self._pWidth)
             m = vtk.vtkPolyDataMapper()
-            m.SetInput(s.GetOutput())
+            m.SetInputConnection(s.GetOutputPort())
             a.SetMapper(m)
 
             self.prop1.AddPart(a)
