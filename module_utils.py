@@ -90,9 +90,11 @@ def create_eoca_buttons(d3module, viewFrame, viewFramePanel,
     # now we have to get the top level sizer to do its thing
     # WORKAROUND - if we don't remove and add, the
     # viewFrame.GetSizer().Layout() below doesn't do anything.
-    viewFrame.GetSizer().Remove(viewFramePanel)
-    viewFrame.GetSizer().Add(viewFramePanel, 1, wx.EXPAND, 0)
+    #viewFrame.GetSizer().Remove(viewFramePanel)
+    #viewFrame.GetSizer().Add(viewFramePanel, 1, wx.EXPAND, 0)
     # WORKAROUND ENDS
+    # wx._core.PyAssertionError: C++ assertion "!sizer || m_containingSizer != sizer" failed at ./src/common/wincmn.cpp(2470) in SetContainingSizer(): Adding a window to the same sizer twice?
+
     viewFrame.GetSizer().Layout() # this should update the minimum size
     viewFrame.GetSizer().Fit(viewFrame)
     viewFrame.GetSizer().SetSizeHints(viewFrame)
@@ -223,9 +225,10 @@ def create_standard_object_introspection(d3module,
     # now we have to get the top level sizer to do its thing
     # WORKAROUND - if we don't remove and add, the
     # viewFrame.GetSizer().Layout() below doesn't do anything.
-    viewFrame.GetSizer().Remove(viewFramePanel)
-    viewFrame.GetSizer().Add(viewFramePanel, 1, wx.EXPAND, 0)
+    #viewFrame.GetSizer().Remove(viewFramePanel)
+    #viewFrame.GetSizer().Add(viewFramePanel, 1, wx.EXPAND, 0)
     # WORKAROUND ENDS
+
     viewFrame.GetSizer().Layout() # this should update the minimum size
     viewFrame.GetSizer().Fit(viewFrame)
     viewFrame.GetSizer().SetSizeHints(viewFrame)
