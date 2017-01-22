@@ -1,3 +1,5 @@
 This is DeVIDE's official home https://github.com/cpbotha/devide
 
+*NOTE: DeVIDE is not being actively maintained. The current software won't spontaneously stop working, but if you're starting a new project, I recommend evaluating other VTK / Python based choices.*
+
 Please see the [[https://github.com/cpbotha/devide/wiki][DeVIDE wiki]] for downloads and documentation.
