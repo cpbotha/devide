@@ -39,7 +39,7 @@ from . import ConfigVtkObj
 DEBUG=0
 def debug (msg):
     if DEBUG:
-	print(msg)
+        print(msg)
 
 # A hack to prevent vtkTransform.GetInverse() infinite loops
 last_transform = 0
@@ -47,7 +47,7 @@ last_transform = 0
 icon_map = {'RenderWindow': 'renwin', 'Renderer': 'ren',
             'Actor': 'actor', 'Light': 'light', 'Camera': 'camera',
             'Mapper': 'process', 'Property': 'file',
-	    'Coordinate': 'coord', 'Source': 'data', 
+            'Coordinate': 'coord', 'Source': 'data', 
             'LookupTable': 'colormap', 'Reader': 'data',
             'Assembly': 'actor', 'Python': 'python', 'Dummy1': 'question'}
 
@@ -57,8 +57,8 @@ def get_icon (vtk_obj):
     
     strng = vtk_obj.GetClassName ()[3:]
     for key in list(icon_map.keys ()):
-	if string.find (strng, key) > -1:
-	    return [key, vtk_obj, icon_map[key]]
+        if string.find (strng, key) > -1:
+            return [key, vtk_obj, icon_map[key]]
     return ["", vtk_obj, "question"]
 
 
@@ -88,19 +88,19 @@ def get_methods (vtk_obj):
     # using only the first set of indented values.
     patn = re.compile ("  \S")
     for method in methods[:]:
-	if patn.match (method):
+        if patn.match (method):
             if string.find (method, ":") == -1:
                 methods.remove (method)
             elif string.find (method[1], "none") > -1:
-                methods.remove (method)	
+                methods.remove (method) 
         else:
-	    methods.remove (method)    
+            methods.remove (method)    
 
     method_names = []
     for i in range (0, len (methods)):
-	strng = methods[i]
-	strng = string.replace (strng, " ", "")
-	methods[i] = string.split (strng, ":")
+        strng = methods[i]
+        strng = string.replace (strng, " ", "")
+        methods[i] = string.split (strng, ":")
         method_names.append (methods[i][0])
         
     # Bug! :(
@@ -111,7 +111,7 @@ def get_methods (vtk_obj):
         remove_method('FileName', methods, method_names)
         
     if re.match ("vtk\w*Renderer", vtk_obj.GetClassName ()):
-	methods.append (["ActiveCamera", ""])
+        methods.append (["ActiveCamera", ""])
         # GetProps is deprecated from 5.0 onwards, we don't want to see
         # the deprecation warning, so we remove the method
         remove_method('Props', methods, method_names)
@@ -148,34 +148,34 @@ def get_vtk_objs (vtk_obj):
     "Obtain vtk objects from the passed objects."
 
     debug ("vtkPipeline.py: get_vtk_objs (%s)"%
-	   (vtk_obj.GetClassName ()))
+           (vtk_obj.GetClassName ()))
            
     methods = get_methods(vtk_obj)
 
     vtk_objs = []
     for method in methods:
-	try:
-	    t = eval ("vtk_obj.Get%s ().GetClassName ()"%method[0])
-	except:
-	    pass
-	else:
-	    if string.find (t, "Collection") > -1:		
-		col = eval ("vtk_obj.Get%s ()"%method[0])
-		col.InitTraversal ()
-		n = col.GetNumberOfItems ()
-		prop = 0
-		if re.match ("vtkProp\w*C", t):
-		    prop = 1
-		for i in range (0, n):
-		    if prop:
-			obj = col.GetNextProp ()
-		    else:
-			obj = col.GetNextItem ()
-		    icon = get_icon (obj)
+        try:
+            t = eval ("vtk_obj.Get%s ().GetClassName ()"%method[0])
+        except:
+            pass
+        else:
+            if string.find (t, "Collection") > -1:              
+                col = eval ("vtk_obj.Get%s ()"%method[0])
+                col.InitTraversal ()
+                n = col.GetNumberOfItems ()
+                prop = 0
+                if re.match ("vtkProp\w*C", t):
+                    prop = 1
+                for i in range (0, n):
+                    if prop:
+                        obj = col.GetNextProp ()
+                    else:
+                        obj = col.GetNextItem ()
+                    icon = get_icon (obj)
                     if icon:
                         vtk_objs.append (["%s%d"%(icon[0], i), obj, icon[2]])
-	    else:
-		obj = eval ("vtk_obj.Get%s ()"%method[0])
+            else:
+                obj = eval ("vtk_obj.Get%s ()"%method[0])
                 icon = get_icon(obj)
                 if icon:
                     vtk_objs.append (icon)
@@ -261,7 +261,7 @@ class vtkPipelineBrowser:
         will still be used for performing updates.
         """
         
-	self.renwin = renwin
+        self.renwin = renwin
         self._objs = objs
 
         # this will be a dictionary of already existing ConfigVtkObj's using

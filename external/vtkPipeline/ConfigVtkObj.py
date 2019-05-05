@@ -127,7 +127,7 @@ class VtkShowDoc:
         top_sizer.Fit(self._frame)
         top_sizer.SetSizeHints(self._frame)
 
-	#self.root.bind ("<Alt-c>", self.quit)
+        #self.root.bind ("<Alt-c>", self.quit)
             
         #self.txt.tag_config ("heading", foreground="blue",
         #                     underline=1, justify='center')
@@ -207,10 +207,10 @@ class ConfigVtkObj:
 
         You have to call show() to make it appear, however.
         """
-	# This variable is used to do a redraw on changing the objects
-	# properties.
+        # This variable is used to do a redraw on changing the objects
+        # properties.
         self._parent = parent
-	self._renwin = renwin
+        self._renwin = renwin
         self._vtk_obj = vtk_obj
 
         if frame and panel:
@@ -222,8 +222,8 @@ class ConfigVtkObj:
             self._panel = None
             self._ownFrameAndPanel = True
         
-	self.parser = vtkMethodParser.VtkMethodParser ()
-	self.state_patn = re.compile ("To[A-Z0-9]")
+        self.parser = vtkMethodParser.VtkMethodParser ()
+        self.state_patn = re.compile ("To[A-Z0-9]")
         self.update_meth = None
         # create that ui
         self.create_ui()
@@ -239,7 +239,7 @@ class ConfigVtkObj:
             self._vtk_obj.GlobalWarningDisplayOff ()
 
         # make lists of all the methods available in the vtk_object
-	self.parse_methods (self._vtk_obj)
+        self.parse_methods (self._vtk_obj)
 
         # ################################################################
         # now create all the actual widget/ui elements
@@ -266,14 +266,14 @@ class ConfigVtkObj:
         sizer7.Add(self._notebook, proportion=0,
                    flag=wx.EXPAND)
 
-	self.make_gui_vars ()
+        self.make_gui_vars ()
 
         # the sizer returned by make_control_gui has no border... we want
         # a border of 7 between the control_gui and the notebook
-	sizer7.Add(self.make_control_gui(self._panel), proportion=1,
+        sizer7.Add(self.make_control_gui(self._panel), proportion=1,
                    flag=wx.EXPAND|wx.TOP, border=7)
         
-	self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
+        self._notebook.AddPage(self.make_toggle_gui(self._notebook), 'Toggles')
         self._notebook.AddPage(self.make_state_gui(self._notebook), 'States')
         self._notebook.AddPage(self.make_get_gui(self._notebook), 'Gets')
         self._notebook.AddPage(self.make_get_set_gui(self._notebook),
@@ -307,11 +307,11 @@ class ConfigVtkObj:
         self.update_meth = method
 
     def parse_methods (self, vtk_obj):
-	self.parser.parse_methods (vtk_obj)
-	self.toggle_meths = self.parser.toggle_methods ()
-	self.state_meths = self.parser.state_methods ()
-	self.get_set_meths = self.parser.get_set_methods ()
-	self.get_meths = self.parser.get_methods ()
+        self.parser.parse_methods (vtk_obj)
+        self.toggle_meths = self.parser.toggle_methods ()
+        self.state_meths = self.parser.state_methods ()
+        self.get_set_meths = self.parser.get_set_methods ()
+        self.get_meths = self.parser.get_methods ()
 
     def get_state (self, meths):
         end = self.state_patn.search (meths[0]).start ()
@@ -333,10 +333,10 @@ class ConfigVtkObj:
         self._frame.Show(False)
 
     def make_gui_vars (self):
-	"Create the various variables used for the GUI."
-	#self.user_command = Tkinter.StringVar ()
+        "Create the various variables used for the GUI."
+        #self.user_command = Tkinter.StringVar ()
 
-	self.toggle_var = [-1 for i in self.toggle_meths]
+        self.toggle_var = [-1 for i in self.toggle_meths]
         self.toggle_checkboxes = [None for i in self.toggle_var]
         
         self.state_var = [-1 for i in self.state_meths]
@@ -419,7 +419,7 @@ class ConfigVtkObj:
         return vert_sizer
 
     def make_toggle_gui (self, parent):
-	"""Create the toggle methods.
+        """Create the toggle methods.
 
         This method should do whatever it does into a panel that it creates.
         This panel should be returned, as it's going to be stuffed in a
@@ -434,10 +434,10 @@ class ConfigVtkObj:
         internalSizer = wx.BoxSizer(wx.VERTICAL)
         vert_sizer.Add(internalSizer, 1, wx.ALL, 7)
         
-	n_meth = len (self.toggle_meths)
-	for i in range (0, n_meth):
-	    m = "Get"+self.toggle_meths[i][:-2]
-	    self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
+        n_meth = len (self.toggle_meths)
+        for i in range (0, n_meth):
+            m = "Get"+self.toggle_meths[i][:-2]
+            self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
             cb_id = wx.NewId()
             cb = wx.CheckBox(parent=panel, id=cb_id, label=self.toggle_meths[i])
             cb.SetValue(self.toggle_var[i])
@@ -464,9 +464,9 @@ class ConfigVtkObj:
         modifies our internal variable.  Neat.
         """
         self.toggle_var[i] = event.GetEventObject().GetValue()
-	    
+            
     def make_state_gui (self, parent):
-	"Create the state methods.  (SetAToB methods)"
+        "Create the state methods.  (SetAToB methods)"
         panel = wx.Panel(parent, id=-1)
         vert_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetAutoLayout(True)
@@ -478,11 +478,11 @@ class ConfigVtkObj:
         # self.state_meths is a list of lists
         # each of the contained lists is the collection of SetBlaToBlaat
         # methods, where Bla is constant for each contained list
-	n_meth = len (self.state_meths)
-	rw = 0
+        n_meth = len (self.state_meths)
+        rw = 0
 
-	for i in range (0, n_meth):
-	    meths = self.state_meths[i]
+        for i in range (0, n_meth):
+            meths = self.state_meths[i]
             # a subgroup must have more than 1 member, else it's not a state method
             if len(meths) > 1:
                 self.state_var[i] = self.get_state (meths)
@@ -517,7 +517,7 @@ class ConfigVtkObj:
         self.state_var[i] = event.GetEventObject().GetSelection()
 
     def make_get_set_gui (self, parent):
-	"Create the Get/Set methods"
+        "Create the Get/Set methods"
 
         panel = wx.Panel(parent, id=-1)
 
@@ -529,10 +529,10 @@ class ConfigVtkObj:
         grid_sizer.AddGrowableCol(1)
         vertSizer.Add(grid_sizer, 1, wx.EXPAND|wx.ALL, 7)
         
-	n_meth = len (self.get_set_meths)
-	for i in range (0, n_meth):
-	    m = "Get"+self.get_set_meths[i]
-	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
+        n_meth = len (self.get_set_meths)
+        for i in range (0, n_meth):
+            m = "Get"+self.get_set_meths[i]
+            self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
 
             s = 'Set'+self.get_set_meths[i]
             try:
@@ -540,9 +540,9 @@ class ConfigVtkObj:
             except AttributeError:
                 docString = None
 
-	    # if the method requires a colour make a button so the user
-	    # can choose the colour!
-	    if string.find (m[-5:], "Color") > -1:
+            # if the method requires a colour make a button so the user
+            # can choose the colour!
+            if string.find (m[-5:], "Color") > -1:
                 cbut_id = wx.NewId()
                 cbut = wx.Button(parent=panel, id=cbut_id, label="Set"+m[3:])
                 wx.EVT_BUTTON(panel, cbut_id,
@@ -553,7 +553,7 @@ class ConfigVtkObj:
                 if docString:
                     cbut.SetToolTip(wx.ToolTip(docString))
 
-	    else:
+            else:
                 st = wx.StaticText(parent=panel, id=-1, label="Set"+m[3:])
                 grid_sizer.Add(st, 0, wx.ALIGN_CENTER_VERTICAL)
 
@@ -615,7 +615,7 @@ class ConfigVtkObj:
         self.get_set_var[i] = evt.GetString()
 
     def make_get_gui (self, parent):
-	"Create the Get methods that have no Set equivalent."
+        "Create the Get methods that have no Set equivalent."
         panel = wx.Panel(parent, id=-1)
 
         vertSizer = wx.BoxSizer(wx.VERTICAL)
@@ -626,9 +626,9 @@ class ConfigVtkObj:
         grid_sizer.AddGrowableCol(1)
         vertSizer.Add(grid_sizer, 1, wx.ALL, 7)
         
-	n_meth = len (self.get_meths)
-	for i in range (0, n_meth):
-	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
+        n_meth = len (self.get_meths)
+        for i in range (0, n_meth):
+            res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
             st = wx.StaticText(parent=panel, id=-1, label=self.get_meths[i]+":")
             grid_sizer.Add(st)
 
@@ -659,38 +659,38 @@ class ConfigVtkObj:
         return panel
 
     def update_gui (self, event=None):
-	"Update the values if anything has changed outside."
+        "Update the values if anything has changed outside."
         if self.vtk_warn > -1:
             self._vtk_obj.GlobalWarningDisplayOff ()
 
-	n_meth = len (self.toggle_meths)
-	for i in range (0, n_meth):
-	    m = "Get"+self.toggle_meths[i][:-2]
-	    self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
+        n_meth = len (self.toggle_meths)
+        for i in range (0, n_meth):
+            m = "Get"+self.toggle_meths[i][:-2]
+            self.toggle_var[i] = eval ("self._vtk_obj.%s ()"%m)
             # set value does NOT invoke the callback
             self.toggle_checkboxes[i].SetValue(self.toggle_var[i])
 
-	for i in range (len (self.state_meths)):
-	    m = self.state_meths[i]
-	    self.state_var[i] = self.get_state (m)
+        for i in range (len (self.state_meths)):
+            m = self.state_meths[i]
+            self.state_var[i] = self.get_state (m)
             self.state_radioboxes[i].SetSelection(self.state_var[i])
 
-	n_meth = len (self.get_set_meths)
-	for i in range (0, n_meth):
-	    m = "Get"+self.get_set_meths[i]
-	    self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
+        n_meth = len (self.get_set_meths)
+        for i in range (0, n_meth):
+            m = "Get"+self.get_set_meths[i]
+            self.get_set_var[i] = eval("self._vtk_obj.%s ()"%m)
             self.get_set_texts[i].SetValue(str(self.get_set_var[i]))
             
-	n_meth = len (self.get_meths)
-	for i in range (0, n_meth):
-	    res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
-	    self.get_texts[i].SetLabel(str(res))
+        n_meth = len (self.get_meths)
+        for i in range (0, n_meth):
+            res = eval ("self._vtk_obj.%s ()"% self.get_meths[i])
+            self.get_texts[i].SetLabel(str(res))
 
         if self.vtk_warn > -1:
             self._vtk_obj.GlobalWarningDisplayOn ()
-	    
+            
     def set_color (self, event, i, parent):
-	"Choose and set a color from a GUI color chooser."
+        "Choose and set a color from a GUI color chooser."
 
         # setup current colour
         # we need to convert get_set_var[i], which could be string, to
@@ -739,7 +739,7 @@ class ConfigVtkObj:
             if val == 1:
                 eval ("self._vtk_obj.%sOn ()"%m)
             else:
-                eval ("self._vtk_obj.%sOff ()"%m)		
+                eval ("self._vtk_obj.%sOff ()"%m)               
 
         n_meth = len (self.state_meths)
         for i in range (0, n_meth):
@@ -798,9 +798,9 @@ class ConfigVtkObj:
         self.render ()
         if self.vtk_warn > -1:
             self._vtk_obj.SetGlobalWarningDisplay (self.vtk_warn)
-		
+                
     def cancel (self, event=None):
-	"Cancel button clicked."
+        "Cancel button clicked."
         self.hide()
 
     def close(self):
@@ -828,21 +828,21 @@ class ConfigVtkObj:
         
 
     def render(self):
-	"Render scene and update anything that needs updating."
+        "Render scene and update anything that needs updating."
         if self.update_meth and callable (self.update_meth):
             self.update_meth ()
-	if self._renwin is not None:
-	    try:
-		self._renwin.Render ()
-	    except:
-		pass
+        if self._renwin is not None:
+            try:
+                self._renwin.Render ()
+            except:
+                pass
 
     def show_vtkobject_methods(self):
-	"Print the various methods of the vtkobject."
-	print("Toggle Methods\n", self.toggle_meths)
-	print("State Methods\n", self.state_meths)
-	print("Get/Set methods\n", self.get_set_meths)
-	print("Get methods\n", self.get_meths)
+        "Print the various methods of the vtkobject."
+        print("Toggle Methods\n", self.toggle_meths)
+        print("State Methods\n", self.state_meths)
+        print("Get/Set methods\n", self.get_set_meths)
+        print("Get methods\n", self.get_meths)
 
 
 if __name__ == "__main__":  
@@ -873,8 +873,8 @@ if __name__ == "__main__":
 
 #    for obj in (renWin, ren, cone, coneMapper, coneActor,
 #                coneActor.GetProperty(), axes):
-#	print "Configuring", obj.GetClassName (), "..."
-#	conf = ConfigVtkObj(frame, renWin, obj)
+#       print "Configuring", obj.GetClassName (), "..."
+#       conf = ConfigVtkObj(frame, renWin, obj)
 #        conf.show()
 
     r = vtkpython.vtkXMLPolyDataReader()
