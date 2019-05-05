@@ -338,7 +338,7 @@ class WXInterface(wx.App):
             'DeVIDE v%s' % (self._devide_app.get_devide_version(),))
 
         # now get all other versions we require
-        pyver = string.split(sys.version)[0]
+        pyver = sys.version.split()[0]
 
         about.versions_listbox.Append('Python %s' % (pyver,))
 

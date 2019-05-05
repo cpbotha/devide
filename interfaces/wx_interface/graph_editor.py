@@ -1075,9 +1075,9 @@ class GraphEditor:
         mm = self._devide_app.get_module_manager()
         mm.execute_module(module_instance)
 
-    def _module_doc_to_html(self, full_module_name, doc):
+    def _module_doc_to_html(self, full_module_name, doc: string):
         # do rudimentary __doc__ -> html conversion
-        docLines = string.split(doc.strip(), '\n')
+        docLines = doc.strip().split('\n')
         for idx in range(len(docLines)):
             docLine = docLines[idx].strip()
             if docLine == '':
@@ -1085,7 +1085,7 @@ class GraphEditor:
 
         # add pretty heading
         htmlDoc = '<center><b>%s</b></center><br><br>' % \
-                  (full_module_name,) + string.join(docLines, '\n')
+                  (full_module_name,) + '\n'.join(docLines)
 
         # finally change the contents of the new/existing module help window
         return '<html><body>%s</body></html>' % (htmlDoc,)
