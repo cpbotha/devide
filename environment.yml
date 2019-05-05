@@ -1,0 +1,16 @@
+name: devide
+channels:
+  - conda-forge
+dependencies:
+  # gdcm 2.8.9 packages not available on Windows, because broken.
+  # until fixed, consider 2.8.4 + py36
+  # - gdcm
+  - numpy
+  - openjpeg
+  - pillow
+  - psutil
+  - pydicom
+  - python=3.7
+  - vtk=8.2
+  - wxpython>=4
+
