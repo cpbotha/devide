@@ -506,7 +506,9 @@ class ModuleManager:
 
                 module_indices.append(mim)
 
-        os.path.walk(modulePath, miwFunc, arg=modulePath)
+        #os.path.walk(modulePath, miwFunc, arg=modulePath)
+        for dirpath, dirnames, filenames in os.walk(modulePath):
+            miwFunc(modulePath, dirpath, filenames)
 
         for emp in self.get_app_main_config().extra_module_paths:
             # make sure there are no extra spaces at the ends, as well
@@ -519,7 +521,9 @@ class ModuleManager:
                 if emp not in sys.path:
                     sys.path.insert(0,emp)
 
-                os.path.walk(emp, miwFunc, arg=emp)
+                #os.path.walk(emp, miwFunc, arg=emp)
+                for dirpath, dirnames, filenames in os.walk(emp):
+                    miwFunc(emp, dirpath, filenames)
 
         # iterate through the moduleIndices, building up the available
         # modules list.
@@ -592,7 +596,9 @@ class ModuleManager:
                                 for fname in fnames
                                 if fnmatch.fnmatch(fname, '*.dvn')])
 
-        os.path.walk(os.path.join(appDir, 'segments'), swFunc, arg=None)
+        #os.path.walk(os.path.join(appDir, 'segments'), swFunc, arg=None)
+        for dirpath, dirnames, filenames in os.walk(os.path.join(appDir, 'segments')):
+            swFunc(None, dirpath, filenames)
 
         # this is purely a list of segment filenames
         self.availableSegmentsList = segmentList
