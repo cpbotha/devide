@@ -20,8 +20,8 @@ import importlib
 
 # so that modules using the file open mixins don't have to import wx
 # directly.
-WX_OPEN = wx.OPEN
-WX_SAVE = wx.SAVE
+WX_OPEN = wx.FD_OPEN
+WX_SAVE = wx.FD_SAVE
 
 import resources.python.filename_view_module_mixin_frame
 import re
@@ -215,7 +215,7 @@ vtkPipelineConfigModuleMixin = IntrospectModuleMixin
 class FileOpenDialogModuleMixin(object):
     """Module mixin to make use of file open dialog."""
     
-    def filename_browse(self, parent, message, wildcard, style=wx.OPEN):
+    def filename_browse(self, parent, message, wildcard, style=WX_OPEN):
         """Utility method to make use of wxFileDialog.
 
         This function will open up exactly one dialog per 'message' and this
