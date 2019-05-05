@@ -275,7 +275,7 @@ class NetworkManager(SubjectMixin):
         # general section with network configuration
         sec = 'general'
         cp.add_section(sec)
-        cp.set(sec, 'export', export)
+        cp.set(sec, 'export', str(export))
 
         if export:
             # convert all stored filenames, if they are below the
@@ -298,8 +298,8 @@ class NetworkManager(SubjectMixin):
                 # no export, so we don't have to transform anything
                 mcd = pms.module_config.__dict__
 
-            cp.set(sec, 'module_config_dict', mcd)
-            cp.set(sec, 'glyph_position', glyph_pos_dict[pms.instance_name])
+            cp.set(sec, 'module_config_dict', str(mcd))
+            cp.set(sec, 'glyph_position', str(glyph_pos_dict[pms.instance_name]))
 
         for idx, pconn in enumerate(connection_list):
             sec = 'connections/%d' % (idx,)
@@ -308,10 +308,7 @@ class NetworkManager(SubjectMixin):
             for a in attrs:
                 cp.set(sec, a, getattr(pconn, a))
 
-
-
-
-        cfp = file(filename, 'wb')
+        cfp = open(filename, 'w')
         cp.write(cfp)
         cfp.close()
 
