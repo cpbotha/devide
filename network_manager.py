@@ -103,7 +103,8 @@ class NetworkManager(SubjectMixin):
 
         try:
             # load the fileData
-            cfp = open(filename, 'rb')
+            # on all platforms, we treat LF as newline
+            cfp = open(filename, 'r', newline='\n')
         except Exception as e:
             raise RuntimeError('Could not open network file %s:\n%s' % \
                     (filename,str(e)))
@@ -308,7 +309,7 @@ class NetworkManager(SubjectMixin):
             for a in attrs:
                 cp.set(sec, a, getattr(pconn, a))
 
-        cfp = open(filename, 'w')
+        cfp = open(filename, 'w', newline="\n")
         cp.write(cfp)
         cfp.close()
 
