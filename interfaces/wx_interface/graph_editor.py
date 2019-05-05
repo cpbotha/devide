@@ -1227,7 +1227,7 @@ class GraphEditor:
             "Choose DeVIDE network to load into copy buffer",
             self._last_fileselector_dir, "", "dvn",
             "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
-            wx.OPEN)
+            wx.FD_OPEN)
         
         if filename:
             # save directory for future use
@@ -2344,7 +2344,7 @@ class GraphEditor:
             "Choose DeVIDE network to load",
             self._last_fileselector_dir, "", "dvn",
             "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
-            wx.OPEN)
+            wx.FD_OPEN)
         
         if filename:
             # save the directory part of whatever was selected for
@@ -2387,7 +2387,7 @@ class GraphEditor:
                 filename = wx.FileSelector(msg,
                     self._last_fileselector_dir, "", "dvn",
                     "DeVIDE networks (*.dvn)|*.dvn|All files (*.*)|*.*",
-                    wx.SAVE)
+                    wx.FD_SAVE)
             else:
                 filename = self._current_filename
        
