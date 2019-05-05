@@ -73,7 +73,9 @@ class vtiRDR(FilenameViewModuleMixin, ModuleBase):
     def streaming_execute_module(self):
         if len(self._reader.GetFileName()):
             self._reader.UpdateInformation()
-            self._reader.GetOutput().SetUpdateExtentToWholeExtent()
+            # 2019 cpbotha does not understand why this streaming_execute_module is updating the whole extent
+            # also, this function does not exist anymore
+            #self._reader.GetOutput().SetUpdateExtentToWholeExtent()
             self._reader.Update()
 
             
