@@ -43,7 +43,7 @@ class FileBrowseButton(wx.Panel):
                   startDirectory = ".",
                   initialValue = "",
                   fileMask = "*.*",
-                  fileMode = wx.OPEN,
+                  fileMode = wx.FD_OPEN,
                   # callback for when value changes (optional)
                   changeCallback= lambda x:x,
                   labelWidth = 0
