@@ -441,7 +441,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             self._threedRenderer.RemoveActor(self._cube_axes_actor2d)
 
             # deactivate VOI widget as far as possible
-            self._voi_widget.SetInput(None)
+            self._voi_widget.SetInputData(None)
             self._voi_widget.Off()
             self._voi_widget.SetInteractor(None)
 
@@ -1004,7 +1004,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         w2i.SetInput(self.threedFrame.threedRWI.GetRenderWindow())
 
         writer = vtk.vtkPNGWriter()
-        writer.SetInput(w2i.GetOutput())
+        writer.SetInputConnection(w2i.GetOutputPort())
         writer.SetFileName(filename)
         writer.Write()
         self._module_manager.setProgress(100, "Writing PNG image... [DONE]")
@@ -1175,7 +1175,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             zor = self.controlFrame.voiResetToOriginCheck.GetValue()
 
             extractVOI = vtk.vtkExtractVOI()
-            extractVOI.SetInput(input_data)
+            extractVOI.SetInputData(input_data)
             extractVOI.SetVOI(self._currentVOI)
 
             writer = vtk.vtkXMLImageDataWriter()
@@ -1185,11 +1185,11 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             if zor:
                 ici = vtk.vtkImageChangeInformation()
                 ici.SetOutputExtentStart(0,0,0)
-                ici.SetInput(extractVOI.GetOutput())
-                writer.SetInput(ici.GetOutput())
+                ici.SetInputConnection(extractVOI.GetOutputPort())
+                writer.SetInputConnection(ici.GetOutputPort())
 
             else:
-                writer.SetInput(extractVOI.GetOutput())
+                writer.SetInputConnection(extractVOI.GetOutputPort())
 
             writer.Write()
 
