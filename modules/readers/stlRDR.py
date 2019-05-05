@@ -20,7 +20,7 @@ class stlRDR(FilenameViewModuleMixin, ModuleBase):
         ModuleBase.__init__(self, module_manager)
 
         # setup necessary VTK objects
-	self._reader = vtk.vtkSTLReader()
+        self._reader = vtk.vtkSTLReader()
 
         # ctor for this specific mixin
         FilenameViewModuleMixin.__init__(
@@ -34,7 +34,7 @@ class stlRDR(FilenameViewModuleMixin, ModuleBase):
 
         # set up some defaults
         self._config.filename = ''
-	self.sync_module_logic_with_config()
+        self.sync_module_logic_with_config()
         
     def close(self):
         del self._reader
@@ -42,17 +42,17 @@ class stlRDR(FilenameViewModuleMixin, ModuleBase):
         FilenameViewModuleMixin.close(self)
 
     def get_input_descriptions(self):
-	return ()
+        return ()
     
     def set_input(self, idx, input_stream):
-	raise Exception
+        raise Exception
     
     def get_output_descriptions(self):
         # equivalent to return ('vtkPolyData',)
-	return (self._reader.GetOutput().GetClassName(),)
+        return (self._reader.GetOutput().GetClassName(),)
     
     def get_output(self, idx):
-	return self._reader.GetOutput()
+        return self._reader.GetOutput()
 
     def logic_to_config(self):
         filename = self._reader.GetFileName()

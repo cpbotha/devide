@@ -91,10 +91,10 @@ class superQuadric(ScriptedConfigModuleMixin, ModuleBase):
         return ()
 
     def set_input(self, idx, input_stream):
-	raise Exception
+        raise Exception
     
     def get_output_descriptions(self):
-	return ('Implicit function',
+        return ('Implicit function',
                 'Polydata')
     
     def get_output(self, idx):
