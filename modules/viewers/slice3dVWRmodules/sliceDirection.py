@@ -196,7 +196,8 @@ class sliceDirection:
                     raise Exception("This inputData already exists in this slice.")
 
             # make sure it's all up to date
-            inputData.Update()
+            # 2019: you can't do this anymore.
+            #inputData.Update()
 
             if self._ipws:
                 # this means we already have data and what's added now can
@@ -236,12 +237,12 @@ class sliceDirection:
 
                 try:
                     # with invalid data, this will throw an exception!
-                    self._ipws[-1].SetInput(inputData)
+                    self._ipws[-1].SetInputData(inputData)
                 except RuntimeError as e:
                     # so we undo any changes so far, and re-raise the exception
                     # calling code will then not make any accounting changes, so
                     # no harm done.
-                    self._ipws[-1].SetInput(None)
+                    self._ipws[-1].SetInputData(None)
                     del self._ipws[-1]
                     raise
                
@@ -268,12 +269,12 @@ class sliceDirection:
                
                 try:
                     # with invalid data, this will throw an exception!
-                    self._ipws[-1].SetInput(inputData)
+                    self._ipws[-1].SetInputData(inputData)
                 except RuntimeError as e:
                     # so we undo any changes so far, and re-raise the exception
                     # calling code will then not make any accounting changes, so
                     # no harm done.
-                    self._ipws[-1].SetInput(None)
+                    self._ipws[-1].SetInputData(None)
                     del self._ipws[-1]
                     raise
 
@@ -322,7 +323,7 @@ class sliceDirection:
                         rsoScalars.SetName('ipw_reslice_output')
                 
                 # and add ourselvess to the output unstructured grid pointer
-                self.sliceDirections.ipwAppendFilter.AddInput(
+                self.sliceDirections.ipwAppendFilter.AddInputData(
                     self._ipws[-1].GetResliceOutput())
 
     def updateData(self, prevInputData, newInputData):
@@ -337,7 +338,7 @@ class sliceDirection:
             if prevInputData is ipw.GetInput():
                 
                 # set new input
-                ipw.SetInput(newInputData)
+                ipw.SetInputData(newInputData)
 
                 if i == 0:
                     primaryUpdated = True
@@ -578,7 +579,7 @@ class sliceDirection:
                 ipw.GetResliceOutput())
             
             # disconnect the input
-            ipw.SetInput(None)
+            ipw.SetInputData(None)
 
             # finally delete our reference
             idx = self._ipws.index(ipw)            
@@ -703,9 +704,10 @@ class sliceDirection:
             
             # first make sure that the WHOLE primary will get updated
             # when we render, else we get stupid single slice renderings!
-            inputData.UpdateInformation()
-            inputData.SetUpdateExtentToWholeExtent()
-            inputData.Update()
+            # 2019: we can't do this anymore.
+            # inputData.UpdateInformation()
+            # inputData.SetUpdateExtentToWholeExtent()
+            # inputData.Update()
             
             # calculate default window/level once (same as used
             # by vtkImagePlaneWidget)
@@ -724,24 +726,30 @@ class sliceDirection:
                 iwindow = dmax - dmin
                 ilevel = 0.5 * (dmin + dmax)
 
-            # this doesn't work anymore.  We'll have to pack the
-            # Window/Level data in a field like we do with the
-            # orientation.
-            inputData_source = inputData.GetSource()
-
-            try:
-                window = inputData_source.GetWindowWidth()
-                print("s3dv: Reading LEVEL from DICOM.")
-            except AttributeError:
+            if True:
                 window = iwindow
-                print("s3dv: Estimating LEVEL.")
-
-            try:
-                level = inputData_source.GetWindowCenter()
-                print("s3dv: Reading WINDOW from DICOM.")
-            except AttributeError:
                 level = ilevel
-                print("s3dv: Estimating WINDOW.")
+
+            else:
+                # TODO: figure out best way to get window / level from DICOM
+                # this doesn't work anymore.  We'll have to pack the
+                # Window/Level data in a field like we do with the
+                # orientation.
+                inputData_source = inputData.GetSource()
+
+                try:
+                    window = inputData_source.GetWindowWidth()
+                    print("s3dv: Reading LEVEL from DICOM.")
+                except AttributeError:
+                    window = iwindow
+                    print("s3dv: Estimating LEVEL.")
+
+                try:
+                    level = inputData_source.GetWindowCenter()
+                    print("s3dv: Reading WINDOW from DICOM.")
+                except AttributeError:
+                    level = ilevel
+                    print("s3dv: Estimating WINDOW.")
 
 
             # if window is negative, it means the DICOM reader couldn't

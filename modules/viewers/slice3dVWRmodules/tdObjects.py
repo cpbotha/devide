@@ -11,7 +11,7 @@ from module_kits.vtk_kit import misc
 from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
 import operator
 import vtk
-import vtkdevide
+#import vtkdevide
 import wx
 import wx.grid
 from wx.lib import colourdb
@@ -86,9 +86,9 @@ class tdObjects(s3dcGridMixin):
             self._objectId += 1
 
             # create a colour as well
-            colour = wx.TheColourDatabase.FindColour(colourName).asTuple()
-            # normalise
-            nColour = tuple([c / 255.0 for c in colour])
+            colour = wx.TheColourDatabase.FindColour(colourName)
+            # normalise. also, ignore the alpha.
+            nColour = tuple([c / 255.0 for c in colour[0:3]])
 
             # we'll need this later (when we decide about scalar vis)
             scalarsName = None
@@ -117,7 +117,8 @@ class tdObjects(s3dcGridMixin):
 
                 elif tdObject.GetClassName() == 'vtkPolyData':
                     mapper = vtk.vtkPolyDataMapper()
-                    mapper.ImmediateModeRenderingOn()
+                    # 2019 charl says: THANK YOU 2012 CHARL FOR COMMENTING THIS. NOT.
+                    #mapper.ImmediateModeRenderingOn()
                     mapper.SetInputData(tdObject)
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
@@ -149,10 +150,11 @@ class tdObjects(s3dcGridMixin):
                                                      'vtkActor' : actor}
 
 
+                    print("tdObjects: actor added to renderer")
                     # to get the name of the scalars we need to do this.
                     # VTK6: not possible anymore.
                     #tdObject.Update()
-                
+
                     if tdObject.GetPointData().GetScalars():
                         scalarsName = tdObject.GetPointData().GetScalars().\
                                       GetName()
@@ -1531,10 +1533,12 @@ class tdObjects(s3dcGridMixin):
                     objectDict['motionBoxWidget'].SetInteractor(None)
                     objectDict['motionBoxWidget'] = None
 
+                # DeVIDE 2019 disabling vtkdevide for now
                 # we like to do it anew
-                objectDict['motionBoxWidget'] = vtkdevide.\
-                                                vtkBoxWidgetConstrained()
-                bw = objectDict['motionBoxWidget']
+                #objectDict['motionBoxWidget'] = vtkdevide.\
+                #                                vtkBoxWidgetConstrained()
+                #bw = objectDict['motionBoxWidget']
+                bw = vtk.vtkBoxWidget()
                     
                 # let's switch on scaling for now... (I used to have this off,
                 # but I can't remember exactly why)

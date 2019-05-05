@@ -348,7 +348,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
             # reset the VOI widget
             self._voi_widget.SetInteractor(self.threedFrame.threedRWI)
-            self._voi_widget.SetInput(input_stream)
+            self._voi_widget.SetInputData(input_stream)
 
             # we only want to placewidget if this is the first time
             if self._voi_widget.NeedsPlacement:
@@ -981,7 +981,8 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             return
 
         # make sure this is all nicely up to date
-        inputData.Update()
+        # 2019: you can't do this anymore!
+        #inputData.Update()
 
         # set up helper actors
         self._outline_source.SetBounds(inputData.GetBounds())
