@@ -3,6 +3,7 @@
 # See COPYRIGHT for details.
 
 import configparser
+import importlib
 import sys, os, fnmatch
 import re
 import copy
@@ -737,10 +738,12 @@ class ModuleManager:
 
             try:
                 # then instantiate the requested class
-                module_instance = None
-                exec(
-                    'module_instance = %s.%s(self)' % (fullName,
-                                                      fullName.split('.')[-1]))
+                # 2019: exec()d imports does not bring into global namespace anymore.
+                module_instance = getattr(sys.modules.get(fullName), fullName.split('.')[-1])(self)
+                # module_instance = None
+                # exec(
+                #     'module_instance = %s.%s(self)' % (fullName,
+                #                                       fullName.split('.')[-1]))
             finally:
                 # do the following in all cases:
                 self.auto_execute = ae
@@ -813,11 +816,13 @@ class ModuleManager:
                 
         # import the correct module - we have to do this in anycase to
         # get the thing into our local namespace
-        exec('import ' + fullName)
+        #exec('import ' + fullName)
+        importlib.import_module(fullName)
             
         # there can only be a reload if this is not a newModule
         if not newModule:
-           exec('reload(' + fullName + ')')
+           #exec('reload(' + fullName + ')')
+           importlib.reload(sys.modules.get(fullName))
 
         # we need to inject the import into the calling dictionary...
         # importing my.module results in "my" in the dictionary, so we
