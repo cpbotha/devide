@@ -42,7 +42,7 @@ if dev_version:
     # if there's no valid versions.py, we have these defaults
     # DEVIDE_VERSION is usually y.m.d of the release, or y.m.D if
     # development version
-    DEVIDE_VERSION = "12.3.D"
+    DEVIDE_VERSION = "2019.1"
     DEVIDE_REVISION_ID = "DEV"
     JOHANNES_REVISION_ID = "DEV"
 
@@ -397,10 +397,12 @@ class DeVIDEApp:
         with all information about current exception.
 
         """
-        
+        print('log_error_with_exception: ', msg)
         import gen_utils
         emsgs = gen_utils.exceptionToMsgs()
+        print("after gen_utils")
         self.log_error_list(emsgs + [msg])
+        print("after log_error_list")
 
     def log_info(self, message, timeStamp=True):
         """Log informative message to the log file or log window.
