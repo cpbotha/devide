@@ -8,7 +8,7 @@ import io, zlib
 
 def getdevidelogo64x64Data():
     return zlib.decompress(
-'x\xda\x01\xb2\x07M\xf8\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00@\x00\
+b'x\xda\x01\xb2\x07M\xf8\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00@\x00\
 \x00\x00@\x08\x06\x00\x00\x00\xaaiq\xde\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\
 \x08d\x88\x00\x00\x07iIDATx\x9c\xe5[+t\xe38\x14\xbd\xdb# \x10`P`P 0 `\x80A\
 \x80A\x81A\x81AA\xc0\x82\x82\x02\xc3\x85\x85\x05\x0b\n\x16\x0cXP\x18X\x180  \
@@ -91,7 +91,7 @@ def getdevidelogo64x64Bitmap():
     return wx.BitmapFromImage(getdevidelogo64x64Image())
 
 def getdevidelogo64x64Image():
-    stream = io.StringIO(getdevidelogo64x64Data())
+    stream = io.BytesIO(getdevidelogo64x64Data())
     return wx.ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -150,7 +150,7 @@ def getdevidelogo32x32Image():
 #----------------------------------------------------------------------
 def getdevidelogom32x32Data():
     return zlib.decompress(
-'x\xda\x01\xd7\x04(\xfb\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00 \x00\
+b'x\xda\x01\xd7\x04(\xfb\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00 \x00\
 \x00\x00 \x08\x06\x00\x00\x00szz\xf4\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\
 \x08d\x88\x00\x00\x04\x8eIDATx\x9c\xc5\x97-t\xe38\x10\xc7\x7f\xb7\xcf@ @ \
 \xc0\xa0\xc0\xa0\xc0\xa0\xc0\xa0\xc0\xa0\xc0 \xc0`A`\xc1\x82\x80\x05\x81\x85\
@@ -204,6 +204,6 @@ def getdevidelogom32x32Bitmap():
     return wx.BitmapFromImage(getdevidelogom32x32Image())
 
 def getdevidelogom32x32Image():
-    stream = io.StringIO(getdevidelogom32x32Data())
+    stream = io.BytesIO(getdevidelogom32x32Data())
     return wx.ImageFromStream(stream)
 
