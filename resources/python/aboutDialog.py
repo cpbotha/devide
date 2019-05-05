@@ -7,12 +7,10 @@ import wx
 # begin wxGlade: extracode
 # end wxGlade
 
-
-
 class aboutDialog(wx.Dialog):
     def __init__(self, *args, **kwds):
         # begin wxGlade: aboutDialog.__init__
-        kwds["style"] = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.THICK_FRAME
+        kwds["style"] = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER
         wx.Dialog.__init__(self, *args, **kwds)
         self.toplevel_panel = wx.Panel(self, -1)
         self.sizer_5_staticbox = wx.StaticBox(self.toplevel_panel, -1, "Component Versions")
