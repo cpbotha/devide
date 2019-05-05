@@ -16,7 +16,7 @@ class aboutDialog(wx.Dialog):
         self.sizer_5_staticbox = wx.StaticBox(self.toplevel_panel, -1, "Component Versions")
         self.name_version_text = wx.StaticText(self.toplevel_panel, -1, "DeVIDE v11.2.0000", style=wx.ALIGN_CENTRE)
         self.icon_bitmap = wx.StaticBitmap(self.toplevel_panel, -1, wx.NullBitmap)
-        self.label_2 = wx.StaticText(self.toplevel_panel, -1, "DeVIDE is copyright (c) 2002-2012 Charl P. Botha, TU Delft\nAll rights reserved.  See COPYRIGHT for details.\n\nSignificant contributions by:\nJoris van Zwieten, Gerwin de Haan, Stef Busking, \nEmiel van IJsseldijk, Peter Krekel, Peter Kok\nFrancois Malan.\n\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
+        self.label_2 = wx.StaticText(self.toplevel_panel, -1, "DeVIDE is copyright (c) 2002-2019 Charl P. Botha, TU Delft\nAll rights reserved.  See COPYRIGHT for details.\n\nSignificant contributions by:\nJoris van Zwieten, Gerwin de Haan, Stef Busking, \nEmiel van IJsseldijk, Peter Krekel, Peter Kok\nFrancois Malan.\n\nhttp://visualisation.tudelft.nl/Projects/DeVIDE", style=wx.ALIGN_CENTRE)
         self.versions_listbox = wx.ListBox(self.toplevel_panel, -1, choices=[], style=wx.LB_NEEDED_SB)
         self.button_1 = wx.Button(self.toplevel_panel, wx.ID_OK, "OK")
 
