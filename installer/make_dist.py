@@ -129,7 +129,7 @@ def find_command_with_ver(name, command, ver_re):
             msg2 = 'could not extract version.'
 
 
-    print PPF, "%s: %s" % (name, msg2)
+    print(PPF, "%s: %s" % (name, msg2))
 
     return retval
 
@@ -176,7 +176,7 @@ def find_files(start_dir, re_pattern='.*\.(pyd|dll)', exclude_pats=[]):
 ####################################################################
 def usage():
 
-    print HELP_MESSAGE
+    print(HELP_MESSAGE)
 
 def clean_pyinstaller(md_paths):
     """Clean out pyinstaller dist and build directories so that it has
@@ -184,14 +184,14 @@ def clean_pyinstaller(md_paths):
     full release versions.
     """
 
-    print S_PPF, "clean_pyinstaller"
+    print(S_PPF, "clean_pyinstaller")
     
     if os.path.isdir(md_paths.pyi_dist_dir):
-        print PPF, "Removing distdevide..."
+        print(PPF, "Removing distdevide...")
         shutil.rmtree(md_paths.pyi_dist_dir)
 
     if os.path.isdir(md_paths.pyi_build_dir):
-        print PPF, "Removing builddevide..."
+        print(PPF, "Removing builddevide...")
         shutil.rmtree(md_paths.pyi_build_dir)
 
 def run_pyinstaller(md_paths):
@@ -199,11 +199,11 @@ def run_pyinstaller(md_paths):
     out the dist and build directories before it begins
     """
 
-    print S_PPF, "run_pyinstaller"
+    print(S_PPF, "run_pyinstaller")
 
     # first get rid of all pre-compiled and backup files.  These HAVE
     # screwed up our binaries in the past!
-    print PPF, 'Deleting PYC, *~ and #*# files'
+    print(PPF, 'Deleting PYC, *~ and #*# files')
     dead_files, _ = find_files(md_paths.devide_dir, '(.*\.pyc|.*~|#.*#)')
     for fn in dead_files:
         os.unlink(fn)
@@ -219,7 +219,7 @@ def run_pyinstaller(md_paths):
     if os.name == 'nt':
         for efile in ['devide.exe.manifest', 
                 'msvcm80.dll', 'Microsoft.VC80.CRT.manifest']:
-            print PPF, "WINDOWS: copying", efile
+            print(PPF, "WINDOWS: copying", efile)
         
             src = os.path.join(
                 md_paths.specfile_dir,
@@ -244,7 +244,7 @@ def run_pyinstaller(md_paths):
                 invoking_fn)
 
         # chmod +x $SCRIPTFILE
-        os.chmod(invoking_fn,0755)
+        os.chmod(invoking_fn,0o755)
   
 
 def package_dist(md_paths):
@@ -255,7 +255,7 @@ def package_dist(md_paths):
     posix)
     """
 
-    print S_PPF, "package_dist"
+    print(S_PPF, "package_dist")
 
     # get devide version (we need this to stamp the executables)
     cmd = '%s -v' % (os.path.join(md_paths.pyi_dist_dir, 'devide'),)
@@ -304,28 +304,28 @@ def package_dist(md_paths):
 
 def postproc_sos(md_paths):
     if os.name == 'posix':
-        print S_PPF, "postproc_sos (strip, chrpath)"
+        print(S_PPF, "postproc_sos (strip, chrpath)")
 
         # strip all libraries
         so_files, _ = find_files(md_paths.pyi_dist_dir, '.*\.(so$|so\.)')
 
-        print PPF, 'strip / chrpath %d SO files.' % (len(so_files),)
+        print(PPF, 'strip / chrpath %d SO files.' % (len(so_files),))
         for so_file in so_files:
             # strip debug info
             ret = os.system('%s %s' % (STRIP, so_file))
             if ret != 0:
-                print "Error stripping %s." % (so_file,)
+                print("Error stripping %s." % (so_file,))
             # remove rpath information
             ret = os.system('%s --delete %s' % (CHRPATH, so_file))
             if ret != 0:
-                print "Error chrpathing %s." % (so_file,)
+                print("Error chrpathing %s." % (so_file,))
  
 def rebase_dlls(md_paths):
     """Rebase all DLLs in the distdevide tree on Windows.
     """
 
     if os.name == 'nt':
-        print S_PPF, "rebase_dlls"
+        print(S_PPF, "rebase_dlls")
 
         # sqlite3.dll cannot be rebased; it even gets corrupted in the
         # process!  see this test:
@@ -339,8 +339,8 @@ def rebase_dlls(md_paths):
         # add newline to each and every filename
         so_files = ['%s\n' % (i,) for i in so_files]
 
-        print "Found %d DLL PYD files..." % (len(so_files),)
-        print "Excluded %d files..." % (len(excluded_files),)
+        print("Found %d DLL PYD files..." % (len(so_files),))
+        print("Excluded %d files..." % (len(excluded_files),))
 
 
         # open file in specfile_dir, write the whole list
@@ -361,7 +361,7 @@ def rebase_dlls(md_paths):
             raise RuntimeError('Could not rebase DLLs.')
 
 def wrapitk_tree(md_paths):
-    print S_PPF, "wrapitk_tree"
+    print(S_PPF, "wrapitk_tree")
 
     py_file = os.path.join(md_paths.specfile_dir, 'wrapitk_tree.py')
     cmd = "%s %s %s" % (sys.executable, py_file, md_paths.pyi_dist_dir) 
@@ -372,7 +372,7 @@ def wrapitk_tree(md_paths):
         'Error creating self-contained WrapITK tree.')
 
 def posix_prereq_check():
-    print S_PPF, 'POSIX prereq check'
+    print(S_PPF, 'POSIX prereq check')
 
     # gnu
     # have the word version anywhere
@@ -389,7 +389,7 @@ def posix_prereq_check():
     return v
 
 def windows_prereq_check():
-    print S_PPF, 'WINDOWS prereq check'
+    print(S_PPF, 'WINDOWS prereq check')
 
     # if you give rebase any other command-line switches (even /?) it
     # exits with return code 99 and outputs its stuff to stderr
@@ -410,16 +410,16 @@ def windows_prereq_check():
         import setuptools
     except ImportError:
         # this is what we want
-        print PPF, 'setuptools not found. Good!'
+        print(PPF, 'setuptools not found. Good!')
         sut_v = True
     else:
-        print PPF, """setuptools is installed.
+        print(PPF, """setuptools is installed.
 
 setuptools will break the DeVIDE dist build.  Please uninstall by doing:
 \Python25\Scripts\easy_install -m setuptools
 del \Python25\Lib\site-packages\setuptools*.*
 You can reinstall later by using ez_setup.py again.
-"""
+""")
         sut_v = False
 
     return v and sut_v
@@ -431,7 +431,7 @@ def main():
                 sys.argv[1:], 'hs:i:',
                 ['help', 'spec=','pyinstaller-script=','stages='])
 
-    except getopt.GetoptError,e:
+    except getopt.GetoptError as e:
         usage
         return
 
@@ -463,12 +463,12 @@ def main():
     # dependency checking
     if os.name == 'nt':
         if not windows_prereq_check():
-            print PPF, "ERR: Windows prerequisites do not check out."
+            print(PPF, "ERR: Windows prerequisites do not check out.")
             return 1
 
     else:
         if not posix_prereq_check():
-            print PPF, "ERR: POSIX prerequisites do not check out."
+            print(PPF, "ERR: POSIX prerequisites do not check out.")
             return 1
 
 

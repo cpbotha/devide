@@ -120,12 +120,12 @@ class shellSplatSimple(IntrospectModuleMixin,
         # sample the two points and check that they haven't changed too much
         tfCol1 = self._ctf.GetColor(self._config.threshold)
         colDif1 = [i for i in
-                  map(abs, map(operator.sub, self._config.colour, tfCol1))
+                  map(abs, list(map(operator.sub, self._config.colour, tfCol1)))
                   if i > 0.001]
 
         tfCol2 = self._ctf.GetColor(self._config.threshold - 0.1)
         colDif2 = [i for i in
-                  map(abs, map(operator.sub, (0,0,0), tfCol2))
+                  map(abs, list(map(operator.sub, (0,0,0), tfCol2)))
                   if i > 0.001]
         
         if self._ctf.GetSize() != 2 or colDif1 or colDif2:

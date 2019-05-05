@@ -6,7 +6,6 @@
 
 import re
 import getopt
-import mutex
 import os
 import re
 import stat
@@ -14,7 +13,9 @@ import string
 import sys
 import time
 import traceback
-import ConfigParser
+import configparser
+
+from threading import Lock
 
 # we need to import this explicitly, else the installer builder
 # forgets it and the binary has e.g. no help() support.
@@ -69,7 +70,7 @@ class MainConfigClass(object):
                 'streaming_pieces' : 5,
                 'streaming_memory' : 100000}
 
-        cp = ConfigParser.ConfigParser(config_defaults)
+        cp = configparser.ConfigParser(config_defaults)
         cp.read(os.path.join(appdir, 'devide.cfg'))
         CSEC = pcl_data.config_profile
 
@@ -125,31 +126,31 @@ class MainConfigClass(object):
 
     def dispUsage(self):
         self.disp_version()
-        print ""
-        print "-h or --help          : Display this message."
-        print "-v or --version       : Display DeVIDE version."
-        print "--version-more        : Display more DeVIDE version info."
-        print "--config-profile name : Use config profile with name."
-        print "--no-kits kit1,kit2   : Don't load the specified kits."
-        print "--kits kit1,kit2      : Load the specified kits."
-        print "--scheduler hybrid|event"
-        print "                      : Select scheduler (def: hybrid)"
-        print "--extra-module-paths path1,path2"
-        print "                      : Specify extra module paths."
-        print "--interface wx|script"
-        print "                      : Load 'wx' or 'script' interface."
-        print "--stereo              : Allocate stereo visuals."
-        print "--test                : Perform built-in unit testing."
-        print "--script              : Run specified .py in script mode."
-        print "--load-network        : Load specified DVN after startup."
-        print "--hide-devide-ui      : Hide the DeVIDE UI at startup."
+        print("")
+        print("-h or --help          : Display this message.")
+        print("-v or --version       : Display DeVIDE version.")
+        print("--version-more        : Display more DeVIDE version info.")
+        print("--config-profile name : Use config profile with name.")
+        print("--no-kits kit1,kit2   : Don't load the specified kits.")
+        print("--kits kit1,kit2      : Load the specified kits.")
+        print("--scheduler hybrid|event")
+        print("                      : Select scheduler (def: hybrid)")
+        print("--extra-module-paths path1,path2")
+        print("                      : Specify extra module paths.")
+        print("--interface wx|script")
+        print("                      : Load 'wx' or 'script' interface.")
+        print("--stereo              : Allocate stereo visuals.")
+        print("--test                : Perform built-in unit testing.")
+        print("--script              : Run specified .py in script mode.")
+        print("--load-network        : Load specified DVN after startup.")
+        print("--hide-devide-ui      : Hide the DeVIDE UI at startup.")
 
     def disp_version(self):
-        print "DeVIDE v%s" % (DEVIDE_VERSION,)
+        print("DeVIDE v%s" % (DEVIDE_VERSION,))
 
     def disp_more_version_info(self):
-        print "DeVIDE rID:", DEVIDE_REVISION_ID 
-        print "Constructed by johannes:", JOHANNES_REVISION_ID
+        print("DeVIDE rID:", DEVIDE_REVISION_ID) 
+        print("Constructed by johannes:", JOHANNES_REVISION_ID)
 
     def _parseCommandLine(self):
         """Parse command-line, return all parsed parameters in
@@ -180,7 +181,7 @@ class MainConfigClass(object):
                  'script=', 'script-params=', 'config-profile=',
                  'scheduler=', 'extra-module-paths=', 'load-network='])
             
-        except getopt.GetoptError,e:
+        except getopt.GetoptError as e:
             self.dispUsage()
             sys.exit(1)
 
@@ -269,8 +270,7 @@ class DeVIDEApp:
         configure relevant main-loop / interface class.
         """
         
-        
-        self._inProgress = mutex.mutex()
+        self._inProgress = Lock()
         self._previousProgressTime = 0
         self._currentProgress = -1
         self._currentProgressMsg = ''
@@ -329,7 +329,7 @@ class DeVIDEApp:
             import module_manager
             self.module_manager = module_manager.ModuleManager(self)
 
-        except Exception, e:
+        except Exception as e:
             es = 'Unable to startup the ModuleManager: %s.  Terminating.' % \
                  (str(e),)
             self.log_error_with_exception(es)
@@ -437,7 +437,8 @@ class DeVIDEApp:
         # the testandset() method of mutex.mutex is atomic... this will grab
         # the lock and set it if it isn't locked alread and then return true.
         # returns false otherwise
-        if self._inProgress.testandset():
+        # 2020: instead of mutex.testandset() we now acquire(blocking=False)
+        if self._inProgress.acquire(blocking=False):
             if message != self._currentProgressMsg or \
                    progress != self._currentProgress:
                 if abs(progress - 100.0) < 0.01 or noTime or \
@@ -449,7 +450,7 @@ class DeVIDEApp:
                     self._interface.set_progress(progress, message, noTime)
 
             # unset the mutex thingy
-            self._inProgress.unlock()
+            self._inProgress.release()
 
     setProgress = set_progress
         

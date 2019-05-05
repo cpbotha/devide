@@ -14,6 +14,7 @@ import vtkgdcm
 import wx
 
 from module_kits.misc_kit.devide_types import MedicalMetaData
+import importlib
 
 class DRDropTarget(wx.PyDropTarget):
     def __init__(self, dicom_reader):
@@ -200,7 +201,7 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
 
         # single or multiple filenames, we have to set the correct
         # output spacing on the image change information
-        print "SPACING: ", spacing
+        print("SPACING: ", spacing)
         self._ici.SetOutputSpacing(spacing)
         self._ici.Update()
 
@@ -248,7 +249,7 @@ class DICOMReader(IntrospectModuleMixin, ModuleBase):
 
     def _create_view_frame(self):
         import modules.readers.resources.python.DICOMReaderViewFrame
-        reload(modules.readers.resources.python.DICOMReaderViewFrame)
+        importlib.reload(modules.readers.resources.python.DICOMReaderViewFrame)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,

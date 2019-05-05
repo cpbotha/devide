@@ -62,7 +62,7 @@ class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
                     raise TypeError
                 
             except (TypeError, AttributeError):
-                raise TypeError, 'This input requires a vtkImageData.'
+                raise TypeError('This input requires a vtkImageData.')
                 
         else:
             try:
@@ -72,7 +72,7 @@ class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
                     raise TypeError
                 
             except (TypeError, AttributeError):
-                raise TypeError, 'This input requires a vtkPolyData.'
+                raise TypeError('This input requires a vtkPolyData.')
             
         
     def get_output_descriptions(self):
@@ -147,5 +147,5 @@ class cptDistanceField(ScriptedConfigModuleMixin, ModuleBase):
 
             self._module_manager.delete_module(cbw)
 
-            print "CPT Basename == %s" % (cptBaseName,)
+            print("CPT Basename == %s" % (cptBaseName,))
 

@@ -16,6 +16,7 @@ import wx
 import wx.lib.masked
 from external.filebrowsebutton import \
         FileBrowseButton, FileBrowseButtonWithHistory,DirBrowseButton
+import importlib
 
 # so that modules using the file open mixins don't have to import wx
 # directly.
@@ -79,7 +80,7 @@ class IntrospectModuleMixin(object):
 
     def closeMiscObjectConfigure(self):
         if hasattr(self, '_python_shells'):
-            for pythonShell in self._python_shells.values():
+            for pythonShell in list(self._python_shells.values()):
                 pythonShell.close()
 
             self._python_shells.clear()
@@ -101,7 +102,7 @@ class IntrospectModuleMixin(object):
         """ 
         if not hasattr(self, '_vtk_obj_cfs'):
             self._vtk_obj_cfs = {}
-        if not self._vtk_obj_cfs.has_key(vtk_obj):
+        if vtk_obj not in self._vtk_obj_cfs:
             self._vtk_obj_cfs[vtk_obj] = ConfigVtkObj(parent, renwin, vtk_obj)
         self._vtk_obj_cfs[vtk_obj].show()
 
@@ -114,7 +115,7 @@ class IntrospectModuleMixin(object):
         is not the case, you can make use of this method.
         """
         if hasattr(self, '_vtk_obj_cfs'):
-            for cvo in self._vtk_obj_cfs.values():
+            for cvo in list(self._vtk_obj_cfs.values()):
                 cvo.close()
 
             self._vtk_obj_cfs.clear()
@@ -145,7 +146,7 @@ class IntrospectModuleMixin(object):
             
         # see if we have this pipeline lying around or not
         # if not, create it and store
-        if not self._vtk_pipeline_cfs.has_key(this_key):
+        if this_key not in self._vtk_pipeline_cfs:
             self._vtk_pipeline_cfs[this_key] = vtkPipelineBrowser(
                 parent, renwin, objects)
 
@@ -161,7 +162,7 @@ class IntrospectModuleMixin(object):
         care of it explicitly.
         """
         if hasattr(self, '_vtk_pipeline_cfs'):
-            for pipeline in self._vtk_pipeline_cfs.values():
+            for pipeline in list(self._vtk_pipeline_cfs.values()):
                 pipeline.close()
 
             self._vtk_pipeline_cfs.clear()
@@ -183,7 +184,7 @@ class IntrospectModuleMixin(object):
         create_standard_object_introspection method in module_utils.
         """
         objectName = objectChoice.GetStringSelection()
-        if objectDict.has_key(objectName):
+        if objectName in objectDict:
             if hasattr(objectDict[objectName], "GetClassName"):
                 self.vtkObjectConfigure(viewFrame, renderWin,
                                         objectDict[objectName])
@@ -198,7 +199,7 @@ class IntrospectModuleMixin(object):
         """
         
         # check that all objects are VTK objects (probably not necessary)
-        objects1 = objectDict.values()
+        objects1 = list(objectDict.values())
         objects = tuple([object for object in objects1
                          if hasattr(object, 'GetClassName')])
 
@@ -228,7 +229,7 @@ class FileOpenDialogModuleMixin(object):
         """
         if not hasattr(self, '_fo_dlgs'):
             self._fo_dlgs = {}
-        if not self._fo_dlgs.has_key(message):
+        if message not in self._fo_dlgs:
             self._fo_dlgs[message] = wx.FileDialog(parent,
                                                   message, "", "",
                                                   wildcard, style)
@@ -249,7 +250,7 @@ class FileOpenDialogModuleMixin(object):
         'parent'.  Use this method in cases where this was not possible.
         """
         if hasattr(self, '_fo_dlgs'):
-            for key in self._fo_dlgs.keys():
+            for key in list(self._fo_dlgs.keys()):
                 self._fo_dlgs[key].Destroy()
             self._fo_dlgs.clear()
 
@@ -263,7 +264,7 @@ class FileOpenDialogModuleMixin(object):
         if not hasattr(self, '_do_dlgs'):
             self._do_dlgs = {}
 
-        if not self._do_dlgs.has_key(message):
+        if message not in self._do_dlgs:
             self._do_dlgs[message] = wx.DirDialog(parent, message, default_path)
 
         if self._do_dlgs[message].ShowModal() == wx.ID_OK:
@@ -571,7 +572,7 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin,
         parentWindow = self._module_manager.get_module_view_parent_window()
 
         import resources.python.defaultModuleViewFrame
-        reload(resources.python.defaultModuleViewFrame)
+        importlib.reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
         viewFrame = module_utils.instantiate_module_view_frame(
@@ -764,7 +765,7 @@ class ScriptedConfigModuleMixin(IntrospectModuleMixin,
                     widget.SetValue(str(val))
 
             else:
-                raise ValueError, 'Invalid typeDescription.'
+                raise ValueError('Invalid typeDescription.')
 
             setattr(self._config, configTuple[1], val)
 

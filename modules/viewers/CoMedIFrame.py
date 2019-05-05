@@ -2,10 +2,11 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import cStringIO
+import io
 import vtk
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
+import importlib
 
 # wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
 # http://trac.wxwidgets.org/ticket/9716
@@ -23,8 +24,8 @@ else:
 # this works fine on Windows.  Have not been able to test on Linux
 # whilst in Magdeburg.
 
-import resources.python.comedi_frames
-reload(resources.python.comedi_frames)
+from . import resources.python.comedi_frames
+importlib.reload(resources.python.comedi_frames)
 
 class CMIPane:
     """Class for anything that would like to populate the interface.

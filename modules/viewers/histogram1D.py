@@ -3,6 +3,7 @@ import gen_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
+import importlib
 
 try:
     import Numeric
@@ -165,7 +166,7 @@ class histogram1D(IntrospectModuleMixin, ModuleBase):
     def _createViewFrame(self):
         # create the viewerFrame
         import modules.viewers.resources.python.histogram1DFrames
-        reload(modules.viewers.resources.python.histogram1DFrames)
+        importlib.reload(modules.viewers.resources.python.histogram1DFrames)
 
         self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,

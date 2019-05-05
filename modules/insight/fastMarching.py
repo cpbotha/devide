@@ -82,7 +82,7 @@ class fastMarching(ScriptedConfigModuleMixin, ModuleBase):
                         raise TypeError
 
                 except (AttributeError, TypeError):
-                    raise TypeError, 'This input requires a points-type'
+                    raise TypeError('This input requires a points-type')
                     
                 self._inputPoints = inputStream
                 

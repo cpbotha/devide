@@ -33,7 +33,7 @@ related to making the GUI persistent.
 """
 
 import os # need this for os.path.normpath
-import vtkMethodParser
+from . import vtkMethodParser
 import types, string, re, traceback
 
 try:
@@ -41,8 +41,8 @@ try:
     import wx.html
     import wx.py
 except ImportError:
-    print "Cannot import the wxPython.{wx,html} modules. "\
-          "Install it and try again."
+    print("Cannot import the wxPython.{wx,html} modules. "\
+          "Install it and try again.")
     sys.exit (1)
 
 ColourDialog = wx.ColourDialog
@@ -53,16 +53,16 @@ from external.filebrowsebutton import FileBrowseButton, \
 def print_err (msg):
     # create nice formatted string with tracebacks and all
     dmsg = \
-         string.join(traceback.format_exception(sys.exc_type,
-                                                sys.exc_value,
-                                                sys.exc_traceback))
+         string.join(traceback.format_exception(sys.exc_info()[0],
+                                                sys.exc_info()[1],
+                                                sys.exc_info()[2]))
     wx.LogError(dmsg)
     wx.LogError(msg)
     wx.Log_FlushActive()
 
 # use this to print stuff for the user command run from the GUI
 def prn (x):
-    print x
+    print(x)
 
 class VtkShowDoc:
     """ This class displays the documentation included in the __doc__
@@ -299,7 +299,7 @@ class ConfigVtkObj:
         self._vtk_obj_doc_view = None
 
     def configure(self, parent_frame, vtk_obj):
-        print "ConfigVtkObj() is now deprecated!"
+        print("ConfigVtkObj() is now deprecated!")
 
     def set_update_method (self, method):
         """ This sets a method that the instance will call when any
@@ -756,7 +756,7 @@ class ConfigVtkObj:
 
             val_tst = eval ("self._vtk_obj.Get%s ()"% self.get_set_meths[i])
 
-            if type (val_tst) is types.StringType: 
+            if type (val_tst) is bytes: 
                 st = 1
             elif self.get_set_meths[i].endswith('FileName') or \
                      self.get_set_meths[i] == 'Function':
@@ -777,7 +777,7 @@ class ConfigVtkObj:
                 try:
                     eval ("self._vtk_obj.%s (%s)"%(m, val))
                 except TypeError:
-                    if type(val) in [types.TupleType, types.ListType]:
+                    if type(val) in [tuple, list]:
                         # sometimes VTK wants the separate elements
                         # and not the tuple / list
                         eval("self._vtk_obj.%s(*%s)"%(m,val))
@@ -839,10 +839,10 @@ class ConfigVtkObj:
 
     def show_vtkobject_methods(self):
 	"Print the various methods of the vtkobject."
-	print "Toggle Methods\n", self.toggle_meths
-	print "State Methods\n", self.state_meths
-	print "Get/Set methods\n", self.get_set_meths
-	print "Get methods\n", self.get_meths
+	print("Toggle Methods\n", self.toggle_meths)
+	print("State Methods\n", self.state_meths)
+	print("Get/Set methods\n", self.get_set_meths)
+	print("Get methods\n", self.get_meths)
 
 
 if __name__ == "__main__":  

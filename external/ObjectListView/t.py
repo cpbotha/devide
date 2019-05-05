@@ -122,41 +122,41 @@ class TestPrinter(wx.Printout):
         """
         Prepare for printing. This event is sent before any of the others
         """
-        print "OnPreparePrinting"
-        print "self.GetDC() = %s" % self.GetDC()
+        print("OnPreparePrinting")
+        print("self.GetDC() = %s" % self.GetDC())
 
     def OnBeginDocument(self, start, end):
         """
         Begin printing one copy of the document. Return False to cancel the job
         """
-        print "OnBeginDocument(%d, %d)" % (start, end)
+        print("OnBeginDocument(%d, %d)" % (start, end))
         if not super(TestPrinter, self).OnBeginDocument(start, end):
             return False
 
         return True
 
     def OnEndDocument(self):
-        print "OnEndDocument"
+        print("OnEndDocument")
         super(TestPrinter, self).OnEndDocument()
 
     def OnBeginPrinting(self):
-        print "OnBeginPrinting"
+        print("OnBeginPrinting")
         super(TestPrinter, self).OnBeginPrinting()
 
     def OnEndPrinting(self):
-        print "OnEndPrinting"
+        print("OnEndPrinting")
         super(TestPrinter, self).OnEndPrinting()
 
     def OnPrintPage(self, page):
-        print "OnPrintPage(%d)" % page
+        print("OnPrintPage(%d)" % page)
         dc = self.GetDC()
         self.CalculateScale(dc)
         self.CalculateLayout(dc)
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
         bounds = (self.x1, self.y1, self.x2-self.x1, self.y2-self.y1)
-        print bounds
-        print self.pageHeight
+        print(bounds)
+        print(self.pageHeight)
         dc.DrawRectangle(*bounds)
         font = wx.Font(10, wx.TELETYPE, wx.NORMAL, wx.NORMAL)
         dc.SetFont(font)

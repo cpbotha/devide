@@ -11,8 +11,8 @@
 #   be good enough; the user can be warned that he should reconnect
 
 import gen_utils
-from typeModules.imageStackClass import imageStackClass
-from typeModules.transformStackClass import transformStackClass
+from .typeModules.imageStackClass import imageStackClass
+from .typeModules.transformStackClass import transformStackClass
 from module_base import ModuleBase
 import module_utils
 import operator
@@ -20,6 +20,7 @@ import fixitk as itk
 import ConnectVTKITKPython as CVIPy
 import vtk
 import wx
+import importlib
 
 class register2D(ModuleBase):
     """Registers a stack of 2D images and generates a list of transforms.
@@ -95,17 +96,15 @@ class register2D(ModuleBase):
                     # if the Update call doesn't work or
                     # if the input list is not long enough (or unsizable),
                     # we don't do anything
-                    raise TypeError, \
-                          "register2D requires an ITK Image Stack of minimum length 2 as input."
+                    raise TypeError("register2D requires an ITK Image Stack of minimum length 2 as input.")
 
                 # now check that the imageStack is the same size as the
                 # transformStack
                 if self._inputTransformStack and \
                    len(inputStream) != len(self._inputTransformStack):
-                    raise TypeError, \
-                          "The Image Stack you are trying to connect has a\n" \
+                    raise TypeError("The Image Stack you are trying to connect has a\n" \
                           "different length than the connected Transform\n" \
-                          "Stack."
+                          "Stack.")
 
                 self._imageStack = inputStream
 
@@ -133,23 +132,20 @@ class register2D(ModuleBase):
                     assert(inputStream.__class__.__name__ == \
                            'transformStackClass')
                 except Exception:
-                    raise TypeError, \
-                          "register2D requires an ITK Transform Stack on " \
-                          "this port."
+                    raise TypeError("register2D requires an ITK Transform Stack on " \
+                          "this port.")
 
                 inputStream.Update()
 
                 if len(inputStream) < 2:
-                    raise TypeError, \
-                          "The input transform stack should be of minimum " \
-                          "length 2."
+                    raise TypeError("The input transform stack should be of minimum " \
+                          "length 2.")
                     
                 if self._imageStack and \
                    len(inputStream) != len(self._imageStack):
-                    raise TypeError, \
-                          "The Transform Stack you are trying to connect\n" \
+                    raise TypeError("The Transform Stack you are trying to connect\n" \
                           "has a different length than the connected\n" \
-                          "Transform Stack"
+                          "Transform Stack")
 
                 self._inputTransformStack = inputStream
 
@@ -223,7 +219,7 @@ class register2D(ModuleBase):
         # hmmmm kay?
         self._transform1 = itk.itkEuler2DTransform_New()
         self._transform1.SetIdentity()
-        print self._transform1.GetParameters()
+        print(self._transform1.GetParameters())
 
 
         self._rescaler1 = itk.itkRescaleIntensityImageFilterF2F2_New()
@@ -249,7 +245,7 @@ class register2D(ModuleBase):
     
     def _createViewFrames(self):
         import modules.Insight.resources.python.register2DViewFrames
-        reload(modules.Insight.resources.python.register2DViewFrames)
+        importlib.reload(modules.Insight.resources.python.register2DViewFrames)
 
         viewerFrame = modules.Insight.resources.python.register2DViewFrames.\
                       viewerFrame
@@ -423,9 +419,9 @@ class register2D(ModuleBase):
               optimizer.GetValue()
         self._module_manager.setProgress(100.0, fpm)
 
-        print registration.GetLastTransformParameters().GetElement(0)
-        print registration.GetLastTransformParameters().GetElement(1)
-        print registration.GetLastTransformParameters().GetElement(2)        
+        print(registration.GetLastTransformParameters().GetElement(0))
+        print(registration.GetLastTransformParameters().GetElement(1))
+        print(registration.GetLastTransformParameters().GetElement(2))        
         
         self._syncGUIToCurrentPair()
         
@@ -453,8 +449,8 @@ class register2D(ModuleBase):
             cam.OrthogonalizeViewUp()
             cam.SetViewUp(0,1,0)
             cam.SetClippingRange(1, 11)
-            v2 = map(operator.sub, planeSource.GetPoint2(),
-                     planeSource.GetOrigin())
+            v2 = list(map(operator.sub, planeSource.GetPoint2(),
+                     planeSource.GetOrigin()))
             n2 = vtk.vtkMath.Normalize(v2)
             cam.SetParallelScale(n2 / 2.0)
             cam.ParallelProjectionOn()

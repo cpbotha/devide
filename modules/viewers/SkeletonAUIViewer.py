@@ -9,10 +9,11 @@
 IMAGE_VIEWER = True
 
 # import the frame, i.e. the wx window containing everything
-import SkeletonAUIViewerFrame
+from . import SkeletonAUIViewerFrame
+import importlib
 # and do a reload, so that the GUI is also updated at reloads of this
 # module.
-reload(SkeletonAUIViewerFrame)
+importlib.reload(SkeletonAUIViewerFrame)
 
 # from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
@@ -179,7 +180,7 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
         # add string to files listcontrol showing where the
         # superquadric was placed.
         self._view_frame.files_lc.InsertStringItem(
-                sys.maxint, 'Position (%.2f, %.2f, %.2f)' % tuple(pos))
+                sys.maxsize, 'Position (%.2f, %.2f, %.2f)' % tuple(pos))
 
 
     def _bind_events(self):
@@ -198,21 +199,21 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
                 self._handler_button3)                
 
     def _handler_button1(self, event):
-        print "button1 pressed"
+        print("button1 pressed")
 
         self.add_superquadric()
 
     def _handler_button2(self, event):
-        print "button2 pressed"
+        print("button2 pressed")
 
         self.ren.ResetCamera()
         self.render()
         
     def _handler_button3(self, event):
-        print "button3 pressed"
+        print("button3 pressed")
         
         if not self.timer:
-            print "installing timer event"
+            print("installing timer event")
             # construct timer, associate it with the main view_frame
             self.timer = wx.Timer(self._view_frame)
             # then make sure we catch view_frame's EVT_TIMER events
@@ -221,7 +222,7 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
             self._view_frame.button3.SetLabel("Stop Timer Event")
             
         else:
-            print "uninstalling timer event"
+            print("uninstalling timer event")
             self.timer.Stop()
             self.timer = None
             self._view_frame.button3.SetLabel("Start Timer Event")
@@ -233,7 +234,7 @@ class SkeletonAUIViewer(IntrospectModuleMixin, ModuleBase):
         
 
     def _handler_file_open(self, event):
-        print "could have opened file now"
+        print("could have opened file now")
 
     def render(self):
         """Method that calls Render() on the embedded RenderWindow.

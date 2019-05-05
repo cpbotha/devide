@@ -34,4 +34,4 @@ if className == 'slice3dVWR':
         lut.Build()
 
 else:
-    print "This snippet must be run from a slice3dVWR introspection window."
+    print("This snippet must be run from a slice3dVWR introspection window.")

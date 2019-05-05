@@ -10,4 +10,4 @@ if className == 'slice3dVWR':
     rw.Render()
 
 else:
-    print "This snippet must be run from a slice3dVWR introspection window."
+    print("This snippet must be run from a slice3dVWR introspection window.")

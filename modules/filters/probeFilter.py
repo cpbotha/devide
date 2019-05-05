@@ -100,7 +100,7 @@ class probeFilter(NoConfigModuleMixin, ModuleBase):
             padX = extX - source_extent[1]
             padY = extY - source_extent[3]
             padZ = extZ - source_extent[5]            
-            print 'Zero-padding source by (%d, %d, %d) voxels to force extent to match/exceed input''s extent. Lame, eh?' % (padX, padY, padZ)            
+            print('Zero-padding source by (%d, %d, %d) voxels to force extent to match/exceed input''s extent. Lame, eh?' % (padX, padY, padZ))            
             self._padder.SetInput(self._source)
             self._padder.SetConstant(0.0)
             self._padder.SetOutputWholeExtent(source_extent[0],extX,source_extent[2],extY,source_extent[4],extZ)

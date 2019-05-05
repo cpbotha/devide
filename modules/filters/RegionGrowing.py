@@ -112,7 +112,7 @@ class RegionGrowing(ScriptedConfigModuleMixin, ModuleBase):
                            float(self._config._thresh_interval / 100.0) * \
                            float(ranges)
 
-            print "Auto thresh: ", lower_thresh, " - ", upper_thresh
+            print("Auto thresh: ", lower_thresh, " - ", upper_thresh)
 
             self._image_threshold.ThresholdBetween(lower_thresh, upper_thresh)
 

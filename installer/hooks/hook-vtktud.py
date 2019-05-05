@@ -12,5 +12,5 @@ else:
             'vtktudImagingPython', 'vtktudGraphicsPython',
             'vtktudWidgetsPython']
 
-print "[*] hook-vtktud.py - HIDDENIMPORTS"
-print hiddenimports
+print("[*] hook-vtktud.py - HIDDENIMPORTS")
+print(hiddenimports)

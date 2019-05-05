@@ -103,7 +103,7 @@ class pointsToSpheres(ScriptedConfigModuleMixin, ModuleBase):
                 self._inputPoints = inputStream
 
             else:
-                raise TypeError, 'This input requires a named points type.'
+                raise TypeError('This input requires a named points type.')
 
     def get_output_descriptions(self):
         return ('PolyData spheres',)

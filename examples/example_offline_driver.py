@@ -22,7 +22,7 @@ def main():
     LOWER = float(l)
     UPPER = float(u)
     
-    print "offline_driver.py starting"
+    print("offline_driver.py starting")
 
     # load the DVN that you prepared
     # load_and_realise_network returns module dictionary + connections
@@ -46,8 +46,8 @@ def main():
     interface.set_module_config('vtp_wrt', writer_conf)
 
     # run the network
-    interface.execute_network(mdict.values())
+    interface.execute_network(list(mdict.values()))
     
-    print "offline_driver.py done."
+    print("offline_driver.py done.")
 
 main()

@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import ConfigParser
+import configparser
 import glob
 import os
 import sys
@@ -46,7 +46,7 @@ def get_sorted_mkds(module_kits_dir):
 
     for mkd_fname in mkd_fnames:
         mkd = MKDef()
-        cp = ConfigParser.ConfigParser(mkd_defaults)
+        cp = configparser.ConfigParser(mkd_defaults)
         cp.read(mkd_fname)
         mkd.name = os.path.splitext(os.path.basename(mkd_fname))[0]
         mkd.crucial = cp.getboolean('default', 'crucial')
@@ -57,7 +57,7 @@ def get_sorted_mkds(module_kits_dir):
         mkds.append(mkd)
 
     # now sort the mkds according to priority
-    def cmp(a,b):
+    def cmp(a, b):
         if a.priority < b.priority:
             return -1
         elif a.priority > b.priority:
@@ -65,7 +65,8 @@ def get_sorted_mkds(module_kits_dir):
         else:
             return 0
 
-    mkds.sort(cmp)
+    #mkds.sort(cmp)
+    mkds.sort(key=lambda mk: mk.priority)
 
     return mkds
 
@@ -105,18 +106,19 @@ def load(module_manager):
             # import module_kit into module_kits namespace
             exec('import module_kits.%s' % (mkd.name,))
             # call module_kit.init()
-            getattr(module_kits, mkd.name).init(module_manager)
+            mkm = sys.modules.get('module_kits')
+            getattr(mkm, mkd.name).init(module_manager)
             # add it to the loaded_kits for dependency checking
             loaded_kit_names.append(mkd.name)
 
-        except Exception, e:
+        except Exception as e:
             # if it's a crucial module_kit, we re-raise with our own
             # message added using th three argument raise form
             # see: http://docs.python.org/ref/raise.html
             if mkd.crucial:
                 es = 'Error loading required module_kit %s: %s.' \
                      % (mkd.name, str(e))
-                raise Exception, es, sys.exc_info()[2]
+                raise Exception(es).with_traceback(sys.exc_info()[2])
             
             
             # if not we can report the error and continue

@@ -291,7 +291,7 @@ def setup_object_introspection(d3module, viewFrame, objectDict,
 
     # fill out the objectChoice with the object names
     objectChoice.Clear()
-    for objectName in objectDict.keys():
+    for objectName in list(objectDict.keys()):
         objectChoice.Append(objectName)
     # default on first object
     objectChoice.SetSelection(0)

@@ -87,7 +87,7 @@ class MIPRender(
         t = self._config.threshold
         p1 = t - t / 10.0
         p2 = t + t / 5.0
-        print "MIP: %.2f - %.2f" % (p1, p2)
+        print("MIP: %.2f - %.2f" % (p1, p2))
         self._otf.AddPoint(p1, 0.0)
         self._otf.AddPoint(p2, 1.0)
         self._otf.AddPoint(self._config.threshold, 1.0)

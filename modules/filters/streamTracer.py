@@ -1,5 +1,5 @@
-import input_array_choice_mixin
-from input_array_choice_mixin import InputArrayChoiceMixin
+from . import input_array_choice_mixin
+from .input_array_choice_mixin import InputArrayChoiceMixin
 from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils

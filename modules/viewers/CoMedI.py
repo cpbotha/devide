@@ -20,19 +20,20 @@ COMPARISON_MODE_CHECKERBOARD = 1
 COMPARISON_MODE_DIFFERENCE = 2
 
 # import the frame, i.e. the wx window containing everything
-import CoMedIFrame
+from . import CoMedIFrame
+import importlib
 # and do a reload, so that the GUI is also updated at reloads of this
 # module.
-reload(CoMedIFrame)
+importlib.reload(CoMedIFrame)
 
-import comedi_match_modes
-reload(comedi_match_modes)
+from . import comedi_match_modes
+importlib.reload(comedi_match_modes)
 
-import comedi_comparison_modes
-reload(comedi_comparison_modes)
+from . import comedi_comparison_modes
+importlib.reload(comedi_comparison_modes)
 
-import comedi_utils
-reload(comedi_utils)
+from . import comedi_utils
+importlib.reload(comedi_utils)
 
 import math
 from module_kits.misc_kit import misc_utils
@@ -205,10 +206,10 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
     def config_to_logic(self):
         # we need to be able to build up the correct MatchMode based
         # on the config.
-        print "sync mm"
+        print("sync mm")
         self._sync_mm_with_config()
         # do the same for the comparison mode
-        print "sync cm"
+        print("sync cm")
         self._sync_cm_with_config()
 
 
@@ -316,7 +317,7 @@ class CoMedI(IntrospectModuleMixin, ModuleBase):
         evt.Skip()
 
     def _handler_mm_nbp_changed(self, evt):
-        print "hello you too"
+        print("hello you too")
         # we have to call this skip so wx also changes the actual tab
         # contents.
         evt.Skip()

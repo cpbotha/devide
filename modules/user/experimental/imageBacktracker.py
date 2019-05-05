@@ -87,7 +87,7 @@ class imageBacktracker(NoConfigModuleMixin, ModuleBase):
             for seedPoint in self._seedPoints:
                 self._imageBacktracker.AddSeed(seedPoint[0], seedPoint[1],
 		                               seedPoint[2])
-                print "adding %s" % (str(seedPoint))
+                print("adding %s" % (str(seedPoint)))
 
 
 

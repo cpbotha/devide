@@ -2,9 +2,10 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import cStringIO
+import io
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
+import importlib
 
 # wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
 # http://trac.wxwidgets.org/ticket/9716
@@ -20,8 +21,8 @@ else:
 import wx.lib.mixins.listctrl as listmix
 from wx import BitmapFromImage, ImageFromStream
 
-from resources.python import DICOMBrowserPanels
-reload(DICOMBrowserPanels)
+from .resources.python import DICOMBrowserPanels
+importlib.reload(DICOMBrowserPanels)
 
 class StudyColumns:
     patient = 0
@@ -55,7 +56,7 @@ def getSmallUpArrowBitmap():
     return BitmapFromImage(getSmallUpArrowImage())
 
 def getSmallUpArrowImage():
-    stream = cStringIO.StringIO(getSmallUpArrowData())
+    stream = io.StringIO(getSmallUpArrowData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------
@@ -72,7 +73,7 @@ def getSmallDnArrowBitmap():
     return BitmapFromImage(getSmallDnArrowImage())
 
 def getSmallDnArrowImage():
-    stream = cStringIO.StringIO(getSmallDnArrowData())
+    stream = io.StringIO(getSmallDnArrowData())
     return ImageFromStream(stream)
 
 #----------------------------------------------------------------------

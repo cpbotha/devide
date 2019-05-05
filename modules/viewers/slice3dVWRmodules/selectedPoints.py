@@ -54,7 +54,7 @@ class selectedPoints(s3dcGridMixin):
             self.slice3dVWR.controlFrame, disable=True)
 
     def close(self):
-        self.removePoints(range(len(self._pointsList)))
+        self.removePoints(list(range(len(self._pointsList))))
 
     def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
         """Appends the points grid commands to a menu.  This can be used
@@ -237,7 +237,7 @@ class selectedPoints(s3dcGridMixin):
 
     def _observerPointWidgetInteraction(self, pw, evt_name):
         # we have to find pw in our list
-        pwidgets = map(lambda i: i['pointWidget'], self._pointsList)
+        pwidgets = [i['pointWidget'] for i in self._pointsList]
         if pw in pwidgets:
             idx = pwidgets.index(pw)
             # toggle the selection for this point in our list

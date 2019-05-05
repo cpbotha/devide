@@ -58,21 +58,21 @@ class advectionProperties(ScriptedConfigModuleMixin, ModuleBase):
         # we need at the very least three inputs:
         # the VolumeIndex input and the actual volumes that will be used
         if len(newInputs) < 3:
-            raise Exception, 'This module requires a minimum of 3 inputs.'
+            raise Exception('This module requires a minimum of 3 inputs.')
 
         # make sure everything is up to date
         [i.Update() for i in newInputs]        
 
         # the first input MUST have a VolumeIndex attribute
         if newInputs[0].GetPointData().GetScalars('VolumeIndex') == None:
-            raise Exception, 'The first input must have ' \
-                  'a VolumeIndex scalar attribute.'
+            raise Exception('The first input must have ' \
+                  'a VolumeIndex scalar attribute.')
 
         # now we're going to build up a dictionary to translate
         # from volume index to a list of point ids
         vis = newInputs[0].GetPointData().GetScalars('VolumeIndex')
         volIdxToPtIds = {}
-        for ptid in xrange(vis.GetNumberOfTuples()):
+        for ptid in range(vis.GetNumberOfTuples()):
             vidx = vis.GetTuple1(ptid)
             if vidx >= 0:
                 if vidx in volIdxToPtIds:
@@ -98,16 +98,16 @@ class advectionProperties(ScriptedConfigModuleMixin, ModuleBase):
                 pd = newInputs[tsi + 1]
                 coordSums = [0,0,0]
                 for ptId in ptIds:
-                    coordSums = map(operator.add, coordSums,
-                                    pd.GetPoint(ptId))
+                    coordSums = list(map(operator.add, coordSums,
+                                    pd.GetPoint(ptId)))
 
                 # calc centroid
                 numPoints = float(len(ptIds))
-                centroid = map(lambda e: e / numPoints, coordSums)
+                centroid = [e / numPoints for e in coordSums]
                 centroids[volIdx].append(centroid)
 
         # now use the centroids to build table
-        volids = centroids.keys()
+        volids = list(centroids.keys())
         volids.sort()
 
         # centroidVectors of the format:
@@ -119,8 +119,8 @@ class advectionProperties(ScriptedConfigModuleMixin, ModuleBase):
             # new row
             centroidVectors.append(['%d - %d' % (tsi, tsi+1)])
             for volIdx in volids:
-                cvec = map(operator.sub,
-                           centroids[volIdx][tsi+1], centroids[volIdx][tsi])
+                cvec = list(map(operator.sub,
+                           centroids[volIdx][tsi+1], centroids[volIdx][tsi]))
                 centroidVectors[-1].extend(cvec)
                 # also the sum of motion
                 centroidVectors[-1].append(vtk.vtkMath.Norm(cvec))
@@ -196,7 +196,7 @@ class advectionProperties(ScriptedConfigModuleMixin, ModuleBase):
         if validInput:
             self._inputs[idx] = inputStream
         else:
-            raise TypeError, 'This input requires a vtkPolyData.'
+            raise TypeError('This input requires a vtkPolyData.')
 
     def get_output_descriptions(self):
         return ()

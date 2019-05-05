@@ -12,6 +12,7 @@ import module_utils
 from external import transfer_function_widget
 import vtk
 import wx
+import importlib
 
 
 TF_LIBRARY = {
@@ -182,8 +183,8 @@ class TransferFunctionEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, M
         
 
     def _create_view_frame(self):
-        import resources.python.tfeditorframe
-        reload(resources.python.tfeditorframe)
+        from . import resources.python.tfeditorframe
+        importlib.reload(resources.python.tfeditorframe)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
@@ -199,7 +200,7 @@ class TransferFunctionEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, M
 
         # and customize the presets choice
         vf = self._view_frame
-        keys = TF_LIBRARY.keys()
+        keys = list(TF_LIBRARY.keys())
         keys.sort()
         vf.preset_choice.Clear()
         for key in keys:
@@ -290,7 +291,7 @@ class TransferFunctionEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, M
             tf = eval(loadf.read(), {"__builtins__": {}})
             loadf.close()
 
-        except Exception, e:
+        except Exception as e:
             self._module_manager.log_error_with_exception(
                     'Could not load transfer function: %s.' %
                     (str(e),))
@@ -307,7 +308,7 @@ class TransferFunctionEditor(IntrospectModuleMixin, FileOpenDialogModuleMixin, M
             savef.write("# DeVIDE Transfer Function DVTF v1.0\n%s" % \
                     (str(tf),))
             savef.close()
-        except Exception, e:
+        except Exception as e:
             self._module_manager.log_error(
                     'Error saving transfer function: %s.' % (str(e),))
 

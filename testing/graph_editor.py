@@ -40,17 +40,17 @@ class GraphEditorVolumeTestBase(GraphEditorTestBase):
         (sqmod, sqglyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
 
-        self.failUnless(sqmod and sqglyph)
+        self.assertTrue(sqmod and sqglyph)
 
         (ivmod, ivglyph) = self._ge.create_module_and_glyph(
             10, 70, 'modules.misc.implicitToVolume')
 
-        self.failUnless(ivmod and ivglyph)
+        self.assertTrue(ivmod and ivglyph)
 
         (dtmod, dtglyph) = self._ge.create_module_and_glyph(
             10, 130, 'modules.filters.doubleThreshold')
 
-        self.failUnless(dtmod and dtglyph)
+        self.assertTrue(dtmod and dtglyph)
 
         # configure the implicitToVolume to have somewhat tighter bounds
         cfg = ivmod.get_config()
@@ -87,7 +87,7 @@ class GraphEditorBasic(GraphEditorTestBase):
     def test_startup(self):
         """graphEditor startup.
         """
-        self.failUnless(
+        self.assertTrue(
            self._ge_frame.IsShown())
 
     def test_module_creation_deletion(self):
@@ -96,10 +96,10 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         (mod, glyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
-        self.failUnless(mod and glyph)
+        self.assertTrue(mod and glyph)
 
         ret = self._ge._delete_module(glyph)
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
     def test_module_help(self):
         """See if module specific help can be called up for a module.
@@ -108,7 +108,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         module_name = 'modules.writers.vtiWRT'
         (mod, glyph) = self._ge.create_module_and_glyph(
             10, 10, module_name)
-        self.failUnless(mod and glyph)
+        self.assertTrue(mod and glyph)
 
         self._ge.show_module_help_from_glyph(glyph)
 
@@ -123,7 +123,7 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         # take it away
         ret = self._ge._delete_module(glyph)
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
     def test_module_search(self):
         import wx
@@ -146,7 +146,7 @@ class GraphEditorBasic(GraphEditorTestBase):
         ag = self._ge._get_all_glyphs()
         module_name = str(ag[0].module_instance.__class__.__name__)
         expected_name = 'imageFillHoles'
-        self.failUnless(module_name == expected_name, '%s != %s' %
+        self.assertTrue(module_name == expected_name, '%s != %s' %
                         (module_name, expected_name))
 
     def test_simple_network(self):
@@ -163,13 +163,13 @@ class GraphEditorBasic(GraphEditorTestBase):
         ret = self._ge._connect(sqglyph, 1, svglyph, 0)
         self._ge.canvas.redraw()
         
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
         # now run the network
         self._ge._handler_execute_network(None)
 
         # the slice viewer should now have an extra object
-        self.failUnless(svmod._tdObjects.findObjectByName('obj0'))
+        self.assertTrue(svmod._tdObjects.findObjectByName('obj0'))
 
     def test_config_vtk_obj(self):
         """See if the ConfigVtkObj is available and working.
@@ -179,20 +179,20 @@ class GraphEditorBasic(GraphEditorTestBase):
         (sqmod, sqglyph) = self._ge.create_module_and_glyph(
             10, 10, 'modules.misc.superQuadric')
 
-        self.failUnless(sqmod and sqglyph)
+        self.assertTrue(sqmod and sqglyph)
 
         self._ge._view_conf_module(sqmod)
 
         # superQuadric is a standard ScriptedConfigModuleMixin, so it has
         # a _viewFrame ivar
-        self.failUnless(sqmod._view_frame.IsShown())
+        self.assertTrue(sqmod._view_frame.IsShown())
 
         # start up the vtkObjectConfigure window for that object
         sqmod.vtkObjectConfigure(sqmod._view_frame, None, sqmod._superquadric)
 
         # check that it's visible
         # sqmod._vtk_obj_cfs[sqmod._superquadric] is the ConfigVtkObj instance
-        self.failUnless(
+        self.assertTrue(
             sqmod._vtk_obj_cfs[sqmod._superquadric]._frame.IsShown())
 
         # end by closing them all (so now all we're left with is the
@@ -201,7 +201,7 @@ class GraphEditorBasic(GraphEditorTestBase):
 
         # remove the module as well
         ret = self._ge._delete_module(sqglyph)
-        self.failUnless(ret)
+        self.assertTrue(ret)
         
 
 
@@ -211,7 +211,7 @@ class TestReadersWriters(GraphEditorVolumeTestBase):
     def test_vti(self):
         """Testing basic readers/writers.
         """
-        self.failUnless(1 == 1)
+        self.assertTrue(1 == 1)
 
 class TestModulesMisc(GraphEditorTestBase):
 
@@ -222,7 +222,7 @@ class TestModulesMisc(GraphEditorTestBase):
 
         # we tested all the vtk_basic modules once with VTK5.0
         # but this causes trouble on Weendows.
-        ml = mm.get_available_modules().keys()
+        ml = list(mm.get_available_modules().keys())
         ml = [i for i in ml
               if not i.startswith('modules.vtk_basic') and
               not i.startswith('modules.user')]
@@ -240,21 +240,21 @@ class TestModulesMisc(GraphEditorTestBase):
         ml = self.get_sorted_core_module_list()
 
         for module_name in ml:
-            print 'About to create %s.' % (module_name,)
+            print('About to create %s.' % (module_name,))
             
             (cmod, cglyph) = self._ge.\
                              create_module_and_glyph(
                 10, 10, module_name)
 
-            print 'Created %s.' % (module_name,)
-            self.failUnless(cmod and cglyph,
+            print('Created %s.' % (module_name,))
+            self.assertTrue(cmod and cglyph,
                             'Error creating %s' % (module_name,))
 
             # destroy
             ret = self._ge._delete_module(
                 cglyph)
-            print 'Destroyed %s.' % (module_name,)
-            self.failUnless(ret,
+            print('Destroyed %s.' % (module_name,))
+            self.assertTrue(ret,
                             'Error destroying %s' % (module_name,))
 
             # so wx can take a breath and catch up
@@ -268,29 +268,29 @@ class TestModulesMisc(GraphEditorTestBase):
         ml = self.get_sorted_core_module_list()
 
         for module_name in ml:
-            print 'About to create %s.' % (module_name,)
+            print('About to create %s.' % (module_name,))
             
             (cmod, cglyph) = self._ge.\
                              create_module_and_glyph(
                 10, 10, module_name)
 
-            print 'Created %s.' % (module_name,)
-            self.failUnless(cmod and cglyph,
+            print('Created %s.' % (module_name,))
+            self.assertTrue(cmod and cglyph,
                             'Error creating %s' % (module_name,))
             
             # call up view window
-            print 'About to bring up view-conf window'
+            print('About to bring up view-conf window')
             try:
                 self._ge._view_conf_module(cmod)
-            except Exception, e:
+            except Exception as e:
                 self.fail(
                     'Error invoking view of %s (%s)' % (module_name,str(e)))
 
             # destroy
             ret = self._ge._delete_module(
                 cglyph)
-            print 'Destroyed %s.' % (module_name,)
-            self.failUnless(ret,
+            print('Destroyed %s.' % (module_name,))
+            self.assertTrue(ret,
                             'Error destroying %s' % (module_name,))
 
             # so wx can take a breath and catch up
@@ -347,8 +347,8 @@ class TestVTKBasic(GraphEditorTestBase):
         # get second bin of output histogram: that should be the
         # number of voxels
         s = via.GetOutput().GetPointData().GetScalars()
-        print s.GetTuple1(1)
-        self.failUnless(s.GetTuple1(1) == 26728)
+        print(s.GetTuple1(1))
+        self.assertTrue(s.GetTuple1(1) == 26728)
         via.SetInput(None)
         del via
 
@@ -363,18 +363,18 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         # test signed short and unsigned long as well)
         (v2imod, v2iglyph) = self._ge.create_module_and_glyph(
                 200, 10, 'modules.insight.VTKtoITK')
-        self.failUnless(v2imod, v2iglyph)
+        self.assertTrue(v2imod, v2iglyph)
 
         
         (i2vmod, i2vglyph) = self._ge.create_module_and_glyph(
                 200, 130, 'modules.insight.ITKtoVTK')
-        self.failUnless(i2vmod and i2vglyph)
+        self.assertTrue(i2vmod and i2vglyph)
 
         ret = self._ge._connect(self.dtglyph, 0, v2iglyph, 0)
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
         ret = self._ge._connect(v2iglyph, 0, i2vglyph, 0)
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
         # redraw the canvas
         self._ge.canvas.redraw()
@@ -392,7 +392,7 @@ class TestITKBasic(GraphEditorVolumeTestBase):
             # each time make sure that the effective data type at the
             # output of the ITKtoVTK is what we expect.
             id = i2vmod.get_output(0)
-            self.failUnless(id.GetScalarTypeAsString() == t[1])
+            self.assertTrue(id.GetScalarTypeAsString() == t[1])
 
             # this is quite nasty: if the next loop is entered too
             # quickly and the VTKtoITK module is modified before the
@@ -414,25 +414,25 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         (svmod, svglyph) = self._ge.create_module_and_glyph(
             200, 190, 'modules.viewers.slice3dVWR')
 
-        self.failUnless(svmod and svglyph)
+        self.assertTrue(svmod and svglyph)
 
         # connect up the created volume and redraw
         ret = self._ge._connect(self.dtglyph, 0, svglyph, 0)
         # make sure it can connect
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
         # we need to execute before storeCursor can work
         self._ge._handler_execute_network(None)
 
         # storeCursor wants a 4-tuple and value - we know what these should be
         svmod.selectedPoints._storeCursor((20,20,0,1))
-        self.failUnless(len(svmod.selectedPoints._pointsList) == 1)
+        self.assertTrue(len(svmod.selectedPoints._pointsList) == 1)
 
         # connect up the insight bits
         (v2imod, v2iglyph) = self._ge.create_module_and_glyph(
             200, 10, 'modules.insight.VTKtoITK')
 
-        self.failUnless(v2imod and v2iglyph)
+        self.assertTrue(v2imod and v2iglyph)
 
         # make sure VTKtoITK will cast to float (because it's getting
         # double at the input!)
@@ -444,29 +444,29 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         (cscmod, cscglyph) = self._ge.create_module_and_glyph(
             200, 70, 'modules.insight.confidenceSeedConnect')
 
-        self.failUnless(cscmod and cscglyph)
+        self.assertTrue(cscmod and cscglyph)
 
         (i2vmod, i2vglyph) = self._ge.create_module_and_glyph(
             200, 130, 'modules.insight.ITKtoVTK')
 
-        self.failUnless(i2vmod and i2vglyph)
+        self.assertTrue(i2vmod and i2vglyph)
 
         ret = self._ge._connect(self.dtglyph, 0, v2iglyph, 0)
-        self.failUnless(ret)
+        self.assertTrue(ret)
         
         ret = self._ge._connect(v2iglyph, 0, cscglyph, 0)
-        self.failUnless(ret)
+        self.assertTrue(ret)
         
         ret = self._ge._connect(cscglyph, 0, i2vglyph, 0)
-        self.failUnless(ret)
+        self.assertTrue(ret)
 
         # there's already something on the 0'th input of the slice3dVWR
         ret = self._ge._connect(i2vglyph, 0, svglyph, 1)
-        self.failUnless(ret)
+        self.assertTrue(ret)
         
         # connect up the selected points
         ret = self._ge._connect(svglyph, 0, cscglyph, 1)
-        self.failUnless(ret)        
+        self.assertTrue(ret)        
         
         # redraw the canvas
         self._ge.canvas.redraw()
@@ -482,8 +482,8 @@ class TestITKBasic(GraphEditorVolumeTestBase):
         # get second bin of output histogram: that should be the
         # number of voxels
         s = via.GetOutput().GetPointData().GetScalars()
-        print s.GetTuple1(1)
-        self.failUnless(s.GetTuple1(1) == 26728)
+        print(s.GetTuple1(1))
+        self.assertTrue(s.GetTuple1(1) == 26728)
         via.SetInput(None)
         del via
 

@@ -34,7 +34,7 @@ if sv and mc:
     
     camera = sv._threedRenderer.GetActiveCamera()
     for i in range(160):
-        print i
+        print(i)
         mc._contourFilter.SetValue(0,i / 2.0)
         camera.Azimuth(5)
         sv.render3D()
@@ -44,7 +44,7 @@ if sv and mc:
         pngWriter.SetFileName('%s%03d.png' % (fprefix, i))
         pngWriter.Write()
 
-    print "The frames have been written as %s*.png." % (fprefix,)
+    print("The frames have been written as %s*.png." % (fprefix,))
 
 else:
-    print "You have to mark a slice3dVWR module and a marchingCubes module!"
+    print("You have to mark a slice3dVWR module and a marchingCubes module!")

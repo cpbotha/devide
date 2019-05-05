@@ -10,7 +10,7 @@ if className == 'slice3dVWR':
     try:
         e = vtk.vtkGL2PSExporter()
     except AttributeError:
-        print "Your VTK was compiled without GL2PS support."
+        print("Your VTK was compiled without GL2PS support.")
         
     else:
         e.SetRenderWindow(rw)
@@ -24,7 +24,7 @@ if className == 'slice3dVWR':
         e.Write()
         obj._orientationWidget.On()
         
-        print "Wrote file to %s." % (outputfilename,)
+        print("Wrote file to %s." % (outputfilename,))
 
 else:
-    print "You have to run this from the introspection window of a slice3dVWR."
+    print("You have to run this from the introspection window of a slice3dVWR.")

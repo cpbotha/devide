@@ -14,6 +14,7 @@ import module_utils
 import vtk
 import vtkgdcm
 import wx
+import importlib
 
 MAJOR_MARKER_SIZE = 10
 MINOR_MARKER_SIZE = 7
@@ -87,8 +88,8 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
         
 
     def _create_view_frame(self):
-        import resources.python.larynx_measurement_frame
-        reload(resources.python.larynx_measurement_frame)
+        from . import resources.python.larynx_measurement_frame
+        importlib.reload(resources.python.larynx_measurement_frame)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
@@ -333,9 +334,9 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
 
 
         if not pp.Pick(x,y,0,self._viewer.GetRenderer()):
-            print "off image!"
+            print("off image!")
         else:
-            print pp.GetMapperPosition()
+            print(pp.GetMapperPosition())
 
 
             # now also get WorldPos
@@ -343,7 +344,7 @@ class LarynxMeasurement(IntrospectModuleMixin, FileOpenDialogModuleMixin, Module
             ren.SetDisplayPoint(x,y,0)
             ren.DisplayToWorld()
             w = ren.GetWorldPoint()[0:3]
-            print w
+            print(w)
 
             # we have a picked position and a world point, now decide
             # what to do based on our current state

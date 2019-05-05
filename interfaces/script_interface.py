@@ -1,7 +1,7 @@
 import copy
-from logging_mixin import LoggingMixin
+from .logging_mixin import LoggingMixin
 import os
-from simple_api_mixin import SimpleAPIMixin
+from .simple_api_mixin import SimpleAPIMixin
 
 class ScriptInterface(SimpleAPIMixin, LoggingMixin):
 
@@ -11,7 +11,7 @@ class ScriptInterface(SimpleAPIMixin, LoggingMixin):
         # initialise logging mixin
         LoggingMixin.__init__(self)
 
-        print "Initialising script interface..."
+        print("Initialising script interface...")
         
     def handler_post_app_init(self):
         """DeVIDE-required method for interfaces."""
@@ -35,7 +35,7 @@ class ScriptInterface(SimpleAPIMixin, LoggingMixin):
             g2.update(globals())
             g2['interface'] = self
             g2['script_params'] = script_params
-            execfile(sv, g2)
+            exec(compile(open(sv, "rb").read(), sv, 'exec'), g2)
 
         self.log_message('Shutting down.')
         self.quit()

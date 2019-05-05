@@ -12,7 +12,7 @@ VERSION = 'INTEGRATED'
 DEBUG=False
 if DEBUG:
     def dprint(*msg):
-        print msg
+        print(msg)
 else:
     def dprint(*msg):
         pass
@@ -20,10 +20,10 @@ else:
 
 def init(module_manager, pre_import=True):
     global misc_utils
-    import misc_utils
+    from . import misc_utils
 
     global mixins
-    import mixins
+    from . import mixins
 
     global types
     module_manager.set_progress(100, 'Initialising misc_kit: complete.')

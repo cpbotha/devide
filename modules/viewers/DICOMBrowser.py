@@ -17,8 +17,9 @@
 #   a quick re-scan (only add new files that have appeared, remove 
 #   files that have disappeared).  See issue 39.
 
-import DICOMBrowserFrame
-reload(DICOMBrowserFrame)
+from . import DICOMBrowserFrame
+import importlib
+importlib.reload(DICOMBrowserFrame)
 import gdcm
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
@@ -255,7 +256,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         self._item_data_to_file = {}
 
         for filename in filenames:
-            idx = lc.InsertStringItem(sys.maxint, filename)
+            idx = lc.InsertStringItem(sys.maxsize, filename)
             lc.SetItemData(idx, idx)
             self._item_data_to_file[idx] = filename
 
@@ -295,8 +296,8 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         item_data_map = {}
         self._item_data_to_series_uid = {}
 
-        for series_uid, series in series_dict.items():
-            idx = lc.InsertStringItem(sys.maxint, series.description)
+        for series_uid, series in list(series_dict.items()):
+            idx = lc.InsertStringItem(sys.maxsize, series.description)
             lc.SetStringItem(idx, sc.modality, series.modality)
             lc.SetStringItem(idx, sc.num_images, str(series.slices))
             rc_string = '%d x %d' % (series.columns, series.rows)
@@ -340,9 +341,9 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         # this is for figuring out which study is selected in the
         # event handler
         self.item_data_to_study_id = {}
-        for study_uid, study in self._study_dict.items():
+        for study_uid, study in list(self._study_dict.items()):
             # clean way of mapping from item to column?
-            idx = lc.InsertStringItem(sys.maxint, study.patient_name)
+            idx = lc.InsertStringItem(sys.maxsize, study.patient_name)
             lc.SetStringItem(idx, sc.patient_id, study.patient_id)
             lc.SetStringItem(idx, sc.description, study.description)
             lc.SetStringItem(idx, sc.date, study.date)
@@ -448,7 +449,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
         try:
             r.Update()
-        except RuntimeWarning, e:
+        except RuntimeWarning as e:
             # reader generates warning of overlay information can't be
             # read.  We should change the VTK exception support to
             # just output some text with a warning and not raise an
@@ -456,7 +457,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
             traceback.print_exc()
             # with trackback.format_exc() you can send this to the log
             # window.
-        except RuntimeError, e:
+        except RuntimeError as e:
             self._module_manager.log_error(
                     'Could not read %s:\n%s.\nSuggest re-Scan.' %
                     (os.path.basename(filename), str(e)))
@@ -736,7 +737,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
                 # in the case of a reset (i.e. we have to build up the
                 # listctrl from scratch), the idx param is ignored as
                 # we overwrite it with our own here
-                idx = lc.InsertStringItem(sys.maxint, a)
+                idx = lc.InsertStringItem(sys.maxsize, a)
             else:
                 # not a reset, so we use the given idx
                 lc.SetStringItem(idx, 0, a)
@@ -799,7 +800,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         
         try:
             self._study_dict = self._scan(paths)
-        except Exception, e:
+        except Exception as e:
             # also print the exception
             traceback.print_exc()
             # i don't want to use log_error_with_exception, because it
@@ -879,7 +880,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         series_uid = self._item_data_to_series_uid[idx]
         self._selected_series_uid = series_uid
 
-        print 'series_uid', series_uid
+        print('series_uid', series_uid)
 
         self._fill_files_listctrl()
 
@@ -892,7 +893,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         study_uid = self._item_data_to_study_uid[idx]
         self._selected_study_uid = study_uid
 
-        print 'study uid', study_uid
+        print('study uid', study_uid)
 
         self._fill_series_listctrl()
 
@@ -941,7 +942,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
 
         # now sort everything
-        filenames = files_dict.keys()
+        filenames = list(files_dict.keys())
         filenames.sort()
 
         return filenames
@@ -1099,7 +1100,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
         # fully-qualified filenames that it finds.
         ret = s.Scan(filenames)
         if not ret:
-            print "scanner failed"
+            print("scanner failed")
             return
 
         # s now contains a Mapping (std::map) from filenames to stuff
@@ -1193,7 +1194,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
         study_dict = {}
 
-        for study_uid, s_study in s_study_dict.items():
+        for study_uid, s_study in list(s_study_dict.items()):
             study = Study()
             for a in STUDY_ATTRS:
                 setattr(study, a, s_study[a])
@@ -1202,7 +1203,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
             study.uid = study_uid
 
             s_series_dict = s_study['s_series_dict']
-            for series_uid, s_series in s_series_dict.items():
+            for series_uid, s_series in list(s_series_dict.items()):
                 series = Series()
                 for a in SERIES_ATTRS:
                     setattr(series, a, s_series[a])
@@ -1229,7 +1230,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
         s_study_dict = {}
 
-        for study_uid, study in study_dict.items():
+        for study_uid, study in list(study_dict.items()):
             s_study = {}
             for a in STUDY_ATTRS:
                 v = getattr(study, a)
@@ -1237,7 +1238,7 @@ class DICOMBrowser(IntrospectModuleMixin, ModuleBase):
 
 
             s_series_dict = {}
-            for series_uid, series in study.series_dict.items():
+            for series_uid, series in list(study.series_dict.items()):
                 s_series = {}
                 for a in SERIES_ATTRS:
                     v = getattr(series, a)

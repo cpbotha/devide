@@ -5,8 +5,9 @@ import wx
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import external.PyAUI as PyAUI
 
-from resources.python import measure2d_panels
-reload(measure2d_panels)
+from .resources.python import measure2d_panels
+import importlib
+importlib.reload(measure2d_panels)
 
 class Measure2DFrame(wx.Frame):
     def __init__(self, parent, id=-1, title="", pos=wx.DefaultPosition,

@@ -7,7 +7,8 @@ import gen_utils
 # the following two lines are only needed during prototyping of the modules
 # that they import
 import modules.viewers.slice3dVWRmodules.sliceDirection
-reload(modules.viewers.slice3dVWRmodules.sliceDirection)
+import importlib
+importlib.reload(modules.viewers.slice3dVWRmodules.sliceDirection)
 
 from modules.viewers.slice3dVWRmodules.sliceDirection import sliceDirection
 from modules.viewers.slice3dVWRmodules.shared import s3dcGridMixin
@@ -63,7 +64,7 @@ class sliceDirections(s3dcGridMixin):
 
         # add this input to all available sliceDirections
         for sliceName, sliceDirection in \
-                self._sliceDirectionsDict.items():
+                list(self._sliceDirectionsDict.items()):
             # try to add the data
             sliceDirection.addData(theData)
 
@@ -79,7 +80,7 @@ class sliceDirections(s3dcGridMixin):
         @param newData: The new data.
         """
 
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection.updateData(prevData, newData)
 
     def addContourObject(self, tdObject, prop3D):
@@ -89,7 +90,7 @@ class sliceDirections(s3dcGridMixin):
         most often a vtkPolyData) in the 3d scene.
         """
         
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection.addContourObject(tdObject, prop3D)
 
     def _appendGridCommandsToMenu(self, menu, eventWidget, disable=True):
@@ -165,7 +166,7 @@ class sliceDirections(s3dcGridMixin):
         
 
     def close(self):
-        for sliceName, sd in self._sliceDirectionsDict.items():
+        for sliceName, sd in list(self._sliceDirectionsDict.items()):
             self._destroySlice(sliceName)
 
     def _createSlice(self, sliceName):
@@ -257,7 +258,7 @@ class sliceDirections(s3dcGridMixin):
         3-element tuples: origin, point1, point2.
         """
         geoms = {}
-        for name, sd in self._sliceDirectionsDict.items():
+        for name, sd in list(self._sliceDirectionsDict.items()):
             geoms[name] = sd.get_slice_geometry()
 
         return geoms
@@ -267,7 +268,7 @@ class sliceDirections(s3dcGridMixin):
         set all slices to the given plane geometries.
         """
 
-        for name, geom in geoms.items():
+        for name, geom in list(geoms.items()):
             try:
                 sd = self._sliceDirectionsDict[name]
                 sd.set_slice_geometry(geom)
@@ -284,7 +285,7 @@ class sliceDirections(s3dcGridMixin):
         return selectedSliceDirections
 
     def get_all_slice_names(self):
-        return self._sliceDirectionsDict.keys()
+        return list(self._sliceDirectionsDict.keys())
 
     def _getSelectedSliceNames(self):
         """
@@ -327,7 +328,7 @@ class sliceDirections(s3dcGridMixin):
         # look it up
         self.overlayMode = sliceDirection.overlayModes[ss]
 
-        for sliceName, sliceDir in self._sliceDirectionsDict.items():
+        for sliceName, sliceDir in list(self._sliceDirectionsDict.items()):
             sliceDir.overlayMode = self.overlayMode
             sliceDir.setAllOverlayLookupTables()
 
@@ -338,7 +339,7 @@ class sliceDirections(s3dcGridMixin):
         val = self.slice3dVWR.controlFrame.fusionAlphaSlider.GetValue()
         self.fusionAlpha = val / 100.0
 
-        for sliceName, sliceDir in self._sliceDirectionsDict.items():
+        for sliceName, sliceDir in list(self._sliceDirectionsDict.items()):
             sliceDir.fusionAlpha = self.fusionAlpha
             sliceDir.setAllOverlayLookupTables()
 
@@ -512,7 +513,7 @@ class sliceDirections(s3dcGridMixin):
         #
         c = self.slice3dVWR.controlFrame.overlayModeChoice
         c.Clear()
-        overlayModeTexts = sliceDirection.overlayModes.keys()
+        overlayModeTexts = list(sliceDirection.overlayModes.keys())
         overlayModeTexts.sort()
         for overlayModeText in overlayModeTexts:
             c.Append(overlayModeText)
@@ -520,22 +521,22 @@ class sliceDirections(s3dcGridMixin):
         c.SetStringSelection('Green Opacity Range')
 
     def removeData(self, theData):
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection.removeData(theData)
 
     def removeContourObject(self, tdObject):
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection.removeContourObject(tdObject)
             
 
     def resetAll(self):
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection._resetPrimary()
             sliceDirection._resetOverlays()
             sliceDirection._syncContours()
 
     def set_lookup_table(self, lut):
-        for sname, sdirection in self._sliceDirectionsDict.items():
+        for sname, sdirection in list(self._sliceDirectionsDict.items()):
             sdirection.set_lookup_table(lut)
         
     def setCurrentCursor(self, cursor):
@@ -574,7 +575,7 @@ class sliceDirections(s3dcGridMixin):
         # find this sliceDirection
         sdFound = False
 
-        for sliceName, sd in self._sliceDirectionsDict.items():
+        for sliceName, sd in list(self._sliceDirectionsDict.items()):
             if sd == sliceDirection:
                 sdFound = True
                 break
@@ -617,11 +618,11 @@ class sliceDirections(s3dcGridMixin):
                 ipw.GetTexturePlaneProperty().SetOpacity(opacity)
 
     def syncContoursToObject(self, tdObject):
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection.syncContourToObject(tdObject)
 
     def syncContoursToObjectViaProp(self, prop):
-        for sliceName, sliceDirection in self._sliceDirectionsDict.items():
+        for sliceName, sliceDirection in list(self._sliceDirectionsDict.items()):
             sliceDirection.syncContourToObjectViaProp(prop)
                 
     def enableEnabledSliceDirections(self):

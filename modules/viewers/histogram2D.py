@@ -82,7 +82,7 @@ class histogram2D(ScriptedConfigModuleMixin, ModuleBase):
                     pass
 
                 if not validType:
-                    raise TypeError, 'Input has to be of type vtkImageData.'
+                    raise TypeError('Input has to be of type vtkImageData.')
                 else:
                     return inputStream
             

@@ -1,9 +1,9 @@
 import code
-from code import softspace
+#from code import softspace
 import os
 import sys
 import wx
-import new
+#import new
 
 def sanitise_text(text):
     """When we process text before saving or executing, we sanitise it
@@ -43,15 +43,16 @@ def runcode(self, code):
     runsource() method.
     """
     try:
-        exec code in self.locals
+        exec(code, self.locals)
     except SystemExit:
         raise
     except:
         raise
         #self.showtraceback()
-    else:
-        if softspace(sys.stdout, 0):
-            print
+    # 2020: no idea what I meant with this. softspace removed in Python 3.0.
+    # else:
+    #     if softspace(sys.stdout, 0):
+    #         print()
 
 def runsource(self, source, filename="<input>", symbol="single",
               runcode=runcode):
@@ -98,7 +99,7 @@ class PythonShellMixin:
         for ch in self.close_handlers:
             try:
                 ch()
-            except Exception, e:
+            except Exception as e:
                 exception_printer(
                     'Exception during PythonShellMixin close_handlers: %s' %
                     (str(e),))

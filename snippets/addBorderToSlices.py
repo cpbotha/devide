@@ -48,8 +48,8 @@ if className == 'slice3dVWR':
         obj._threedRenderer.addBorderToSlicesActor = actor
 
     else:
-        print "Please select the slices whose opacity you want to set."
+        print("Please select the slices whose opacity you want to set.")
     
     
 else:
-    print "You have to run this from a slice3dVWR introspect window."
+    print("You have to run this from a slice3dVWR introspect window.")

@@ -14,5 +14,5 @@ else:
             'vtktudossWidgetsPython',
             'vtktudossSTLibPython']
 
-print "[*] hook-vtktudoss.py - HIDDENIMPORTS"
-print hiddenimports
+print("[*] hook-vtktudoss.py - HIDDENIMPORTS")
+print(hiddenimports)

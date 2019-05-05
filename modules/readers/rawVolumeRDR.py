@@ -5,6 +5,7 @@ from module_mixins import FileOpenDialogModuleMixin
 import module_utils
 import vtk
 import wx
+import importlib
 
 class rawVolumeRDR(ModuleBase,
                    vtkPipelineConfigModuleMixin,
@@ -63,7 +64,7 @@ class rawVolumeRDR(ModuleBase,
         return ()
 
     def set_input(self, idx, inputStream):
-        raise Exception, 'rawVolumeRDR has no input!'
+        raise Exception('rawVolumeRDR has no input!')
 
     def get_output_descriptions(self):
 	return (self._reader.GetOutput().GetClassName(),)
@@ -157,9 +158,9 @@ class rawVolumeRDR(ModuleBase,
         # now we have to find self._config.dataType in self._dataTypes
         # I believe that I can assume .values() and .keys() to be consistent
         # with each other (if I don't mutate the dictionary)
-        idx = self._dataTypes.values().index(self._config.dataType)
+        idx = list(self._dataTypes.values()).index(self._config.dataType)
         self._viewFrame.dataTypeChoice.SetStringSelection(
-            self._dataTypes.keys()[idx])
+            list(self._dataTypes.keys())[idx])
 
         self._viewFrame.endiannessRadioBox.SetSelection(
             not self._config.endianness)
@@ -186,7 +187,7 @@ class rawVolumeRDR(ModuleBase,
 
         # import the viewFrame (created with wxGlade)
         import modules.readers.resources.python.rawVolumeRDRViewFrame
-        reload(modules.readers.resources.python.rawVolumeRDRViewFrame)
+        importlib.reload(modules.readers.resources.python.rawVolumeRDRViewFrame)
 
         self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
@@ -210,7 +211,7 @@ class rawVolumeRDR(ModuleBase,
 
         # finish setting up the output datatype choice
         self._viewFrame.dataTypeChoice.Clear()
-        for aType in self._dataTypes.keys():
+        for aType in list(self._dataTypes.keys()):
             self._viewFrame.dataTypeChoice.Append(aType)
 
     def _browseButtonCallback(self, event): 

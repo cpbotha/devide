@@ -7,6 +7,7 @@ from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 import wx
 import wx.lib.inspection
 import vtk
+import importlib
 
 # wxPython 2.8.8.1 wx.aui bugs severely on GTK. See:
 # http://trac.wxwidgets.org/ticket/9716
@@ -18,8 +19,8 @@ if wx.Platform == "__WXGTK__":
 else:
     import wx.aui
 
-import MaskComBinarPanels
-reload(MaskComBinarPanels)
+from . import MaskComBinarPanels
+importlib.reload(MaskComBinarPanels)
 
 class MaskComBinarFrame(wx.Frame):
     """wx.Frame child class used by MaskComBinar for its
@@ -339,4 +340,4 @@ class MaskComBinarFrame(wx.Frame):
         wx.TheClipboard.Open()
         wx.TheClipboard.SetData(clipdata)
         wx.TheClipboard.Close()
-        print 'Text copied to clipboard: %s' % text_message
+        print('Text copied to clipboard: %s' % text_message)

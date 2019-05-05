@@ -120,7 +120,7 @@ class polyDataConnect(ScriptedConfigModuleMixin, ModuleBase):
             self._polyDataConnect.InitializeSeedList()
             for seedId in self._seedIds:
                 self._polyDataConnect.AddSeed(seedId)
-                print "adding %d" % (seedId)
+                print("adding %d" % (seedId))
 
 
 

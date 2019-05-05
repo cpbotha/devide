@@ -49,7 +49,7 @@ class ITKtoVTK(NoConfigModuleMixin, ModuleBase):
                     self._input)
                 
             except TypeError:
-                raise TypeError, 'ITKtoVTK requires an ITK image as input.'
+                raise TypeError('ITKtoVTK requires an ITK image as input.')
             
             witk_template = getattr(itk, 'ImageToVTKImageFilter')
             witk_type = getattr(itk.Image, shortstring)
@@ -57,10 +57,10 @@ class ITKtoVTK(NoConfigModuleMixin, ModuleBase):
             try:
                 self._itk2vtk = witk_template[witk_type].New()
                 
-            except KeyError, e:
-                raise RuntimeError, 'Unable to instantiate ITK to VTK ' \
+            except KeyError as e:
+                raise RuntimeError('Unable to instantiate ITK to VTK ' \
                       'converter with type %s.' % \
-                      (shortstring,)
+                      (shortstring,))
             
             else:
                 self._input.UpdateOutputInformation()

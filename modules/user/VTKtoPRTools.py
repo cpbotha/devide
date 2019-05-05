@@ -47,10 +47,10 @@ class VTKtoPRTools(ScriptedConfigModuleMixin, ModuleBase):
         # this is where the good stuff happens...
 
         if len(self._config.filename) == 0:
-            raise RuntimeError, 'No filename has been set.'
+            raise RuntimeError('No filename has been set.')
 
         if self._inputData == None:
-            raise RuntimeError, 'No input data to convert.'
+            raise RuntimeError('No input data to convert.')
 
         # now let's start going through the data
         outfile = file(self._config.filename, 'w')
@@ -61,7 +61,7 @@ class VTKtoPRTools(ScriptedConfigModuleMixin, ModuleBase):
         pd = self._inputData.GetPointData()
         curList = [''] * noc
 
-        for i in xrange(nop):
+        for i in range(nop):
             for j in range(noc):
                 curList[j] = str(pd.GetComponent(i, j))
 
@@ -86,7 +86,7 @@ class VTKtoPRTools(ScriptedConfigModuleMixin, ModuleBase):
                 raise AttributeError
             
         except AttributeError:
-            raise TypeError, 'This module requires a vtkImageData as input.'
+            raise TypeError('This module requires a vtkImageData as input.')
 
     def get_output_descriptions(self):
         return ()

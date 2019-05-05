@@ -14,7 +14,7 @@
 def get_plane_infos():
     # get out all plane orientations and normals
     plane_infos = []
-    for sd in obj.sliceDirections._sliceDirectionsDict.values():
+    for sd in list(obj.sliceDirections._sliceDirectionsDict.values()):
         # each sd has at least one IPW
         ipw = sd._ipws[0]
         plane_infos.append((ipw.GetOrigin(), ipw.GetPoint1(), ipw.GetPoint2(), ipw.GetWindow(), ipw.GetLevel()))
@@ -23,7 +23,7 @@ def get_plane_infos():
 
 def set_plane_infos(plane_infos):
     # go through existing sliceDirections, sync if info available
-    sds = obj.sliceDirections._sliceDirectionsDict.values()
+    sds = list(obj.sliceDirections._sliceDirectionsDict.values())
     for i in range(len(sds)):
         sd = sds[i]
         if i < len(plane_infos):

@@ -110,8 +110,8 @@ class FileBrowseButton(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer( outsidebox )
         self.Layout()
-        if type( size ) == types.TupleType:
-            size = apply( wx.Size, size)
+        if type( size ) == tuple:
+            size = wx.Size(*size)
         self.SetDimensions(-1, -1, size.width, size.height, wx.SIZE_USE_EXISTING)
 
 #        if size.width != -1 or size.height != -1:
@@ -257,7 +257,7 @@ class FileBrowseButtonWithHistory( FileBrowseButton ):
         if callable(self.history):
             self.historyCallBack=self.history
             self.history=None
-        apply( FileBrowseButton.__init__, ( self,)+arguments, namedarguments)
+        FileBrowseButton.__init__(*( self,)+arguments, **namedarguments)
 
 
     def createTextControl( self):
@@ -393,7 +393,7 @@ if __name__ == "__main__":
         def __init__( self, tag ):
             self.tag = tag
         def __call__( self, event ):
-            print self.tag, event.GetString()
+            print(self.tag, event.GetString())
     class DemoFrame( wx.Frame ):
         def __init__(self, parent):
             wx.Frame.__init__(self, parent, -1, "File entry with browse", size=(500,260))
@@ -444,7 +444,7 @@ if __name__ == "__main__":
             self.history={"c:\\temp":1, "c:\\tmp":1, "r:\\temp":1,"z:\\temp":1}
 
         def historyCallBack(self):
-            keys=self.history.keys()
+            keys=list(self.history.keys())
             keys.sort()
             return keys
 
@@ -472,7 +472,7 @@ if __name__ == "__main__":
     def test( ):
         app = DemoApp(0)
         app.MainLoop()
-    print 'Creating dialog'
+    print('Creating dialog')
     test( )
 
 

@@ -120,9 +120,9 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
                 # each ridge is 1 cm (10 mm) - we'll change this later
                 y = [10.0 * j for j in yN]
                 
-                origin = map(operator.add, self._giaHumerus, y)
-                point1 = map(operator.add, origin, [-2.0 * k for k in y])
-                point2 = map(operator.add, origin, gia)
+                origin = list(map(operator.add, self._giaHumerus, y))
+                point1 = list(map(operator.add, origin, [-2.0 * k for k in y]))
+                point2 = list(map(operator.add, origin, gia))
 
                 # now create the plane source
                 ps = vtk.vtkPlaneSource()
@@ -176,7 +176,7 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
                     while onGlenoid:
                         contour.GetCellPoints(curLineId, ptIds)
                         if ptIds.GetNumberOfIds() != 2:
-                            print 'aaaaaaaaaaaaack!'
+                            print('aaaaaaaaaaaaack!')
                             
                         ptId0 = ptIds.GetId(0)
                         ptId1 = ptIds.GetId(1)
@@ -185,7 +185,7 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
 
                         contour.GetPointCells(nextPointId, cellIds)
                         if cellIds.GetNumberOfIds() != 2:
-                            print 'aaaaaaaaaaaaaaaack2!'
+                            print('aaaaaaaaaaaaaaaack2!')
                         cId0 = cellIds.GetId(0)
                         cId1 = cellIds.GetId(1)
                         nextLineId = [cId0, cId1]\
@@ -422,9 +422,9 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
             csTrfm = vtk.vtkTransform()
             # go half the height + 2mm upwards from surface
             drillGuideCentre = - 1.0 * self.drillGuideHeight / 2.0 - 2
-            cs1Centre = map(operator.add,
+            cs1Centre = list(map(operator.add,
                             self._giaGlenoid,
-                            [drillGuideCentre * i for i in giaN])
+                            [drillGuideCentre * i for i in giaN]))
             # once again, this is performed LAST
             csTrfm.Translate(cs1Centre)
             # and this FIRST (we have to rotate the OTHER way than for
@@ -477,14 +477,14 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
         # t = xo dot normal
         # h = x - t * normal
         t = vtk.vtkMath.Dot(startPointNormal, cutPlane.GetNormal())
-        houseNormal = map(operator.sub, startPointNormal,
-                          [t * i for i in cutPlane.GetNormal()])
+        houseNormal = list(map(operator.sub, startPointNormal,
+                          [t * i for i in cutPlane.GetNormal()]))
         
         vtk.vtkMath.Normalize(houseNormal)
         
         houseNormal3 = [3.0 * i for i in houseNormal]
         cutPlaneNormal1_5 = [1.5 * i for i in cutPlane.GetNormal()]
-        mp = map(operator.add, startPoint, houseNormal3)
+        mp = list(map(operator.add, startPoint, houseNormal3))
         p1 = tuple(map(operator.add, mp, cutPlaneNormal1_5))
         p2 = tuple(map(operator.add, p1, houseNormal3))
         p4 = tuple(map(operator.sub, mp, cutPlaneNormal1_5))
@@ -529,7 +529,7 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
         that giaGlenoid is on the inside of the implicit plane.
         """
         
-        fbzV = map(operator.sub, fbz[0], fbz[1])
+        fbzV = list(map(operator.sub, fbz[0], fbz[1]))
         fbzPN = [0,0,0]
         vtk.vtkMath.Cross(fbzV, giaN, fbzPN)
         vtk.vtkMath.Normalize(fbzPN)
@@ -575,8 +575,8 @@ class glenoidMouldDesign(ModuleBase, NoConfigModuleMixin):
         for point in edgeLine:
             housePoints = self._buildHouse(point[1], point[2], cutPlane)
             if prevHousePoint0:
-                v0 = map(operator.sub, housePoints[0], prevHousePoint0)
-                v1 = map(operator.sub, housePoints[5], prevHousePoint5)
+                v0 = list(map(operator.sub, housePoints[0], prevHousePoint0))
+                v1 = list(map(operator.sub, housePoints[5], prevHousePoint5))
                 # bad-assed trick to test for negative volume
                 if vtk.vtkMath.Dot(v0, v1) < 0.0:
                     negativeVolume = 1

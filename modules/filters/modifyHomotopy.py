@@ -146,7 +146,7 @@ class modifyHomotopy(NoConfigModuleMixin, ModuleBase):
                         raise TypeError
 
                 except (AttributeError, TypeError):
-                    raise TypeError, 'This input requires a points-type'
+                    raise TypeError('This input requires a points-type')
                     
                 
                 if self._inputPoints:

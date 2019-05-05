@@ -12,7 +12,8 @@ wx.aui = aui
 
 from wx.html import HtmlWindow
 
-class SimpleHTMLListBox(wx.HtmlListBox):
+
+class SimpleHTMLListBox(wx.html.HtmlListBox):
     """Simple class to emulate normal wx.ListBox (Append, Clear, GetClientData
     and GetString methods) with the super-powers of the wx.HtmlListBox.
 
@@ -20,7 +21,8 @@ class SimpleHTMLListBox(wx.HtmlListBox):
     """
 
     def __init__(self, *args, **kwargs):
-        wx.HtmlListBox.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
+        #wx.HtmlListBox.__init__(self, *args, **kwargs)
         self.items = []
         self.Clear()
 

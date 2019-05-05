@@ -3,8 +3,9 @@ import geometry
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
-import Measure2DFrame
-reload(Measure2DFrame)
+from . import Measure2DFrame
+import importlib
+importlib.reload(Measure2DFrame)
 
 import vtk
 import vtktudoss
@@ -54,7 +55,7 @@ class M2DWidgetList:
 
 
     def get_names(self):
-        return self._wdict.keys()
+        return list(self._wdict.keys())
 
     def get_widget(self, name):
         return self._wdict[name]
@@ -64,7 +65,7 @@ class M2DWidgetList:
         """
 
         wlist = []
-        for wname, w in self._wdict.items():
+        for wname, w in list(self._wdict.items()):
             if w.type_string == type_string:
                 wlist.append(w)
 
@@ -258,7 +259,7 @@ class Measure2D(IntrospectModuleMixin, ModuleBase):
         snames = self._get_selected_measurement_names()
         for sname in snames:
             w = self._widgets.get_widget(sname)
-            print "about to enable ", w.name
+            print("about to enable ", w.name)
             w.widget.SetEnabled(1)
 
         self.render()
@@ -270,7 +271,7 @@ class Measure2D(IntrospectModuleMixin, ModuleBase):
         snames = self._get_selected_measurement_names()
         for sname in snames:
             w = self._widgets.get_widget(sname)
-            print "about to disable ", w.name
+            print("about to disable ", w.name)
             w.widget.SetEnabled(0)
 
         self.render()

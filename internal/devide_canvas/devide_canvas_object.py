@@ -221,11 +221,11 @@ class DeVIDECanvasRBBox(DeVIDECanvasObject):
     """
 
 
-    def __init__(self, canvas, corner_bl, (width, height)):
+    def __init__(self, canvas, corner_bl, xxx_todo_changeme):
         """ctor.  corner_bl is the bottom-left corner and corner_tr
         the top-right corner of the rbbox in world coords.
         """
-
+        (width, height) = xxx_todo_changeme
         self.corner_bl = corner_bl
         self.width, self.height = width, height
 

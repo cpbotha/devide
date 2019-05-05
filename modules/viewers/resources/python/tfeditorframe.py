@@ -6,11 +6,12 @@ import wx
 
 # begin wxGlade: extracode
 from external import transfer_function_widget
-reload(transfer_function_widget)
+import importlib
+importlib.reload(transfer_function_widget)
 TransferFunctionWidget = transfer_function_widget.TransferFunctionWidget
 
 from external import transfer_function_widget
-reload(transfer_function_widget)
+importlib.reload(transfer_function_widget)
 TransferFunctionWidget = transfer_function_widget.TransferFunctionWidget
 
 # end wxGlade

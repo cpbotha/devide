@@ -36,7 +36,7 @@ def get_itk_img_type_and_dim_shortstring(itk_img):
     mo = re.search('^<itkImagePython.itkImage(.*);.*>', rs)
 
     if not mo:
-        raise TypeError, 'This method requires an ITK image as input.'
+        raise TypeError('This method requires an ITK image as input.')
     else:
         return mo.groups()[0]
 
@@ -94,8 +94,8 @@ def get_itk_img_type_and_dim_DEPRECATED(itk_img):
 
     try:
         t = itk_img.this
-    except AttributeError, e:
-        raise TypeError, 'This method requires an ITK image as input.'
+    except AttributeError as e:
+        raise TypeError('This method requires an ITK image as input.')
     else:
         # g will be e.g. ('float', '3') or ('unsigned_char', '2')
         # note that we use the NON-greedy version so it doesn't break
@@ -107,7 +107,7 @@ def get_itk_img_type_and_dim_DEPRECATED(itk_img):
                       itk_img.this)
 
         if not mo:
-            raise TypeError, 'This method requires an ITK Image as input.'
+            raise TypeError('This method requires an ITK Image as input.')
         else:
             g = mo.groups()
         

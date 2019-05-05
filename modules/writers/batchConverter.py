@@ -131,7 +131,7 @@ class batchConverter(
                     # equivalent to e.g. itk.Image.UC3
                     reader = itk.ImageFileReader[
                         getattr(itk.Image, reader_type_text)].New()
-                    print '%s was auto-detected as ITK %s' % (source_file_path, reader_type_text)
+                    print('%s was auto-detected as ITK %s' % (source_file_path, reader_type_text))
 
                 if reader_type_text == 'F3':
                     self._config.source_numerical_type = 1
@@ -140,7 +140,7 @@ class batchConverter(
                 elif reader_type_text == 'UC3':
                     self._config.source_numerical_type = 3
                 else:
-                    print "Warning: data of type '%s' is not explicitly supported. Reverting to IF3 (float)." % reader_type_text
+                    print("Warning: data of type '%s' is not explicitly supported. Reverting to IF3 (float)." % reader_type_text)
                     self._config.source_numerical_type = 1
                     reader = autotype_reader
 
@@ -158,7 +158,7 @@ class batchConverter(
         else:
             raise Exception('Undefined file type with numerical index %d' % self._config.source_file_type)
 
-        print "Reading %s ..." % source_file_path
+        print("Reading %s ..." % source_file_path)
         reader.SetFileName(source_file_path)
         reader.Update()
         return reader.GetOutput()
@@ -196,7 +196,7 @@ class batchConverter(
                 self._config.target_numerical_type = self._config.source_numerical_type
             else:
                 self._config.target_numerical_type = self._config.target_forced_numerical_type
-                print 'Type casting VTK data from (%s) to (%s)...' % (self._config.data_types_by_number[self._config.source_numerical_type], self._config.data_types_by_number[self._config.target_numerical_type])
+                print('Type casting VTK data from (%s) to (%s)...' % (self._config.data_types_by_number[self._config.source_numerical_type], self._config.data_types_by_number[self._config.target_numerical_type]))
                 caster = vtk.vtkImageCast()
                 caster.SetInput(input_data)
                 if self._config.target_numerical_type == 1:      #float
@@ -215,7 +215,7 @@ class batchConverter(
                     output_data.DeepCopy(caster.GetOutput())
 
             else:   #target is ITK - requires vtk2itk
-                print 'Converting from VTK to ITK... (%s)' % self._config.data_types_by_number[self._config.target_numerical_type]
+                print('Converting from VTK to ITK... (%s)' % self._config.data_types_by_number[self._config.target_numerical_type])
 
                 if self._config.target_numerical_type == 1:      #float
                     converter = itk.VTKImageToImageFilter[itk.Image.F3].New()
@@ -245,7 +245,7 @@ class batchConverter(
                 self._config.target_numerical_type = self._config.source_numerical_type
             else:
                 self._config.target_numerical_type = self._config.target_forced_numerical_type
-                print 'Type casting ITK data from (%s) to (%s)...' % (self._config.data_types_by_number[self._config.source_numerical_type], self._config.data_types_by_number[self._config.target_numerical_type])
+                print('Type casting ITK data from (%s) to (%s)...' % (self._config.data_types_by_number[self._config.source_numerical_type], self._config.data_types_by_number[self._config.target_numerical_type]))
 
                 if self._config.source_numerical_type == 1:       #float
                     if self._config.target_numerical_type == 2:   #short
@@ -282,7 +282,7 @@ class batchConverter(
                     output_data.DeepCopy(caster.GetOutput())
 
             else:   #target is VTK - requires itk2vtk
-                print 'Converting from ITK to VTK... (%s)' % self._config.data_types_by_number[self._config.target_numerical_type]
+                print('Converting from ITK to VTK... (%s)' % self._config.data_types_by_number[self._config.target_numerical_type])
 
                 if self._config.target_numerical_type == 1:      #float
                     converter = itk.ImageToVTKImageFilter[itk.Image.F3].New()
@@ -316,9 +316,9 @@ class batchConverter(
         if (not self._config.overwrite) and os.path.exists(target_file_path):
             dlg = wx.MessageDialog(self._view_frame, "%s already exists! \nOverwrite?" % target_file_path,"File already exists",wx.YES_NO|wx.NO_DEFAULT)
             if dlg.ShowModal() == wx.ID_NO:
-                print 'Skipped writing %s' % target_file_path
+                print('Skipped writing %s' % target_file_path)
                 if self._config.delete_after_conversion:
-                    print 'Source %s not deleted, since no output was written' % source_file_path
+                    print('Source %s not deleted, since no output was written' % source_file_path)
                 return    #skip this file if overwrite is denied
 
         writer = None
@@ -358,7 +358,7 @@ class batchConverter(
         #Write the output
         writer.SetInput(final_data)
         writer.SetFileName(target_file_path)
-        print "Writing %s ..." % target_file_path
+        print("Writing %s ..." % target_file_path)
         writer.Write()
 
     def execute_module(self):
@@ -382,9 +382,9 @@ class batchConverter(
         source_ext = self._config.extensions[self._config.source_file_type]
         target_ext = self._config.extensions[self._config.target_file_type]
 
-        print 'Source type = %s, target type = %s' % (source_ext, target_ext)
-        print 'source dir = %s' % (self._config.source_folder)
-        print 'target dir = %s' % (self._config.target_folder)
+        print('Source type = %s, target type = %s' % (source_ext, target_ext))
+        print('source dir = %s' % (self._config.source_folder))
+        print('target dir = %s' % (self._config.target_folder))
 
         all_files = os.listdir(self._config.source_folder)
 
@@ -414,9 +414,9 @@ class batchConverter(
             #Now we delete the input IFF the check-box is checked, and only if source and destination names differ
             if self._config.delete_after_conversion:
                 if source_file_path != target_file_path:
-                    print 'Deleting source %s' % source_file_path
+                    print('Deleting source %s' % source_file_path)
                     os.remove(source_file_path)
                 else:
-                    print 'Source not deleted, since already overwritten by output: %s' % source_file_path
+                    print('Source not deleted, since already overwritten by output: %s' % source_file_path)
                 
-        print 'Done'
+        print('Done')

@@ -12,7 +12,8 @@ from module_mixins import IntrospectModuleMixin # temporary
 import module_utils # temporary, most of this should be in utils.
 import re
 import types
-import utils
+from . import utils
+import importlib
 
 #########################################################################
 class PickleVTKObjectsModuleMixin(object):
@@ -106,8 +107,8 @@ class PickleVTKObjectsModuleMixin(object):
                 vtkObjPD = getattr(self._config, vtkObjName)
                 vtkObj = getattr(self, vtkObjName)
             except AttributeError:
-                print "PickleVTKObjectsModuleMixin: %s not available " \
-                      "in self._config OR in self.  Skipping." % (vtkObjName,)
+                print("PickleVTKObjectsModuleMixin: %s not available " \
+                      "in self._config OR in self.  Skipping." % (vtkObjName,))
 
             else:
                 
@@ -136,7 +137,7 @@ class PickleVTKObjectsModuleMixin(object):
                     try:
                         eval('vtkObj.Set%s(val)' % (method,))
                     except TypeError:
-                        if type(val) in [types.TupleType, types.ListType]:
+                        if type(val) in [tuple, list]:
                             # sometimes VTK wants the separate elements
                             # and not the tuple / list
                             eval("vtkObj.Set%s(*val)"%(method,))
@@ -212,7 +213,7 @@ class SimpleVTKClassModuleBase(PickleVTKObjectsModuleMixin,
         parentWindow = self._module_manager.get_module_view_parent_window()
 
         import resources.python.defaultModuleViewFrame
-        reload(resources.python.defaultModuleViewFrame)
+        importlib.reload(resources.python.defaultModuleViewFrame)
 
         dMVF = resources.python.defaultModuleViewFrame.defaultModuleViewFrame
         viewFrame = module_utils.instantiate_module_view_frame(

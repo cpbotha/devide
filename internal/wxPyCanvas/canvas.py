@@ -1,6 +1,6 @@
 import wx
-from canvasSubject import canvasSubject
-from canvasObject import *
+from .canvasSubject import canvasSubject
+from .canvasObject import *
 
 class canvas(wx.wxScrolledWindow, canvasSubject):
     def __init__(self, parent, id = -1, size = wx.wxDefaultSize):

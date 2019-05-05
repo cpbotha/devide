@@ -23,7 +23,7 @@ class BasicMiscTest(unittest.TestCase):
         # cur.fetchall() returns a list of tuples: we get the first
         # item in the list, then the first element in that tuple, this
         # should be the version we inserted.
-        self.failUnless(cur.fetchall()[0][0] == v)
+        self.assertTrue(cur.fetchall()[0][0] == v)
 
 
 def get_suite(devide_testing):

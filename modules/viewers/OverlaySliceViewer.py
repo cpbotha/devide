@@ -57,7 +57,7 @@ class OverlaySliceViewer:
            id : the string id which will be used to identify this overlay for future lookups.
            rgba_colour : a length 4 vector giving the red,green,blue,opacity value for this overlay. Range = [0,1]
         """
-        if self.ipw_triads.has_key(id):
+        if id in self.ipw_triads:
             raise ValueError('The overlay id = "%s" is already in use! Cannot this id - aborting.' % id)
         else:
             new_ipw_triad = [vtk.vtkImagePlaneWidget() for _ in range(3)]
@@ -97,7 +97,7 @@ class OverlaySliceViewer:
     # end edit
 
     def close(self):
-        for id in self.ipw_triads.keys():
+        for id in list(self.ipw_triads.keys()):
             self.set_input(id, None)
         self.dv_orientation_widget.close()
 
@@ -124,8 +124,8 @@ class OverlaySliceViewer:
         ispacing = idata.GetSpacing()
         iorigin = idata.GetOrigin()
         # calculate real coords
-        world = map(operator.add, iorigin,
-                    map(operator.mul, ispacing, image_pos[0:3]))
+        world = list(map(operator.add, iorigin,
+                    list(map(operator.mul, ispacing, image_pos[0:3]))))
         return world
 
     def set_perspective(self):
@@ -156,7 +156,7 @@ class OverlaySliceViewer:
             self._ipw1_delta_slice(-delta)
 
         self.render()
-        for id in self.ipw_triads.keys():
+        for id in list(self.ipw_triads.keys()):
             self.ipw_triads[id][0].InvokeEvent('InteractionEvent')
 
     def _ipw1_delta_slice(self, delta):
@@ -223,7 +223,7 @@ class OverlaySliceViewer:
         self.render()
         
     def set_input(self, id, input):
-        if self.ipw_triads.has_key(id):
+        if id in self.ipw_triads:
             selected_ipw_triad = self.ipw_triads[id]
             if input == selected_ipw_triad[0].GetInput():
                 return

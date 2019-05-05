@@ -31,7 +31,7 @@ class TransferPoint(object):
         self.alpha = alpha
     
         if len(color) != 3:
-            raise Exception, 'Color should have length of 3'
+            raise Exception('Color should have length of 3')
 
         self.radius = 5
         self.fixed = fixed
@@ -484,7 +484,7 @@ class TransferFunctionWidget(wx.PyWindow):
         maxv = self.points[-1].value
 
         if not (value >= minv and value <= maxv):
-            raise Exception, 'Value out of range: ' + str(value)
+            raise Exception('Value out of range: ' + str(value))
 
         for pt_i in range(len(self.points)):
             pt_cur = self.points[pt_i]
@@ -505,8 +505,8 @@ class TransferFunctionWidget(wx.PyWindow):
             elif value_cur == value:
                 return pt_cur.get_rgba() 
             else:
-                print 'Value, ', value, value_cur 
-                raise Exception, 'Value is weird'
+                print('Value, ', value, value_cur) 
+                raise Exception('Value is weird')
 
         return []
     
@@ -542,7 +542,7 @@ class TGraphDemo(wx.Frame):
     def OnTGraphUpdate(self, event):
         # Use this to get an RGBA matrix
         # self.t_graph.get_map()
-        print 'Yay new values!'
+        print('Yay new values!')
 
 if __name__ == '__main__':
     app = wx.App()

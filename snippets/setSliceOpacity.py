@@ -19,7 +19,7 @@ if className == 'slice3dVWR':
             pass
 
         if opacity < 0.0 or opacity > 1.0:
-            print "Invalid opacity."
+            print("Invalid opacity.")
 
         else:
             for sd in sds:
@@ -28,8 +28,8 @@ if className == 'slice3dVWR':
                     prop.SetOpacity(opacity)
 
     else:
-        print "Please select the slices whose opacity you want to set."
+        print("Please select the slices whose opacity you want to set.")
     
     
 else:
-    print "You have to run this from a slice3dVWR introspect window."
+    print("You have to run this from a slice3dVWR introspect window.")

@@ -1,5 +1,5 @@
-from logging_mixin import LoggingMixin
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from .logging_mixin import LoggingMixin
+from xmlrpc.server import SimpleXMLRPCServer
 import time
 
 class ServerProxy:
@@ -14,7 +14,7 @@ class XMLRPCInterface(LoggingMixin):
         # initialise logging mixin
         LoggingMixin.__init__(self)
 
-        print "Initialising XMLRPC..."
+        print("Initialising XMLRPC...")
         # without real IP number, this is only available via localhost
         self.server = SimpleXMLRPCServer(('localhost', 8000))
         self.server.register_instance(ServerProxy())

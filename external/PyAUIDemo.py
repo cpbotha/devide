@@ -2,10 +2,10 @@ import wx
 import wx.grid
 import wx.html
 
-import cStringIO
+import io
 import random
 
-import PyAUI
+from . import PyAUI
 
 ID_CreateTree = wx.ID_HIGHEST+1
 ID_CreateGrid = ID_CreateTree+2
@@ -90,7 +90,7 @@ def GetMondrianBitmap():
 
 
 def GetMondrianImage():
-    stream = cStringIO.StringIO(GetMondrianData())
+    stream = io.StringIO(GetMondrianData())
     return wx.ImageFromStream(stream)
 
 
@@ -358,7 +358,7 @@ class PyAUIFrame(wx.Frame):
         
         all_panes = self._mgr.GetAllPanes()
         
-        for ii in xrange(len(all_panes)):
+        for ii in range(len(all_panes)):
             if not all_panes[ii].IsToolbar():
                 all_panes[ii].Hide()
                 
@@ -370,7 +370,7 @@ class PyAUIFrame(wx.Frame):
 
         perspective_default = self._mgr.SavePerspective()
 
-        for ii in xrange(len(all_panes)):
+        for ii in range(len(all_panes)):
             if not all_panes[ii].IsToolbar():
                 all_panes[ii].Hide()
 
@@ -761,7 +761,7 @@ class PyAUIFrame(wx.Frame):
         items.append(tree.AppendItem(root, "Item 4", 0))
         items.append(tree.AppendItem(root, "Item 5", 0))
 
-        for ii in xrange(len(items)):
+        for ii in range(len(items)):
         
             id = items[ii]
             tree.AppendItem(id, "Subitem 1", 1)
@@ -1107,8 +1107,8 @@ class SettingsPanel(wx.Panel):
     
         image = wx.EmptyImage(25, 14)
         
-        for x in xrange(25):
-            for y in xrange(14):
+        for x in range(25):
+            for y in range(14):
                 pixcol = c
                 if x == 0 or x == 24 or y == 0 or y == 13:
                     pixcol = wx.BLACK

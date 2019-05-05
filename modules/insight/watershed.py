@@ -86,16 +86,16 @@ class watershed(ScriptedConfigModuleMixin, ModuleBase):
         try:
             self._watershed.SetInput(inputStream)
 
-        except TypeError, e:
+        except TypeError as e:
             # deduce the type
             itku = module_kits.itk_kit.utils
             ss = itku.get_img_type_and_dim_shortstring(inputStream)
             try:
                 w = itk.WatershedImageFilter[getattr(itk.Image,ss)].New()
-            except KeyError, e:
+            except KeyError as e:
                 emsg = 'Could not create Watershed with input type %s. '\
                         'Please try a different input type.' % (ss,)
-                raise TypeError, emsg
+                raise TypeError(emsg)
 
             # if we get here, we have a new filter
             # disconnect old one

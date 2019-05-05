@@ -79,16 +79,16 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
         if idx == 0:
             try:
                 self._cCIF.SetInput(inputStream)
-            except TypeError, e:
+            except TypeError as e:
                 # deduce the type
                 itku = module_kits.itk_kit.utils
                 ss = itku.get_img_type_and_dim_shortstring(inputStream)
                 try:
                     c = itk.ConfidenceConnectedImageFilter[getattr(itk.Image,ss), itk.Image[itk.F, 3]].New()
-                except KeyError, e:
+                except KeyError as e:
                     emsg = 'Could not create ConfidenceConnectedImageFilter with input type %s. '\
                             'Please try a different input type.' % (ss,)
-                    raise TypeError, emsg
+                    raise TypeError(emsg)
 
                 # if we get here, we have a new filter
                 # disconnect old one
@@ -115,7 +115,7 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
                         raise TypeError
 
                 except (AttributeError, TypeError):
-                    raise TypeError, 'This input requires a points-type'
+                    raise TypeError('This input requires a points-type')
  
                 self._inputPoints = inputStream
                 
@@ -167,4 +167,4 @@ class confidenceSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
                 idx.SetElement(2, z)
                 self._cCIF.AddSeed(idx)
             
-                print "Added %d,%d,%d" % (x,y,z)
+                print("Added %d,%d,%d" % (x,y,z))

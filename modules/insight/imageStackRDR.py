@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from typeModules.imageStackClass import imageStackClass
+from .typeModules.imageStackClass import imageStackClass
 import fixitk as itk
 from module_base import ModuleBase
 from module_mixins import FileOpenDialogModuleMixin

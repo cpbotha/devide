@@ -16,6 +16,7 @@ import wx
 import vtk
 import vtkdevide
 import module_utils
+import importlib
 
 class dicomRDR(ModuleBase,
                IntrospectModuleMixin,
@@ -228,7 +229,7 @@ class dicomRDR(ModuleBase,
 
     def _createViewFrame(self):
         import modules.readers.resources.python.dicomRDRViewFrame
-        reload(modules.readers.resources.python.dicomRDRViewFrame)
+        importlib.reload(modules.readers.resources.python.dicomRDRViewFrame)
 
         self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,

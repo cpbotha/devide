@@ -14,13 +14,14 @@ Inserts the following modules in sys.modules: geometry.
 """
 
 import sys
+import importlib
 
 # you have to define this
 VERSION = 'INTEGRATED'
 
 def init(module_manager, pre_import=True):
     global geometry
-    import geometry
+    from . import geometry
 
     # if we don't do this, the module will be in sys.modules as
     # module_kits.stats_kit.stats because it's not in the sys.path.
@@ -34,7 +35,7 @@ def init(module_manager, pre_import=True):
 def refresh():
     # we have none of our own packages yet...
     global geometry
-    reload(geometry)
+    importlib.reload(geometry)
 
 
     

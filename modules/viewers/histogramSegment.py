@@ -4,6 +4,7 @@ import module_utils
 import vtk
 import vtkdevide
 import wx
+import importlib
 
 class histogramSegment(IntrospectModuleMixin, ModuleBase):
     """Mooooo!  I'm a cow.
@@ -59,7 +60,7 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
 
         # first nuke all current selectors (but prevent updates to config
         # and the stencil)
-        indices = range(len(self._selectors))
+        indices = list(range(len(self._selectors)))
         self._removeSelector(indices, preventSync=True)
 
         for d in config.selectorList:
@@ -98,7 +99,7 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
                     pass
 
                 if not validType:
-                    raise TypeError, 'Input has to be of type vtkImageData.'
+                    raise TypeError('Input has to be of type vtkImageData.')
                 else:
                     return inputStream
             
@@ -221,13 +222,13 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
 
     def _deactivateOverlayIPW(self):
         if self._overlayipw:
-            print "switching off overlayipw"
+            print("switching off overlayipw")
             self._overlayipw.Off()
             self._overlayipw.SetInteractor(None)
             self._overlayipw.SetInput(None)
             self._overlayipw = None
 
-            print "disconnecting stencil"
+            print("disconnecting stencil")
             # also disconnect this guy, or we crash!
             self._stencil.SetStencil(None)
 
@@ -428,7 +429,7 @@ class histogramSegment(IntrospectModuleMixin, ModuleBase):
         # create the viewerFrame
         import modules.viewers.resources.python.histogramSegmentFrames
         # this reload is temporary during development
-        reload(modules.viewers.resources.python.histogramSegmentFrames)
+        importlib.reload(modules.viewers.resources.python.histogramSegmentFrames)
 
         viewFrame = modules.viewers.resources.python.histogramSegmentFrames.\
                     viewFrame

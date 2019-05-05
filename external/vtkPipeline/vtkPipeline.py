@@ -32,14 +32,14 @@ done by using the ConfigVtkObj class.
 
 import wx
 import os, string, re, sys, types
-import ConfigVtkObj
+from . import ConfigVtkObj
 
 # set this to 1 if you want to see debugging messages - very useful if
 # you have problems
 DEBUG=0
 def debug (msg):
     if DEBUG:
-	print msg
+	print(msg)
 
 # A hack to prevent vtkTransform.GetInverse() infinite loops
 last_transform = 0
@@ -56,7 +56,7 @@ def get_icon (vtk_obj):
         return None
     
     strng = vtk_obj.GetClassName ()[3:]
-    for key in icon_map.keys ():
+    for key in list(icon_map.keys ()):
 	if string.find (strng, key) > -1:
 	    return [key, vtk_obj, icon_map[key]]
     return ["", vtk_obj, "question"]
@@ -227,7 +227,7 @@ def recursively_add_children(tree_ctrl, parent_node):
                not i[1].IsA("vtkExecutive"):
 
             # get_vtk_objs() conveniently calls get_icon as well
-            img_idx = icon_map.values().index(i[2])
+            img_idx = list(icon_map.values()).index(i[2])
             if i[0]:
                 text = i[0] + " (" + i[1].GetClassName() + ")"
             else:
@@ -326,10 +326,10 @@ class vtkPipelineBrowser:
         if os.path.isdir(_icondir):
             ICONDIR = _icondir
         elif not os.path.isdir(ICONDIR):
-            raise RuntimeError, "can't find icon directory (%s)" % `ICONDIR`
+            raise RuntimeError("can't find icon directory (%s)" % repr(ICONDIR))
 
         self._image_list = wx.ImageList(16,16)
-        for i in icon_map.values():
+        for i in list(icon_map.values()):
             self._image_list.Add(wx.Bitmap(os.path.join(ICONDIR, i + ".xpm"),
                                           wx.BITMAP_TYPE_XPM))
         self._tree_ctrl.SetImageList(self._image_list)
@@ -350,13 +350,13 @@ class vtkPipelineBrowser:
                 ConfigVtkObj.print_err('Undefined renderwindow AND objects. '
                                        'Either or both must be defined.')
             else:
-                rw_idx = icon_map.values().index(icon_map['RenderWindow'])
+                rw_idx = list(icon_map.values()).index(icon_map['RenderWindow'])
                 self._root = self._tree_ctrl.AddRoot(text="RenderWindow",
                                                      image=rw_idx)
                 self._tree_ctrl.SetPyData(self._root, self.renwin)
                 recursively_add_children(self._tree_ctrl, self._root)
         else:
-            im_idx = icon_map.values().index(icon_map['Python'])
+            im_idx = list(icon_map.values()).index(icon_map['Python'])
             self._root = self._tree_ctrl.AddRoot(text="Root",
                                                  image=im_idx)
             self._tree_ctrl.SetPyData(self._root, None)
@@ -365,7 +365,7 @@ class vtkPipelineBrowser:
                 # we should probably do a stricter check
                 if hasattr(i, 'GetClassName'):
                     icon = get_icon(i)
-                    img_idx = icon_map.values().index(icon[2])
+                    img_idx = list(icon_map.values()).index(icon[2])
                     if icon[0]:
                         text = "%s (%s)" % (icon[0],i.GetClassName())
                     else:
@@ -413,7 +413,7 @@ class vtkPipelineBrowser:
         # clean out the tree
         self.clear()
         # close all ConfigVtkObjs
-        for cvo in self._config_vtk_objs.values():
+        for cvo in list(self._config_vtk_objs.values()):
             cvo.close()
         # now make sure the list dies
         self._config_vtk_objs.clear()
@@ -433,7 +433,7 @@ class vtkPipelineBrowser:
         """
         obj = self._tree_ctrl.GetPyData(tree_event.GetItem())
         if hasattr(obj, 'GetClassName'):
-            if not self._config_vtk_objs.has_key(obj):
+            if obj not in self._config_vtk_objs:
                 cvo = ConfigVtkObj.ConfigVtkObj(self._frame,
                                                 self.renwin, obj)
                                                 

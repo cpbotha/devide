@@ -1,5 +1,5 @@
 from wxPython import wx
-from canvasSubject import canvasSubject
+from .canvasSubject import canvasSubject
 
 #############################################################################
 class canvasObject(canvasSubject):

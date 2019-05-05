@@ -113,8 +113,8 @@ class transformImageToTarget(ScriptedConfigModuleMixin, ModuleBase):
             pad_end = (ext_X_max - source_extent[1], ext_Y_max - source_extent[3], ext_Z_max - source_extent[5])
 
         if (max(pad_start) > 0) or (max(pad_end) > 0):
-            print 'Zero-padding source by %s voxels at start and  %s voxels at end to force extent to match/exceed ' \
-                  'input''s extent. Lame, eh?' % (str(pad_start), str(pad_end))
+            print('Zero-padding source by %s voxels at start and  %s voxels at end to force extent to match/exceed ' \
+                  'input''s extent. Lame, eh?' % (str(pad_start), str(pad_end)))
             self._padder.SetInput(source)
             self._padder.SetConstant(0.0)
             self._padder.SetOutputWholeExtent(ext_X_min, ext_X_max, ext_Y_min, ext_Y_max, ext_Z_min, ext_Z_max)

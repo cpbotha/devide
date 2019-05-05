@@ -9,7 +9,7 @@
 BACKGROUND_RENDERER = False
 GRADIENT_BACKGROUND = True
 
-import cPickle
+import pickle
 import gen_utils
 
 from module_base import ModuleBase
@@ -19,13 +19,14 @@ import module_utils
 # the following four lines are only needed during prototyping of the modules
 # that they import
 import modules.viewers.slice3dVWRmodules.sliceDirections
-reload(modules.viewers.slice3dVWRmodules.sliceDirections)
+import importlib
+importlib.reload(modules.viewers.slice3dVWRmodules.sliceDirections)
 import modules.viewers.slice3dVWRmodules.selectedPoints
-reload(modules.viewers.slice3dVWRmodules.selectedPoints)
+importlib.reload(modules.viewers.slice3dVWRmodules.selectedPoints)
 import modules.viewers.slice3dVWRmodules.tdObjects
-reload(modules.viewers.slice3dVWRmodules.tdObjects)
+importlib.reload(modules.viewers.slice3dVWRmodules.tdObjects)
 import modules.viewers.slice3dVWRmodules.implicits
-reload(modules.viewers.slice3dVWRmodules.implicits)
+importlib.reload(modules.viewers.slice3dVWRmodules.implicits)
 
 
 from modules.viewers.slice3dVWRmodules.sliceDirections import sliceDirections
@@ -394,10 +395,9 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                         highestPortIndex = i
 
                 if idx <= highestPortIndex:
-                    raise Exception, \
-                          "Please add overlay data at higher input " \
+                    raise Exception("Please add overlay data at higher input " \
                           "port numbers " \
-                          "than existing primary data and overlays."
+                          "than existing primary data and overlays.")
 
             # tell all our sliceDirections about the new data
             # this might throw an exception if the input image data
@@ -572,15 +572,15 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                 self._inputs[idx]['inputData'] = inputStream
 
             else:
-                raise TypeError, "Wrong input type!"
+                raise TypeError("Wrong input type!")
 
         # ends: elif hasattr GetClassName
         elif hasattr(inputStream, 'devideType'):
             # todo: re-implement, this will now be called at EVERY
             # network execute!
-            print "has d3type"
+            print("has d3type")
             if inputStream.devideType == 'namedPoints':
-                print "d3type correct"
+                print("d3type correct")
                 # add these to our selected points!
                 self._inputs[idx]['Connected'] = 'namedWorldPoints'
                 for point in inputStream:
@@ -589,7 +589,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
                         point['name'])
 
         else:
-            raise TypeError, "Input type not recognised!"
+            raise TypeError("Input type not recognised!")
 
     def get_output_descriptions(self):
         return ('Selected points',
@@ -683,7 +683,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
 
     def _create_window(self):
         import modules.viewers.resources.python.slice3dVWRFrames
-        reload(modules.viewers.resources.python.slice3dVWRFrames)
+        importlib.reload(modules.viewers.resources.python.slice3dVWRFrames)
 
         stereo = self._module_manager.get_app_main_config().stereo
         #print "STEREO:", stereo
@@ -879,8 +879,8 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             ispacing = inputData.GetSpacing()
             iorigin = inputData.GetOrigin()
             # calculate real coords
-            world = map(operator.add, iorigin,
-                        map(operator.mul, ispacing, discretePos[0:3]))
+            world = list(map(operator.add, iorigin,
+                        list(map(operator.mul, ispacing, discretePos[0:3]))))
             return world
 
         else:
@@ -927,10 +927,10 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
             # then we have to update our internal record of this point
             ispacing = inputData.GetSpacing()
             iorigin = inputData.GetOrigin()
-            discrete = map(int, map(
-                round, map(
+            discrete = list(map(int, list(map(
+                round, list(map(
                 operator.div,
-                map(operator.sub, worldPosition, iorigin), ispacing)))
+                list(map(operator.sub, worldPosition, iorigin)), ispacing))))))
                 
             validPos = True
             extent = inputData.GetExtent()
@@ -1093,7 +1093,7 @@ class slice3dVWR(IntrospectModuleMixin, ColourDialogMixin, ModuleBase):
         if len(selected_sds) == 0:
             if len(self.sliceDirections._sliceDirectionsDict) == 1:
                 # convenience: nothing selected, but there is only one SD, use that then!
-                sd = self.sliceDirections._sliceDirectionsDict.items()[0][1]
+                sd = list(self.sliceDirections._sliceDirectionsDict.items())[0][1]
             else:
                 return
             

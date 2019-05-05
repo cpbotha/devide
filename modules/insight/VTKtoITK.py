@@ -62,7 +62,7 @@ class VTKtoITK(ScriptedConfigModuleMixin, ModuleBase):
                 if self._input.IsA('vtkImageData'):
                     input_type = self._input.GetScalarTypeAsString()
             except AttributeError:
-                raise TypeError, 'VTKtoITK requires VTK image data as input.'
+                raise TypeError('VTKtoITK requires VTK image data as input.')
 
             # input_type is a text repr, e.g. 'float' or 'unsigned char'
 

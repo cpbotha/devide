@@ -16,16 +16,17 @@ Inserts the following modules in sys.modules: wx.
 # you have to define this
 VERSION = ''
 
+
 def init(theModuleManager, pre_import=True):
     # import the main module itself
     global wx
     import wx
 
-    import dvedit_window
-    import dvshell
-    import python_shell_mixin
-    import python_shell
-    import utils
+    from . import dvedit_window
+    from . import dvshell
+    from . import python_shell_mixin
+    from . import python_shell
+    from . import utils
 
     # build up VERSION
     global VERSION

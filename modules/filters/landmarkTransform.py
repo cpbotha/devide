@@ -63,7 +63,7 @@ class landmarkTransform(ScriptedConfigModuleMixin, ModuleBase):
                 self._input_points[idx] = input_stream
 
             else:
-                raise TypeError, 'This input requires a named points type.'
+                raise TypeError('This input requires a named points type.')
 
     def get_output_descriptions(self):
         return ('vtkTransform',)
@@ -118,7 +118,7 @@ class landmarkTransform(ScriptedConfigModuleMixin, ModuleBase):
                 dict[name] = point['world']
 
         # use this as decorator list
-        snames = sdict.keys()
+        snames = list(sdict.keys())
         snames.sort()
 
         temp_source_landmarks = [sdict[name] for name in snames]

@@ -114,26 +114,26 @@ def install(devide_app_dir):
 
     itk_kit_dir = os.path.join(devide_app_dir, 'module_kits/itk_kit')
 
-    print "Deleting existing wrapitk dir."
+    print("Deleting existing wrapitk dir.")
     sys.stdout.flush()
     witk_dest_dir = os.path.join(itk_kit_dir, 'wrapitk')
     if os.path.exists(witk_dest_dir):
         shutil.rmtree(witk_dest_dir)
 
-    print "Creating list of WrapITK files..."
+    print("Creating list of WrapITK files...")
     sys.stdout.flush()
     wrapitk_tree = get_wrapitk_tree()
 
-    print "Copying WrapITK files..."
+    print("Copying WrapITK files...")
     sys.stdout.flush()
     for f in wrapitk_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
 
-    print "Creating list of ITK shared objects..."
+    print("Creating list of ITK shared objects...")
     sys.stdout.flush()
     itk_so_tree = get_itk_so_tree()
 
-    print "Copying ITK shared objects..."
+    print("Copying ITK shared objects...")
     sys.stdout.flush()
     for f in itk_so_tree:
         copy3(f[1], os.path.join(witk_dest_dir, f[0]))
@@ -144,7 +144,7 @@ def install(devide_app_dir):
         # since XP SP1.  You could also change the current dir, but our DLLs
         # are lazy loaded, so no go.  An invoking batchfile is out of the
         # question.
-        print "Moving all SOs back to main DeVIDE dir [WINDOWS] ..."
+        print("Moving all SOs back to main DeVIDE dir [WINDOWS] ...")
         lib_path = os.path.join(witk_dest_dir, 'lib')
         so_files = glob.glob(os.path.join(lib_path, SO_GLOB))
         so_files.extend(glob.glob(os.path.join(lib_path, PYE_GLOB)))
@@ -159,7 +159,7 @@ def install(devide_app_dir):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "Specify devide app dir as argument."
+        print("Specify devide app dir as argument.")
 
     else:
         install(sys.argv[1])

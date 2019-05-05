@@ -10,6 +10,7 @@ import sys
 import module_kits.wx_kit
 from module_kits.wx_kit.python_shell_mixin import PythonShellMixin
 import wx
+import importlib
 
 NUMBER_OF_INPUTS = 5
 NUMBER_OF_OUTPUTS = 5
@@ -104,14 +105,14 @@ class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin,
 
     def view_to_config(self):
         for ew, cn, i in zip(self._editwindows, self._config_srcs,
-                             range(len(self._editwindows))):
+                             list(range(len(self._editwindows)))):
             
             setattr(self._config, cn, ew.GetText())
             self.set_editwindow_modified(i, False)
         
     def config_to_view(self):
         for ew, cn, i in zip(self._editwindows, self._config_srcs,
-                             range(len(self._editwindows))):
+                             list(range(len(self._editwindows)))):
             
             ew.SetText(getattr(self._config, cn))
             self.set_editwindow_modified(i, False)
@@ -171,8 +172,8 @@ class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin,
 
         
     def _create_view_frame(self):
-        import resources.python.code_runner_frame
-        reload(resources.python.code_runner_frame)
+        from . import resources.python.code_runner_frame
+        importlib.reload(resources.python.code_runner_frame)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
@@ -189,7 +190,7 @@ class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin,
         try:
             filename, t = self._open_python_file(self._view_frame)
                 
-        except IOError, e:
+        except IOError as e:
             self._module_manager.log_error_with_exception(
                 'Could not open file %s into CodeRunner edit: %s' %
                 (filename, str(e)))
@@ -210,7 +211,7 @@ class CodeRunner(IntrospectModuleMixin, ModuleBase, PythonShellMixin,
                 self._view_frame.statusbar.SetStatusText(
                     'Saved current edit to %s.' % (filename,))
             
-        except IOError, e:
+        except IOError as e:
             self._module_manager.log_error_with_exception(
                 'Could not save CodeRunner edit to file %s: %s' %
                 (filename, str(e)))

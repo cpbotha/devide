@@ -12,6 +12,7 @@ Inserts the following modules in sys.modules: stats.
 """
 
 import sys
+import importlib
 
 # you have to define this
 VERSION = 'Strangman - May 10, 2002'
@@ -19,7 +20,7 @@ VERSION = 'Strangman - May 10, 2002'
 def init(theModuleManager, pre_import=True):
     # import the main module itself
     global stats
-    import stats
+    from . import stats
     # if we don't do this, the module will be in sys.modules as
     # module_kits.stats_kit.stats because it's not in the sys.path.
     # iow. if a module is in sys.path, "import module" will put 'module' in
@@ -30,6 +31,6 @@ def init(theModuleManager, pre_import=True):
     theModuleManager.setProgress(100, 'Initialising stats_kit: complete.')
 
 def refresh():
-    reload(stats)
+    importlib.reload(stats)
 
     

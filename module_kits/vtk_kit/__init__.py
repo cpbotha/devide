@@ -107,8 +107,9 @@ def init(module_manager, pre_import=True):
     import vtk
 
     # and do the same for vtkdevide
-    global vtkdevide
-    import vtkdevide
+    # 2020: disable vtkdevide for now
+    #global vtkdevide
+    #import vtkdevide
 
     # load up some generic functions into this namespace
     # user can, after import of module_kits.vtk_kit, address these as

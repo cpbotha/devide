@@ -138,7 +138,7 @@ class ITKReader(ScriptedConfigModuleMixin, ModuleBase):
             self._reader = itk.ImageFileReader[
                 getattr(itk.Image, reader_type_text)].New()
             self._reader_type_text = reader_type_text
-            print reader_type_text
+            print(reader_type_text)
                 
             itk_kit.utils.setupITKObjectProgress(
                 self, self._reader, 'ImageFileReader',

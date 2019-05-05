@@ -43,7 +43,7 @@ if sv and sq:
         pngWriter.SetFileName('%s%03d.png' % (fprefix, i))
         pngWriter.Write()
 
-    print "The frames have been written as %s*.png." % (fprefix,)
+    print("The frames have been written as %s*.png." % (fprefix,))
 
 else:
-    print "You have to mark a slice3dVWR module and a superQuadric module!"
+    print("You have to mark a slice3dVWR module and a superQuadric module!")

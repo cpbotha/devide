@@ -159,7 +159,7 @@ class LandmarkList:
         self._ren = ren
 
         # there we go, sync internal state to passed config
-        for name,(index_pos, world_pos) in config_dict.items():
+        for name,(index_pos, world_pos) in list(config_dict.items()):
             self.add_landmark(index_pos, world_pos, name)
 
         olv.Bind(EVT_CELL_EDIT_FINISHING,
@@ -189,14 +189,14 @@ class LandmarkList:
 
     def close(self):
         self._olv.Unbind(EVT_CELL_EDIT_FINISHING)
-        [lm.close() for lm in self.landmark_dict.values()]
+        [lm.close() for lm in list(self.landmark_dict.values())]
 
     def _get_olv_landmark_list(self):
         """Returns list of Landmark objects, sorted by name.  This is
         given to the ObjectListView.
         """
         ld = self.landmark_dict
-        keys,values = ld.keys(),ld.values()
+        keys,values = list(ld.keys()),list(ld.values())
         keys.sort()
         return [ld[key] for key in keys]
 
@@ -208,7 +208,7 @@ class LandmarkList:
         """
 
         ld = self.landmark_dict
-        keys = ld.keys()
+        keys = list(ld.keys())
         keys.sort()
         return [ld[key].index_pos for key in keys]
 
@@ -270,7 +270,7 @@ class LandmarkList:
         # would just bind to a new dictionary and not modify the
         # passed one.
         self._config_dict.clear()
-        for key,value in self.landmark_dict.items():
+        for key,value in list(self.landmark_dict.items()):
             self._config_dict[key] = value.index_pos, value.world_pos
 
 
@@ -345,18 +345,18 @@ class SStructLandmarksMM(MatchMode):
 
         md = self._cfg[KEY_MAX_DISTANCE]
 
-        print "sslm starting itk init"
+        print("sslm starting itk init")
         # use itk fast marching to generate confidence field
         self._fm = itk.FastMarchingImageFilter.IF3IF3.New()
         self._fm.SetStoppingValue(md)
         self._fm.SetSpeedConstant(1.0)
         # setup a progress message
-        print "sslm fm progress start"
+        print("sslm fm progress start")
         itk_kit.utils.setup_itk_object_progress(
             self, self._fm, 'itkFastMarchingImageFilter',
             'Propagating confidence front.', None,
             comedi._module_manager)
-        print "sslm fm progress end"
+        print("sslm fm progress end")
 
 
         # and a threshold to clip off the really high values that fast
@@ -374,7 +374,7 @@ class SStructLandmarksMM(MatchMode):
         # and a little something to convert it back to VTK world
         self._itk2vtk = itk.ImageToVTKImageFilter.IF3.New()
         self._itk2vtk.SetInput(t.GetOutput())
-        print "sslm mm init end"
+        print("sslm mm init end")
 
     def close(self):
         self._data1_landmarks.close()
@@ -413,7 +413,7 @@ class SStructLandmarksMM(MatchMode):
             # we force the landmark to do its thing
             try:
                 self._transfer_landmarks_to_vtk()
-            except RuntimeError, e:
+            except RuntimeError as e:
                 # could not transfer points
                 self._output = None
                 # tell the user why
@@ -610,7 +610,7 @@ class SStructLandmarksMM(MatchMode):
         sld = self._data1_landmarks.landmark_dict
         tld = self._data2_landmarks.landmark_dict
 
-        names = sld.keys()
+        names = list(sld.keys())
 
         sposs, tposs = [],[]
         for name in names:

@@ -72,7 +72,7 @@ def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
     # is invoked by making use of getattr on the devideModule binding.
 
     # find attribute string of obj in dvModule
-    di = dvModule.__dict__.items()
+    di = list(dvModule.__dict__.items())
     objAttrString = None
     for key, value in di:
         if value is obj:
@@ -80,8 +80,8 @@ def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
             break
 
     if not objAttrString:
-        raise Exception, 'Could not determine attribute string for ' \
-              'object %s.' % (obj.__class__.__name__)
+        raise Exception('Could not determine attribute string for ' \
+              'object %s.' % (obj.__class__.__name__))
 
     if module_manager is None:
         mm = dvModule._module_manager
@@ -90,7 +90,7 @@ def setup_itk_object_progress(dvModule, obj, nameOfObject, progressText,
 
     # sanity check objEvals
     if type(objEvals) != type(()) and objEvals != None:
-        raise TypeError, 'objEvals should be a tuple or None.'
+        raise TypeError('objEvals should be a tuple or None.')
 
     def commandCallable():
         # setup for and get values of all requested objEvals

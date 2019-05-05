@@ -11,7 +11,8 @@ import wx.grid
 # with the very ugly two lines below, make sure x capture is not used
 # this should rather be an ivar of the wxVTKRenderWindowInteractor!
 import vtk.wx.wxVTKRenderWindowInteractor
-reload(vtk.wx.wxVTKRenderWindowInteractor)
+import importlib
+importlib.reload(vtk.wx.wxVTKRenderWindowInteractor)
 vtk.wx.wxVTKRenderWindowInteractor.WX_USE_X_CAPTURE = 0
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
@@ -30,7 +31,7 @@ class threedFrame(wx.Frame):
         
         # this line will stay: transfer stereo setting to class
         wxVTKRenderWindowInteractor.USE_STEREO = S3DV_STEREO
-        print "s3dv Frames STEREO:", S3DV_STEREO
+        print("s3dv Frames STEREO:", S3DV_STEREO)
 
         # begin wxGlade: threedFrame.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE

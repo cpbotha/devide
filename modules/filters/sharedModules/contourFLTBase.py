@@ -2,6 +2,7 @@ from module_base import ModuleBase
 from module_mixins import vtkPipelineConfigModuleMixin
 import module_utils
 import vtk
+import importlib
 
 class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
 
@@ -85,7 +86,7 @@ class contourFLTBase(ModuleBase, vtkPipelineConfigModuleMixin):
 
         # import the viewFrame (created with wxGlade)
         import modules.Filters.resources.python.contourFLTBaseViewFrame
-        reload(modules.Filters.resources.python.contourFLTBaseViewFrame)
+        importlib.reload(modules.Filters.resources.python.contourFLTBaseViewFrame)
 
         self._viewFrame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,

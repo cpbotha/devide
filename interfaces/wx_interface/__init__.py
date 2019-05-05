@@ -1,1 +1,1 @@
-from main import WXInterface
+from .main import WXInterface

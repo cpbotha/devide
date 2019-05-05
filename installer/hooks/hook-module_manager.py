@@ -23,9 +23,9 @@ sys.path.insert(0, devideDir)
 import module_kits
 
 # now also parse config file
-import ConfigParser
+import configparser
 config_defaults = {'nokits': ''}
-cp = ConfigParser.ConfigParser(config_defaults)
+cp = configparser.ConfigParser(config_defaults)
 cp.read(os.path.join(devideDir, 'devide.cfg'))
 nokits = [i.strip() for i in cp.get('DEFAULT', 'nokits').split(',')]
 
@@ -57,6 +57,6 @@ else:
 
 hiddenimports = ['module_kits.%s' % (i,) for i in mkl] + other_imports
 
-print "[*] hook-ModuleManager.py - HIDDENIMPORTS"
-print hiddenimports
+print("[*] hook-ModuleManager.py - HIDDENIMPORTS")
+print(hiddenimports)
 

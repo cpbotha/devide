@@ -39,8 +39,8 @@ if className == 'slice3dVWR':
         trfmPd.SetInput(pd)
         filename = os.path.join(tempdir, '%s.vtp' % (name,))
         vtpWriter.SetFileName(filename)
-        print "Writing %s." % (filename,)
+        print("Writing %s." % (filename,))
         vtpWriter.Write()
 
 else:
-    print "This snippet must be run from a slice3dVWR introspection window."
+    print("This snippet must be run from a slice3dVWR introspection window.")

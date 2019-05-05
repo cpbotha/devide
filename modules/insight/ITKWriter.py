@@ -57,10 +57,9 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
             try:
                 if inputStream.GetNameOfClass() != 'Image':
                     raise AttributeError
-            except AttributeError, e:
-                raise TypeError, \
-                      'This module requires an ITK Image Type (%s).' \
-                      % (str(e),)
+            except AttributeError as e:
+                raise TypeError('This module requires an ITK Image Type (%s).' \
+                      % (str(e),))
             else:
                 self._input = inputStream
     
@@ -92,21 +91,20 @@ class ITKWriter(FilenameViewModuleMixin, ModuleBase):
                 self._input)
 
             if shortstring != self._writer_type:
-                print "ITKWriter: creating new writer instance."
+                print("ITKWriter: creating new writer instance.")
                 witk_template = getattr(itk, 'ImageFileWriter')
                 witk_type = getattr(itk.Image, shortstring)
 
                 try:
                     self._writer = witk_template[witk_type].New()
-                except Exception, e:
+                except Exception as e:
                     if vectorString == 'V':
                         vType = 'vector'
                     else:
                         vType = ''
                          
-                        raise RuntimeError, \
-                              'Unable to instantiate ITK writer with' \
-                              'type %s.' % (shortstring,)
+                        raise RuntimeError('Unable to instantiate ITK writer with' \
+                              'type %s.' % (shortstring,))
 
                 else:
                     itk_kit.utils.setupITKObjectProgress(

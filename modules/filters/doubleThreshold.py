@@ -3,6 +3,7 @@ from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
 import vtk
+import importlib
 
 class doubleThreshold(IntrospectModuleMixin, ModuleBase):
 
@@ -108,7 +109,7 @@ class doubleThreshold(IntrospectModuleMixin, ModuleBase):
                 "Impossible error with outputType choice in "
                 "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
-            ocString = self._outputTypes.keys()[-1]
+            ocString = list(self._outputTypes.keys())[-1]
 
         try:
             symbolicOutputType = self._outputTypes[ocString]
@@ -117,7 +118,7 @@ class doubleThreshold(IntrospectModuleMixin, ModuleBase):
                 "Impossible error with ocString in "
                 "doubleThresholdFLT.py.  Picking sane default.")
             # set to last string in list, should be default
-            symbolicOutputType = self._outputTypes.values()[-1]
+            symbolicOutputType = list(self._outputTypes.values())[-1]
 
         if symbolicOutputType == -1:
             self._config.outputScalarType = -1
@@ -139,7 +140,7 @@ class doubleThreshold(IntrospectModuleMixin, ModuleBase):
         self._view_frame.replaceOutCheckBox.SetValue(self._config.replaceOut)
         self._view_frame.replaceOutText.SetValue(str(self._config.outValue))
 
-        for key in self._outputTypes.keys():
+        for key in list(self._outputTypes.keys()):
             symbolicOutputType = self._outputTypes[key]
             if hasattr(vtk, str(symbolicOutputType)):
                 numericOutputType = getattr(vtk, symbolicOutputType)
@@ -170,7 +171,7 @@ class doubleThreshold(IntrospectModuleMixin, ModuleBase):
 
         # import the viewFrame (created with wxGlade)
         import modules.filters.resources.python.doubleThresholdFLTFrame
-        reload(modules.filters.resources.python.doubleThresholdFLTFrame)
+        importlib.reload(modules.filters.resources.python.doubleThresholdFLTFrame)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,
@@ -188,7 +189,7 @@ class doubleThreshold(IntrospectModuleMixin, ModuleBase):
 
         # finish setting up the output datatype choice
         self._view_frame.outputDataTypeChoice.Clear()
-        for aType in self._outputTypes.keys():
+        for aType in list(self._outputTypes.keys()):
             self._view_frame.outputDataTypeChoice.Append(aType)    
 
     def _sanitiseThresholdTexts(self, whichText):

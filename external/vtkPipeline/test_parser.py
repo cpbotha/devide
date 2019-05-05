@@ -51,7 +51,7 @@ $ python test_parser.py &> /tmp/err.log
 
 """
 
-import vtkMethodParser
+from . import vtkMethodParser
 import vtkpython
 import sys, traceback
 
@@ -65,16 +65,16 @@ def exception ():
         type, value, tb = sys.exc_info ()
         info = traceback.extract_tb (tb)
         filename, lineno, function, text = info[-1] # last line only
-        print "Exception: %s:%d: %s: %s (in %s)" %\
-              (filename, lineno, type.__name__, str (value), function)
+        print("Exception: %s:%d: %s: %s (in %s)" %\
+              (filename, lineno, type.__name__, str (value), function))
     finally:
         type = value = tb = None # clean up
 
 
 def print_err (msg):
-    print "**************************************************"
-    print msg
-    print "**************************************************"
+    print("**************************************************")
+    print(msg)
+    print("**************************************************")
     
 
 def test_obj (obj_name):
@@ -153,7 +153,7 @@ def test_all_vtk(debug=0):
 
     for obj_name in obj_names:
         if obj_name[:3] == 'vtk':
-            print "Testing %s"%obj_name            
+            print("Testing %s"%obj_name)            
             try:
                 obj = eval ("vtkpython.%s()"%obj_name)
             except TypeError:
@@ -168,15 +168,15 @@ def test_all_vtk(debug=0):
                     if check_if_testable (obj):
                         try:
                             p.parse_methods (obj)
-                            print "ok"
-                        except Exception, msg:
+                            print("ok")
+                        except Exception as msg:
                             exception ()
                             bad_objects.append (obj_name)
                         else:
                             count = count + 1
                     
-    print "Parsed all VTK Python classes.  "\
-          "A total of %d classes were parseable."% count
+    print("Parsed all VTK Python classes.  "\
+          "A total of %d classes were parseable."% count)
     
     if bad_objects:
         print_err ("The following classes couldnt be parsed - please "\

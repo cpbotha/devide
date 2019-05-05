@@ -147,7 +147,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
 
             # and now we have to unsign it!
             tempPd1Scalars = tempPd1.GetPointData().GetScalars()
-            for i in xrange(tempPd1Scalars.GetNumberOfTuples()):
+            for i in range(tempPd1Scalars.GetNumberOfTuples()):
                 a = tempPd1Scalars.GetTuple1(i)
                 tempPd1Scalars.SetTuple1(i, float(abs(a)))
 
@@ -161,7 +161,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
             cellIdList = vtk.vtkIdList()
             pointIdList = vtk.vtkIdList()
 
-            for ptId in xrange(numPoints):
+            for ptId in range(numPoints):
                 # this has to be first
                 neighbourMap[ptId].append(ptId)
                 tempPd1.GetPointCells(ptId, cellIdList)
@@ -198,12 +198,12 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
             # everywhere else it should be the maximum value of the mask
             # image
             cMin, cMax = tempPd1.GetScalarRange()
-            print "range: %d - %d" % (cMin, cMax)
+            print("range: %d - %d" % (cMin, cMax))
             seedPd = vtk.vtkPolyData()
             # first make a copy of the complete PolyData
             seedPd.DeepCopy(tempPd1)
             # now change EVERYTHING to the maximum value
-            print seedPd.GetPointData().GetScalars().GetName()
+            print(seedPd.GetPointData().GetScalars().GetName())
             # we know that the active scalars thingy has only one component,
             # namely Mean_Curvature - set it all to MAX
             seedPd.GetPointData().GetScalars().FillComponent(0, cMax)
@@ -267,7 +267,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
                 # newSeedPdScalars is identical to seedPdScalars
                 stable = True
                 
-                for i in xrange(newSeedPdScalars.GetNumberOfTuples()):
+                for i in range(newSeedPdScalars.GetNumberOfTuples()):
                     a = newSeedPdScalars.GetTuple1(i)
                     b = tempPd1Scalars.GetTuple1(i)
                     c = [b, a][bool(a > b)]
@@ -277,7 +277,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
                         # if a single scalar is different, stable becomes
                         # false and we'll never have to check again
                         stable = False
-                        print "unstable on point %d" % (i)
+                        print("unstable on point %d" % (i))
                     
                     # stuff the result directly into seedPdScalars, ready
                     # for the next iteration
@@ -285,7 +285,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
 
                 self._module_manager.setProgress(iteration / 500.0 * 100.0,
                                                 "Homotopic modification")
-                print "iteration %d done" % (iteration)
+                print("iteration %d done" % (iteration))
                 iteration += 1
 
                 #if iteration == 2:
@@ -296,7 +296,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
 
             # BEGIN watershed            
 
-            pointLabels = [-1 for i in xrange(seedPd.GetNumberOfPoints())]
+            pointLabels = [-1 for i in range(seedPd.GetNumberOfPoints())]
 
             # mark all minima as separate regions
             gPtId = seedPd.FindPoint(self._giaGlenoid)
@@ -311,10 +311,10 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
             # now, iterate through all non-marked points
             seedPdScalars = seedPd.GetPointData().GetScalars()
             
-            for ptId in xrange(seedPd.GetNumberOfPoints()):
+            for ptId in range(seedPd.GetNumberOfPoints()):
                 if pointLabels[ptId] == -1:
 
-                    print "starting ws with ptId %d" % (ptId)
+                    print("starting ws with ptId %d" % (ptId))
                     pathDone = False
                     # this will contain all the pointIds we walk along,
                     # starting with ptId (new path!)
@@ -347,8 +347,8 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
                                 for newLabelPtId in thePath:
                                     pointLabels[newLabelPtId] = theLabel
 
-                                print "found new path: %d (%d)" % \
-                                      (theLabel, len(thePath))
+                                print("found new path: %d (%d)" % \
+                                      (theLabel, len(thePath)))
                                 # and our loop is done
                                 pathDone = True
 
@@ -380,15 +380,15 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
                                 for newLabelPtId in thePath:
                                     pointLabels[newLabelPtId] = plateauLabel
 
-                                print "found new path: %d (%d)" % \
-                                      (plateauLabel, len(thePath))
+                                print("found new path: %d (%d)" % \
+                                      (plateauLabel, len(thePath)))
                                 # and our loop is done
                                 pathDone = True
                                     
                             elif not plateauNeighbours:
                                 # i.e. we have a single point or a floating
                                 # plateau...
-                                print "floating plateau!"
+                                print("floating plateau!")
                                 pathDone = True
                                 
                             else:
@@ -419,8 +419,8 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
                                             pointLabels[newLabelPtId] = \
                                                                       theLabel
 
-                                        print "found new path: %d (%d)" % \
-                                              (theLabel, len(thePath))
+                                        print("found new path: %d (%d)" % \
+                                              (theLabel, len(thePath)))
                                         # and our loop is done
                                         pathDone = True
 
@@ -430,14 +430,14 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
                                         thePath.append(minId)
                                     
                                 else:
-                                    print "HELP! - we found a minimum plateau!"
+                                    print("HELP! - we found a minimum plateau!")
 
             # we're done with our little path walking... now we have to assign
             # our watershedded thingy to the output data
             
             self._outputPolyDataHM.DeepCopy(seedPd)
 
-            for ptId in xrange(len(pointLabels)):
+            for ptId in range(len(pointLabels)):
                 self._outputPolyDataHM.GetPointData().GetScalars().SetTuple1(
                     ptId,
                     pointLabels[ptId])
@@ -458,7 +458,7 @@ class testModule3(ModuleBase, NoConfigModuleMixin):
         plateauLabel = -1
         # we're going to use this to check VERY quickly whether we've
         # already stored a point
-        donePoints = [False for i in xrange(len(neighbourMap))]
+        donePoints = [False for i in range(len(neighbourMap))]
         donePoints[initPt] = True
         # and this is the scalar value of the plateau
         initScalar = scalars.GetTuple1(initPt)

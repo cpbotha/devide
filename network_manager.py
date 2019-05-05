@@ -2,8 +2,8 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import ConfigParser
-from ConfigParser import NoOptionError
+import configparser
+from configparser import NoOptionError
 import copy
 from module_kits.misc_kit.mixins import SubjectMixin
 from module_manager import PickledModuleState, PickledConnection
@@ -40,14 +40,14 @@ class NetworkManager(SubjectMixin):
         sms = self._devide_app.scheduler.meta_modules_to_scheduler_modules(
             meta_modules)
 
-        print "STARTING network execute ----------------------------"
-        print time.ctime()
+        print("STARTING network execute ----------------------------")
+        print(time.ctime())
 
         self._devide_app.scheduler.execute_modules(sms)
         
         self._devide_app.set_progress(100.0, 'Network execution complete.')
 
-        print "ENDING network execute ------------------------------"        
+        print("ENDING network execute ------------------------------")        
 
 
     def load_network_DEPRECATED(self, filename):
@@ -61,12 +61,12 @@ class NetworkManager(SubjectMixin):
             # load the fileData
             f = open(filename, 'rb')
             fileData = f.read()
-        except Exception, e:
+        except Exception as e:
             if f:
                 f.close()
 
-            raise RuntimeError, 'Could not load network from %s:\n%s' % \
-                  (filename,str(e))
+            raise RuntimeError('Could not load network from %s:\n%s' % \
+                  (filename,str(e)))
 
         f.close()
 
@@ -75,14 +75,14 @@ class NetworkManager(SubjectMixin):
             magic, major, minor, patch = headerTuple
             pmsDict, connectionList, glyphPosDict = dataTuple
             
-        except Exception, e:
-            raise RuntimeError, 'Could not interpret network from %s:\n%s' % \
-                  (filename,str(e))
+        except Exception as e:
+            raise RuntimeError('Could not interpret network from %s:\n%s' % \
+                  (filename,str(e)))
             
 
         if magic != 'DVN' and magic != 'D3N' or (major,minor,patch) != (1,0,0):
-            raise RuntimeError, '%s is not a valid DeVIDE network file.' % \
-                  (filename,)
+            raise RuntimeError('%s is not a valid DeVIDE network file.' % \
+                  (filename,))
 
         return (pmsDict, connectionList, glyphPosDict)
 
@@ -99,20 +99,20 @@ class NetworkManager(SubjectMixin):
         # module_config_dict
         dvn_dir = os.path.dirname(filename)
 
-        cp = ConfigParser.ConfigParser({'dvn_dir' : dvn_dir})
+        cp = configparser.ConfigParser({'dvn_dir' : dvn_dir})
 
         try:
             # load the fileData
             cfp = open(filename, 'rb')
-        except Exception, e:
-            raise RuntimeError, 'Could not open network file %s:\n%s' % \
-                    (filename,str(e))
+        except Exception as e:
+            raise RuntimeError('Could not open network file %s:\n%s' % \
+                    (filename,str(e)))
 
         try:
             cp.readfp(cfp)
-        except Exception, e:
-            raise RuntimeError, 'Could not load network from %s:\n%s' % \
-                  (filename,str(e))
+        except Exception as e:
+            raise RuntimeError('Could not load network from %s:\n%s' % \
+                  (filename,str(e)))
         finally:
             cfp.close()
 
@@ -174,7 +174,7 @@ class NetworkManager(SubjectMixin):
             elif sec.startswith('connections/'):
                 pc = PickledConnection()
 
-                for a, getter in conn_attrs.items():
+                for a, getter in list(conn_attrs.items()):
                     get_method = getattr(cp, getter) 
                     try:
                         setattr(pc, a, get_method(sec, a))
@@ -240,18 +240,18 @@ class NetworkManager(SubjectMixin):
 
                 v = module_config_dict[k]
                 if type(v) in [
-                        types.StringType,
-                        types.UnicodeType]:
+                        bytes,
+                        str]:
                     new_mcd[k] = transform_single_path(v)
 
-                elif type(v) == types.ListType:
+                elif type(v) == list:
                     # it's a list, so try to transform every element
                     # copy everything into a new list new_v
                     new_v = v[:]
                     for i,p in enumerate(v):
                         if type(p) in [
-                                types.StringType,
-                                types.UnicodeType]:
+                                bytes,
+                                str]:
                             new_v[i] = transform_single_path(p)
 
 
@@ -270,7 +270,7 @@ class NetworkManager(SubjectMixin):
         be expanded (relative to the loaded network) at load-time.
         """
 
-        cp = ConfigParser.ConfigParser()
+        cp = configparser.ConfigParser()
 
         # general section with network configuration
         sec = 'general'
@@ -285,7 +285,7 @@ class NetworkManager(SubjectMixin):
             dvn_dir = os.path.abspath(os.path.dirname(filename))
 
         # create a section for each module
-        for pms in pms_dict.values():
+        for pms in list(pms_dict.values()):
             sec = 'modules/%s' % (pms.instance_name,)
             cp.add_section(sec)
             cp.set(sec, 'module_name', pms.module_name)
@@ -304,7 +304,7 @@ class NetworkManager(SubjectMixin):
         for idx, pconn in enumerate(connection_list):
             sec = 'connections/%d' % (idx,)
             cp.add_section(sec)
-            attrs = pconn.__dict__.keys()
+            attrs = list(pconn.__dict__.keys())
             for a in attrs:
                 cp.set(sec, a, getattr(pconn, a))
 

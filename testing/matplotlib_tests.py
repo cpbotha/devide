@@ -57,7 +57,7 @@ class MPLTest(unittest.TestCase):
 
         err = self._devide_testing.compare_png_images(test_fn, filename1)
 
-        self.failUnless(err == 0, '%s differs from %s, err = %.2f' %
+        self.assertTrue(err == 0, '%s differs from %s, err = %.2f' %
                         (filename1, test_fn, err))
 
 

@@ -17,7 +17,7 @@ class PyroInterface:
     def __init__(self, devide_app):
         self._devide_app = devide_app
 
-        print "Initialising Pyro..."
+        print("Initialising Pyro...")
         Pyro.core.initServer()
         self.daemon = Pyro.core.Daemon()
 
@@ -45,7 +45,7 @@ class PyroInterface:
         """
 
         for msg in msgs:
-            print 'ERROR: %s' % (msg,)
+            print('ERROR: %s' % (msg,))
 
     def log_error(self, message):
         """Log a single string as error.
@@ -68,24 +68,24 @@ class PyroInterface:
         else:
             msg = message
 
-        print 'INFO: %s' % (msg,)
+        print('INFO: %s' % (msg,))
 
     def log_message(self, message, timeStamp=True):
         """Use this to log a message that has to be shown to the user in
         for example a message box.
         """
 
-        print 'MESSAGE: %s' % (message,)
+        print('MESSAGE: %s' % (message,))
 
     def log_warning(self, message, timeStamp=True):
 
-        print 'WARNING: %s' % (message,)
+        print('WARNING: %s' % (message,))
 
     def set_progress(self, progress, message, noTime=False):
         # we also output an informative message to standard out
         # in cases where DeVIDE is very busy, this is quite
         # handy.
-        print "PROGRESS: %s: %.2f" % (message, progress)
+        print("PROGRESS: %s: %.2f" % (message, progress))
 
     def start_main_loop(self):
         self.log_message('DeVIDE available at %s' % (self.easy_uri,))

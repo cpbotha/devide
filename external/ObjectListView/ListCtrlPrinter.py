@@ -103,7 +103,7 @@ import math
 
 import wx
 
-from WordWrapRenderer import WordWrapRenderer
+from .WordWrapRenderer import WordWrapRenderer
 
 #----------------------------------------------------------------------------
 
@@ -2597,7 +2597,7 @@ class Bucket(object):
         self.__dict__.update(kwargs)
 
     def __repr__(self):
-        strs = ["%s=%r" % kv for kv in self.__dict__.items()]
+        strs = ["%s=%r" % kv for kv in list(self.__dict__.items())]
         return "Bucket(" + ", ".join(strs) + ")"
 
 #----------------------------------------------------------------------------
@@ -2726,7 +2726,7 @@ class RectUtils:
 
 if __name__ == '__main__':
     import wx
-    from ObjectListView import ObjectListView, FastObjectListView, GroupListView, ColumnDefn
+    from .ObjectListView import ObjectListView, FastObjectListView, GroupListView, ColumnDefn
 
     # Where can we find the Example module?
     import sys

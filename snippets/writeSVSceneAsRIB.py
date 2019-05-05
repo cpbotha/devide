@@ -25,7 +25,7 @@ if className == 'slice3dVWR':
     e.Write()
     obj._orientationWidget.On()
     
-    print "Wrote file to %s.rib." % (outputfilename,)
+    print("Wrote file to %s.rib." % (outputfilename,))
 
 else:
-    print "You have to run this from the introspection window of a slice3dVWR."
+    print("You have to run this from the introspection window of a slice3dVWR.")

@@ -9,7 +9,7 @@ class PythonShellTest(unittest.TestCase):
         """
         iface = self._devide_app.get_interface()
         iface._handler_menu_python_shell(None)
-        self.failUnless(iface._python_shell._frame.IsShown())
+        self.assertTrue(iface._python_shell._frame.IsShown())
         iface._python_shell._frame.Show(False)
         
 

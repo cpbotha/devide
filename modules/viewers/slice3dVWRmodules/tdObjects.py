@@ -3,7 +3,8 @@
 # class that controls the 3-D objects list
 
 import gen_utils
-reload(gen_utils)
+import importlib
+importlib.reload(gen_utils)
 import math
 import module_kits
 from module_kits.vtk_kit import misc
@@ -177,11 +178,11 @@ class tdObjects(s3dcGridMixin):
 #                         mapper.ScalarVisibilityOff()
                 
                 else:
-                    raise Exception, 'Non-handled tdObject type'
+                    raise Exception('Non-handled tdObject type')
 
             else:
                 # the object has no GetClassName that's callable
-                raise Exception, 'tdObject has no GetClassName()'
+                raise Exception('tdObject has no GetClassName()')
 
             nrGridRows = self._grid.GetNumberRows()
             self._grid.AppendRows()
@@ -214,7 +215,7 @@ class tdObjects(s3dcGridMixin):
             
         # ends 
         else:
-            raise Exception, 'Attempt to add same object twice.'
+            raise Exception('Attempt to add same object twice.')
 
     def updateObject(self, prevObject, newObject):
         """Method used to update new data on a new connection.
@@ -356,13 +357,13 @@ class tdObjects(s3dcGridMixin):
             motionSwitched = True
 
         # vector from 0 to 1
-        vn = map(operator.sub, twoPoints[1], twoPoints[0])
+        vn = list(map(operator.sub, twoPoints[1], twoPoints[0]))
         # normalise it
         d = vtk.vtkMath.Normalize(vn)
         # calculate new lengthening vector
         v = [0.5 * d * e for e in vn]
-        new0 = map(operator.sub, twoPoints[0], v)
-        new1 = map(operator.add, twoPoints[1], v)
+        new0 = list(map(operator.sub, twoPoints[0], v))
+        new1 = list(map(operator.add, twoPoints[1], v))
         
         # we want the actor double as long
         lineSource = vtk.vtkLineSource()
@@ -396,12 +397,12 @@ class tdObjects(s3dcGridMixin):
         """
 
         # 2. calculate vertical distance from first axis point to line
-        tp0o = map(operator.sub, axisPoints[0], lineOrigin)
+        tp0o = list(map(operator.sub, axisPoints[0], lineOrigin))
         bvm = vtk.vtkMath.Dot(tp0o, lineVector) # bad vector magnitude
         bv = [bvm * e for e in lineVector] # bad vector
         # by subtracting the bad (lineVector-parallel) vector from tp0o,
         # we get only the orthogonal distance!
-        od = map(operator.sub, tp0o, bv)
+        od = list(map(operator.sub, tp0o, bv))
         # negate it
         od = [-e for e in od]
 
@@ -410,19 +411,19 @@ class tdObjects(s3dcGridMixin):
 
         # let's rotate
         # get axis as vector
-        objectAxis = map(operator.sub, axisPoints[1], axisPoints[0])
+        objectAxis = list(map(operator.sub, axisPoints[1], axisPoints[0]))
         objectAxisM = vtk.vtkMath.Norm(objectAxis)
         rotAxis = [0.0, 0.0, 0.0]
         vtk.vtkMath.Cross(objectAxis, lineVector, rotAxis)
         
         # calculate the new tp[1] (i.e. after the translate)
-        ntp1 = map(operator.add, axisPoints[1], od)
+        ntp1 = list(map(operator.add, axisPoints[1], od))
         # relative to line origin
-        ntp1o = map(operator.sub, ntp1, lineOrigin)
+        ntp1o = list(map(operator.sub, ntp1, lineOrigin))
         # project down onto line
         bvm = vtk.vtkMath.Dot(ntp1o, lineVector)
         bv = [bvm * e for e in lineVector]
-        gv = map(operator.sub, ntp1o, bv)
+        gv = list(map(operator.sub, ntp1o, bv))
         
         spdM = vtk.vtkMath.Norm(gv)
                     
@@ -508,7 +509,7 @@ class tdObjects(s3dcGridMixin):
         # 2. calculate vertical translation between the first axis point
         #    and the plane that we are going to lock to
         
-        tpo = map(operator.sub, axisPoints[0], planeOrigin)
+        tpo = list(map(operator.sub, axisPoints[0], planeOrigin))
         # "vertical" distance
         vdm = vtk.vtkMath.Dot(tpo, planeNormal)
         # vector perpendicular to plane, between plane and tp[0]
@@ -522,15 +523,15 @@ class tdObjects(s3dcGridMixin):
 
         # let's rotate
         # get axis as vector
-        objectAxis = map(operator.sub, axisPoints[1], axisPoints[0])
+        objectAxis = list(map(operator.sub, axisPoints[1], axisPoints[0]))
         objectAxisM = vtk.vtkMath.Norm(objectAxis)
         rotAxis = [0.0, 0.0, 0.0]
         vtk.vtkMath.Cross(objectAxis, planeNormal, rotAxis)
                     
         # calculate the new tp[1] (i.e. after the translate)
-        ntp1 = map(operator.add, axisPoints[1], vd)
+        ntp1 = list(map(operator.add, axisPoints[1], vd))
         # relative to plane origin
-        ntp1o = map(operator.sub, ntp1, planeOrigin)
+        ntp1o = list(map(operator.sub, ntp1, planeOrigin))
         # project down onto plane by
         # first calculating the orthogonal distance to the plane
         spdM = vtk.vtkMath.Dot(ntp1o, planeNormal)
@@ -670,7 +671,7 @@ class tdObjects(s3dcGridMixin):
             return self._tdObjectsDict[prop]
         except KeyError:
             #
-            for objectDict in self._tdObjectsDict.values():
+            for objectDict in list(self._tdObjectsDict.values()):
                 if objectDict['vtkActor'] == prop:
                     return objectDict['tdObject']
 
@@ -681,7 +682,7 @@ class tdObjects(s3dcGridMixin):
         """Given an objectName, return a tdObject binding.
         """
         
-        dictItems = self._tdObjectsDict.items()
+        dictItems = list(self._tdObjectsDict.items())
         dictLen = len(dictItems)
 
         objectFound = False
@@ -702,7 +703,7 @@ class tdObjects(s3dcGridMixin):
         to all the found objects.  There could be less objects than names.
         """
 
-        dictItems = self._tdObjectsDict.items()
+        dictItems = list(self._tdObjectsDict.items())
         dictLen = len(dictItems)
 
         itemsIdx = 0
@@ -731,7 +732,7 @@ class tdObjects(s3dcGridMixin):
         
 
     def getPickableProps(self):
-        return [o['vtkActor'] for o in self._tdObjectsDict.values()
+        return [o['vtkActor'] for o in list(self._tdObjectsDict.values())
                 if 'vtkActor' in o]
 
     def _getSelectedObjects(self):
@@ -752,7 +753,7 @@ class tdObjects(s3dcGridMixin):
     def getContourObjects(self):
         """Returns a list of objects that have contouring activated.
         """
-        return [o['tdObject'] for o in self._tdObjectsDict.values()
+        return [o['tdObject'] for o in list(self._tdObjectsDict.values())
                 if o['contour']]
 
     def getObjectColour(self, tdObject):
@@ -1008,7 +1009,7 @@ class tdObjects(s3dcGridMixin):
     def _handlerObjectAxisToSlice(self, event):
         #
         sObjects = self._getSelectedObjects()
-        print len(sObjects)
+        print(len(sObjects))
         sSliceDirections = self.slice3dVWR.sliceDirections.\
                            getSelectedSliceDirections()
 
@@ -1053,7 +1054,7 @@ class tdObjects(s3dcGridMixin):
                 try:
                     lineOrigin, lineVector = misc.planePlaneIntersection(
                         pn0, po0, pn1, po1)
-                except ValueError, msg:
+                except ValueError as msg:
                     md = wx.MessageDialog(self.slice3dVWR.controlFrame,
                                           "The two slices you have selected "
                                           "are parallel, no intersection "
@@ -1183,7 +1184,7 @@ class tdObjects(s3dcGridMixin):
 
                         # do the actual rotation
                         # calculate the axis vector
-                        v = map(operator.sub, twoPoints[1], twoPoints[0])
+                        v = list(map(operator.sub, twoPoints[1], twoPoints[0]))
                         vtk.vtkMath.Normalize(v)
                         # create a transform with the requested rotation
                         newTransform = vtk.vtkTransform()
@@ -1349,8 +1350,8 @@ class tdObjects(s3dcGridMixin):
         self.slice3dVWR.sliceDirections.syncContoursToObject(tdObject)
 
     def removeObject(self, tdObject):
-        if not self._tdObjectsDict.has_key(tdObject):
-            raise Exception, 'Attempt to remove non-existent tdObject'
+        if tdObject not in self._tdObjectsDict:
+            raise Exception('Attempt to remove non-existent tdObject')
 
         # this will take care of motion boxes and the like
         self._setObjectMotion(tdObject, False)
@@ -1377,8 +1378,7 @@ class tdObjects(s3dcGridMixin):
             self.slice3dVWR.render3D()
             
         else:
-            raise Exception,\
-                  'Unhandled object type in tdObjects.removeObject()'
+            raise Exception('Unhandled object type in tdObjects.removeObject()')
 
         # whatever the case may be, we need to remove it from the wxGrid
         # first search for the correct objectName
@@ -1401,7 +1401,7 @@ class tdObjects(s3dcGridMixin):
         del self._tdObjectsDict[tdObject]
 
     def _setObjectColour(self, tdObject, dColour):
-        if self._tdObjectsDict.has_key(tdObject):
+        if tdObject in self._tdObjectsDict:
             if self._tdObjectsDict[tdObject]['type'] == 'vtkPolyData':
                 objectDict = self._tdObjectsDict[tdObject]
                 
@@ -1428,7 +1428,7 @@ class tdObjects(s3dcGridMixin):
                     self._grid.SetCellValue(row, self._gridColourCol, cName)
 
     def _setObjectVisibility(self, tdObject, visible):
-        if self._tdObjectsDict.has_key(tdObject):
+        if tdObject in self._tdObjectsDict:
             objectDict = self._tdObjectsDict[tdObject]
 
             # in our own dict
@@ -1449,7 +1449,7 @@ class tdObjects(s3dcGridMixin):
                     self._grid,gridRow, self._gridVisibleCol, visible)
 
     def _setObjectScalarVisibility(self, tdObject, scalarVisibility):
-        if self._tdObjectsDict.has_key(tdObject):
+        if tdObject in self._tdObjectsDict:
             objectDict = self._tdObjectsDict[tdObject]
 
             
@@ -1488,7 +1488,7 @@ class tdObjects(s3dcGridMixin):
                 self._setObjectVisibility(obj, not visible)
 
     def _setObjectContouring(self, tdObject, contour):
-        if self._tdObjectsDict.has_key(tdObject):
+        if tdObject in self._tdObjectsDict:
             objectDict = self._tdObjectsDict[tdObject]
             
             # in our own dict

@@ -65,7 +65,7 @@ def planePlaneIntersection(
     maxAbsL = max(absL)
     
     if maxAbsL == 0.0:
-        raise ValueError, "Planes are almost parallel."
+        raise ValueError("Planes are almost parallel.")
     
     w = absL.index(maxAbsL)
     Lw = L[w]

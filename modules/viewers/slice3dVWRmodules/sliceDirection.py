@@ -64,7 +64,7 @@ class sliceDirection:
         is usually a tdObject and specifically a vtkPolyData.  We also
         need the prop3D that represents this polydata in the 3d scene.
         """
-        if self._contourObjectsDict.has_key(contourObject):
+        if contourObject in self._contourObjectsDict:
             # we already have this, thanks
             return
 
@@ -130,7 +130,7 @@ class sliceDirection:
             self.addContourObject(co, prop)
 
     def removeAllContourObjects(self):
-        contourObjects = self._contourObjectsDict.keys()
+        contourObjects = list(self._contourObjectsDict.keys())
         for co in contourObjects:
             self.removeContourObject(co)
 
@@ -143,7 +143,7 @@ class sliceDirection:
             del self._contourObjectsDict[contourObject]
 
     def syncContourToObjectViaProp(self, prop):
-        for coi in self._contourObjectsDict.items():
+        for coi in list(self._contourObjectsDict.items()):
             if coi[1]['contourObjectProp'] == prop:
                 # there can be only one (and contourObject is the key)
                 self.syncContourToObject(coi[0])
@@ -185,7 +185,7 @@ class sliceDirection:
         """
         
         if inputData is None:
-            raise Exception, "Hallo, the inputData is none.  Doing nothing."
+            raise Exception("Hallo, the inputData is none.  Doing nothing.")
 
         # make sure it's vtkImageData
         if hasattr(inputData, 'IsA') and inputData.IsA('vtkImageData'):
@@ -193,8 +193,7 @@ class sliceDirection:
             # if we already have this data as input, we can't take it
             for ipw in self._ipws:
                 if inputData is ipw.GetInput():
-                    raise Exception,\
-                          "This inputData already exists in this slice."
+                    raise Exception("This inputData already exists in this slice.")
 
             # make sure it's all up to date
             inputData.Update()
@@ -207,13 +206,12 @@ class sliceDirection:
                 mainInput = self._ipws[0].GetInput()
 
                 if inputData.GetWholeExtent() != mainInput.GetWholeExtent():
-                    raise Exception, \
-                          "The extent of this inputData " \
+                    raise Exception("The extent of this inputData " \
                           "does not match the extent of the existing input" \
                           ", so it can't be used as overlay:\n"\
                           "[%s != %s]" % \
                           (inputData.GetWholeExtent(),
-                           mainInput.GetWholeExtent())
+                           mainInput.GetWholeExtent()))
 
 
                 # differences in spacing between new input and existing input
@@ -226,13 +224,12 @@ class sliceDirection:
                 if spacingDiff[0] > spacingEpsilon or \
                    spacingDiff[1] > spacingEpsilon or \
                    spacingDiff[2] > spacingEpsilon:
-                    raise Exception, \
-                          "The spacing of this inputData " \
+                    raise Exception("The spacing of this inputData " \
                           "does not match the spacing of the existing input" \
                           ", so it can't be used as overlay.\n"\
                           "[%s != %s]" % \
                           (inputData.GetSpacing(),
-                           mainInput.GetSpacing())
+                           mainInput.GetSpacing()))
 
 
                 self._ipws.append(vtk.vtkImagePlaneWidget())
@@ -240,7 +237,7 @@ class sliceDirection:
                 try:
                     # with invalid data, this will throw an exception!
                     self._ipws[-1].SetInput(inputData)
-                except RuntimeError, e:
+                except RuntimeError as e:
                     # so we undo any changes so far, and re-raise the exception
                     # calling code will then not make any accounting changes, so
                     # no harm done.
@@ -272,7 +269,7 @@ class sliceDirection:
                 try:
                     # with invalid data, this will throw an exception!
                     self._ipws[-1].SetInput(inputData)
-                except RuntimeError, e:
+                except RuntimeError as e:
                     # so we undo any changes so far, and re-raise the exception
                     # calling code will then not make any accounting changes, so
                     # no harm done.
@@ -319,8 +316,8 @@ class sliceDirection:
 
                 if rsoScalars:
                     if rsoScalars.GetName():
-                        print "sliceDirection.py: WARNING - ResliceOutput " \
-                        "scalars are named."
+                        print("sliceDirection.py: WARNING - ResliceOutput " \
+                        "scalars are named.")
                     else:
                         rsoScalars.SetName('ipw_reslice_output')
                 
@@ -454,7 +451,7 @@ class sliceDirection:
             ipw.On()
 
         # alse re-enable all contours for this slice
-        for (contourObject, contourDict) in self._contourObjectsDict.items():
+        for (contourObject, contourDict) in list(self._contourObjectsDict.items()):
             contourDict['tdActor'].VisibilityOn()
 
     def enableInteraction(self):
@@ -469,7 +466,7 @@ class sliceDirection:
             ipw.Off()
 
         # alse disable all contours for this slice
-        for (contourObject, contourDict) in self._contourObjectsDict.items():
+        for (contourObject, contourDict) in list(self._contourObjectsDict.items()):
             contourDict['tdActor'].VisibilityOff()
 
     def disableInteraction(self):
@@ -519,8 +516,8 @@ class sliceDirection:
             return
 
         # we pick p0 as the origin
-        p1o = map(operator.sub, p1, p0)
-        p2o = map(operator.sub, p2, p0)
+        p1o = list(map(operator.sub, p1, p0))
+        p2o = list(map(operator.sub, p2, p0))
         planeNormal = [0,0,0]
         vtk.vtkMath.Cross(p1o, p2o, planeNormal)
         pnSize = vtk.vtkMath.Normalize(planeNormal)
@@ -689,8 +686,8 @@ class sliceDirection:
             icam.OrthogonalizeViewUp()
             icam.SetViewUp(0,1,0)
             icam.SetClippingRange(1,11)
-            v2 = map(operator.sub, planeSource.GetPoint2(),
-                     planeSource.GetOrigin())
+            v2 = list(map(operator.sub, planeSource.GetPoint2(),
+                     planeSource.GetOrigin()))
             n2 = vtk.vtkMath.Normalize(v2)
             icam.SetParallelScale(n2 / 2.0)
             icam.ParallelProjectionOn()
@@ -734,17 +731,17 @@ class sliceDirection:
 
             try:
                 window = inputData_source.GetWindowWidth()
-                print "s3dv: Reading LEVEL from DICOM."
+                print("s3dv: Reading LEVEL from DICOM.")
             except AttributeError:
                 window = iwindow
-                print "s3dv: Estimating LEVEL."
+                print("s3dv: Estimating LEVEL.")
 
             try:
                 level = inputData_source.GetWindowCenter()
-                print "s3dv: Reading WINDOW from DICOM."
+                print("s3dv: Reading WINDOW from DICOM.")
             except AttributeError:
                 level = ilevel
-                print "s3dv: Estimating WINDOW."
+                print("s3dv: Estimating WINDOW.")
 
 
             # if window is negative, it means the DICOM reader couldn't
@@ -752,7 +749,7 @@ class sliceDirection:
             if window < 0.0:
                 window = iwindow
                 level = ilevel
-                print "s3dv: DICOM W/L invalid, estimating."
+                print("s3dv: DICOM W/L invalid, estimating.")
 
 
 
@@ -902,7 +899,7 @@ class sliceDirection:
     def _syncContours(self):
         """Synchronise all contours to current primary plane.
         """
-        for contourObject in self._contourObjectsDict.keys():
+        for contourObject in list(self._contourObjectsDict.keys()):
             self.syncContourToObject(contourObject)
 
     def _syncOutputPolyData(self):

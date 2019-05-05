@@ -81,10 +81,10 @@ class EditorRegistry:
 
         # Standard types and their creator functions
         self.typeToFunctionMap[str] = self._MakeStringEditor
-        self.typeToFunctionMap[unicode] = self._MakeStringEditor
+        self.typeToFunctionMap[str] = self._MakeStringEditor
         self.typeToFunctionMap[bool] = self._MakeBoolEditor
         self.typeToFunctionMap[int] = self._MakeIntegerEditor
-        self.typeToFunctionMap[long] = self._MakeLongEditor
+        self.typeToFunctionMap[int] = self._MakeLongEditor
         self.typeToFunctionMap[float] = self._MakeFloatEditor
         self.typeToFunctionMap[datetime.datetime] = self._MakeDateTimeEditor
         self.typeToFunctionMap[datetime.date] = self._MakeDateEditor
@@ -141,7 +141,7 @@ class EditorRegistry:
         dte = DateTimeEditor(olv, subItemIndex)
 
         column = olv.columns[subItemIndex]
-        if isinstance(column.stringConverter, basestring):
+        if isinstance(column.stringConverter, str):
             dte.formatString = column.stringConverter
 
         return dte
@@ -157,7 +157,7 @@ class EditorRegistry:
         editor = TimeEditor(olv, subItemIndex)
 
         column = olv.columns[subItemIndex]
-        if isinstance(column.stringConverter, basestring):
+        if isinstance(column.stringConverter, str):
             editor.formatString = column.stringConverter
 
         return editor
@@ -233,13 +233,13 @@ class LongEditor(BaseCellTextEditor):
         "Get the value from the editor"
         s = wx.TextCtrl.GetValue(self).strip()
         try:
-            return long(s)
+            return int(s)
         except ValueError:
             return None
 
     def SetValue(self, value):
         "Put a new value into the editor"
-        if isinstance(value, long):
+        if isinstance(value, int):
             value = repr(value)
         wx.TextCtrl.SetValue(self, value)
 

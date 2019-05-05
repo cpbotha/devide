@@ -52,7 +52,7 @@ class implicits(s3dcGridMixin):
         # delete all implicits, the good way
         # this shouldn't cause problems, because the whole slice3dVWR module
         # has been disconnected by this time
-        dNames = self._implicitsDict.keys()
+        dNames = list(self._implicitsDict.keys())
         for dName in dNames:
             self._deleteImplicit(dName)
             
@@ -393,7 +393,7 @@ class implicits(s3dcGridMixin):
     def findNameImplicitInfoUsingWidget(self, widget):
         # let's find widget in our records
         found = False
-        for name, ii in self._implicitsDict.items():
+        for name, ii in list(self._implicitsDict.items()):
             if ii.widget == widget:
                 found  = True
                 break
@@ -427,7 +427,7 @@ class implicits(s3dcGridMixin):
         """
 
         implicitsState = []
-        for implicitName, implicitInfo in self._implicitsDict.items():
+        for implicitName, implicitInfo in list(self._implicitsDict.items()):
             functionState = None
             
             if implicitInfo.type == 'Plane':
@@ -459,7 +459,7 @@ class implicits(s3dcGridMixin):
         """
 
         # first delete all implicits
-        for dname in self._implicitsDict.keys():
+        for dname in list(self._implicitsDict.keys()):
             self._deleteImplicit(dname)
 
         # now start creating new ones
@@ -702,7 +702,7 @@ class implicits(s3dcGridMixin):
 
         # let's find widget in our records
         found = False
-        for name, ii in self._implicitsDict.items():
+        for name, ii in list(self._implicitsDict.items()):
             if ii.widget == widget:
                 found  = True
                 break

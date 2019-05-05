@@ -97,8 +97,8 @@ import operator
 import string
 import time
 
-import CellEditor
-import OLVEvent
+from . import CellEditor
+from . import OLVEvent
 
 
 class ObjectListView(wx.ListCtrl):
@@ -246,7 +246,7 @@ class ObjectListView(wx.ListCtrl):
         self.selectionBeforeCellEdit = []
         self.checkStateColumn = None
         self.handleStandardKeys = True
-        self.searchPrefix = u""
+        self.searchPrefix = ""
         self.whenLastTypingEvent = 0
         self.filter = None
         self.objectToIndexMap = None
@@ -336,7 +336,7 @@ class ObjectListView(wx.ListCtrl):
 
         info = wx.ListItem()
         info.m_mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_FORMAT
-        if isinstance(defn.headerImage, basestring) and self.smallImageList is not None:
+        if isinstance(defn.headerImage, str) and self.smallImageList is not None:
             info.m_image = self.smallImageList.GetImageIndex(defn.headerImage)
         else:
             info.m_image = defn.headerImage
@@ -532,9 +532,9 @@ class ObjectListView(wx.ListCtrl):
         If a name is given, that name can later be used to refer to the images rather
         than having to use the returned index.
         """
-        if isinstance(smallImage, basestring):
+        if isinstance(smallImage, str):
             smallImage = wx.Bitmap(smallImage)
-        if isinstance(normalImage, basestring):
+        if isinstance(normalImage, str):
             normalImage = wx.Bitmap(normalImage)
 
         # We must have image lists for images to be added to them
@@ -1066,7 +1066,7 @@ class ObjectListView(wx.ListCtrl):
 
         # Not a checkbox column, so just return the image
         imageIndex = column.GetImage(modelObject)
-        if isinstance(imageIndex, basestring):
+        if isinstance(imageIndex, str):
             return self.smallImageList.GetImageIndex(imageIndex)
         else:
             return imageIndex
@@ -1380,7 +1380,7 @@ class ObjectListView(wx.ListCtrl):
             return False
 
         if evt.GetKeyCode() in (wx.WXK_BACK, wx.WXK_DELETE):
-            self.searchPrefix = u""
+            self.searchPrefix = ""
             return True
 
         # On which column are we going to compare values? If we should search on the
@@ -1395,7 +1395,7 @@ class ObjectListView(wx.ListCtrl):
         if evt.GetUnicodeKey() == 0:
             uniChar = chr(evt.GetKeyCode())
         else:
-            uniChar = unichr(evt.GetUnicodeKey())
+            uniChar = chr(evt.GetUnicodeKey())
         if uniChar not in string.printable:
             return False
 
@@ -1442,7 +1442,7 @@ class ObjectListView(wx.ListCtrl):
             # the rows in two partitions: start to the end of the collection, and then
             # from the beginning to the start position. Expressing this in other languages
             # is a pain, but it's elegant in Python. I just love Python :)
-            for i in itertools.chain(range(start, self.GetItemCount()), range(0, start)):
+            for i in itertools.chain(list(range(start, self.GetItemCount())), list(range(0, start))):
                 #self.__rows += 1
                 model = self.GetObjectAt(i)
                 if model is not None:
@@ -1465,7 +1465,7 @@ class ObjectListView(wx.ListCtrl):
         # know that the list isn't empty.
         if searchColumn.useBinarySearch is None:
             aspect = searchColumn.GetValue(self.GetObjectAt(0))
-            searchColumn.useBinarySearch = isinstance(aspect, (basestring, bool))
+            searchColumn.useBinarySearch = isinstance(aspect, (str, bool))
 
         return searchColumn.useBinarySearch
 
@@ -1856,7 +1856,7 @@ class ObjectListView(wx.ListCtrl):
         # Remove the sort indicator from the old sort column
         if oldSortColumnIndex >= 0:
             headerImage = self.columns[oldSortColumnIndex].headerImage
-            if isinstance(headerImage, basestring) and self.smallImageList is not None:
+            if isinstance(headerImage, str) and self.smallImageList is not None:
                 headerImage = self.smallImageList.GetImageIndex(headerImage)
             self.SetColumnImage(oldSortColumnIndex, headerImage)
 
@@ -2813,7 +2813,7 @@ class GroupListView(FastObjectListView):
                 groupMap[key] = group = ListGroup(key, groupingColumn.GetGroupKeyAsString(key))
             group.Add(model)
 
-        groups = groupMap.values()
+        groups = list(groupMap.values())
 
         if self.GetShowItemCounts():
             self._BuildGroupTitles(groups, groupingColumn)
@@ -3601,7 +3601,7 @@ class ColumnDefn(object):
         try:
             return fmt % value
         except UnicodeError:
-            return unicode(fmt) % value
+            return str(fmt) % value
 
 
     def GetGroupKey(self, modelObject):
@@ -4105,7 +4105,7 @@ class BatchedUpdate(object):
 #----------------------------------------------------------------------------
 # Built in images so clients don't have to do the same
 
-import cStringIO, zlib
+import io, zlib
 
 def _getSmallUpArrowData():
     return zlib.decompress(
@@ -4116,7 +4116,7 @@ def _getSmallUpArrowData():
 \xe1\xbc\x8fw\x01\ra\xf0t\xf5sY\xe7\x94\xd0\x04\x00\xb7\x89#\xbb' )
 
 def _getSmallUpArrowBitmap():
-    stream = cStringIO.StringIO(_getSmallUpArrowData())
+    stream = io.StringIO(_getSmallUpArrowData())
     return wx.BitmapFromImage(wx.ImageFromStream(stream))
 
 def _getSmallDownArrowData():
@@ -4129,7 +4129,7 @@ def _getSmallDownArrowData():
 \xd3\xd5\xcfe\x9dSB\x13\x00$1+:' )
 
 def _getSmallDownArrowBitmap():
-    stream = cStringIO.StringIO(_getSmallDownArrowData())
+    stream = io.StringIO(_getSmallDownArrowData())
     return wx.BitmapFromImage(wx.ImageFromStream(stream))
 
 

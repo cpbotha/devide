@@ -64,7 +64,7 @@ class geodesicActiveContour(ScriptedConfigModuleMixin, ModuleBase):
             else:
                 self._geodesicActiveContour.SetInput(inputStream)
 
-        except TypeError, e:
+        except TypeError as e:
             feat = self._geodesicActiveContour.GetFeatureImage()
             inp_img = self._geodesicActiveContour.GetInput()
 
@@ -140,10 +140,10 @@ class geodesicActiveContour(ScriptedConfigModuleMixin, ModuleBase):
             g = \
                 itk.GeodesicActiveContourLevelSetImageFilter[
                         img_type,img_type,itk.F].New()
-        except KeyError, e:
+        except KeyError as e:
             emsg = 'Could not create GAC filter with input type %s. '\
                     'Please try a different input type.' % (ss,)
-            raise TypeError, emsg
+            raise TypeError(emsg)
 
         # if successful, we can disconnect the old filter and store 
         # the instance (needed for the progress call!)

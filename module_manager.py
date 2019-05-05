@@ -2,7 +2,7 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import ConfigParser
+import configparser
 import sys, os, fnmatch
 import re
 import copy
@@ -10,12 +10,13 @@ import gen_utils
 import glob
 from meta_module import MetaModule
 import modules
-import mutex
 from random import choice
 from module_base import DefaultConfigClass
+from threading import Lock
 import time
 import types
 import traceback
+import importlib
 
 # some notes with regards to extra module state/logic required for scheduling
 # * in general, execute_module()/transfer_output()/etc calls do exactly that
@@ -136,7 +137,7 @@ class ModuleSearch:
                     # we can have partial matches with more than one key
                     # returning the same location, so we stuff results in a 
                     # dict too to consolidate results
-                    for k in self.search_dict[w].keys():
+                    for k in list(self.search_dict[w].keys()):
                         # k[1] is where_found, k[0] is module_name
                         if k[0] not in search_results:
                             search_results[k[0]] = {k[1] : 1}
@@ -179,7 +180,7 @@ class ModuleSearch:
                         # sr[module_name] is a dict with where_founds as keys
                         # by definition (dictionary) all where_founds are
                         # unique per sr[module_name]
-                        for i in sr[module_name].keys():
+                        for i in list(sr[module_name].keys()):
                             if i in temp_finds:
                                 temp_finds[i] += 1
                             else:
@@ -187,7 +188,7 @@ class ModuleSearch:
 
                     # extract where_froms for which the number of hits is
                     # equal to the number of words.
-                    temp_finds2 = [wf for wf in temp_finds.keys() if
+                    temp_finds2 = [wf for wf in list(temp_finds.keys()) if
                                    temp_finds[wf] == srl_len]
 
                     # make new dictionary from temp_finds2 list as keys,
@@ -289,7 +290,7 @@ class ModuleManager:
 
         # we'll use this to perform mutex-based locking on the progress
         # callback... (there SHOULD only be ONE ModuleManager instance)
-        self._inProgressCallback = mutex.mutex()
+        self._inProgressCallback = Lock()
 
     def refresh_module_kits(self):
         """Go through list of imported module kits, reload each one, and
@@ -308,9 +309,9 @@ class ModuleManager:
                 pass
             else:
                 try:
-                    reload(kit)
+                    importlib.reload(kit)
                     refresh_method()                
-                except Exception, e:
+                except Exception as e:
                     self._devide_app.log_error_with_exception(
                         'Unable to refresh module_kit %s: '
                         '%s.  Continuing...' %
@@ -333,21 +334,21 @@ class ModuleManager:
         """
         
         # this is fine because .items() makes a copy of the dict
-        for mModule in self._module_dict.values():
+        for mModule in list(self._module_dict.values()):
 
-            print "Deleting %s (%s) >>>>>" % \
+            print("Deleting %s (%s) >>>>>" % \
                   (mModule.instance_name,
-                   mModule.instance.__class__.__name__)
+                   mModule.instance.__class__.__name__))
                    
             try:
                 self.delete_module(mModule.instance)
-            except Exception, e:
+            except Exception as e:
                 # we can't allow a module to stop us
-                print "Error deleting %s (%s): %s" % \
+                print("Error deleting %s (%s): %s" % \
                       (mModule.instance_name,
                        mModule.instance.__class__.__name__,
-                       str(e))
-                print "FULL TRACE:"
+                       str(e)))
+                print("FULL TRACE:")
                 traceback.print_exc()
 
     def apply_module_view_to_logic(self, instance):
@@ -377,7 +378,7 @@ class ModuleManager:
             if self._devide_app.view_mode:
                 instance.config_to_view()
 
-        except Exception, e:
+        except Exception as e:
             # we are directly reporting the error, as this is used by
             # a utility function that is too compact to handle an
             # exception by itself.  Might change in the future.
@@ -419,7 +420,7 @@ class ModuleManager:
             if self._devide_app.view_mode:
                 instance.config_to_view()
             
-        except Exception, e:
+        except Exception as e:
             # we are directly reporting the error, as this is used by
             # a utility function that is too compact to handle an
             # exception by itself.  Might change in the future.
@@ -538,7 +539,7 @@ class ModuleManager:
                 # now we can import
                 __import__(mim, globals(), locals())
                 
-            except Exception, e:
+            except Exception as e:
                 # make a list of all failed moduleIndices
                 failed_mis[mim] = sys.exc_info()
                 msgs = gen_utils.exceptionToMsgs()
@@ -558,11 +559,11 @@ class ModuleManager:
             else:
                 # reload, as this could be a run-time rescan
                 m = sys.modules[mim]
-                reload(m)
+                importlib.reload(m)
             
                 # find all classes in the imported module
                 cs = [a for a in dir(m)
-                      if type(getattr(m,a)) == types.ClassType]
+                      if type(getattr(m,a)) == type]
 
                 # stuff these classes, keyed on the module name that they
                 # represent, into the modules list.
@@ -604,7 +605,7 @@ class ModuleManager:
         # report on accumulated errors - this is still a non-critical error
         # so we don't throw an exception.
         if len(failed_mis) > 0:
-            failed_indices = '\n'.join(failed_mis.keys())
+            failed_indices = '\n'.join(list(failed_mis.keys()))
             self._devide_app.log_error(
                 'The following module indices failed to load '
                 '(see message log for details): \n%s' \
@@ -637,7 +638,7 @@ class ModuleManager:
         """
 
         found = False
-        for instance, mModule in self._module_dict.items():
+        for instance, mModule in list(self._module_dict.items()):
             if mModule.instance_name == instance_name:
                 found = True
                 break
@@ -757,15 +758,15 @@ class ModuleManager:
             # it's now fully born ;)
             self._halfBornInstanceName = None
 
-        except ImportError, e:
+        except ImportError as e:
             # we re-raise with the three argument form to retain full
             # trace information.
             es = "Unable to import module %s: %s" % (fullName, str(e))
-            raise ModuleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException(es).with_traceback(sys.exc_info()[2])
         
-        except Exception, e:
+        except Exception as e:
             es = "Unable to instantiate module %s: %s" % (fullName, str(e))
-            raise ModuleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException(es).with_traceback(sys.exc_info()[2])
 
         # return the instance
         return module_instance
@@ -799,7 +800,7 @@ class ModuleManager:
         modulePrefix = fullName.split('.')[0]
 
         # determine whether this is a new import
-        if not sys.modules.has_key(fullName):
+        if fullName not in sys.modules:
             newModule = True
         else:
             newModule = False
@@ -848,7 +849,7 @@ class ModuleManager:
             meta_module.execute_module(part, streaming)
 
             
-        except Exception, e:
+        except Exception as e:
             # get details about the errored module
             instance_name = meta_module.instance_name
             module_name = meta_module.instance.__class__.__name__
@@ -860,7 +861,7 @@ class ModuleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise ModuleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException(es).with_traceback(sys.exc_info()[2])
         
             
     def execute_network(self, startingModule=None):
@@ -876,9 +877,9 @@ class ModuleManager:
 
         try:
             self._devide_app.network_manager.execute_network(
-                self._module_dict.values())
+                list(self._module_dict.values()))
 
-        except Exception, e:
+        except Exception as e:
             # if an error occurred, but progress is not at 100% yet,
             # we have to put it there, else app remains in visually
             # busy state.
@@ -931,7 +932,7 @@ class ModuleManager:
                 # also make sure we fully disconnect ourselves from
                 # our producers
                 self.disconnect_modules(instance, input_idx)
-            except Exception, e:
+            except Exception as e:
                 # we can't allow this to prevent a destruction, just log
                 self.log_error_with_exception(
                     'Module %s (%s) errored during disconnect of input %d. '
@@ -962,7 +963,7 @@ class ModuleManager:
                 # the exception will now be re-raised if there was one
                 # to begin with.
 
-        except Exception, e:
+        except Exception as e:
             # we're going to re-raise the exception: this method could be
             # called by other parties that need to do alternative error
             # handling
@@ -974,7 +975,7 @@ class ModuleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise ModuleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException(es).with_traceback(sys.exc_info()[2])
 
     def connect_modules(self, output_module, output_idx,
                         input_module, input_idx):
@@ -1018,7 +1019,7 @@ class ModuleManager:
 
         try:
             input_module.set_input(input_idx, None)
-        except Exception, e:
+        except Exception as e:
             # if the module errors during disconnect, we have no choice
             # but to continue with deleting it from our metadata
             # at least this way, no data transfers will be attempted during
@@ -1063,14 +1064,14 @@ class ModuleManager:
         # and new instance!
         newModulesDict = {}
         failed_modules_dict = []
-        for pmsTuple in pmsDict.items():
+        for pmsTuple in list(pmsDict.items()):
             # each pmsTuple == (instance_name, pms)
             # we're only going to try to create a module if the module_man
             # says it's available!
             try:
                 newModule = self.create_module(pmsTuple[1].module_name)
                 
-            except ModuleManagerException, e:
+            except ModuleManagerException as e:
                 self._devide_app.log_error_with_exception(
                     'Could not create module %s:\n%s.' %
                     (pmsTuple[1].module_name, str(e)))
@@ -1098,7 +1099,7 @@ class ModuleManager:
                     cfg.__dict__.update(configCopy.__dict__)
                     # and then we set it back with set_config
                     newModule.set_config(cfg)
-                except Exception, e:
+                except Exception as e:
                     # it could be a module with no defined config logic
                     self._devide_app.log_warning(
                         'Could not restore state/config to module %s: %s' %
@@ -1123,14 +1124,14 @@ class ModuleManager:
                                if connection.connection_type == connection_type]
             
             for connection in typeConnections:
-                if newModulesDict.has_key(connection.source_instance_name) and \
-                   newModulesDict.has_key(connection.target_instance_name):
+                if connection.source_instance_name in newModulesDict and \
+                   connection.target_instance_name in newModulesDict:
                     sourceM = newModulesDict[connection.source_instance_name]
                     targetM = newModulesDict[connection.target_instance_name]
                     # attempt connecting them
-                    print "connecting %s:%d to %s:%d..." % \
+                    print("connecting %s:%d to %s:%d..." % \
                           (sourceM.__class__.__name__, connection.output_idx,
-                           targetM.__class__.__name__, connection.input_idx)
+                           targetM.__class__.__name__, connection.input_idx))
 
                     try:
                         self.connect_modules(sourceM, connection.output_idx,
@@ -1141,7 +1142,7 @@ class ModuleManager:
                         newConnections.append(connection)
 
         # now do the POST connection module config!
-        for oldInstanceName,newModuleInstance in newModulesDict.items():
+        for oldInstanceName,newModuleInstance in list(newModulesDict.items()):
             # retrieve the pickled module state
             pms = pmsDict[oldInstanceName]
             # take care to deep copy the config
@@ -1152,7 +1153,7 @@ class ModuleManager:
                 newModuleInstance.set_configPostConnect(configCopy)
             except AttributeError:
                 pass
-            except Exception, e:
+            except Exception as e:
                 # it could be a module with no defined config logic
                 self._devide_app.log_warning(
                     'Could not restore post connect state/config to module '
@@ -1173,7 +1174,7 @@ class ModuleManager:
         """
 
         if self.auto_execute:
-            print "auto_execute ##### #####"
+            print("auto_execute ##### #####")
             self.execute_network()
 
     def serialise_module_instances(self, module_instances):
@@ -1188,7 +1189,7 @@ class ModuleManager:
         pickledModuleInstances = []
         
         for module_instance in module_instances:
-            if self._module_dict.has_key(module_instance):
+            if module_instance in self._module_dict:
 
                 # first get the MetaModule
                 mModule = self._module_dict[module_instance]
@@ -1197,11 +1198,11 @@ class ModuleManager:
                 pms = PickledModuleState()
                 
                 try:
-                    print "SERIALISE: %s - %s" % \
+                    print("SERIALISE: %s - %s" % \
                           (str(module_instance),
-                           str(module_instance.get_config()))
+                           str(module_instance.get_config())))
                     pms.module_config = module_instance.get_config()
-                except AttributeError, e:
+                except AttributeError as e:
                     self._devide_app.log_warning(
                         'Could not extract state (config) from module %s: %s' \
                         % (module_instance.__class__.__name__, str(e)))
@@ -1256,9 +1257,9 @@ class ModuleManager:
                             # supplier modules are in the list that we're
                             # going to pickle
 
-                        print '%s has connection type %d' % \
+                        print('%s has connection type %d' % \
                               (outputConnection[0].__class__.__name__,
-                               connection_type)
+                               connection_type))
                         
                         connection = PickledConnection(
                             mModule.instance_name, output_idx,
@@ -1276,7 +1277,7 @@ class ModuleManager:
         """
 
         
-        if self._inProgressCallback.testandset():
+        if self._inProgressCallback.acquire(blocking=False):
 
             # first check if execution has been disabled
             # the following bit of code is risky: the ITK to VTK bridges
@@ -1302,7 +1303,7 @@ class ModuleManager:
                 fullText += ' [DONE]'
 
             self.setProgress(progressP, fullText)
-            self._inProgressCallback.unlock()
+            self._inProgressCallback.release()
     
 
     def get_consumers(self, meta_module):
@@ -1409,7 +1410,7 @@ class ModuleManager:
         while not uniqueName:
             # first check that this doesn't exist in the module dictionary
             uniqueName = True
-            for mmt in self._module_dict.items():
+            for mmt in list(self._module_dict.items()):
                 if mmt[1].instance_name == instance_name:
                     uniqueName = False
                     break
@@ -1623,14 +1624,14 @@ class ModuleManager:
         if meta_module.findConsumerInOutputConnections(
             output_idx, consumer_instance, consumer_input_idx) == -1:
 
-            raise Exception, 'ModuleManager.transfer_output called for ' \
-                  'connection that does not exist.'
+            raise Exception('ModuleManager.transfer_output called for ' \
+                  'connection that does not exist.')
         
         try:
             # get data from producerModule output
             od = meta_module.instance.get_output(output_idx)
 
-        except Exception, e:
+        except Exception as e:
             # get details about the errored module
             instance_name = meta_module.instance_name
             module_name = meta_module.instance.__class__.__name__
@@ -1642,7 +1643,7 @@ class ModuleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise ModuleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException(es).with_traceback(sys.exc_info()[2])
 
         # we only disconnect if we're NOT streaming!
         if not streaming:
@@ -1661,7 +1662,7 @@ class ModuleManager:
             consumer_meta_module.instance.set_input(consumer_input_idx, od)
 
             
-        except Exception, e:
+        except Exception as e:
             # get details about the errored module
             instance_name = consumer_meta_module.instance_name
             module_name = consumer_meta_module.instance.__class__.__name__
@@ -1673,7 +1674,7 @@ class ModuleManager:
             # we use the three argument form so that we can add a new
             # message to the exception but we get to see the old traceback
             # see: http://docs.python.org/ref/raise.html
-            raise ModuleManagerException, es, sys.exc_info()[2]
+            raise ModuleManagerException(es).with_traceback(sys.exc_info()[2])
         
 
         # record that the transfer has just happened

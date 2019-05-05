@@ -134,5 +134,5 @@ class Chain(object):
         Return the model objects that match all of our filters
         """
         for filter in self.filters:
-            modelObjects = filter(modelObjects)
+            modelObjects = list(filter(modelObjects))
         return modelObjects

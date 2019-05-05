@@ -571,7 +571,7 @@ class GraphEditor:
 
         try:
             self._devide_app.network_manager.execute_network(allMetaModules)
-        except Exception, e:
+        except Exception as e:
             # if an error occurred, but progress is not at 100% yet,
             # we have to put it there, else app remains in visually
             # busy state.
@@ -790,7 +790,7 @@ class GraphEditor:
 
                     fline = fline.strip().lower()
 
-                except Exception, e:
+                except Exception as e:
                     dropFilenameErrors.append(
                         (filename,
                          'Could not parse VTK file to distinguish type.'))
@@ -840,7 +840,7 @@ class GraphEditor:
                     cfg = mod.get_config()
                     cfg.dicom_filenames.extend(dcmFilenames)
                     mod.set_config(cfg)
-                except Exception, e:
+                except Exception as e:
                     dropFilenameErrors.append(
                         ('DCM files', 'Error loading DICOM files: %s.' % 
                          (str(e),)))
@@ -1048,7 +1048,7 @@ class GraphEditor:
             mm = self._devide_app.get_module_manager()
             try:
                 temp_module = mm.create_module(module_name)
-            except ModuleManagerException, e:
+            except ModuleManagerException as e:
                 self._devide_app.log_error_with_exception(
                     'Could not create module %s: %s' % (module_name, str(e)))
                 return (None, None)
@@ -1108,7 +1108,7 @@ class GraphEditor:
         # let's build up new dictionary with categoryName as key and
         # list of complete module_names as value - check for 'Segments',
         # that's reserved
-        for mn,module_metadata in self._available_modules.items():
+        for mn,module_metadata in list(self._available_modules.items()):
             # we add an ALL category implicitly to all modules
             for cat in module_metadata.cats + [ALLCATS_STRING]:
                 if cat in self._moduleCats:
@@ -1128,7 +1128,7 @@ class GraphEditor:
         self._interface._main_frame.module_cats_choice.Clear()
         idx = 0
 
-        cats = self._moduleCats.keys()
+        cats = list(self._moduleCats.keys())
         cats.sort()
 
         # but make sure that ALL is up front, no matter what
@@ -1426,7 +1426,7 @@ class GraphEditor:
                 # post-connect config!)
                 new_instance.set_config(module_config)
                 
-            except Exception, e:
+            except Exception as e:
                 self._devide_app.log_error_with_exception(
                     'Could not restore state/config to module %s: %s' %
                     (new_instance.__class__.__name__, e)                    
@@ -1682,7 +1682,7 @@ class GraphEditor:
             mm = self._devide_app.get_module_manager()
             mm.disconnect_modules(glyph.module_instance, input_idx)
 
-        except Exception, e:
+        except Exception as e:
             self._devide_app.log_error_with_exception(
                 'Could not disconnect modules (removing link '
                 'from canvas anyway): %s' \
@@ -1907,7 +1907,7 @@ class GraphEditor:
             fromObject.update_geometry()
             toObject.update_geometry()
 
-        except Exception, e:
+        except Exception as e:
             success = False
             self._devide_app.log_error_with_exception(
                 'Could not connect modules: %s' % (str(e)))
@@ -1949,7 +1949,7 @@ class GraphEditor:
         # glyphs!
 
         if reposition:
-            coords = glyphPosDict.values()
+            coords = list(glyphPosDict.values())
             minX = min([coord[0] for coord in coords])
             minY = min([coord[1] for coord in coords])
             reposCoords = [minX, minY]
@@ -1961,7 +1961,7 @@ class GraphEditor:
         # instance_name so that we can connect them up in the next step
         mm = self._devide_app.get_module_manager()
         newGlyphDict = {} 
-        for newModulePickledName in newModulesDict.keys():
+        for newModulePickledName in list(newModulesDict.keys()):
             position = glyphPosDict[newModulePickledName]
             module_instance = newModulesDict[newModulePickledName]
             gLabel = [module_instance.__class__.__name__]
@@ -2087,7 +2087,7 @@ class GraphEditor:
         lf.Update()
 
         new_pts = lf.GetOutput()
-        for ptid, glyph in ptid2glyph.items():
+        for ptid, glyph in list(ptid2glyph.items()):
             new_pos = new_pts.GetPoint(ptid)
             glyph.setPosition(new_pos[0:2]) 
 
@@ -2107,7 +2107,7 @@ class GraphEditor:
             pmsDict, connectionList, glyphPosDict = ln(filename)
             self._realise_network(pmsDict, connectionList, glyphPosDict,
                                  position, reposition)
-        except Exception, e:
+        except Exception as e:
             self._devide_app.log_error_with_exception(str(e))
 
     def _load_network_into_copy_buffer(self, filename):
@@ -2121,7 +2121,7 @@ class GraphEditor:
             pmsDict, connectionList, glyphPosDict = ln(filename)
             self._copyBuffer = (pmsDict, connectionList, glyphPosDict)
 
-        except Exception, e:
+        except Exception as e:
             self._devide_app.log_error_with_exception(str(e))
 
 
@@ -2138,7 +2138,7 @@ class GraphEditor:
         try:
             f = open(filename, 'wb')
             f.write(stream)
-        except Exception, e:
+        except Exception as e:
             self._devide_app.log_error_with_exception(
                 'Could not write network to %s: %s' % (filename,
                                                        str(e)))
@@ -2155,7 +2155,7 @@ class GraphEditor:
         try:
             nm.save_network(pms_dict, connection_list, glyph_pos_dict,
                     filename, export)
-        except Exception, e:
+        except Exception as e:
             self._devide_app.log_error_with_exception(
                 'Could not write network to %s: %s' % (filename,
                                                        str(e)))
@@ -2167,7 +2167,7 @@ class GraphEditor:
         # first work through the module instances
         dotModuleDefLines = []
 
-        for instance_name, pickledModule in pmsDict.items():
+        for instance_name, pickledModule in list(pmsDict.items()):
             configKeys = [i for i in dir(pickledModule.module_config) if
                           not i.startswith('__')]
 
@@ -2227,7 +2227,7 @@ class GraphEditor:
             f.writelines(connectionLines)
             f.write('}')
             
-        except Exception, e:
+        except Exception as e:
             self._devide_app.log_error_with_exception(
                 'Could not write network to %s: %s' % (filename,
                                                        str(e)))
@@ -2260,7 +2260,7 @@ class GraphEditor:
         pmsDict, connectionList = mm.serialise_module_instances(
             module_instances)
 
-        savedInstanceNames = [pms.instance_name for pms in pmsDict.values()]
+        savedInstanceNames = [pms.instance_name for pms in list(pmsDict.values())]
                                   
         # now we also get to store the coordinates of the glyphs which
         # have been saved (keyed on instance_name)
@@ -2920,10 +2920,10 @@ class GraphEditor:
 
             # now look for the clip point closest to the start of the current
             # line segment!
-            currentSd = sys.maxint
+            currentSd = sys.maxsize
             nearestGlyph = None
             nearestClipPoint = None
-            for clip in clips.items():
+            for clip in list(clips.items()):
                 for clipPoint in clip[1]:
                     xdif = clipPoint[0] - x0
                     ydif = clipPoint[1] - y0
@@ -3006,7 +3006,7 @@ class GraphEditor:
                     numInserts += 1
 
                 else:
-                    print "HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen."
+                    print("HEEEEEEEEEEEEEEEEEEEELP!!  This shouldn't happen.")
                     raise Exception
 
         line.set_normal()
@@ -3061,7 +3061,7 @@ class GraphEditor:
             mm.delete_module(glyph.module_instance)
 
 
-        except Exception, e:
+        except Exception as e:
             success = False
             self._devide_app.log_error_with_exception(
                 'Could not delete module (removing from canvas '

@@ -2,8 +2,8 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from typeModules.transformStackClass import transformStackClass
-import cPickle
+from .typeModules.transformStackClass import transformStackClass
+import pickle
 from module_base import ModuleBase
 from module_mixins import FilenameViewModuleMixin
 import module_utils
@@ -55,8 +55,7 @@ class transformStackWRT(ModuleBase, FilenameViewModuleMixin):
                 return
 
             if not inputStream.__class__.__name__ == 'transformStackClass':
-                raise TypeError, \
-                      'transformStackWRT requires a transformStack at input'
+                raise TypeError('transformStackWRT requires a transformStack at input')
             
             self._transformStack = inputStream
     
@@ -104,9 +103,9 @@ class transformStackWRT(ModuleBase, FilenameViewModuleMixin):
         try:
             # opened for binary writing
             transformFile = file(filename, 'wb')
-        except IOError, ioemsg:
-            raise IOError, 'Could not open %s for writing:\n%s' % \
-                  (filename, ioemsg)
+        except IOError as ioemsg:
+            raise IOError('Could not open %s for writing:\n%s' % \
+                  (filename, ioemsg))
 
         # convert transformStack to list of tuples
         pickleList = []
@@ -117,7 +116,7 @@ class transformStackWRT(ModuleBase, FilenameViewModuleMixin):
             paramsTup = tuple([pda.GetElement(i) for i in range(nop)])
             pickleList.append((name, paramsTup))
 
-        cPickle.dump(pickleList, transformFile, True)
+        pickle.dump(pickleList, transformFile, True)
 
         
             

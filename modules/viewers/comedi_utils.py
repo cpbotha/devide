@@ -320,8 +320,8 @@ class CMSliceViewer:
         ispacing = idata.GetSpacing()
         iorigin = idata.GetOrigin()
         # calculate real coords
-        world = map(operator.add, iorigin,
-                    map(operator.mul, ispacing, image_pos[0:3]))
+        world = list(map(operator.add, iorigin,
+                    list(map(operator.mul, ispacing, image_pos[0:3]))))
 
         return world
 

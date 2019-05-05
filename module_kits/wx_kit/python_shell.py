@@ -7,6 +7,7 @@ import sys
 import module_kits.wx_kit
 from module_kits.wx_kit.python_shell_mixin import PythonShellMixin
 import wx
+import importlib
 
 class Tab:
     def __init__(self, editwindow, interp):
@@ -241,7 +242,7 @@ class PythonShell(PythonShellMixin):
 
     def _create_frame(self):
         import resources.python.python_shell_frame
-        reload(resources.python.python_shell_frame)
+        importlib.reload(resources.python.python_shell_frame)
         
         frame = resources.python.python_shell_frame.PyShellFrame(
             self._parent_window, id=-1, title="Dummy", name='DeVIDE')
@@ -257,7 +258,7 @@ class PythonShell(PythonShellMixin):
     def _handler_file_open(self, event):
         try:
             filename, t = self._open_python_file(self._frame)
-        except IOError, e:
+        except IOError as e:
             self._devide_app.log_error_with_exception(
                 'Could not open file %s: %s' %
                 (filename, str(e)))
@@ -283,7 +284,7 @@ class PythonShell(PythonShellMixin):
                 # we do this
                 filename = current_tab.filename
 
-        except IOError, e:
+        except IOError as e:
             self._devide_app.log_error_with_exception(
                 'Could not write file %s: %s' %
                 (filename, str(e)))
@@ -298,7 +299,7 @@ class PythonShell(PythonShellMixin):
         try:
             filename = self._saveas_python_file(text, self._frame)
             
-        except IOError, e:
+        except IOError as e:
             self._devide_app.log_error_with_exception(
                 'Could not write file %s: %s' %
                 (filename, str(e)))
@@ -354,7 +355,7 @@ class PythonShell(PythonShellMixin):
             self._psFrame.pyShell.run('execfile(r"%s")' %
                                       (path,))
             
-        except IOError,e:
+        except IOError as e:
             md = wx.MessageDialog(
                 self._psFrame,
                 'Could not open file %s: %s' % (path, str(e)), 'Error',

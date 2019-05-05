@@ -38,7 +38,7 @@ DEBUG=0
 
 def debug (msg):
     if DEBUG:
-	print msg
+	print(msg)
 
 class VtkDirMethodParser:
     """ Parses the methods from dir(vtk_obj). """
@@ -241,7 +241,7 @@ class VtkDirMethodParser:
         # now make another pass through state_meths, removing all groups
         # which have less than 2 methods, as they obviously can't be states!
         toBeRemoved = []
-        for idx, state_group in zip(range(len(self.state_meths)),
+        for idx, state_group in zip(list(range(len(self.state_meths))),
                                     self.state_meths):
             if len(state_group) < 2:
                 toBeRemoved.append(idx)
@@ -379,10 +379,10 @@ class VtkMethodParser:
                             self.get_meths.append ("Get"+method[0])
                         else:
                             try:
-                                apply (f, val)
+                                f(*val)
                             except TypeError:
                                 try:
-                                    apply (f, (val, ))
+                                    f(*(val, ))
                                 except TypeError:
                                     self.get_meths.append ("Get"+method[0])
                                 else:
@@ -625,11 +625,11 @@ class VtkPickler:
             msg = msg + "\nObject given is %s."%vtk_obj.GetClassName () 
             msg = msg + "\nObject saved in file is %s."%c_name
 	    msg = msg + "\nNot loading saved configuration!"
-	    raise VtkPicklerException, msg
+	    raise VtkPicklerException(msg)
 
 	methods = eval (self.input.readline ())
         t = type (methods[0]) 
-        if t is types.TupleType or t is types.ListType:
+        if t is tuple or t is list:
             self.load_new_config (methods)
         else:
             self.load_old_config (methods)
@@ -663,7 +663,7 @@ class VtkPickler:
             debug (msg)
         else:
             try:
-                apply (f, arg)
+                f(*arg)
             except TypeError:
-                apply (f, (arg, ))
+                f(*(arg, ))
         

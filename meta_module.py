@@ -74,13 +74,13 @@ class MetaModule:
         # derive partsTo dictionaries #######################################
         self._inputsToParts = {}
         if not partsToInputs is None:
-            for part, inputs in partsToInputs.items():
+            for part, inputs in list(partsToInputs.items()):
                 for inp in inputs:
                     self._inputsToParts[inp] = part
             
         self._outputsToParts = {}
         if not partsToOutputs is None:
-            for part, outputs in partsToOutputs.items():
+            for part, outputs in list(partsToOutputs.items()):
                 for outp in outputs:
                     self._outputsToParts[outp] = part
         # partsTo dicts derived ############################################
@@ -237,9 +237,8 @@ class MetaModule:
 
         # check that the given input is not already connected
         if self.inputs[input_idx] is not None:
-            raise Exception, \
-                  "%d'th input of module %s already connected." % \
-                  (input_idx, self.instance.__class__.__name__)
+            raise Exception("%d'th input of module %s already connected." % \
+                  (input_idx, self.instance.__class__.__name__))
 
         # record the input connection
         self.inputs[input_idx] = (producerModule, producerOutputIdx)
@@ -309,8 +308,7 @@ class MetaModule:
 
         else:
             # consumer not found, the connection didn't exist
-            raise Exception, \
-                  "Attempt to disconnect output which isn't connected."
+            raise Exception("Attempt to disconnect output which isn't connected.")
         
 
     def reset_inputsOutputs(self):
@@ -331,7 +329,7 @@ class MetaModule:
         @todo: should change the name of this timestamp.
         """
         self.streaming_touch_times[part] = counter.counter()
-        print "streaming touch stamped:", self.streaming_touch_times[part]
+        print("streaming touch stamped:", self.streaming_touch_times[part])
 
     def execute_module(self, part=0, streaming=False):
         """Used by ModuleManager to execute module.
@@ -351,7 +349,7 @@ class MetaModule:
                     self.instance.streaming_execute_module(part)
 
                 self.execute_times[part] = counter.counter() 
-                print "streaming exec stamped:", self.execute_times[part]
+                print("streaming exec stamped:", self.execute_times[part])
 
             else:
                 if part == 0:
@@ -362,7 +360,7 @@ class MetaModule:
                 # if we get here, everything is okay and we can record
                 # the execution time of this part
                 self.execute_times[part] = counter.counter() 
-                print "exec stamped:", self.execute_times[part]
+                print("exec stamped:", self.execute_times[part])
 
 
     def modify(self, part=0):
@@ -382,11 +380,11 @@ class MetaModule:
         """Determine whether the encapsulated module needs to be executed.
         """
        
-        print "?? mod > exec? :", self.modifiedTimes[part], self.execute_times[part]
+        print("?? mod > exec? :", self.modifiedTimes[part], self.execute_times[part])
         return self.modifiedTimes[part] > self.execute_times[part]
 
     def should_touch(self, part=0):
-        print "?? mod > touch? :", self.modifiedTimes[part], self.streaming_touch_times[part]
+        print("?? mod > touch? :", self.modifiedTimes[part], self.streaming_touch_times[part])
         return self.modifiedTimes[part] > self.streaming_touch_times[part]
 
     def should_transfer_output(
@@ -439,14 +437,14 @@ class MetaModule:
                 # note that we compare with the touch time, and not
                 # the execute time, since only the terminating module
                 # is actually executed.
-                print "?? streaming transfer? ttime ", tTime, "< touchtime", self.streaming_touch_times[part] 
+                print("?? streaming transfer? ttime ", tTime, "< touchtime", self.streaming_touch_times[part]) 
                 should_transfer = bool(tTime <
                         self.streaming_touch_times[part])
 
             else:
                 tTime = self.transferTimes[
                     (output_idx, consumer_instance, consumer_input_idx)]
-                print "?? transfer? ttime ", tTime, "< executetime", self.execute_times[part] 
+                print("?? transfer? ttime ", tTime, "< executetime", self.execute_times[part]) 
                 should_transfer = bool(tTime < self.execute_times[part])
 
             return should_transfer

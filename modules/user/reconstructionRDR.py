@@ -111,7 +111,7 @@ class reconstructionRDR(ScriptedConfigModuleMixin, ModuleBase):
 		try:
 			connection = adodbapi.connect( connectString )
 		except adodbapi.Error:
-			raise IOError, "Could not open database."
+			raise IOError("Could not open database.")
 		
 		cursor = connection.cursor()
 		cursor.execute( "SELECT name FROM reconstruction ORDER BY run_date" )
@@ -131,18 +131,18 @@ class reconstructionRDR(ScriptedConfigModuleMixin, ModuleBase):
 		try:
 			connection = adodbapi.connect( connectString )
 		except adodbapi.Error:
-			raise IOError, "Could not open database."
+			raise IOError("Could not open database.")
 		
 		# try to figure out reconstruction ID from recontruction name
-		print "NAME: " + self._config.reconstructionName
+		print("NAME: " + self._config.reconstructionName)
 		cursor = connection.cursor()
 		cursor.execute( "SELECT id FROM reconstruction WHERE name=?", [ self._config.reconstructionName ] )
 		
 		row = cursor.fetchone()
 		if row == None:
-			raise IOError, "Reconstruction not found."
+			raise IOError("Reconstruction not found.")
 
-		print "reconstructionID: %i" % row[ 0 ]
+		print("reconstructionID: %i" % row[ 0 ])
 		
 		# build transformStack
 		cursor.execute( "SELECT angle, centerx, centery, tx, ty FROM centeredRigid2DTransform WHERE reconstruction_id=? ORDER BY seq_nr", [ row[ 0 ] ] )

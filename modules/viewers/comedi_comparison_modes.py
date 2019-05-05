@@ -2,8 +2,9 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-import comedi_utils
-reload(comedi_utils)
+from . import comedi_utils
+import importlib
+importlib.reload(comedi_utils)
 import vtk
 import vtktudoss
 from module_kits import vtk_kit
@@ -278,10 +279,10 @@ class FocusDiffCM(ComparisonMode):
                         CMAP_BLUE_TO_YELLOW_PL, r, True)
                 self._set_range_ui(r)
 
-                print "about to update iac"
+                print("about to update iac")
                 self._iac.SetNumberOfThreads(1)
                 self._iac.Update()
-                print "done updating iac"
+                print("done updating iac")
 
                 self._sv.set_input(self._iac.GetOutput())
 

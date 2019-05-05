@@ -149,7 +149,7 @@ def main():
     # objects that can be instantiated 
     for vtkobj in list1:
         try:
-            print vtkobj
+            print(vtkobj)
             a = getattr(vtk, vtkobj)()
         except:
             # if it can't be instantiated, we can't use it
@@ -181,7 +181,7 @@ def main():
 
             #moduleListStrings.append("'%s' : %s," % (module_name, moduleCats))
             f.close()
-            print "Wrote %s.py." % (module_name,)
+            print("Wrote %s.py." % (module_name,))
 
     if len(moduleListStrings):
         # snip off the last ,
@@ -191,7 +191,7 @@ def main():
         f = open('module_index.py', 'w')
         f.write(moduleListString)
         f.close()
-        print "\nWrote module_index.py.\n"
+        print("\nWrote module_index.py.\n")
 
 
 if __name__ == '__main__':

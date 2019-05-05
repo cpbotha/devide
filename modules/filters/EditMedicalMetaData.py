@@ -10,6 +10,7 @@ import vtk
 import wx
 
 from module_kits.misc_kit.devide_types import MedicalMetaData
+import importlib
 
 class EditMedicalMetaData(IntrospectModuleMixin, ModuleBase):
     def __init__(self, module_manager):
@@ -74,7 +75,7 @@ class EditMedicalMetaData(IntrospectModuleMixin, ModuleBase):
 
         # 3. apply only changed fields from interface
         mip = self._output_mmd.medical_image_properties
-        for key,val in self._config.new_value_dict.items():
+        for key,val in list(self._config.new_value_dict.items()):
             getattr(mip, 'Set%s' % (key))(val)
 
     def logic_to_config(self):
@@ -115,7 +116,7 @@ class EditMedicalMetaData(IntrospectModuleMixin, ModuleBase):
 
     def _create_view_frame(self):
         import modules.filters.resources.python.EditMedicalMetaDataViewFrame
-        reload(modules.filters.resources.python.EditMedicalMetaDataViewFrame)
+        importlib.reload(modules.filters.resources.python.EditMedicalMetaDataViewFrame)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,

@@ -1,3 +1,3 @@
-from canvasObject import *
-from canvas import *
+from .canvasObject import *
+from .canvas import *
 

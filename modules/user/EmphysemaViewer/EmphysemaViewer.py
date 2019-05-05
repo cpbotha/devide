@@ -13,16 +13,17 @@
 IMAGE_VIEWER = True
 
 # import the frame, i.e. the wx window containing everything
-import EmphysemaViewerFrame
+from . import EmphysemaViewerFrame
+import importlib
 # and do a reload, so that the GUI is also updated at reloads of this
 # module.
-reload(EmphysemaViewerFrame)
+importlib.reload(EmphysemaViewerFrame)
 
 from module_kits.misc_kit import misc_utils
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
-from comedi_utils import CMSliceViewer
-from comedi_utils import SyncSliceViewers
+from .comedi_utils import CMSliceViewer
+from .comedi_utils import SyncSliceViewers
 import module_utils
 import os
 import sys

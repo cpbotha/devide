@@ -17,7 +17,8 @@ import wx.html
 
 #import resources.python.mainFrame
 import resources.graphics.images
-import main_frame
+from . import main_frame
+import importlib
 
 class WXInterface(wx.App):
     """WX-based graphical user interface for DeVIDE.
@@ -133,7 +134,7 @@ class WXInterface(wx.App):
 
     def _handler_test_all(self, event):
         import testing
-        reload(testing)
+        importlib.reload(testing)
         dt = testing.DeVIDETesting(self._devide_app)
         dt.runAllTests()
 
@@ -149,7 +150,7 @@ class WXInterface(wx.App):
     
         global GraphEditor, PythonShell
     
-        from graph_editor import GraphEditor
+        from .graph_editor import GraphEditor
 
         import module_kits
         from module_kits.wx_kit.python_shell import PythonShell
@@ -175,19 +176,15 @@ class WXInterface(wx.App):
             self.timer_ln.Start(150, True)
             
     def _handler_update_memory_display(self):
-        vmu = psutil.virtmem_usage() # SWAP / pagefile memory
-        pmu = psutil.phymem_usage() # physical RAM
+        # svm has: total, avail, percent, used, free
+        svm = psutil.virtual_memory()
+
         # we show the user how much physical+swap they're using out of the total available
-        total_used = (vmu[1]+pmu[1]) / 1024 / 1024 / 1024.0
-        total_avail = (vmu[0]+vmu[0]) / 1024 / 1024 / 1024.0
-        mem_msg = "%.1f / %.1f GB" % (total_used , total_avail)
+        f = 1024 * 1024 * 1024
+        mem_msg = f"{svm.used / f:.1f} / {svm.total / f:.1f} GB used"
         # write into the second section of the statusbar
         self._main_frame.GetStatusBar().SetStatusText(mem_msg, 1)
-        
-        # and log a warning to the message window
-        if (total_avail > 0) and (total_used / total_avail > 0.95):
-            self.log_info("You have almost exhausted all available memory. Free up memory to prevent crashing.")
-        
+
     def quit(self):
         """Event handler for quit request.
 
@@ -242,7 +239,8 @@ class WXInterface(wx.App):
         for msg in msgs:
             wx.LogError(msg)
 
-        wx.Log_FlushActive()
+        wx.Log.FlushActive()
+        #wx.Log_FlushActive()
 
     def log_error(self, message):
         """Log a single string as error.
@@ -287,7 +285,7 @@ class WXInterface(wx.App):
         # we also output an informative message to standard out
         # in cases where DeVIDE is very busy, this is quite
         # handy.
-        print "%s: %.2f" % (message, progress)
+        print("%s: %.2f" % (message, progress))
 
         # activate the busy cursor (we're a bit more lenient
         # on its epsilon)

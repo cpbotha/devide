@@ -187,7 +187,7 @@ Version 0.9.2.
 """
 
 import wx
-import cStringIO, zlib
+import io, zlib
 import time
 
 _libimported = None
@@ -346,7 +346,7 @@ def GetCloseBitmap():
 
 
 def GetCloseImage():
-    stream = cStringIO.StringIO(GetCloseData())
+    stream = io.StringIO(GetCloseData())
     return wx.ImageFromStream(stream)
 
 def Colorize(i, color):
@@ -446,7 +446,7 @@ def DrawGradientRectangle(dc, rect, start_color, end_color, direction):
         else:
             high = rect.GetWidth() - 1
 
-        for ii in xrange(high+1):
+        for ii in range(high+1):
             r = start_color.Red() + ((ii*rd*100)/high)/100
             g = start_color.Green() + ((ii*gd*100)/high)/100
             b = start_color.Blue() + ((ii*bd*100)/high)/100
@@ -759,7 +759,7 @@ class DefaultDockArt:
 
         if pane.IsToolbar():
         
-            for ii in xrange(0, border_width):
+            for ii in range(0, border_width):
             
                 dc.SetPen(wx.WHITE_PEN)
                 dc.DrawLine(drect.x, drect.y, drect.x+drect.width, drect.y)
@@ -773,7 +773,7 @@ class DefaultDockArt:
         
         else:
         
-            for ii in xrange(0, border_width):
+            for ii in range(0, border_width):
             
                 dc.DrawRectangle(drect.x, drect.y, drect.width, drect.height)
                 drect.Deflate(1, 1)
@@ -977,7 +977,7 @@ if _ctypes:
 
       def dump(self):
 
-        return map(int, (self.left, self.top, self.right, self.bottom))
+        return list(map(int, (self.left, self.top, self.right, self.bottom)))
 
 
     class SIZE(ctypes.Structure):
@@ -1985,8 +1985,8 @@ def PaneCreateStippleBitmap():
     img = wx.EmptyImage(2, 2)
     counter = 0
     
-    for ii in xrange(2):
-        for jj in xrange(2):
+    for ii in range(2):
+        for jj in range(2):
             img.SetRGB(ii, jj, data[counter], data[counter+1], data[counter+2])
             counter = counter + 3
     
@@ -2022,10 +2022,10 @@ def CopyDocksAndPanes(src_docks, src_panes):
     dest_docks = src_docks
     dest_panes = src_panes
 
-    for ii in xrange(len(dest_docks)):
+    for ii in range(len(dest_docks)):
         dock = dest_docks[ii]
-        for jj in xrange(len(dock.panes)):
-            for kk in xrange(len(src_panes)):
+        for jj in range(len(dock.panes)):
+            for kk in range(len(src_panes)):
                 if dock.panes[jj] == src_panes[kk]:
                     dock.panes[jj] = dest_panes[kk]
 
@@ -2042,7 +2042,7 @@ def CopyDocksAndPanes2(src_docks, src_panes):
     
     dest_docks = []
 
-    for ii in xrange(len(src_docks)):
+    for ii in range(len(src_docks)):
         dest_docks.append(DockInfo())
         dest_docks[ii].dock_direction = src_docks[ii].dock_direction
         dest_docks[ii].dock_layer = src_docks[ii].dock_layer
@@ -2057,7 +2057,7 @@ def CopyDocksAndPanes2(src_docks, src_panes):
 
     dest_panes = []
 
-    for ii in xrange(len(src_panes)):
+    for ii in range(len(src_panes)):
         dest_panes.append(PaneInfo())
         dest_panes[ii].name = src_panes[ii].name
         dest_panes[ii].caption = src_panes[ii].caption
@@ -2078,10 +2078,10 @@ def CopyDocksAndPanes2(src_docks, src_panes):
         dest_panes[ii].rect = src_panes[ii].rect
         dest_panes[ii].icon = src_panes[ii].icon
 
-    for ii in xrange(len(dest_docks)):
+    for ii in range(len(dest_docks)):
         dock = dest_docks[ii]
-        for jj in xrange(len(dock.panes)):
-            for kk in xrange(len(src_panes)):
+        for jj in range(len(dock.panes)):
+            for kk in range(len(src_panes)):
                 if dock.panes[jj] == src_panes[kk]:
                     dock.panes[jj] = dest_panes[kk]
 
@@ -2127,7 +2127,7 @@ def DoInsertDockLayer(panes, dock_direction, dock_layer):
     layer by incrementing all existing dock layer values by one.
     """
     
-    for ii in xrange(len(panes)):
+    for ii in range(len(panes)):
         pane = panes[ii]
         if not pane.IsFloating() and pane.dock_direction == dock_direction and pane.dock_layer >= dock_layer:
             pane.dock_layer = pane.dock_layer + 1
@@ -2143,7 +2143,7 @@ def DoInsertDockRow(panes, dock_direction, dock_layer, dock_row):
     row by incrementing all existing dock row values by one.
     """
     
-    for ii in xrange(len(panes)):
+    for ii in range(len(panes)):
         pane = panes[ii]
         if not pane.IsFloating() and pane.dock_direction == dock_direction and \
            pane.dock_layer == dock_layer and pane.dock_row >= dock_row:
@@ -2156,7 +2156,7 @@ def DoInsertDockRow(panes, dock_direction, dock_layer, dock_row):
     
 def DoInsertPane(panes, dock_direction, dock_layer, dock_row, dock_pos):
 
-    for ii in xrange(len(panes)):
+    for ii in range(len(panes)):
         pane = panes[ii]
         if not pane.IsFloating() and pane.dock_direction == dock_direction and \
            pane.dock_layer == dock_layer and  pane.dock_row == dock_row and \
@@ -2184,7 +2184,7 @@ def FindDocks(docks, dock_direction, dock_layer=-1, dock_row=-1, arr=[]):
     max_layer = 0
     
     # discover the maximum dock layer and the max row
-    for ii in xrange(dock_count):
+    for ii in range(dock_count):
         max_row = max(max_row, docks[ii].dock_row)
         max_layer = max(max_layer, docks[ii].dock_layer)
     
@@ -2200,9 +2200,9 @@ def FindDocks(docks, dock_direction, dock_layer=-1, dock_row=-1, arr=[]):
 
     arr = []
 
-    for layer in xrange(begin_layer, end_layer+1):
-        for row in xrange(begin_row, end_row+1):
-            for ii in xrange(dock_count):
+    for layer in range(begin_layer, end_layer+1):
+        for row in range(begin_row, end_row+1):
+            for ii in range(dock_count):
                 d = docks[ii]
                 if dock_direction == -1 or dock_direction == d.dock_direction:
                     if d.dock_layer == layer and d.dock_row == row:
@@ -2230,7 +2230,7 @@ def RemovePaneFromDocks(docks, pane, exc=None):
     with a possible exception specified by parameter "except".
     """
     
-    for ii in xrange(len(docks)):
+    for ii in range(len(docks)):
         d = docks[ii]
         if d == exc:
             continue
@@ -2250,10 +2250,10 @@ def RenumberDockRows(docks):
     dock has rows with numbers 0, 2, 5, they will become 0, 1, 2.
     """
     
-    for ii in xrange(len(docks)):
+    for ii in range(len(docks)):
         dock = docks[ii]
         dock.dock_row = ii
-        for jj in xrange(len(dock.panes)):
+        for jj in range(len(dock.panes)):
             dock.panes[jj].dock_row = ii
 
         docks[ii] = dock
@@ -2263,7 +2263,7 @@ def RenumberDockRows(docks):
 
 def SetActivePane(panes, active_pane):
     
-    for ii in xrange(len(panes)):
+    for ii in range(len(panes)):
         pane = panes[ii]
 
         if pane.window == active_pane:
@@ -2285,7 +2285,7 @@ def SetActivePane(panes, active_pane):
 
 def KillActivePane(panes):
 
-    for ii in xrange(len(panes)):
+    for ii in range(len(panes)):
         pane = panes[ii]
 
         if pane.state & PaneInfo.optionActive:
@@ -2649,9 +2649,9 @@ class FrameManager(wx.EvtHandler):
                 winxpgui.SetLayeredWindowAttributes(hwnd, 0, amount, 2)
     
             elif _libimported == "ctypes":
-                style = self._winlib.GetWindowLongA(hwnd, 0xffffffecL)
+                style = self._winlib.GetWindowLongA(hwnd, 0xffffffec)
                 style |= 0x00080000
-                self._winlib.SetWindowLongA(hwnd, 0xffffffecL, style)
+                self._winlib.SetWindowLongA(hwnd, 0xffffffec, style)
                 self._winlib.SetLayeredWindowAttributes(hwnd, 0, amount, 2)
                 
         elif wx.Platform == "__WXMAC__" and _carbon_dll:
@@ -2941,7 +2941,7 @@ class FrameManager(wx.EvtHandler):
         result = "layout1|"
         pane_count = len(self._panes)
 
-        for pane_i in xrange(pane_count):
+        for pane_i in range(pane_count):
             pane = self._panes[pane_i]
             result = result + "name=" + EscapeDelimiters(pane.name) + ";"
             result = result + "caption=" + EscapeDelimiters(pane.caption) + ";"
@@ -2970,7 +2970,7 @@ class FrameManager(wx.EvtHandler):
         
         dock_count = len(self._docks)
 
-        for dock_i in xrange(dock_count):
+        for dock_i in range(dock_count):
             dock = self._docks[dock_i]
             result = result + ("dock_size(%d,%d,%d)=%d|")%(dock.dock_direction,
                                                            dock.dock_layer,
@@ -3001,7 +3001,7 @@ class FrameManager(wx.EvtHandler):
         
         # mark all panes currently managed as docked and hidden
         pane_count = len(self._panes)
-        for pane_i in xrange(pane_count):
+        for pane_i in range(pane_count):
             pane = self._panes[pane_i]
             pane.Dock().Hide()
             self._panes[pane_i] = pane
@@ -3138,7 +3138,7 @@ class FrameManager(wx.EvtHandler):
         pane_count = len(dock.panes)
 
         # find the pane marked as our action pane
-        for pane_i in xrange(pane_count):
+        for pane_i in range(pane_count):
             pane = dock.panes[pane_i]
             if pane.state & PaneInfo.actionPane:
                 action_pane = pane_i
@@ -3176,7 +3176,7 @@ class FrameManager(wx.EvtHandler):
             return positions, sizes
 
         offset = 0
-        for pane_i in xrange(action_pane-1, -1, -1):
+        for pane_i in range(action_pane-1, -1, -1):
             amount = positions[pane_i+1] - (positions[pane_i] + sizes[pane_i])
             if amount >= 0:
                 offset = offset + amount
@@ -3188,7 +3188,7 @@ class FrameManager(wx.EvtHandler):
         # if the dock mode is fixed, make sure none of the panes
         # overlap we will bump panes that overlap
         offset = 0
-        for pane_i in xrange(action_pane, pane_count):
+        for pane_i in range(action_pane, pane_count):
             amount = positions[pane_i] - offset
             if amount >= 0:
                 offset = offset + amount
@@ -3367,7 +3367,7 @@ class FrameManager(wx.EvtHandler):
             pane_positions, pane_sizes = self.GetPanePositionsAndSizes(dock)
 
             offset = 0
-            for pane_i in xrange(pane_count):
+            for pane_i in range(pane_count):
             
                 pane = dock.panes[pane_i]
                 pane_pos = pane_positions[pane_i]
@@ -3414,7 +3414,7 @@ class FrameManager(wx.EvtHandler):
         
         else:
         
-            for pane_i in xrange(pane_count):
+            for pane_i in range(pane_count):
             
                 pane = dock.panes[pane_i]
 
@@ -3486,7 +3486,7 @@ class FrameManager(wx.EvtHandler):
         cli_size = self._frame.GetClientSize()
         
         # empty all docks out
-        for ii in xrange(len(docks)):
+        for ii in range(len(docks)):
             docks[ii].panes = []
 
         dock_count = len(docks)
@@ -3523,13 +3523,13 @@ class FrameManager(wx.EvtHandler):
                 docks = RemovePaneFromDocks(docks, p)
             
         # remove any empty docks
-        for ii in xrange(len(docks)-1, -1, -1):
+        for ii in range(len(docks)-1, -1, -1):
             if len(docks[ii].panes) == 0:
                 docks.pop(ii)
 
         dock_count = len(docks)        
         # configure the docks further
-        for ii in xrange(len(docks)):
+        for ii in range(len(docks)):
             dock = docks[ii]
             dock_pane_count = len(dock.panes)
             
@@ -3540,7 +3540,7 @@ class FrameManager(wx.EvtHandler):
             # for newly created docks, set up their initial size
             if dock.size == 0:
                 size = 0
-                for jj in xrange(dock_pane_count):
+                for jj in range(dock_pane_count):
                     pane = dock.panes[jj]
                     pane_size = pane.best_size
                     if pane_size == wx.DefaultSize:
@@ -3555,7 +3555,7 @@ class FrameManager(wx.EvtHandler):
                 
                 # add space for the border (two times), but only
                 # if at least one pane inside the dock has a pane border
-                for jj in xrange(dock_pane_count):
+                for jj in range(dock_pane_count):
                     if dock.panes[jj].HasBorder():
                         size = size + pane_border_size*2
                         break
@@ -3563,7 +3563,7 @@ class FrameManager(wx.EvtHandler):
                 # if pane is on the top or bottom, add the caption height,
                 # but only if at least one pane inside the dock has a caption
                 if dock.IsHorizontal():
-                    for jj in xrange(dock_pane_count):
+                    for jj in range(dock_pane_count):
                         if dock.panes[jj].HasCaption():
                             size = size + caption_size
                             break
@@ -3583,7 +3583,7 @@ class FrameManager(wx.EvtHandler):
             plus_border = False
             plus_caption = False
             dock_min_size = 0
-            for jj in xrange(dock_pane_count):
+            for jj in range(dock_pane_count):
                 pane = dock.panes[jj]
                 if pane.min_size != wx.DefaultSize:
                     if pane.HasBorder():
@@ -3614,7 +3614,7 @@ class FrameManager(wx.EvtHandler):
             action_pane_marked = False
             dock.fixed = True
             dock.toolbar = True
-            for jj in xrange(dock_pane_count):
+            for jj in range(dock_pane_count):
                 pane = dock.panes[jj]
                 if not pane.IsFixed():
                     dock.fixed = False
@@ -3627,7 +3627,7 @@ class FrameManager(wx.EvtHandler):
             # reassign the dock_pos to the sequential 0, 1, 2, 3
             # e.g. remove gaps like 1, 2, 30, 500
             if not dock.fixed:
-                for jj in xrange(dock_pane_count):
+                for jj in range(dock_pane_count):
                     pane = dock.panes[jj]
                     pane.dock_pos = jj
                     dock.panes[jj] = pane
@@ -3639,7 +3639,7 @@ class FrameManager(wx.EvtHandler):
             if dock.fixed and not action_pane_marked:
                 pane_positions, pane_sizes = self.GetPanePositionsAndSizes(dock)
                 offset = 0
-                for jj in xrange(dock_pane_count):
+                for jj in range(dock_pane_count):
                     pane = dock.panes[jj]
                     pane.dock_pos = pane_positions[jj]
                     amount = pane.dock_pos - offset
@@ -3657,7 +3657,7 @@ class FrameManager(wx.EvtHandler):
         # discover the maximum dock layer
         max_layer = 0
         
-        for ii in xrange(dock_count):
+        for ii in range(dock_count):
             max_layer = max(max_layer, docks[ii].dock_layer)
 
         # clear out uiparts
@@ -3671,7 +3671,7 @@ class FrameManager(wx.EvtHandler):
         if oncheck:
             docks = self._docks
         
-        for layer in xrange(max_layer+1):
+        for layer in range(max_layer+1):
             # find any docks in this layer
             arr = FindDocks(docks, -1, layer, -1)
             # if there aren't any, skip to the next layer
@@ -3688,7 +3688,7 @@ class FrameManager(wx.EvtHandler):
             arr = FindDocks(docks, AUI_DOCK_TOP, layer, -1, arr)
             arr = RenumberDockRows(arr)
             if len(arr) > 0:
-                for row in xrange(len(arr)):
+                for row in range(len(arr)):
                     uiparts = self.LayoutAddDock(cont, arr[row], uiparts, spacer_only)
             
             # fill out the middle layer (which consists
@@ -3700,7 +3700,7 @@ class FrameManager(wx.EvtHandler):
             arr = FindDocks(docks, AUI_DOCK_LEFT, layer, -1, arr)
             arr = RenumberDockRows(arr)
             if len(arr) > 0:
-                for row in xrange(len(arr)):
+                for row in range(len(arr)):
                     uiparts = self.LayoutAddDock(middle, arr[row], uiparts, spacer_only)
             
             # add content dock (or previous layer's sizer
@@ -3709,7 +3709,7 @@ class FrameManager(wx.EvtHandler):
                 # find any center docks
                 arr = FindDocks(docks, AUI_DOCK_CENTER, -1, -1, arr)
                 if len(arr) > 0:
-                    for row in xrange(len(arr)):
+                    for row in range(len(arr)):
                        uiparts = self.LayoutAddDock(middle, arr[row], uiparts, spacer_only)
                 elif not self._has_maximized:
                     # there are no center docks, add a background area
@@ -3729,7 +3729,7 @@ class FrameManager(wx.EvtHandler):
             arr = FindDocks(docks, AUI_DOCK_RIGHT, layer, -1, arr)
             arr = RenumberDockRows(arr)
             if len(arr) > 0:
-                for row in xrange(len(arr)-1, -1, -1):
+                for row in range(len(arr)-1, -1, -1):
                     uiparts = self.LayoutAddDock(middle, arr[row], uiparts, spacer_only)
             
             cont.Add(middle, 1, wx.EXPAND)
@@ -3738,7 +3738,7 @@ class FrameManager(wx.EvtHandler):
             arr = FindDocks(docks, AUI_DOCK_BOTTOM, layer, -1, arr)
             arr = RenumberDockRows(arr)
             if len(arr) > 0:
-                for row in xrange(len(arr)-1, -1, -1):
+                for row in range(len(arr)-1, -1, -1):
                     uiparts = self.LayoutAddDock(cont, arr[row], uiparts, spacer_only)
 
         if not cont:
@@ -3780,7 +3780,7 @@ class FrameManager(wx.EvtHandler):
 
         # destroy floating panes which have been
         # redocked or are becoming non-floating
-        for ii in xrange(pane_count):
+        for ii in range(pane_count):
             p = self._panes[ii]
             if not p.IsFloating() and p.frame:
                 # because the pane is no longer in a floating, we need to
@@ -3805,7 +3805,7 @@ class FrameManager(wx.EvtHandler):
         
         pane_count = len(self._panes)
         
-        for ii in xrange(pane_count):
+        for ii in range(pane_count):
             p = self._panes[ii]
             if p.IsFloating():
                 if p.frame == None:
@@ -3846,7 +3846,7 @@ class FrameManager(wx.EvtHandler):
 
         old_pane_rects = []
         
-        for ii in xrange(pane_count):
+        for ii in range(pane_count):
             r = wx.Rect()
             p = self._panes[ii]
 
@@ -3864,7 +3864,7 @@ class FrameManager(wx.EvtHandler):
         # the new pane rectangles against the old rectangles that
         # we saved a few lines above here.  If the rectangles have
         # changed, the corresponding panes must also be updated
-        for ii in xrange(pane_count):
+        for ii in range(pane_count):
             p = self._panes[ii]
             if p.window and p.IsShown() and p.IsDocked():
                 if p.rect != old_pane_rects[ii]:
@@ -3884,7 +3884,7 @@ class FrameManager(wx.EvtHandler):
 
         self._frame.Layout()
         
-        for ii in xrange(len(self._uiparts)):
+        for ii in range(len(self._uiparts)):
             part = self._uiparts[ii]
             
             # get the rectangle of the UI part
@@ -3928,13 +3928,13 @@ class FrameManager(wx.EvtHandler):
         of the pane in question, including decorations like caption and border.
         """
 
-        for ii in xrange(len(self._uiparts)):
+        for ii in range(len(self._uiparts)):
             part = self._uiparts[ii]
             if part.type == DockUIPart.typePaneBorder and \
                part.pane and part.pane.window == wnd:
                 return part
 
-        for ii in xrange(len(self._uiparts)):
+        for ii in range(len(self._uiparts)):
             part = self._uiparts[ii]
             if part.type == DockUIPart.typePane and \
                part.pane and part.pane.window == wnd:
@@ -3963,7 +3963,7 @@ class FrameManager(wx.EvtHandler):
         sizer.SetDimension(0, 0, client_size.x, client_size.y)
         sizer.Layout()
 
-        for ii in xrange(len(uiparts)):
+        for ii in range(len(uiparts)):
             part = uiparts[ii]
             pos = part.sizer_item.GetPosition()
             size = part.sizer_item.GetSize()
@@ -3973,7 +3973,7 @@ class FrameManager(wx.EvtHandler):
 
         sizer.Destroy()
 
-        for ii in xrange(len(docks)):
+        for ii in range(len(docks)):
             dock = docks[ii]
             if test.dock_direction == dock.dock_direction and \
                test.dock_layer == dock.dock_layer and  \
@@ -4526,7 +4526,7 @@ class FrameManager(wx.EvtHandler):
 
         # remove any pane already there which bears the same window
         # this happens when you are moving a pane around in a dock
-        for ii in xrange(len(panes)):
+        for ii in range(len(panes)):
             if panes[ii].window == pane_window:
                 docks = RemovePaneFromDocks(docks, panes[ii])
                 panes.pop(ii)
@@ -4546,7 +4546,7 @@ class FrameManager(wx.EvtHandler):
         sizer.SetDimension(0, 0, client_size.x, client_size.y)
         sizer.Layout()
 
-        for ii in xrange(len(uiparts)):
+        for ii in range(len(uiparts)):
             part = uiparts[ii]
             if part.type == DockUIPart.typePaneBorder and \
                part.pane and part.pane.name == "__HINT__":
@@ -5028,7 +5028,7 @@ class FrameManager(wx.EvtHandler):
                 pane_positions, pane_sizes = self.GetPanePositionsAndSizes(dock)
                 
                 dock_pane_count = len(dock.panes)
-                for ii in xrange(dock_pane_count):
+                for ii in range(dock_pane_count):
                     dock.panes[ii].dock_pos = pane_positions[ii]
             
             pane.state &= ~PaneInfo.actionPane
@@ -5286,7 +5286,7 @@ class FrameManager(wx.EvtHandler):
             dock_pane_count = len(dock.panes)
             pane_position = -1
             
-            for ii in xrange(dock_pane_count):
+            for ii in range(dock_pane_count):
                 p = dock.panes[ii]
                 if p.window == pane.window:
                     pane_position = ii
@@ -5314,7 +5314,7 @@ class FrameManager(wx.EvtHandler):
             # to the right of the action pane
             borrow_pane = -1
             
-            for ii in xrange(pane_position+1, dock_pane_count):
+            for ii in range(pane_position+1, dock_pane_count):
                 p = dock.panes[ii]
                 if not p.IsFixed():
                     borrow_pane = ii

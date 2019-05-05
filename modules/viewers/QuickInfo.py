@@ -2,6 +2,8 @@ from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
 import module_utils
 import operator
+from functools import reduce
+import importlib
 
 HTML_START = '<html><body>'
 HTML_END = '</body></html>'
@@ -34,8 +36,8 @@ class QuickInfo(IntrospectModuleMixin, ModuleBase):
         self.view_initialised = True
 
     def _create_view_frame(self):
-        import resources.python.quick_info_frames
-        reload(resources.python.quick_info_frames)
+        from . import resources.python.quick_info_frames
+        importlib.reload(resources.python.quick_info_frames)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
                 self, self._module_manager,

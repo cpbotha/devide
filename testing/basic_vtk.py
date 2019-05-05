@@ -17,8 +17,8 @@ class BasicVTKTest(unittest.TestCase):
 
         try:
             b.Update()
-        except RuntimeError, e:
-            self.failUnless(str(e).startswith('ERROR'))
+        except RuntimeError as e:
+            self.assertTrue(str(e).startswith('ERROR'))
 
         else:
             self.fail('VTK object did not raise Python exception.')
@@ -31,14 +31,14 @@ class BasicVTKTest(unittest.TestCase):
         import vtkdevide
 
         def observer_progress(o, e):
-            print "DICOM progress %s." % (str(o.GetProgress() * 100.0),)
+            print("DICOM progress %s." % (str(o.GetProgress() * 100.0),))
 
         r = vtkdevide.vtkDICOMVolumeReader()
         r.AddObserver("ProgressEvent", observer_progress)
 
         try:
             r.Update()
-        except RuntimeError, e:
+        except RuntimeError as e:
             pass
         else:
             self.fail('ProgressEvent handler masked RuntimeError.')

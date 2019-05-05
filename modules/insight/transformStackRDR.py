@@ -2,8 +2,8 @@
 # All rights reserved.
 # See COPYRIGHT for details.
 
-from typeModules.transformStackClass import transformStackClass
-import cPickle
+from .typeModules.transformStackClass import transformStackClass
+import pickle
 import fixitk as itk
 import md5
 from module_base import ModuleBase
@@ -90,9 +90,9 @@ class transformStackRDR(ModuleBase, FilenameViewModuleMixin):
         try:
             # binary mode
             transformFile = file(filename, 'rb')
-        except IOError, ioemsg:
-            raise IOError, 'Could not open %s for reading:\n%s' % \
-                  (filename, ioemsg)
+        except IOError as ioemsg:
+            raise IOError('Could not open %s for reading:\n%s' % \
+                  (filename, ioemsg))
 
         tBuffer = transformFile.read()
         m = md5.new()
@@ -106,7 +106,7 @@ class transformStackRDR(ModuleBase, FilenameViewModuleMixin):
             # we have to rewind to the beginning of the file, else
             # the load will break
             transformFile.seek(0)
-            pickleList = cPickle.load(transformFile)
+            pickleList = pickle.load(transformFile)
             for name, paramsTup in pickleList:
                 # instantiate transform
                 trfm = eval('itk.itk%s_New()' % (name,))

@@ -130,7 +130,7 @@ class nbhSeedConnect(ScriptedConfigModuleMixin, ModuleBase):
                 idx.SetElement(1, y)
                 idx.SetElement(2, z)
                 self._nbhCIF.AddSeed(idx)
-                print "Added %d,%d,%d" % (x,y,z)
+                print("Added %d,%d,%d" % (x,y,z))
 
                 
                 

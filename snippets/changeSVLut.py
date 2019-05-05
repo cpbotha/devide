@@ -4,7 +4,7 @@ import vtk
 
 className = obj.__class__.__name__
 if className == 'slice3dVWR':
-    ipw = obj.sliceDirections._sliceDirectionsDict.values()[0]._ipws[0]
+    ipw = list(obj.sliceDirections._sliceDirectionsDict.values())[0]._ipws[0]
     
     if ipw.GetInput():
         mins, maxs = ipw.GetInput().GetScalarRange()
@@ -24,4 +24,4 @@ if className == 'slice3dVWR':
     
     
 else:
-    print "You have to mark a slice3dVWR module!"
+    print("You have to mark a slice3dVWR module!")

@@ -63,7 +63,7 @@ class DanielssonDistance(ScriptedConfigModuleMixin, ModuleBase):
     def set_input(self, idx, inputStream):
         try:
             self._dist_filter.SetInput(inputStream)
-        except TypeError, e:
+        except TypeError as e:
             # deduce the type
             itku = itk_kit.utils
             ss = itku.get_img_type_and_dim_shortstring(inputStream)
@@ -102,10 +102,10 @@ class DanielssonDistance(ScriptedConfigModuleMixin, ModuleBase):
             d = itk.DanielssonDistanceMapImageFilter[
                     img_type, img_type].New()
 
-        except KeyError, e:
+        except KeyError as e:
             emsg = 'Could not create DanielssonDist with input type %s. '\
                     'Please try a different input type.' % (ss,)
-            raise TypeError, emsg
+            raise TypeError(emsg)
 
         # if successful, we can disconnect the old filter and store 
         # the instance (needed for the progress call!)

@@ -92,7 +92,7 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
             if input_stream == None:
                 # only clear seeds if not already the case
                 if len(our_list) > 0:
-                    print "isolatedConnect: nuking list on input", idx-1
+                    print("isolatedConnect: nuking list on input", idx-1)
                     # this means we get to nuke all seeds
                     # due to bug in ITK 3.20, we have to add a dummy seed.                    
                     conn_map['SetSeeds'][idx-1](itk.Index[3]([0,0,0]))
@@ -104,7 +104,7 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
                 dpoints = [i['discrete'] for i in input_stream]
                 # if the new list differs from ours, copy it
                 if dpoints != our_list:
-                    print "isolatedConnect: copying new list on input", idx-1
+                    print("isolatedConnect: copying new list on input", idx-1)
                     del our_list[:]
                     our_list.extend(dpoints)
                     conn_map['ClearSeeds'][idx-1]()
@@ -118,7 +118,7 @@ class isolatedConnect(ScriptedConfigModuleMixin, ModuleBase):
                         conn_map['SetSeeds'][idx-1](itk.Index[3]([0,0,0]))
 
             else:
-                raise TypeError, 'This input requires a named points type.'
+                raise TypeError('This input requires a named points type.')
     
     def get_output_descriptions(self):
         return ('Segmented ITK image', 'Derived threshold')

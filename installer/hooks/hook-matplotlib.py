@@ -7,5 +7,5 @@ hiddenimports = ['matplotlib.numerix',
         'matplotlib.numerix.random_array',
         'matplotlib.backends.backend_wxagg']
 
-print "[*] hook-matplotlib.py - HIDDENIMPORTS"
-print hiddenimports
+print("[*] hook-matplotlib.py - HIDDENIMPORTS")
+print(hiddenimports)

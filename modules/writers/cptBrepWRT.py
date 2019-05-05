@@ -79,7 +79,7 @@ class cptBrepWRT(FilenameViewModuleMixin, ModuleBase):
             self._module_manager.setProgress(10,'Extracting triangles')
             # blaat.
             numCells = polyData.GetNumberOfCells()
-            for cellIdx in xrange(numCells):
+            for cellIdx in range(numCells):
                 c = polyData.GetCell(cellIdx)
                 # make sure we're working with triangles
                 if c.GetClassName() == 'vtkTriangle':
@@ -93,7 +93,7 @@ class cptBrepWRT(FilenameViewModuleMixin, ModuleBase):
             f.write('%d\n%d\n' % (polyData.GetNumberOfPoints(), len(faces)))
 
             numPoints = polyData.GetNumberOfPoints()
-            for ptIdx in xrange(numPoints):
+            for ptIdx in range(numPoints):
                 # polyData.GetPoint() returns a 3-tuple
                 f.write('%f %f %f\n' % polyData.GetPoint(ptIdx))
 

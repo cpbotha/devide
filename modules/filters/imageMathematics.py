@@ -80,7 +80,7 @@ class imageMathematics(ScriptedConfigModuleMixin, ModuleBase):
     def logic_to_config(self):
         o = self._imageMath.GetOperation()
         # search for o in _operations
-        for name,idx in OPS_DICT.items():
+        for name,idx in list(OPS_DICT.items()):
             if idx == o:
                 break
 

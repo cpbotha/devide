@@ -24,12 +24,12 @@ if sv:
     for pd in polyDatas:
         tf.SetInput(pd)
         mp.Update()
-        print "AREA == %f" % (mp.GetSurfaceArea(),)
+        print("AREA == %f" % (mp.GetSurfaceArea(),))
         
     if len(polyDatas) == 0:
-        print "You haven't selected any objects for me to work with!"
+        print("You haven't selected any objects for me to work with!")
 
 else:
-    print "You have to mark a slice3dVWR module!"
+    print("You have to mark a slice3dVWR module!")
 
     

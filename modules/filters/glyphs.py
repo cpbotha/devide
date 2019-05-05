@@ -6,9 +6,10 @@ from module_base import ModuleBase
 from module_mixins import ScriptedConfigModuleMixin
 import module_utils
 import vtk
-import input_array_choice_mixin
-reload(input_array_choice_mixin)
-from input_array_choice_mixin import InputArrayChoiceMixin
+from . import input_array_choice_mixin
+import importlib
+importlib.reload(input_array_choice_mixin)
+from .input_array_choice_mixin import InputArrayChoiceMixin
 
 ARRAY_IDX = 1
 

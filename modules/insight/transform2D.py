@@ -6,12 +6,12 @@
 # * this module is not sensitive to changes in its inputs... it should
 #   register observers and run _createPipelines if/when they change.
 
-from imageStackRDR import imageStackClass
+from .imageStackRDR import imageStackClass
 from module_base import ModuleBase
 from module_mixins import NoConfigModuleMixin
 import fixitk as itk
-from typeModules.transformStackClass import transformStackClass
-from typeModules.imageStackClass import imageStackClass
+from .typeModules.transformStackClass import transformStackClass
+from .typeModules.imageStackClass import imageStackClass
 import  vtk
 import ConnectVTKITKPython as CVIPy
 
@@ -85,17 +85,15 @@ class transform2D(NoConfigModuleMixin, ModuleBase):
                     # if the Update call doesn't work or
                     # if the input list is not long enough (or unsizable),
                     # we don't do anything
-                    raise TypeError, \
-                          "register2D requires an ITK Image Stack of minimum length 2 as input."
+                    raise TypeError("register2D requires an ITK Image Stack of minimum length 2 as input.")
 
                 # now check that the imageStack is the same size as the
                 # transformStack
                 if self._transformStack and \
                    len(inputStream) != len(self._transformStack):
-                    raise TypeError, \
-                          "The Image Stack you are trying to connect has a\n" \
+                    raise TypeError("The Image Stack you are trying to connect has a\n" \
                           "different length than the connected Transform\n" \
-                          "Stack."
+                          "Stack.")
 
                 self._imageStack = inputStream
                 self._createPipelines()
@@ -111,23 +109,20 @@ class transform2D(NoConfigModuleMixin, ModuleBase):
                     assert(inputStream.__class__.__name__ == \
                            'transformStackClass')
                 except Exception:
-                    raise TypeError, \
-                          "register2D requires an ITK Transform Stack on " \
-                          "this port."
+                    raise TypeError("register2D requires an ITK Transform Stack on " \
+                          "this port.")
 
                 inputStream.Update()
 
                 if len(inputStream) < 2:
-                    raise TypeError, \
-                          "The input transform stack should be of minimum " \
-                          "length 2."
+                    raise TypeError("The input transform stack should be of minimum " \
+                          "length 2.")
                     
                 if self._imageStack and \
                    len(inputStream) != len(self._imageStack):
-                    raise TypeError, \
-                          "The Transform Stack you are trying to connect\n" \
+                    raise TypeError("The Transform Stack you are trying to connect\n" \
                           "has a different length than the connected\n" \
-                          "Transform Stack"
+                          "Transform Stack")
 
                 self._transformStack = inputStream
                 self._createPipelines()
@@ -183,7 +178,7 @@ class transform2D(NoConfigModuleMixin, ModuleBase):
         prevImage = self._imageStack[0]
         for trfm, img, i in zip(self._transformStack,
                                 self._imageStack,
-                                range(len(self._imageStack))):
+                                list(range(len(self._imageStack)))):
             # accumulate with our totalTransform
             totalTrfm.Compose(trfm.GetPointer(), 0)
             # make a copy of the totalTransform that we can use on
@@ -219,7 +214,7 @@ class transform2D(NoConfigModuleMixin, ModuleBase):
             rescaler.SetOutputMinimum(0)
             rescaler.SetOutputMaximum(65535)
             rescaler.SetInput(resampler.GetOutput())
-            print "Resampling image %d" % (i,)
+            print("Resampling image %d" % (i,))
             rescaler.Update() # give ITK a chance to complain
 
             itkExporter = itk.itkVTKImageExportUS2_New()

@@ -40,6 +40,7 @@ __version__ = "0.7.2"
 ident = "$Id: fpconst.py,v 1.16 2005/02/24 17:42:03 warnes Exp $"
 
 import struct, operator
+from functools import reduce
 
 # check endianess
 _big_endian = struct.pack('i',1)[0] != '\x01'

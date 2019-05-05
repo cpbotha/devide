@@ -54,6 +54,7 @@ from module_mixins import IntrospectModuleMixin
 import module_utils
 import vtk
 import wx
+import importlib
 
 class Contour:
     pass
@@ -168,8 +169,8 @@ class Slicinator(IntrospectModuleMixin, ModuleBase):
                 wx.EVT_BUTTON, self._handler_reset_image_button)
 
     def _create_view_frame(self):
-        import resources.python.slicinator_frames
-        reload(resources.python.slicinator_frames)
+        from . import resources.python.slicinator_frames
+        importlib.reload(resources.python.slicinator_frames)
 
         self._view_frame = module_utils.instantiate_module_view_frame(
             self, self._module_manager,

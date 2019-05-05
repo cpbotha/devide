@@ -150,7 +150,7 @@ class modifyHomotopySlow(NoConfigModuleMixin, ModuleBase):
                         raise TypeError
 
                 except (AttributeError, TypeError):
-                    raise TypeError, 'This input requires a points-type'
+                    raise TypeError('This input requires a points-type')
                     
                 
                 if self._inputPoints:
@@ -229,12 +229,12 @@ class modifyHomotopySlow(NoConfigModuleMixin, ModuleBase):
             self._diff.SetInput2(self._sup.GetOutput())
             self._accum.Update()
 
-            print "%f == %f ?" % (self._accum.GetMin()[0], self._accum.GetMax()[0])
+            print("%f == %f ?" % (self._accum.GetMin()[0], self._accum.GetMax()[0]))
             if abs(self._accum.GetMin()[0] - self._accum.GetMax()[0]) < 0.0001:
                 stable = True
             else:
                 # not stable yet...
-                print "Trying again..."
+                print("Trying again...")
                 tempJ.DeepCopy(self._sup.GetOutput())
                 
             

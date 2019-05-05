@@ -10,8 +10,8 @@ class NumPyTest(unittest.TestCase):
 
         try:
             na = numpy.array([0,0,0])
-            print na
-        except Exception, e:
+            print(na)
+        except Exception as e:
             self.fail('numpy.array() cast raises exception: %s' %
                     (str(e),)) 
         else:

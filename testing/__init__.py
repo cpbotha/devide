@@ -12,12 +12,13 @@ from testing import basic_wx
 from testing import graph_editor
 from testing import numpy_tests
 from testing import matplotlib_tests
+import importlib
 
 module_list = [misc, basic_vtk, basic_wx, graph_editor, 
         numpy_tests, matplotlib_tests]
 
 for m in module_list:
-    reload(m)
+    importlib.reload(m)
 
 
 # ----------------------------------------------------------------------------
@@ -40,8 +41,8 @@ class DeVIDETesting:
         runner = unittest.TextTestRunner(verbosity=2)
         runner.run(self.main_suite)
 
-        print "Complete suite consists of 19 (multi-part) tests on "
-        print "lin32, lin64, win32, win64."
+        print("Complete suite consists of 19 (multi-part) tests on ")
+        print("lin32, lin64, win32, win64.")
 
     def runSomeTest(self):
         #some_suite = misc.get_suite(self)
@@ -89,7 +90,7 @@ class DeVIDETesting:
         if r1.GetOutput().GetDimensions() != r2.GetOutput().GetDimensions():
             em = 'Input images %s and %s are not of equal size.' % \
                  (image1_filename, image2_filename)
-            raise RuntimeError, em
+            raise RuntimeError(em)
 
         # sometimes PNG files have an ALPHA component we have to chuck away
         # do this for both images

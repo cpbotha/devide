@@ -5,7 +5,7 @@
 """
 """
 
-import mutex
+from threading import Lock
 
 #########################################################################
 class SchedulerException(Exception):
@@ -142,7 +142,7 @@ class Scheduler:
     @author: Charl P. Botha <http://cpbotha.net/>
     """
 
-    _execute_mutex = mutex.mutex()
+    _execute_mutex = Lock()
 
     def __init__(self, devideApp):
         """Initialise scheduler instance.
@@ -382,7 +382,7 @@ class Scheduler:
         
 
         # stop concurrent calls of execute_modules.
-        if not Scheduler._execute_mutex.testandset():
+        if not Scheduler._execute_mutex.acquire(blocking=False):
             return
 
         # first remove all blocked modules from the list, before we do any
@@ -410,7 +410,7 @@ class Scheduler:
             mm = self._devideApp.get_module_manager()
 
             for sm in schedList:
-                print "### sched:", sm.meta_module.instance.__class__.__name__
+                print("### sched:", sm.meta_module.instance.__class__.__name__)
                 # find all producer modules
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
@@ -419,11 +419,11 @@ class Scheduler:
                         pmodule.meta_module, output_index,
                         sm.meta_module, input_index):
 
-                        print 'transferring output: %s:%d to %s:%d' % \
+                        print('transferring output: %s:%d to %s:%d' % \
                               (pmodule.meta_module.instance.__class__.__name__,
                                output_index,
                                sm.meta_module.instance.__class__.__name__,
-                               input_index)
+                               input_index))
 
                         mm.transfer_output(pmodule.meta_module, output_index,
                                           sm.meta_module, input_index)
@@ -431,15 +431,15 @@ class Scheduler:
                 # finally: execute module if
                 # ModuleManager thinks it's necessary
                 if mm.should_execute_module(sm.meta_module, sm.part):
-                    print 'executing part %d of %s' % \
-                          (sm.part, sm.meta_module.instance.__class__.__name__)
+                    print('executing part %d of %s' % \
+                          (sm.part, sm.meta_module.instance.__class__.__name__))
 
                     mm.execute_module(sm.meta_module, sm.part)
 
         finally:
             # in whichever way execution terminates, we have to unlock the
             # mutex.
-            Scheduler._execute_mutex.unlock()
+            Scheduler._execute_mutex.release()
                 
 #########################################################################
 class EventDrivenScheduler(Scheduler):
@@ -465,7 +465,7 @@ class HybridScheduler(Scheduler):
         
 
         # stop concurrent calls of execute_modules.
-        if not Scheduler._execute_mutex.testandset():
+        if not Scheduler._execute_mutex.acquire(blocking=False):
             return
 
         # first remove all blocked modules from the list, before we do any
@@ -500,12 +500,12 @@ class HybridScheduler(Scheduler):
                 smt = (sm.meta_module, sm.part)
                 if smt in streamables_dict:
                     streaming_module = True
-                    print "### streaming ",
+                    print("### streaming ", end=' ')
                 else:
                     streaming_module = False
-                    print "### ",
+                    print("### ", end=' ')
 
-                print "sched:", sm.meta_module.instance.__class__.__name__
+                print("sched:", sm.meta_module.instance.__class__.__name__)
                 # find all producer modules
                 producers = self.getProducerModules(sm)
                 # transfer relevant data
@@ -523,13 +523,13 @@ class HybridScheduler(Scheduler):
                             streaming_transfer):
 
                         if streaming_transfer:
-                            print 'streaming ',
+                            print('streaming ', end=' ')
 
-                        print 'transferring output: %s:%d to %s:%d' % \
+                        print('transferring output: %s:%d to %s:%d' % \
                               (pmodule.meta_module.instance.__class__.__name__,
                                output_index,
                                sm.meta_module.instance.__class__.__name__,
-                               input_index)
+                               input_index))
 
                         mm.transfer_output(pmodule.meta_module, output_index,
                                           sm.meta_module, input_index,
@@ -541,9 +541,9 @@ class HybridScheduler(Scheduler):
                     if streamables_dict[smt] == 2:
                         # terminating module in streamable subset
                         if mm.should_execute_module(sm.meta_module, sm.part):
-                            print 'streaming executing part %d of %s' % \
+                            print('streaming executing part %d of %s' % \
                                   (sm.part, \
-                                   sm.meta_module.instance.__class__.__name__)
+                                   sm.meta_module.instance.__class__.__name__))
                             
                             mm.execute_module(sm.meta_module, sm.part,
                                     streaming=True)
@@ -562,9 +562,9 @@ class HybridScheduler(Scheduler):
                 else:
                     # this is not a streaming module, normal semantics
                     if mm.should_execute_module(sm.meta_module, sm.part):
-                        print 'executing part %d of %s' % \
+                        print('executing part %d of %s' % \
                               (sm.part, \
-                               sm.meta_module.instance.__class__.__name__)
+                               sm.meta_module.instance.__class__.__name__))
                         
                         mm.execute_module(sm.meta_module, sm.part)
                                 
@@ -572,7 +572,7 @@ class HybridScheduler(Scheduler):
         finally:
             # in whichever way execution terminates, we have to unlock the
             # mutex.
-            Scheduler._execute_mutex.unlock()
+            Scheduler._execute_mutex.release()
 
     def find_streamable_subsets(self, scheduler_modules):
         """

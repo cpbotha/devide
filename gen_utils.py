@@ -53,7 +53,7 @@ def logError_DEPRECATED(msg):
 
     # then the most recent
     wx.LogError(msg)
-    print msg
+    print(msg)
     # and flush... the last message will be the actual error
     # message, what we did before will add to it to become the
     # detail message

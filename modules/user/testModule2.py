@@ -63,8 +63,7 @@ class testModule2(NoConfigModuleMixin, ModuleBase):
 
                 # if not, we have to complain
                 else:
-                    raise TypeError, \
-                          "transformVolume input 2 requires a transform."
+                    raise TypeError("transformVolume input 2 requires a transform.")
             
             else:
                 self._imageReslice.SetResliceTransform(self._matrixToHT)

@@ -8,7 +8,7 @@
 # to current edit" from the main menu to load the file.  Now select
 # "File | Run current edit" to execute.
 
-import ConfigParser
+import configparser
 import os
 import wx
 
@@ -27,9 +27,9 @@ def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
     as a config-style DVN file.
     """
 
-    cp = ConfigParser.ConfigParser()
+    cp = configparser.ConfigParser()
     # create a section for each module
-    for pms in pms_dict.values():
+    for pms in list(pms_dict.values()):
         sec = 'modules/%s' % (pms.instanceName,)
         cp.add_section(sec)
         cp.set(sec, 'module_name', pms.moduleName)
@@ -40,7 +40,7 @@ def save_network(pms_dict, connection_list, glyph_pos_dict, filename):
     for idx, pconn in enumerate(connection_list):
         sec = 'connections/%d' % (idx,)
         cp.add_section(sec)
-        attrs = pconn.__dict__.keys()
+        attrs = list(pconn.__dict__.keys())
         for a in attrs:
             cp.set(sec, conn_trans[a], getattr(pconn, a))
 

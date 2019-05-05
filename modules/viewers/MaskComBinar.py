@@ -1,6 +1,7 @@
 from wxPython._controls import wxLIST_MASK_STATE
 from wxPython._controls import wxLIST_STATE_SELECTED
 import os.path
+import importlib
 # Modified by Francois Malan, LUMC / TU Delft
 # December 2009
 #
@@ -12,10 +13,10 @@ import os.path
 IMAGE_VIEWER = False
 
 # import the frame, i.e. the wx window containing everything
-import MaskComBinarFrame
+from . import MaskComBinarFrame
 # and do a reload, so that the GUI is also updated at reloads of this
 # module.
-reload(MaskComBinarFrame)
+importlib.reload(MaskComBinarFrame)
 
 from module_base import ModuleBase
 from module_mixins import IntrospectModuleMixin
@@ -28,7 +29,7 @@ import copy
 import subprocess
 #import numpy as np
 
-from OverlaySliceViewer import OverlaySliceViewer
+from .OverlaySliceViewer import OverlaySliceViewer
 
 class Mask(object):
     def __init__(self, name, file_path, image_data):
@@ -121,7 +122,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         self.rendered_overlap = False
 
     def _load_mask_from_file(self, file_path):
-        print "Opening file: %s" % (file_path)
+        print("Opening file: %s" % (file_path))
         filename = os.path.split(file_path)[1]
         reader = None
         extension = os.path.splitext(filename)[1]
@@ -169,13 +170,13 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         if os.path.exists(file_path):
             result = self._view_frame.dialog_yesno("%s already exists! \nOverwrite?" % file_path,"File already exists")
             if result == False:
-                print 'Skipped writing %s' % file_path
+                print('Skipped writing %s' % file_path)
                 return    #skip this file if overwrite is denied
 
         mask = self.masks[mask_name]
         mask.file_path = file_path
         self._save_image_to_file(mask.data, file_path)
-        print 'Wrote mask %s to %s' % (mask_name, file_path)
+        print('Wrote mask %s to %s' % (mask_name, file_path))
             
     def _save_image_to_file(self, imagedata, file_path):
         filename = os.path.split(file_path)[1]        
@@ -184,7 +185,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         if extension == '.vti':       # VTI
             writer = vtk.vtkXMLImageDataWriter()
         elif extension == '.mha':     # MHA
-            print 'Attempting to create an mha writer. This has failed in the past (?)'
+            print('Attempting to create an mha writer. This has failed in the past (?)')
             writer = vtk.vtkMetaImageWriter()
             writer.SetCompression(True)
         else:
@@ -197,20 +198,20 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         result = writer.Write()
         if result == 0:
             self._view_frame.dialog_error('Error writing %s' % filename, 'Error writing file')
-            print 'ERROR WRITING FILE!!!'
+            print('ERROR WRITING FILE!!!')
         else:
             self._view_frame.dialog_info('Successfully wrote %s' % filename, 'Success')
-            print 'Successfully wrote %s' % file_path        
+            print('Successfully wrote %s' % file_path)        
         
     def add_mask(self, mask):
         [accept, name] = self._view_frame.dialog_inputtext('Please choose a name for the new mask','Choose a name', mask.name)
         if accept:
             mask.name = name
-            if self.masks.has_key(name):
+            if name in self.masks:
                 i=1
                 new_name = '%s%d' % (name, i)
 
-                while self.masks.has_key(new_name):
+                while new_name in self.masks:
                     i += 1
                     new_name = '%s%d' % (mask.name, i)
                 mask.name = new_name
@@ -227,8 +228,8 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             mask_names = temp
             if self._view_frame.dialog_yesno('Are you sure you want to delete the following masks: %s' % mask_names_str, 'Delete masks?'):
                 for mask_name in mask_names:
-                    print 'deleting mask: %s' % mask_name
-                    if self.masks.has_key(mask_name):
+                    print('deleting mask: %s' % mask_name)
+                    if mask_name in self.masks:
                         self.masks.pop(mask_name)                        
                         self._view_frame.delete_mask(mask_name)
                     else:
@@ -334,7 +335,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         self._render_3d_data('a_and_b', mask_intersect.data, self.rgb_yellow, self.opacity_3d)
 
     def _clear_3d_window(self):
-        for actor in self.actors3d.values():
+        for actor in list(self.actors3d.values()):
             self.ren3d.RemoveActor(actor)
         self.ren3d.Clear()
         self.rendered_masks_in_a = set()
@@ -357,7 +358,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         """
         surface = None
         mask = self.masks[name]
-        if not self.surfaces.has_key(name):
+        if name not in self.surfaces:
             surface_creator = vtk.vtkDiscreteMarchingCubes()
             surface_creator.SetInput(mask.data)
             surface_creator.Update()
@@ -615,7 +616,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
                 full_file_path = "%s\\%s" % (dir_name, filename)
                 self.load_binary_mask_from_file(full_file_path)
         dlg.Destroy()
-        print 'Done!'
+        print('Done!')
 
     def _specify_output_file_path(self):
         file_path = None
@@ -653,7 +654,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
                     imath = vtk.vtkImageMathematics()
                     imath.SetOperationToMultiplyByK()
                     imath.SetConstantK(k)  
-                    print 'Multiplying %s with %d and adding to volume' % (mask_name, k)
+                    print('Multiplying %s with %d and adding to volume' % (mask_name, k))
                     imath.SetInput(maskdata)
                     imath.Update()  
                     adder = vtk.vtkImageMathematics()
@@ -664,7 +665,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
                     imagedata.DeepCopy(adder.GetOutput()) 
                 
                 self._save_image_to_file(imagedata, file_path)
-                print 'Wrote multi-label mask with %d labels to %s' % (k, file_path)
+                print('Wrote multi-label mask with %d labels to %s' % (k, file_path))
         
     def _handler_save_mask(self, event):
         """Saves a mask file"""
@@ -735,7 +736,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             meshA = None
             meshB = None
             #actually this should never happen, but let's keep it for making double sure
-            if not self.surfaces.has_key(maskA.name): 
+            if maskA.name not in self.surfaces: 
                 surface_creator_A = vtk.vtkDiscreteMarchingCubes()
                 surface_creator_A.SetInput(maskA.data)
                 surface_creator_A.Update()
@@ -744,7 +745,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
                 meshA = self.surfaces[maskA.name]
 
             #actually this should never happen, but let's keep it for making double sure
-            if not self.surfaces.has_key(maskB.name):
+            if maskB.name not in self.surfaces:
                 surface_creator_B = vtk.vtkDiscreteMarchingCubes()
                 surface_creator_B.SetInput(maskB.data)
                 surface_creator_B.Update()
@@ -758,7 +759,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             icp.SetSource(meshA)
             icp.SetTarget(meshB)
 
-            print 'Executing ICP alorithm'
+            print('Executing ICP alorithm')
             icp.Update()            
             del meshA, meshB
 
@@ -790,7 +791,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
             volume = voxel_volume * nonzero_count / 1000.0
 
-            print "Volume = %.2f ml" % (volume)
+            print("Volume = %.2f ml" % (volume))
             copy_to_clipboard = self._view_frame.dialog_yesno('Volume = %f ml\n\nCopy to clipboard?' % volume, 'Volume = %.1f%% ml' % (volume))
             if copy_to_clipboard:
                 self._view_frame.copy_text_to_clipboard('%f' % volume)
@@ -867,7 +868,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
             dice_coeff = (2 * cells[3] / (2* cells[3] + cells[1] + cells[2]))
             
-            print "Dice Coefficiet = %.2f" % (dice_coeff)
+            print("Dice Coefficiet = %.2f" % (dice_coeff))
             copy_to_clipboard = self._view_frame.dialog_yesno('Dice coefficient = %f\n\nCopy to clipboard?' % dice_coeff, '%.1f%% overlap' % (100*dice_coeff))
             if copy_to_clipboard:
                 self._view_frame.copy_text_to_clipboard('%f' % dice_coeff)
@@ -883,7 +884,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         meshA = None
         meshB = None
         #actually this should never happen, but let's keep it for making double sure
-        if not self.surfaces.has_key(maskA.name):
+        if maskA.name not in self.surfaces:
             self._view_frame.dialog_exclaim('Mesh belonging to Mask A not found in list, and created on the fly. This is unexpected...', 'Unexpected program state')
             surface_creator_A = vtk.vtkDiscreteMarchingCubes()
             surface_creator_A.SetInput(maskA.data)
@@ -893,7 +894,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             meshA = self.surfaces[maskA.name]
 
         #actually this should never happen, but let's keep it for making double sure
-        if not self.surfaces.has_key(maskB.name):
+        if maskB.name not in self.surfaces:
             self._view_frame.dialog_exclaim('Mesh belonging to Mask B not found in list, and created on the fly. This is unexpected...', 'Unexpected program state')
             surface_creator_B = vtk.vtkDiscreteMarchingCubes()
             surface_creator_B.SetInput(maskB.data)
@@ -907,11 +908,11 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
 
         ply_writer = vtk.vtkPLYWriter()
         ply_writer.SetFileTypeToBinary()
-        print 'Writing temporary PLY mesh A = %s' % filename_a
+        print('Writing temporary PLY mesh A = %s' % filename_a)
         ply_writer.SetFileName(filename_a)
         ply_writer.SetInput(meshA)
         ply_writer.Update()
-        print 'Writing temporary PLY mesh B = %s' % filename_b
+        print('Writing temporary PLY mesh B = %s' % filename_b)
         ply_writer.SetFileName(filename_b)
         ply_writer.SetInput(meshB)
         ply_writer.Update()
@@ -924,10 +925,10 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             self._view_frame.dialog_error('Hausdorff distance computation requires Metro to be installed and available in the system path.\n\nMetro failed to execute.\n\nAborting.\n\nMetro may be downloaded from http://vcg.sourceforge.net/index.php/Metro', 'Metro was not found')
             return
 
-        print 'Executing: %s' % command
-        print '....................................'
-        print outp
-        print '....................................'
+        print('Executing: %s' % command)
+        print('....................................')
+        print(outp)
+        print('....................................')
 
         index = outp.find('max')
         hdf = float(outp[index+6:index+54].split()[0])  #Forward Hausdorff distance
@@ -942,12 +943,12 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         hausdorff_distance = max(hdf, hdb)
         mean_hausdorff_distance = 0.5 * (mhdf + mhdb)
 
-        print 'removing temporary files'
+        print('removing temporary files')
         os.remove(filename_a)
         os.remove(filename_b)
-        print 'done!'
+        print('done!')
 
-        print '\nSampled Hausdorff distance      = %.4f\nSampled Mean Hausdorff distance = %.4f\n' % (hausdorff_distance, mean_hausdorff_distance)
+        print('\nSampled Hausdorff distance      = %.4f\nSampled Mean Hausdorff distance = %.4f\n' % (hausdorff_distance, mean_hausdorff_distance))
 
         return [hausdorff_distance, mean_hausdorff_distance]
 
@@ -1040,7 +1041,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         eight_bit = False
 
         for mask_name in mask_names:
-            print 'adding %s' % mask_name
+            print('adding %s' % mask_name)
             data2 = self.masks[mask_name].data
             adder = vtk.vtkImageMathematics()
             adder.SetOperationToAdd()
@@ -1112,51 +1113,51 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             extent = maskdata.GetExtent()
             whole_extent = maskdata.GetWholeExtent()
 
-            if not masks_by_dimensions.has_key(dimensions):
+            if dimensions not in masks_by_dimensions:
                 masks_by_dimensions[dimensions] = [str(mask_name)]
             else:
                 masks_by_dimensions[dimensions].append(str(mask_name))
 
-            if not masks_by_spacing.has_key(spacing):
+            if spacing not in masks_by_spacing:
                 masks_by_spacing[spacing] = [str(mask_name)]
             else:
                 masks_by_spacing[spacing].append(str(mask_name))
 
-            if not masks_by_extent.has_key(extent):
+            if extent not in masks_by_extent:
                 masks_by_extent[extent] = [str(mask_name)]
             else:
                 masks_by_extent[extent].append(str(mask_name))
 
-            if not masks_by_whole_extent.has_key(whole_extent):
+            if whole_extent not in masks_by_whole_extent:
                 masks_by_whole_extent[whole_extent] = [str(mask_name)]
             else:
                 masks_by_whole_extent[whole_extent].append(str(mask_name))
 
 
-        if len(masks_by_dimensions.keys()) == 1 and len(masks_by_spacing.keys()) == 1 and len(masks_by_extent.keys()) == 1 and len(masks_by_whole_extent.keys()):
+        if len(list(masks_by_dimensions.keys())) == 1 and len(list(masks_by_spacing.keys())) == 1 and len(list(masks_by_extent.keys())) == 1 and len(list(masks_by_whole_extent.keys())):
             dimension_report = '%s masks have the same dimensions, spacing, extent and whole extent:\n\n' % msg
-            dimensions = masks_by_dimensions.keys().pop()
+            dimensions = list(masks_by_dimensions.keys()).pop()
             dimension_report = '%s dimensions = %s\n' % (dimension_report, str(dimensions))
-            dimensions = masks_by_spacing.keys().pop()
+            dimensions = list(masks_by_spacing.keys()).pop()
             dimension_report = '%s spacing = %s\n' % (dimension_report, str(dimensions))
-            dimensions = masks_by_extent.keys().pop()
+            dimensions = list(masks_by_extent.keys()).pop()
             dimension_report = '%s extent = %s\n' % (dimension_report, str(dimensions))
-            dimensions = masks_by_whole_extent.keys().pop()
+            dimensions = list(masks_by_whole_extent.keys()).pop()
             dimension_report = '%s whole extent = %s\n' % (dimension_report, str(dimensions))
             
             self._view_frame.dialog_info(dimension_report, 'No mismatches')
         else:
             dimension_report = '% masks possess %d unique sets of dimensions. See below:\n' % (msg, len(masks_by_dimensions))
-            for k in masks_by_dimensions.keys():
+            for k in list(masks_by_dimensions.keys()):
                 dimension_report = '%s\n%s => %s' % (dimension_report, str(k), str( masks_by_dimensions[k]))
             dimension_report = '%s\n\n%d unique spacings with their defining masks:\n' % (dimension_report, len(masks_by_spacing))
-            for k in masks_by_spacing.keys():
+            for k in list(masks_by_spacing.keys()):
                 dimension_report = '%s\n%s => %s' % (dimension_report, str(k), str( masks_by_spacing[k]))
             dimension_report = '%s\n\n%d unique extents with their defining masks:\n' % (dimension_report, len(masks_by_extent))
-            for k in masks_by_extent.keys():
+            for k in list(masks_by_extent.keys()):
                 dimension_report = '%s\n%s => %s' % (dimension_report, str(k), str( masks_by_extent[k]))
             dimension_report = '%s\n\n%d unique whole_extents with their defining masks:\n' % (dimension_report, len(masks_by_whole_extent))
-            for k in masks_by_whole_extent.keys():
+            for k in list(masks_by_whole_extent.keys()):
                 dimension_report = '%s\n%s => %s' % (dimension_report, str(k), str( masks_by_whole_extent[k]))
 
             self._view_frame.dialog_exclaim(dimension_report,"Mismatches found!")
@@ -1169,7 +1170,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             self._view_frame.dialog_info("At least 2 masks need to be loaded to compare dimensions!","Fewer than two masks loaded")
             return
 
-        mask_names = self.masks.keys()
+        mask_names = list(self.masks.keys())
         self._test_dimensions(mask_names, 'All')
 
 
@@ -1194,7 +1195,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             self._view_frame.dialog_info("At least 2 masks need to be loaded to detect intersections!","Fewer than two masks loaded")
             return
                 
-        mask_names = self.masks.keys()
+        mask_names = list(self.masks.keys())
         self._test_intersections(mask_names)
 
 
@@ -1328,7 +1329,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             return maskB
         elif maskB == None:
             return maskA
-        print 'Joining masks %s and %s' % (maskA.name, maskB.name)
+        print('Joining masks %s and %s' % (maskA.name, maskB.name))
         logicOR = vtk.vtkImageLogic()
         logicOR.SetOperationToOr()
         logicOR.SetInput1(maskA.data)
@@ -1341,7 +1342,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
     def _logical_intersect_masks(self, maskA, maskB):        
         if maskA == None or maskB == None:
             return None
-        print 'Intersecting masks %s and %s' % (maskA.name, maskB.name)
+        print('Intersecting masks %s and %s' % (maskA.name, maskB.name))
         logicAND = vtk.vtkImageLogic()
         logicAND.SetOperationToAnd()
         logicAND.SetInput1(maskA.data)
@@ -1355,7 +1356,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         """Returns logical subtraction of maskB from maskA => maskA AND (NOT maskB)"""        
         if maskB == None:
             return maskA
-        print 'Subtracting mask %s and %s' % (maskA.name, maskB.name)
+        print('Subtracting mask %s and %s' % (maskA.name, maskB.name))
         logicNOT = vtk.vtkImageLogic()
         logicNOT.SetOperationToNot()
         logicNOT.SetInput1(maskB.data)
@@ -1413,7 +1414,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
         accumulator.SetInput(labeled)
         accumulator.Update()
         nr_of_components = accumulator.GetMax()[0]
-        print 'Found %d disconnected mask components' % nr_of_components
+        print('Found %d disconnected mask components' % nr_of_components)
 
         message = '%d disconnected components found.\nHow many do you want to accept (large to small)?' % nr_of_components
         nr_to_process_str = self._view_frame.dialog_inputtext(message, 'Choose number of disconnected components', '1')[1]
@@ -1428,7 +1429,7 @@ class MaskComBinar(IntrospectModuleMixin, ModuleBase):
             self._view_frame.dialog_error('Number must be between 1 and %d' % nr_of_components, "Invalid input")
             return
 
-        print 'Saving the largest %d components to new masks' % nr_to_process
+        print('Saving the largest %d components to new masks' % nr_to_process)
         thresholder = vtk.vtkImageThreshold()
         thresholder.SetInput(labeled)
         thresholder.SetInValue(1)

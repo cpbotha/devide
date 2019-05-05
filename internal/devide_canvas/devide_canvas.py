@@ -4,7 +4,7 @@
 
 import vtk
 from module_kits.misc_kit.mixins import SubjectMixin
-from devide_canvas_object import DeVIDECanvasGlyph
+from .devide_canvas_object import DeVIDECanvasGlyph
 import operator
 
 import wx # we're going to use this for event handling
@@ -421,8 +421,8 @@ class DeVIDECanvas(SubjectMixin):
                 display_depth))
 
         # old_pick_pt - new_pick_pt (reverse of camera!)
-        motion_vector = map(operator.sub, new_pick_pt,
-                old_pick_pt)
+        motion_vector = list(map(operator.sub, new_pick_pt,
+                old_pick_pt))
 
         return motion_vector
 
@@ -482,11 +482,11 @@ class DeVIDECanvas(SubjectMixin):
                     focal_depth))
 
             # old_pick_pt - new_pick_pt (reverse of camera!)
-            motion_vector = map(operator.sub, old_pick_pt,
-                    new_pick_pt)
+            motion_vector = list(map(operator.sub, old_pick_pt,
+                    new_pick_pt))
 
-            new_cfp = map(operator.add, cfp, motion_vector)
-            new_cp = map(operator.add, cp, motion_vector)
+            new_cfp = list(map(operator.add, cfp, motion_vector))
+            new_cp = list(map(operator.add, cp, motion_vector))
             
             c.SetFocalPoint(new_cfp)
             c.SetPosition(new_cp)
